@@ -29,5 +29,8 @@
           ;; Binary operator 
           ((ArithOp)
            (ArithExpr c ... (??) (sub1 depth))
-           (ArithExpr c ... (??) (sub1 depth)))
-))
+           (ArithExpr c ... (??) (sub1 depth)))))
+
+;; For pairs
+(define fst car)
+(define snd cadr)

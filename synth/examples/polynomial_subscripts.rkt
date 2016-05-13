@@ -59,7 +59,7 @@
 (define (expr a b ilist)
   (let ([i (car ilist)]
         [j (cadr ilist)])
-    (+ (* i (+ i a)) (+ j (* i i)) 2)))
+    (+ (* i (+ i a)) (+ j (* i i)) 2 (* b j) (+ j j))))
 
 (define (correct? lmad ini a b ilist)
   (assert (eq? (lmad a b ilist) (ini a b ilist))))
@@ -72,7 +72,16 @@
     #:forall (list i1 i2 c2 c3)
     #:guarantee (correct? lmad1 expr c2 c3 (list i1 i2)))))
 
+;; time : cpu time: 100 real time: 7962 gc time: 0
+;; solution :
+;; (poly-LMAD
+;; (cons
+;;  (polynom (cons 2 (cons a (list 14))))
+;;  (list (polynom (cons 0 (cons (+ 3 b) (list 2))))))
+;; (+ 2 -16))
+;; Can be rewritten : (poly-LMAD (list (polynom '(2 a 14)) 
+;;                                      polynom '(0 (+ 3 b) 2))
+;;                               (+ 2 -16))
 (define (solution a b ilist)
   (eval (syntax->datum (car (generate-forms sol))))
         (lmad1 a b ilist))
-
