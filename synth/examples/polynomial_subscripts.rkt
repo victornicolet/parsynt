@@ -59,7 +59,7 @@
 (define (expr a b ilist)
   (let ([i (car ilist)]
         [j (cadr ilist)])
-    (+ (* i (+ i a)) (+ j (* i i)) 2)))
+    (+ (* i (+ i a)) (+ j (* i i)) 2 (* b j) (+ j j))))
 
 (define (correct? lmad ini a b ilist)
   (assert (eq? (lmad a b ilist) (ini a b ilist))))
@@ -75,4 +75,3 @@
 (define (solution a b ilist)
   (eval (syntax->datum (car (generate-forms sol))))
         (lmad1 a b ilist))
-
