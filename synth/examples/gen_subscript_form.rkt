@@ -13,7 +13,7 @@
   #:else (choose (MultE i ... dep)
                 (+ (MultE i ... dep) (AddE [dep] i ... (sub1 k)))))
 
-
+(current-bitwidth 5)
 ;; (SA) Simple affine array access pattern
 (define (SA-LMAD i c)
   (AddE [3] i c 4))
@@ -73,5 +73,5 @@
     #:forall (list i1 i2 c1 c2)
     #:guarantee (assert (eq? (+ (* i1 (+ i1 3)) i2 c2)
                              (NA-LMAD i1 i2 c1 c2))))))
-;;time : cpu time: 116 real time: 2076 gc time: 0
+;; time : cpu time: 116 real time: 2076 gc time: 0
 ;; result : '(define (NA-LMAD i j k l) (+ l (+ j (+ (* i i) (* 3 i)))))
