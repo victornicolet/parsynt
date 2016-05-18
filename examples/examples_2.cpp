@@ -26,7 +26,7 @@ int* rpermute(int n) {
 /* 
    Remove duplicates
 */
-int* remove_duplicates(int* array, int size, int (*hash)(int) {
+int* remove_duplicates(int* array, int size, int (*hash)(int)) {
   int * hashed = new int[size];
   int nu_size = size;
   for(int i=0; i < size; i++){
@@ -34,6 +34,7 @@ int* remove_duplicates(int* array, int size, int (*hash)(int) {
       nu_size--;
     }
   }
+}
     
 
 /*
@@ -45,21 +46,7 @@ int* remove_duplicates(int* array, int size, int (*hash)(int) {
   node, combining the values with an operator.
 */
 
-#define CHUNKSIZE 64
 
-typedef struct array_list_chunk {
-  int P[CHUNKSIZE];
-  int S[CHUNKSIZE];
-  int V[CHUNKSIZE];
-} array_list_chunk;
-
-int contract_elts (array_list_chunk *list_chunks, int n_chunks, int head, int n_elts) {
-  int sum = 0 ;  
-  for(int elt_no = 0; elt_no < n_elts; elt_no++) {
-    sum+= list_chunks[head / CHUNKSIZE].V[head % CHUNKSIZE];
-    head = list_chunks[head / CHUNKSIZE].S[head % CHUNKSIZE];
-  }
-}
 
 
 int main (int argc, char **argv) {
