@@ -1,0 +1,1 @@
+("6.4" ("c7bbb5b02c5cbbae350e92c9faf1be95078c6522" . "a4b5e9f8e97362c052272a35f58cce7062ec50dd") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"syntax.rkt") (collects #"rosette" #"lang" #"reader.rkt") (collects #"rosette" #"lib" #"synthax.rkt") (collects #"rosette" #"main.rkt"))

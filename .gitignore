@@ -2,3 +2,4 @@
 *#
 examples/Basic
 *.out
+consynth/compiled/
