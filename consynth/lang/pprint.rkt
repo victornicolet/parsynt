@@ -1,188 +1,224 @@
 #lang racket
 
 (require c
-         racket/pretty)
+         racket/pretty racket/match)
+
+(provide sprint-cexp sprintc)
+
+; General interface for printing C programs 
+(define (sprintc program)
+  (match program
+    [(expr _ ) (sprint-cexp program)]
+    [(decl _ ) (sprint-decl program)]
+    [(type _) (sprint-type program)]
+    [_ (sprint-decl-list program)]))
 
 ; Printing C expressions
 (define (sprint-cexp cexpr) 
-  (parameterize 
-      ([pretty-print-columns 80])
-    (pretty-format 
-     "~s"
-     (match cexpr
-       [(expr src) (format "Expression:~s" (sprint-src src))]
-       [(expr:ref _ id) (sprint-id id)]
-       [(expr:int _ val qualifiers) (format "~s ~s" val 
-                                            (sprint-qualifiers qualifiers))]
-       [(expr:float _ val qualifiers) (format "~s ~s" val 
-                                              (sprint-qualifiers qualifiers))]
-       [(expr:char _ source wide?) (format "char ~s" source)]
-       [(expr:string _ source wide?) (format "string ~s" source)]
-       [(expr:compound _ type inits) (format "~s ~s" (sprint-type type)
-                                             (sprint-inits inits)) ]
-       [(expr:array-ref _ expr offset) (format "~s[~s]"
-                                               (sprint-cexp expr)
-                                               (sprint-cexp offset))]
-       [(expr:call _ func args) (format "~s (~s)"
-                                        (sprint-cexp func)
-                                        (sprint-cexp-list args))]
-       [(expr:member _ expr label) (format "~s.~s" 
-                                           (sprint-cexp expr)
-                                           (sprint-id label))]
-       [(expr:pointer-member _ expr label) (format "~s -> ~s"
-                                                   (sprint-cexp expr)
-                                                   (sprint-id label))]
-       [(expr:postfix _ expr op) (format "~s ~s" (sprint-cexp expr) (sprint-id op))]
-       [(expr:prefix _ op expr) (format "~s ~s" (sprint-id op) (sprint-cexp expr))]
-       [(expr:cast _ type expr) (format "~s(~s)" (sprint-type type) (sprint-cexp expr))]
-       [(expr:sizeof _ term) (format "sizeof(~s)" (sprint-term term))]
-       [(expr:unop _ op expr) (format "~s ~s" (sprint-id op) (sprint-cexp expr))]
-       [(expr:binop _ lexpr op rexpr) (format "~s ~s ~s"
-                                             (sprint-cexp lexpr)
-                                             (sprint-id op)
-                                             (sprint-cexp rexpr))]
-       [(expr:assign _ lexpr op rexpr) (format "~s ~s ~s"
-                                               (sprint-cexp lexpr)
-                                               (sprint-id op)
-                                               (sprint-cexp rexpr))]
-       [(expr:begin _ left right) (format "~s;\n~s"
-                                          (sprint-cexp left)
-                                          (sprint-cexp right))]
-       [(expr:if _ test conss alt) (sprint-conditional test conss alt #f)]
-       [_ ""]
-))))
+  (match cexpr
+    [(expr:ref _ id) (sprint-id id)]
+    [(expr:int _ val qualifiers) (format "~a ~a" val 
+                                         (sprint-qualifiers qualifiers))]
+    [(expr:float _ val qualifiers) (format "~a ~a" val 
+                                           (sprint-qualifiers qualifiers))]
+    [(expr:char _ source wide?) (format "char ~a" source)]
+    [(expr:string _ source wide?) (format "string ~a" source)]
+    [(expr:compound _ type inits) (format "~a ~a" (sprint-type type)
+                                          (sprint-inits inits)) ]
+    [(expr:array-ref _ expr offset) (format "~a[~a]"
+                                            (sprint-cexp expr)
+                                            (sprint-cexp offset))]
+    [(expr:call _ func args) (format "~a (~a)"
+                                     (sprint-cexp func)
+                                     (sprint-cexp-list args))]
+    [(expr:member _ expr label) (format "~a.~a" 
+                                        (sprint-cexp expr)
+                                        (sprint-id label))]
+    [(expr:pointer-member _ expr label) (format "~a -> ~a"
+                                                (sprint-cexp expr)
+                                                (sprint-id label))]
+    [(expr:postfix _ expr op) (format "~a ~a" (sprint-cexp expr) (sprint-id op))]
+    [(expr:prefix _ op expr) (format "~a ~a" (sprint-id op) (sprint-cexp expr))]
+    [(expr:cast _ type expr) (format "~a(~a)" (sprint-type type) (sprint-cexp expr))]
+    [(expr:sizeof _ term) (format "sizeof(~a)" (sprint-term term))]
+    [(expr:unop _ op expr) (format "~a ~a" (sprint-id op) (sprint-cexp expr))]
+    [(expr:binop _ lexpr op rexpr) (format "~a ~a ~a"
+                                           (sprint-cexp lexpr)
+                                           (sprint-id op)
+                                           (sprint-cexp rexpr))]
+    [(expr:assign _ lexpr op rexpr) (format "~a ~a ~a"
+                                            (sprint-cexp lexpr)
+                                            (sprint-id op)
+                                            (sprint-cexp rexpr))]
+    [(expr:begin _ left right) (format "~a;\n~a"
+                                       (sprint-cexp left)
+                                       (sprint-cexp right))]
+    [(expr:if _ test conss alt) (format "~a?~a:~a" 
+                                        (sprint-cexp test) 
+                                        (sprint-cexp conss)
+                                        (sprint-cexp alt))]
+    [(expr src) ""]
+    [#f ""]
+    [_ (error (format "Received a bad expression : ~a" cexpr))]))
 
 
 
 
 (define (sprint-cexp-list cexp-list)
   (match cexp-list
-    [(cons a b) (format "~s, ~s" (sprint-cexp a) (sprint-cexp-list b))]
+    [(cons a b) (format "~a, ~a" (sprint-cexp a) (sprint-cexp-list b))]
     ['() ""]
     [a (sprint-cexp a)]))
 
 (define (sprint-compound element)
   (match element
-    [(cons dtors ini) (pretty-format "~s ~s" 
+    [(cons dtors ini) (format "~a ~a" 
                               (map sprint-designator dtor)
                               (sprint-init ini))]
     [ini (sprint-init ini)]))
 
-
-(define (sprint-conditional test conss alt is-statement?)
-  "Not yet implemented - COnditionals")
-
 (define (sprint-decl cdecl)
   (match cdecl
-    [(decl src) (format "Declaration:~s" (sprint-src src))]
-    [(decl:typedef _ type declarators) (format "typedef ~s ~s;\n" 
+    [(decl:typedef _ type declarators) (format "typedef ~a ~a;\n" 
                                                (sprint-type type)
-                                               (map sprint-decl declarators))]
-    [(decl:vars _ storage-class type declarators) (pretty-format 
-                                                   "~s ~s ~s;\n"
+                                               (string-join (map sprint-decl declarators)))]
+    [(decl:vars _ storage-class type declarators) (format 
+                                                   "~a ~a ~a;\n"
                                                    (sprint-id storage-class)
                                                    (sprint-type type)
-                                                   (map sprint-decl declarators))]
-    [(decl:formal _ storage-class type declarator) (pretty-format
-                                                   "~s ~s ~s"
-                                                   (sprint-id storage-class)
-                                                   (sprint-type type)
-                                                   (sprint-decl declarator))]
-    [(decl:function _ storage-class inline? return-type declarator preamble body)
-     (pretty-format "~s~s ~s(~s) {\n~s}" 
-                    (if inline? "inline " "") (sprint-id storage-class) 
-                    (sprint-decl declarator) (sprint-decl-list preamble)
-                    (sprint-stmt body))]
-    [(decl:declarator _ id type initializer) (format "~s ~s~s"
-                                                     (sprint-id id)
+                                                   (string-join (map sprint-decl declarators)))]
+    [(decl:formal _ storage-class type declarator) (string-join
+                                                    (list
+                                                     (sprint-id storage-class)
                                                      (sprint-type type)
-                                                     (if (= initializer #f)
-                                                         ""
-                                                         (sprint-init initializer)))]
-    [(decl:member-declarator _ id type initializer bit-size) (format "~s ~s~s [~s];\n"
+                                                     (sprint-decl declarator ))
+                                                    " "
+                                                    #:after-last "")]
+    [(decl:function _ storage-class inline? return-type declarator preamble body)
+     (format "~a~a ~a ~a~a {\n~a}" 
+             (if inline? "inline " "") (sprint-id storage-class)
+             (sprint-type return-type)
+             (sprint-decl declarator) (sprint-decl-list preamble)
+             (indented (sprint-stmt body)))]
+    [(decl:declarator _ id type initializer)
+     (format "~a ~a~a"
+             (sprint-id id)
+             (sprint-type type)
+             (sprint-init initializer))]
+    [(decl:member-declarator _ id type initializer bit-size) (format "~a ~a~a [~a]\n"
                                                                      (sprint-id id)
                                                                      (sprint-type type)
                                                                      (sprint-init initializer)
                                                                      (sprint-cexp bit-size))]
-    [(decl:member _ type declarators) (pretty-format "~s ~s\n"
-                                                     (sprint-type type)
-                                                     (map sprint-decl declarators))]))
-
+    [(decl:member _ type declarators) (format "~a~a"
+                                              (sprint-type type)
+                                              (string-join (map sprint-decl declarators) 
+                                                           ", " #:after-last ""))]
+    [(decl src) ""]
+    [(or '() #f) ""]))
 
 (define (sprint-decl-list dlist)
-  "Not yet implemented - list of declarations")
+  (match dlist
+    [(cons a b) (format "~a~n~a" (sprint-decl a) (sprint-decl-list b))]
+    [a (sprint-decl a)]
+    ['() ""]
+    [_ (error "In sprint-decl-list, expected a list, a declaration or an empty list.")]))
 
 (define (sprint-designator designator)
   (match designator
+    [(dtor:array _ expr) (format "[~a]" (sprint-cexp expr))]
+    [(dtor:member _ label) (format ".~a" (sprint-id label))]
     [(dtor src) ""]
-    [(dtor:array _ expr) (format "[~s]" (sprint-cexp expr))]
-    [(dtor:member _ label) (format ".~s" (sprint-id label))]))
+    [_ (error "Unexpected argument, not a designator.")]))
 
-;; (lsitof (or/c decl:formal? id:ellipsis?))
+
 (define (sprint-formals formals) 
-  "Not yet implemented yet")
+  (string-join 
+          (map
+           (lambda (decl-or-id)
+             (match decl-or-id
+               [(decl:formal _ _ _ _) (sprint-decl decl-or-id)]
+               [(id:ellipsis _) (sprint-id decl-or-id)]))
+           formals)
+          ", "))
 
 (define (sprint-id id)
   (match id
-    [(id:var _ name-symbol) (format "~s:~s" "var:" (symbol->string name-symbol))]
-    [(id:label _ name-symbol) (format "~s:~s" "label:" (symbol->string name-symbol))]
+    [(id:var _ name-symbol)  (symbol->string name-symbol)]
+    [(id:label _ name-symbol) (symbol->string name-symbol)]
     [(id:op _ name-symbol) (symbol->string name-symbol)]
-    [(id:storage _ storage-class) (format "~s:~s" "class:" storage-class)]
+    [(id:storage _ storage-class) (format "~v" storage-class)]
     [(id:inline _) "inline"]
-    [(id:qualifier _ name) (pretty-format "~s" name)]
-    [_ "unrecognized id"]))
+    [(id:qualifier _ name) (format "~v" name)]
+    [(id:ellipsis _) "..."]
+    [(id:star _) "*"]
+    [#f ""]
+    [_ (error (format "Unexpected id ~v" id))]))
 
 
 (define (sprint-init cinit)
   (match cinit
     [#f ""]
+    [(init:compound _ elements) (format "~a" (map sprint-compound elements))]
+    [(init:expr _ expr) (sprint-cexp expr)]
     [(init src) ""]
-    [(init:compound _ elements) (pretty-format "~s" (map sprint-compound elements))]
-    [(init:expr _ expr) (sprint-cexp expr)]))
+    [_ (error "Unexpected initialization")]))
 
 (define (sprint-inits inits)
-  (pretty-format "~s" (map sprint-init inits)))
+  (format "~a" (map sprint-init inits)))
 
 
 (define (sprint-qualifiers qualifiers)
-  (pretty-format "~s" (map sprint-id qualifiers)))
+  (string-join (map sprint-id qualifiers) " "))
 
 ; C statements 
 (define (sprint-stmt stmt)
-  (parameterize
-      ([pretty-print-columns 80])
-    (pretty-format 
-     "~s"
-     (match stmt
-       [(stmt:label _ label stmt) (format "~s ~s;\n" (sprint-id label) (sprint-stmt stmt))]
-       [(stmt:case _ expr stmt) (format "case ~s:\n~s" (sprint-cexp expr) (sprint-stmt stmt))]
-       [(stmt:default _ stmt) (format "default:\n~s" (sprint-stmt stmt))]
-       [(stmt:block _ items) (sprint-stmt-list items)]
-       [(stmt:expr _ expr) (format "~s\n" (sprint-cexp expr))]
-       [(stmt:if _ test conss alt) (format "~s\n" (sprint-conditional test conss alt #t))]
-       [(stmt:switch _ test body) (format "switch(~s) { \n~s}" 
+  (format 
+   "~a"
+   (match stmt
+     [(stmt:label _ label stmt) (format "~a:\n~a" (sprint-id label)
+                                        (indented (sprint-stmt stmt)))]
+     [(stmt:case _ expr stmt) (format "case ~a:\n~a" (sprint-cexp expr) 
+                                      (indented (sprint-stmt stmt)))]
+     [(stmt:default _ stmt) (format "default:\n~a" (sprint-stmt stmt))]
+     [(stmt:block _ items) (sprint-stmt-list items)]
+     [(stmt:expr _ expr) (format "~a;\n" (sprint-cexp expr))]
+     [(stmt:if _ test conss alt) (string-append 
+                                  (format "if(~a) {\n~a}"
                                           (sprint-cexp test)
-                                          (sprint-stmt body))]
-       [(stmt:while _ test body) (format "while(~s) {\n~s}"
-                                         (sprint-cexp test)
-                                         (sprint-stmt body))]
-       [(stmt:do _ body test) (format "do {\n~s} while(~s)"
-                                      (sprint-stmt body)
-                                      (sprint-cexp expr))]
-       [(stmt:for _ ini test update body) (format "for(~s;~s;~s) {\n~s"
-                                                   (sprint-cexp ini)
-                                                   (sprint-cexp test)
-                                                   (sprint-cexp update)
-                                                   (sprint-stmt body))]
-       [(stmt:goto _ label) (format "goto ~s" (sprint-id label))]
-       [(stmt:break _) "break;\n"]
-       [(stmt:continue _) "continue;\n"]
-       [(stmt:return _ result) (format "return ~s;\n" (sprint-cexp result))]
-       [(stmt:empty _) "skip;\n"]))))
+                                          (indented (sprint-stmt conss)))
+                                  (match alt
+                                    [#f "\n"]
+                                    [_ (format " else {\n~a}\n"
+                                               (indented (sprint-stmt alt)))]))]
+     [(stmt:switch _ test body) (format "switch(~a) {\n~a}" 
+                                        (sprint-cexp test)
+                                        (indented (sprint-stmt body)))]
+     [(stmt:while _ test body) (format "while(~a) {\n~a}"
+                                       (sprint-cexp test)
+                                       (indented (sprint-stmt body)))]
+     [(stmt:do _ body test) (format "do {\n~a} while(~a);\n"
+                                    (indented (sprint-stmt body))
+                                    (sprint-cexp expr))]
+     [(stmt:for _ ini test update body) (format "for(~a;~a;~a) {\n~a}\n"
+                                                (sprint-cexp ini)
+                                                (sprint-cexp test)
+                                                (sprint-cexp update)
+                                                (indented (sprint-stmt body)))]
+     [(stmt:goto _ label) (format "goto ~a;\n" (sprint-id label))]
+     [(stmt:break _) "break;\n"]
+     [(stmt:continue _) "continue;\n"]
+     [(stmt:return _ result) (format "return ~a;\n" (sprint-cexp result))]
+     [(stmt:empty _) "skip;\n"]
+     [ _ (error "Expected a statement but got something else ..")])))
 
 (define (sprint-stmt-list stmt-list)
   (match stmt-list
-    [(cons a b) (format "~s\n~s;" (sprint-stmt a) (sprint-stmt-list b))]
+    [(cons a b) (format "~a~a" 
+                        (match a
+                          [(stmt _) (sprint-stmt a)]
+                          [(decl _) (sprint-decl a)])
+                        (sprint-stmt-list b))]
     ['() ""]
     [a (sprint-stmt a)]))
 
@@ -192,19 +228,18 @@
 
 (define (sprint-type ctype)
   (match ctype
-    [(type src) (format "Type:~s" (sprint-src src))]
-    [(type:primitive _ name) (pretty-format "~s" name)]
-    [(type:ref _ id) (format "ref ~s" (sprint-id id))]
-    [(type:struct _ tags fields) (pretty-format "struct ~s {~s}"
+    [(type:primitive _ name) (format "~a" name)]
+    [(type:ref _ id) (format "ref ~a" (sprint-id id))]
+    [(type:struct _ tags fields) (format "struct ~a {~a}"
                                                 (sprint-id tags)
                                                 (sprint-decl-list fields))]
-    [(type:union _ tags variants) (pretty-format "union ~s (~s)"
+    [(type:union _ tags variants) (format "union ~a (~a)"
                                                  (sprint-id tags)
                                                  (sprint-decl-list variants))]
-    [(type:enum _ tags variants) (pretty-format "enum ~s [~s]"
+    [(type:enum _ tags variants) (format "enum ~a [~a]"
                                                  (sprint-id tags)
                                                  (sprint-decl-list variants))]
-    [(type:array _ base static? qualifiers len star?) (format "~s~s~s[~s]"
+    [(type:array _ base static? qualifiers len star?) (format "~a~a~a[~a]"
                                                               (if (= static? #f)
                                                                   (sprint-id static?)
                                                                   "")
@@ -212,17 +247,32 @@
                                                               (sprint-type base)
                                                               (sprint-cexp len)
                                                               )]
-    [(type:pointer _ base qualifiers) (format "~s ~s*" (sprint-qualifiers qualifiers)
+    [(type:pointer _ base qualifiers) (format "~a ~a*" (sprint-qualifiers qualifiers)
                                               (sprint-type base))]
-    [(type:function _ return formals) (format "fun ~s -> ~s" 
-                                              (sprint-formals formals)
-                                              (sprint-type return))]
-    [(type:qualified _ type qualifiers) (format "~s ~s" (sprint-type type)
-                                                (sprint-qualifiers qualifiers))]))
+    [(type:function _ return formals) (format "(~a)" 
+                                              (sprint-formals formals))]
+    [(type:qualified _ type qualifiers) (format "~a~a" (sprint-type type)
+                                                (sprint-qualifiers qualifiers))]
+    [#f ""]
+    [(type src) (format "Type:~a" (sprint-src src))]
+    [_ (error "unexpected type for printing")]))
 
 (define (sprint-src source)
   (match source
     [(src start-offset start-line start-col end-offset end-line end-col path)
-     (format "~s:~s L ~s:~s C ~s:~s Path: ~s"
+     (format "~a:~a L ~a:~a C ~a:~a Path: ~a"
              start-offset end-offset start-line end-line
              start-col end-col path)]))
+
+
+;; Pretty-printing utilities
+(define default-indent 4)
+
+(define (indented str)
+  (let ([lines (string-split str "\n")])
+    (string-join 
+     (map 
+      (lambda (s) (string-append (make-string default-indent #\space) s))
+      lines)
+     "\n"
+     #:after-last "\n")))

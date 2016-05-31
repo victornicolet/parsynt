@@ -11,6 +11,9 @@ void other_dummy(int n, int *array) {
   int i;
   for(i = 0; i < n; i++) {
     array[i] = i;
+    if(i >= 10) {
+      array[i] = 0;
+    }
   }
 }
 

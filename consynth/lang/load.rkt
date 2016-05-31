@@ -11,9 +11,7 @@
 (define (extract-from-decl loop-list decl)
   (match decl 
     [(decl:function _ _ _ _ decl-ctx _ _)
-     (begin
-       (print-declarator-context decl-ctx)
-       (extract-in-func loop-list decl))]
+       (extract-in-func loop-list decl)]
     [ _ loop-list]))
 
 (define (extract-in-func loop-list func)
@@ -34,16 +32,6 @@
     [(stmt:case _  expr stmt) (extract-stmt l stmt)]
     [_ l]))
 
-(define (print-declarator-context decl-ctx)
- (match decl-ctx
-   [(decl:declarator _ id type initializer) (print-id id)]))
 
-(define (print-id id)
-  (match id
-    [(id:var _ name-symbol) (printf "~s:~s" "var:" (symbol->string name-symbol))]
-    [(id:label _ name-symbol) (printf "~s:~s" "label:" (symbol->string name-symbol))]
-    [(id:op _ name-symbol) (printf "~s:~s" "op:" (symbol->string name-symbol))]
-    [(id:storage _ storage-class) (printf "~s:~s" "class:" storage-class)]
-    [(id:inline _) (print "inline")]
-    [_ (print "unrecognized id")]
-  ))
+
+
