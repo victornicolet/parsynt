@@ -2,36 +2,32 @@
 
 (require c)
 
-(provide extract-for-loops)
+(provide loops)
 
-(define (extract-for-loops loop-list cprogram)
-  (foldl extract-from-decl loop-list cprogram))
+(define (loops program)
+  (remove #f (flatten (map extract-loop program))))
 
+(define (extract-loop stmt-or-decl)
+  (let ([res
+         (match stmt-or-decl
+           ;; Loops
+           [(or (stmt:for _ _ _ _ _)
+                (stmt:while _ _ _)
+                (stmt:do _ _ _)) stmt-or-decl]
+           ;; Search sub-blocks
+           [(or (decl:function _ _ _ _ _ _ body)
+                (stmt:label _ _ body)
+                (stmt:case _ _ body)
+                (stmt:block _ body)
+                (stmt:switch _ _ body)
+                (stmt:default _ body)) (map-or-apply extract-loop body)]
+           ;; Statements or declarations without sub-blocks
+           [_ #f])])
+    (if (list? res) (remove #f (flatten res))
+        (if (eq? res #f) '() (list res)))))
 
-(define (extract-from-decl loop-list decl)
-  (match decl 
-    [(decl:function _ _ _ _ decl-ctx _ _)
-       (extract-in-func loop-list decl)]
-    [ _ loop-list]))
-
-(define (extract-in-func loop-list func)
-  (match func
-    [(decl:function src stgclass inl rettype decl pre body)
-     (match body
-       [(stmt:block src items) 
-        (foldl extract-stmt loop-list items)]
-       [_ loop-list])]))
-
-(define (extract-stmt stmt-or-decl l)
-  (match stmt-or-decl 
-    [(stmt:for _ ini test update body) (cons l stmt-or-decl)]
-    [(stmt:while _ test body) (cons l stmt-or-decl)]
-    [(stmt:do _ body test) (cons l stmt-or-decl)]
-    [(stmt:switch _ test body) (extract-stmt l body)]
-    [(stmt:if _ test stmt1 stmt2) (cons (extract-stmt l stmt1) (extract-stmt '() stmt2))]
-    [(stmt:case _  expr stmt) (extract-stmt l stmt)]
-    [_ l]))
-
+(define (map-or-apply func items)
+  (if (list? items) (map func items) (func items)))
 
 
 

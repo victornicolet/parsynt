@@ -6,8 +6,5 @@
 
 (define mini-cprogram (parse-program (open-input-file "mini.c")))
 
-(display (sprintc mini-cprogram))
-
-
-
+(for-each (lambda (forstmt) (display (sprintc forstmt))) (loops mini-cprogram))
 

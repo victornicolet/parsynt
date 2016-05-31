@@ -3,7 +3,7 @@
 (require c
          racket/pretty racket/match)
 
-(provide sprint-cexp sprintc)
+(provide sprintc)
 
 ; General interface for printing C programs 
 (define (sprintc program)
@@ -11,6 +11,7 @@
     [(expr _ ) (sprint-cexp program)]
     [(decl _ ) (sprint-decl program)]
     [(type _) (sprint-type program)]
+    [(stmt _) (sprint-stmt program)]
     [_ (sprint-decl-list program)]))
 
 ; Printing C expressions
