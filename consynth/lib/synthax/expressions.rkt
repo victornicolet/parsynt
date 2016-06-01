@@ -2,7 +2,7 @@
 
 (require rosette/lib/synthax racket/syntax)
 
-(provide ScalarExpr Expr)
+(provide ScalarExpr LinearScalarExpr Expr)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -33,6 +33,20 @@
            (ScalarExpr x ... (sub1 depth)))
           ; Unary expression
           ((UnopsChoice)
+           (ScalarExpr x ... (sub1 depth)))
+          ; Scalar
+          (Scalar x ...)
+          ))
+
+(define-synthax (LinearScalarExpr x ... depth)
+  #:base (Scalar x ...)
+  #:else (choose
+          ; Binary expression
+          ((BasicBinops)
+           (ScalarExpr x ... (sub1 depth))
+           (ScalarExpr x ... (sub1 depth)))
+          ; Unary expression
+          ((BasicUnops)
            (ScalarExpr x ... (sub1 depth)))
           ; Scalar
           (Scalar x ...)
