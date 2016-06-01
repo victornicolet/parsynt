@@ -13,13 +13,13 @@
   (Loop from to 4 sum (lambda (s i) (/ (+ s (f i)) 2))))
 
 (define (join s1 l1 r1 s2 l2 r2)
-  (+ (choose s2 l2 r2 2)
+  (+ (Expr s2 l2 r2 1)
      (Loop (choose l2 r2) ; start
-             (choose l2 r2) ; symbolic-end
-             4 ; end / loop limit
-             (choose s1 l1 r1 2) ; initial
-             (lambda (s i) (/ s 2)) ; body of the loop
-             )))
+           (choose l2 r2) ; symbolic-end
+           4 ; end / loop limit
+           (Expr s1 l1 r1 1) ; initial
+           (lambda (s i) (/ s 2)) ; body of the loop
+           )))
  
 
 ;; Synthesis problem
@@ -30,17 +30,17 @@
                                   (body in a c)))]))
 
 (define cond1 (conds 2 7 9 0))
-(define cond2 (conds 3 4 5 0))
+(define cond2 (conds 0 4 10 0))
 (define cond3 (conds 5 12 30 0))
 
 (define-symbolic n0 n1 n2 sum0 integer?)
 
-;; (define odot 
-;;   (time
-;;    (synthesize
-;;     #:forall '()
-;;     #:guarantee (assert cond1))))
+(define odot 
+  (time
+   (synthesize
+    #:forall '()
+    #:guarantee (assert (and cond1 cond2 cond3)))))
 
-;; (printf "Sat: ~v\n" (sat? odot))
-;; (if (unsat? odot) (printf "Core: ~v" (core odot)) 
-;;     (begin (printf "Forms:\n") (print-forms odot)))
+(printf "Sat: ~v\n" (sat? odot))
+(if (unsat? odot) (printf "Core: ~v" (core odot)) 
+    (begin (printf "Forms:\n") (print-forms odot)))
