@@ -27,6 +27,8 @@
 (define-synthax (ScalarExpr x ... depth)
   #:base (Scalar x ...)
   #:else (choose
+          ; Scalar
+          (Scalar x ...)
           ; Binary expression
           ((BinopsChoice)
            (ScalarExpr x ... (sub1 depth))
@@ -34,13 +36,13 @@
           ; Unary expression
           ((UnopsChoice)
            (ScalarExpr x ... (sub1 depth)))
-          ; Scalar
-          (Scalar x ...)
           ))
 
 (define-synthax (LinearScalarExpr x ... depth)
   #:base (Scalar x ...)
   #:else (choose
+          ; Scalar
+          (Scalar x ...)
           ; Binary expression
           ((BasicBinops)
            (ScalarExpr x ... (sub1 depth))
@@ -48,8 +50,6 @@
           ; Unary expression
           ((BasicUnops)
            (ScalarExpr x ... (sub1 depth)))
-          ; Scalar
-          (Scalar x ...)
           ))
 
 ;; WIP : vector expressions = arrays with subscripts
