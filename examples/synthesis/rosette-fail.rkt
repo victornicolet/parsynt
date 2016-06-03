@@ -38,3 +38,18 @@
     #:guarantee (assert (body a b c d)))))
 
 (if (unsat? odot) (core odot) (print-forms odot) )
+
+;; In this example, the probalem is not the termination of the loop 
+;; anymore but the symbolic start index. Giving a symbolic start index 
+;; to this form of loops causes the loop to never terminate.
+
+(define (body s0 start end)
+  (letrec 
+      ([aux (lambda (s i) (if (or (<= end i) (<= 10 i)) s (aux s (add1 i))))])
+    (aux s0 start)))
+
+(define-symbolic a b integer?)
+(assert (and (<= 0 a) (<= a b) (<= b 10)))
+
+(body 1 0 b) ; terminates
+(body 1 a b) ; doesn't terminate

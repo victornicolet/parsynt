@@ -4,3 +4,4 @@ examples/Basic
 *.out
 consynth/compiled/
 */compiled/
+*.#*

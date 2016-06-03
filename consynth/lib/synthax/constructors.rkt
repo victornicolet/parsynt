@@ -23,4 +23,4 @@
      (letrec 
          ([aux (lambda (s i) 
                  (if (or (>= i end) (>= i symbolic-end)) s (aux (body s i) (add1 i))))])
-       (aux initial start))]))
+       (aux initial start))])) 
