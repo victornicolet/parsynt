@@ -20,10 +20,10 @@
         (lambda (s i) 
           (let
               ([ai (array i)] [p2 (pow2 (- n i))])
-            ((choose + * /) (/ ai p2) s)))))
+            (+ (/ ai p2) s))))) ; Adding unknowns here leads easily to unsat
 
 (define (join s1 l1 r1 s2 l2 r2)
-  (+ (choose s1 l1 r1) (choose s2 l2 r2)))
+  (+ s1 s2))
    ;; (LinearScalarExpr s2 l2 r2 2)
    ;; (LinearScalarExpr s1 l1 r1 2)))
 

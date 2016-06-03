@@ -7,6 +7,7 @@
 
 (define max-iters 20)
 (define max-pow 200)
+(current-bitwidth #f)
 
 (define (array i) (* i i))
 (define (pow2 i) 
@@ -16,7 +17,7 @@
   (Loop 0 b max-iters s0 (lambda (s i) (/ (+ s (array i)) 2))))
 
 (define (synth-body s0 b n)
-  (Loop 0 b max-iters s0 (lambda (s i) (+ s (/ (array i) (pow2 (- n i)))))))
+  (Loop 0 b max-iters s0 (lambda (s i) (Expr s (/ (array i) (pow2 (- n i))) 2))))
 
 (define-syntax c_cond 
   (syntax-rules ()
@@ -30,4 +31,4 @@
    #:forall (list a)
    #:guarantee (assert (c_cond 0 a a))))
 
-;(print-forms odot)
+(print-forms odot)
