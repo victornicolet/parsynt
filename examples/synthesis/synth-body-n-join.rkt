@@ -4,6 +4,8 @@
          consynth/lib/synthax/constructors
          rosette/lib/synthax)
 
+(current-bitwidth #f)
+
 (define (array i) (* i i))
 
 (define (pow2 i) (Loop 0 i 200 1 (lambda (s i) (* 2 s))))
@@ -20,7 +22,8 @@
         (lambda (s i) 
           (let
               ([ai (array i)] [p2 (pow2 (- n i))])
-            (+ (/ ai p2) s))))) ; Adding unknowns here leads easily to unsat
+            (+ (Expr ai p2 s 1) (choose ai s p2))))))
+;; Working sketch : (+ ((choose / + *) (choose ai p2 s) (choose s ai p2)) (choose ai s p2))))))
 
 (define (join s1 l1 r1 s2 l2 r2)
   (+ s1 s2))
@@ -30,7 +33,7 @@
 ;; (define a (synth-body 0 0 5 10))
 ;; (define b (synth-body 0 5 10 10))
 ;; (= (+ a b) (synth-body a 5 10 10)) ;--> #t
-;; (= (+ a b) (orig-body 0 0 10)) ;--> #t
+;; (= (+ a b) (orig-body 0 0 10)) ;--> #
 
 (define-syntax c_cond
   (syntax-rules ()
