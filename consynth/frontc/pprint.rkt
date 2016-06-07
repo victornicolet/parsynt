@@ -3,7 +3,7 @@
 (require c
          racket/pretty racket/match)
 
-(provide sprintc)
+(provide sprintc sprint-src)
 
 ; General interface for printing C programs 
 (define (sprintc program)
@@ -12,6 +12,7 @@
     [(decl _ ) (sprint-decl program)]
     [(type _) (sprint-type program)]
     [(stmt _) (sprint-stmt program)]
+    [(id _) (sprint-id program)]
     [_ (sprint-decl-list program)]))
 
 ; Printing C expressions
@@ -80,21 +81,24 @@
 
 (define (sprint-decl cdecl)
   (match cdecl
-    [(decl:typedef _ type declarators) (format "typedef ~a ~a;\n" 
-                                               (sprint-type type)
-                                               (string-join (map sprint-decl declarators)))]
-    [(decl:vars _ storage-class type declarators) (format 
-                                                   "~a ~a ~a;\n"
-                                                   (sprint-id storage-class)
-                                                   (sprint-type type)
-                                                   (string-join (map sprint-decl declarators)))]
-    [(decl:formal _ storage-class type declarator) (string-join
-                                                    (list
-                                                     (sprint-id storage-class)
-                                                     (sprint-type type)
-                                                     (sprint-decl declarator ))
-                                                    " "
-                                                    #:after-last "")]
+    [(decl:typedef _ type declarators)
+     (format "typedef ~a ~a;\n" 
+             (sprint-type type)
+             (string-join (map sprint-decl declarators)))]
+    [(decl:vars _ storage-class type declarators) 
+     (format 
+      "~a ~a ~a;\n"
+      (sprint-id storage-class)
+      (sprint-type type)
+      (string-join (map sprint-decl declarators)))]
+    [(decl:formal _ storage-class type declarator) 
+     (string-join
+      (list
+       (sprint-id storage-class)
+       (sprint-type type)
+       (sprint-decl declarator ))
+      " "
+      #:after-last "")]
     [(decl:function _ storage-class inline? return-type declarator preamble body)
      (format "~a~a ~a ~a~a {\n~a}" 
              (if inline? "inline " "") (sprint-id storage-class)
@@ -106,21 +110,22 @@
              (sprint-id id)
              (sprint-type type)
              (sprint-init initializer))]
-    [(decl:member-declarator _ id type initializer bit-size) (format "~a ~a~a [~a]\n"
+    [(decl:member-declarator _ id type initializer bit-size) (format "~a ~a ~a [~a]\n"
                                                                      (sprint-id id)
                                                                      (sprint-type type)
                                                                      (sprint-init initializer)
                                                                      (sprint-cexp bit-size))]
-    [(decl:member _ type declarators) (format "~a~a"
+    [(decl:member _ type declarators) (format "~a ~a"
                                               (sprint-type type)
                                               (string-join (map sprint-decl declarators) 
                                                            ", " #:after-last ""))]
     [(decl src) ""]
-    [(or '() #f) ""]))
+    [(or '() #f) ""]
+    [_ ""]))
 
 (define (sprint-decl-list dlist)
   (match dlist
-    [(cons a b) (format "~a~n~a" (sprint-decl a) (sprint-decl-list b))]
+    [(cons a b) (string-join (list (sprint-decl a) (sprint-decl-list b)) "")]
     [a (sprint-decl a)]
     ['() ""]
     [_ (error "In sprint-decl-list, expected a list, a declaration or an empty list.")]))
@@ -230,10 +235,10 @@
 (define (sprint-type ctype)
   (match ctype
     [(type:primitive _ name) (format "~a" name)]
-    [(type:ref _ id) (format "ref ~a" (sprint-id id))]
-    [(type:struct _ tags fields) (format "struct ~a {~a}"
+    [(type:ref _ id) (sprint-id id)]
+    [(type:struct _ tags fields) (format "struct ~a {\n~a}"
                                                 (sprint-id tags)
-                                                (sprint-decl-list fields))]
+                                                (indented (sprint-decl-list fields)))]
     [(type:union _ tags variants) (format "union ~a (~a)"
                                                  (sprint-id tags)
                                                  (sprint-decl-list variants))]
@@ -252,7 +257,7 @@
                                               (sprint-type base))]
     [(type:function _ return formals) (format "(~a)" 
                                               (sprint-formals formals))]
-    [(type:qualified _ type qualifiers) (format "~a~a" (sprint-type type)
+    [(type:qualified _ type qualifiers) (format "~a ~a" (sprint-type type)
                                                 (sprint-qualifiers qualifiers))]
     [#f ""]
     [(type src) (format "Type:~a" (sprint-src src))]

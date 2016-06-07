@@ -1,3 +1,7 @@
+typedef int my_int_arrray[3];
+
+static int a;
+
 int dummy_func(int h) {
   int i;
   int sum = 0;
