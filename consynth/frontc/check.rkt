@@ -1,10 +1,19 @@
 #lang racket
 
 (require c
+         racket/list
          "./pprint.rkt")
 
 (provide check-typedef check-vardecl)
 
+
+
+(define/contract (check-declarator-context decl ty)
+  (-> decl? type? (or/c decl? #f))
+  (if (and (complete-type? ty) (declarator-context? decl))
+      (apply-declarator-context decl ty)
+      (error (format "Not a declarator context : type ~a declarator ~a" 
+                     (sprintc ty) (sprintc decl)))))
 
 ;; Check the consistency of the typedefs and returns a list of typedefs,
 ;; one for each declarator in the orignal typedef
@@ -21,7 +30,7 @@ but received ~a instead." (sprintc ty) (sprint-src src)))
                              (list (check-declarator-context decl ty))))
        decls)]
      [else (error
-            (format "~a - Typedef check failed because there is not declarators."
+            (format "~a - Typedef check failed because there is no declarators."
                     (sprint-src src)))])))
 
 (define (check-vardecl decl stg-cls ty src)
@@ -40,10 +49,3 @@ but received ~a instead." (sprintc ty) (sprint-src src)))
                             (check-declarator-context decl ty)))))]
     [ _ (error (format "Not a type declarator at ~a" (sprint-src src)))]))
 
-
-(define/contract (check-declarator-context decl ty)
-  (-> decl? type? (or/c decl? #f))
-  (if (and (complete-type? ty) (declarator-context? decl))
-      (apply-declarator-context decl ty)
-      (error (format "Not a declarator context : type ~a declarator ~a" 
-                     (sprintc ty) (sprintc decl)))))

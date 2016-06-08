@@ -9,4 +9,3 @@
 
 (for-each (lambda (forstmt) (display (sprintc forstmt))) (loops mini-cprogram))
 
-;(hash-for-each Globals (lambda (k v) (sprintc v)))
