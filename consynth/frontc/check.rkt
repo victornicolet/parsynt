@@ -4,7 +4,7 @@
          racket/list
          "./pprint.rkt")
 
-(provide check-typedef check-vardecl)
+(provide check-typedef check-vardecl check-switch-body)
 
 
 
@@ -49,3 +49,21 @@ but received ~a instead." (sprintc ty) (sprint-src src)))
                             (check-declarator-context decl ty)))))]
     [ _ (error (format "Not a type declarator at ~a" (sprint-src src)))]))
 
+
+;; Checks if the body of a switch is either a block with case/default 
+;; statements inside or a single default/case statement. It returns the 
+;; list with one or more items.
+(define (check-switch-body stmt)
+  (match stmt
+    [(stmt:block src items) 
+     (cond 
+       [(list? items) 
+        (cond
+          [(empty items) '()]
+          [else (if 
+                 (andmap (lambda (item)
+                        (or (stmt:case? item)
+                            (stmt:default? item)))
+                      items) items '())])])]
+    [(or (stmt:case _ _ _)
+         (stmt:default _ _)) (list stmt)]))

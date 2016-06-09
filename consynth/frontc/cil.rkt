@@ -10,10 +10,10 @@
          cfstmt:while cfstmt:do cfstmt:for cfstmt:goto cfstmt:continue cfstmt:break
          cfstmt:label cfstmt:empty cfstmt:return
          gen-empty-block
-         cf-block? cf-node? cf-exit? cf-block?
+         cf-block? cf-node? cf-exit? cf-block? cf-loop?
          link-stmts! block-add-stmt!)
 
-;; This C intermediary language is en enriched ast reprensentation
+;; This C intermediary language is en enriched ast representation
 ;; of the ast in c-utils. This allows to build he control flow graph and ..,
 
 ;; We keep the same structs except for the statements, they need additional
@@ -26,15 +26,26 @@
 ;; Regular control flow nodes
 (define (cf-node? stmt)
   (and (cfstmt? stmt)
-       (or (cfstmt:break? stmt)
+       (or (cf-exit? stmt)
+           (cf-loop? stmt)
            (cfstmt:case? stmt)
-           (cfstmt:continue? stmt)
-           (cfstmt:do? stmt)
-           (cfstmt:for? stmt)
            (cfstmt:if? stmt)
            (cfstmt:label? stmt)
-           (cfstmt:switch? stmt)
-           (cfstmt:while? stmt))))
+           (cfstmt:switch? stmt))))
+
+;; Loop nodes
+(define (cf-loop? stmt)
+  (and (cfstmt? stmt)
+       (or (cfstmt:for? stmt)
+           (cfstmt:while? stmt)
+           (cfstmt:do? stmt))))
+
+;; Break/continue/return
+(define (cf-end? stmt)
+  (and (cfstmt? stmt)
+       (or (cfstmt:break? stmt)
+           (cfstmt:return? stmt)
+           (cfstmt:continue? stmt))))
 
 ;; Exit control flow nodes. A block can have several
 ;; exit points but only one entry point
