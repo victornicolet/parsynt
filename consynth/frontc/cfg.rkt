@@ -7,6 +7,8 @@
          "./exceptions.rkt"
          "../lib/utils.rkt")
 
+(provide compute-cfg)
+
 ;; Computes the control flow graph for a C program by translating
 ;; the input AST fromc-utils into statements with predecessors 
 ;; and successors
@@ -16,9 +18,23 @@
 (define break #f)
 
 (struct func-node (entry ret-stmt)
-  #:extra-constructor-name make-fnode)
+  #:extra-constructor-name make-fnode
+  #:transparent)
 (struct block-node (next break cont rlabels))
 
+;; Set of visited Nodes. Entry points for visiting the graph
+;; are in charge of clearing the set of visited nodes.
+(define VisitedStmts (make-hash))
+
+(define (clear-visited-stmts)
+  (hash-clear VisitedStmts))
+
+(define/contract (visted-stmt stmt)
+  (-> stmt? (or/c #f number?))
+  (hash-ref VisitedStmts (hash-stmt stmt) #f))
+
+(define (mark-visited-stmt stmt)
+  (hash-set! VisitedStmts (hash-stmt stmt) 1))
 
 (define (compute-cfg program)
   (cond
@@ -29,7 +45,7 @@
 (define (all-stmts stmt-or-decl)
   (match stmt-or-decl
     [(decl:function src _ _ _ _ _ body)
-     (func-node (cfg-stmts body))
+     (func-node (cfg-block body) '())
      ]
     [_ #f]))
 
@@ -57,9 +73,14 @@
 
 (define (cfg stmt current-block)
   (match stmt
+    ;; If the statement is a block, it becomes the new current
+    ;; block and we link it to the previous one.
     [(stmt:block src items) 
      (link-stmts!  current-block (cfg-stmts (gen-empty-block src) items))]
-    ;; The case statement is treated spearately in the switch body. 
+    ;; An expressions statement is added to the current block.
+    [(stmt:expr src expr) 
+     (block-add-stmt! current-block (cfstmt:expr src '() '() expr))]
+    ;; The case statement is treated separately in the switch body. 
     [(or 
       (stmt:case src _ body) 
       (stmt:default src body))
@@ -76,7 +97,7 @@
           (foldl
            (lambda (case-stmt prev-block)
              (case/default-link switch-node case-stmt prev-block next-body))
-           (switch-node)
+           switch-node
            (check-switch-body body))
           next-body)))]
     ;; The if node is linked to one or two blocks, depending on the
@@ -111,7 +132,7 @@
            (block-add-stmt! current-block (cfstmt:break src '() '())))
          (raise (unexpected-exn "break" (current-continuation-marks))))]
     [(stmt:return src expr)
-     (block-add-stmt! current-block (cfstmt:return src '() '()) expr)]
+     (block-add-stmt! current-block (cfstmt:return src '() '() expr))]
     ;; Loop statements.
     ;; The loop-back edge from the end of the loop body to the test node 
     [(stmt:while src test body)
@@ -139,7 +160,7 @@
     [(stmt:for src ini test update body)
      (let ([for-body (cfg-block body)]
            [for-node (cfstmt:for src '() '() ini test update)]
-           [next-block (gen-empty-block)])
+           [next-block (gen-empty-block src)])
        (begin 
          (link-stmts! current-block for-node)
          (link-stmts! for-node for-body)
@@ -179,17 +200,41 @@
            (cfstmt:case src '() '() expr)]
           [(stmt:default src body)
            (cfstmt:default src '() '() expr)])])
-    (set! await-break #t)
-    (let ([case-body (cfg-block stmt-case-body)])
-      (begin
-        (link-stmts! switch-node case-def-node)
-        (link-stmts! prev-case case-def-node)
-        (link-stmts! 
-        (cond
-          [break 
-           (begin
+    (begin
+      (set! await-break #t)
+      (let ([case-body (cfg-block stmt-case-body)])
+        (begin
+          (link-stmts! switch-node case-def-node)
+          (link-stmts! prev-case case-def-node) 
+          (link-stmts! case-def-node case-body)
+          (cond
+            [break 
+             (begin
              (set! break #f)
              (link-stmts! case-body if-break)
              case-def-node)]
-          [else
-           case-body]))))))
+            [else
+             case-body]))))))
+
+;; Print a quick resume of a block of the CFG
+(define (print-cfg block)
+  (match block
+    [(cfstmt:block src _ _ items)
+     (map pcfg items)]
+    [_ (print "Print-cfg didn't receive a block.")]))
+
+(define block-print-id 0)
+
+(define (pcfg stmt)
+  (match stmt
+    [(cfstmt:block src succs preds items)
+     (begin (println (format "Block ~v" (post-incr block-print-id)))
+            (map (pcfg items))
+            (println "Successors :")
+            (map (pcfg succs)))]
+    [(cfstmt:expr src _ _ _) 
+     (println "ExprStmt")]
+    [(cfstmt:if src succs preds expr) 
+     (begin (println "If")
+            (map (pcfg succs)))]
+    [_ "Not a statement"]))

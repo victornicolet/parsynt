@@ -59,11 +59,12 @@ but received ~a instead." (sprintc ty) (sprint-src src)))
      (cond 
        [(list? items) 
         (cond
-          [(empty items) '()]
+          [(empty? items) (list)]
           [else (if 
-                 (andmap (lambda (item)
-                        (or (stmt:case? item)
-                            (stmt:default? item)))
-                      items) items '())])])]
+                 (andmap (lambda (item) (or (stmt:case? item) 
+                                            (stmt:default? item)))
+                         items) 
+                 items 
+                 (list))])])]
     [(or (stmt:case _ _ _)
          (stmt:default _ _)) (list stmt)]))

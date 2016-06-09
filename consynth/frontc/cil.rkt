@@ -3,7 +3,8 @@
 (require (except-in c struct)
          racket/contract/region
          racket/contract
-         "../lib/utils.rkt")
+         "../lib/utils.rkt"
+         "./pprint.rkt")
 
 (provide cfstmt
          cfstmt:case cfstmt:default cfstmt:block cfstmt:expr cfstmt:if cfstmt:switch
@@ -11,7 +12,8 @@
          cfstmt:label cfstmt:empty cfstmt:return
          gen-empty-block
          cf-block? cf-node? cf-exit? cf-block? cf-loop?
-         link-stmts! block-add-stmt!)
+         link-stmts! block-add-stmt!
+         hash-stmt)
 
 ;; This C intermediary language is en enriched ast representation
 ;; of the ast in c-utils. This allows to build he control flow graph and ..,
@@ -40,36 +42,27 @@
            (cfstmt:while? stmt)
            (cfstmt:do? stmt))))
 
-;; Break/continue/return
-(define (cf-end? stmt)
-  (and (cfstmt? stmt)
-       (or (cfstmt:break? stmt)
-           (cfstmt:return? stmt)
-           (cfstmt:continue? stmt))))
-
 ;; Exit control flow nodes. A block can have several
 ;; exit points but only one entry point
 (define (cf-exit? stmt)
   (and (cfstmt? stmt)
        (or (cfstmt:return? stmt)
            (cfstmt:break? stmt)
-           (cfstmt:goto? stmt))))
+           (cfstmt:goto? stmt)
+           (cfstmt:continue? stmt))))
 
 ;; A C statement.  src : (or/c src? #f)
 ;; succs contains the successors in the CFG and preds the predecessors
-(struct cfstmt (src succs preds) #:mutable)
-;; (define cfstmt/c
-;;   (or/c #f
-;;         (struct/dc cfstmt
-;;                    [src (or/c src? #f)]
-;;                    [succs #:lazy (or/c (listof (recursive-contract cfstmt/c #:chaperone)) #f)]
-;;                    [preds #:lazy (or/c (listof (recursive-contract cfstmt/c #:chaperone)) #f)]))
+(struct cfstmt (src succs preds) 
+  #:mutable #:transparent)
 
 ;; A labeled statement.
-(define-struct/contract	(cfstmt:label cfstmt) ((label id:label?)) #:mutable)
+(define-struct/contract	(cfstmt:label cfstmt)
+  ((label id:label?)) #:mutable)
 
 ;; A case statement.
-(define-struct/contract (cfstmt:case cfstmt) ((expr expr?)) #:mutable)
+(define-struct/contract (cfstmt:case cfstmt)
+  ((expr expr?)) #:mutable)
 ;; A default statement.
 (struct	 cfstmt:default cfstmt () #:mutable)
 
@@ -78,7 +71,8 @@
   ((items (listof (or/c decl? cfstmt?)))) #:mutable)
 
 ;; An expression statement.
-(define-struct/contract	(cfstmt:expr cfstmt) ((expr expr?)) #:mutable)
+(define-struct/contract	(cfstmt:expr cfstmt)
+  ((expr expr?)) #:mutable)
 
 ;; An if statement.
 (define-struct/contract	(cfstmt:if cfstmt)
@@ -120,25 +114,62 @@
 ;; Empty statement
 (struct	cfstmt:empty cfstmt ())
 
+
+;; Add a statement to a block, and return the current block.
 (define/contract (block-add-stmt! block stmt)
   (-> cf-block? cfstmt? cf-block?)
   (let ([items (cfstmt:block-items block)])
-    (set-cfstmt:block-items! (c-append items stmt))))
+    (set-cfstmt:block-items! block (c-append items stmt))
+    block))
 
-(define (link-stmts! stmt1 stmt2)
+;; Link two statements together and return the second statement.
+(define/contract (link-stmts! stmt1 stmt2)
+  (-> cfstmt? cfstmt? cfstmt?)
   (let ([preds (cfstmt-preds stmt2)]
         [succs (cfstmt-succs stmt1)])
     (begin
       (set-cfstmt-preds! stmt2 (c-append preds stmt1))
       (set-cfstmt-succs! stmt1 (c-append succs stmt2))
-      stmt2 )))
+      stmt2)))
 
-(define (gen-empty-block src)
+;; Generate an empty block. Useful for preparing the outgoing
+;; edge of a block.
+(define/contract (gen-empty-block src)
+  (-> src? cfstmt:block?)
   (cfstmt:block src '() '() '()))
 
 ;; A block is empty if it has no successors and no statements
 ;; in its body.
-(define (is_empty_block? stmt)
+(define/contract (is_empty_block? stmt)
+  (-> cfstmt? boolean?)
   (and (cf-block?)
        (empty? (cfstmt:block-items stmt))
        (empty? (cfstmt-succs stmt))))
+
+
+(define/contract (stmt-name stmt)
+  (-> cfstmt? string?)
+  (cond
+    [(cfstmt:block? stmt) "block"]
+    [(cfstmt:expr? stmt) "expr"]
+    [(cfstmt:if? stmt) "if"]
+    [(cfstmt:switch? stmt) "switch"]
+    [(cfstmt:case? stmt) "case"]
+    [(cfstmt:default? stmt) "default"]
+    [(cfstmt:break? stmt) "break"]
+    [(cfstmt:for? stmt) "for"]
+    [(cfstmt:while? stmt) "while"]
+    [(cfstmt:do? stmt) "do"]
+    [(cfstmt:return? stmt) "return"]
+    [(cfstmt:goto? stmt) "goto"]
+    [(cfstmt:label? stmt) "label"]
+    [(cfstmt:continue? stmt) "continue"]
+    [else "NOT A STATEMENT"]))
+
+(define/contract (hash-src src)
+  (-> src? string?)
+  (format "~v~v~v" (src-start-offset src) (src-end-offset src) (src-path src)))
+
+(define/contract (hash-stmt stmt)
+  (-> cfstmt? string?)
+  (format "~a~a" (hash-src (cfstmt-src stmt)) (stmt-name stmt)))
