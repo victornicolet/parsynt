@@ -61,6 +61,7 @@
                                         (sprint-cexp alt))]
     [(expr src) ""]
     [#f ""]
+    [(decl _) (sprint-decl cexpr)]
     [_ (error (format "Received a bad expression : ~a" cexpr))]))
 
 

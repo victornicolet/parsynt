@@ -50,21 +50,21 @@ but received ~a instead." (sprintc ty) (sprint-src src)))
     [ _ (error (format "Not a type declarator at ~a" (sprint-src src)))]))
 
 
-;; Checks if the body of a switch is either a block with case/default 
-;; statements inside or a single default/case statement. It returns the 
+;; Checks if the body of a switch is either a block with case/default
+;; statements inside or a single default/case statement. It returns the
 ;; list with one or more items.
 (define (check-switch-body stmt)
   (match stmt
-    [(stmt:block src items) 
-     (cond 
-       [(list? items) 
+    [(stmt:block src items)
+     (cond
+       [(list? items)
         (cond
           [(empty? items) (list)]
-          [else (if 
-                 (andmap (lambda (item) (or (stmt:case? item) 
+          [else (if
+                 (andmap (lambda (item) (or (stmt:case? item)
                                             (stmt:default? item)))
-                         items) 
-                 items 
+                         items)
+                 items
                  (list))])])]
     [(or (stmt:case _ _ _)
          (stmt:default _ _)) (list stmt)]))

@@ -7,7 +7,7 @@
          "./exceptions.rkt"
          "../lib/utils.rkt")
 
-(provide compute-cfg)
+(provide compute-cfg print-cfg)
 
 ;; Computes the control flow graph for a C program by translating
 ;; the input AST fromc-utils into statements with predecessors 
@@ -29,9 +29,9 @@
 (define (clear-visited-stmts)
   (hash-clear VisitedStmts))
 
-(define/contract (visted-stmt stmt)
-  (-> stmt? (or/c #f number?))
-  (hash-ref VisitedStmts (hash-stmt stmt) #f))
+(define/contract (visited-stmt stmt)
+  (-> cfstmt? number?)
+  (hash-ref VisitedStmts (hash-stmt stmt) 0))
 
 (define (mark-visited-stmt stmt)
   (hash-set! VisitedStmts (hash-stmt stmt) 1))
@@ -54,17 +54,19 @@
 ;; the body of this wrapper block
 (define (cfg-block stmt-block)
   (match stmt-block
-    [(stmt:block src items) (cfg-stmts (gen-empty-block src) items)]
-    [(stmt src) (cfg-stmts (gen-empty-block src) (list stmt-block))]))
+    [(stmt:block src items) (let
+                                ([main-body (gen-empty-block src)])
+                              (cfg-stmts main-body items)
+                              main-body)]
+    [(stmt src) (let
+                    ([main-body (gen-empty-block src)])
+                  (cfg-stmts main-body (list stmt-block))
+                  main-body)]))
 
 ;; Takes a body of stmts/decls and produces the last block(s) visited when
 ;; creating the graphs
-(define (cfg-stmts current-block body)
-   (match body
-     [(cons hd tl) (cfg-stmts 
-                    (cfg hd current-block)
-                    tl)]
-     ['() current-block]))
+(define (cfg-stmts cur body)
+   (foldl (lambda (stmt block) (cfg stmt block)) cur body))
 
 ;; cfg replaces a stmt by a cfstmt, filling the in/out edges
 ;; by linking in the in edge provided, and is the statement is a control
@@ -76,7 +78,7 @@
     ;; If the statement is a block, it becomes the new current
     ;; block and we link it to the previous one.
     [(stmt:block src items) 
-     (link-stmts!  current-block (cfg-stmts (gen-empty-block src) items))]
+     (link-stmts! current-block (cfg-stmts (gen-empty-block src) items))]
     ;; An expressions statement is added to the current block.
     [(stmt:expr src expr) 
      (block-add-stmt! current-block (cfstmt:expr src '() '() expr))]
@@ -106,12 +108,12 @@
     [(stmt:if src expr cont alt)
      (let ([if-node (cfstmt:if src '() '() expr)]
            [cont-block (cfg-block cont)]
-           [alt-block (if (alt) (cfg-block alt) #f)]
+           [alt-block (if alt (cfg-block alt) #f)]
            [next-body (gen-empty-block src)])
        (begin
          (link-stmts! current-block if-node)
          (link-stmts! if-node cont-block)
-         (cond [(alt-block) (begin
+         (cond [alt-block (begin
                               (link-stmts! if-node alt-block)
                               (link-stmts! alt-block next-body))])
          (link-stmts! cont-block next-body)))]
@@ -174,7 +176,7 @@
  (label or goto)." (sprint-src src)))]
 
     ;; Declarations in blocks
-
+    [(decl _) (block-add-stmt! current-block stmt)]
  
     [_ current-block]))
           
@@ -204,6 +206,7 @@
       (set! await-break #t)
       (let ([case-body (cfg-block stmt-case-body)])
         (begin
+          
           (link-stmts! switch-node case-def-node)
           (link-stmts! prev-case case-def-node) 
           (link-stmts! case-def-node case-body)
@@ -217,24 +220,43 @@
              case-body]))))))
 
 ;; Print a quick resume of a block of the CFG
+;; WIP
 (define (print-cfg block)
   (match block
-    [(cfstmt:block src _ _ items)
-     (map pcfg items)]
+    [(cfstmt:block src succs preds items)
+     (begin
+       (println "Function body:")
+       (map pcfg items)
+       (map pcfg succs))]
+    [(func-node entry ret-stmt) (print-cfg entry)]
     [_ (print "Print-cfg didn't receive a block.")]))
 
 (define block-print-id 0)
 
 (define (pcfg stmt)
-  (match stmt
-    [(cfstmt:block src succs preds items)
-     (begin (println (format "Block ~v" (post-incr block-print-id)))
-            (map (pcfg items))
-            (println "Successors :")
-            (map (pcfg succs)))]
-    [(cfstmt:expr src _ _ _) 
-     (println "ExprStmt")]
-    [(cfstmt:if src succs preds expr) 
-     (begin (println "If")
-            (map (pcfg succs)))]
-    [_ "Not a statement"]))
+  (if (cfstmt? stmt)
+      (if
+       (> (visited-stmt stmt) 0)
+       (print "")
+       (begin
+         (mark-visited-stmt stmt)
+         (match stmt
+           [(cfstmt:block src succs preds items)
+            (begin (println (format "Block ~v" (post-incr block-print-id)))
+                   (map pcfg items)
+                   (println "Successors :")
+                   (map pcfg succs))]
+           [(cfstmt:expr src _ _ _) 
+            (println "ExprStmt")]
+           [(cfstmt:if src succs preds expr) 
+            (begin (println "If")
+                   (map pcfg succs))]
+           [(cfstmt:for src succs _ ini test update)
+            (begin
+              (println "For")
+              (map pcfg succs))]
+           [(cfstmt:return src succs preds expr)
+            (println "Return")]
+           [_ "Not a statement"])))
+      (println "")))
+  

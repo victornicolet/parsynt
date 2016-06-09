@@ -6,10 +6,10 @@
          "../lib/utils.rkt"
          "./pprint.rkt")
 
-(provide cfstmt
-         cfstmt:case cfstmt:default cfstmt:block cfstmt:expr cfstmt:if cfstmt:switch
-         cfstmt:while cfstmt:do cfstmt:for cfstmt:goto cfstmt:continue cfstmt:break
-         cfstmt:label cfstmt:empty cfstmt:return
+(provide cfstmt cfstmt?
+         cfstmt:case cfstmt:default cfstmt:block cfstmt:expr cfstmt:if
+         cfstmt:switch cfstmt:while cfstmt:do cfstmt:for cfstmt:goto
+         cfstmt:continue cfstmt:break cfstmt:label cfstmt:empty cfstmt:return
          gen-empty-block
          cf-block? cf-node? cf-exit? cf-block? cf-loop?
          link-stmts! block-add-stmt!
@@ -117,7 +117,7 @@
 
 ;; Add a statement to a block, and return the current block.
 (define/contract (block-add-stmt! block stmt)
-  (-> cf-block? cfstmt? cf-block?)
+  (-> cf-block? (or/c cfstmt? decl?) cf-block?)
   (let ([items (cfstmt:block-items block)])
     (set-cfstmt:block-items! block (c-append items stmt))
     block))
