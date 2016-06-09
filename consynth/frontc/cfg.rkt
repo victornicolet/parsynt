@@ -72,6 +72,7 @@
 ;; by linking in the in edge provided, and is the statement is a control
 ;; statement, the out edge is the block-body. It returns either the block
 ;; with a new statement in it or a new block
+(define current-parent-node #f)
 
 (define (cfg stmt current-block)
   (match stmt
@@ -82,12 +83,18 @@
     ;; An expressions statement is added to the current block.
     [(stmt:expr src expr) 
      (block-add-stmt! current-block (cfstmt:expr src '() '() expr))]
-    ;; The case statement is treated separately in the switch body. 
-    [(or 
-      (stmt:case src _ body) 
-      (stmt:default src body))
-     (error (format "~a - CFG : case statement unexpected outside a switch"
-                    (sprint-src src)))]
+
+    ;; The case/defualt statements are linked to a switch.
+    [(stmt:case src expr body) 
+     (let
+         ([case-stmt (cfstmt:case src '() '() expr)])
+       (link-stmts! current-parent-node case-stmt)
+       (block-add-stmt! current-block case-stmt))]
+     [(stmt:default src body)
+      (let ([default-stmt (cfstmt:default src '() '())])
+        (link-stmts! current-parent-node default-stmt)
+        (block-add-stmt! current-block default-stmt))]
+
     ;; A switch statement will be connected to all the case statements 
     ;; and the default statement.
     [(stmt:switch src expr body)
@@ -95,13 +102,8 @@
            [switch-node (cfstmt:switch src '() '() expr)])
        (begin 
          (link-stmts! current-block switch-node)
-         (link-stmts!
-          (foldl
-           (lambda (case-stmt prev-block)
-             (case/default-link switch-node case-stmt prev-block next-body))
-           switch-node
-           (check-switch-body body))
-          next-body)))]
+         (set! current-parent-node switch-node)
+         (link-stmts! (cfg-block body) next-body)))]
     ;; The if node is linked to one or two blocks, depending on the
     ;; existence of an alt branch in the original body, then an empty 
     ;; block is returned

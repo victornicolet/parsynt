@@ -12,5 +12,13 @@ int testfunc(int var, int var1) {
     if( a == 1) 
       b = a + 5;
   }
+
+  switch (a) {
+  case 0:
+    b = b +3;
+  default:
+    break;
+  }
+
   return 0;
 }
