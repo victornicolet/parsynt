@@ -13,7 +13,7 @@
          gen-empty-block
          cf-block? cf-node? cf-exit? cf-block? cf-loop?
          link-stmts! block-add-stmt!
-         hash-stmt)
+         hash-stmt stmt-name)
 
 ;; This C intermediary language is en enriched ast representation
 ;; of the ast in c-utils. This allows to build he control flow graph and ..,
@@ -127,10 +127,9 @@
   (-> cfstmt? cfstmt? cfstmt?)
   (let ([preds (cfstmt-preds stmt2)]
         [succs (cfstmt-succs stmt1)])
-    (begin
-      (set-cfstmt-preds! stmt2 (c-append preds stmt1))
-      (set-cfstmt-succs! stmt1 (c-append succs stmt2))
-      stmt2)))
+    (set-cfstmt-preds! stmt2 (c-append preds stmt1))
+    (set-cfstmt-succs! stmt1 (c-append succs stmt2))
+    stmt2))
 
 ;; Generate an empty block. Useful for preparing the outgoing
 ;; edge of a block.
@@ -138,14 +137,21 @@
   (-> src? cfstmt:block?)
   (cfstmt:block src '() '() '()))
 
-;; A block is empty if it has no successors and no statements
-;; in its body.
+;; A block is empty if its body is empty
 (define/contract (is_empty_block? stmt)
   (-> cfstmt? boolean?)
   (and (cf-block?)
-       (empty? (cfstmt:block-items stmt))
-       (empty? (cfstmt-succs stmt))))
+       (empty? (cfstmt:block-items stmt))))
 
+(define/contract (is_collapsable_block? stmt)
+  (-> cfstmt? boolean?)
+  (and (is_empty_block? stmt)
+       (<= (length (cfstmt-preds stmt)) 1)))
+
+(define/contract (collapse block)
+  (-> cfstmt:block? cfstmt?)
+  block
+  )
 
 (define/contract (stmt-name stmt)
   (-> cfstmt? string?)

@@ -9,8 +9,11 @@ int testfunc(int var, int var1) {
   
   for(a = 0; a < c; a++) {
     printf("ok");
-    if( a == 1) 
+	b += a;
+    if( a == 1) {
       b = a + 5;
+	  printf("if");
+	}
   }
 
   switch (a) {

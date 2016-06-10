@@ -73,6 +73,7 @@
 ;; statement, the out edge is the block-body. It returns either the block
 ;; with a new statement in it or a new block
 (define current-parent-node #f)
+(define current-next-node #f)
 
 (define (cfg stmt current-block)
   (match stmt
@@ -87,23 +88,32 @@
     ;; The case/defualt statements are linked to a switch.
     [(stmt:case src expr body) 
      (let
-         ([case-stmt (cfstmt:case src '() '() expr)])
+         ([case-stmt (cfstmt:case src '() '() expr)]
+          [case-body (cfg-block body)])
        (link-stmts! current-parent-node case-stmt)
-       (block-add-stmt! current-block case-stmt))]
+       (link-stmts! current-block case-stmt)
+       (link-stmts! case-stmt case-body))]
+    
+    
      [(stmt:default src body)
-      (let ([default-stmt (cfstmt:default src '() '())])
+      (let ([default-stmt (cfstmt:default src '() '())]
+            [default-body (cfg-block body)])
         (link-stmts! current-parent-node default-stmt)
-        (block-add-stmt! current-block default-stmt))]
+        (link-stmts! current-block default-stmt)
+        (link-stmts! default-stmt default-body))]
 
     ;; A switch statement will be connected to all the case statements 
     ;; and the default statement.
     [(stmt:switch src expr body)
      (let ([next-body (gen-empty-block src)]
            [switch-node (cfstmt:switch src '() '() expr)])
-       (begin 
+       (let ([switch-body (begin
+                            (set! current-parent-node switch-node)
+                            (set! current-next-node next-body)
+                            (cfg-block body))])
          (link-stmts! current-block switch-node)
-         (set! current-parent-node switch-node)
-         (link-stmts! (cfg-block body) next-body)))]
+         (link-stmts! switch-node switch-body)
+         (link-stmts! switch-body next-body)))]
     ;; The if node is linked to one or two blocks, depending on the
     ;; existence of an alt branch in the original body, then an empty 
     ;; block is returned
@@ -129,13 +139,10 @@
     [(stmt:continue src) 
      (block-add-stmt! current-block (cfstmt:continue src '() '()))]
     [(stmt:break src)
-     (if await-break
-         (begin
-           (set! await-break #f)
-           (set! break #t)
-           (block-add-stmt! current-block (cfstmt:break src '() '())))
-         (raise (unexpected-exn "break" (current-continuation-marks))))]
-    [(stmt:return src expr)
+     (let ([break-statement (cfstmt:break src '() '())])
+       (link-stmts! break-statement current-next-node)
+       (block-add-stmt! current-block break-statement))]
+     [(stmt:return src expr)
      (block-add-stmt! current-block (cfstmt:return src '() '() expr))]
     ;; Loop statements.
     ;; The loop-back edge from the end of the loop body to the test node 
@@ -239,15 +246,17 @@
   (if (cfstmt? stmt)
       (if
        (> (visited-stmt stmt) 0)
-       (print "")
+       (println (format "Visited ~a" (stmt-name stmt)))
        (begin
          (mark-visited-stmt stmt)
          (match stmt
            [(cfstmt:block src succs preds items)
-            (begin (println (format "Block ~v" (post-incr block-print-id)))
-                   (map pcfg items)
-                   (println "Successors :")
-                   (map pcfg succs))]
+            (let ([block-no (pre-incr block-print-id)])
+              (println (format "Block ~v" block-no))
+              (map pcfg items)
+              (println (format "Successors ~v:" block-no))
+              (map pcfg succs)
+              (println (format "End block ~v" block-no)))]
            [(cfstmt:expr src _ _ _) 
             (println "ExprStmt")]
            [(cfstmt:if src succs preds expr) 
@@ -259,6 +268,22 @@
               (map pcfg succs))]
            [(cfstmt:return src succs preds expr)
             (println "Return")]
-           [_ "Not a statement"])))
+           [(cfstmt:switch src succs preds expr)
+            (begin
+              (println "Switch")
+              (map pcfg succs)
+              (println "--End switch"))]
+           [(cfstmt:case _ succs _ expr)
+            (begin 
+              (println "Case")
+              (map pcfg succs))]
+           [(cfstmt:default _ succs _)
+            (begin
+              (println "Default")
+              (map pcfg succs))]
+           [(cfstmt:break _ succs _)
+            (begin
+              (println "Break"))]
+           [_ (println "Not a statement")])))
       (println "")))
   
