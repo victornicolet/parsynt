@@ -5,3 +5,4 @@ examples/Basic
 consynth/compiled/
 */compiled/
 *.#*
+consynth/canalysis/_build/*

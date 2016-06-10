@@ -1,0 +1,16 @@
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Name: ConSynth
+Version: 0.1
+Synopsis: Concurrent programs synthesis.
+Authors: Me <me@myhost.com>
+License: LGPL with OCaml linking exception
+
+Description: A library that synthesizes concurrent C programs from sequential specifications.
+Homepage: https://github.com/victornicolet/consynth
+
+Executable "main"
+    Path: src
+    MainIs: main.ml
