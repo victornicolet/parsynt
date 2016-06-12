@@ -1,8 +1,16 @@
+# File extensions
+
 *~
-*#
-examples/Basic
+*\#
 *.out
-consynth/compiled/
-*/compiled/
-*.#*
+*.\#*
+*.dep
+*.zo
+
+# Build / compilation directories
+
+# OCaml
 consynth/canalysis/_build/*
+
+#Racket
+compiled/
