@@ -1,5 +1,7 @@
 open Cil
 open Printf
+open List
+open Loops
 
 module F = Frontc
 module E = Errormsg
@@ -16,8 +18,9 @@ let main () =
   C.lineLength := 1000;
   C.warnTruncate := false;
   Cabs2cil.doCollapseCallCast := true;
-  let usageMsg = "Usage : canalyze [options] source-files" in
   let fileName = "todo" in
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
-  
+  Deadcodeelim.dce cfile;
+  Loops.processFile cfile
+

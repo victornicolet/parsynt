@@ -14,3 +14,7 @@ Homepage: https://github.com/victornicolet/consynth
 Executable "main"
     Path: src
     MainIs: main.ml
+    CompiledObject: best
+    BuildDepends:
+      cil
+

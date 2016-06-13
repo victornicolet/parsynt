@@ -1,5 +1,8 @@
 *~
 *#
+*.byte
+*.native
+*.log
 examples/Basic
 *.out
 consynth/compiled/
