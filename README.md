@@ -5,6 +5,10 @@ Most of the source files are written in [Racket 6.4](https://racket-lang.org/dow
 ```$ raco pkg install rosette```
 Or you can install it from source, [more information here](https://github.com/emina/rosette).
 
+You will also need to install the project package in order to run the different tests :
+``` $ cd consynth```
+``` $ raco pkg install ```
+
 ### OCaml
 C code analysis is partially done using the Cil library in Ocaml, so you will need to install Ocaml and some packages.
 - Project management : oasis. \\
