@@ -1,5 +1,6 @@
 open Cil
 open Pretty
+open List
 
 module E = Errormsg
 module S = Str
@@ -27,3 +28,7 @@ let onlyFuncLoc fn g =
   match g with
   | GFun (f, loc) -> fn f loc
   | _ -> ()
+
+let appendC l a =
+  List.append l 
+    (if List.mem a l then [] else [a])
