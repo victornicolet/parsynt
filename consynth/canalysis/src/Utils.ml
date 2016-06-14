@@ -32,3 +32,9 @@ let onlyFuncLoc fn g =
 let appendC l a =
   List.append l 
     (if List.mem a l then [] else [a])
+
+(** Cil specific utility functions *)
+let setOfReachingDefs rdef =
+  match rdef with
+  | Some (_,_, setXhash) -> Some setXhash
+  | None -> None

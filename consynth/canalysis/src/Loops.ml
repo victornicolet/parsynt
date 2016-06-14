@@ -8,6 +8,8 @@ open Map
 module Errormsg = E
 module Pf = Map.Make(String)
 
+type defsMap = Reachingdefs.IOS.t Reachingdefs.IH.t
+
 module Cloop = struct
   type t = {
   (** Each loop has a statement id in a Cil program *)
@@ -19,7 +21,7 @@ module Cloop = struct
   (** The set of function called in a loop body *)
     mutable calledFunctions : varinfo list;
   (** The variables declared before entering the loop*)
-    mutable definedInVars : varinfo list;
+    mutable definedInVars : defsMap option;
   (** The variables used after exiting the loop *)
     mutable usedOutVars : varinfo list;
   (** 
@@ -39,7 +41,7 @@ module Cloop = struct
       parentLoops = [];
       parentFunction = parent;
       calledFunctions = [];
-      definedInVars = [];
+      definedInVars = None;
       usedOutVars = [];
       inNormalForm = false;
       inSsaForm = false;
@@ -52,6 +54,9 @@ module Cloop = struct
 
   let getParent l =
     l.parentFunction
+
+  let setDefinedInVars l xs =
+    l.definedInVars <- xs
 
   (** 
       Append a parent loop to the list of parent loops.
@@ -73,6 +78,14 @@ module Cloop = struct
     let nested_in = List.mem l2.sid l1.parentLoops in
     let inlinable = List.mem l1.parentFunction l2.calledFunctions  in
     nested_in || inlinable
+
+  let string_of_cloop (cl : t) =
+    let sid = string_of_int cl.sid in
+    let pfun = cl.parentFunction.vname in
+    let cfuns = String.concat ", " 
+      (map (fun y -> y.vname) cl.calledFunctions) in
+    sprintf "Loop %s in %s:\nCalls:%s" sid pfun cfuns
+    
 end
 
 (******************************************************************************)
@@ -163,10 +176,14 @@ class loopInspector (tl : Cloop.t) = object
   method vinstr (i : Cil.instr) : Cil.instr Cil.visitAction =
     match i with
     | Call (lval_opt, ef, elist, _)  -> 
-         SkipChildren
+       begin
+         match ef with
+         | Lval (Var vi, _) -> Cloop.addCalledFunc tl vi
+         | _ -> ()
+       end;
+      SkipChildren
     | _ -> () ; 
       SkipChildren
-
 end
 
 
@@ -181,3 +198,25 @@ let locateLoops fd : unit =
 let processFile cfile =
   iterGlobals cfile (Utils.onlyFunc locateLoops);
   
+
+(******************************************************************************)
+
+(**
+   Now for each loop we process the function containing the loop and compute
+   the reaching definitons (variables defined in) and the set of variables that
+   are used after the loop
+*)
+
+class defsVisitor = object (self)
+  inherit nopCilVisitor 
+
+  method vstmt (s : Cil.stmt) =
+    begin
+      if Hashtbl.mem programLoops s.sid 
+      then 
+        let clp = Hashtbl.find programLoops s.sid in
+        Cloop.setDefinedInVars clp (Utils.setOfReachingDefs 
+                                      (Reachingdefs.getRDs s.sid))
+    end;
+    DoChildren
+end
