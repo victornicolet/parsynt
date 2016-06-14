@@ -4,11 +4,13 @@ open Printf
 open Hashtbl
 open Utils
 open Map
+open Cflows
 
 module Errormsg = E
+module IH = Inthash
 module Pf = Map.Make(String)
 
-type defsMap = Reachingdefs.IOS.t Reachingdefs.IH.t
+type defsMap = Reachingdefs.IOS.t IH.t
 
 module Cloop = struct
   type t = {
@@ -24,6 +26,9 @@ module Cloop = struct
     mutable definedInVars : defsMap option;
   (** The variables used after exiting the loop *)
     mutable usedOutVars : varinfo list;
+    (** A map of variable ids to integers, to determine if the variable is in
+    the read or write set*)
+    mutable rwset : defsMap option;
   (** 
       Some variables too keep track of the state of the work done on the loop.
       - is the loop in normal form : the loop is in normal form when the outer 
@@ -43,6 +48,7 @@ module Cloop = struct
       calledFunctions = [];
       definedInVars = None;
       usedOutVars = [];
+      rwset = None;
       inNormalForm = false;
       inSsaForm = false;
       hasBreaks = false; }

@@ -9,8 +9,9 @@ open Cil
 
 module DF = Dataflow
 module IH = Inthash
+module UD = Usedef
 
-module ReadWriteSet =
+module RWTransfer =
 struct
   let name = "Read/Write Set"
 
@@ -21,8 +22,9 @@ struct
       keys are variables IDs and the stored elements are the 
       information on the set it belongs to.
   *)
-  let wvar = 1
+  let nvar = -1
   let rvar = 0
+  let wvar = 1
   let rwvar = 2
 
   type t = (int IH.t)
@@ -31,7 +33,15 @@ struct
 
   (** Additional operations on IH *)
   let combine v1 v2 =
-    if v1 == v2 then v1 else rwvar
+    if v1 == v2 then v1
+    else begin
+      match v1, v2 with
+      | nvar, x when x > nvar -> v2
+      | x , nvar when x > nvar -> v1
+      | _, _ -> rwvar
+    end
+          
+      
 
   let replaceIn hmap k v =
     try
@@ -54,7 +64,7 @@ struct
   let eqs hmap1 hmap2 =
     IH.fold 
       (fun k v b ->
-        try b && (v == IH.find hmap2 k)
+        try b && (v == IH.find hmap2 k) 
         with Not_found -> false
       )
       hmap1 true
@@ -65,7 +75,7 @@ struct
   *)
        
   (** Modify the variable information inside m *)
-  let used_in_epxr expr m = 
+  let used_in_expr expr m = 
     let rec aux e =
       begin
         match e with
@@ -96,7 +106,7 @@ struct
   let combinePredecessors (stm: Cil.stmt) ~(old:t) (m:t) =
     if (eqs old m) then None else Some (combs old m)
 
-    
+
 
   let doInstr (inst : Cil.instr) (m : t) =
     let transf (m : t) =
@@ -125,4 +135,27 @@ struct
     
 end
 
-module WR = DF.ForwardsDataFlow (ReadWriteSet)
+module RWFlow = DF.ForwardsDataFlow (RWTransfer)
+
+
+module RWSet = struct
+    let computeRWs stmts =
+      let fst_stm = List.hd stmts in
+      let fst_ih = IH.create 32 in
+      UD.onlyNoOffsetsAreDefs := true;
+      IH.clear RWTransfer.stmtStartData;
+      IH.add RWTransfer.stmtStartData fst_stm.sid fst_ih;
+      ignore (RWTransfer.computeFirstPredecessor fst_stm fst_ih);
+      RWFlow.compute [fst_stm]
+
+    let getRWs sid =
+      try Some(IH.find RWTransfer.stmtStartData sid)
+      with Not_found -> None
+
+    (** Interface module needs the integer values *)
+    let ir = RWTransfer.rvar
+    let iw = RWTransfer.wvar
+    let irw = RWTransfer.rwvar
+    let indef = RWTransfer.nvar
+
+end

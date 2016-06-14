@@ -11,6 +11,7 @@ module Cloop : sig
     mutable calledFunctions : varinfo list;
     mutable definedInVars : defsMap option;
     mutable usedOutVars : varinfo list;
+    mutable rwset : defsMap option;
     mutable inNormalForm : bool;
     mutable inSsaForm : bool;
     mutable hasBreaks : bool;
