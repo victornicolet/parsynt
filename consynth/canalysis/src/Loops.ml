@@ -75,7 +75,7 @@ module Cloop = struct
     nested_in || inlinable
 end
 
-
+(******************************************************************************)
 (** Each loop is stored according to the statement id *)
 let programLoops = Hashtbl.create 10
 let programFuncs = ref Pf.empty
@@ -105,6 +105,7 @@ module LoopLocations = struct
   let locateForLoops (cf : Cil.file) : unit = ()
 end
 
+(******************************************************************************)
 
 (** Loop locations inspector. During a first visit of the control flow
     graph, we store the loop locations, with the containing functions*)
@@ -126,12 +127,14 @@ class loopLocator topFunc = object
     | _ -> SkipChildren
 end ;;
 
+(******************************************************************************)
 
 (** The loop inspector inspects the body of the loop tl and adds information
     about :
     - loop nests
     - functions used
     - presence of break/gotos statements in cf *)
+
 class loopInspector (tl : Cloop.t) = object
   inherit nopCilVisitor
 
@@ -165,6 +168,8 @@ class loopInspector (tl : Cloop.t) = object
       SkipChildren
 
 end
+
+
 
 let locateLoops fd : unit =
   Reachingdefs.computeRDs fd;

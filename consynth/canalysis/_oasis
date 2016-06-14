@@ -5,7 +5,7 @@ Plugins: META (0.4), DevFiles (0.4)
 Name: ConSynth
 Version: 0.1
 Synopsis: Concurrent programs synthesis.
-Authors: Me <me@myhost.com>
+Authors: Victor Nicolet
 License: LGPL with OCaml linking exception
 
 Description: A library that synthesizes concurrent C programs from sequential specifications.
@@ -18,3 +18,8 @@ Executable "main"
     BuildDepends:
       cil
 
+SourceRepository master
+  Type: git
+  Location: git@github.com:victornicolet/consynth.git
+  Branch: master
+  Browser: https://github.com/victornicolet/consynth
