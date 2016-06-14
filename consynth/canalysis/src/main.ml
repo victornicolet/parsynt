@@ -13,14 +13,14 @@ let parseOneFile (fname : string) : C.file =
   cil
 
 
-let main () =
+let processFile fileName =
   C.insertImplicitCasts := false;
   C.lineLength := 1000;
   C.warnTruncate := false;
   Cabs2cil.doCollapseCallCast := true;
-  let fileName = "todo" in
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  Loops.processFile cfile
+  Loops.processFile cfile;
+  printf "-- OK --\n"
 

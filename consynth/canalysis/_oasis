@@ -18,8 +18,22 @@ Executable "main"
     BuildDepends:
       cil
 
-SourceRepository master
+SourceRepository "master"
   Type: git
-  Location: git@github.com:victornicolet/consynth.git
+  Location: https://github.com/victornicolet/consynth.git
   Branch: master
   Browser: https://github.com/victornicolet/consynth
+
+Executable "test_main"
+  Path: test
+  MainIs: test_main.ml
+  Build$: flag(tests) && flag(main)
+  CompiledObject: best
+  Install: false
+  BuildDepends: main, cil
+
+Test "test_main"
+  Run$: flag(tests) && flag(main)
+  TestTools: test_main
+  Command: $test_main
+  WorkingDirectory: test
