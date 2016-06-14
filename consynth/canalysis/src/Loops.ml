@@ -108,6 +108,17 @@ let addLoop (loop : Cloop.t) : unit =
 let hasLoop (loop : Cloop.t) : bool =
   Hashtbl.mem programLoops loop.Cloop.sid
 
+let getFuncWithLoops () : Cil.fundec list =
+  Hashtbl.fold
+    (fun k v l ->
+      let f = 
+        try
+          Pf.find v.Cloop.parentFunction.vname !programFuncs 
+        with Not_found -> raise (Failure "x")
+      in
+      f::l)
+    programLoops []
+
 let addGlobalFunc (fd : Cil.fundec) =
   programFuncs := Pf.add fd.svar.vname fd !programFuncs
 
