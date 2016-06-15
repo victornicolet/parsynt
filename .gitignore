@@ -19,3 +19,6 @@ consynth/canalysis/_build/*
 
 #Racket
 compiled/
+
+#Oasis
+setup.data

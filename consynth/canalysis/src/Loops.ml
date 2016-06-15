@@ -212,7 +212,7 @@ let locateLoops fd : unit =
   ignore (visitCilFunction visitor fd)
 
     
-let processFile cfile =
+let processFile cfile = 
   iterGlobals cfile (Utils.onlyFunc locateLoops);
   
 
