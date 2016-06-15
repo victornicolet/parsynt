@@ -9,8 +9,16 @@ open Cflows
 module Errormsg = E
 module IH = Inthash
 module Pf = Map.Make(String)
-
-type defsMap = Reachingdefs.IOS.t IH.t
+(** 
+    The integer option set used in Cil implementation of reachingdefs.ml.
+    A set of "int option". 
+*)
+module IOS = Reachingdefs.IOS
+(** 
+    Map of Cil reaching definitions, maps each variable id 
+    to a set of definition ids that reach the statement.
+*)
+type defsMap = IOS.t IH.t
 
 module Cloop = struct
   type t = {
@@ -28,7 +36,7 @@ module Cloop = struct
     mutable usedOutVars : varinfo list;
     (** A map of variable ids to integers, to determine if the variable is in
     the read or write set*)
-    mutable rwset : defsMap option;
+    mutable rwset : Utils.IS.t;
   (** 
       Some variables too keep track of the state of the work done on the loop.
       - is the loop in normal form : the loop is in normal form when the outer 
@@ -48,7 +56,7 @@ module Cloop = struct
       calledFunctions = [];
       definedInVars = None;
       usedOutVars = [];
-      rwset = None;
+      rwset = Utils.IS.empty;
       inNormalForm = false;
       inSsaForm = false;
       hasBreaks = false; }
@@ -90,16 +98,17 @@ module Cloop = struct
     let pfun = cl.parentFunction.vname in
     let cfuns = String.concat ", " 
       (map (fun y -> y.vname) cl.calledFunctions) in
-    sprintf "Loop %s in %s:\nCalls:%s" sid pfun cfuns
+    sprintf "Loop %s in %s:\nCalls:%s\n" sid pfun cfuns
     
 end
 
 (******************************************************************************)
 (** Each loop is stored according to the statement id *)
+let fileName = ref ""
 let programLoops = Hashtbl.create 10
 let programFuncs = ref Pf.empty
 
-let clearLoops () = 
+let clearLoops () =
   Hashtbl.clear programLoops
 
 let addLoop (loop : Cloop.t) : unit =
@@ -122,18 +131,6 @@ let getFuncWithLoops () : Cil.fundec list =
 let addGlobalFunc (fd : Cil.fundec) =
   programFuncs := Pf.add fd.svar.vname fd !programFuncs
 
-
-
-module LoopLocations = struct
-  (** The statement ids of the loops in the program *)
-  let loops : int list = []
-  let loopMap = Hashtbl.create 
-  (** Returns the list of functions in which for loops appear *)
-  let functions (): fundec list =
-    []
-  (** Analyze a Cil file to identify where the loops are. *)
-  let locateForLoops (cf : Cil.file) : unit = ()
-end
 
 (******************************************************************************)
 
@@ -211,11 +208,6 @@ let locateLoops fd : unit =
   let visitor = new loopLocator fd.svar in
   ignore (visitCilFunction visitor fd)
 
-    
-let processFile cfile = 
-  iterGlobals cfile (Utils.onlyFunc locateLoops);
-  
-
 (******************************************************************************)
 
 (**
@@ -237,3 +229,32 @@ class defsVisitor = object (self)
     end;
     DoChildren
 end
+
+let visitPfunc pgm clp =
+  let fvi = clp.Cloop.parentFunction in
+  let fdc = Utils.checkOption (Utils.getFn pgm fvi.vname) in
+  let visitor = new defsVisitor in
+  ignore(Cil.visitCilFunction visitor fdc)
+
+(******************************************************************************)
+(** Exported functions *)
+
+let processFile cfile =
+  fileName := cfile.fileName;
+  iterGlobals cfile (Utils.onlyFunc locateLoops);
+  Hashtbl.iter (fun k v -> visitPfunc cfile v) programLoops
+(** 
+    Return the set of processed loops. To check if a program has been
+    processed, we check if the fileName has been assigned. 
+    A program could be totally loop free !
+*)
+let processedLoops () =
+  if (!fileName == "") then
+    raise (Failure "No file processed, no looop data !")
+  else
+    programLoops
+
+let clear () =
+  fileName := "";
+  clearLoops ();
+  programFuncs := Pf.empty
