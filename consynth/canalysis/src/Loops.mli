@@ -1,22 +1,24 @@
 open Cil
 open String
+open Utils
 
-type defsMap = Reachingdefs.IOS.t Reachingdefs.IH.t
+type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
 
 module Cloop : sig
   type t = {
     sid: int;
+    mutable parentFile : Cil.file;
     mutable parentLoops : int list;
     mutable parentFunction : Cil.varinfo;
-    mutable calledFunctions : varinfo list;
-    mutable definedInVars : defsMap option;
-    mutable usedOutVars : varinfo list;
+    mutable calledFunctions : Cil.varinfo list;
+    mutable definedInVars : defsMap;
+    mutable usedOutVars : Cil.varinfo list;
     mutable rwset : Utils.IS.t;
     mutable inNormalForm : bool;
     mutable inSsaForm : bool;
     mutable hasBreaks : bool;
   }
-  val create: int -> Cil.varinfo -> t
+  val create: int -> Cil.varinfo -> Cil.file -> t
   val string_of_cloop: t -> String.t
 end
 

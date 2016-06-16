@@ -2,7 +2,10 @@ open Cil
 open Canalyst
 open Printf
 
+module LC = Loops.Cloop
+
 let testProcessFile =
   printf "-- test processing file -- \n";
-  Canalyst.processFile "test/test.c"
+  let loops = Canalyst.processFile "test/test.c" in
+  Hashtbl.iter (fun i cl -> print_string (LC.string_of_cloop cl)) loops
 

@@ -4,11 +4,33 @@ open List
 
 module E = Errormsg
 module S = Str
-
+module IH = Inthash 
 module IS = Set.Make (struct
   type t = int
   let compare = Pervasives.compare
 end)
+
+module VS = Usedef.VS
+
+(** Hash a set of variables with their variable id *)
+let hashVS vset = 
+  let ihs = IH.create 10 in
+  VS.iter (fun v -> IH.add ihs v.vid v) vset;
+  ihs
+
+(** 
+    Returns a new hashset containing the the keys 
+    in h1, and values are the pairs of values
+    having the same key in h1 and h2 (None for the second
+    element if not found).
+*)
+let addHash newh h1 h2 =
+  IH.iter
+    (fun k v1 -> 
+      try 
+        let v2 = IH.find h2 k in
+        IH.add newh k (v1, Some v2)
+      with Not_found -> IH.add newh k (v1, None)) h1
 
 let v2e (v : varinfo): exp = Lval (var v)
 

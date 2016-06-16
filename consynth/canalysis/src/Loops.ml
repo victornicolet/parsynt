@@ -9,6 +9,8 @@ open Cflows
 module Errormsg = E
 module IH = Inthash
 module Pf = Map.Make(String)
+module VS = Utils.VS
+module LF = Liveness.LiveFlow
 (** 
     The integer option set used in Cil implementation of reachingdefs.ml.
     A set of "int option". 
@@ -18,12 +20,14 @@ module IOS = Reachingdefs.IOS
     Map of Cil reaching definitions, maps each variable id 
     to a set of definition ids that reach the statement.
 *)
-type defsMap = IOS.t IH.t
+type defsMap = (VS.elt * (IOS.t option))  IH.t
 
 module Cloop = struct
   type t = {
   (** Each loop has a statement id in a Cil program *)
     sid: int;
+    (** The file in which the loop appears *)
+    mutable parentFile: Cil.file;
     (** Loops can be nested. *)
     mutable parentLoops : int list;
   (** A loop appears in the body of a parent function declared globally *)
@@ -31,7 +35,7 @@ module Cloop = struct
   (** The set of function called in a loop body *)
     mutable calledFunctions : varinfo list;
   (** The variables declared before entering the loop*)
-    mutable definedInVars : defsMap option;
+    mutable definedInVars : defsMap;
   (** The variables used after exiting the loop *)
     mutable usedOutVars : varinfo list;
     (** A map of variable ids to integers, to determine if the variable is in
@@ -49,12 +53,13 @@ module Cloop = struct
     mutable hasBreaks : bool;
   }
 
-  let create (sid : int) (parent : Cil.varinfo) : t =
+  let create (sid : int) (parent : Cil.varinfo) (f : Cil.file) : t =    
     { sid = sid;
+      parentFile = f;
       parentLoops = [];
       parentFunction = parent;
       calledFunctions = [];
-      definedInVars = None;
+      definedInVars = IH.create 32;
       usedOutVars = [];
       rwset = Utils.IS.empty;
       inNormalForm = false;
@@ -63,14 +68,32 @@ module Cloop = struct
       
   let id l = l.sid
 
-  let setParent l par =
-    l.parentFunction <- par
+  (** Parent function *)
 
-  let getParent l =
-    l.parentFunction
+  let setParent l par = l.parentFunction <- par
 
-  let setDefinedInVars l xs =
-    l.definedInVars <- xs
+  let getParent l = l.parentFunction
+
+  let getParentFundec l =
+    Utils.checkOption 
+      (Utils.getFn l.parentFile l.parentFunction.vname)
+
+  (** Defined variables at the loop statement*)
+  let string_of_defvars l = 
+    let setname = "Variables defined at the entry of the loop:\n{" in
+    let str = IH.fold
+      (fun k (vi, dio) s -> let vS = s^" "^vi.vname in
+                            match dio with
+                            | Some mapping -> vS^"[defs]"
+                            | None -> vS) 
+      l.definedInVars setname in
+    str^"}"
+
+  let setDefinedInVars l vid2did vs = 
+    let vid2v = Utils.hashVS vs in
+    Utils.addHash l.definedInVars vid2v vid2did
+
+  let getDefinedInVars l = l.definedInVars
 
   (** 
       Append a parent loop to the list of parent loops.
@@ -98,7 +121,8 @@ module Cloop = struct
     let pfun = cl.parentFunction.vname in
     let cfuns = String.concat ", " 
       (map (fun y -> y.vname) cl.calledFunctions) in
-    sprintf "Loop %s in %s:\nCalls:%s\n" sid pfun cfuns
+    let defvarS = string_of_defvars cl in
+    sprintf "Loop %s in %s:\nCalls:%s\n%s\n" sid pfun cfuns defvarS
     
 end
 
@@ -136,12 +160,12 @@ let addGlobalFunc (fd : Cil.fundec) =
 
 (** Loop locations inspector. During a first visit of the control flow
     graph, we store the loop locations, with the containing functions*)
-class loopLocator topFunc = object
+class loopLocator topFunc f = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
     match s.skind with
     | Loop _ ->
-       addLoop (Cloop.create s.sid topFunc);
+       addLoop (Cloop.create s.sid topFunc f);
       
        DoChildren
     | Block _ | If _ | TryFinally _ | TryExcept _ ->
@@ -202,10 +226,10 @@ end
 
 
 
-let locateLoops fd : unit =
+let locateLoops fd f : unit =
   Reachingdefs.computeRDs fd;
   addGlobalFunc fd;
-  let visitor = new loopLocator fd.svar in
+  let visitor = new loopLocator fd.svar f in
   ignore (visitCilFunction visitor fd)
 
 (******************************************************************************)
@@ -224,15 +248,21 @@ class defsVisitor = object (self)
       if Hashtbl.mem programLoops s.sid 
       then 
         let clp = Hashtbl.find programLoops s.sid in
-        Cloop.setDefinedInVars clp (Utils.setOfReachingDefs 
-                                      (Reachingdefs.getRDs s.sid))
+        let rds = 
+          match (Utils.setOfReachingDefs 
+                   (Reachingdefs.getRDs s.sid)) with
+          | Some x -> x
+          | None -> IH.create 2
+        in
+        let livevars = IH.find LF.stmtStartData s.sid in
+        Cloop.setDefinedInVars clp rds livevars
     end;
     DoChildren
 end
 
 let visitPfunc pgm clp =
-  let fvi = clp.Cloop.parentFunction in
-  let fdc = Utils.checkOption (Utils.getFn pgm fvi.vname) in
+  let fdc = Cloop.getParentFundec clp in
+  Liveness.computeLiveness fdc;
   let visitor = new defsVisitor in
   ignore(Cil.visitCilFunction visitor fdc)
 
@@ -241,8 +271,9 @@ let visitPfunc pgm clp =
 
 let processFile cfile =
   fileName := cfile.fileName;
-  iterGlobals cfile (Utils.onlyFunc locateLoops);
+  iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
   Hashtbl.iter (fun k v -> visitPfunc cfile v) programLoops
+
 (** 
     Return the set of processed loops. To check if a program has been
     processed, we check if the fileName has been assigned. 

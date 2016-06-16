@@ -23,14 +23,5 @@ let processFile fileName =
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
   Loops.processFile cfile;
-  let lps = Loops.processedLoops () in
-  let htl = Hashtbl.length lps in
-  if htl > 0 then
-    begin
-      printf "%d loops found. \n-- OK --\n" htl;
-      Hashtbl.iter (fun k clp -> print_string (Cloop.string_of_cloop clp)) lps;
-      Loops.clear ()
-    end
-  else
-    printf "-- FAIL --\n"
+  Loops.processedLoops ()
 
