@@ -101,6 +101,11 @@ let setOfReachingDefs rdef =
   | Some (_,_, setXhash) -> Some setXhash
   | None -> None
 
+(** 
+    Extract the variables used in statements/expressions/instructions/..
+    Used variables can be on either side of an assignment.
+*)
+
 let rec sovi (instr : Cil.instr) : VS.t =
   match instr with
   | Set (lval, exp, loc) -> 
@@ -121,3 +126,4 @@ and sovv (v : Cil.lval) : VS.t =
     match v with 
        | Var x, _ -> VS.singleton x
        | _ -> VS.empty
+

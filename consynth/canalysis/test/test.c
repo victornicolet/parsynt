@@ -21,7 +21,24 @@ void other_dummy(int n, int *array) {
   for(i = 0; (i < 10 | i < n); i++) {
     array[i] = i;
     if(i >= 10) {
-      array[i] = dummy_func(i);
+      array[i] = i + dummy_func(i);
+    }
+  }
+}
+
+void other_dummy1(int n, int *array) {
+  int i,j;
+  int sum = 0;
+  if (n == 0) {
+    return;
+  }
+  for(i = 0; (i < 10 | i < n); i++) {
+    array[i] = i;
+    if(i >= 10) {
+      array[i] = i + dummy_func(i);
+      for(j = 0; (j < 10 | j < n); j++) {
+	sum += j;
+      }
     }
   }
 }

@@ -31,7 +31,9 @@ let match_for_loop loop_stmt : forIGU option =
   | Loop _ ->
      begin
        try
-         let if_brk = List.hd loop_stmt.succs in
+         let if_brk = List.hd loop_stmt.succs in (** Not always working TDOD :
+                                                     better identification of
+                                                     termination cond.*)
          let term_expr =
            match if_brk.skind with
            | If (e, b1, b2, _) -> e;
@@ -41,9 +43,9 @@ let match_for_loop loop_stmt : forIGU option =
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
          Some (init, term_expr, update)
-       with Failure s -> None
+       with Failure s -> print_endline s;  None
      end
-  |_ -> None
+  |_ -> print_endline "failed match_for_loop"; None
 
 (** 
     Checking the weel formedness of the triplet. The initialisation and update
@@ -173,11 +175,7 @@ module Cloop = struct
       then "\n"^(sprint_IGU (Utils.checkOption cl.loopIGU))
       else "" 
     in
-    sprintf "Loop %s in %s:\nCalls:%s\n%s%s\n" sid pfun cfuns defvarS oigu
-
-  (** Is the loop a regular for loop ?*)
-
-    
+    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n" sid pfun cfuns defvarS oigu
 end
 
 (******************************************************************************)
@@ -215,6 +213,7 @@ let addGlobalFunc (fd : Cil.fundec) =
 
 (** Loop locations inspector. During a first visit of the control flow
     graph, we store the loop locations, with the containing functions*)
+
 class loopLocator topFunc f = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
@@ -241,6 +240,14 @@ class loopLocator topFunc f = object
 
     | _ -> SkipChildren
 end ;;
+
+
+
+let locateLoops fd f : unit =
+  addGlobalFunc fd;
+  let visitor = new loopLocator fd.svar f in
+  ignore (visitCilFunction visitor fd)
+
 
 (******************************************************************************)
 
@@ -275,7 +282,7 @@ class loopInspector (tl : Cloop.t) = object
     | Instr _ ->
        DoChildren
         
-  method vinstr (i : Cil.instr) : Cil.instr Cil.visitAction =
+  method vinst (i : Cil.instr) : Cil.instr list Cil.visitAction =
     match i with
     | Call (lval_opt, ef, elist, _)  -> 
        begin
@@ -284,17 +291,8 @@ class loopInspector (tl : Cloop.t) = object
          | _ -> ()
        end;
       SkipChildren
-    | _ -> () ; 
-      SkipChildren
+    | _ -> SkipChildren
 end
-
-
-
-let locateLoops fd f : unit =
-  Reachingdefs.computeRDs fd;
-  addGlobalFunc fd;
-  let visitor = new loopLocator fd.svar f in
-  ignore (visitCilFunction visitor fd)
 
 (******************************************************************************)
 
@@ -316,16 +314,19 @@ class defsVisitor = object (self)
           match (Utils.setOfReachingDefs 
                    (Reachingdefs.getRDs s.sid)) with
           | Some x -> x
-          | None -> IH.create 2
+          | None -> printf "bad"; IH.create 2
         in
+        (printf "%d\n" (IH.length rds));
         let livevars = IH.find LF.stmtStartData s.sid in
-        Cloop.setDefinedInVars clp rds livevars
+        Cloop.setDefinedInVars clp rds livevars;
+        ignore(visitCilStmt (new loopInspector clp) s)
     end;
     DoChildren
 end
 
 let visitPfunc pgm clp =
   let fdc = Cloop.getParentFundec clp in
+  Reachingdefs.computeRDs fdc;
   Liveness.computeLiveness fdc;
   let visitor = new defsVisitor in
   ignore(Cil.visitCilFunction visitor fdc)
@@ -336,6 +337,7 @@ let visitPfunc pgm clp =
 
 let processFile cfile =
   fileName := cfile.fileName;
+  iterGlobals cfile Simplify.doGlobal;
   iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
   Hashtbl.iter (fun k v -> visitPfunc cfile v) programLoops
 
