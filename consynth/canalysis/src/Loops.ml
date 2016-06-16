@@ -1,12 +1,8 @@
 open Cil
-open List
-open Printf
-open Hashtbl
-open Utils
-open Map
 open Cflows
+open Printf
 
-module Errormsg = E
+module E = Errormsg
 module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
@@ -22,10 +18,58 @@ module IOS = Reachingdefs.IOS
 *)
 type defsMap = (VS.elt * (IOS.t option))  IH.t
 
+
+(** 
+    The for loop statement can be strored as a triplet of 
+    initialization instruction, guard condition and update instructions
+*)
+type forIGU = (Cil.instr * Cil.exp * Cil.instr)
+
+(** Extracting the termination condition of the loop *)
+let match_for_loop loop_stmt : forIGU option =
+  match loop_stmt.skind with
+  | Loop _ ->
+     begin
+       try
+         let if_brk = List.hd loop_stmt.succs in
+         let term_expr =
+           match if_brk.skind with
+           | If (e, b1, b2, _) -> e;
+           (* e is the termination expr. in the for loop *)
+           | _ -> raise (Failure "Unexpected loop stmt sucessor.")
+         in
+         let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
+         let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
+         Some (init, term_expr, update)
+       with Failure s -> None
+     end
+  |_ -> None
+
+(** 
+    Checking the weel formedness of the triplet. The initialisation and update
+    must update the same variable. The restrict the termination condition too,
+    it has to refer to the loop index i.
+*)
+
+let check_loop ((init, guard, update) : forIGU) : bool =
+  let i = VS.inter
+    (VS.inter (Utils.sovi init) (Utils.sove guard))
+    (Utils.sovi update) in
+  (VS.cardinal i) = 1
+
+
+let sprint_IGU ((init, guard, update) : forIGU) : string = 
+  sprintf "for(%s; %s; %s)"
+    (Pretty.sprint 80 (Cil.d_instr () init))
+    (Pretty.sprint 80 (Cil.d_exp () guard))
+    (Pretty.sprint 80 (Cil.d_instr () update))
+
 module Cloop = struct
   type t = {
   (** Each loop has a statement id in a Cil program *)
     sid: int;
+    (** If it is a for loop the init-guard-update can be summarized*)
+    mutable loopIGU : forIGU option;
     (** The file in which the loop appears *)
     mutable parentFile: Cil.file;
     (** Loops can be nested. *)
@@ -55,6 +99,7 @@ module Cloop = struct
 
   let create (sid : int) (parent : Cil.varinfo) (f : Cil.file) : t =    
     { sid = sid;
+      loopIGU = None;
       parentFile = f;
       parentLoops = [];
       parentFunction = parent;
@@ -116,13 +161,22 @@ module Cloop = struct
     let inlinable = List.mem l1.parentFunction l2.calledFunctions  in
     nested_in || inlinable
 
+  let isForLoop l = match l.loopIGU with Some s -> true | None -> false 
+
   let string_of_cloop (cl : t) =
     let sid = string_of_int cl.sid in
     let pfun = cl.parentFunction.vname in
     let cfuns = String.concat ", " 
-      (map (fun y -> y.vname) cl.calledFunctions) in
+      (List.map (fun y -> y.vname) cl.calledFunctions) in
     let defvarS = string_of_defvars cl in
-    sprintf "Loop %s in %s:\nCalls:%s\n%s\n" sid pfun cfuns defvarS
+    let oigu = if isForLoop cl 
+      then "\n"^(sprint_IGU (Utils.checkOption cl.loopIGU))
+      else "" 
+    in
+    sprintf "Loop %s in %s:\nCalls:%s\n%s%s\n" sid pfun cfuns defvarS oigu
+
+  (** Is the loop a regular for loop ?*)
+
     
 end
 
@@ -156,6 +210,7 @@ let addGlobalFunc (fd : Cil.fundec) =
   programFuncs := Pf.add fd.svar.vname fd !programFuncs
 
 
+
 (******************************************************************************)
 
 (** Loop locations inspector. During a first visit of the control flow
@@ -165,9 +220,18 @@ class loopLocator topFunc f = object
   method vstmt (s : stmt)  =
     match s.skind with
     | Loop _ ->
-       addLoop (Cloop.create s.sid topFunc f);
-      
-       DoChildren
+       let cloop = (Cloop.create s.sid topFunc f) in
+       let igu = match_for_loop s in
+       begin
+         match igu with
+         | Some figu ->
+            if check_loop figu then 
+              cloop.Cloop.loopIGU <- Some figu
+            else ()
+         | _ -> ()
+       end;
+         addLoop cloop;
+      DoChildren
     | Block _ | If _ | TryFinally _ | TryExcept _ ->
        DoChildren
     | Switch _ ->
@@ -266,6 +330,7 @@ let visitPfunc pgm clp =
   let visitor = new defsVisitor in
   ignore(Cil.visitCilFunction visitor fdc)
 
+
 (******************************************************************************)
 (** Exported functions *)
 
@@ -280,7 +345,7 @@ let processFile cfile =
     A program could be totally loop free !
 *)
 let processedLoops () =
-  if (!fileName == "") then
+  if (!fileName = "") then
     raise (Failure "No file processed, no looop data !")
   else
     programLoops

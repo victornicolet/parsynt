@@ -3,10 +3,12 @@ open String
 open Utils
 
 type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
+type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 
 module Cloop : sig
   type t = {
     sid: int;
+    mutable loopIGU : forIGU option;
     mutable parentFile : Cil.file;
     mutable parentLoops : int list;
     mutable parentFunction : Cil.varinfo;
