@@ -8,20 +8,20 @@ module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
 module RW = Cflows.RWSet
-(** 
+(**
     The integer option set used in Cil implementation of reachingdefs.ml.
-    A set of "int option". 
+    A set of "int option".
 *)
 module IOS = Reachingdefs.IOS
-(** 
-    Map of Cil reaching definitions, maps each variable id 
+(**
+    Map of Cil reaching definitions, maps each variable id
     to a set of definition ids that reach the statement.
 *)
 type defsMap = (VS.elt * (IOS.t option))  IH.t
 
 
-(** 
-    The for loop statement can be strored as a triplet of 
+(**
+    The for loop statement can be strored as a triplet of
     initialization instruction, guard condition and update instructions
 *)
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
@@ -39,7 +39,7 @@ let match_for_loop loop_stmt : forIGU option =
            match if_brk.skind with
            | If (e, b1, b2, _) -> e;
            (* e is the termination expr. in the for loop *)
-           | _ -> 
+           | _ ->
               begin
                 Printf.eprintf "Received : %s\n" (Pretty.sprint 80
                                                   (Cil.d_stmt () if_brk));
@@ -53,7 +53,7 @@ let match_for_loop loop_stmt : forIGU option =
      end
   |_ -> print_endline "failed match_for_loop"; None
 
-(** 
+(**
     Checking the weel formedness of the triplet. The initialisation and update
     must update the same variable. The restrict the termination condition too,
     it has to refer to the loop index i.
@@ -66,7 +66,7 @@ let check_loop ((init, guard, update) : forIGU) : bool =
   (VS.cardinal i) = 1
 
 
-let sprint_IGU ((init, guard, update) : forIGU) : string = 
+let sprint_IGU ((init, guard, update) : forIGU) : string =
   sprintf "for(%s; %s; %s)"
     (Utils.psprint80 Cil.d_instr init)
     (Utils.psprint80 Cil.d_exp guard)
@@ -93,10 +93,10 @@ module Cloop = struct
     mutable usedOutVars : varinfo list;
     (** A map of variable ids to integers, to determine if the variable is in
     the read or write set*)
-    mutable rwset : Utils.IS.t;
-  (** 
+    mutable rwset : int list * int list * int list;
+  (**
       Some variables too keep track of the state of the work done on the loop.
-      - is the loop in normal form : the loop is in normal form when the outer 
+      - is the loop in normal form : the loop is in normal form when the outer
       iterator is a stride-one integer.
       - is the loop body in SSA Form ?
       - does the loops contain break / continue / goto statements ?
@@ -107,7 +107,7 @@ module Cloop = struct
   }
 
   let create (lstm : Cil.stmt)
-      (parent : Cil.varinfo) (f : Cil.file) : t =    
+      (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
       loopStatement = lstm;
       loopIGU = None;
@@ -117,11 +117,11 @@ module Cloop = struct
       calledFunctions = [];
       definedInVars = IH.create 32;
       usedOutVars = [];
-      rwset = Utils.IS.empty;
+      rwset = ([], [], []);
       inNormalForm = false;
       inSsaForm = false;
       hasBreaks = false; }
-      
+
   let id l = l.sid
 
   (** Parent function *)
@@ -131,27 +131,89 @@ module Cloop = struct
   let getParent l = l.parentFunction
 
   let getParentFundec l =
-    Utils.checkOption 
+    Utils.checkOption
       (Utils.getFn l.parentFile l.parentFunction.vname)
 
   (** Defined variables at the loop statement*)
-  let string_of_defvars l = 
+  let string_of_defvars l =
     let setname = "Variables defined at the entry of the loop:\n{" in
     let str = IH.fold
       (fun k (vi, dio) s -> let vS = s^" "^vi.vname in
                             match dio with
                             | Some mapping -> vS^"[defs]"
-                            | None -> vS) 
+                            | None -> vS)
       l.definedInVars setname in
     str^"}"
 
-  let setDefinedInVars l vid2did vs = 
+
+  (**
+     Setting the defined-In variables il also needed to access variable
+     information in further steps. If a varaible is not "defined in" then
+     we cannot access it, considering also the fact that the Cil representation
+     puts all the local variable declarations in the function body at the top
+     of the function, so we don't have any local variable declaration in the
+     loop body.
+  *)
+  let setDefinedInVars l vid2did vs =
     let vid2v = Utils.hashVS vs in
     Utils.addHash l.definedInVars vid2v vid2did
 
   let getDefinedInVars l = l.definedInVars
 
-  (** 
+  (**
+     Once the defined vars are set we can have variable information directly
+     from within the Cloop module.
+  *)
+
+  let getVarinfo l vid =
+    try
+      match IH.find l.definedInVars vid with
+      | (vi, _) -> vi
+    with
+      Not_found ->
+        begin
+          if IH.length l.definedInVars < 1
+          then
+            raise
+              (Failure
+                 "The definedInVars are empty. Perhaps you
+forgot initializing them ?")
+          else
+            raise
+              (Failure
+                 (Printf.sprintf
+                    "Failed in getVarinfo. The variable with id %i
+is not defined at the beginning of the loop"
+                    vid))
+        end
+  (**
+     Set read/write set ifnormation. The set of defined-in variables should
+     be comnputed before in order to associate variable IDs with variable
+     names.
+  *)
+  let setRW l hmap ?(checkDefinedIn = false) =
+    l.rwset <-
+      (IH.fold
+         (fun k v (r, w, rw) ->
+           begin
+           if checkDefinedIn then
+             try ignore(getVarinfo l k) with Failure s ->
+               raise (Failure "Trying to setRW a variable not DefinedIn")
+           end;
+           if v = RW.ir then (k::r, w, rw)
+           else (if v = RW.iw then (r, k::w, rw)
+             else (if v = RW.irw then (r, w, k::rw)
+               else (r, w, rw))))
+         hmap
+         l.rwset)
+
+  let string_of_rwset (cl : t) =
+    let (r, w, rw) = cl.rwset in
+    let transform l = String.concat " " 
+      (List.map (fun k -> (getVarinfo cl k).vname) l) in
+    let (rs, ws, rws) = (transform r, transform w, transform rw) in
+    "Read set : "^rs^"\nWrite set : "^ws^"\nRead-Write set:"^rws^"\n"
+  (**
       Append a parent loop to the list of parent loops.
       The AST is visited top-down, so the list should contains
       parent loops for outermost to innermost.
@@ -172,19 +234,21 @@ module Cloop = struct
     let inlinable = List.mem l1.parentFunction l2.calledFunctions  in
     nested_in || inlinable
 
-  let isForLoop l = match l.loopIGU with Some s -> true | None -> false 
+  let isForLoop l = match l.loopIGU with Some s -> true | None -> false
 
   let string_of_cloop (cl : t) =
     let sid = string_of_int cl.sid in
     let pfun = cl.parentFunction.vname in
-    let cfuns = String.concat ", " 
+    let cfuns = String.concat ", "
       (List.map (fun y -> y.vname) cl.calledFunctions) in
     let defvarS = string_of_defvars cl in
-    let oigu = if isForLoop cl 
+    let oigu = if isForLoop cl
       then "\n"^(sprint_IGU (Utils.checkOption cl.loopIGU))
-      else "" 
+      else ""
     in
-    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n" sid pfun cfuns defvarS oigu
+    let rwsets = string_of_rwset cl in
+    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu 
+      rwsets
 end
 
 (******************************************************************************)
@@ -205,9 +269,9 @@ let hasLoop (loop : Cloop.t) : bool =
 let getFuncWithLoops () : Cil.fundec list =
   Hashtbl.fold
     (fun k v l ->
-      let f = 
+      let f =
         try
-          Pf.find v.Cloop.parentFunction.vname !programFuncs 
+          Pf.find v.Cloop.parentFunction.vname !programFuncs
         with Not_found -> raise (Failure "x")
       in
       f::l)
@@ -233,7 +297,7 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
        begin
          match igu with
          | Some figu ->
-            if check_loop figu then 
+            if check_loop figu then
               cloop.Cloop.loopIGU <- Some figu
             else ()
          | _ -> ()
@@ -243,7 +307,7 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
     | Block _ | If _ | TryFinally _ | TryExcept _ ->
        DoChildren
     | Switch _ ->
-       raise 
+       raise
          (Failure ("Switch statement unexpected. "^
                       "Maybe you forgot to compute the CFG ?"))
 
@@ -276,12 +340,12 @@ class loopInspector (tl : Cloop.t) = object
        Cloop.addParentLoop (Hashtbl.find programLoops s.sid) (Cloop.id tl) ;
       DoChildren
     | Block _ | If _ | TryFinally _ | TryExcept _ -> DoChildren
-    | Switch _ -> 
-       raise 
+    | Switch _ ->
+       raise
          (Failure ("Switch statement unexpected. "^
           "Maybe you forgot to compute the CFG ?"))
     (**
-       If the loop has a control-flow breaking statement, we mark the loop as 
+       If the loop has a control-flow breaking statement, we mark the loop as
        such but stop visiting children. Currently, we do not support breaks
        and the loops will not be parallelized.
     *)
@@ -290,10 +354,10 @@ class loopInspector (tl : Cloop.t) = object
       SkipChildren
     | Instr _ ->
        DoChildren
-        
+
   method vinst (i : Cil.instr) : Cil.instr list Cil.visitAction =
     match i with
-    | Call (lval_opt, ef, elist, _)  -> 
+    | Call (lval_opt, ef, elist, _)  ->
        begin
          match ef with
          | Lval (Var vi, _) -> Cloop.addCalledFunc tl vi
@@ -311,56 +375,66 @@ end
    are used after the loop
 *)
 
-class defsVisitor pgm = object (self)
-  inherit nopCilVisitor 
+let addBoundaryInfo sid clp =
+  let rds =
+    match (Utils.setOfReachingDefs
+             (Reachingdefs.getRDs sid))
+    with
+    | Some x -> x
+    | None -> printf "bad\n"; IH.create 2
+  in
+  let livevars = IH.find LF.stmtStartData sid in
+  Cloop.setDefinedInVars clp rds livevars;
+  (** Visit the loop statement and compute some information *)
+  ignore(visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement)
 
-  method vstmt (s : Cil.stmt) =
-    begin
-      if Hashtbl.mem programLoops s.sid 
-      then 
-        let clp = Hashtbl.find programLoops s.sid in
-        let rds = 
-          match (Utils.setOfReachingDefs 
-                   (Reachingdefs.getRDs s.sid)) with
-          | Some x -> x
-          | None -> printf "bad"; IH.create 2
-        in
-        let livevars = IH.find LF.stmtStartData s.sid in
-        Cloop.setDefinedInVars clp rds livevars;
-        (** Visit the loop statement and comptue some information *)
-        ignore(visitCilStmt (new loopInspector clp) s);
-        (** Compute the Read/Write set information *)
-        RW.computeRWs (Utils.getBody clp.Cloop.loopStatement);
-        let rws = RW.getRWs clp.Cloop.sid in
-        RW.printRWs clp.Cloop.sid rws (Utils.hashVS livevars)
-    end;
-    DoChildren
-end
+(******************************************************************************)
+(** Read/write set *)
 
-let visitPfunc pgm clp =
-  let fdc = Cloop.getParentFundec clp in
-  Reachingdefs.computeRDs fdc;
-  Liveness.computeLiveness fdc;
-  let visitor = new defsVisitor pgm in
-  ignore(Cil.visitCilFunction visitor fdc)
-
+let addRWinformation sid clp =
+  let stmts =
+    match clp.Cloop.loopStatement.skind with
+    | Loop (blk,_, _, _) -> blk.bstmts
+    | _ -> raise (Failure "Expected a loop statement") in
+  let last_sid = (Utils.last stmts).sid in
+  let rwinfo =  Utils.checkOption (RW.computeRWs stmts ; RW.getRWs last_sid) in
+  Cloop.setRW clp rwinfo ~checkDefinedIn:true
 
 (******************************************************************************)
 (** Exported functions *)
-(** 
-    Main entry point. Do not simplify in theee-address code here, or it will 
+(**
+    Main entry point. Do not simplify in theee-address code here, or it will
     break the for-loop recgnition which is only based on the CFG structure.
+
+    Returns the vids of the processed functions.
 *)
+
 let processFile cfile =
   fileName := cfile.fileName;
   iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
-  Hashtbl.iter (fun k v -> visitPfunc cfile v) programLoops
+  Hashtbl.fold
+    (fun k v vf ->
+      let fdc = Cloop.getParentFundec v in
+      let nvf =
+        if List.mem fdc.svar.vid vf then vf
+        else
+          begin
+            Reachingdefs.computeRDs fdc;
+            Liveness.computeLiveness fdc;
+            fdc.svar.vid :: vf
+          end
+      in
+      addBoundaryInfo k v;
+      addRWinformation k v;
+      nvf)
+    programLoops []
 
-(** 
+(**
     Return the set of processed loops. To check if a program has been
-    processed, we check if the fileName has been assigned. 
+    processed, we check if the fileName has been assigned.
     A program could be totally loop free !
 *)
+
 let processedLoops () =
   if (!fileName = "") then
     raise (Failure "No file processed, no looop data !")

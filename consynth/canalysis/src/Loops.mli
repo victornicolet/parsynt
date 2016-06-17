@@ -16,7 +16,7 @@ module Cloop : sig
     mutable calledFunctions : Cil.varinfo list;
     mutable definedInVars : defsMap;
     mutable usedOutVars : Cil.varinfo list;
-    mutable rwset : Utils.IS.t;
+    mutable rwset : int list * int list * int list;
     mutable inNormalForm : bool;
     mutable inSsaForm : bool;
     mutable hasBreaks : bool;
@@ -25,6 +25,6 @@ module Cloop : sig
   val string_of_cloop: t -> String.t
 end
 
-val processFile: Cil.file -> unit
+val processFile: Cil.file -> int list
 val processedLoops: unit -> (int, Cloop.t) Hashtbl.t
 val clear : unit -> unit

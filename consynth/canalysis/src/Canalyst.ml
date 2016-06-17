@@ -22,6 +22,6 @@ let processFile fileName =
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  Loops.processFile cfile;
+  ignore(Loops.processFile cfile);
   Loops.processedLoops ()
 
