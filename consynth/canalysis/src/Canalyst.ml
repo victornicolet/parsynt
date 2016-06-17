@@ -1,7 +1,7 @@
 open Cil
 open Printf
 open List
-open Loops
+open Loops2ssa
 open Hashtbl
 
 module F = Frontc
@@ -22,6 +22,5 @@ let processFile fileName =
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  ignore(Loops.processFile cfile);
-  Loops.processedLoops ()
+  Loops2ssa.processFile_l2s cfile
 

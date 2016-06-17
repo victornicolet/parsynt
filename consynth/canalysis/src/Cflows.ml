@@ -28,6 +28,10 @@ struct
   let wvar = 1
   let rwvar = 2
 
+  let srw i = 
+    match i with
+    | 0 -> "R" | 1 -> "W" | 2 -> "RW" | _ -> "N/D"
+
   type t = (int IH.t)
     
   let copy vmap = IH.copy vmap
@@ -35,14 +39,7 @@ struct
   (** Additional operations on IH *)
   let combine v1 v2 =
     if v1 == v2 then v1
-    else begin
-      match v1, v2 with
-      | nvar, x when x > nvar -> v2
-      | x , nvar when x > nvar -> v1
-      | _, _ -> rwvar
-    end
-          
-      
+    else min 2 (v1 + v2 + 1)
 
   let replaceIn hmap k v =
     try
@@ -74,8 +71,9 @@ struct
   let rec addvar hmap cvar v =
     match cvar with
     | (Cil.Var vi, _) ->
-       Printf.printf "%s <- %i" vi.vname v;
-       replaceIn hmap vi.vid v
+       Printf.printf "%s <- %s" vi.vname (srw v);
+       replaceIn hmap vi.vid v;
+       Printf.printf " : %s\n" (srw (IH.find hmap vi.vid));
     | (Cil.Mem exp, _) ->
        used_in_expr exp hmap v
 
@@ -102,7 +100,13 @@ struct
   let stmtStartData = IH.create 32
 
   (** TODO  : pretty printing function *)
-  let pretty () m = Pretty.line
+  let pretty () m = 
+    IH.fold
+      (fun k v doc ->
+        Pretty.concat doc 
+          (Pretty.text (Printf.sprintf "%i -> %s " k (srw v))))
+      m
+      (Pretty.chr 'M')
 
   let computeFirstPredecessor stm m =
     m
@@ -144,6 +148,7 @@ module RWFlow = DF.ForwardsDataFlow (RWTransfer)
 module RWSet = struct
     let computeRWs stmts =
       let fst_stm = List.hd stmts in
+
       let fst_ih = IH.create 32 in
       UD.onlyNoOffsetsAreDefs := true;
       IH.clear RWTransfer.stmtStartData;
@@ -169,8 +174,7 @@ module RWSet = struct
             let var = IH.find hvar i in
             Printf.printf "%i - %s : %s\n" lid
               var.vname 
-              (match at with
-              | 0 -> "R" | 1 -> "W" | 2 -> "RW" | _ -> "ND" )
+              (RWTransfer.srw at)
           with
             Not_found -> print_string "N/F\n"
         ))

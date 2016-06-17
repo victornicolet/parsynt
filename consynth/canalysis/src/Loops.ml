@@ -209,7 +209,7 @@ is not defined at the beginning of the loop"
 
   let string_of_rwset (cl : t) =
     let (r, w, rw) = cl.rwset in
-    let transform l = String.concat " " 
+    let transform l = String.concat " "
       (List.map (fun k -> (getVarinfo cl k).vname) l) in
     let (rs, ws, rws) = (transform r, transform w, transform rw) in
     "Read set : "^rs^"\nWrite set : "^ws^"\nRead-Write set:"^rws^"\n"
@@ -247,7 +247,7 @@ is not defined at the beginning of the loop"
       else ""
     in
     let rwsets = string_of_rwset cl in
-    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu 
+    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu
       rwsets
 end
 
@@ -397,6 +397,7 @@ let addRWinformation sid clp =
     | Loop (blk,_, _, _) -> blk.bstmts
     | _ -> raise (Failure "Expected a loop statement") in
   let last_sid = (Utils.last stmts).sid in
+  print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts));
   let rwinfo =  Utils.checkOption (RW.computeRWs stmts ; RW.getRWs last_sid) in
   Cloop.setRW clp rwinfo ~checkDefinedIn:true
 

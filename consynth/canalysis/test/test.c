@@ -1,13 +1,12 @@
 typedef int my_int_arrray[3];
 
-static int a;
 
-int dummy_func(int h) {
+int dummy_func(int h, int *a) {
   int i;
   int sum = 0;
   for(i = 2; i < h; i++) {
     if (i <= 2) print("2");
-    sum += i;
+    sum += i + a[i];
     i += 2;
   }
   return sum;
