@@ -73,7 +73,8 @@ struct
   (** Modify the variable information inside m *)
   let rec addvar hmap cvar v =
     match cvar with
-    | (Cil.Var vi, _) -> 
+    | (Cil.Var vi, _) ->
+       Printf.printf "%s <- %i" vi.vname v;
        replaceIn hmap vi.vid v
     | (Cil.Mem exp, _) ->
        used_in_expr exp hmap v
