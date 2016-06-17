@@ -18,7 +18,7 @@ void other_dummy(int n, int *array) {
   if (n == 0) {
     return;
   }
-  for(i = 0; (i < 10 | i < n); i++) {
+  for(i = 0; i <= n; i++) {
     array[i] = i;
     if(i >= 10) {
       array[i] = i + dummy_func(i);

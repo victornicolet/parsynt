@@ -32,6 +32,7 @@ let addHash newh h1 h2 =
         IH.add newh k (v1, Some v2)
       with Not_found -> IH.add newh k (v1, None)) h1
 
+(** Convert a varinfo to an expression *)
 let v2e (v : varinfo): exp = Lval (var v)
 
 let (|>) (a : 'a) (f: 'a -> 'b): 'b = f a
@@ -40,6 +41,9 @@ let map_2 (f : 'a -> 'b) ((a,b): ('a * 'a)) : ('b * 'b) = (f a, f b)
 
 let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) = 
   (f a, f b, f c)
+
+let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
+  List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
 
 let last list =
   List.nth list ((List.length list) - 1)
@@ -55,6 +59,10 @@ let checkOption (ao : 'a option) : 'a =
   | Some a -> a
   | None -> raise (Failure "checkOption")
 
+let appOption (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
+  match v with 
+  | Some a -> f a
+  | None -> default
 
 let xorOpt o1 o2 =
   match o1, o2 with
@@ -63,6 +71,7 @@ let xorOpt o1 o2 =
   | _, _ -> None
 
 
+(** Get the function named fname in the file cf *)
 let getFn cf fname =
   let auxoptn cfile =
     Cil.foldGlobals cfile
@@ -96,10 +105,17 @@ let appendC l a =
     (if List.mem a l then [] else [a])
 
 (** Cil specific utility functions *)
+let psprint80 f x = Pretty.sprint 80 (f () x)
+
 let setOfReachingDefs rdef =
   match rdef with
   | Some (_,_, setXhash) -> Some setXhash
   | None -> None
+
+let getBody stmt =
+  match stmt.skind with
+  | Loop (blk, _, _, _) -> blk.bstmts 
+  | _ -> []
 
 (** 
     Extract the variables used in statements/expressions/instructions/..
@@ -112,7 +128,11 @@ let rec sovi (instr : Cil.instr) : VS.t =
      let vs_ls = sovv lval in
      let vs_exp = sove exp in
      VS.union vs_exp vs_ls
- | _ -> VS.empty
+  | Call (lvo, ef, elist, _) ->
+     let vs_ls = appOption sovv lvo VS.empty in
+     let vs_el = foldl_union sove elist in
+     VS.union vs_ls vs_el
+  | _ -> VS.empty
     
 and sove (expr : Cil.exp) : VS.t =
   match expr with

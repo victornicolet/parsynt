@@ -8,6 +8,7 @@ type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 module Cloop : sig
   type t = {
     sid: int;
+    mutable loopStatement : Cil.stmt;
     mutable loopIGU : forIGU option;
     mutable parentFile : Cil.file;
     mutable parentLoops : int list;
@@ -20,7 +21,7 @@ module Cloop : sig
     mutable inSsaForm : bool;
     mutable hasBreaks : bool;
   }
-  val create: int -> Cil.varinfo -> Cil.file -> t
+  val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t
   val string_of_cloop: t -> String.t
 end
 

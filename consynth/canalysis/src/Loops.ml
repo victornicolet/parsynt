@@ -7,6 +7,7 @@ module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
+module RW = Cflows.RWSet
 (** 
     The integer option set used in Cil implementation of reachingdefs.ml.
     A set of "int option". 
@@ -38,7 +39,12 @@ let match_for_loop loop_stmt : forIGU option =
            match if_brk.skind with
            | If (e, b1, b2, _) -> e;
            (* e is the termination expr. in the for loop *)
-           | _ -> raise (Failure "Unexpected loop stmt sucessor.")
+           | _ -> 
+              begin
+                Printf.eprintf "Received : %s\n" (Pretty.sprint 80
+                                                  (Cil.d_stmt () if_brk));
+                raise (Failure "Unexpected loop stmt sucessor.")
+              end
          in
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
@@ -62,14 +68,15 @@ let check_loop ((init, guard, update) : forIGU) : bool =
 
 let sprint_IGU ((init, guard, update) : forIGU) : string = 
   sprintf "for(%s; %s; %s)"
-    (Pretty.sprint 80 (Cil.d_instr () init))
-    (Pretty.sprint 80 (Cil.d_exp () guard))
-    (Pretty.sprint 80 (Cil.d_instr () update))
+    (Utils.psprint80 Cil.d_instr init)
+    (Utils.psprint80 Cil.d_exp guard)
+    (Utils.psprint80 Cil.d_instr update)
 
 module Cloop = struct
   type t = {
   (** Each loop has a statement id in a Cil program *)
     sid: int;
+    mutable loopStatement : Cil.stmt;
     (** If it is a for loop the init-guard-update can be summarized*)
     mutable loopIGU : forIGU option;
     (** The file in which the loop appears *)
@@ -99,8 +106,10 @@ module Cloop = struct
     mutable hasBreaks : bool;
   }
 
-  let create (sid : int) (parent : Cil.varinfo) (f : Cil.file) : t =    
-    { sid = sid;
+  let create (lstm : Cil.stmt)
+      (parent : Cil.varinfo) (f : Cil.file) : t =    
+    { sid = lstm.sid;
+      loopStatement = lstm;
       loopIGU = None;
       parentFile = f;
       parentLoops = [];
@@ -214,12 +223,12 @@ let addGlobalFunc (fd : Cil.fundec) =
 (** Loop locations inspector. During a first visit of the control flow
     graph, we store the loop locations, with the containing functions*)
 
-class loopLocator topFunc f = object
+class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
     match s.skind with
     | Loop _ ->
-       let cloop = (Cloop.create s.sid topFunc f) in
+       let cloop = (Cloop.create s topFunc f) in
        let igu = match_for_loop s in
        begin
          match igu with
@@ -302,7 +311,7 @@ end
    are used after the loop
 *)
 
-class defsVisitor = object (self)
+class defsVisitor pgm = object (self)
   inherit nopCilVisitor 
 
   method vstmt (s : Cil.stmt) =
@@ -316,10 +325,14 @@ class defsVisitor = object (self)
           | Some x -> x
           | None -> printf "bad"; IH.create 2
         in
-        (printf "%d\n" (IH.length rds));
         let livevars = IH.find LF.stmtStartData s.sid in
         Cloop.setDefinedInVars clp rds livevars;
-        ignore(visitCilStmt (new loopInspector clp) s)
+        (** Visit the loop statement and comptue some information *)
+        ignore(visitCilStmt (new loopInspector clp) s);
+        (** Compute the Read/Write set information *)
+        RW.computeRWs (Utils.getBody clp.Cloop.loopStatement);
+        let rws = RW.getRWs clp.Cloop.sid in
+        RW.printRWs clp.Cloop.sid rws (Utils.hashVS livevars)
     end;
     DoChildren
 end
@@ -328,16 +341,18 @@ let visitPfunc pgm clp =
   let fdc = Cloop.getParentFundec clp in
   Reachingdefs.computeRDs fdc;
   Liveness.computeLiveness fdc;
-  let visitor = new defsVisitor in
+  let visitor = new defsVisitor pgm in
   ignore(Cil.visitCilFunction visitor fdc)
 
 
 (******************************************************************************)
 (** Exported functions *)
-
+(** 
+    Main entry point. Do not simplify in theee-address code here, or it will 
+    break the for-loop recgnition which is only based on the CFG structure.
+*)
 let processFile cfile =
   fileName := cfile.fileName;
-  iterGlobals cfile Simplify.doGlobal;
   iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
   Hashtbl.iter (fun k v -> visitPfunc cfile v) programLoops
 

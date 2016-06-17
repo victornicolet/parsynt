@@ -10,6 +10,7 @@ open Cil
 module DF = Dataflow
 module IH = Inthash
 module UD = Usedef
+module U = Utils
 
 module RWTransfer =
 struct
@@ -50,11 +51,6 @@ struct
     with
     | Not_found -> IH.add hmap k v
 
-  let addvar hmap cvar v =
-    match cvar with
-    | (Cil.Var vi, _) -> 
-       replaceIn hmap vi.vid v
-    | _ -> raise (Failure "Works only with lvalues that are variables")
 
   (** Combining two  sets is simply adding all the bindings of the second one
       int the new one, following he rule combine for two bindings *)
@@ -75,11 +71,18 @@ struct
   *)
        
   (** Modify the variable information inside m *)
-  let used_in_expr expr m = 
+  let rec addvar hmap cvar v =
+    match cvar with
+    | (Cil.Var vi, _) -> 
+       replaceIn hmap vi.vid v
+    | (Cil.Mem exp, _) ->
+       used_in_expr exp hmap v
+
+  and used_in_expr expr m action_type = 
     let rec aux e =
       begin
         match e with
-        | Lval lv -> addvar m lv rvar
+        | Lval lv -> addvar m lv action_type
         | SizeOfE e -> aux e
         | AlignOfE e -> aux e
         | UnOp (_ , e1, _) -> aux e1
@@ -107,14 +110,13 @@ struct
     if (eqs old m) then None else Some (combs old m)
 
 
-
   let doInstr (inst : Cil.instr) (m : t) =
     let transf (m : t) =
       match inst with
       | Set (lv, e, _) ->
          begin
            addvar m lv wvar;
-           used_in_expr e m;
+           used_in_expr e m rvar;
            m
          end
       | Call (lvo, ef, eargs, _) ->
@@ -158,4 +160,19 @@ module RWSet = struct
     let irw = RWTransfer.rwvar
     let indef = RWTransfer.nvar
 
+    let printRWs lid (hmap : int IH.t option) (hvar : varinfo IH.t) = 
+      U.appOption
+      (IH.iter
+        (fun i at -> 
+          try
+            let var = IH.find hvar i in
+            Printf.printf "%i - %s : %s\n" lid
+              var.vname 
+              (match at with
+              | 0 -> "R" | 1 -> "W" | 2 -> "RW" | _ -> "ND" )
+          with
+            Not_found -> print_string "N/F\n"
+        ))
+        hmap
+        (print_endline "Failed printRWs")
 end
