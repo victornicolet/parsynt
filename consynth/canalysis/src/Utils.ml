@@ -39,11 +39,18 @@ let (|>) (a : 'a) (f: 'a -> 'b): 'b = f a
 
 let map_2 (f : 'a -> 'b) ((a,b): ('a * 'a)) : ('b * 'b) = (f a, f b)
 
-let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) = 
+let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
   (f a, f b, f c)
+
+(** Lists *)
 
 let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
   List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
+
+let outer_join_lists (a, b) =
+ List.fold_left
+   (fun li i ->
+   if List.mem i li then li else i::li) a b
 
 let last list =
   List.nth list ((List.length list) - 1)
@@ -51,7 +58,7 @@ let last list =
 let lastInstr instr_stmt =
   match instr_stmt.skind with
   | Instr il -> last il
-  | _ -> raise 
+  | _ -> raise
      (Failure "lastInstr expected a statement of instruction list kind" )
 
 let checkOption (ao : 'a option) : 'a =

@@ -49,7 +49,8 @@ let match_for_loop loop_stmt : forIGU option =
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
          Some (init, term_expr, update)
-       with Failure s -> print_endline s;  None
+       with Failure s ->
+		 print_endline ("match_for_loop : "^s); None
      end
   |_ -> print_endline "failed match_for_loop"; None
 
@@ -59,10 +60,13 @@ let match_for_loop loop_stmt : forIGU option =
     it has to refer to the loop index i.
 *)
 
-let check_loop ((init, guard, update) : forIGU) : bool =
-  let i = VS.inter
+let indexOfIGU ((init, guard, update) : forIGU) : VS.t =
+  VS.inter
     (VS.inter (Utils.sovi init) (Utils.sove guard))
-    (Utils.sovi update) in
+    (Utils.sovi update)
+
+let check_loop ((init, guard, update) : forIGU) : bool =
+  let i = indexOfIGU (init, guard, update) in
   (VS.cardinal i) = 1
 
 
@@ -371,22 +375,28 @@ end
 
 (**
    Now for each loop we process the function containing the loop and compute
-   the reaching definitons (variables defined in) and the set of variables that
+   the reaching definitions (variables defined in) and the set of variables that
    are used after the loop
 *)
 
-let addBoundaryInfo sid clp =
+let addBoundaryInfo clp =
+  let sid = clp.Cloop.sid in
   let rds =
     match (Utils.setOfReachingDefs
              (Reachingdefs.getRDs sid))
     with
     | Some x -> x
-    | None -> printf "bad\n"; IH.create 2
+    | None -> Printf.eprintf "addBoundaryInfo - no reaching defs\n"; IH.create 2
   in
-  let livevars = IH.find LF.stmtStartData sid in
-  Cloop.setDefinedInVars clp rds livevars;
+  let livevars =
+	try IH.find LF.stmtStartData sid
+	with Not_found -> (raise (Failure "addBoundaryInfo : live variables \
+ statement data not found "))
+  in
+	Cloop.setDefinedInVars clp rds livevars;
   (** Visit the loop statement and compute some information *)
-  ignore(visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement)
+	ignore(visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement)
+
 
 (******************************************************************************)
 (** Read/write set *)
@@ -412,22 +422,31 @@ let addRWinformation sid clp =
 
 let processFile cfile =
   fileName := cfile.fileName;
+  (** Locate the loops in the file *)
   iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
+  (**
+	 Visit each function containing a loop, but compute cil information
+	 like Reaching defintions and live variables each time the function
+	 is visited.
+  *)
   IH.fold
-    (fun k v vf ->
-      let fdc = Cloop.getParentFundec v in
-      let nvf =
-        if List.mem fdc.svar.vid vf then vf
+    (fun k cl visited_fids ->
+      let fdc = Cloop.getParentFundec cl in
+      let vis_fids =
+        if List.mem fdc.svar.vid visited_fids
+		then visited_fids
         else
           begin
-            Reachingdefs.computeRDs fdc;
-            Liveness.computeLiveness fdc;
-            fdc.svar.vid :: vf
+
+
+            visited_fids@[fdc.svar.vid]
           end
       in
-      addBoundaryInfo k v;
-      addRWinformation k v;
-      nvf)
+      Reachingdefs.computeRDs fdc;
+      Liveness.computeLiveness fdc;
+      addBoundaryInfo cl;
+      addRWinformation k cl;
+      vis_fids)
     programLoops []
 
 (**

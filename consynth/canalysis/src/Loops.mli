@@ -4,6 +4,7 @@ open Utils
 
 type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
+val indexOfIGU: forIGU -> VS.t
 
 module Cloop : sig
   type t = {
