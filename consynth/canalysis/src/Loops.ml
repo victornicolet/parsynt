@@ -404,7 +404,7 @@ let addRWinformation sid clp =
 (******************************************************************************)
 (** Exported functions *)
 (**
-    Main entry point. Do not simplify in theee-address code here, or it will
+    Main entry point. Do not simplify in three-address code here, or it will
     break the for-loop recgnition which is only based on the CFG structure.
 
     Returns the vids of the processed functions.

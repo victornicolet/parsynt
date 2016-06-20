@@ -4,7 +4,7 @@ open List
 
 module E = Errormsg
 module S = Str
-module IH = Inthash 
+module IH = Inthash
 module IS = Set.Make (struct
   type t = int
   let compare = Pervasives.compare
@@ -13,21 +13,21 @@ end)
 module VS = Usedef.VS
 
 (** Hash a set of variables with their variable id *)
-let hashVS vset = 
+let hashVS vset =
   let ihs = IH.create 10 in
   VS.iter (fun v -> IH.add ihs v.vid v) vset;
   ihs
 
-(** 
-    Returns a new hashset containing the the keys 
+(**
+    Returns a new hashset containing the the keys
     in h1, and values are the pairs of values
     having the same key in h1 and h2 (None for the second
     element if not found).
 *)
 let addHash newh h1 h2 =
   IH.iter
-    (fun k v1 -> 
-      try 
+    (fun k v1 ->
+      try
         let v2 = IH.find h2 k in
         IH.add newh k (v1, Some v2)
       with Not_found -> IH.add newh k (v1, None)) h1
@@ -60,7 +60,7 @@ let checkOption (ao : 'a option) : 'a =
   | None -> raise (Failure "checkOption")
 
 let appOption (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
-  match v with 
+  match v with
   | Some a -> f a
   | None -> default
 
@@ -79,14 +79,14 @@ let getFn cf fname =
         match g with
         | GFun (f, loc) ->
            begin
-             if f.svar.vname = fname 
+             if f.svar.vname = fname
              then xorOpt fdeco (Some f)
              else fdeco
            end
         | _ -> fdeco )
-      None 
+      None
   in
-  try auxoptn cf 
+  try auxoptn cf
   with Failure s -> None
 
 
@@ -101,7 +101,7 @@ let onlyFuncLoc fn g =
   | _ -> ()
 
 let appendC l a =
-  List.append l 
+  List.append l
     (if List.mem a l then [] else [a])
 
 (** Cil specific utility functions *)
@@ -114,17 +114,17 @@ let setOfReachingDefs rdef =
 
 let getBody stmt =
   match stmt.skind with
-  | Loop (blk, _, _, _) -> blk.bstmts 
+  | Loop (blk, _, _, _) -> blk.bstmts
   | _ -> []
 
-(** 
+(**
     Extract the variables used in statements/expressions/instructions/..
     Used variables can be on either side of an assignment.
 *)
 
 let rec sovi (instr : Cil.instr) : VS.t =
   match instr with
-  | Set (lval, exp, loc) -> 
+  | Set (lval, exp, loc) ->
      let vs_ls = sovv lval in
      let vs_exp = sove exp in
      VS.union vs_exp vs_ls
@@ -133,17 +133,16 @@ let rec sovi (instr : Cil.instr) : VS.t =
      let vs_el = foldl_union sove elist in
      VS.union vs_ls vs_el
   | _ -> VS.empty
-    
+
 and sove (expr : Cil.exp) : VS.t =
   match expr with
-  | BinOp (_, e1, e2, _) 
-  | Question (_, e1, e2, _) -> VS.union (sove e1) (sove e2) 
+  | BinOp (_, e1, e2, _)
+  | Question (_, e1, e2, _) -> VS.union (sove e1) (sove e2)
   | SizeOfE e | AlignOfE e | UnOp (_, e, _) | CastE (_, e) -> sove e
   | AddrOf v  | StartOf v | Lval v -> sovv v
   | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
 
 and sovv (v : Cil.lval) : VS.t =
-    match v with 
+    match v with
        | Var x, _ -> VS.singleton x
        | _ -> VS.empty
-

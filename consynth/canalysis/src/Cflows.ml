@@ -1,4 +1,4 @@
-(** 
+(**
     Custom dataflow analysis not provided by Cil.
     Main components :
     - Read/Write set of a body
@@ -18,9 +18,9 @@ struct
 
   let debug = ref false
 
-  (** 
-      Read/ write sets are encoded as a integer hash where 
-      keys are variables IDs and the stored elements are the 
+  (**
+      Read/ write sets are encoded as a integer hash where
+      keys are variables IDs and the stored elements are the
       information on the set it belongs to.
   *)
   let nvar = -1
@@ -28,12 +28,12 @@ struct
   let wvar = 1
   let rwvar = 2
 
-  let srw i = 
+  let srw i =
     match i with
     | 0 -> "R" | 1 -> "W" | 2 -> "RW" | _ -> "N/D"
 
   type t = (int IH.t)
-    
+
   let copy vmap = IH.copy vmap
 
   (** Additional operations on IH *)
@@ -55,18 +55,18 @@ struct
     IH.iter (replaceIn hmap1) hmap2; hmap1
 
   let eqs hmap1 hmap2 =
-    IH.fold 
+    IH.fold
       (fun k v b ->
-        try b && (v == IH.find hmap2 k) 
+        try b && (v == IH.find hmap2 k)
         with Not_found -> false
       )
       hmap1 true
 
-  (** 
+  (**
       We also need to inspect the expressions and look at what variables are
       read inside the right-hand side expressions
   *)
-       
+
   (** Modify the variable information inside m *)
   let rec addvar hmap cvar v =
     match cvar with
@@ -77,7 +77,7 @@ struct
     | (Cil.Mem exp, _) ->
        used_in_expr exp hmap v
 
-  and used_in_expr expr m action_type = 
+  and used_in_expr expr m action_type =
     let rec aux e =
       begin
         match e with
@@ -93,17 +93,16 @@ struct
     in
     aux expr
 
-  (** 
+  (**
       Now the transfer functions used in the dataflow ramework while inspecting
       the program
   *)
   let stmtStartData = IH.create 32
 
-  (** TODO  : pretty printing function *)
-  let pretty () m = 
+  let pretty () m =
     IH.fold
       (fun k v doc ->
-        Pretty.concat doc 
+        Pretty.concat doc
           (Pretty.text (Printf.sprintf "%i -> %s " k (srw v))))
       m
       (Pretty.chr 'M')
@@ -126,20 +125,20 @@ struct
          end
       | Call (lvo, ef, eargs, _) ->
          begin
-           match lvo with 
+           match lvo with
            | Some lv -> addvar m lv wvar; m
            | None -> m
          end;
       | _ -> m
     in
     DF.Post transf
-      
+
   let doStmt (stmt : Cil.stmt) (m : t) = DF.SDefault
 
   let doGuard (condition : Cil.exp) _ = DF.GDefault
 
   let filterStmt (stm : Cil.stmt) = true
-    
+
 end
 
 module RWFlow = DF.ForwardsDataFlow (RWTransfer)
@@ -166,14 +165,14 @@ module RWSet = struct
     let irw = RWTransfer.rwvar
     let indef = RWTransfer.nvar
 
-    let printRWs lid (hmap : int IH.t option) (hvar : varinfo IH.t) = 
+    let printRWs lid (hmap : int IH.t option) (hvar : varinfo IH.t) =
       U.appOption
       (IH.iter
-        (fun i at -> 
+        (fun i at ->
           try
             let var = IH.find hvar i in
             Printf.printf "%i - %s : %s\n" lid
-              var.vname 
+              var.vname
               (RWTransfer.srw at)
           with
             Not_found -> print_string "N/F\n"
