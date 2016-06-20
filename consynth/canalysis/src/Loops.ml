@@ -254,20 +254,20 @@ end
 (******************************************************************************)
 (** Each loop is stored according to the statement id *)
 let fileName = ref ""
-let programLoops = Hashtbl.create 10
+let programLoops = IH.create 10
 let programFuncs = ref Pf.empty
 
 let clearLoops () =
-  Hashtbl.clear programLoops
+  IH.clear programLoops
 
 let addLoop (loop : Cloop.t) : unit =
-  Hashtbl.add programLoops loop.Cloop.sid loop
+  IH.add programLoops loop.Cloop.sid loop
 
 let hasLoop (loop : Cloop.t) : bool =
-  Hashtbl.mem programLoops loop.Cloop.sid
+  IH.mem programLoops loop.Cloop.sid
 
 let getFuncWithLoops () : Cil.fundec list =
-  Hashtbl.fold
+  IH.fold
     (fun k v l ->
       let f =
         try
@@ -337,7 +337,7 @@ class loopInspector (tl : Cloop.t) = object
     match s.skind with
     | Loop _ ->
        (** The inspected loop is nested in the current loop *)
-       Cloop.addParentLoop (Hashtbl.find programLoops s.sid) (Cloop.id tl) ;
+       Cloop.addParentLoop (IH.find programLoops s.sid) (Cloop.id tl) ;
       DoChildren
     | Block _ | If _ | TryFinally _ | TryExcept _ -> DoChildren
     | Switch _ ->
@@ -413,7 +413,7 @@ let addRWinformation sid clp =
 let processFile cfile =
   fileName := cfile.fileName;
   iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
-  Hashtbl.fold
+  IH.fold
     (fun k v vf ->
       let fdc = Cloop.getParentFundec v in
       let nvf =

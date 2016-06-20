@@ -26,5 +26,5 @@ module Cloop : sig
 end
 
 val processFile: Cil.file -> int list
-val processedLoops: unit -> (int, Cloop.t) Hashtbl.t
+val processedLoops: unit -> Cloop.t Inthash.t
 val clear : unit -> unit

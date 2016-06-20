@@ -1,3 +1,3 @@
 open Cil
 
-val processFile: string -> (int, Loops.Cloop.t) Hashtbl.t
+val processFile: string -> Loops.Cloop.t Inthash.t
