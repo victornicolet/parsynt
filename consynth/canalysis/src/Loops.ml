@@ -8,6 +8,10 @@ module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
 module RW = Cflows.RWSet
+
+let verbose = ref false
+let debug = ref false
+
 (**
     The integer option set used in Cil implementation of reachingdefs.ml.
     A set of "int option".
@@ -169,7 +173,7 @@ module Cloop = struct
      from within the Cloop module.
   *)
 
-  let getVarinfo l vid =
+  let getVarinfo l vid  =
     try
       match IH.find l.definedInVars vid with
       | (vi, _) -> vi
@@ -195,26 +199,22 @@ is not defined at the beginning of the loop"
      be comnputed before in order to associate variable IDs with variable
      names.
   *)
-  let setRW l hmap ?(checkDefinedIn = false) =
-    l.rwset <-
-      (IH.fold
-         (fun k v (r, w, rw) ->
-           begin
-           if checkDefinedIn then
-             try ignore(getVarinfo l k) with Failure s ->
-               raise (Failure "Trying to setRW a variable not DefinedIn")
-           end;
-           if v = RW.ir then (k::r, w, rw)
-           else (if v = RW.iw then (r, k::w, rw)
-             else (if v = RW.irw then (r, w, k::rw)
-               else (r, w, rw))))
-         hmap
-         l.rwset)
+  let setRW l (uses, defs) ?(checkDefinedIn = false) =
+	let r = List.map (fun v -> v.vid) (VS.elements uses) in
+	let w = List.map (fun v -> v.vid) (VS.elements defs) in
+	let rw = List.map (fun v -> v.vid)
+	  (VS.elements (VS.inter uses defs)) in
+	l.rwset <- (r, w, rw)
+
 
   let string_of_rwset (cl : t) =
     let (r, w, rw) = cl.rwset in
     let transform l = String.concat " "
-      (List.map (fun k -> (getVarinfo cl k).vname) l) in
+      (List.map (fun k ->
+		try
+		  (getVarinfo cl k).vname
+	  with Failure s -> "*")l)
+	in
     let (rs, ws, rws) = (transform r, transform w, transform rw) in
     "Read set : "^rs^"\nWrite set : "^ws^"\nRead-Write set:"^rws^"\n"
   (**
@@ -251,7 +251,7 @@ is not defined at the beginning of the loop"
       else ""
     in
     let rwsets = string_of_rwset cl in
-    sprintf "Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu
+    sprintf "---> Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu
       rwsets
 end
 
@@ -283,6 +283,11 @@ let getFuncWithLoops () : Cil.fundec list =
 
 let addGlobalFunc (fd : Cil.fundec) =
   programFuncs := Pf.add fd.svar.vname fd !programFuncs
+
+let getGLobalFuncVS () =
+  VS.of_list
+	(List.map (fun (a,b) -> b)
+	   (Pf.bindings (Pf.map (fun fd -> fd.svar) !programFuncs)))
 
 
 
@@ -406,9 +411,11 @@ let addRWinformation sid clp =
     match clp.Cloop.loopStatement.skind with
     | Loop (blk,_, _, _) -> blk.bstmts
     | _ -> raise (Failure "Expected a loop statement") in
-  let last_sid = (Utils.last stmts).sid in
-  print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts));
-  let rwinfo =  Utils.checkOption (RW.computeRWs stmts ; RW.getRWs last_sid) in
+  if !verbose
+  then
+	print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts))
+  else ();
+  let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGLobalFuncVS ()) in
   Cloop.setRW clp rwinfo ~checkDefinedIn:true
 
 (******************************************************************************)
@@ -444,6 +451,7 @@ let processFile cfile =
       in
       Reachingdefs.computeRDs fdc;
       Liveness.computeLiveness fdc;
+
       addBoundaryInfo cl;
       addRWinformation k cl;
       vis_fids)

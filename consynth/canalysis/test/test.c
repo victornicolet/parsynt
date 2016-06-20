@@ -5,7 +5,6 @@ int dummy_func(int h, int *a) {
   int i;
   int sum = 0;
   for(i = 2; i < h; i++) {
-    if (i <= 2) print("2");
     sum += i + a[i];
     i += 2;
   }
@@ -36,7 +35,7 @@ void other_dummy1(int n, int *array) {
     if(i >= 10) {
       array[i] = i + dummy_func(i);
       for(j = 0; (j < 10 | j < n); j++) {
-	sum += j;
+		sum += j;
       }
     }
   }

@@ -47,6 +47,12 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
 let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
   List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
 
+let foldl_union2 (f: 'a -> VS.t * VS.t) (l: 'a list) : VS.t * VS.t =
+  List.fold_left (fun (acc1, acc2) a ->
+	let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
+	(VS.empty, VS.empty) l
+
+
 let outer_join_lists (a, b) =
  List.fold_left
    (fun li i ->
@@ -112,7 +118,13 @@ let appendC l a =
     (if List.mem a l then [] else [a])
 
 (** Cil specific utility functions *)
+(** Pretty printing shortcuts *)
 let psprint80 f x = Pretty.sprint 80 (f () x)
+let ppe e = print_endline (psprint80 Cil.d_exp e)
+let pps s = print_endline (psprint80 Cil.d_stmt s)
+let pplv lv = print_endline (psprint80 Cil.d_lval lv)
+let ppv v = print_endline v.vname
+let ppi i = print_endline (psprint80 Cil.d_instr i)
 
 let setOfReachingDefs rdef =
   match rdef with
@@ -150,6 +162,12 @@ and sove (expr : Cil.exp) : VS.t =
   | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
 
 and sovv (v : Cil.lval) : VS.t =
-    match v with
-       | Var x, _ -> VS.singleton x
-       | _ -> VS.empty
+  match v with
+  | Var x, _ -> VS.singleton x
+  | Mem e, offs -> VS.union (sove e) (sovoff offs)
+
+and sovoff (off : Cil.offset) : VS.t =
+  match off with
+  | NoOffset -> VS.empty
+  | Index (e, offs) -> VS.union (sove e) (sovoff offs)
+  | Field _ -> VS.empty

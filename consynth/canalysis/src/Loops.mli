@@ -2,6 +2,9 @@ open Cil
 open String
 open Utils
 
+val verbose : bool ref
+val debug : bool ref
+
 type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 val indexOfIGU: forIGU -> VS.t
