@@ -10,7 +10,7 @@ module C = Cil
 module IH = Inthash
 module L2S = Loops2ssa
 
-let debug = ref false
+let debug = ref true
 let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =

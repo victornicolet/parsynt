@@ -1,12 +1,13 @@
 open Cil
 open Utils
 open Loops
+open Printf
 
 module IH = Inthash
 
 let debug = ref false
 (** The loops in the files *)
-let loops = IH.create 10
+let loops = ref (IH.create 10)
 
 type guard =
     GEmpty 
@@ -33,9 +34,30 @@ type preFunc =
       expression in the assignment.
       The subscript expression list is empty if it is a scalar.
   *)
-  | ForLoop of Loops.forIGU * Cil.exp list * preFunc
+  | ForLoop of preFunc * Loops.forIGU * Cil.exp list * preFunc
   (* An expression guarded by an if *)
   | Guarded of preFunc * preFunc * preFunc
+
+let rec ps_pf pf =
+  match pf with
+  | Empty -> "Empty"
+  | Container e -> (psprint80 Cil.d_exp e)
+  | FBinop (op, e1, e2) -> 
+     String.concat " " [ (ps_pf e1); (psprint80 Cil.d_binop op); (ps_pf e2)]
+  | FUnop (op, e) ->
+     String.concat " " [(psprint80 Cil.d_unop op); (ps_pf e)]
+  | ForLoop (e0, (i, g, u), el, e) ->
+     String.concat " "  ([ "Init: "^(ps_pf e0)^"\nFor {"; 
+                           (psprint80 Cil.d_instr i); 
+                           (psprint80 Cil.d_exp g); 
+                           (psprint80 Cil.d_instr u);
+                           "[:"]@
+                            (List.map (fun e -> (psprint80 Cil.d_exp e)) el)@
+                            [":]\n"; ps_pf e; "}"])
+
+  | Guarded (c, e1, e2) -> 
+     "("^(ps_pf c)^" ? "^(ps_pf e1)^" : "^(ps_pf e2)^")"
+
 
 let rec build_expr ?(subs= [])  g (expr : Cil.exp) (x : Cil.varinfo)=
   match g with
@@ -43,7 +65,8 @@ let rec build_expr ?(subs= [])  g (expr : Cil.exp) (x : Cil.varinfo)=
   | GCond (e, g') -> Guarded (Container e, 
                               (build_expr g' expr x),
                               Container (v2e x))
-  | GFor (igu, g') -> ForLoop (igu, subs, build_expr g' expr x)
+  | GFor (igu, g') -> 
+     ForLoop (Container (v2e x), igu, subs, build_expr g' expr x)
 
 
 let rec rep vid old ne =
@@ -52,7 +75,7 @@ let rec rep vid old ne =
   | Container e -> (rep_in_e vid old e)
   | FBinop (op, e1, e2) -> FBinop (op, rep vid old e1, rep vid old e2)
   | FUnop (op, e) -> FUnop (op, rep vid old e)
-  | ForLoop (e, el, g) -> ForLoop (e, el, rep vid old g)
+  | ForLoop (init, e, el, g) -> ForLoop (rep vid old init, e, el, g)
   | Guarded (e, g1, g2) -> Guarded (e, rep vid old g1,
                                     rep vid old g2)
 
@@ -103,8 +126,11 @@ and do_i hm g (ins : Cil.instr) =
         let olde = 
           try
             IH.find hm v.vid 
-          with Not_found -> Empty in
+          with Not_found -> Container (v2e v) in
         let nexp = replace_init_in v.vid olde fexp in
+        if !debug then
+          Printf.printf "Replacing %s\n by %s\n"
+            (ps_pf olde) (ps_pf nexp);
         IH.replace hm v.vid nexp 
       end
     else ()  
@@ -120,12 +146,12 @@ and do_s hm g stm =
   | If (e, b1, b2, _) ->
      let cond1 = gCompose g (GCond (e, GEmpty)) in
      do_b hm cond1 b1; 
-     let cond2 = gCompose g (GCond (e, GEmpty)) in
+     let cond2 = gCompose g (GCond ((neg_exp e), GEmpty)) in
      do_b hm cond2 b2
   | Loop (b, _ ,_, _) ->
      begin
        try
-         let igu = (IH.find loops stm.sid).Cloop.loopIGU in
+         let igu = (IH.find !loops stm.sid).Cloop.loopIGU in
          let forlp = gCompose g (GFor (checkOption igu, GEmpty)) in
          do_b hm forlp b
        with
@@ -137,11 +163,15 @@ and do_s hm g stm =
 
 
 let ssaify stmtlist statevars =
+  if !debug then print_endline "---Transform to SSA---";
   let assignments = IH.create 10 in
-  List.iter
-    (fun vid -> IH.add assignments vid Empty) 
-    statevars;
-  List.iter (fun s -> do_s assignments GEmpty s) stmtlist
+  List.iter (fun s -> do_s assignments GEmpty s) stmtlist;
+  if !debug then 
+    begin
+      IH.iter (fun i v -> printf "%i = %s\n" i (ps_pf v)) assignments;
+      printf "-----------\n"
+    end
+      
 
 let removeFromCFG (stm : Cil.stmt) =
   let succs = stm.succs in
@@ -188,16 +218,30 @@ let removeIGU (whileStmt : Cil.stmt) ((i, g, u) : forIGU) =
 
 
 let processLoop (sid : int) (cl : Cloop.t) =
+  if !debug then Printf.printf "--- Loop %i --> SSA ---\n" sid;
   let stateVars = Utils.outer_join_lists
 	(match cl.Cloop.rwset with (r, w, rw) -> w, rw) in
-  let loopIndex = indexOfIGU  (checkOption cl.Cloop.loopIGU) in
-  removeIGU cl.Cloop.loopStatement (checkOption cl.Cloop.loopIGU);
-  if !debug then pps cl.Cloop.loopStatement;
-  ()
+(**  let loopIndex = indexOfIGU  (checkOption cl.Cloop.loopIGU) in *)
+  let loop_stmt = cl.Cloop.loopStatement in
+  removeIGU loop_stmt (checkOption cl.Cloop.loopIGU);
+  if !debug then 
+    begin
+      Printf.printf "Loop after removing IGU:\n";
+      pps cl.Cloop.loopStatement;
+    end;
+  let body_stmts = 
+    match loop_stmt.skind with 
+    | Loop (blk, _, _, _) -> blk.bstmts
+    | _ -> raise (Failure "processLoop : this should be a loop statement.")
+  in
+  ssaify body_stmts stateVars
+  
 
 
 (** Main entry point *)
 
 let processFile_l2s lps =
-  IH.copy_into loops lps;
-  IH.iter processLoop loops
+  loops := lps;
+  IH.iter processLoop lps
+
+

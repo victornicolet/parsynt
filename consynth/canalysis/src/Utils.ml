@@ -140,6 +140,7 @@ let getBody stmt =
 let neg_exp (exp : Cil.exp) =
   match exp with 
   | UnOp (LNot, b, _) -> b
+  | UnOp (Neg, x, _) -> x
   | _ -> UnOp (LNot, exp, TInt (IBool, []))
 
 (**

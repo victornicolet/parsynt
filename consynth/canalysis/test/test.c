@@ -7,6 +7,7 @@ int dummy_func(int h, int *a) {
   for(i = 2; i < h; i++) {
     sum += i + a[i];
     i += 2;
+    sum = sum - 1;
   }
   return sum;
 }
@@ -39,6 +40,20 @@ void other_dummy1(int n, int *array) {
       }
     }
   }
+}
+
+int simple (int *a) {
+  int i,j;
+  int sum = 0;
+  for (i = 3; i < 34; i++) {
+    sum += i;
+    if (a[i] == 0) sum = 0;
+    for(int j = 0; j < 3; j++){
+      sum +=j;
+    }
+    sum++;
+  }
+  return sum;
 }
 
 int main (int argc, char **argv) {
