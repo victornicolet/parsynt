@@ -125,6 +125,7 @@ let pps s = print_endline (psprint80 Cil.d_stmt s)
 let pplv lv = print_endline (psprint80 Cil.d_lval lv)
 let ppv v = print_endline v.vname
 let ppi i = print_endline (psprint80 Cil.d_instr i)
+let ppbk blk = List.iter pps blk.bstmts
 
 let setOfReachingDefs rdef =
   match rdef with
@@ -166,10 +167,11 @@ and sove (expr : Cil.exp) : VS.t =
   | AddrOf v  | StartOf v | Lval v -> sovv v
   | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
 
-and sovv (v : Cil.lval) : VS.t =
+and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : VS.t =
   match v with
   | Var x, _ -> VS.singleton x
-  | Mem e, offs -> VS.union (sove e) (sovoff offs)
+  | Mem e, offs -> VS.union (sove e)
+     (if onlyNoOffset then VS.empty else (sovoff offs))
 
 and sovoff (off : Cil.offset) : VS.t =
   match off with

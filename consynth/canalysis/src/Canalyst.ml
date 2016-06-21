@@ -7,12 +7,18 @@ open Hashtbl
 module F = Frontc
 module E = Errormsg
 module C = Cil
+module IH = Inthash
+module L2S = Loops2ssa
+
+let debug = ref false
+let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =
   let cabs, cil = Frontc.parse_with_cabs fname () in
   Rmtmps.removeUnusedTemps cil;
   cil
 
+let loops = IH.create 10
 
 let processFile fileName =
   C.insertImplicitCasts := false;
@@ -22,5 +28,11 @@ let processFile fileName =
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  Loops2ssa.processFile_l2s cfile
+  Loops.debug := !debug; Loops.verbose := ! verbose;
+  let fids = Loops.processFile cfile in
+  let loops = Loops.processedLoops () in
+  L2S.debug := !debug;
+  L2S.processFile_l2s (IH.copy loops);
+  loops
 
+let getLoops () = loops

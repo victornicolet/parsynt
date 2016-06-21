@@ -10,7 +10,7 @@ module LF = Liveness.LiveFlow
 module RW = Cflows.RWSet
 module EC = Expcompare
 
-let verbose = ref false
+let verbose = ref true
 let debug = ref false
 
 (**
@@ -111,7 +111,7 @@ let get_loop_IGU loop_stmt : forIGU option =
   | Loop (bdy, _, _, _) ->
      begin
        try
-         let term_expr_o, _ = get_loop_condition bdy in         
+         let term_expr_o, _ = get_loop_condition bdy in
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
          Some (init, Utils.neg_exp (Utils.checkOption term_expr_o), update)
@@ -469,13 +469,17 @@ let addBoundaryInfo clp =
 (** Read/write set *)
 
 let addRWinformation sid clp =
+  RW.verbose := !verbose;
   let stmts =
     match clp.Cloop.loopStatement.skind with
     | Loop (blk,_, _, _) -> blk.bstmts
     | _ -> raise (Failure "Expected a loop statement") in
   if !verbose
   then
-	print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts))
+    begin
+      print_string "AddRW information :";
+	  print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts))
+    end
   else ();
   let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGLobalFuncVS ()) in
   Cloop.setRW clp rwinfo ~checkDefinedIn:true
@@ -525,7 +529,7 @@ let processFile cfile =
 
 let processedLoops () =
   if (!fileName = "") then
-    raise (Failure "No file processed, no looop data !")
+    raise (Failure "No file processed, no loop data !")
   else
     programLoops
 
