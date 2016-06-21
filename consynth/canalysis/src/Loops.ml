@@ -8,6 +8,7 @@ module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
 module RW = Cflows.RWSet
+module EC = Expcompare
 
 let verbose = ref false
 let debug = ref false
@@ -31,35 +32,96 @@ type defsMap = (VS.elt * (IOS.t option))  IH.t
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 
 (** Extracting the termination condition of the loop *)
-let match_for_loop loop_stmt : forIGU option =
+let get_loop_condition b =
+  (* returns the first non-empty
+   * statement of a statement list *)
+  (* stm list -> stm list *)
+  let rec skipEmpty = function
+    | [] -> []
+    | {skind = Instr []; labels = []}::rest ->
+	   skipEmpty rest
+    | x -> x
+  in
+  (* stm -> exp option * instr list *)
+  let rec get_cond_from_if if_stm =
+    match if_stm.skind with
+      If(e,tb,fb,_) ->
+	    let e = EC.stripNopCasts e in
+	    let tsl = skipEmpty tb.bstmts in
+	    let fsl = skipEmpty fb.bstmts in
+	    (match tsl, fsl with
+	      {skind = Break _} :: _, [] -> Some e
+	    | [], {skind = Break _} :: _ -> 
+	       Some(UnOp(LNot, e, intType))
+	    | ({skind = If(_,_,_,_)} as s) :: _, [] ->
+	       let teo = get_cond_from_if s in
+	       (match teo with
+	         None -> None
+	       | Some te -> 
+		      Some(BinOp(LAnd,e,EC.stripNopCasts te,intType)))
+	    | [], ({skind = If(_,_,_,_)} as s) :: _ ->
+	       let feo = get_cond_from_if s in
+	       (match feo with
+	         None -> None
+	       | Some fe -> 
+		      Some(BinOp(LAnd,UnOp(LNot,e,intType),
+			             EC.stripNopCasts fe,intType)))
+	    | {skind = Break _} :: _, ({skind = If(_,_,_,_)} as s):: _ ->
+	       let feo = get_cond_from_if s in
+	       (match feo with
+	         None -> None
+	       | Some fe -> 
+		      Some(BinOp(LOr,e,EC.stripNopCasts fe,intType)))
+	    | ({skind = If(_,_,_,_)} as s) :: _, {skind = Break _} :: _ ->
+	       let teo = get_cond_from_if s in
+	       (match teo with
+	         None -> None
+	       | Some te -> 
+		      Some(BinOp(LOr,UnOp(LNot,e,intType),
+			             EC.stripNopCasts te,intType)))
+	    | ({skind = If(_,_,_,_)} as ts) :: _ , ({skind = If(_,_,_,_)} as fs) :: _ ->
+	       let teo = get_cond_from_if ts in
+	       let feo = get_cond_from_if fs in
+	       (match teo, feo with
+	         Some te, Some fe ->
+		       Some(BinOp(LOr,BinOp(LAnd,e,EC.stripNopCasts te,intType),
+			              BinOp(LAnd,UnOp(LNot,e,intType),
+				                EC.stripNopCasts fe,intType),intType))
+	       | _,_ -> None)
+	    | _, _ -> (if !debug then ignore(E.log "cond_finder: branches of %a not good\n"
+					                       d_stmt if_stm);
+		           None))
+    | _ -> (if !debug then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
+	        None)
+  in
+  let sl = skipEmpty b.bstmts in
+  match sl with
+    ({skind = If(_,_,_,_); labels=[]} as s) :: rest ->
+      get_cond_from_if s, rest
+  | s :: _ -> 
+     (if !debug then ignore(E.log "checkMover: %a is first, not an if\n"
+			                  d_stmt s);
+      None, sl)
+  | [] ->
+     (if !debug then ignore(E.log "checkMover: no statements in loop block?\n");
+      None, sl)
+
+let get_loop_IGU loop_stmt : forIGU option =
   match loop_stmt.skind with
-  | Loop _ ->
+  | Loop (bdy, _, _, _) ->
      begin
        try
-         let if_brk = List.hd loop_stmt.succs in (** Not always working TDOD :
-                                                     better identification of
-                                                     termination cond.*)
-         let term_expr =
-           match if_brk.skind with
-           | If (e, b1, b2, _) -> e;
-           (* e is the termination expr. in the for loop *)
-           | _ ->
-              begin
-                Printf.eprintf "Received : %s\n" (Pretty.sprint 80
-                                                  (Cil.d_stmt () if_brk));
-                raise (Failure "Unexpected loop stmt sucessor.")
-              end
-         in
+         let term_expr_o, _ = get_loop_condition bdy in         
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
-         Some (init, term_expr, update)
+         Some (init, Utils.neg_exp (Utils.checkOption term_expr_o), update)
        with Failure s ->
-		 print_endline ("match_for_loop : "^s); None
+		 print_endline ("get_loop_IGU : "^s); None
      end
-  |_ -> print_endline "failed match_for_loop"; None
+  |_ -> print_endline "failed get_loop_IGU"; None
 
 (**
-    Checking the weel formedness of the triplet. The initialisation and update
+    Checking that the triplet is well-formed. The initialisation and update
     must update the same variable. The restrict the termination condition too,
     it has to refer to the loop index i.
 *)
@@ -251,8 +313,8 @@ is not defined at the beginning of the loop"
       else ""
     in
     let rwsets = string_of_rwset cl in
-    sprintf "---> Loop %s in %s:\nCalls: %s\n%s%s\n%s" sid pfun cfuns defvarS oigu
-      rwsets
+    sprintf "---> Loop %s in %s:\nCalls: %s\n%s%s\n%s"
+      sid pfun cfuns defvarS oigu rwsets
 end
 
 (******************************************************************************)
@@ -302,7 +364,7 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
     match s.skind with
     | Loop _ ->
        let cloop = (Cloop.create s topFunc f) in
-       let igu = match_for_loop s in
+       let igu = get_loop_IGU s in
        begin
          match igu with
          | Some figu ->
@@ -444,8 +506,6 @@ let processFile cfile =
 		then visited_fids
         else
           begin
-
-
             visited_fids@[fdc.svar.vid]
           end
       in

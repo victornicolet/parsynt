@@ -11,9 +11,12 @@ module IH = Inthash
 module U = Utils
 module VS = U.VS
 
+
 (** Here we do not use Cil's Dataflow framework *)
 
 module RWSet = struct
+
+  let verbose = ref false
 
   let prws u d =
 	print_endline "--Uses";
@@ -25,6 +28,6 @@ module RWSet = struct
 	Usedef.onlyNoOffsetsAreDefs := true;
 	let _u, _d = Usedef.computeDeepUseDefStmtKind loop.skind in
 	let u, d = VS.diff _u fnames, VS.diff _d fnames in
-	prws u d;
+	if !verbose then prws u d;
 	u, d
 end

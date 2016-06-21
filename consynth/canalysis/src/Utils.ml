@@ -136,6 +136,11 @@ let getBody stmt =
   | Loop (blk, _, _, _) -> blk.bstmts
   | _ -> []
 
+let neg_exp (exp : Cil.exp) =
+  match exp with 
+  | UnOp (LNot, b, _) -> b
+  | _ -> UnOp (LNot, exp, TInt (IBool, []))
+
 (**
     Extract the variables used in statements/expressions/instructions/..
     Used variables can be on either side of an assignment.
