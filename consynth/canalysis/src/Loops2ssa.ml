@@ -288,10 +288,10 @@ module Floop = struct
 end
 
 (** Main entry point *)
+let floops = IH.create 10
 
 let processFile_l2s lps =
   loops := lps;
-  let floops = IH.create 10 in
   begin
     IH.iter (fun sid cloop ->
       if cloop.Cloop.hasBreaks 
@@ -305,3 +305,6 @@ let processFile_l2s lps =
   end;
   floops
 
+let clear () =
+  IH.clear !loops ;
+  IH.clear floops;
