@@ -79,7 +79,8 @@ let get_loop_condition b =
 	       | Some te -> 
 		      Some(BinOp(LOr,UnOp(LNot,e,intType),
 			             EC.stripNopCasts te,intType)))
-	    | ({skind = If(_,_,_,_)} as ts) :: _ , ({skind = If(_,_,_,_)} as fs) :: _ ->
+	    | ({skind = If(_,_,_,_)} as ts) :: _ ,
+           ({skind = If(_,_,_,_)} as fs) :: _ ->
 	       let teo = get_cond_from_if ts in
 	       let feo = get_cond_from_if fs in
 	       (match teo, feo with
@@ -88,10 +89,12 @@ let get_loop_condition b =
 			              BinOp(LAnd,UnOp(LNot,e,intType),
 				                EC.stripNopCasts fe,intType),intType))
 	       | _,_ -> None)
-	    | _, _ -> (if !debug then ignore(E.log "cond_finder: branches of %a not good\n"
+	    | _, _ -> (if !debug
+          then ignore(E.log "cond_finder: branches of %a not good\n"
 					                       d_stmt if_stm);
 		           None))
-    | _ -> (if !debug then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
+    | _ -> (if !debug
+      then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
 	        None)
   in
   let sl = skipEmpty b.bstmts in
