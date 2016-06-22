@@ -1,12 +1,19 @@
 #lang racket
 
-;XXX  SERVER SIDE XXX
+(require racket/sandbox)
 
 (define server-name "localhost")
 (define server-port 9877)
 (define max-allow-wait 20); max concurrent clients waiting for turn
 (define reuse? #f)
 (define time-limit 120); secs for each rpc request
+
+(define (make-synth-eval input) 
+  (make-evaluator '(special rosette)
+                  input
+                  [#:requires (list
+                               "lib/synthax/expressions.rkt"
+                               "lib/synthax/constructors.rkt")]))
 
 (define (allowed? expr);; Filter out illegal requests here
   #t)
