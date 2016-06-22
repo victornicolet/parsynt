@@ -134,7 +134,7 @@ let indexOfIGU ((init, guard, update) : forIGU) : VS.t =
     (VS.inter (Utils.sovi init) (Utils.sove guard))
     (Utils.sovi update)
 
-let check_loop ((init, guard, update) : forIGU) : bool =
+let checkIGU ((init, guard, update) : forIGU) : bool =
   let i = indexOfIGU (init, guard, update) in
   (VS.cardinal i) = 1
 
@@ -371,7 +371,7 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
        begin
          match igu with
          | Some figu ->
-            if check_loop figu then
+            if checkIGU figu then
               cloop.Cloop.loopIGU <- Some figu
             else ()
          | _ -> ()

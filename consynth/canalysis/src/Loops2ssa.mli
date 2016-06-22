@@ -1,15 +1,7 @@
 open Loops
+open Prefunc
 
 val debug: bool ref
-
-type preFunc = 
-  | Empty
-  | Container of Cil.exp
-  | FBinop of Cil.binop * preFunc * preFunc
-  | FUnop of Cil.unop * preFunc
-  | ForLoop of preFunc * Loops.forIGU * Cil.exp list * preFunc
-  | Guarded of preFunc * preFunc * preFunc
-
 
 module Floop : sig 
     type t = {

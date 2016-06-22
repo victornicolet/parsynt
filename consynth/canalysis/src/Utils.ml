@@ -102,6 +102,8 @@ let getFn cf fname =
   try auxoptn cf
   with Failure s -> None
 
+let non_empty_block (b : Cil.block) =
+  (List.length b.bstmts) > 0
 
 let onlyFunc fn g =
   match g with

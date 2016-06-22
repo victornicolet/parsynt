@@ -1,10 +1,20 @@
 open Cil
 open Canalyst
 open Printf
+open Prefunc
 
-module LC = Loops.Cloop
+module LF = Loops2ssa.Floop
 
-let testProcessFile =
+let testProcessFile () =
   printf "-- test processing file -- \n";
   let loops = Canalyst.processFile "test/test.c" in
-  Inthash.iter (fun i cl -> print_string (LC.string_of_cloop cl)) loops
+  Inthash.iter (fun i cl ->
+    printf "\n\n Loop %i " cl.LF.sid;
+    Inthash.iter
+    (fun i pf -> 
+      printf "\n%i = %s" i
+        (string_of_prefunc pf))
+      cl.LF.body )
+    loops;;
+
+testProcessFile ()

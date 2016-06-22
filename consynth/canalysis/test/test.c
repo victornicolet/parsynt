@@ -7,21 +7,25 @@ int dummy_func(int h, int *a) {
   for(i = 2; i < h; i++) {
     sum += i + a[i];
     i += 2;
-    sum = sum - 1;
+    if (sum == 10) {
+      sum = sum - 1;
+    } else {
+      sum = sum + 1;
+    }
+
   }
   return sum;
 }
 
-void other_dummy(int n, int *array) {
+void other_dummy(int n, int array) {
   int i;
   if (n == 0) {
     return;
   }
+
   for(i = 0; i <= n; i++) {
-    array[i] = i;
-    if(i >= 10) {
-      array[i] = i + dummy_func(i);
-    }
+    array = i;
+    if(i >= 10) array += i;
   }
 }
 

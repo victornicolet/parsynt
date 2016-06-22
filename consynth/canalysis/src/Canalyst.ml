@@ -10,7 +10,7 @@ module C = Cil
 module IH = Inthash
 module L2S = Loops2ssa
 
-let debug = ref true
+let debug = ref false
 let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =
@@ -31,8 +31,10 @@ let processFile fileName =
   Loops.debug := !debug; Loops.verbose := ! verbose;
   let fids = Loops.processFile cfile in
   let loops = Loops.processedLoops () in
+  let loopscpy = (IH.copy loops) in
   L2S.debug := !debug;
-  L2S.processFile_l2s (IH.copy loops);
-  loops
+  L2S.processFile_l2s loopscpy
+
+
 
 let getLoops () = loops
