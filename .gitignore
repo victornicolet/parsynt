@@ -15,7 +15,8 @@ examples/Basic
 # Build / compilation directories
 
 # OCaml
-consynth/canalysis/_build/*
+consynth/_build
+consynth/canalysis/_build
 
 #Racket
 compiled/

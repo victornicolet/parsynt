@@ -15,3 +15,6 @@ C code analysis is partially done using the Cil library in Ocaml, so you will ne
   ``` opam install oasis ```
 - Cil ``` opam install cil ```
 
+To set up the Makefiles, in each directory where you can find a ```_oasis``` file, run :\\
+```oasis setup -stup-update dynamic``` \\
+And then compile using make.

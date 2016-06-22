@@ -1,0 +1,26 @@
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Name: ConSynthClient
+Version: 0.1
+Synopsis: Concurrent programs synthesis.
+Authors: Victor Nicolet
+License: LGPL with OCaml linking exception
+
+Description: A library that synthesizes concurrent C programs from sequential specifications.
+Homepage: https://github.com/victornicolet/consynth
+
+
+Executable csclient
+  Path: ./
+  MainIs: client.ml
+  CompiledObject: best
+  Install: false
+  BuildDepends: unix
+
+SourceRepository "master"
+  Type: git
+  Location: https://github.com/victornicolet/consynth.git
+  Branch: master
+  Browser: https://github.com/victornicolet/consynth
