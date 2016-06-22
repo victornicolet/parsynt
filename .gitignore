@@ -20,6 +20,7 @@ consynth/canalysis/_build
 
 #Racket
 compiled/
+consynth/synthServ
 
 #Oasis
 setup.data

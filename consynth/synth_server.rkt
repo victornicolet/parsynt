@@ -6,7 +6,7 @@
 (define server-port 9877)
 (define max-allow-wait 20); max concurrent clients waiting for turn
 (define reuse? #f)
-(define time-limit 10); secs for each rpc request
+(define time-limit 120); secs for each rpc request
 
 (define (allowed? expr);; Filter out illegal requests here
   #t)
@@ -18,11 +18,13 @@
     (parameterize ((current-custodian cust))
       (define expr "")
       (define-values (client->me me->client) (tcp-accept listener))
+      (define (handle)
+        (set! expr (read client->me))
+        (if (allowed? expr)
+            (write (eval expr) me->client)
+            (error "Illegal procedure call!" me->client)))
       (thread (lambda ()
-                (set! expr (read client->me))
-                (if (allowed? expr)
-                    (write (eval expr) me->client)
-                    (error "Illegal procedure call!" me->client))
+                (handle)
                 (close-output-port me->client)
                 (close-input-port client->me))))
     (thread (lambda ()
@@ -39,3 +41,4 @@
     (custodian-shutdown-all main-cust)))
 
 (define stop (run-rpc-server))
+
