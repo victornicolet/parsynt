@@ -14,6 +14,7 @@ module Cloop : sig
   type t = {
     sid: int;
     mutable loopStatement : Cil.stmt;
+    mutable statements : Cil.stmt list;
     mutable loopIGU : forIGU option;
     mutable parentFile : Cil.file;
     mutable parentLoops : int list;

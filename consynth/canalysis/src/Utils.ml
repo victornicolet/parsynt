@@ -63,6 +63,16 @@ let outer_join_lists (a, b) =
 let last list =
   List.nth list ((List.length list) - 1)
 
+let remove_last list = 
+  match (List.rev list) with
+  | h::t -> List.rev t
+  | []   -> []
+
+let replace_last list elt =
+  match (List.rev list) with
+  | h::t -> List.rev (elt::t)
+  | []   -> []
+
 let lastInstr instr_stmt =
   match instr_stmt.skind with
   | Instr il -> last il
@@ -124,11 +134,11 @@ let appendC l a =
 (** Cil specific utility functions *)
 (** Pretty printing shortcuts *)
 let psprint80 f x = Pretty.sprint 80 (f () x)
-let ppe e = print_endline (psprint80 Cil.d_exp e)
-let pps s = print_endline (psprint80 Cil.d_stmt s)
-let pplv lv = print_endline (psprint80 Cil.d_lval lv)
+let ppe e = print_endline (psprint80 Cil.dn_exp e)
+let pps s = print_endline ("Statement : "^(psprint80 Cil.dn_stmt s))
+let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
 let ppv v = print_endline v.vname
-let ppi i = print_endline (psprint80 Cil.d_instr i)
+let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
 let ppbk blk = List.iter pps blk.bstmts
 
 let setOfReachingDefs rdef =
@@ -142,10 +152,15 @@ let getBody stmt =
   | _ -> []
 
 let neg_exp (exp : Cil.exp) =
-  match exp with 
+  match exp with
   | UnOp (LNot, b, _) -> b
   | UnOp (Neg, x, _) -> x
   | _ -> UnOp (LNot, exp, TInt (IBool, []))
+
+let is_like_array (vi : Cil.varinfo) =
+  match vi.vtype with
+  | TPtr _ | TArray _ -> true
+  | _ -> false
 
 (**
     Extract the variables used in statements/expressions/instructions/..
@@ -184,7 +199,7 @@ and sovoff (off : Cil.offset) : VS.t =
   | Index (e, offs) -> VS.union (sove e) (sovoff offs)
   | Field _ -> VS.empty
 
-let hasVid (id : int) (vs : VS.t) = 
+let hasVid (id : int) (vs : VS.t) =
   VS.exists (fun vi -> vi.vid = id) vs
 
 let getVi (id: int) (vs : VS.t) =

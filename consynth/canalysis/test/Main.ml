@@ -12,7 +12,7 @@ let testProcessFile () =
     printf "\n\n Loop %i " cl.LF.sid;
     Inthash.iter
     (fun i pf -> 
-      printf "\n%i = %s" i
+      printf "\n%s"
         (string_of_prefunc pf))
       cl.LF.body )
     loops;;

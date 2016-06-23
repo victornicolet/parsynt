@@ -29,7 +29,7 @@ and fexp =
       The subscript expression list is empty if it is a scalar.
   *)
   (** init, igu, subscripts, expression *)
-  | Loop of Loops.forIGU * Cil.exp list * fexp
+  | Loop of Loops.forIGU * fexp
   (* An expression guarded by an if *)
   | Cond of fexp * fexp * fexp
 
@@ -57,7 +57,7 @@ let rec gcompose g1 g2 =
     Build the expression that will be put in the let/in form,
     for a given varaible v and statevariables x
 *)
-let rec build ?(subs= [])  g (expr : Cil.exp) (x : Cil.varinfo) 
+let rec build  g (expr : Cil.exp) (x : Cil.varinfo) 
     (statevars : int list)=
   match g with
   | GEmpty -> Container expr
@@ -65,7 +65,7 @@ let rec build ?(subs= [])  g (expr : Cil.exp) (x : Cil.varinfo)
                               (build g' expr x statevars),
                               Id x.vid)
   | GFor (igu, g') ->
-     Loop (igu, subs, build g' expr x statevars)
+     Loop (igu, build g' expr x statevars)
 
 
 let rec rep vid old ne =
@@ -74,7 +74,7 @@ let rec rep vid old ne =
   | Container e -> (rep_in_e vid old e)
   | Binop (op, e1, e2) -> Binop (op, rep vid old e1, rep vid old e2)
   | Unop (op, e) -> Unop (op, rep vid old e)
-  | Loop (igu, el, g) -> Loop (igu, el, g)
+  | Loop (igu, g) -> Loop (igu, rep vid old g)
   | Cond (e, g1, g2) -> Cond (e, rep vid old g1,
                                     rep vid old g2)
 
@@ -139,20 +139,18 @@ and string_of_lambda lam =
 and string_of_fexp fexp =
   match fexp with 
   | Id i -> Printf.sprintf "(%i)" i
-  | Container e -> (psprint80 Cil.d_exp e)
+  | Container e -> "\""^(psprint80 Cil.d_exp e)^"\""
   | Binop (op, e1, e2) ->
      String.concat " " [ (string_of_fexp e1); (psprint80 Cil.d_binop op);
                          (string_of_fexp e2)]
   | Unop (op, e) ->
      String.concat " " [(psprint80 Cil.d_unop op); (string_of_fexp e)]
-  | Loop ((i, g, u), el, e) ->
-     String.concat " "  ([ "\nFor {";
-                           (psprint80 Cil.d_instr i);
-                           (psprint80 Cil.d_exp g);
-                           (psprint80 Cil.d_instr u);
-                           "[:"]@
-                            (List.map (fun e -> (psprint80 Cil.d_exp e)) el)@
-                            [":]\n"; string_of_fexp e; "}"])
+  | Loop ((i, g, u), e) ->
+     String.concat " "  ([ "\nFor (";
+                           (psprint80 Cil.dn_instr i);
+                           (psprint80 Cil.dn_exp g);
+                           (psprint80 Cil.dn_instr u)]@
+                            [")\n"; string_of_fexp e; "EndFor"])
 
   | Cond (c, e1, e2) ->
      "("^(string_of_fexp c)^" ? "^(string_of_fexp e1)^" : "^
@@ -175,10 +173,8 @@ and vs_of_fexp stv e =
   | Container ec -> sove ec
   | Binop (op, e1, e2) -> VS.union (vs_of_fexp stv e1) (vs_of_fexp stv e2)
   | Unop (op, e1) -> vs_of_fexp stv e1
-  | Loop (_, el, e) ->
-     VS.union (List.fold_left (fun acc v -> VS.union acc (sove v)) VS.empty el)
-       (vs_of_fexp stv e)
+  | Loop (_, e) -> (vs_of_fexp stv e)
   | Cond (e', e1, e2) -> 
      List.fold_left 
        VS.union       VS.empty
-       (List.map (vs_of_fexp stv) [e; e1; e2])
+       (List.map (vs_of_fexp stv) [e'; e1; e2])
