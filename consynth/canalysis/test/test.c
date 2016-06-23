@@ -1,18 +1,11 @@
 typedef int my_int_arrray[3];
 
 
-int dummy_func(int h, int *a) {
+int simple_reduction(int h, int *a) {
   int i;
   int sum = 0;
-  for(i = 2; i < h; i++) {
-    sum += i + a[i];
-    i += 2;
-    if (sum == 10) {
-      sum = sum - 1;
-    } else {
-      sum = sum + 1;
-    }
-
+  for(i = 1; i < h; i++) {
+    sum += a[i];
   }
   return sum;
 }

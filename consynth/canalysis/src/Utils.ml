@@ -24,7 +24,9 @@ let hashVS vset =
     having the same key in h1 and h2 (None for the second
     element if not found).
 *)
-let addHash newh h1 h2 =
+
+let addHash (newh : ('a * 'b option) IH.t)
+    (h1 : 'a IH.t)  (h2 : 'b IH.t) : unit =
   IH.iter
     (fun k v1 ->
       try
@@ -33,7 +35,7 @@ let addHash newh h1 h2 =
       with Not_found -> IH.add newh k (v1, None)) h1
 
 (** Convert a varinfo to an expression *)
-let v2e (v : varinfo): exp = Lval (var v)
+let v2e (v : varinfo): Cil.exp = Lval (var v)
 
 let (|>) (a : 'a) (f: 'a -> 'b): 'b = f a
 
@@ -181,3 +183,20 @@ and sovoff (off : Cil.offset) : VS.t =
   | NoOffset -> VS.empty
   | Index (e, offs) -> VS.union (sove e) (sovoff offs)
   | Field _ -> VS.empty
+
+let hasVid (id : int) (vs : VS.t) = 
+  VS.exists (fun vi -> vi.vid = id) vs
+
+let getVi (id: int) (vs : VS.t) =
+ VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
+
+let subset_of_list (li : int list) (vs : VS.t) =
+  VS.filter (fun vi -> List.mem vi.vid li) vs
+
+let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
+    VS.t =
+  let vs = VS.empty in
+  IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
+
+let vids_of_vs (vs : VS.t) : int list =
+  List.map (fun vi -> vi.vid) (VS.elements vs)
