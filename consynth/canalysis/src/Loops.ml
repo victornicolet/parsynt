@@ -1,6 +1,7 @@
 open Cil
 open Cflows
 open Printf
+open LoopsHelper
 
 module E = Errormsg
 module IH = Inthash
@@ -109,19 +110,37 @@ let get_loop_condition b =
      (if !debug then ignore(E.log "checkMover: no statements in loop block?\n");
       None, sl)
 
-let get_loop_IGU loop_stmt : forIGU option =
+
+(** Get the initiatlization, termination and update in a*)
+let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
   match loop_stmt.skind with
   | Loop (bdy, _, _, _) ->
      begin
        try
-         let term_expr_o, _ = get_loop_condition bdy in
+         let term_expr_o, rem = get_loop_condition bdy in
+         let term_expr = match term_expr_o with
+           | Some expr -> 
+              expr
+           | None ->
+              raise (Failure "couldn't get the term condition")
+         in
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
-         let update = Utils.lastInstr (List.nth loop_stmt.preds 0) in
-         Some (init, Utils.neg_exp (Utils.checkOption term_expr_o), update)
+         let update, newbody = 
+           match  remLastInstr rem with
+           | Some instr, Some s -> 
+              instr, s
+           | None, Some s ->
+              Utils.ppbk (Cil.mkBlock s);
+             raise (Failure "Failed to find last intruction")
+           | Some _, None
+           | None, None ->
+              raise (Failure "Failed to find last statement in body")
+         in
+         Some (init, (Utils.neg_exp term_expr), update), newbody
        with Failure s ->
-		 print_endline ("get_loop_IGU : "^s); None
+		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
      end
-  |_ -> print_endline "failed get_loop_IGU"; None
+  |_ -> print_endline "failed get_loop_IGU"; None , []
 
 (**
     Checking that the triplet is well-formed. The initialisation and update
@@ -150,6 +169,8 @@ module Cloop = struct
   (** Each loop has a statement id in a Cil program *)
     sid: int;
     mutable loopStatement : Cil.stmt;
+    (** Modified body of the loop *)
+    mutable statements : Cil.stmt list;
     (** If it is a for loop the init-guard-update can be summarized*)
     mutable loopIGU : forIGU option;
     (** The file in which the loop appears *)
@@ -183,6 +204,7 @@ module Cloop = struct
       (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
       loopStatement = lstm;
+      statements = [];
       loopIGU = None;
       parentFile = f;
       parentLoops = [];
@@ -365,14 +387,17 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
     match s.skind with
-    | Loop _ ->
+    | Loop (b, loc, o1, o2) ->
        let cloop = (Cloop.create s topFunc f) in
-       let igu = get_loop_IGU s in
+       let igu, stmts = get_loop_IGU s in
        begin
          match igu with
          | Some figu ->
             if checkIGU figu then
-              cloop.Cloop.loopIGU <- Some figu
+              begin
+                cloop.Cloop.loopIGU <- Some figu;
+                cloop.Cloop.statements <- stmts;
+              end
             else ()
          | _ -> ()
        end;

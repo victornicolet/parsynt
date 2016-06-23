@@ -11,7 +11,7 @@ and fexp =
   | Container of Cil.exp
   | Binop of Cil.binop * fexp * fexp
   | Unop of Cil.unop * fexp
-  | Loop of Loops.forIGU * Cil.exp list * fexp
+  | Loop of Loops.forIGU * fexp
   | Cond of fexp * fexp * fexp
 
 type guard =
@@ -20,7 +20,7 @@ type guard =
   | GFor of Loops.forIGU * guard
 
 val gcompose: guard -> guard -> guard
-val build: ?subs:Cil.exp list -> guard -> Cil.exp -> Cil.varinfo -> 
+val build: guard -> Cil.exp -> Cil.varinfo -> 
   int list -> fexp
 val replace: int -> fexp -> fexp -> fexp
 val letin: Cil.varinfo -> lambda -> fexp -> lambda

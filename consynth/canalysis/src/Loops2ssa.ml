@@ -3,6 +3,7 @@ open Utils
 open Loops
 open Printf
 open Prefunc
+open LoopsHelper
 
 module IH = Inthash
 module VS = Utils.VS
@@ -94,54 +95,6 @@ let prefunc stmtlist statevs =
 
 (** ------------------------------------------------------------------*)
 (**
-    Control-flow graph operations to remove the statements updating
-    the loop index and the break statement.
-    Another solution would be to patch Cil so it keeps the structure of the
-    for loops and doesn't translate them to this while(1) structure.
-*)
-
-let removeFromCFG (stm : Cil.stmt) =
-  let succs = stm.succs in
-  let preds = stm.preds in
-  let eq_stm s = (stm.sid = s.sid) in
-  List.iter (fun s -> (s.succs <- List.filter eq_stm s.succs)) preds;
-  List.iter (fun s -> (s.preds <- List.filter eq_stm s.preds)) succs
-
-let removeIGU (whileStmt : Cil.stmt) ((i, g, u) : forIGU) =
-  match whileStmt.skind with
-  | Loop (blk, loc, so1, so2) ->
-	let stmts0 = blk.bstmts in
-    (** Remove the instruction incrementing the index *)
-	let rec auxi ilist inst =
-	  if inst = u then
-        begin
-          (if !debug then (print_endline "Removing:"; ppi inst) else ());
-          ilist
-        end
-      else inst::ilist in
-    (** Remove the statement containing the break *)
-	let rec auxs stmlist stm =
-	  match stm.skind with
-	  | If (e, b1, b2, _) when e = g ->
-         begin
-           if !debug then
-             (print_string "Removing If stmt with expression ";
-              ppe e;);
-           removeFromCFG stm;
-           stmlist
-         end
-	  | Instr ilist0 ->
-		let ilist = List.fold_left auxi [] ilist0 in
-		stm.skind <- (Instr ilist);
-		stmlist@[stm]
-	  | _ -> stmlist@[stm]
-	in
-	let stmts = List.fold_left auxs [] stmts0 in
-	blk.bstmts <- stmts
-  | _ -> raise (Failure "Expected a loop statement in removeIGU")
-
-(** ------------------------------------------------------------------*)
-(**
     main interface functions. From the result of using the Loops module to
     compute some information, deduce a semi-functional representation
     of the loop body.
@@ -167,18 +120,13 @@ module Floop = struct
       let vars = vs_of_defsMap cl.Cloop.definedInVars in
       let stateSet = subset_of_list stateVars vars in
   (**  let loopIndex = indexOfIGU  (checkOption cl.Cloop.loopIGU) in *)
-      let loop_stmt = cl.Cloop.loopStatement in
       let loop_igu = checkOption cl.Cloop.loopIGU in
-      removeIGU loop_stmt loop_igu;
       if !debug then
         begin
           Printf.printf "Loop after removing IGU:\n";
           pps cl.Cloop.loopStatement;
         end;
-      let body_stmts =
-        match loop_stmt.skind with
-        | Loop (blk, _, _, _) -> blk.bstmts
-        | _ -> raise (Failure "processLoop : this should be a loop statement.")
+      let body_stmts = cl.Cloop.statements
       in
       {
         sid = sid;
