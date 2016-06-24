@@ -1,6 +1,8 @@
 open Cil
 open Pretty
 open List
+open Printf
+open Format
 
 module E = Errormsg
 module S = Str
@@ -63,7 +65,7 @@ let outer_join_lists (a, b) =
 let last list =
   List.nth list ((List.length list) - 1)
 
-let remove_last list = 
+let remove_last list =
   match (List.rev list) with
   | h::t -> List.rev t
   | []   -> []
@@ -215,3 +217,12 @@ let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
 
 let vids_of_vs (vs : VS.t) : int list =
   List.map (fun vi -> vi.vid) (VS.elements vs)
+
+let pvs ppf (vs: VS.t) =
+  VS.iter
+    (fun vi -> fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
+    vs
+
+let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
+let ppvs = pvs std_formatter
+let epvs = pvs err_formatter

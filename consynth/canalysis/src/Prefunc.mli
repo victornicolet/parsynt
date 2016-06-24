@@ -8,11 +8,12 @@ and lambda =
   | Let of int * fexp * lambda
 and fexp =
   | Id of int
-  | Container of Cil.exp
+  | Container of Cil.exp * substitutions
   | Binop of Cil.binop * fexp * fexp
   | Unop of Cil.unop * fexp
   | Loop of Loops.forIGU * fexp
   | Cond of fexp * fexp * fexp
+and substitutions = (int * fexp) list
 
 type guard =
     GEmpty 
@@ -24,7 +25,10 @@ val build: guard -> Cil.exp -> Cil.varinfo ->
   int list -> fexp
 val replace: int -> fexp -> fexp -> fexp
 val letin: Cil.varinfo -> lambda -> fexp -> lambda
-val let_in_func: Cil.varinfo -> preFunc -> fexp -> preFunc
+val let_in_func: Cil.varinfo -> preFunc -> lambda -> preFunc
+
+val reduce: preFunc -> fexp
+
 val vs_of_prefunc: VS.t -> preFunc -> VS.t
 val vs_of_lam: VS.t -> lambda -> VS.t
 val vs_of_fexp: VS.t -> fexp -> VS.t
