@@ -3,6 +3,7 @@ open Printf
 open List
 open Loops2ssa
 open Hashtbl
+open Sketch
 
 module F = Frontc
 module E = Errormsg
