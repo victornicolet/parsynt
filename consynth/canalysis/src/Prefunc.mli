@@ -32,3 +32,12 @@ val vs_of_fexp: VS.t -> fexp -> VS.t
 val string_of_prefunc: preFunc -> string
 val string_of_lambda: lambda -> string
 val string_of_fexp: fexp -> string
+
+val eprint_fexp: fexp -> unit
+val eprint_lambda: lambda -> unit
+val eprint_prefunc: preFunc -> unit
+
+val print_fexp: fexp -> unit
+val print_lambda: lambda -> unit
+val print_prefunc: preFunc -> unit
+

@@ -127,7 +127,7 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
          let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
          let update, newbody = 
            match  remLastInstr rem with
-           | Some instr, Some s -> 
+           | Some instr, Some s ->
               instr, s
            | None, Some s ->
               Utils.ppbk (Cil.mkBlock s);

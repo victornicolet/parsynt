@@ -21,7 +21,6 @@ let rec remLastInstr (bdy : stmt list) =
             removeFromCFG lastStmt;
            Some i, Some (remove_last bdy)
          | hd::tl ->
-            ppi (last il);
             lastStmt.skind <- Instr (remove_last il);
            Some (last il), Some bdy
          | [] -> None, None

@@ -1,6 +1,8 @@
 open Utils
 open Cil
-
+open Printf
+open Format
+open PpHelper
 module VS = VS
 
 (** ------------------------------------------------------------------*)
@@ -12,7 +14,7 @@ type preFunc =
   | Empty of varinfo
   | Func of varinfo * lambda
 
-and lambda = 
+and lambda =
   | Exp of fexp
   | Let of int * fexp * lambda
   (** A cil expression *)
@@ -53,11 +55,11 @@ let rec gcompose g1 g2 =
   | GCond (e, g) -> GCond (e, gcompose g g2)
   | GFor (igu, g) -> GFor (igu, gcompose g g2)
 
-(** 
+(**
     Build the expression that will be put in the let/in form,
     for a given varaible v and statevariables x
 *)
-let rec build  g (expr : Cil.exp) (x : Cil.varinfo) 
+let rec build  g (expr : Cil.exp) (x : Cil.varinfo)
     (statevars : int list)=
   match g with
   | GEmpty -> Container expr
@@ -104,14 +106,14 @@ and rep_in_e vid old_expr cont_e =
 let replace vid old_expr new_expr =
   rep vid old_expr new_expr
 
-(** Adds a new let v = newe in .. 
+(** Adds a new let v = newe in ..
     at the end of the old lambda *)
 let rec letin v old newe =
   match old with
   | Let (i, x , olde) -> letin v olde newe
-  | Exp eold -> 
+  | Exp eold ->
      begin
-       match eold with 
+       match eold with
        | Container e when e = v2e v -> Exp newe
        | Id vid when v.vid = vid -> Exp newe
        | Id vid -> Let(v.vid, newe, Exp (Id vid))
@@ -123,58 +125,105 @@ let let_in_func v old newe =
   | Empty vi -> Func (vi, Let(v.vid, newe, Exp (Id vi.vid)))
   | Func (vi, lam) -> Func (vi, letin v lam newe)
 
- 
 
-let rec string_of_prefunc pf =
-  match pf with
-  | Empty vi -> "Empty "^vi.vname
-  | Func (vi, lam) -> vi.vname^" = "^(string_of_lambda lam)
 
-and string_of_lambda lam =
-  match lam with
-  | Exp e -> string_of_fexp e
-  | Let (i, x, e) -> "Let "^(string_of_int i)^" = "^
-     (string_of_fexp x)^"\nIn "^(string_of_lambda e)
+let rec pr_prefunc ppf =
+  function
+  | Empty vi ->
+     fprintf ppf "@[empty %s@]" vi.vname
 
-and string_of_fexp fexp =
-  match fexp with 
-  | Id i -> Printf.sprintf "(%i)" i
-  | Container e -> "\""^(psprint80 Cil.d_exp e)^"\""
+  | Func (vi, lam) ->
+     fprintf ppf
+       "@[%s =@. %a @]"
+       vi.vname
+       pr_lam lam
+
+and pr_lam ppf =
+  function
+  | Exp e ->
+     pr_fexp ppf e
+
+  | Let (i, x, e) ->
+     fprintf ppf
+       "@[%sLet%s %s = @[<2>%a@] @;%sin%s@;@[%a@] @]"
+       (color "red") (color "")
+       (string_of_int i)
+       pr_fexp x
+       (color "red") (color "")
+       pr_lam e
+
+and pr_fexp ppf =
+  function
+  | Id i ->
+     fprintf ppf "(%i)" i
+
+  | Container e ->
+     fprintf ppf
+       "@[\"%s\"@]"
+       (psprint80 Cil.dn_exp e)
+
   | Binop (op, e1, e2) ->
-     String.concat " " [ (string_of_fexp e1); (psprint80 Cil.d_binop op);
-                         (string_of_fexp e2)]
+     fprintf ppf
+       "@[%a %s @;%a@]"
+       pr_fexp e1
+       (psprint80 Cil.d_binop op)
+       pr_fexp e2
+
   | Unop (op, e) ->
-     String.concat " " [(psprint80 Cil.d_unop op); (string_of_fexp e)]
+     fprintf ppf
+       "%s %a"
+       (psprint80 Cil.d_unop op)
+       pr_fexp e
+
   | Loop ((i, g, u), e) ->
-     String.concat " "  ([ "\nFor (";
-                           (psprint80 Cil.dn_instr i);
-                           (psprint80 Cil.dn_exp g);
-                           (psprint80 Cil.dn_instr u)]@
-                            [")\n"; string_of_fexp e; "EndFor"])
+     fprintf ppf
+       "for (%s; %s; %s) {@; @[%a@]} end@;"
+       (psprint80 Cil.dn_instr i)
+       (psprint80 Cil.dn_exp g)
+       (psprint80 Cil.dn_instr u)
+       pr_fexp e
 
   | Cond (c, e1, e2) ->
-     "("^(string_of_fexp c)^" ? "^(string_of_fexp e1)^" : "^
-       (string_of_fexp e2)^")"
+     fprintf ppf
+       "(@[%a@] ? @; @[%a@] : @[%a@])@;"
+       pr_fexp c
+       pr_fexp e1
+       pr_fexp e2
+
+let string_of_fexp fexp =
+  pr_fexp str_formatter fexp; flush_str_formatter ()
+let string_of_lambda lam =
+  pr_lam str_formatter lam; flush_str_formatter ()
+let string_of_prefunc pref =
+  pr_prefunc str_formatter pref; flush_str_formatter ()
+
+let eprint_fexp = pr_fexp err_formatter
+let eprint_lambda = pr_lam err_formatter
+let eprint_prefunc = pr_prefunc err_formatter
+
+let print_fexp = pr_fexp std_formatter
+let print_lambda = pr_lam std_formatter
+let print_prefunc = pr_prefunc std_formatter
 
 (** Variable set used in a function *)
 let rec vs_of_prefunc stv pf =
-  match pf with 
+  match pf with
   | Empty vi -> VS.empty
   | Func (vi, lam) -> VS.union (VS.singleton vi) (vs_of_lam stv lam)
 
 and vs_of_lam stv lam =
-  match lam with 
+  match lam with
   | Exp e -> vs_of_fexp stv e
   | Let (i, e, lam') -> VS.union (vs_of_fexp stv e) (vs_of_lam stv lam)
 
 and vs_of_fexp stv e =
-  match e with 
+  match e with
   | Id i -> subset_of_list [i] stv
   | Container ec -> sove ec
   | Binop (op, e1, e2) -> VS.union (vs_of_fexp stv e1) (vs_of_fexp stv e2)
   | Unop (op, e1) -> vs_of_fexp stv e1
   | Loop (_, e) -> (vs_of_fexp stv e)
-  | Cond (e', e1, e2) -> 
-     List.fold_left 
+  | Cond (e', e1, e2) ->
+     List.fold_left
        VS.union       VS.empty
        (List.map (vs_of_fexp stv) [e'; e1; e2])
