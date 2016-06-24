@@ -10,23 +10,23 @@ int simple_reduction(int h, int *a) {
   return sum;
 }
 
-void other_dummy(int n, int array) {
+int  other_dummy(int n, int array) {
   int i;
   if (n == 0) {
-    return;
+    return n;
   }
 
   for(i = 0; i <= n; i++) {
     array = i;
-    if(i >= 10) array += i;
   }
+  return array;
 }
 
-void other_dummy1(int n, int *array) {
+int other_dummy1(int n, int *array) {
   int i,j;
   int sum = 0;
   if (n == 0) {
-    return;
+    return n;
   }
   for(i = 0; (i < 10 | i < n); i++) {
     array[i] = i;
@@ -37,6 +37,7 @@ void other_dummy1(int n, int *array) {
       }
     }
   }
+  return sum;
 }
 
 int simple (int *a) {

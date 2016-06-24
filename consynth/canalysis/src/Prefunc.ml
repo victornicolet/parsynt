@@ -1,5 +1,7 @@
 open Utils
 open Cil
+open Printf
+open Format
 
 module VS = VS
 
@@ -125,36 +127,78 @@ let let_in_func v old newe =
 
  
 
-let rec string_of_prefunc pf =
-  match pf with
-  | Empty vi -> "Empty "^vi.vname
-  | Func (vi, lam) -> vi.vname^" = "^(string_of_lambda lam)
+let rec pr_prefunc ppf =
+  function
+  | Empty vi ->
+     fprintf ppf "@[empty %s@]" vi.vname
 
-and string_of_lambda lam =
-  match lam with
-  | Exp e -> string_of_fexp e
-  | Let (i, x, e) -> "Let "^(string_of_int i)^" = "^
-     (string_of_fexp x)^"\nIn "^(string_of_lambda e)
+  | Func (vi, lam) -> 
+     fprintf ppf
+       "@[%s =@. %a @]"
+       vi.vname
+       pr_lam lam
 
-and string_of_fexp fexp =
-  match fexp with 
-  | Id i -> Printf.sprintf "(%i)" i
-  | Container e -> "\""^(psprint80 Cil.d_exp e)^"\""
+and pr_lam ppf =
+  function
+  | Exp e -> 
+     pr_fexp ppf e
+
+  | Let (i, x, e) -> 
+     fprintf ppf 
+       "@[Let %s = @[<2>%a@] in@;@[%a@] @]"
+       (string_of_int i)
+       pr_fexp x
+       pr_lam e
+
+and pr_fexp ppf =
+  function
+  | Id i -> 
+     fprintf ppf "(%i)" i
+
+  | Container e ->
+     fprintf ppf
+       "@[\"%s\"@]"
+       (psprint80 Cil.dn_exp e)
+
   | Binop (op, e1, e2) ->
-     String.concat " " [ (string_of_fexp e1); (psprint80 Cil.d_binop op);
-                         (string_of_fexp e2)]
+     fprintf ppf 
+       "@[%a %s @;%a@]"
+       pr_fexp e1
+       (psprint80 Cil.d_binop op)
+       pr_fexp e2
+
   | Unop (op, e) ->
-     String.concat " " [(psprint80 Cil.d_unop op); (string_of_fexp e)]
+     fprintf ppf
+       "%s %a"
+       (psprint80 Cil.d_unop op)
+       pr_fexp e
+
   | Loop ((i, g, u), e) ->
-     String.concat " "  ([ "\nFor (";
-                           (psprint80 Cil.dn_instr i);
-                           (psprint80 Cil.dn_exp g);
-                           (psprint80 Cil.dn_instr u)]@
-                            [")\n"; string_of_fexp e; "EndFor"])
+     fprintf ppf
+       "for (%s; %s; %s) {@; @[%a@]} end@."
+       (psprint80 Cil.dn_instr i)
+       (psprint80 Cil.dn_exp g)
+       (psprint80 Cil.dn_instr u)
+       pr_fexp e
 
   | Cond (c, e1, e2) ->
-     "("^(string_of_fexp c)^" ? "^(string_of_fexp e1)^" : "^
-       (string_of_fexp e2)^")"
+     fprintf ppf
+       "(@[%a]@ ? @; @[%a@] : @[%a@])@."
+       pr_fexp c
+       pr_fexp e1
+       pr_fexp e2
+
+let string_of_fexp fexp = pr_fexp str_formatter fexp; flush_str_formatter ()
+let string_of_lambda lam = pr_lam str_formatter lam; flush_str_formatter ()
+let string_of_prefunc pref = pr_prefunc str_formatter pref; flush_str_formatter ()
+
+let eprint_fexp = pr_fexp err_formatter
+let eprint_lambda = pr_lam err_formatter
+let eprint_prefunc = pr_prefunc err_formatter
+
+let print_fexp = pr_fexp std_formatter
+let print_lambda = pr_lam std_formatter
+let print_prefunc = pr_prefunc std_formatter
 
 (** Variable set used in a function *)
 let rec vs_of_prefunc stv pf =
