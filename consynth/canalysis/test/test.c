@@ -12,12 +12,15 @@ int simple_reduction(int h, int *a) {
 
 int  other_dummy(int n, int array) {
   int i;
+  int d;
+
   if (n == 0) {
     return n;
   }
 
   for(i = 0; i <= n; i++) {
-    array = i;
+    d = d * i;
+    array = i + d;
   }
   return array;
 }
@@ -29,7 +32,7 @@ int other_dummy1(int n, int *array) {
     return n;
   }
   for(i = 0; (i < 10 | i < n); i++) {
-    array[i] = i;
+    array[i] = n + i;
     if(i >= 10) {
       array[i] = i + dummy_func(i);
       for(j = 0; (j < 10 | j < n); j++) {

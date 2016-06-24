@@ -21,7 +21,7 @@ and lambda =
 and fexp =
   (* *)
   | Id of int
-  | Container of Cil.exp
+  | Container of Cil.exp * substitutions
   | Binop of Cil.binop * fexp * fexp
   | Unop of Cil.unop * fexp
   (**
@@ -34,6 +34,8 @@ and fexp =
   | Loop of Loops.forIGU * fexp
   (* An expression guarded by an if *)
   | Cond of fexp * fexp * fexp
+
+and substitutions = (int * fexp) list
 
 (**
     Some types to record the control statements above
@@ -62,8 +64,8 @@ let rec gcompose g1 g2 =
 let rec build  g (expr : Cil.exp) (x : Cil.varinfo)
     (statevars : int list)=
   match g with
-  | GEmpty -> Container expr
-  | GCond (e, g') -> Cond (Container e,
+  | GEmpty -> Container (expr, [])
+  | GCond (e, g') -> Cond (Container (e, []),
                               (build g' expr x statevars),
                               Id x.vid)
   | GFor (igu, g') ->
@@ -72,8 +74,8 @@ let rec build  g (expr : Cil.exp) (x : Cil.varinfo)
 
 let rec rep vid old ne =
   match ne with
-  | Id vid -> Id vid
-  | Container e -> (rep_in_e vid old e)
+  | Id vid -> ne
+  | Container (e, li) -> Container (e, li@[(vid, ne)])
   | Binop (op, e1, e2) -> Binop (op, rep vid old e1, rep vid old e2)
   | Unop (op, e) -> Unop (op, rep vid old e)
   | Loop (igu, g) -> Loop (igu, rep vid old g)
@@ -97,10 +99,10 @@ and rep_in_e vid old_expr cont_e =
   | Lval (h, o) ->
      begin
        match h with
-       | Var x -> if x.vid = vid then old_expr else Container cont_e
-       | _ -> Container cont_e
+       | Var x -> if x.vid = vid then old_expr else Container (cont_e, [])
+       | _ -> Container (cont_e, [])
      end
-  |_ -> Container cont_e
+  |_ -> Container (cont_e, [])
 
 (** Replace vid by the old expression in new expr *)
 let replace vid old_expr new_expr =
@@ -114,16 +116,61 @@ let rec letin v old newe =
   | Exp eold ->
      begin
        match eold with
-       | Container e when e = v2e v -> Exp newe
+       | Container (e, []) when e = v2e v -> Exp newe
        | Id vid when v.vid = vid -> Exp newe
        | Id vid -> Let(v.vid, newe, Exp (Id vid))
        | _ -> Let(v.vid, eold, Exp(newe))
      end
 
-let let_in_func v old newe =
+(**
+   Put the new lambda at the end of the old lambda, and put last
+   expression in the old lambda in a let in using the vid provided 
+   as argument.
+*)
+let rec letin_lam (vid : int) (old : lambda) (nlam : lambda) =
   match old with
-  | Empty vi -> Func (vi, Let(v.vid, newe, Exp (Id vi.vid)))
-  | Func (vi, lam) -> Func (vi, letin v lam newe)
+  | Exp e -> Let(vid, e, nlam) 
+  | Let (x, e, l) -> Let (x, e, letin_lam vid l nlam)
+
+let let_in_func v old newe =
+  match newe with 
+  | Exp e ->
+     begin
+       match old with
+       | Empty vi -> Func (vi, Let(v.vid, e, Exp (Id vi.vid)))
+       | Func (vi, lam) -> Func (vi, letin v lam e)
+     end
+  | Let (vi0, expr, lam) ->
+     begin
+       match old with
+       | Empty vi -> Func (vi, newe)
+       | Func (vi, lam) -> Func (vi, letin_lam vi.vid lam newe)
+     end
+
+let rec reduce_v (vid: int) (lam : lambda) (state : fexp IH.t) =
+  let step main_vid e =
+    let ne = IH.fold
+      (fun i v eacc ->
+        replace i eacc v)
+      state e in
+    IH.replace state main_vid ne
+  in
+  match lam with 
+  | Exp e -> step vid e
+  | Let (xid, fexpr, lam') ->
+     step xid fexpr;
+    reduce_v vid lam' state
+     
+     
+     
+
+let reduce (func : preFunc) : fexp =
+  match func with
+  | Empty vi -> Id vi.vid
+  | Func (vi, lam) -> 
+     let hm = IH.create 10 in
+     reduce_v vi.vid lam hm;
+     IH.find hm vi.vid
 
 
 
@@ -157,10 +204,22 @@ and pr_fexp ppf =
   | Id i ->
      fprintf ppf "(%i)" i
 
-  | Container e ->
+  | Container (e, []) ->
      fprintf ppf
        "@[\"%s\"@]"
        (psprint80 Cil.dn_exp e)
+
+  | Container (e, l) ->
+     fprintf ppf
+       "@[\"%s\"[%s]@]"
+       (psprint80 Cil.dn_exp e)
+       (String.concat
+          " "
+          (List.map 
+          (fun (i, fexpr) ->
+            (sprintf "%i -> %s" i "xx"))
+          l
+          ))
 
   | Binop (op, e1, e2) ->
      fprintf ppf
@@ -219,7 +278,7 @@ and vs_of_lam stv lam =
 and vs_of_fexp stv e =
   match e with
   | Id i -> subset_of_list [i] stv
-  | Container ec -> sove ec
+  | Container (ec, l) -> sove ec
   | Binop (op, e1, e2) -> VS.union (vs_of_fexp stv e1) (vs_of_fexp stv e2)
   | Unop (op, e1) -> vs_of_fexp stv e1
   | Loop (_, e) -> (vs_of_fexp stv e)

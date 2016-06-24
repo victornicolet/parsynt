@@ -35,12 +35,23 @@ and do_i vs hm g (ins : Cil.instr) =
         let fnexp = build g exp v  (vids_of_vs vs) in
         (** If any other state variable is used in the expression,
         replace it by its current function *)
-        let used_in_f = VS.inter (vs_of_fexp vs fnexp) vs in
+        let used_in_f = VS.diff (VS.inter (vs_of_fexp vs fnexp) vs) vset in
+        let new_lam = 
+          VS.fold
+            (fun vi lam -> 
+              try
+                let pf = IH.find hm vi.vid in
+                Let (vi.vid, (reduce pf), lam)
+              with Not_found ->
+                lam
+            )
+            used_in_f
+            (Exp fnexp) in
         let olde =
           try
             IH.find hm v.vid
           with Not_found ->  Empty v in
-        let nexp = let_in_func v olde fnexp in
+        let nexp = let_in_func v olde new_lam in
         if !debug then
           Printf.printf "Replacing %s\n by %s\n"
             (string_of_prefunc olde) (string_of_prefunc nexp);
