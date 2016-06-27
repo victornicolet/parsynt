@@ -10,14 +10,27 @@
 (define time-limit 120); secs for each rpc request
 (define hostname #f) ; if #f any client accepted
 
+
+(define-values (rst_par rst mbdir?) (split-path (collection-path "rosette")))
+(define z3solver (build-path rst_par (string->path "bin/z3")))
+
+(define rosette-evaluator
+  (parameterize
+      ([sandbox-path-permissions (list (list 'execute z3solver))])
+    (make-evaluator 'rosette)))
+
+(define (rosette-eval sk)
+  (display sk)
+  (define odot (rosette-evaluator sk))
+  odot)
+
 (define (solve-sketch sketch)
   (with-handlers
     ([exn:fail? (lambda (e)
                   (exn-message e))])
-    (eval sketch)))
+    (rosette-eval sketch)))
 
-(define (allowed? expr);; Filter out illegal requests here
-  #t)
+(define (allowed? expr) #t)
 
 (define (exit-failure msg)
   (lambda (e) (eprintf "Failed : ~a" msg)))
@@ -30,7 +43,7 @@
       (define expr "")
       (define-values (client->me me->client) (tcp-accept listener))
       (define (handle)
-        (set! expr (read client->me))
+        (set! expr (read-syntax "tcp-input" client->me))
         (if (allowed? expr)
             (write (solve-sketch expr) me->client)
             (error "Illegal procedure call!" me->client)))
@@ -47,7 +60,8 @@
       (with-handlers
         ([exn:fail:network?
           (lambda (e)
-            ((eprintf "Connection to port ~a failed. Exiting ..." server-port)
+            ((eprintf "~a\n" (exn-message e))
+             (eprintf "Connection to port ~a failed. Exiting ..." server-port)
              (exit 1)))]
          [exn:fail?
           (exit-failure "tcp-listen")])
