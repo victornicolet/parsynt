@@ -2,6 +2,7 @@ open Cil
 open Cflows
 open Printf
 open LoopsHelper
+open Utils
 
 module E = Errormsg
 module IH = Inthash
@@ -124,19 +125,19 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
            | None ->
               raise (Failure "couldn't get the term condition")
          in
-         let init = Utils.lastInstr (List.nth loop_stmt.preds 1) in
+         let init = lastInstr (List.nth loop_stmt.preds 1) in
          let update, newbody = 
            match  remLastInstr rem with
            | Some instr, Some s ->
               instr, s
            | None, Some s ->
-              Utils.ppbk (Cil.mkBlock s);
+              ppbk (Cil.mkBlock s);
              raise (Failure "Failed to find last intruction")
            | Some _, None
            | None, None ->
               raise (Failure "Failed to find last statement in body")
          in
-         Some (init, (Utils.neg_exp term_expr), update), newbody
+         Some (init, (neg_exp term_expr), update), newbody
        with Failure s ->
 		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
      end
@@ -150,8 +151,8 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
 
 let indexOfIGU ((init, guard, update) : forIGU) : VS.t =
   VS.inter
-    (VS.inter (Utils.sovi init) (Utils.sove guard))
-    (Utils.sovi update)
+    (VS.inter (VSOps.sovi init) (VSOps.sove guard))
+    (VSOps.sovi update)
 
 let checkIGU ((init, guard, update) : forIGU) : bool =
   let i = indexOfIGU (init, guard, update) in
@@ -160,9 +161,9 @@ let checkIGU ((init, guard, update) : forIGU) : bool =
 
 let sprint_IGU ((init, guard, update) : forIGU) : string =
   sprintf "for(%s; %s; %s)"
-    (Utils.psprint80 Cil.d_instr init)
-    (Utils.psprint80 Cil.d_exp guard)
-    (Utils.psprint80 Cil.d_instr update)
+    (psprint80 Cil.d_instr init)
+    (psprint80 Cil.d_exp guard)
+    (psprint80 Cil.d_instr update)
 
 module Cloop = struct
   type t = {
@@ -226,8 +227,8 @@ module Cloop = struct
   let getParent l = l.parentFunction
 
   let getParentFundec l =
-    Utils.checkOption
-      (Utils.getFn l.parentFile l.parentFunction.vname)
+    checkOption
+      (getFn l.parentFile l.parentFunction.vname)
 
   (** Defined variables at the loop statement*)
   let string_of_defvars l =
@@ -250,8 +251,8 @@ module Cloop = struct
      loop body.
   *)
   let setDefinedInVars l vid2did vs =
-    let vid2v = Utils.hashVS vs in
-    Utils.addHash l.definedInVars vid2v vid2did
+    let vid2v = hashVS vs in
+    addHash l.definedInVars vid2v vid2did
 
   let getDefinedInVars l = l.definedInVars
 
@@ -310,10 +311,10 @@ is not defined at the beginning of the loop"
       parent loops for outermost to innermost.
   *)
   let addParentLoop l  parentSid =
-    l.parentLoops <- Utils.appendC l.parentLoops parentSid
+    l.parentLoops <- appendC l.parentLoops parentSid
 
   let addCalledFunc l vi =
-    l.calledFunctions <- Utils.appendC l.calledFunctions vi
+    l.calledFunctions <- appendC l.calledFunctions vi
 
   (** The loops contains either a break, a continue or a goto statement *)
   let setBreak l =
@@ -334,7 +335,7 @@ is not defined at the beginning of the loop"
       (List.map (fun y -> y.vname) cl.calledFunctions) in
     let defvarS = string_of_defvars cl in
     let oigu = if isForLoop cl
-      then "\n"^(sprint_IGU (Utils.checkOption cl.loopIGU))
+      then "\n"^(sprint_IGU (checkOption cl.loopIGU))
       else ""
     in
     let rwsets = string_of_rwset cl in
@@ -477,7 +478,7 @@ end
 let addBoundaryInfo clp =
   let sid = clp.Cloop.sid in
   let rds =
-    match (Utils.setOfReachingDefs
+    match (setOfReachingDefs
              (Reachingdefs.getRDs sid))
     with
     | Some x -> x
@@ -506,7 +507,7 @@ let addRWinformation sid clp =
   then
     begin
       print_string "AddRW information :";
-	  print_endline (Utils.psprint80 Cil.d_stmt (Utils.last stmts))
+	  print_endline (psprint80 Cil.d_stmt (last stmts))
     end
   else ();
   let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGLobalFuncVS ()) in
@@ -524,7 +525,7 @@ let addRWinformation sid clp =
 let processFile cfile =
   fileName := cfile.fileName;
   (** Locate the loops in the file *)
-  iterGlobals cfile (Utils.onlyFunc (fun fd -> locateLoops fd cfile));
+  iterGlobals cfile (onlyFunc (fun fd -> locateLoops fd cfile));
   (**
 	 Visit each function containing a loop, but compute cil information
 	 like Reaching defintions and live variables each time the function

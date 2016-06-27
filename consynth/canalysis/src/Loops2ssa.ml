@@ -27,12 +27,12 @@ let rec do_il vs hm g il =
 and do_i vs hm g (ins : Cil.instr) =
  match ins with
  | Set (lv, exp, _) ->
-    let vset = Utils.sovv ~onlyNoOffset:true lv in
+    let vset = VSOps.sovv ~onlyNoOffset:true lv in
     if VS.cardinal vset = 1
     then
       begin
         let v = VS.min_elt vset in
-        let fnexp = build g exp v  (vids_of_vs vs) in
+        let fnexp = build g exp v  (VSOps.vids_of_vs vs) in
         (** If any other state variable is used in the expression,
         replace it by its current function *)
         let used_in_f = VS.diff (VS.inter (vs_of_fexp vs fnexp) vs) vset in
@@ -128,8 +128,8 @@ module Floop = struct
       if !debug then Printf.printf "--- Loop %i --> SSA ---\n" sid;
       let stateVars = outer_join_lists
 	    (match cl.Cloop.rwset with (r, w, rw) -> w, rw) in
-      let vars = vs_of_defsMap cl.Cloop.definedInVars in
-      let stateSet = subset_of_list stateVars vars in
+      let vars = VSOps.vs_of_defsMap cl.Cloop.definedInVars in
+      let stateSet = VSOps.subset_of_list stateVars vars in
   (**  let loopIndex = indexOfIGU  (checkOption cl.Cloop.loopIGU) in *)
       let loop_igu = checkOption cl.Cloop.loopIGU in
       if !debug then

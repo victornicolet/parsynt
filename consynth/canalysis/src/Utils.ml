@@ -168,61 +168,62 @@ let is_like_array (vi : Cil.varinfo) =
     Extract the variables used in statements/expressions/instructions/..
     Used variables can be on either side of an assignment.
 *)
+module VSOps = struct
+  let rec sovi (instr : Cil.instr) : VS.t =
+    match instr with
+    | Set (lval, exp, loc) ->
+       let vs_ls = sovv lval in
+       let vs_exp = sove exp in
+       VS.union vs_exp vs_ls
+    | Call (lvo, ef, elist, _) ->
+       let vs_ls = appOption sovv lvo VS.empty in
+       let vs_el = foldl_union sove elist in
+       VS.union vs_ls vs_el
+    | _ -> VS.empty
 
-let rec sovi (instr : Cil.instr) : VS.t =
-  match instr with
-  | Set (lval, exp, loc) ->
-     let vs_ls = sovv lval in
-     let vs_exp = sove exp in
-     VS.union vs_exp vs_ls
-  | Call (lvo, ef, elist, _) ->
-     let vs_ls = appOption sovv lvo VS.empty in
-     let vs_el = foldl_union sove elist in
-     VS.union vs_ls vs_el
-  | _ -> VS.empty
+  and sove (expr : Cil.exp) : VS.t =
+    match expr with
+    | BinOp (_, e1, e2, _)
+    | Question (_, e1, e2, _) -> VS.union (sove e1) (sove e2)
+    | SizeOfE e | AlignOfE e | UnOp (_, e, _) | CastE (_, e) -> sove e
+    | AddrOf v  | StartOf v | Lval v -> sovv v
+    | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
 
-and sove (expr : Cil.exp) : VS.t =
-  match expr with
-  | BinOp (_, e1, e2, _)
-  | Question (_, e1, e2, _) -> VS.union (sove e1) (sove e2)
-  | SizeOfE e | AlignOfE e | UnOp (_, e, _) | CastE (_, e) -> sove e
-  | AddrOf v  | StartOf v | Lval v -> sovv v
-  | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
+  and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : VS.t =
+    match v with
+    | Var x, _ -> VS.singleton x
+    | Mem e, offs -> VS.union (sove e)
+       (if onlyNoOffset then VS.empty else (sovoff offs))
 
-and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : VS.t =
-  match v with
-  | Var x, _ -> VS.singleton x
-  | Mem e, offs -> VS.union (sove e)
-     (if onlyNoOffset then VS.empty else (sovoff offs))
+  and sovoff (off : Cil.offset) : VS.t =
+    match off with
+    | NoOffset -> VS.empty
+    | Index (e, offs) -> VS.union (sove e) (sovoff offs)
+    | Field _ -> VS.empty
 
-and sovoff (off : Cil.offset) : VS.t =
-  match off with
-  | NoOffset -> VS.empty
-  | Index (e, offs) -> VS.union (sove e) (sovoff offs)
-  | Field _ -> VS.empty
+  let hasVid (id : int) (vs : VS.t) =
+    VS.exists (fun vi -> vi.vid = id) vs
 
-let hasVid (id : int) (vs : VS.t) =
-  VS.exists (fun vi -> vi.vid = id) vs
+  let getVi (id: int) (vs : VS.t) =
+    VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
 
-let getVi (id: int) (vs : VS.t) =
- VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
+  let subset_of_list (li : int list) (vs : VS.t) =
+    VS.filter (fun vi -> List.mem vi.vid li) vs
 
-let subset_of_list (li : int list) (vs : VS.t) =
-  VS.filter (fun vi -> List.mem vi.vid li) vs
+  let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
+      VS.t =
+    let vs = VS.empty in
+    IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
 
-let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
-    VS.t =
-  let vs = VS.empty in
-  IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
+  let vids_of_vs (vs : VS.t) : int list =
+    List.map (fun vi -> vi.vid) (VS.elements vs)
 
-let vids_of_vs (vs : VS.t) : int list =
-  List.map (fun vi -> vi.vid) (VS.elements vs)
+  let pvs ppf (vs: VS.t) =
+    VS.iter
+      (fun vi -> fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
+      vs
 
-let pvs ppf (vs: VS.t) =
-  VS.iter
-    (fun vi -> fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
-    vs
-
-let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
-let ppvs = pvs std_formatter
-let epvs = pvs err_formatter
+  let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
+  let ppvs = pvs std_formatter
+  let epvs = pvs err_formatter
+end

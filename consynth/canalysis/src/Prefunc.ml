@@ -277,8 +277,8 @@ and vs_of_lam stv lam =
 
 and vs_of_fexp stv e =
   match e with
-  | Id i -> subset_of_list [i] stv
-  | Container (ec, l) -> sove ec
+  | Id i -> VSOps.subset_of_list [i] stv
+  | Container (ec, l) -> VSOps.sove ec
   | Binop (op, e1, e2) -> VS.union (vs_of_fexp stv e1) (vs_of_fexp stv e2)
   | Unop (op, e1) -> vs_of_fexp stv e1
   | Loop (_, e) -> (vs_of_fexp stv e)
