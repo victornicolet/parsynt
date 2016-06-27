@@ -11,13 +11,17 @@ License: LGPL with OCaml linking exception
 Description: A library that synthesizes concurrent C programs from sequential specifications.
 Homepage: https://github.com/victornicolet/consynth
 
+AlphaFeatures: ocamlbuild_more_args
 
 Executable csclient
   Path: ./
   MainIs: client.ml
   CompiledObject: best
   Install: false
-  BuildDepends: unix
+  Build: true
+  BuildDepends: unix, async
+
+XOCamlbuildExtraArgs: "-tag thread"
 
 SourceRepository "master"
   Type: git
