@@ -204,6 +204,11 @@ module VSOps = struct
   let hasVid (id : int) (vs : VS.t) =
     VS.exists (fun vi -> vi.vid = id) vs
 
+  let hasLval ((host,offset): lval) (vs: VS.t) =
+    match host  with
+    | Var vi -> hasVid vi.vid vs
+    | _-> VS.cardinal (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
+
   let getVi (id: int) (vs : VS.t) =
     VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
 
