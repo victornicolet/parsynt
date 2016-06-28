@@ -1,4 +1,8 @@
-(define forms (car (generate-forms odot)))
-(define solution-out (open-output-file "%output-file%" #:exists 'truncate))
-   (write (syntax->datum forms) solution-out)
-   (close-output-port solution-out)
+(define output-file
+  (open-output-file "%output-file%" #:exists 'truncate))
+(if (sat? odot)
+    (begin
+      (define forms (car (generate-forms odot)))
+      (write (syntax->datum forms) output-file))
+    (print "unsat" output-file))
+(close-output-port output-file)

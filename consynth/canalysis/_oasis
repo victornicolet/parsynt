@@ -11,11 +11,17 @@ License: LGPL with OCaml linking exception
 Description: A library that synthesizes concurrent C programs from sequential specifications.
 Homepage: https://github.com/victornicolet/consynth
 
+AlphaFeatures: ocamlbuild_more_args
+XOCamlbuildExtraArgs: "-tag thread"
+
+PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
+PreUninstallCommand: $ocamlfind remove ppx_getenv
+
 Library canalyst
   Path: src
   Modules: Canalyst
   CompiledObject: best
-  BuildDepends: cil
+  BuildDepends: cil, core, camlp4.extend, camlp4.quotations.o, sexplib.syntax
 
 Executable test_main
   Path: test

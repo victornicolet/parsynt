@@ -4,6 +4,7 @@ open Loops
 open Printf
 open Format
 open Prefunc
+open Sexplib.Std
 
 module VS = VS
 module LF = Loops2ssa.Floop
@@ -147,3 +148,53 @@ let pp_skexpr ppf =
   function
   | SkVar i -> fprintf ppf "%s" i.vname
   | _ -> ()
+
+
+(** Compile the Rosette sketch *)
+type symbDef =
+  | Integer of string
+  | Boolean of string
+  | Real of string
+  | RArray of symbDef
+  | Empty
+with sexp
+
+let strings_of_symbdefs symbdefs =
+  let rec aux (i, b, r) =
+    function
+    | Integer s -> (i^" "^s, b, r)
+    | Boolean s -> (i, b^" "^s, r)
+    | Real s -> (i, b, r^" "^s)
+    | _ -> (i, b, r)
+  in
+  let sypr = "(define-symbolic" in
+  let (ii, bb, rr) =
+    List.fold_left aux (sypr, sypr, sypr) symbdefs
+  in
+  ii^" integer?)",
+  bb^" boolean?)",
+  rr^" real?)"
+
+
+
+let symbolic_definitions_of vars = []
+
+let join_sketch_of sketch = []
+
+let loop_body_of sketch = []
+
+let assertions_of sketch = []
+
+let synthesis_statement_of sketch = []
+
+let rosette_sketch_of sketch =
+  let symbolic_definitions = symbolic_definitions_of sketch in
+  let join_sketch = join_sketch_of sketch in
+  let loop_body = loop_body_of sketch in
+  let additional_assertions = assertions_of sketch in
+  let main_pb = synthesis_statement_of sketch in
+  Stream.of_list     (symbolic_definitions@
+                        join_sketch@
+                        loop_body@
+                        additional_assertions@
+                        main_pb)
