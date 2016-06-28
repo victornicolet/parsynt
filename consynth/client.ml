@@ -47,7 +47,10 @@ let client_fun ic oc =
   | exn -> shut_exit ic oc exn
 
 let synthpb =
-  "(begin (define-symbolic a integer?) (define (f x) ((choose + - / *) 1 x)) (define odot (synthesize  #:forall (list a) #:guarantee (= (f y) y))) odot)"
+  "(begin
+     (define-symbolic a integer?)\
+     (define (f x) ((choose + - / *) 1 x))\
+     (define odot (synthesize  #:forall (list a) #:guarantee (= (f a) a))))"
 
 let test_send_synthpb ic oc =
   try
@@ -55,8 +58,8 @@ let test_send_synthpb ic oc =
     flush stdout;
     output_string oc synthpb ;
     flush oc ;
-    let response = input_line ic
-    in printf "Response : %s\n\n" response;
+    let response = input_line ic in
+    printf "Response : %s\n\n" response;
     shut_exit ic oc Exit;
   with
   | exn -> shut_exit ic oc exn
