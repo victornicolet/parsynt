@@ -19,7 +19,15 @@ Executable csclient
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: unix, async
+  BuildDepends: unix
+
+Executable cslocal
+  Path: ./
+  MainIs: local.ml
+  CompiledObject: best
+  Install: false
+  Build: true
+  BuildDepends: str
 
 XOCamlbuildExtraArgs: "-tag thread"
 
