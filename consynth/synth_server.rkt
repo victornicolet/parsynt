@@ -52,9 +52,6 @@
   (fprintf tempFileOut "~a" (syntax->datum sketch))
   (finish-file tempFileOut solFilePath)
   (close-output-port tempFileOut)
-
-  ;; REMOVE THIS -- !!!!!!!!
-  (copy-file tempFilePath (build-path user-home "000tempFileOut.txt"))
   (with-handlers
     ([exn:fail? (lambda (e)
                   (exn-message e))])
@@ -62,7 +59,6 @@
   (define solInput (open-input-file solFilePath))
   (define sol (read solInput))
   (close-input-port solInput)
-  (copy-file solFilePath (build-path user-home "000solFile.txt"))
   (with-handlers
     ([exn:fail:filesystem?
       (lambda (e)
