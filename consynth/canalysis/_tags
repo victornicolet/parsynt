@@ -1,0 +1,3 @@
+<**/*.ml{,i}>: warn(-40), no_alias_deps
+# OASIS_START
+# OASIS_STOP

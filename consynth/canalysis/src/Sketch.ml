@@ -4,7 +4,7 @@ open Loops
 open Printf
 open Format
 open Prefunc
-open Sexplib.Std
+open Core.Std
 
 module VS = VS
 module LF = Loops2ssa.Floop
@@ -164,11 +164,37 @@ type symbDef =
   | Integers of string list
   | Reals of string list
   | Booleans of string list
-  | IntArray of string list
-  | RealArray of string list
-  | BooleanArray of string list
+  | RoArray of string list * string
 [@@deriving sexp]
 
+(**
+    The idnetity  state of the loop has to be defined with
+    non-symbolic values.
+*)
+type initialDefs =
+  | Initials of (string * string) list [@@deriving_sexp]
+
+(**
+   The body of the join and the loop are Racket programs with
+   holes insides.
+*)
+type racket_with_holes = string list [@@deriving_sexp]
+
+(**
+   A state is simply a list of variables that are modified
+   during the loop.
+*)
+type state = string list [@@deriving_sexp]
+
+(**
+   We generate the body of the oririginal loop simply from
+   the state variables and the list of function that are
+   applied to each state variable.
+*)
+type bodyFunc =
+  | DefineBody of state * racket_with_holes
+  | DefineJoin of state * racket_with_holes
+      [@@deriving_sexp]
 
 let strings_of_symbdefs1 symbdef =
   let sexpr = sexp_of_symbDef symbdef in
