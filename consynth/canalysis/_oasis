@@ -21,7 +21,8 @@ Library canalyst
   Path: src
   Modules: Canalyst
   CompiledObject: best
-  BuildDepends: cil, core, camlp4.extend, camlp4.quotations.o, sexplib.syntax
+  BuildDepends: cil, core, sexplib, ppx_sexp_conv, ppx_type_conv
+
 
 Executable test_main
   Path: test

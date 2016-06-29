@@ -150,31 +150,29 @@ let pp_skexpr ppf =
   | _ -> ()
 
 
-(** Compile the Rosette sketch *)
+(**
+    Compile the Rosette sketch.
+    Rosette is using Racket, which is based on s-expresssions
+    so we will be using the Sexplb library to convert types
+    directly to s-expressions
+*)
+
+
+(** A symbolic definition defines a list of values of a given type,
+    the second string in the type corresponds *)
 type symbDef =
-  | Integer of string
-  | Boolean of string
-  | Real of string
-  | RArray of symbDef
-  | Empty
-with sexp
+  | Integers of string list
+  | Reals of string list
+  | Booleans of string list
+  | IntArray of string list
+  | RealArray of string list
+  | BooleanArray of string list
+[@@deriving sexp]
 
-let strings_of_symbdefs symbdefs =
-  let rec aux (i, b, r) =
-    function
-    | Integer s -> (i^" "^s, b, r)
-    | Boolean s -> (i, b^" "^s, r)
-    | Real s -> (i, b, r^" "^s)
-    | _ -> (i, b, r)
-  in
-  let sypr = "(define-symbolic" in
-  let (ii, bb, rr) =
-    List.fold_left aux (sypr, sypr, sypr) symbdefs
-  in
-  ii^" integer?)",
-  bb^" boolean?)",
-  rr^" real?)"
 
+let strings_of_symbdefs1 symbdef =
+  let sexpr = sexp_of_symbDef symbdef in
+  string_of_sexp sexpr
 
 
 let symbolic_definitions_of vars = []

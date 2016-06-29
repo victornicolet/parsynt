@@ -1,4 +1,4 @@
 S src
 B _build/src
 B _build
-PKG cil core
+PKG cil core ppx_sexp_conv
