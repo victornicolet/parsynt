@@ -1,6 +1,7 @@
 #lang racket
 
-(require (for-syntax syntax/struct syntax/parse racket/syntax))
+(require rosette/safe
+         (for-syntax syntax/struct syntax/parse racket/syntax))
 
 
 (provide (all-defined-out))
@@ -48,9 +49,10 @@
 ; Don't forget to add
 ; (format-id stx ... if a stx object from the toplevel macro is avialable
 
-(define-syntax (LetStructFieldnames stx)
+(define-syntax (D-struct stx)
   (syntax-parse stx
-    [(let-st structname s (fieldnames ...) body)
+
+    [(D structname s (fieldnames ...) body)
      (with-syntax
        ([(field-assignments ...)
          (map (lambda (fname)
@@ -59,11 +61,40 @@
                                     (format-id stx "~a-~a" #'structname fname)
                                     (pack fname))])
                   #'(fieldn (ident s))))
-             (unpack #'(fieldnames ...)))])
+              (unpack #'(fieldnames ...)))])
+       #'(let (field-assignments ...) body))]
+
+    [(D structname s (fieldnames ...) (varnames ...) body)
+     (with-syntax
+       ([(field-assignments ...)
+         (map2 (lambda (fname vname)
+                 (with-syntax
+                   ([(ident fieldn) (list
+                                     (format-id stx "~a-~a" #'structname fname)
+                                     (pack vname))])
+                   #'(fieldn (ident s))))
+               (unpack #'(fieldnames ...))
+               (unpack #'(varnames ...))
+               '())])
        #'(let (field-assignments ...) body))]))
+
+(define-syntax (Define-struct-eq stx)
+  (syntax-case stx ()
+    [(Def sname (fields ...))
+     (with-syntax
+       ([(tmps ...) (generate-temporaries #'(fields ...))]
+        [eq-name (format-id stx "~a-eq?" #'sname)])
+       #'(define (eq-name s1 s2)
+           (D-struct sname s1 (fields ...) (tmps ...)
+                     (D-struct sname s2 (fields ...)
+                               (and (eq? fields tmps) ...)))))]))
 
 (struct state (a b c))
 (define s (state 1 2 3))
 
-(define (test) (LetStructFieldnames state s (a b c) #t))
-(assert (test))
+(define (test) (D-struct state s (a b c) (x y z) #t))
+(define (test2) (D-struct state s (a b c) #t))
+
+(Define-struct-eq state (a b c))
+
+(assert (and (test) (test2) (state-eq? s (state 1 2 3))))

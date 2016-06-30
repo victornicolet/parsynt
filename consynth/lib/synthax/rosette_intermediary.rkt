@@ -1,7 +1,8 @@
 #lang racket
 
 (require rosette/safe
-         "../utils.rkt")
+         "../utils.rkt"
+         (for-syntax "../utils.rkt"))
 
 (provide (all-defined-out))
 
@@ -20,26 +21,33 @@
 
 ;; Macros generating function definitions body and join
 
-(define-syntax-rule (DefineBody (vnames ...) (b ...))
-     (lambda (vnames ...) (values b ...)))
+(define-syntax-rule (LamBody (vnames ...) (b ...))
+     (lambda (stt)
+       (D-struct state stt (vnames ...)
+                         (state b ...))))
 
-(define-syntax-rule (DefineJoin (vnames ...) (b ...))
+(define-syntax-rule (LamJoin (vnames ...) (rnames ...) (b ...))
   (lambda (ll lr)
-    ()))
+    (D-struct state ll (vnames ...)
+                      (D-struct state lr (vnames ...) (rnames ...)
+                      (state b ...)))))
 
-;; (define-syntax (Synthesize stx)
-;;   (syntax-case stx ()
-;;     [(_ (symbs1 ...)(symbs2 ...) (symbs_r ...) (initials ...))
-;;      (with-syntax
-;;        ([(f1 ...) (generate-temporaries (symbs1 ...))]
-;;         [(f2 ...) (generate-temporaries (symbs2 ...))])
-;;        (synthesize
-;;         #:forall (list symbs_r ... symbs1 ... symbs2)
-;;         #:guarantee (assert
-;;                      (and
-;;                       (let-values ([(f1 ...) (body symbs1 ...)])
-;;                         (let-values ([(join ...)))))
+(define-syntax (Synthesize stx)
+  (syntax-rules ()
+    [(Synthesize st1 st2 st0 v ...)
+     (synthesize
+      #:forall (list v ...)
+      #:guarantee (assert
+                   (and (eq? (join st1 st0) st0)
+                        (eq? (join st1 (body st2))
+                             (body (join st1 st2))))))]))
 ;; Test macros
+(struct state (a b c))
+(define s0 (state 1 2 3))
+(define s1 (state 3 3 4))
+
+(Define-struct-eq state (a b c))
+
 (Integers i1 i2 i3)
 (assert (map integer? (list i1 i2 i3)))
 (Reals r1 r2 r3)
@@ -48,11 +56,5 @@
 (assert (map boolean? (list b1 b2 b3)))
 (RoArray (a) integer?)
 (assert (integer? (a i1)))
-(define body (DefineBody (a b c) ((+ a b) (+ 1 b) (add1 c))))
-(assert (let-values ([(a b c) (body 1 2 3)])(eq? (list a b c) (list 3 3 4))))
-
-(struct state (a b c))
-(define s (state 1 2 3))
-
-(define (test) (LetStructFieldnames state s (a b c) #t))
-(assert (test))
+(define body (LamBody (a b c) ((+ a b) (+ 1 b) (add1 c))))
+(define join (LamJoin (a b c) (x y z) ((+ a x) (+ b y) (+ c z))))
