@@ -160,6 +160,25 @@ let pp_skexpr ppf =
 
 (** A symbolic definition defines a list of values of a given type,
     the second string in the type corresponds *)
+(*
+  Booleans
+  boolean?, false?, true, false, not, nand, nor, implies, xor
+  Integers and Reals
+  number?, real?, integer?, zero?, positive?, negative?, even?, odd?,
+  inexact->exact, exact->inexact, +, -, *, /, quotient, remainder
+  , modulo, add1, sub1, abs, max, min, floor, ceiling, truncate,
+  =, <, <=, >, >=, expt, pi, sgn
+*)
+type symbolicType =
+  (** Base types : only booleans, integers and reals *)
+  | Integer
+  | Real
+  | Boolean
+
+let symbType_of_ciltyp =
+  function
+  | T
+
 type symbDef =
   | Integers of string list
   | Reals of string list
@@ -167,8 +186,29 @@ type symbDef =
   | RoArray of string list * string
 [@@deriving sexp]
 
+let add_to_arrays vname typ =
+
+
+let add_varinfo vi =
+  match vi.vtype with
+  | TArray (t, eo, attrs) -> add_to_arrays vi.vname t
+  | TInt (ik, _) ->
+     let adder =
+       match ik with
+       | IBool -> add_to_booleans
+       | IChar | ISChar | IUChar -> failwith "Not yet implemented"
+       | IInt | ILong | ILongLong | IShort | IUShort | IULongLong
+       | IUInt | IULong -> add_to_integers
+     in
+     vi.vname
+  | TFloat (fk, _) ->
+     add_to_reals vi.vname
+  | TFun (t, arglisto, inline, _) ->
+     failwith "not yet impelemented"
+  | TVoid -> (fun x -> x)
+
 (**
-    The idnetity  state of the loop has to be defined with
+    The identity  state of the loop has to be defined with
     non-symbolic values.
 *)
 type initialDefs =

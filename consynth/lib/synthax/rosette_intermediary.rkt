@@ -18,6 +18,11 @@
 (define-syntax-rule (RoArray (id ...) type)
   (define-symbolic id ... (~> integer? type)))
 
+(define-syntax-rule (DefStruct vals ...)
+  (struct state (vals ...)))
+
+(define-syntax-rule (State s (vals ...))
+  (define s (state vals ...)))
 
 ;; Macros generating function definitions body and join
 
@@ -34,13 +39,15 @@
 
 (define-syntax (Synthesize stx)
   (syntax-rules ()
-    [(Synthesize st1 st2 st0 v ...)
+    [(Synthesize st1 st2 st0 (v ...))
      (synthesize
       #:forall (list v ...)
       #:guarantee (assert
                    (and (eq? (join st1 st0) st0)
                         (eq? (join st1 (body st2))
                              (body (join st1 st2))))))]))
+
+
 ;; Test macros
 (struct state (a b c))
 (define s0 (state 1 2 3))
