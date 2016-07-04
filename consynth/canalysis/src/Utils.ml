@@ -65,6 +65,12 @@ let outer_join_lists (a, b) =
    (fun li i ->
    if List.mem i li then li else i::li) a b
 
+let rec ppli ppf pfun =
+  function
+  | hd :: tl -> fprintf ppf "%a;%a" pfun hd (fun fmt -> ppli fmt pfun) tl
+  | [] -> fprintf ppf "%s" ""
+
+
 let last list =
   List.nth list ((List.length list) - 1)
 

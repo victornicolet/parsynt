@@ -3,6 +3,7 @@ open Cil
 open Loops
 open Printf
 open Format
+open Format
 open Prefunc
 open Core.Std
 open RosetteTypes
@@ -24,7 +25,8 @@ and skExpr =
   | SkUnop of unop * skExpr
   | SkRec of  forIGU * skExpr
   | SkCond of skExpr * skExpr * skExpr
-  | SkHole
+  | SkHoleL
+  | SkHoleR
 (** Simple translation of Cil exp needed to nest
     sub-expressions with state variables *)
   | SkConst of constant
@@ -50,12 +52,14 @@ let build_sketch (loopinfo : LF.t): sketch =
 
 let hole_or_exp constr e =
   match e with
-  | SkHole -> SkHole
+  | SkHoleL -> SkHoleL
+  | SkHoleR -> SkHoleR
   | _ -> constr e
 
 let hole_or_exp2 constr e1 e2 =
   match e1, e2 with
-  | SkHole, SkHole -> SkHole
+  | SkHoleL, SkHoleL -> SkHoleL
+  | SkHoleR, SkHoleR -> SkHoleR
   | _, _ -> constr e1 e2
 
 let rec hole (vs: VS.t) =
@@ -66,20 +70,20 @@ let rec hole (vs: VS.t) =
          let vi = VSOps.getVi i vs in
          SkVar vi
        with Not_found ->
-         SkHole
+         SkHoleR
      end
   | Container (e, subs) ->
      let usv = VS.inter (VSOps.sove e) vs in
      if VS.cardinal usv > 0 then
        hole_cils vs e
-     else SkHole
+     else SkHoleR
 
   | Binop (op, e1, e2) ->
      let e1' = hole vs e1 in
      let e2' = hole vs e2 in
      begin
        match e1', e2' with
-       | SkHole, SkHole -> SkHole
+       | SkHoleR, SkHoleR -> SkHoleR
        | _, _ -> SkBinop (op, hole vs e1, hole vs e2)
      end
   | Unop (op, e) ->
@@ -91,17 +95,17 @@ let rec hole (vs: VS.t) =
          TODO : figure out how to generate the bookkeeping variable for conds.
          This might require analysis of the subexpressions into the condition
      *)
-     SkHole
+     SkHoleR
 
 and hole_cils (vs : VS.t) =
   function
-  | Const c -> SkHole
+  | Const c -> SkHoleR
 
   | Lval v ->
      if VSOps.hasLval v vs then
        SkLval v (** TODO : better matching lvalue -> SkVar or Skvar + offset *)
      else
-       SkHole
+       SkHoleR
 
   | SizeOf t->
      SkSizeof t
@@ -146,11 +150,18 @@ and hole_cils (vs : VS.t) =
      SkStartOf lv
 
 
-
-let pp_skexpr ppf =
+(** TODO *)
+let rec pp_skexpr ppf =
   function
   | SkVar i -> fprintf ppf "%s" i.vname
-  | _ -> ()
+  | SkHoleR -> fprintf ppf "(??_R)"
+  | SkHoleL -> fprintf ppf "(??_L)"
+  | SkAddrof e -> fprintf ppf "(AddrOf )"
+  | SkAddrofLabel addr -> fprintf ppf "(AddrOfLabel)"
+  | SkAlignof typ -> fprintf ppf "(AlignOf typ)"
+  | SkAlignofE e -> fprintf ppf "(AlignOfE %a)" pp_skexpr e
+  | SkArray (v, subsd) ->
+     fprintf ppf "%s[%a]" v.vname (fun fmt -> ppli fmt pp_skexpr) subsd
 
 
 (**
