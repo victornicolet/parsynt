@@ -72,17 +72,23 @@ and symb_type_of_args argslisto =
 
 
 (*
-  Booleans
-  boolean?, false?, true, false, not, nand, nor, implies, xor
-  Integers and Reals
-  number?, real?, integer?, zero?, positive?, negative?, even?, odd?,
-  inexact->exact, exact->inexact, +, -, *, /, quotient, remainder
-  , modulo, add1, sub1, abs, max, min, floor, ceiling, truncate,
-  =, <, <=, >, >=, expt, pi, sgn
+  Operators : Cil operators and C function names.
 *)
 
 type symbUnops =
-  | Not | Add1 | Sub1 | Abs | Floor | Ceiling | Truncate
+  | Not | Add1 | Sub1
+(**
+   From C++11 : 4 different ops.
+   value   round   floor   ceil    trunc
+   -----   -----   -----   ----    -----
+   2.3     2.0     2.0     3.0     2.0
+   3.8     4.0     3.0     4.0     3.0
+   5.5     6.0     5.0     6.0     5.0
+   -2.3    -2.0    -3.0    -2.0    -2.0
+   -3.8    -4.0    -4.0    -3.0    -3.0
+   -5.5    -6.0    -6.0    -5.0    -5.0
+*)
+  | Abs | Floor | Ceiling | Truncate | Round
   | Neg
   (** Misc*)
   | Expt | Sgn
@@ -94,9 +100,17 @@ type symbBinops =
   | Plus | Minus | Times | Div | Quot | Rem | Mod
   | Max | Min
   (** Comparison *)
-  | Eq | Lt | Le | Gt | Ge | Ne
+  | Eq | Lt | Le | Gt | Ge | Neq
   (** Shift*)
   | ShiftL | ShiftR
+
+type constants =
+  | Int of int
+  | Real of float
+  | Bool of bool
+  | CUnop of symbUnops * constants
+  | CBinop of symbBinops * constants * constants
+  | Pi | SqrtPi | Ln2 | Ln10 | E
 
 let symb_unop_of_cil =
   function
@@ -115,14 +129,96 @@ let symb_binop_of_cil =
   | BAnd | LAnd -> And
   | BOr | LOr -> Or
   | Lt -> Lt | Le -> Le | Gt -> Gt | Ge -> Ge
-  | Eq -> Eq | Ne -> Ne
+  | Eq -> Eq | Ne -> Neq
   | Shiftlt -> ShiftL | Shiftrt -> ShiftR
 
-(**
-    TODO simple recognition of the functions imeplementing the
-    operators described above.
-*)
+  (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
+  (* inexact->exact, exact->inexact, quotient , sgn *)
+
+(** C Standard Library function names -> Rosette supported functions *)
+let symb_unop_of_fname =
+  function
+  | "exp" -> Some Expt
+  | "floor" | "floorf" | "floorl" -> Some Floor
+  | "abs"
+  | "fabs" | "fabsf" | "fabsl"
+  | "labs" | "llabs" | "imaxabs" -> Some Abs
+  | "ceil" -> Some Ceiling
+  (** C++11 *)
+  | "trunc" | "truncf" | "truncl"  -> Some Truncate
+  | "llround"
+  | "lround" | "lroundf" | "lroundl"
+  | "round" | "roundf" | "roundl"
+  | "nearbyint" | "nearbyintf" | "nearbyintl"
+  | "lround" | "lroundf" | "lroundl"
+  | "llround" | "llroundf" | "llroundl"
+  | "rint" | "rintf" | "rintl" -> Some Round
+  | _ -> None
 
 let symb_binop_of_fname =
   function
-  |
+  | "modf" | "modff" | "modfl" -> None (** TODO *)
+  | "fmod" | "fmodl" | "fmodf" -> Some Mod
+  | "remainder" | "remainderf" | "remainderl"
+  | "drem" | "dremf" | "dreml" -> Some Rem
+  | "fmax" -> Some Max
+  | "fmin" -> Some Min
+  (**
+      Comparison macros/functions in C++11
+      /!\ Unsafe
+  *)
+  | "isgreater" -> Some Gt
+  | "isgreaterequal" -> Some Ge
+  | "isless" -> Some Lt
+  | "islessequal" -> Some Le
+  | "islessgreater" -> Some Neq
+  | "isunordered" -> Some Neq
+  | _ -> None
+
+(**
+    Mathematical constants defined in GNU-GCC math.h.
+   ****   ****   ****   ****   ****   ****   ****
+    TODO : integrate log/ln/pow function, not in
+    rosette/safe AFAIK.
+*)
+let c_constant =
+  function
+  | "M_E" -> Some E
+  | "M_LOG2E" -> None
+  | "M_LOG10E" -> None
+  | "M_LN2" -> Some Ln2
+  | "M_LN10" -> Some Ln10
+  | "M_PI" -> Some Pi
+  | "M_PI_2" -> Some (CBinop (Div, Pi, (Int 2)))
+  | "M_PI_4" -> Some (CBinop (Div, Pi, (Int 2)))
+  | "M_1_PI" -> Some (CBinop (Div, (Real 1.0), Pi))
+  | "M_2_PI" -> Some (CBinop (Div, (Real 2.0), Pi))
+  | "M_2_SQRTPI" -> None
+  | "M_SQRT2" -> None
+  | "M_SQRT1_2" -> None
+  | _ -> None
+
+
+(**
+    A function name not appearing in the cases above
+    will be treated as an "uninterpreted function" by
+    default.
+    TODO :
+    -> Unless it is a user-specified function that can
+    be interpreted easily (ex : custom max)
+*)
+
+let uninterpeted fname =
+  match symb_unop_of_fname fname with
+  | Some _ -> false
+  | None ->
+     begin
+       match symb_binop_of_fname fname with
+       | Some _ -> false
+       | None ->
+          begin
+            match c_constant fname with
+            | Some _ -> false
+            | None -> true
+          end
+     end
