@@ -1,6 +1,7 @@
 open Cil
 open Utils
 
+let use_unsafe_operations = ref false
 
 type symbolicType =
   | Unit
@@ -91,26 +92,49 @@ type symbUnops =
   | Abs | Floor | Ceiling | Truncate | Round
   | Neg
   (** Misc*)
-  | Expt | Sgn
+  | Sgn
 
 type symbBinops =
   (** Booleans*)
   | And | Nand | Or | Nor | Implies | Xor
   (** Integers and reals *)
   | Plus | Minus | Times | Div | Quot | Rem | Mod
+  (** Max and min *)
   | Max | Min
   (** Comparison *)
   | Eq | Lt | Le | Gt | Ge | Neq
   (** Shift*)
   | ShiftL | ShiftR
+  | Expt
 
+(**
+   Some racket function that are otherwise unsafe
+   to use in Racket, but we might still need them.
+*)
+type symbUnsafeUnops =
+  (** Trigonometric + hyp. functions *)
+  | Sin | Cos | Tan | Sinh | Cosh | Tanh
+  (** Anti functions *)
+  | ASin | ACos | ATan | ASinh | ACosh | ATanh
+  (** Other functions *)
+  | Log | Log2 | Log10
+  | Exp | Sqrt
+
+type symbUnsafeBinops =
+  | TODO
+
+(** Some pre-defined constants existing in C99 *)
 type constants =
   | Int of int
   | Real of float
   | Bool of bool
   | CUnop of symbUnops * constants
   | CBinop of symbBinops * constants * constants
-  | Pi | SqrtPi | Ln2 | Ln10 | E
+  | CUnsafeUnop of symbUnsafeUnops * constants
+  | CUnsafeBinop of symbUnsafeBinops * constants * constants
+  | Pi | SqrtPi
+  | Sqrt2
+  | Ln2 | Ln10 | E
 
 let symb_unop_of_cil =
   function
@@ -138,7 +162,6 @@ let symb_binop_of_cil =
 (** C Standard Library function names -> Rosette supported functions *)
 let symb_unop_of_fname =
   function
-  | "exp" -> Some Expt
   | "floor" | "floorf" | "floorl" -> Some Floor
   | "abs"
   | "fabs" | "fabsf" | "fabsl"
@@ -146,11 +169,9 @@ let symb_unop_of_fname =
   | "ceil" -> Some Ceiling
   (** C++11 *)
   | "trunc" | "truncf" | "truncl"  -> Some Truncate
-  | "llround"
   | "lround" | "lroundf" | "lroundl"
   | "round" | "roundf" | "roundl"
   | "nearbyint" | "nearbyintf" | "nearbyintl"
-  | "lround" | "lroundf" | "lroundl"
   | "llround" | "llroundf" | "llroundl"
   | "rint" | "rintf" | "rintl" -> Some Round
   | _ -> None
@@ -161,8 +182,8 @@ let symb_binop_of_fname =
   | "fmod" | "fmodl" | "fmodf" -> Some Mod
   | "remainder" | "remainderf" | "remainderl"
   | "drem" | "dremf" | "dreml" -> Some Rem
-  | "fmax" -> Some Max
-  | "fmin" -> Some Min
+  | "fmax" | "fmaxf" | "fmaxl" -> Some Max
+  | "fmin" | "fminf" | "fminl" -> Some Min
   (**
       Comparison macros/functions in C++11
       /!\ Unsafe
@@ -175,17 +196,29 @@ let symb_binop_of_fname =
   | "isunordered" -> Some Neq
   | _ -> None
 
+let unsafe_unops_of_fname =
+  function
+  | "sin" -> Some Sin
+  | "cos" -> Some Cos
+  | "tan" -> Some Tan
+  | "asin" -> Some ASin
+  | "acos" -> Some ACos
+  | "atan" -> Some ATan
+  | "exp" -> Some Exp
+  | "log" -> Some Log
+  | "log10" -> Some Log10
+  | "log2" -> Some Log2
+  | "sqrt" -> Some Sqrt
+  | _ -> None
 (**
     Mathematical constants defined in GNU-GCC math.h.
    ****   ****   ****   ****   ****   ****   ****
     TODO : integrate log/ln/pow function, not in
     rosette/safe AFAIK.
 *)
-let c_constant =
-  function
+let c_constant  ccst =
+  match ccst with
   | "M_E" -> Some E
-  | "M_LOG2E" -> None
-  | "M_LOG10E" -> None
   | "M_LN2" -> Some Ln2
   | "M_LN10" -> Some Ln10
   | "M_PI" -> Some Pi
@@ -193,10 +226,23 @@ let c_constant =
   | "M_PI_4" -> Some (CBinop (Div, Pi, (Int 2)))
   | "M_1_PI" -> Some (CBinop (Div, (Real 1.0), Pi))
   | "M_2_PI" -> Some (CBinop (Div, (Real 2.0), Pi))
-  | "M_2_SQRTPI" -> None
-  | "M_SQRT2" -> None
-  | "M_SQRT1_2" -> None
-  | _ -> None
+  | _ ->
+     if !use_unsafe_operations then
+       begin
+         match ccst with
+         | "M_SQRT2" -> Some Sqrt2
+         | "M_SQRT1_2" ->
+            Some (CBinop (Div, (Real 1.0), Sqrt2))
+         | "M_2_SQRTPI" ->
+            Some (CBinop (Div, (Real 2.0), SqrtPi))
+         | "M_LOG10E" ->
+            Some (CBinop (Div, (Real 1.0), Ln10))
+         | "M_LOG2E" ->
+            Some (CBinop (Div, (Real 1.0), Ln2))
+         | _ -> None
+       end
+     else
+       None
 
 
 (**
@@ -209,16 +255,29 @@ let c_constant =
 *)
 
 let uninterpeted fname =
-  match symb_unop_of_fname fname with
-  | Some _ -> false
-  | None ->
-     begin
-       match symb_binop_of_fname fname with
-       | Some _ -> false
-       | None ->
-          begin
-            match c_constant fname with
-            | Some _ -> false
-            | None -> true
-          end
-     end
+  let not_in_safe =
+    match symb_unop_of_fname fname with
+    | Some _ -> false
+    | None ->
+       begin
+         match symb_binop_of_fname fname with
+         | Some _ -> false
+         | None ->
+            begin
+              match c_constant fname with
+              | Some _ -> false
+              | None -> true
+            end
+       end
+  in
+  let not_in_unsafe =
+    if !use_unsafe_operations
+    then
+      begin
+        match unsafe_unops_of_fname fname with
+        | Some _ -> false
+        | None -> true
+      end
+    else true
+  in
+      not_in_safe && not_in_unsafe
