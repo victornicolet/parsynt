@@ -15,7 +15,7 @@
 (define-syntax-rule (Booleans id ...) (define-symbolic id ... boolean?))
 
 ;; Read-only arrays are just functions from integers to another type
-(define-syntax-rule (RoArray (id ...) type)
+(define-syntax-rule (RoArray type (id ...))
   (define-symbolic id ... (~> integer? type)))
 
 (define-syntax-rule (DefStruct vals ...)
@@ -61,7 +61,7 @@
 (assert (map real? (list r1 r2 r3)))
 (Booleans b1 b2 b3)
 (assert (map boolean? (list b1 b2 b3)))
-(RoArray (a) integer?)
+(RoArray integer? (a))
 (assert (integer? (a i1)))
 (define body (LamBody (a b c) ((+ a b) (+ 1 b) (add1 c))))
 (define join (LamJoin (a b c) (x y z) ((+ a x) (+ b y) (+ c z))))

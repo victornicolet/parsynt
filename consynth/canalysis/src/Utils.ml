@@ -36,6 +36,9 @@ let addHash (newh : ('a * 'b option) IH.t)
         IH.add newh k (v1, Some v2)
       with Not_found -> IH.add newh k (v1, None)) h1
 
+let identity x = x
+let identity2 x y = y
+
 (** Convert a varinfo to an expression *)
 let v2e (v : varinfo): Cil.exp = Lval (var v)
 

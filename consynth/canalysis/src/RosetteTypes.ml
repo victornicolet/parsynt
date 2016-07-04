@@ -26,12 +26,12 @@ type symbolicType =
   (** User-defined structures *)
   | Struct of symbolicType
 
-let string_of_baseSymbolicType =
+let ostring_of_baseSymbolicType =
   function
-  | Integer -> "integer?"
-  | Real -> "real?"
-  | Boolean -> "boolean?"
-  | _ -> failwith "not a symbolic type."
+  | Integer -> Some "integer?"
+  | Real -> Some "real?"
+  | Boolean -> Some "boolean?"
+  | _ -> None
 
 let rec symb_type_of_ciltyp =
   function
@@ -209,6 +209,10 @@ let unsafe_unops_of_fname =
   | "log10" -> Some Log10
   | "log2" -> Some Log2
   | "sqrt" -> Some Sqrt
+  | _ -> None
+
+let unsafe_binops_of_fname =
+  function
   | _ -> None
 (**
     Mathematical constants defined in GNU-GCC math.h.

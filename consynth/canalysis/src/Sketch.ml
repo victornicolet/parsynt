@@ -5,9 +5,12 @@ open Printf
 open Format
 open Prefunc
 open Core.Std
+open RosetteTypes
+open Utils
 
 module VS = VS
 module LF = Loops2ssa.Floop
+module SM = Map.Make (String)
 
 type sklet =
   | SkLetExpr of skExpr
@@ -160,52 +163,76 @@ let pp_skexpr ppf =
 
 (** A symbolic definition defines a list of values of a given type,
     the second string in the type corresponds *)
-(*
-  Booleans
-  boolean?, false?, true, false, not, nand, nor, implies, xor
-  Integers and Reals
-  number?, real?, integer?, zero?, positive?, negative?, even?, odd?,
-  inexact->exact, exact->inexact, +, -, *, /, quotient, remainder
-  , modulo, add1, sub1, abs, max, min, floor, ceiling, truncate,
-  =, <, <=, >, >=, expt, pi, sgn
+
+(** Type for building the defintions list *)
+type defsRec =
+  { ints : string list ;
+    reals : string list ;
+    bools : string list ;
+    vecs : (string * string) list }
+
+(**
+     Type suitable for printing s-expressions that will be used
+     as Racket macros.
 *)
-type symbolicType =
-  (** Base types : only booleans, integers and reals *)
-  | Integer
-  | Real
-  | Boolean
-
-let symbType_of_ciltyp =
-  function
-  | T
-
 type symbDef =
   | Integers of string list
   | Reals of string list
   | Booleans of string list
-  | RoArray of string list * string
+  | RoArray of string * string list
 [@@deriving sexp]
 
-let add_to_arrays vname typ =
+let add_to_reals s defs =
+  { defs with reals = s::defs.reals }
 
+let add_to_booleans s defs =
+  { defs with bools = s::defs.bools }
 
-let add_varinfo vi =
-  match vi.vtype with
-  | TArray (t, eo, attrs) -> add_to_arrays vi.vname t
-  | TInt (ik, _) ->
-     let adder =
-       match ik with
-       | IBool -> add_to_booleans
-       | IChar | ISChar | IUChar -> failwith "Not yet implemented"
-       | IInt | ILong | ILongLong | IShort | IUShort | IULongLong
-       | IUInt | IULong -> add_to_integers
-     in
-     vi.vname
-  | TFloat (fk, _) ->
-     add_to_reals vi.vname
-  | TFun (t, arglisto, inline, _) ->
-     failwith "not yet impelemented"
-  | TVoid -> (fun x -> x)
+let add_to_integers s defs =
+  { defs with ints = s::defs.ints }
+
+let add_to_vectors ty s defs =
+  let osty = ostring_of_baseSymbolicType ty in
+  match osty with
+  | Some sty -> { defs with vecs = (s, sty)::defs.vecs }
+  | None ->
+     eprintf "add_to_vectors : vector of type too complex";
+    defs
+
+let adding_function vtype =
+  let symb_type = symb_type_of_ciltyp vtype in
+  match symb_type with
+  | Unit -> identity2
+  | Integer -> add_to_integers
+  | Real -> add_to_reals
+  | Boolean -> add_to_booleans
+  | Vector (ty, _) -> add_to_vectors ty
+  | _ ->  identity2
+
+let add_varinfo vi defs  =
+  (adding_function vi.vtype) vi.vname defs
+
+let defsRec_to_symbDefs defs_rec
+    : (symbDef * symbDef * symbDef * (symbDef list) ) =
+  let ro_arrays_map =
+    List.fold_left
+      defs_rec.vecs
+      ~init:SM.empty
+      ~f:(fun tmap (vname, sty) ->
+        SM.update tmap sty
+          (function
+          | Some l -> vname::l
+          | None -> [vname] ))
+  in
+  let ro_arrays = SM.to_alist ro_arrays_map in
+  let roArrays = List.map  ro_arrays ~f:(fun (k,v) -> RoArray (k, v))
+  in
+  (
+    Integers defs_rec.ints,
+    Reals defs_rec.reals,
+    Booleans defs_rec.bools,
+    roArrays
+  )
 
 (**
     The identity  state of the loop has to be defined with
