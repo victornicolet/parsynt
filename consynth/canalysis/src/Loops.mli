@@ -23,8 +23,6 @@ module Cloop : sig
     mutable definedInVars : defsMap;
     mutable usedOutVars : Cil.varinfo list;
     mutable rwset : int list * int list * int list;
-    mutable inNormalForm : bool;
-    mutable inSsaForm : bool;
     mutable hasBreaks : bool;
   }
   val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t

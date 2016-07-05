@@ -71,7 +71,6 @@ and do_s vs hm g stm =
     Instr il ->
       do_il vs hm g il
   | If (e, b1, b2, _) ->
-     ppe e;
      let cond1 = gcompose g (GCond (e, GEmpty)) in
      do_b vs hm cond1 b1;
      if !debug then

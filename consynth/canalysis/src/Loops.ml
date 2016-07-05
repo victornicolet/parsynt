@@ -53,32 +53,32 @@ let get_loop_condition b =
 	    let fsl = skipEmpty fb.bstmts in
 	    (match tsl, fsl with
 	      {skind = Break _} :: _, [] -> Some e
-	    | [], {skind = Break _} :: _ -> 
+	    | [], {skind = Break _} :: _ ->
 	       Some(UnOp(LNot, e, intType))
 	    | ({skind = If(_,_,_,_)} as s) :: _, [] ->
 	       let teo = get_cond_from_if s in
 	       (match teo with
 	         None -> None
-	       | Some te -> 
+	       | Some te ->
 		      Some(BinOp(LAnd,e,EC.stripNopCasts te,intType)))
 	    | [], ({skind = If(_,_,_,_)} as s) :: _ ->
 	       let feo = get_cond_from_if s in
 	       (match feo with
 	         None -> None
-	       | Some fe -> 
+	       | Some fe ->
 		      Some(BinOp(LAnd,UnOp(LNot,e,intType),
 			             EC.stripNopCasts fe,intType)))
 	    | {skind = Break _} :: _, ({skind = If(_,_,_,_)} as s):: _ ->
 	       let feo = get_cond_from_if s in
 	       (match feo with
 	         None -> None
-	       | Some fe -> 
+	       | Some fe ->
 		      Some(BinOp(LOr,e,EC.stripNopCasts fe,intType)))
 	    | ({skind = If(_,_,_,_)} as s) :: _, {skind = Break _} :: _ ->
 	       let teo = get_cond_from_if s in
 	       (match teo with
 	         None -> None
-	       | Some te -> 
+	       | Some te ->
 		      Some(BinOp(LOr,UnOp(LNot,e,intType),
 			             EC.stripNopCasts te,intType)))
 	    | ({skind = If(_,_,_,_)} as ts) :: _ ,
@@ -103,7 +103,7 @@ let get_loop_condition b =
   match sl with
     ({skind = If(_,_,_,_); labels=[]} as s) :: rest ->
       get_cond_from_if s, rest
-  | s :: _ -> 
+  | s :: _ ->
      (if !debug then ignore(E.log "checkMover: %a is first, not an if\n"
 			                  d_stmt s);
       None, sl)
@@ -118,30 +118,36 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
   | Loop (bdy, _, _, _) ->
      begin
        try
-         let term_expr_o, rem = get_loop_condition bdy in
+         let body_copy = Cil.mkBlock bdy.bstmts in
+         let term_expr_o, rem = get_loop_condition body_copy in
          let term_expr = match term_expr_o with
-           | Some expr -> 
+           | Some expr ->
               expr
            | None ->
-              raise (Failure "couldn't get the term condition")
+              raise (Failure "couldn't get the term condition.")
          in
          let init = lastInstr (List.nth loop_stmt.preds 1) in
-         let update, newbody = 
+         let update, newbody =
            match  remLastInstr rem with
            | Some instr, Some s ->
               instr, s
            | None, Some s ->
-              ppbk (Cil.mkBlock s);
-             raise (Failure "Failed to find last intruction")
+              begin
+                ppbk (Cil.mkBlock s);
+                raise (Failure "failed to find last intruction.")
+              end
            | Some _, None
            | None, None ->
-              raise (Failure "Failed to find last statement in body")
+              raise (Failure "failed to find last statement in body.")
          in
          Some (init, (neg_exp term_expr), update), newbody
        with Failure s ->
 		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
      end
-  |_ -> print_endline "failed get_loop_IGU"; None , []
+  |_ ->
+     raise(
+       Failure(
+         "get_loop_IGU : bad argument, expected a Loop statement."))
 
 (**
     Checking that the triplet is well-formed. The initialisation and update
@@ -196,8 +202,6 @@ module Cloop = struct
       - is the loop body in SSA Form ?
       - does the loops contain break / continue / goto statements ?
   *)
-    mutable inNormalForm : bool;
-    mutable inSsaForm : bool;
     mutable hasBreaks : bool;
   }
 
@@ -214,9 +218,8 @@ module Cloop = struct
       definedInVars = IH.create 32;
       usedOutVars = [];
       rwset = ([], [], []);
-      inNormalForm = false;
-      inSsaForm = false;
-      hasBreaks = false; }
+      hasBreaks = false;
+    }
 
   let id l = l.sid
 
@@ -380,9 +383,12 @@ let getGLobalFuncVS () =
 
 
 (******************************************************************************)
+(** LOCATIONS *)
 
-(** Loop locations inspector. During a first visit of the control flow
-    graph, we store the loop locations, with the containing functions*)
+(**
+    Loop locations inspector. During a first visit of the control flow
+    graph, we store the loop locations, with the containing functions
+*)
 
 class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
   inherit nopCilVisitor
@@ -423,6 +429,7 @@ let locateLoops fd f : unit =
 
 
 (******************************************************************************)
+(** INNER BODY INSPECTION *)
 
 (** The loop inspector inspects the body of the loop tl and adds information
     about :
@@ -531,24 +538,39 @@ let processFile cfile =
 	 like Reaching defintions and live variables each time the function
 	 is visited.
   *)
-  IH.fold
-    (fun k cl visited_fids ->
-      let fdc = Cloop.getParentFundec cl in
-      let vis_fids =
-        if List.mem fdc.svar.vid visited_fids
-		then visited_fids
-        else
-          begin
-            visited_fids@[fdc.svar.vid]
-          end
-      in
-      Reachingdefs.computeRDs fdc;
-      Liveness.computeLiveness fdc;
-
-      addBoundaryInfo cl;
-      addRWinformation k cl;
-      vis_fids)
-    programLoops []
+  let visited_funcs =
+    IH.fold
+      (fun k cl visited_fids ->
+        let fdc = Cloop.getParentFundec cl in
+        let vis_fids =
+          if List.mem fdc.svar.vid visited_fids
+		  then visited_fids
+          else
+            begin
+              visited_fids@[fdc.svar.vid]
+            end
+        in
+        Reachingdefs.computeRDs fdc;
+        Liveness.computeLiveness fdc;
+        addBoundaryInfo cl;
+        addRWinformation k cl;
+        vis_fids)
+      programLoops []
+  in
+  let loops_with_breaks =
+    IH.fold
+      (fun k cl lp_brks ->
+        if cl.Cloop.hasBreaks then
+          k::lp_brks
+        else lp_brks
+      )
+      programLoops
+      []
+  in
+  List.iter
+    (fun sid -> IH.remove programLoops sid)
+    loops_with_breaks;
+  visited_funcs
 
 (**
     Return the set of processed loops. To check if a program has been
