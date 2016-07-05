@@ -1,5 +1,4 @@
 open Cil
-open Cflows
 open Printf
 open LoopsHelper
 open Utils
@@ -9,7 +8,6 @@ module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
-module RW = Cflows.RWSet
 module EC = Expcompare
 
 let verbose = ref true
@@ -375,7 +373,7 @@ let getFuncWithLoops () : Cil.fundec list =
 let addGlobalFunc (fd : Cil.fundec) =
   programFuncs := Pf.add fd.svar.vname fd !programFuncs
 
-let getGLobalFuncVS () =
+let getGlobalFuncVS () =
   VS.of_list
 	(List.map (fun (a,b) -> b)
 	   (Pf.bindings (Pf.map (fun fd -> fd.svar) !programFuncs)))
@@ -489,20 +487,71 @@ let addBoundaryInfo clp =
              (Reachingdefs.getRDs sid))
     with
     | Some x -> x
-    | None -> Printf.eprintf "addBoundaryInfo - no reaching defs\n"; IH.create 2
+    | None ->
+       if !debug || true then
+         begin
+           Printf.eprintf
+             "addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
+             sid
+             (psprint80 d_stmt clp.Cloop.loopStatement)
+         end;
+      IH.create 2
   in
   let livevars =
 	try IH.find LF.stmtStartData sid
 	with Not_found -> (raise (Failure "addBoundaryInfo : live variables \
  statement data not found "))
   in
-	Cloop.setDefinedInVars clp rds livevars;
-  (** Visit the loop statement and compute some information *)
-	ignore(visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement)
+  let stmt =
+    if VS.cardinal livevars = 0
+    then
+      begin
+        if !debug || true then
+          begin
+            Printf.eprintf
+              "addBoundaryInfo - no live variables in (sid : %i):\n %s\n"
+              sid
+              (psprint80 d_stmt clp.Cloop.loopStatement);
+
+          end;
+        raise (Failure "addBoundaryInfo : no live variables.");
+      end
+    else
+      begin
+        Cloop.setDefinedInVars clp rds livevars;
+      (** Visit the loop statement and compute some information *)
+        visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement
+      end
+  in
+  clp.Cloop.loopStatement <- stmt
 
 
 (******************************************************************************)
 (** Read/write set *)
+(**
+    Custom dataflow analysis not provided by Cil.
+    Main components :
+    - Read/Write set of a body
+*)
+(** Here we do not use Cil's Dataflow framework *)
+
+module RW = struct
+
+  let verbose = ref false
+
+  let prws u d =
+	print_endline "--Uses";
+	VS.iter ppv u;
+	print_endline "Defs";
+	VS.iter ppv d
+
+  let computeRWs (loop : Cil.stmt) (fnames : VS.t) : VS.t * VS.t  =
+	Usedef.onlyNoOffsetsAreDefs := true;
+	let _u, _d = Usedef.computeDeepUseDefStmtKind loop.skind in
+	let u, d = VS.diff _u fnames, VS.diff _d fnames in
+	if !verbose then prws u d;
+	u, d
+end
 
 let addRWinformation sid clp =
   RW.verbose := !verbose;
@@ -517,8 +566,8 @@ let addRWinformation sid clp =
 	  print_endline (psprint80 Cil.d_stmt (last stmts))
     end
   else ();
-  let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGLobalFuncVS ()) in
-  Cloop.setRW clp rwinfo ~checkDefinedIn:true
+  let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGlobalFuncVS ()) in
+  Cloop.setRW clp rwinfo ~checkDefinedIn:false
 
 (******************************************************************************)
 (** Exported functions *)
@@ -557,10 +606,18 @@ let processFile cfile =
         vis_fids)
       programLoops []
   in
-  let loops_with_breaks =
+  (**
+      Remove the loops with missing information and
+      the loops containing break statements.
+  *)
+  let rem_cond cl =
+    cl.Cloop.hasBreaks ||
+      ((IH.length cl.Cloop.definedInVars) = 0)
+  in
+  let loops_to_remove =
     IH.fold
       (fun k cl lp_brks ->
-        if cl.Cloop.hasBreaks then
+        if rem_cond cl then
           k::lp_brks
         else lp_brks
       )
@@ -569,7 +626,7 @@ let processFile cfile =
   in
   List.iter
     (fun sid -> IH.remove programLoops sid)
-    loops_with_breaks;
+    loops_to_remove;
   visited_funcs
 
 (**
