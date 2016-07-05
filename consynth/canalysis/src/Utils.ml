@@ -65,11 +65,6 @@ let outer_join_lists (a, b) =
    (fun li i ->
    if List.mem i li then li else i::li) a b
 
-let rec ppli ppf pfun =
-  function
-  | hd :: tl -> fprintf ppf "%a;%a" pfun hd (fun fmt -> ppli fmt pfun) tl
-  | [] -> fprintf ppf "%s" ""
-
 
 let last list =
   List.nth list ((List.length list) - 1)
@@ -233,9 +228,16 @@ module VSOps = struct
     List.map (fun vi -> vi.vid) (VS.elements vs)
 
   let pvs ppf (vs: VS.t) =
-    VS.iter
-      (fun vi -> fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
-      vs
+    if VS.cardinal vs > 1 then
+      VS.iter
+        (fun vi -> Format.fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
+        vs
+    else
+      Format.fprintf ppf "%s@;" "{empty}"
+
+  let ppvs vs = pvs Format.std_formatter vs
+  let spvs vs = pvs Format.str_formatter vs; Format.flush_str_formatter ()
+  let epvs vs = pvs Format.err_formatter vs
 
   let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
   let ppvs = pvs std_formatter

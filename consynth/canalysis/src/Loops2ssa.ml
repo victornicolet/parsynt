@@ -36,9 +36,9 @@ and do_i vs hm g (ins : Cil.instr) =
         (** If any other state variable is used in the expression,
         replace it by its current function *)
         let used_in_f = VS.diff (VS.inter (vs_of_fexp vs fnexp) vs) vset in
-        let new_lam = 
+        let new_lam =
           VS.fold
-            (fun vi lam -> 
+            (fun vi lam ->
               try
                 let pf = IH.find hm vi.vid in
                 Let (vi.vid, (reduce pf), lam)
@@ -74,8 +74,15 @@ and do_s vs hm g stm =
      ppe e;
      let cond1 = gcompose g (GCond (e, GEmpty)) in
      do_b vs hm cond1 b1;
-     ppe (neg_exp e);
-     if non_empty_block b2 then 
+     if !debug then
+       begin
+         printf "Negation of ";
+         ppe e;
+         printf " is ";
+         ppe (neg_exp e);
+         print_endline ".";
+       end;
+     if non_empty_block b2 then
        let cond2 = gcompose g (GCond ((neg_exp e), GEmpty)) in
        do_b vs hm cond2 b2;
   | Loop (b, _ ,_, _) ->
@@ -119,8 +126,7 @@ module Floop = struct
       mutable body : preFunc IH.t;
       mutable state : int list;
       mutable parentLoops : int list;
-      mutable definedInVars: defsMap;
-      mutable usedOutVars: varinfo list;
+      mutable usedOutVars: Cil.varinfo list;
       mutable allVars: VS.t ;
     }
 
@@ -130,7 +136,6 @@ module Floop = struct
 	    (match cl.Cloop.rwset with (r, w, rw) -> w, rw) in
       let vars = VSOps.vs_of_defsMap cl.Cloop.definedInVars in
       let stateSet = VSOps.subset_of_list stateVars vars in
-  (**  let loopIndex = indexOfIGU  (checkOption cl.Cloop.loopIGU) in *)
       let loop_igu = checkOption cl.Cloop.loopIGU in
       if !debug then
         begin
@@ -145,9 +150,8 @@ module Floop = struct
         body = prefunc body_stmts stateSet;
         state = stateVars;
         parentLoops = cl.Cloop.parentLoops;
-        definedInVars = cl.Cloop.definedInVars;
         usedOutVars = cl.Cloop.usedOutVars;
-        allVars = VS.empty;
+        allVars = vars;
       }
 end
 

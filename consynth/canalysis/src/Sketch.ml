@@ -1,21 +1,29 @@
 open Utils
 open Cil
 open Loops
-open Printf
-open Format
 open Format
 open Prefunc
 open Core.Std
 open RosetteTypes
 open Utils
+open PpHelper
 
 module VS = VS
 module LF = Loops2ssa.Floop
 module SM = Map.Make (String)
 
+
+let debug = ref true;
+(**
+   The main entry point of the file if build_sketch :
+   build a sketch from the Floop (vector of functions
+   for each state variable representing the ody of the
+   loop).
+*)
+
 type sklet =
   | SkLetExpr of skExpr
-  | SkLetIn of int * skExpr * sklet
+  | SkLetIn of varinfo * skExpr * sklet
 
 and skExpr =
   | SkVar of varinfo
@@ -45,10 +53,72 @@ and skStmt =  varinfo * sklet
 
 type sketch = VS.t * skStmt list
 
-let build_sketch (loopinfo : LF.t): sketch =
-  let state_set = VSOps.subset_of_list loopinfo.LF.state loopinfo.LF.allVars in
-  let sketch_body = [] in
-  (state_set, sketch_body)
+
+(** Basic pretty-printing *)
+let rec pp_skstmt ppf ((vi, sklet) : varinfo * sklet)  =
+  Format.fprintf  ppf "%s = %sbegin%s@.@[%a@] %send%s\n"
+    vi.vname
+    (color "yellow") default
+    pp_sklet sklet
+    (color "yellow") default
+
+and pp_sklet ppf =
+  function
+  | SkLetExpr e -> pp_skexpr ppf e
+  | SkLetIn (vi, e, l) ->
+     Format.fprintf ppf "@[%slet%s %s = %a %sin%s@] %a"
+       (color "red") default
+       vi.vname pp_skexpr e
+       (color "red") default
+       pp_sklet l
+
+and pp_skexpr (ppf : Format.formatter) skexpr =
+let fp = Format.fprintf in
+  match skexpr with
+  | SkVar i -> fp ppf "%s" i.vname
+  | SkConst c -> fp ppf "const %s" (psprint80 Cil.d_const c)
+  | SkLval l -> fp ppf "%s" (psprint80 Cil.d_lval l)
+  | SkHoleR -> fp ppf "(??_R)"
+  | SkHoleL -> fp ppf "(??_L)"
+  | SkAddrof e -> fp ppf "(AddrOf )"
+  | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
+  | SkAlignof typ -> fp ppf "(AlignOf typ)"
+  | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
+  | SkArray (v, subsd) ->
+     fp ppf "%s[%a]" v.vname (fun fmt -> ppli fmt pp_skexpr) subsd
+  | SkCil e -> fp ppf "<cil expr>"
+  | SkBinop (op, e1, e2) ->
+     fp ppf "%a %s %a"
+       pp_skexpr e1 (psprint80 Cil.d_binop op) pp_skexpr e2
+  | SkUnop (op, e) ->
+     fp ppf "%s %a" (psprint80 Cil.d_unop op) pp_skexpr e
+  | SkCond (c, e1, e2) ->
+      fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
+        (color "blue") default
+       pp_skexpr c pp_skexpr e1 pp_skexpr e2
+  | SkRec (igu, e) ->
+     fp ppf "%s recursive%s %a" (color "blue")
+     default pp_skexpr e
+  | SkSizeof t -> fp ppf "(SizeOf %s)" (psprint80 Cil.d_type t)
+  | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
+  | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
+  | SkCastE (t,e) ->
+     fp ppf "(%s) %a" (psprint80 Cil.d_type t) pp_skexpr e
+  | SkStartOf l -> fp ppf "(StartOf %s)" (psprint80 Cil.d_lval l)
+
+
+
+let printSkstmt s = pp_skstmt Format.std_formatter s
+let sprintSkstmt s =
+  pp_skstmt Format.str_formatter s;
+  Format.flush_str_formatter ()
+
+let eprintSkstmt s = pp_skstmt Format.err_formatter s
+
+(**
+    Replacing old expressions by sketch epxressions, and putting holes
+    in some places.
+*)
 
 let hole_or_exp constr e =
   match e with
@@ -149,19 +219,34 @@ and hole_cils (vs : VS.t) =
   | StartOf lv ->
      SkStartOf lv
 
-
-(** TODO *)
-let rec pp_skexpr ppf =
+and hole_lam (vs: VS.t) =
   function
-  | SkVar i -> fprintf ppf "%s" i.vname
-  | SkHoleR -> fprintf ppf "(??_R)"
-  | SkHoleL -> fprintf ppf "(??_L)"
-  | SkAddrof e -> fprintf ppf "(AddrOf )"
-  | SkAddrofLabel addr -> fprintf ppf "(AddrOfLabel)"
-  | SkAlignof typ -> fprintf ppf "(AlignOf typ)"
-  | SkAlignofE e -> fprintf ppf "(AlignOfE %a)" pp_skexpr e
-  | SkArray (v, subsd) ->
-     fprintf ppf "%s[%a]" v.vname (fun fmt -> ppli fmt pp_skexpr) subsd
+  | Prefunc.Exp e -> SkLetExpr (hole vs e)
+  | Prefunc.Let (i, e, l) ->
+     try
+       let vi = VSOps.getVi i vs in
+       SkLetIn (vi, hole vs e, hole_lam vs l)
+     with Not_found ->
+       if !debug then
+         printerr
+           (Format.sprintf "Didn't find variable id  %s in %s"
+              (string_of_int i) (VSOps.spvs vs));
+       failwith "Not_found : a variable in let is not in the state"
+
+and hole_prefunc (vs : VS.t) =
+  function
+  | Empty x -> (x, SkLetExpr (SkVar x))
+  | Func (x,l) -> (x, hole_lam vs l)
+
+(*** MAIN ENTRY POINT ***)
+
+let build_sketch (loopinfo : LF.t): sketch =
+  let state_set = VSOps.subset_of_list loopinfo.LF.state loopinfo.LF.allVars in
+  let sketch_body =
+    List.map (IH.tolist loopinfo.LF.body)
+      ~f:(fun (i,b) -> hole_prefunc state_set b)
+  in
+  (state_set, sketch_body)
 
 
 (**

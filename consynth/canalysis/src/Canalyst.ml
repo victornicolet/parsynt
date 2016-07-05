@@ -34,7 +34,12 @@ let processFile fileName =
   let loops = Loops.processedLoops () in
   let loopscpy = (IH.copy loops) in
   L2S.debug := !debug;
-  L2S.processFile_l2s loopscpy
+  let floops = L2S.processFile_l2s loopscpy in
+  let sketchSet = IH.create 10 in
+  IH.iter (fun k v ->
+    IH.add sketchSet k (build_sketch v)) floops;
+  IH.iter (fun k (vi, v) -> ignore(List.map printSkstmt v)) sketchSet;
+  floops
 
 
 

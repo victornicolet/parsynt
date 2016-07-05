@@ -3,14 +3,13 @@ open Prefunc
 
 val debug: bool ref
 
-module Floop : sig 
+module Floop : sig
     type t = {
       sid: int;
       mutable igu: forIGU;
       mutable body : preFunc Inthash.t;
       mutable state : int list;
       mutable parentLoops : int list;
-      mutable definedInVars: defsMap;
       mutable usedOutVars: Cil.varinfo list;
       mutable allVars: Utils.VS.t ;
     }

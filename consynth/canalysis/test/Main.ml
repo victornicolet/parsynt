@@ -6,15 +6,13 @@ open Prefunc
 module LF = Loops2ssa.Floop
 
 let testProcessFile () =
+  if Array.length Sys.argv < 2 then
+    begin
+      eprintf "Usage : ./Main.native [test file name]\n\n";
+      exit 0
+    end;
+  let filename = "test/"^(Array.get Sys.argv 1) in
   printf "-- test processing file -- \n";
-  let loops = Canalyst.processFile "test/test.c" in
-  Inthash.iter (fun i cl ->
-    printf "\n\n Loop %i " cl.LF.sid;
-    Inthash.iter
-    (fun i pf -> 
-      printf "\n%s"
-        (string_of_prefunc pf))
-      cl.LF.body )
-    loops;;
+  ignore(Canalyst.processFile filename);;
 
 testProcessFile ()
