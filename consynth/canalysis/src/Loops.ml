@@ -1,5 +1,5 @@
 open Cil
-open Printf
+open Format
 open LoopsHelper
 open Utils
 
@@ -262,7 +262,7 @@ module Cloop = struct
      from within the Cloop module.
   *)
 
-  let getVarinfo l vid  =
+  let getVarinfo  ?(varname = "") l vid =
     try
       match IH.find l.definedInVars vid with
       | (vi, _) -> vi
@@ -273,14 +273,15 @@ module Cloop = struct
           then
             raise
               (Failure
-                 "The definedInVars are empty. Perhaps you
+                 "The definedInVars are empty. Perhaps you \
 forgot initializing them ?")
           else
             raise
               (Failure
                  (Printf.sprintf
-                    "Failed in getVarinfo. The variable with id %i
-is not defined at the beginning of the loop"
+                    "Failed in getVarinfo. The variable %s with id %i \
+is not defined at the beginning of the loop.\n"
+                    varname
                     vid))
         end
   (**
@@ -289,6 +290,18 @@ is not defined at the beginning of the loop"
      names.
   *)
   let setRW l (uses, defs) ?(checkDefinedIn = false) =
+    VS.iter
+      (fun v ->
+        let vi = try
+                   getVarinfo ~varname:v.vname l v.vid
+          with Failure s ->
+            begin
+              if checkDefinedIn
+              then raise (Failure s)
+              else v
+            end
+        in ignore(vi))
+      uses;
 	let r = List.map (fun v -> v.vid) (VS.elements uses) in
 	let w = List.map (fun v -> v.vid) (VS.elements defs) in
 	let rw = List.map (fun v -> v.vid)
@@ -444,7 +457,8 @@ class loopInspector (tl : Cloop.t) = object
        (** The inspected loop is nested in the current loop *)
        Cloop.addParentLoop (IH.find programLoops s.sid) (Cloop.id tl) ;
       DoChildren
-    | Block _ | If _ | TryFinally _ | TryExcept _ -> DoChildren
+    | Block _ | If _ | TryFinally _ | TryExcept _
+    | Goto _ | ComputedGoto _ | Break _ -> DoChildren
     | Switch _ ->
        raise
          (Failure ("Switch statement unexpected. "^
@@ -454,7 +468,7 @@ class loopInspector (tl : Cloop.t) = object
        such but stop visiting children. Currently, we do not support breaks
        and the loops will not be parallelized.
     *)
-    | Goto _ | ComputedGoto _ | Break _ | Continue _ | Return _->
+   | Continue _ | Return _->
        Cloop.setBreak tl;
       SkipChildren
     | Instr _ ->
@@ -490,10 +504,11 @@ let addBoundaryInfo clp =
     | None ->
        if !debug || true then
          begin
-           Printf.eprintf
-             "addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
+           eprintf
+             "Error : addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
              sid
-             (psprint80 d_stmt clp.Cloop.loopStatement)
+             (psprint80 d_stmt clp.Cloop.loopStatement);
+           flush_all ();
          end;
       IH.create 2
   in
@@ -508,11 +523,11 @@ let addBoundaryInfo clp =
       begin
         if !debug || true then
           begin
-            Printf.eprintf
+            eprintf
               "addBoundaryInfo - no live variables in (sid : %i):\n %s\n"
               sid
               (psprint80 d_stmt clp.Cloop.loopStatement);
-
+            flush_all ();
           end;
         raise (Failure "addBoundaryInfo : no live variables.");
       end
@@ -567,7 +582,11 @@ let addRWinformation sid clp =
     end
   else ();
   let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGlobalFuncVS ()) in
-  Cloop.setRW clp rwinfo ~checkDefinedIn:false
+  try
+    Cloop.setRW clp rwinfo ~checkDefinedIn:false
+  with Failure s ->
+    eprintf "%s\n" s;
+    raise (Failure "Failed to set RW info with defined-in check")
 
 (******************************************************************************)
 (** Exported functions *)
@@ -611,8 +630,8 @@ let processFile cfile =
       the loops containing break statements.
   *)
   let rem_cond cl =
-    cl.Cloop.hasBreaks ||
-      ((IH.length cl.Cloop.definedInVars) = 0)
+    cl.Cloop.hasBreaks(** ||
+      ((IH.length cl.Cloop.definedInVars) = 0)*)
   in
   let loops_to_remove =
     IH.fold
@@ -624,6 +643,14 @@ let processFile cfile =
       programLoops
       []
   in
+
+  if !debug && List.length loops_to_remove > 0 then
+    begin
+      printf "Remove %s from"
+        (String.concat "; "(List.map string_of_int loops_to_remove));
+      IH.iter (fun k v -> printf " %i;" v.Cloop.sid) programLoops
+    end;
+
   List.iter
     (fun sid -> IH.remove programLoops sid)
     loops_to_remove;

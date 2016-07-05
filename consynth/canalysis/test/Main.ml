@@ -1,6 +1,6 @@
 open Cil
 open Canalyst
-open Printf
+open Format
 open Prefunc
 
 module LF = Loops2ssa.Floop
@@ -13,6 +13,8 @@ let testProcessFile () =
     end;
   let filename = "test/"^(Array.get Sys.argv 1) in
   printf "-- test processing file -- \n";
-  ignore(Canalyst.processFile filename);;
+  ignore(Canalyst.processFile filename);
+  printf "-- finished --\n";;
+
 
 testProcessFile ()

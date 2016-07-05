@@ -1,5 +1,5 @@
 open Cil
-open Printf
+open Format
 open List
 open Loops2ssa
 open Hashtbl
@@ -16,7 +16,6 @@ let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =
   let cabs, cil = Frontc.parse_with_cabs fname () in
-  Rmtmps.removeUnusedTemps cil;
   cil
 
 let loops = IH.create 10
@@ -29,8 +28,10 @@ let processFile fileName =
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  Loops.debug := !debug; Loops.verbose := ! verbose;
-  let fids = Loops.processFile cfile in
+  Loops.debug := !debug;
+  Loops.verbose := !verbose;
+  Rmtmps.removeUnusedTemps cfile;
+  ignore(Loops.processFile cfile);
   let loops = Loops.processedLoops () in
   let loopscpy = (IH.copy loops) in
   L2S.debug := !debug;

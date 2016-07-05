@@ -161,13 +161,8 @@ let processFile_l2s lps =
   loops := lps;
   begin
     IH.iter (fun sid cloop ->
-      if (not cloop.Cloop.hasBreaks)
-      then ()
-      else
-        begin
-          let floop = Floop.fromCloop sid cloop in
-          IH.add floops sid floop
-        end)
+      let floop = Floop.fromCloop sid cloop in
+      IH.add floops sid floop)
       lps
   end;
   floops
