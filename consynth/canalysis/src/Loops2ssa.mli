@@ -4,17 +4,18 @@ open Prefunc
 val debug: bool ref
 
 module Floop : sig
-    type t = {
-      sid: int;
-      mutable igu: forIGU;
-      mutable body : preFunc Inthash.t;
-      mutable state : int list;
-      mutable parentLoops : int list;
-      mutable usedOutVars: Cil.varinfo list;
-      mutable allVars: Utils.VS.t ;
-    }
+  type t = {
+    sid: int;
+    mutable igu: forIGU;
+    mutable body : preFunc Inthash.t;
+    mutable parentLoops : int list;
+    mutable state : int list;
+    mutable indexes : int list;
+    mutable usedOutVars: Cil.varinfo list;
+    mutable allVars: VS.t ;
+  }
 
-    val fromCloop: int -> Cloop.t -> t
+  val fromCloop: int -> Cloop.t -> t
 end
 
 val floops : Floop.t Inthash.t

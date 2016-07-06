@@ -51,7 +51,7 @@
 ;; Test macros
 (struct state (a b c))
 (define s0 (state 1 2 3))
-(define s1 (state 3 3 4))
+(define s1 (state 3 3 4))LoLLop
 
 (Define-struct-eq state (a b c))
 

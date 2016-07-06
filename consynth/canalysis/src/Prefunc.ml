@@ -59,7 +59,7 @@ let rec gcompose g1 g2 =
 
 (**
     Build the expression that will be put in the let/in form,
-    for a given varaible v and statevariables x
+    for a given variable v and statevariables x
 *)
 let rec build  g (expr : Cil.exp) (x : Cil.varinfo)
     (statevars : int list)=
@@ -124,16 +124,16 @@ let rec letin v old newe =
 
 (**
    Put the new lambda at the end of the old lambda, and put last
-   expression in the old lambda in a let in using the vid provided 
+   expression in the old lambda in a let in using the vid provided
    as argument.
 *)
 let rec letin_lam (vid : int) (old : lambda) (nlam : lambda) =
   match old with
-  | Exp e -> Let(vid, e, nlam) 
+  | Exp e -> Let(vid, e, nlam)
   | Let (x, e, l) -> Let (x, e, letin_lam vid l nlam)
 
 let let_in_func v old newe =
-  match newe with 
+  match newe with
   | Exp e ->
      begin
        match old with
@@ -155,19 +155,19 @@ let rec reduce_v (vid: int) (lam : lambda) (state : fexp IH.t) =
       state e in
     IH.replace state main_vid ne
   in
-  match lam with 
+  match lam with
   | Exp e -> step vid e
   | Let (xid, fexpr, lam') ->
      step xid fexpr;
     reduce_v vid lam' state
-     
-     
-     
+
+
+
 
 let reduce (func : preFunc) : fexp =
   match func with
   | Empty vi -> Id vi.vid
-  | Func (vi, lam) -> 
+  | Func (vi, lam) ->
      let hm = IH.create 10 in
      reduce_v vi.vid lam hm;
      IH.find hm vi.vid
@@ -215,7 +215,7 @@ and pr_fexp ppf =
        (psprint80 Cil.dn_exp e)
        (String.concat
           " "
-          (List.map 
+          (List.map
           (fun (i, fexpr) ->
             (sprintf "%i -> %s" i "xx"))
           l

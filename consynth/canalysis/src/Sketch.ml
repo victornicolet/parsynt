@@ -13,7 +13,7 @@ module LF = Loops2ssa.Floop
 module SM = Map.Make (String)
 
 
-let debug = ref true;
+let debug = ref false;
 (**
    The main entry point of the file if build_sketch :
    build a sketch from the Floop (vector of functions
@@ -96,9 +96,14 @@ let fp = Format.fprintf in
       fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
         (color "blue") default
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
-  | SkRec (igu, e) ->
-     fp ppf "%s recursive%s %a" (color "blue")
-     default pp_skexpr e
+  | SkRec ((i, g, u), e) ->
+     fp ppf "%s recursive(%s %s;%s) %s %a"
+       (color "blue")
+       (psprint80 Cil.dn_instr i)
+       (psprint80 Cil.dn_exp g)
+       (psprint80 Cil.dn_instr u)
+       default
+       pp_skexpr e
   | SkSizeof t -> fp ppf "(SizeOf %s)" (psprint80 Cil.d_type t)
   | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
@@ -248,6 +253,7 @@ let build_sketch (loopinfo : LF.t): sketch =
   in
   (state_set, sketch_body)
 
+(******************************************************************************)
 
 (**
     Compile the Rosette sketch.

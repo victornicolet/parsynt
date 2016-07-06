@@ -224,6 +224,9 @@ module VSOps = struct
     let vs = VS.empty in
     IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
 
+  let vs_of_inthash ih =
+    IH.fold (fun i vi set -> VS.add vi set) ih VS.empty
+
   let vids_of_vs (vs : VS.t) : int list =
     List.map (fun vi -> vi.vid) (VS.elements vs)
 
