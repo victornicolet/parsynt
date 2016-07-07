@@ -164,3 +164,13 @@ let rec reduce let_form substs =
      else LetCond (e, red bif, red belse, red cont, loc)
 
 and red let_form = reduce let_form IM.empty
+
+
+(**
+   MAIN ENTRY POINT
+ *)
+
+let cil2func block statevs =
+  if !debug then eprintf "-- Cil --> Functional --";
+  let let_expression = do_b block in
+  let_expression
