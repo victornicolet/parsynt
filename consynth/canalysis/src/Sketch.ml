@@ -159,7 +159,7 @@ let build_sketch (loopinfo : LF.t): sketch =
 (**
     Compile the Rosette sketch.
     Rosette is using Racket, which is based on s-expresssions
-    so we will be using the Sexplb library to convert types
+    so we will be using the Sexplib library to convert types
     directly to s-expressions
 *)
 
