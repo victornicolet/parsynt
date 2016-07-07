@@ -26,7 +26,7 @@ and fexp =
   | Unop of Cil.unop * fexp
   (**
       A loop enclosing an assignment is reduced to the IGU,
-      the subscripts if is is an array and the right-hand side
+      the subscripts if it is an array and the right-hand side
       expression in the assignment.
       The subscript expression list is empty if it is a scalar.
   *)

@@ -91,7 +91,7 @@ and do_i vs hm g (ins : Cil.instr) =
            match ef with
            | Lval (Var vi, _) ->
               begin
-                ()
+                () (** TODO *)
               end
            | _ ->  ()
          end

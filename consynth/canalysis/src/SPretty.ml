@@ -63,10 +63,42 @@ let fp = Format.fprintf in
   | SkStartOf l -> fp ppf "(StartOf %s)" (psprint80 Cil.d_lval l)
 
 
-
-let printSkstmt s = pp_skstmt Format.std_formatter s
+(** Print statements **)
+let printSkstmt s = pp_skstmt std_formatter s
 let sprintSkstmt s =
-  pp_skstmt Format.str_formatter s;
-  Format.flush_str_formatter ()
+  pp_skstmt str_formatter s;
+  flush_str_formatter ()
 
-let eprintSkstmt s = pp_skstmt Format.err_formatter s
+let eprintSkstmt s = pp_skstmt err_formatter s
+
+(** Print let-forms *)
+let printSklet s = pp_sklet std_formatter s
+let sprintSklet s =
+  pp_sklet str_formatter s;
+  flush_str_formatter ()
+
+let eprintSklet s = pp_sklet err_formatter s
+
+(** Print epxressions *)
+let printSkexpr s = pp_skexpr std_formatter s
+let sprintSkexpr s =
+  pp_skexpr str_formatter s;
+  flush_str_formatter ()
+
+let eprintSkexpr s = pp_skexpr err_formatter s
+
+(** Pritn the whole intermediary sketch *)
+let pp_sketch ppf (state_set, stmt_li) =
+  fprintf ppf "@[State = %a@]@;@[%a@]"
+    VSOps.pvs state_set
+    (pp_print_list
+       ~pp_sep:(fun fmt x -> fprintf fmt "\n@.")
+       pp_skstmt) stmt_li
+
+(** Print sketches *)
+let printSketch s = pp_sketch std_formatter s
+let sprintSketch s =
+  pp_sketch str_formatter s;
+  flush_str_formatter ()
+
+let eprintSketch s = pp_sketch err_formatter s

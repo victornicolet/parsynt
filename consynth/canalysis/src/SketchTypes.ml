@@ -39,6 +39,33 @@ and skStmt =  varinfo * sklet
 
 type sketch = VS.t * skStmt list
 
+(** Structure types for Rosette sketches *)
+
+type initialDefs =
+  | Initials of (string * string) list [@@deriving_sexp]
+
+(**
+   The body of the join and the loop are Racket programs with
+   holes insides.
+*)
+type racket_with_holes = string list [@@deriving_sexp]
+
+(**
+   A state is simply a list of variables that are modified
+   during the loop.
+*)
+type state = string list [@@deriving_sexp]
+
+(**
+   We generate the body of the oririginal loop simply from
+   the state variables and the list of function that are
+   applied to each state variable.
+*)
+type bodyFunc =
+  | DefineBody of state * racket_with_holes
+  | DefineJoin of state * racket_with_holes
+      [@@deriving_sexp]
+
 (** Interface types with Rosette/Racket *)
 
 type symbolicType =
