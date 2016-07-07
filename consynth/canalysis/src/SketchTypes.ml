@@ -1,7 +1,45 @@
 open Cil
 open Utils
+open Loops
 
 let use_unsafe_operations = ref false
+
+
+(** Internal type for building sketches *)
+
+type sklet =
+  | SkLetExpr of skExpr
+  | SkLetIn of varinfo * skExpr * sklet
+
+and skExpr =
+  | SkVar of varinfo
+  | SkArray of varinfo * (skExpr list)
+  | SkCil of exp (** If expression doesn't contain state variables *)
+  | SkBinop of binop * skExpr * skExpr
+  | SkUnop of unop * skExpr
+  | SkRec of  forIGU * skExpr
+  | SkCond of skExpr * skExpr * skExpr
+  | SkHoleL
+  | SkHoleR
+(** Simple translation of Cil exp needed to nest
+    sub-expressions with state variables *)
+  | SkConst of constant
+  | SkLval of lval
+  | SkSizeof of typ
+  | SkSizeofE of skExpr
+  | SkSizeofStr of string
+  | SkAlignof of typ
+  | SkAlignofE of skExpr
+  | SkCastE of typ * skExpr
+  | SkAddrof of lval
+  | SkAddrofLabel of stmt ref
+  | SkStartOf of lval
+
+and skStmt =  varinfo * sklet
+
+type sketch = VS.t * skStmt list
+
+(** Interface types with Rosette/Racket *)
 
 type symbolicType =
   | Unit

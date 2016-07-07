@@ -39,7 +39,7 @@ let processFile fileName =
   let sketchSet = IH.create 10 in
   IH.iter (fun k v ->
     IH.add sketchSet k (build_sketch v)) floops;
-  IH.iter (fun k (vi, v) -> ignore(List.map printSkstmt v)) sketchSet;
+  IH.iter (fun k (vi, v) -> ignore(List.map SPretty.printSkstmt v)) sketchSet;
   floops
 
 
