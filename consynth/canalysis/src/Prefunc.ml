@@ -1,6 +1,5 @@
 open Utils
 open Cil
-open Printf
 open Format
 open PpHelper
 module VS = VS
