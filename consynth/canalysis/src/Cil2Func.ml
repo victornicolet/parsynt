@@ -2,6 +2,7 @@ open Utils
 open Cil
 open Format
 open Loops
+open PpHelper
 
 module IM = Map.Make(struct type t = int let compare = compare end)
 
@@ -172,5 +173,59 @@ and red let_form = reduce let_form IM.empty
 
 let cil2func block statevs =
   if !debug then eprintf "-- Cil --> Functional --";
-  let let_expression = do_b block in
-  let_expression
+  let let_expression = do_b statevs block in
+  red let_expression
+
+
+(** Pretty-printinf functions *)
+
+let rec  pp_subs ppf =
+  IM.iter
+    (fun k v -> fprintf ppf "%i -> %a" k pp_expr v)
+
+and pp_letin ppf =
+  function
+  | State (vs, expr_map) ->
+     fprintf ppf "@[<State: %a>@]@[<Substitutions: %a>@]"
+       VSOps.pvs vs
+       pp_subs expr_map
+
+  | Let (vi, expr, letn, loc) ->
+     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s @[ %a @]@]"
+       (color "red") default vi.vname pp_expr expr
+       (color "red") default
+       pp_letin letn
+
+  | LetRec ((i, g , u), let1, letcont, loc) ->
+     fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]"
+       (color "red") default
+       (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
+       (psprint80 Cil.dn_instr u)
+       pp_letin let1
+       (color "red") default
+       pp_letin letcont
+
+  | LetCond (exp, letif, letelse, letcont, loc) ->
+     fprintf ppf "@[%sif%s %s @]@[%sthen%s %a @]@[%selse%s %a @]%sendif%s@[%a@]"
+       (color "red") default
+       (psprint80 Cil.dn_exp exp)
+       (color "red") default
+       pp_letin letif
+       (color "red") default
+       pp_letin  letelse
+       (color "red") default
+       pp_letin letcont
+
+and pp_expr ppf =
+  function
+    | Var vi -> fprintf ppf "%s" vi.vname
+    | Container (e, subs) ->
+       fprintf ppf "%s [%a]"
+         (psprint80 Cil.dn_exp e)  pp_subs subs
+    | FQuestion (c, a, b) ->
+       fprintf ppf "%s ? %a : %a"
+         (psprint80 Cil.dn_exp c) pp_expr a pp_expr b
+
+let printlet letform = pp_letin std_formatter letform
+let eprintlet letform = pp_letin err_formatter letform
+let sprintlet letform = pp_letin str_formatter letform ; flush_str_formatter ()
