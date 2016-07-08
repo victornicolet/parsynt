@@ -1,7 +1,9 @@
 open Printf
 open Format
+open Utils
 
 module SH = Map.Make(String)
+
 
 let colorPrefix = "\x1b"
 
@@ -19,10 +21,28 @@ let color cname =
 
 let default = colorPrefix^"[0m"
 
-let rec ppli ppf pfun =
-  function
-  | hd :: tl -> fprintf ppf "%a;%a" pfun hd (fun fmt -> ppli fmt pfun) tl
-  | [] -> fprintf ppf "%s" ""
+(** List printing *)
+
+let rec ppli
+    (ppf : formatter)
+    ?(sep = ";")
+    (pfun : formatter -> 'a -> unit) : 'a list -> unit =
+  pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "%s" sep) pfun ppf
+
+let pp_int_list ppf =
+  ppli ppf
+    ~sep:":"
+    (fun ppf i -> fprintf ppf "%i" i)
+
+let print_int_list = pp_int_list std_formatter
+
+(** Map printing *)
+let ppimap
+    (pelt : formatter -> 'a -> unit)
+    (ppf : formatter) : 'a IM.t -> unit =
+  IM.iter
+    (fun i a ->
+      fprintf ppf "@[<hov 2> %i -> %a@]@;" i pelt a)
 
 (**TODO : replace characters that are srtting colro back to default in incoming
    string *)

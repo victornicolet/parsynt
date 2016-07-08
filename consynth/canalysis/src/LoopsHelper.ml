@@ -1,5 +1,6 @@
 open Cil
 open Utils
+open ListTools
 
 let removeFromCFG (stm : stmt) =
   let succs = stm.succs in
@@ -11,11 +12,11 @@ let removeFromCFG (stm : stmt) =
 let rec remLastInstr (bdy : stmt list) =
   if List.length bdy < 1
   then None, None
-  else    
+  else
     let lastStmt = last bdy in
     match lastStmt.skind with
     | Instr il ->
-       begin 
+       begin
          match il with
          | [i] ->
             removeFromCFG lastStmt;

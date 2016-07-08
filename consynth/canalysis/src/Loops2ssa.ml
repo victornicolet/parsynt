@@ -4,6 +4,7 @@ open Loops
 open Printf
 open Prefunc
 open LoopsHelper
+open ListTools
 
 module IH = Inthash
 module VS = Utils.VS

@@ -1,9 +1,7 @@
 open Cil
-open Format
-open List
-open Loops2ssa
 open Hashtbl
 open Sketch
+open Utils
 
 module F = Frontc
 module E = Errormsg
@@ -32,7 +30,7 @@ let processFile fileName =
   Loops.verbose := !verbose;
   Rmtmps.removeUnusedTemps cfile;
   ignore(Loops.processFile cfile);
-  let loops = Loops.processedLoops () in
+  IHTools.add_all loops (Loops.processedLoops ());
   let loopscpy = (IH.copy loops) in
   L2S.debug := !debug;
   let floops = L2S.processFile_l2s loopscpy in

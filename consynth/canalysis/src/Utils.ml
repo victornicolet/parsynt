@@ -13,6 +13,7 @@ module IS = Set.Make (struct
 end)
 
 module VS = Usedef.VS
+module IM = Map.Make(struct type t = int let compare = compare end)
 
 (** Hash a set of variables with their variable id *)
 let hashVS vset =
@@ -50,38 +51,42 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
   (f a, f b, f c)
 
 (** Lists *)
+module ListTools = struct
 
-let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
-  List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
+  let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
+    List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
 
-let foldl_union2 (f: 'a -> VS.t * VS.t) (l: 'a list) : VS.t * VS.t =
-  List.fold_left (fun (acc1, acc2) a ->
-	let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
-	(VS.empty, VS.empty) l
-
-
-let outer_join_lists (a, b) =
- List.fold_left
-   (fun li i ->
-   if List.mem i li then li else i::li) a b
+  let foldl_union2 (f: 'a -> VS.t * VS.t) (l: 'a list) : VS.t * VS.t =
+    List.fold_left (fun (acc1, acc2) a ->
+	  let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
+	  (VS.empty, VS.empty) l
 
 
-let last list =
-  List.nth list ((List.length list) - 1)
+  let outer_join_lists (a, b) =
+    List.fold_left
+      (fun li i ->
+        if List.mem i li then li else i::li) a b
 
-let remove_last list =
-  match (List.rev list) with
-  | h::t -> List.rev t
-  | []   -> []
+  let last list =
+    List.nth list ((List.length list) - 1)
 
-let replace_last list elt =
-  match (List.rev list) with
-  | h::t -> List.rev (elt::t)
-  | []   -> []
+  let remove_last list =
+    match (List.rev list) with
+    | h::t -> List.rev t
+    | []   -> []
+
+  let replace_last list elt =
+    match (List.rev list) with
+    | h::t -> List.rev (elt::t)
+    | []   -> []
+
+end
+
+
 
 let lastInstr instr_stmt =
   match instr_stmt.skind with
-  | Instr il -> last il
+  | Instr il -> ListTools.last il
   | _ -> raise
      (Failure "lastInstr expected a statement of instruction list kind" )
 
@@ -181,7 +186,7 @@ module VSOps = struct
        VS.union vs_exp vs_ls
     | Call (lvo, ef, elist, _) ->
        let vs_ls = appOption sovv lvo VS.empty in
-       let vs_el = foldl_union sove elist in
+       let vs_el = ListTools.foldl_union sove elist in
        VS.union vs_ls vs_el
     | _ -> VS.empty
 
@@ -231,7 +236,7 @@ module VSOps = struct
     List.map (fun vi -> vi.vid) (VS.elements vs)
 
   let pvs ppf (vs: VS.t) =
-    if VS.cardinal vs > 1 then
+    if VS.cardinal vs > 0 then
       VS.iter
         (fun vi -> Format.fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
         vs
@@ -245,4 +250,16 @@ module VSOps = struct
   let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
   let ppvs = pvs std_formatter
   let epvs = pvs err_formatter
+end
+
+module IHTools = struct
+    (**
+        Add al the key-value bindings of to_add to add_to only
+        if the key is not present in add_to.
+    *)
+    let add_all add_to to_add =
+      IH.iter
+        (fun k v ->
+          if IH.mem add_to k then () else IH.add add_to k v)
+        to_add
 end

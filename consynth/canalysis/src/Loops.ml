@@ -2,6 +2,7 @@ open Cil
 open Format
 open LoopsHelper
 open Utils
+open ListTools
 
 module E = Errormsg
 module IH = Inthash
