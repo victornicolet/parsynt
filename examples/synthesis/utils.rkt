@@ -8,10 +8,10 @@
 ;; (PolytopeLU [lower bounds ..] [indexes ... ] [upper bounds ...])
 (define-syntax PolytopeLU
   (syntax-rules ()
-    [(PolytopeLU [l ...] [a ...] [u ...]) 
+    [(PolytopeLU [l ...] [a ...] [u ...])
      (assert (and (and (< a u) (<= l a)) ...)) ]))
 
-(define (get-synthax synthesis-solution) 
+(define (get-synthax synthesis-solution)
   (car synthesis-solution))
 
 ;; Synthesizable arithmetic expressions, based onyl on Rosette symbolic values
@@ -26,7 +26,7 @@
   #:else (choose
           ;; Scalar value
           (c ... (??))
-          ;; Binary operator 
+          ;; Binary operator
           ((ArithOp)
            (ArithExpr c ... (??) (sub1 depth))
            (ArithExpr c ... (??) (sub1 depth)))))
@@ -34,3 +34,10 @@
 ;; For pairs
 (define fst car)
 (define snd cadr)
+
+(define (split-by lst x)
+  (foldr (lambda (element next)
+           (if (eq? element x)
+               (cons '() next)
+               (cons (cons element (car next)) (cdr next))))
+         (list ) lst))

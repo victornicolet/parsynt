@@ -4,6 +4,7 @@
          consynth/lib/synthax/expressions
          rosette/lib/synthax
          rosette/query/debug
+         "../utils.rkt"
          )
 
 ;; Reduce f on list l with neutral element
@@ -54,7 +55,7 @@
 ;; sum so far. Then returns a list containing (mps, sum).
 (define (mps-join L R)
   (let ([mpsL (car L)] [sL (cdr L)][mpsR (car R)][sR (cdr R)])
-    (cons (car (mps-and-sum (list
+    (mps-and-sum (list
                              ((choose - +)
                               (choose mpsL sL mpsR sR (??))
                               (choose mpsL sL mpsR sR (??)))
@@ -69,8 +70,7 @@
 
                              ((choose - +)
                               (choose mpsL sL mpsR sR (??))
-                              (choose mpsL sL mpsR sR (??))))))
-          (+ sL sR))))
+                              (choose mpsL sL mpsR sR (??)))))))
 
 
 (define-values (l01 l02) (values
@@ -90,8 +90,13 @@
 (define-symbolic li0 li1 li2 li3 li4 integer?)
 (define-symbolic li5 li6 li7 integer?)
 
-(define-values (l1 l2) (values (list li0 li1 li2 li3 li4)
-                               (list li5 li6 li7)))
+
+(define symb-list (list li0 li1 li2 li3 li4 li5 li6 li7))
+(define tek integer?)
+(define-values (l1 l2) (split-at symb-list 4))
+(define-values (l3 l4) (split-at symb-list 3))
+(define-values (l5 l6) (split-at symb-list 5))
+;;(define-values (l7 l8) (split-at symb-list 6))
 
 (if (unsat? (verify (assert (problem mps-join l1 l2))))
     (display "Given join is not correct !\n")
@@ -100,20 +105,21 @@
 (define odot
   (time
    (synthesize
-    #:forall (list li0 li1 li2 li5 li6 li3 li4 )
-    #:guarantee (assert (problem mps-join l1 l2)))))
+    #:forall (list li0 li1 li2 li3 li4 li5 li6 li7)
+    #:guarantee (assert (and
+                         (problem mps-join l1 l2)
+                         (problem mps-join l5 l6)
+                         (problem mps-join l3 l4))))))
 
 (if (sat? odot) (print-forms odot) (core odot))
 
-;; Output ;
+;; Output with VC on three list splits, timeout with four.
 ;; Given join is correct.
-;; cpu time: 533 real time: 62406 gc time: 29
-;; /home/victorn/repos/consynth/examples/synthesis/loops/maximum-prefix-sum.rkt:48:0
+;; cpu time: 123 real time: 2682 gc time: 0
+;; /home/victorn/repos/consynth/examples/synthesis/loops/maximum-prefix-sum.rkt:56:0
 ;; '(define (mps-join L R)
 ;;    (let ((mpsL (car L)) (sL (cdr L)) (mpsR (car R)) (sR (cdr R)))
-;;      (cons
-;;       (car (mps-and-sum (list (+ mpsL 0) (- 0 mpsL) (+ 0 sL) (+ mpsR 0))))
-;;       (+ sL sR))))
+;;      (mps-and-sum (list (+ mpsL 0) (- sL mpsL) (+ 0 mpsR) (- sR mpsR)))))
 
 ;; -----------------------------------------------------------------------------
 ;; Join problem in its "imperative" form, where the join appears on each side of
