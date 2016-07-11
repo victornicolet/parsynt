@@ -16,5 +16,12 @@ C code analysis is partially done using the Cil library in Ocaml, so you will ne
 - Cil ``` opam install cil ```
 
 To set up the Makefiles, in each directory where you can find a ```_oasis``` file, run :\\
-```oasis setup -stup-update dynamic``` \\
+```oasis setup -setup-update dynamic``` \\
 And then compile using make.
+
+## Project
+
+### Parsing and analyzing input C code.
+The parsing and the analysis of the input code is done with the Cil library in consynth/canalysis. To run the tests, execute the makefile in the consynth/canalysis directory and run ```./Main [filename]```
+
+### Synthesis examples with Rosette.

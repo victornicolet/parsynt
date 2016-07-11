@@ -126,11 +126,12 @@
 ;; the = : s # B(s',i) = B(s#s',i) where s, s' are ANY state and not only a
 ;; state resulting from the application of a body.
 (clear-asserts!)
-(define-symbolic mps1 sum1 mps2 sum2 a integer?)
+(define-symbolic mps1 sum1 mps2 sum2 mps3 sum3 a integer?)
 
 (define s0-prim (cons 0 0))
 (define state1 (cons mps1 sum1))
 (define state2 (cons mps2 sum2))
+(define state3 (cons mps3 sum3))
 
 (assert (>= 0 mps1))
 (assert (>= 0 mps2))
@@ -141,10 +142,13 @@
    (synthesize
     #:forall (list mps1 sum1 mps2 sum2 a)
     #:guarantee (assert
-                 (eq? (mps-join state1
+                 (and
+                  (eq? (mps-join state3 s0-prim) state3)
+                  (eq? (mps-join s0-prim state3) state3)
+                  (eq? (mps-join state1
                                 (mpss one-iter-list state2))
                       (mpss
-                       one-iter-list (mps-join state1 state2)))))))
+                       one-iter-list (mps-join state1 state2))))))))
 
 ;; Timeout after running the solver for 10 minutes.
 
