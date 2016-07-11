@@ -4,6 +4,7 @@
          consynth/lib/synthax/expressions
          consynth/lib/synthax/constructors)
 
+(current-bitwidth #f)
 
 (define-symbolic a0 a1 a2 a3 a4 a5 a6 a7 boolean?)
 (define-symbolic len integer? )
@@ -57,6 +58,9 @@
 (define join_res (join left right))
 
 
+(if (unsat? (verify  (assert (eq? total join_res))))
+    (displayln "Unsatifisifable verification conditions.")
+    (displayln "Verif passed."))
 
 (define odot
   (synthesize

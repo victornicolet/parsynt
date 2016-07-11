@@ -3,7 +3,7 @@
 (require rosette/lib/synthax)
 
 (provide PolytopeLU get-synthax
-         ArithOp ArithExpr)
+         ArithOp ArithExpr print-if-sat)
 ;; Generates the assertions for a polytope P such that each  a < u and a <=
 ;; (PolytopeLU [lower bounds ..] [indexes ... ] [upper bounds ...])
 (define-syntax PolytopeLU
@@ -41,3 +41,6 @@
                (cons '() next)
                (cons (cons element (car next)) (cdr next))))
          (list ) lst))
+
+
+(define (print-if-sat odot) (if (sat? odot) (print-forms odot) (core odot)))
