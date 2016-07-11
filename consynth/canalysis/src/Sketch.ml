@@ -1,5 +1,4 @@
 open Utils
-open Cil
 open Format
 open Prefunc
 open Core.Std
@@ -7,6 +6,7 @@ open Utils
 open SketchTypes
 open SPretty
 open PpHelper
+open Cil2Func
 
 module VS = VS
 module LF = Loops2ssa.Floop
@@ -73,56 +73,72 @@ let rec hole (vs: VS.t) =
      *)
      SkHoleR
 
+and hole_fexpr (vs : VS.t) =
+  function
+  | Var vi ->
+     begin
+       try
+         let vi = VSOps.getVi vi.Cil.vid vs in
+         SkVar vi
+       with Not_found ->
+         SkHoleR
+     end
+  (** TODO : array -> region *)
+  | Array (vi, el) ->
+     SkHoleR
+  | Container (e, subs) ->
+
+
 and hole_cils (vs : VS.t) =
   function
-  | Const c -> SkHoleR
+  | Cil.Const c -> SkHoleR
 
-  | Lval v ->
+  | Cil.Lval v ->
      if VSOps.hasLval v vs then
        SkLval v (** TODO : better matching lvalue -> SkVar or Skvar + offset *)
      else
        SkHoleR
 
-  | SizeOf t->
+  | Cil.SizeOf t->
      SkSizeof t
 
-  | SizeOfE e ->
+  | Cil.SizeOfE e ->
      hole_or_exp (fun x -> SkSizeofE x) (hole_cils vs e)
 
-  | SizeOfStr s ->
+  | Cil.SizeOfStr s ->
      SkSizeofStr s
 
-  | AlignOf t ->
+  | Cil.AlignOf t ->
      SkAlignof t
 
-  | AlignOfE e ->
+  | Cil.AlignOfE e ->
      hole_or_exp (fun x -> SkAlignofE x) (hole_cils vs e)
 
-  | AddrOf lv ->
+  | Cil.AddrOf lv ->
      SkAddrof lv
 
-  | AddrOfLabel stm_ref ->
+  | Cil.AddrOfLabel stm_ref ->
      SkAddrofLabel stm_ref
 
-  | UnOp (op, e1, t) ->
+  | Cil.UnOp (op, e1, t) ->
      hole_or_exp (fun x -> SkUnop (op,x)) (hole_cils vs e1)
 
-  | BinOp (op, e1, e2, t) ->
+  | Cil.BinOp (op, e1, e2, t) ->
      hole_or_exp2
        (fun x1 x2 -> SkBinop (op, x1, x2))
        (hole_cils vs e1)
        (hole_cils vs e2)
 
-  | Question (c, e1, e2, t) ->
+  | Cil.Question (c, e1, e2, t) ->
      let c' = hole_cils vs c in
      (** TODO : do something more specific with the question *)
      hole_or_exp2
        (fun x1 x2 -> SkCond (c', x1, x2))
        (hole_cils vs e1)
        (hole_cils vs e2)
-  | CastE (t, e) ->
+  | Cil.CastE (t, e) ->
      SkCastE (t, hole_cils vs e)
-  | StartOf lv ->
+  | Cil.StartOf lv ->
      SkStartOf lv
 
 and hole_lam (vs: VS.t) =
@@ -213,7 +229,7 @@ let adding_function vtype =
   | _ ->  identity2
 
 let add_varinfo vi defs  =
-  (adding_function vi.vtype) vi.vname defs
+  (adding_function vi.Cil.vtype) vi.Cil.vname defs
 
 let defsRec_to_symbDefs defs_rec
     : (symbDef * symbDef * symbDef * (symbDef list) ) =

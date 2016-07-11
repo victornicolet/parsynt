@@ -33,8 +33,10 @@ type letin =
 
 and expr =
   | Var of varinfo
+  | Array of varinfo * (expr list)
   | Container of exp * substitutions
   | FQuestion of exp * expr * expr
+  | FRec of Loops.forIGU * expr
 
 and substitutions = expr IM.t
 
@@ -51,12 +53,28 @@ let rec wf_letin =
        | _ -> false
      end
 
+(** Helpers *)
+
 let empty_state vs = State (vs, IM.empty)
 
-let is_enpty_state state =
+let is_empty_state state =
   match state with
   | State (vs, emap) when IM.is_empty emap -> true
   | _ -> false
+
+let rec is_not_identity_substitution vid expr =
+  match expr with
+  | Var (vi) -> vi.vid != vid
+  | Container (e, subs) ->
+     ((IM.fold
+         (fun k v a -> (is_not_identity_substitution k v) && a)
+         subs false)
+      &&
+        ((VS.max_elt (VSOps.sove e)).vid != vid))
+  | _ -> true
+
+let remove_identity_subs substs =
+  IM.filter is_not_identity_substitution substs
 
 (**
    Convert a let-in form of a loop body into
@@ -68,13 +86,34 @@ let is_enpty_state state =
    loops for each written variable is not too expensive.
 *)
 
-let convert_loop let_body = ()
+let convert_loop let_body igu let_cont loc =
+  match let_body with
+  | State (vars, subs) ->
+     let subs' = remove_identity_subs subs in
+     if (IM.cardinal subs') = 1
+     then
+       let vid, expr = IM.max_binding subs' in
+       let rec_expr = FRec (igu, expr) in
+       true, Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
+     else
+       false, let_body
+
+  | _ -> false, let_body
 
 
 let rec apply_subs expr subs =
   match expr with
   | Var vi ->
      (try IM.find vi.vid subs with Not_found -> expr)
+
+  | Array (vi, el) ->
+     let vi_sub =
+       (try
+          let _ = IM.find vi.vid subs in
+          raise (Failure (sprintf "Substitution for an array \
+ violating one-assignment hypothesis : %s ." vi.vname))
+        with Not_found -> vi) in
+     Array (vi_sub, List.map (fun x -> apply_subs x subs) el)
 
   | Container (e, subs') ->
      Container (e,
@@ -88,6 +127,9 @@ let rec apply_subs expr subs =
 
   | FQuestion (e, e1, e2) ->
      FQuestion (e, apply_subs e1 subs, apply_subs e2 subs)
+
+  | FRec (igu, e) ->
+     FRec (igu, apply_subs e subs)
 
 (**
    Add a new let-form at the end of an old one,
@@ -157,6 +199,8 @@ and do_s vs let_form s =
      let_add let_form (do_b vs b)
 
   | _ ->
+     eprintf "do_s : received unexpected Cil statement : @.@[<hov 4>%s@]@."
+       (psprint80 Cil.d_stmt s);
      failwith "Statement unsupported in CPS conversion"
 
 
@@ -197,7 +241,6 @@ let merge_cond c let_if let_else =
   | _ -> false, let_if
 
 
-
 (**
    The main goal of this reduction is to simplify the form by
    eliminating lets as much as possible, an handle specifically
@@ -220,9 +263,17 @@ let rec red let_form substs =
      let nexpr = apply_subs expr substs in
      let nsubs = IM.add vi.vid nexpr substs in
      red cont nsubs
+
   | LetRec (igu, body, cont, loc) ->
      let redd_body = reduce body in
-     LetRec (igu, redd_body, reduce cont, loc)
+     let redd_cont = reduce cont in
+     let converted, conversion =
+       convert_loop redd_body igu redd_cont loc in
+     if converted then
+       conversion
+     else
+       LetRec (igu, redd_body, reduce cont, loc)
+
   | LetCond (e, bif, belse, cont, loc) ->
      let red_if = reduce bif in
      let red_else = reduce belse in
@@ -247,8 +298,8 @@ let cil2func block statevs =
   reduce let_expression
 
 
-(** Pretty-printinf functions *)
-let rec pp_letin ppf =
+(** Pretty-printing functions *)
+let rec pp_letin ?(wloc = false) ppf =
   function
   | State (vs, expr_map) ->
      if IM.is_empty expr_map then
@@ -260,47 +311,55 @@ let rec pp_letin ppf =
          (ppimap pp_expr) expr_map
 
   | Let (vi, expr, letn, loc) ->
-     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]@."
+     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s@."
        (color "red") default vi.vname pp_expr expr
        (color "red") default
-       pp_letin letn
+       (pp_letin ~wloc:wloc) letn
+       (if wloc then string_of_loc loc else "")
 
   | LetRec ((i, g , u), let1, letcont, loc) ->
-     fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]"
+     fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]%s"
        (color "red") default
        (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
        (psprint80 Cil.dn_instr u)
-       pp_letin let1
+       (pp_letin ~wloc:wloc) let1
        (color "red") default
-       pp_letin letcont
+       (pp_letin ~wloc:wloc) letcont
+       (if wloc then string_of_loc loc else "")
 
   | LetCond (exp, letif, letelse, letcont, loc) ->
-     fprintf ppf "@[%sif%s %s @]@[%sthen%s %a @]@[%selse%s %a @]%sendif%s@[%a@]"
+     fprintf ppf
+       "@[%sif%s %s @]@[%sthen%s %a @]@[%selse%s %a @]%sendif%s@[%a@]%s"
        (color "red") default
        (psprint80 Cil.dn_exp exp)
        (color "red") default
-       pp_letin letif
+       (pp_letin ~wloc:wloc) letif
        (color "red") default
-       pp_letin  letelse
+       (pp_letin ~wloc:wloc)  letelse
        (color "red") default
-       pp_letin letcont
+       (pp_letin ~wloc:wloc) letcont
+       (if wloc then string_of_loc loc else "")
 
   | LetState (let_state, let_cont) ->
       fprintf ppf "@[%slet%s %a@]@[%sin%s  %a @]@."
         (color "red") default
-        pp_letin let_state
+        (pp_letin ~wloc:wloc) let_state
         (color "red") default
-        pp_letin let_cont
+        (pp_letin ~wloc:wloc) let_cont
 
 
 and pp_expr ppf =
   function
     | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
 
+    | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
+       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" pp_expr e)) el
+
     | Container (e, subs) ->
        if IM.is_empty subs then
          fprintf ppf "%s"
            (psprint80 Cil.dn_exp e)
+
        else
        fprintf ppf "%s [%a]"
          (psprint80 Cil.dn_exp e)  (ppimap pp_expr) subs
@@ -309,6 +368,19 @@ and pp_expr ppf =
        fprintf ppf "(%s ? %a : %a)"
          (psprint80 Cil.dn_exp c) pp_expr a pp_expr b
 
-let printlet letform = pp_letin std_formatter letform
-let eprintlet letform = pp_letin err_formatter letform
-let sprintlet letform = pp_letin str_formatter letform ; flush_str_formatter ()
+    | FRec ((i, g, u), expr) ->
+       fprintf ppf "%s(%s;%s;%s)%s { %a }"
+         (color "blue")
+         (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
+         (psprint80 Cil.dn_instr u)
+         default pp_expr expr
+
+
+let printlet ?(wloc=false) letform =
+pp_letin ~wloc:wloc std_formatter letform
+
+let eprintlet ?(wloc=false) letform =
+pp_letin ~wloc:wloc err_formatter letform
+
+let sprintlet ?(wloc=false) letform =
+  pp_letin ~wloc:wloc str_formatter letform ; flush_str_formatter ()

@@ -44,6 +44,12 @@ let ppimap
     (fun i a ->
       fprintf ppf "@[<hov 2> %i -> %a@]@;" i pelt a)
 
+
+
+let string_of_loc (loc : Cil.location) =
+ sprintf "<#line %i in %s>" loc.Cil.line loc.Cil.file
+
+
 (**TODO : replace characters that are srtting colro back to default in incoming
    string *)
 let printerr s =
