@@ -8,12 +8,12 @@ open Utils
 module C2F = Cil2Func
 module LF = Loops2ssa.Floop
 
-module T1 = TCil2Func
+module TC2F = TCil2Func
 
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
     begin
-      T1.test ();
+      TC2F.test ();
       eprintf "Usage : ./Main.native [test file name]\n\n";
       exit 0
     end;

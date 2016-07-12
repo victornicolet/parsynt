@@ -1,5 +1,6 @@
 open Cil
 open Utils
+open Format
 open Loops
 
 let use_unsafe_operations = ref false
@@ -350,3 +351,64 @@ let uninterpeted fname =
     else true
   in
       not_in_safe && not_in_unsafe
+
+
+(** Pretty-printing operators *)
+
+let string_of_symb_unops =
+  function
+  | Not -> "Not" | Add1 -> "Add1" | Sub1 -> "Sub1"| Abs -> "Abs"
+  | Floor -> "Floor" | Ceiling -> "Ceiling"  | Truncate -> "Truncate"
+  | Round -> "Round" | Neg -> "Neg" | Sgn -> "Sgn"
+
+let string_of_symb_binops =
+  function
+  | And -> "and"
+  | Nand -> "nand" | Or -> "or" | Nor -> "nor" | Implies -> "implies"
+  | Xor -> "xor"
+  (** Integers and reals *)
+  | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
+  | Quot -> "quot" | Rem -> "rem" | Mod -> "mod"
+  (** Max and min *)
+  | Max -> "max" | Min -> "min"
+  (** Comparison *)
+  | Eq -> "=" | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
+  | Neq -> "neq"
+  (** Shift*)
+  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
+  | Expt -> "expt"
+
+(**
+   Some racket function that are otherwise unsafe
+   to use in Racket, but we might still need them.
+*)
+let string_of_unsafe_unops =
+  function
+  (** Trigonometric + hyp. functions *)
+  | Sin -> "sin" | Cos -> "cos" | Tan -> "tan" | Sinh -> "sinh"
+  | Cosh -> "cosh" | Tanh -> "tanh"
+  (** Anti functions *)
+  | ASin -> "asin" | ACos -> "acos" | ATan -> "atan" | ASinh -> "asinh"
+  | ACosh -> "acosh" | ATanh
+  (** Other functions *)
+  | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
+  | Exp -> "exp" | Sqrt -> "sqrt"
+
+let rec pp_constants ppf =
+  function
+  | Int i -> fprintf ppf "%i" i
+  | Real f -> fprintf ppf "%10.3f" f
+  | Bool b -> fprintf ppf "%b" b
+  | CUnop (op, c) ->
+     fprintf ppf "(%s %a)" (string_of_symb_unops op) pp_constants c
+  | CBinop (op, c1, c2) ->
+     fprintf ppf "(%s %a %a)" (string_of_symb_binops op)
+       pp_constants c1 pp_constants c2
+  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
+  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
+  | Pi -> fprintf ppf "pi"
+  | Sqrt2 -> fprintf ppf "(sqrt 2)"
+  | Ln2 -> fprintf ppf "(log 2)"
+  | Ln10 -> fprintf ppf "(log 10)"
+  | SqrtPi -> fprintf ppf "(sqrt pi)"
+  | E -> fprintf ppf "(exp 1)"

@@ -3,7 +3,7 @@ open Cil
 open Format
 open Loops
 open PpHelper
-
+open SketchTypes
 
 (**
    Implementation of a simple CPS comversion from the
@@ -37,6 +37,19 @@ and expr =
   | Container of exp * substitutions
   | FQuestion of exp * expr * expr
   | FRec of Loops.forIGU * expr
+  (** Types for translated expressions *)
+  | FBinop of symbBinops * expr * expr
+  | FUnop of symbUnops * expr
+  | FConst of constants
+  | FSizeof of typ
+  | FSizeofE of expr
+  | FSizeofStr of string
+  | FAlignof of typ
+  | FAlignofE of expr
+  | FCastE of typ * expr
+  | FAddrof of lval
+  | FAddrofLabel of stmt ref
+  | FStartOf of lval
 
 and substitutions = expr IM.t
 
@@ -126,6 +139,8 @@ let rec apply_subs expr subs =
 
   | FRec (igu, e) ->
      FRec (igu, apply_subs e subs)
+
+  | _ -> failwith "Cannot apply substitutions for this expressions."
 
 
 
@@ -418,6 +433,47 @@ and pp_expr ppf =
          (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
          (psprint80 Cil.dn_instr u)
          default pp_expr expr
+
+    | FBinop (op, e1, e2) ->
+       fprintf ppf "%s %a %a"
+         (string_of_symb_binops op)
+         pp_expr e1
+         pp_expr e2
+
+    | FUnop (op, expr) ->
+       fprintf ppf "%s %a"
+         (string_of_symb_unops op)
+         pp_expr expr
+
+    | FConst c ->
+       fprintf ppf "%a"
+       pp_constants c
+
+    | FSizeof typ ->
+       fprintf ppf "(sizeof %s)"
+        (psprint80 Cil.d_type typ)
+
+    | FSizeofE expr ->
+       fprintf ppf "(sizeof %a)"
+         pp_expr expr
+
+    | FSizeofStr s ->
+        fprintf ppf "(sizeof %s)" s
+
+    | FAlignof typ ->
+       fprintf ppf "(alignof %s)" (psprint80 Cil.d_type typ)
+
+    | FAlignofE e ->
+       fprintf ppf "(alignof %a)" pp_expr e
+
+    | FCastE (t, exp) ->
+       fprintf ppf "(cast %s %a)" (psprint80 Cil.d_type t) pp_expr exp
+
+    | FAddrof (lval) ->
+       fprintf ppf "(addrof %s)" (psprint80 Cil.d_lval lval)
+
+    | FAddrofLabel _ -> fprintf ppf ""
+    | FStartOf _ -> fprintf ppf ""
 
 
 let printlet ?(wloc=false) letform =

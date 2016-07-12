@@ -13,7 +13,14 @@ let debug = ref false
 let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =
-  let cabs, cil = Frontc.parse_with_cabs fname () in
+  let cabs, cil =
+    try
+      Frontc.parse_with_cabs fname ()
+    with
+      Errormsg.Error ->
+        failwith "Error while parsing input file,\
+the filename might contain errors"
+  in
   cil
 
 let loops = IH.create 10

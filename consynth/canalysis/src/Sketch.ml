@@ -86,7 +86,13 @@ and hole_fexpr (vs : VS.t) =
 
   (** TODO : array -> region *)
   | Array (vi, el) ->
-     SkHoleR
+    begin
+      try
+        let vi = VSOps.getVi vi.Cil.vid vs in
+        SkArray (vi, List.map el (hole_fexpr vs))
+      with Not_found ->
+        SkHoleR
+    end
 
   | Container (e, subs) ->
      let usv = VS.inter (VSOps.sove e) vs in
