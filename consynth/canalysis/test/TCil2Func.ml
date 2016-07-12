@@ -8,6 +8,17 @@ module C = Canalyst
 module C2F = Cil2Func
 module LF = Loops2ssa.Floop
 
+let wf_single_subst func =
+  match func with
+  | C2F.State (vs, subs) ->
+     begin
+       (IM.cardinal subs = 1) &&
+         (match IM.max_binding subs with
+         | k, C2F.Container _ -> true
+         | _ -> false)
+     end
+  | _ -> false
+
 let wf_test_case fname (func : C2F.letin) =
   match fname with
   | "test_merge_ifs" ->
@@ -22,20 +33,21 @@ let wf_test_case fname (func : C2F.letin) =
             | _ -> false)
        | _ -> false
      end
-  | "test_simple_loop" ->
-     begin
-       match func with
-       | C2F.State (vs, subs) ->
-          begin
-            (IM.cardinal subs = 1) &&
-              (match IM.max_binding subs with
-              | k, C2F.Container _ -> true
-              | _ -> false)
-          end
-       | _ -> false
-     end
+  | "test_simple_loop" -> wf_single_subst func
+
   | "test_nested_loops" ->
-     true
+     (** Two cases depending on if it is the outer/inner loop *)
+     (wf_single_subst func) ||
+       (match func with
+       | C2F.Let (vid, expr, cont, loc) ->
+          (match expr with
+          | C2F.FRec (_, _) -> true
+          | _ -> false) &&
+            C2F.is_empty_state cont
+
+       | _ -> false
+       )
+
   | _ -> false
 
 

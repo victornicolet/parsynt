@@ -87,9 +87,9 @@ let rec is_not_identity_substitution vid expr =
   | Var (vi) -> vi.vid != vid
   | Container (e, subs) ->
      ((IM.fold
-         (fun k v a -> (is_not_identity_substitution k v) && a)
+         (fun k v a -> (is_not_identity_substitution k v) || a)
          subs false)
-      &&
+      ||
         ((VS.max_elt (VSOps.sove e)).vid != vid))
   | _ -> true
 
@@ -217,7 +217,7 @@ and do_s vs let_form s =
    expression into a FQuestion (an expression instead of a lambda)
 *)
 
-let merge_cond c let_if let_else =
+let rec  merge_cond c let_if let_else =
   match let_if, let_else with
   | State (vs_if, subs_if) , State (vs_else, subs_else) ->
      if VS.equal vs_if vs_else
@@ -263,7 +263,7 @@ let merge_cond c let_if let_else =
    loops for each written variable when not too expensive.
 *)
 
-let convert_loop let_body igu let_cont loc =
+and convert_loop let_body igu let_cont loc =
   match let_body with
   | State (vars, subs) ->
      let subs' = remove_identity_subs subs in
@@ -271,7 +271,7 @@ let convert_loop let_body igu let_cont loc =
      then
        let vid, expr = IM.max_binding subs' in
        let rec_expr = FRec (igu, expr) in
-       true, Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
+       true,  Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
      else
        false, let_body
 
@@ -288,7 +288,7 @@ let convert_loop let_body igu let_cont loc =
    from variable ids to expressions with conditionals inside.
 *)
 
-let rec red let_form substs =
+and red let_form substs =
   match let_form with
   | State (vs, im) ->
      let id_list = VSOps.vids_of_vs vs in
@@ -320,6 +320,7 @@ let rec red let_form substs =
      if merged
      then exprs
      else LetCond (e, red_if, red_else, red_cont, loc)
+
   | LetState (state, let_cont) ->
      LetState (state,reduce let_cont)
 
