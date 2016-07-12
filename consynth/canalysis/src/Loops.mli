@@ -18,6 +18,7 @@ module Cloop : sig
     mutable loopIGU : forIGU option;
     mutable parentFile : Cil.file;
     mutable parentLoops : int list;
+    mutable childrenLoops : stmt list;
     mutable parentFunction : Cil.varinfo;
     mutable calledFunctions : Cil.varinfo list;
     mutable definedInVars : defsMap;

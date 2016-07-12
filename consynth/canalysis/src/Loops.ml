@@ -10,7 +10,6 @@ module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
-module EC = Expcompare
 
 let verbose = ref true
 let debug = ref false
@@ -31,123 +30,7 @@ type defsMap = (VS.elt * (IOS.t option))  IH.t
     The for loop statement can be strored as a triplet of
     initialization instruction, guard condition and update instructions
 *)
-type forIGU = (Cil.instr * Cil.exp * Cil.instr)
-
-(** Extracting the termination condition of the loop *)
-let get_loop_condition b =
-  (* returns the first non-empty
-   * statement of a statement list *)
-  (* stm list -> stm list *)
-  let rec skipEmpty = function
-    | [] -> []
-    | {skind = Instr []; labels = []}::rest ->
-	   skipEmpty rest
-    | x -> x
-  in
-  (* stm -> exp option * instr list *)
-  let rec get_cond_from_if if_stm =
-    match if_stm.skind with
-      If(e,tb,fb,_) ->
-	    let e = EC.stripNopCasts e in
-	    let tsl = skipEmpty tb.bstmts in
-	    let fsl = skipEmpty fb.bstmts in
-	    (match tsl, fsl with
-	      {skind = Break _} :: _, [] -> Some e
-	    | [], {skind = Break _} :: _ ->
-	       Some(UnOp(LNot, e, intType))
-	    | ({skind = If(_,_,_,_)} as s) :: _, [] ->
-	       let teo = get_cond_from_if s in
-	       (match teo with
-	         None -> None
-	       | Some te ->
-		      Some(BinOp(LAnd,e,EC.stripNopCasts te,intType)))
-	    | [], ({skind = If(_,_,_,_)} as s) :: _ ->
-	       let feo = get_cond_from_if s in
-	       (match feo with
-	         None -> None
-	       | Some fe ->
-		      Some(BinOp(LAnd,UnOp(LNot,e,intType),
-			             EC.stripNopCasts fe,intType)))
-	    | {skind = Break _} :: _, ({skind = If(_,_,_,_)} as s):: _ ->
-	       let feo = get_cond_from_if s in
-	       (match feo with
-	         None -> None
-	       | Some fe ->
-		      Some(BinOp(LOr,e,EC.stripNopCasts fe,intType)))
-	    | ({skind = If(_,_,_,_)} as s) :: _, {skind = Break _} :: _ ->
-	       let teo = get_cond_from_if s in
-	       (match teo with
-	         None -> None
-	       | Some te ->
-		      Some(BinOp(LOr,UnOp(LNot,e,intType),
-			             EC.stripNopCasts te,intType)))
-	    | ({skind = If(_,_,_,_)} as ts) :: _ ,
-           ({skind = If(_,_,_,_)} as fs) :: _ ->
-	       let teo = get_cond_from_if ts in
-	       let feo = get_cond_from_if fs in
-	       (match teo, feo with
-	         Some te, Some fe ->
-		       Some(BinOp(LOr,BinOp(LAnd,e,EC.stripNopCasts te,intType),
-			              BinOp(LAnd,UnOp(LNot,e,intType),
-				                EC.stripNopCasts fe,intType),intType))
-	       | _,_ -> None)
-	    | _, _ -> (if !debug
-          then ignore(E.log "cond_finder: branches of %a not good\n"
-					                       d_stmt if_stm);
-		           None))
-    | _ -> (if !debug
-      then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
-	        None)
-  in
-  let sl = skipEmpty b.bstmts in
-  match sl with
-    ({skind = If(_,_,_,_); labels=[]} as s) :: rest ->
-      get_cond_from_if s, rest
-  | s :: _ ->
-     (if !debug then ignore(E.log "checkMover: %a is first, not an if\n"
-			                  d_stmt s);
-      None, sl)
-  | [] ->
-     (if !debug then ignore(E.log "checkMover: no statements in loop block?\n");
-      None, sl)
-
-
-(** Get the initiatlization, termination and update in a*)
-let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
-  match loop_stmt.skind with
-  | Loop (bdy, _, _, _) ->
-     begin
-       try
-         let body_copy = Cil.mkBlock bdy.bstmts in
-         let term_expr_o, rem = get_loop_condition body_copy in
-         let term_expr = match term_expr_o with
-           | Some expr ->
-              expr
-           | None ->
-              raise (Failure "couldn't get the termination condition.")
-         in
-         let init = lastInstr (List.nth loop_stmt.preds 1) in
-         let update, newbody =
-           match  remLastInstr rem with
-           | Some instr, Some s ->
-              instr, s
-           | None, Some s ->
-              begin
-                ppbk (Cil.mkBlock s);
-                raise (Failure "failed to find last intruction.")
-              end
-           | Some _, None
-           | None, None ->
-              raise (Failure "failed to find last statement in body.")
-         in
-         Some (init, (neg_exp term_expr), update), newbody
-       with Failure s ->
-		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
-     end
-  |_ ->
-     raise(
-       Failure(
-         "get_loop_IGU : bad argument, expected a Loop statement."))
+type forIGU = LoopsHelper.forIGU
 
 (**
     Checking that the triplet is well-formed. The initialisation and update
@@ -184,6 +67,7 @@ module Cloop = struct
     mutable parentFile: Cil.file;
     (** Loops can be nested. *)
     mutable parentLoops : int list;
+    mutable childrenLoops : stmt list;
   (** A loop appears in the body of a parent function declared globally *)
     mutable parentFunction : varinfo;
   (** The set of function called in a loop body *)
@@ -213,6 +97,7 @@ module Cloop = struct
       loopIGU = None;
       parentFile = f;
       parentLoops = [];
+      childrenLoops = [];
       parentFunction = parent;
       calledFunctions = [];
       definedInVars = IH.create 32;
@@ -329,6 +214,9 @@ is not defined at the beginning of the loop.\n"
   let addParentLoop l  parentSid =
     l.parentLoops <- appendC l.parentLoops parentSid
 
+  let addChild l child =
+    l.childrenLoops <- appendC l.childrenLoops child.loopStatement
+
   let addCalledFunc l vi =
     l.calledFunctions <- appendC l.calledFunctions vi
 
@@ -336,11 +224,12 @@ is not defined at the beginning of the loop.\n"
   let setBreak l =
     l.hasBreaks <- true
 
-  (** Returns true if l1 contains the loop l2 *)
+  (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
-    let nested_in = List.mem l2.sid l1.parentLoops in
-    let inlinable = List.mem l1.parentFunction l2.calledFunctions  in
-    nested_in || inlinable
+    let n_in = List.mem l1.loopStatement l2.childrenLoops in
+    let nested_in = n_in || List.mem l2.sid l1.parentLoops in
+    let called_in = List.mem l1.parentFunction l2.calledFunctions  in
+    nested_in || called_in
 
   let isForLoop l = match l.loopIGU with Some s -> true | None -> false
 
@@ -456,9 +345,24 @@ class loopInspector (tl : Cloop.t) = object
   method vstmt (s : Cil.stmt) =
     match s.skind with
     | Loop _ ->
+       if Cloop.id tl != s.sid then
        (** The inspected loop is nested in the current loop *)
-       Cloop.addParentLoop (IH.find programLoops s.sid) (Cloop.id tl) ;
-      DoChildren
+         begin
+           let child_loop = IH.find programLoops s.sid in
+           Cloop.addParentLoop child_loop (Cloop.id tl);
+           Cloop.addChild tl child_loop;
+           let (i, g, u) = checkOption (child_loop.Cloop.loopIGU) in
+           let new_statements =
+             removeInitInstr
+               tl.Cloop.statements [] i child_loop.Cloop.loopStatement in
+           tl.Cloop.statements <- new_statements;
+         (** Remove init statements of inner loop present in outer loop *)
+
+           DoChildren
+         end
+       else
+         DoChildren
+
     | Block _ | If _ | TryFinally _ | TryExcept _
     | Goto _ | ComputedGoto _ | Break _ -> DoChildren
     | Switch _ ->
@@ -487,6 +391,8 @@ class loopInspector (tl : Cloop.t) = object
       SkipChildren
     | _ -> SkipChildren
 end
+
+
 
 (******************************************************************************)
 
@@ -543,6 +449,7 @@ let addBoundaryInfo clp =
   clp.Cloop.loopStatement <- stmt
 
 
+
 (******************************************************************************)
 (** Read/write set *)
 (**
@@ -590,6 +497,29 @@ let addRWinformation sid clp =
     eprintf "%s\n" s;
     raise (Failure "Failed to set RW info with defined-in check")
 
+
+(******************************************************************************)
+(**
+   Once we have the information of the loop-nesting, we have to remove
+   the termination condition of the inner loops in the outer loops, to
+   do so we simply replace the body of the loop by what has already
+   been computed.
+   Must be executed from the bottom up in the inner-loops tree.
+*)
+let replaceInnerBodies cl =
+  let replace_matching_body stmt =
+    {stmt with skind =
+        match stmt.skind with
+        | Loop (b, x, y ,loc) ->
+           let cl = IH.find programLoops stmt.sid in
+           Loop (mkBlock cl.Cloop.statements, x, y, loc)
+        | _ -> stmt.skind}
+  in
+  let nstmts = List.map replace_matching_body cl.Cloop.statements in
+  cl.Cloop.statements <- nstmts
+
+
+
 (******************************************************************************)
 (** Exported functions *)
 (**
@@ -627,6 +557,18 @@ let processFile cfile =
         vis_fids)
       programLoops []
   in
+  let clean_loops =
+    IHTools.iter_bottom_up
+      programLoops
+      (fun cl -> List.length cl.Cloop.parentLoops = 0)
+      (fun cl ->
+        List.map
+          (fun stm -> IH.find programLoops stm.sid)
+          cl.Cloop.childrenLoops)
+      replaceInnerBodies
+  in
+  IH.clear programLoops;
+  IHTools.add_list programLoops Cloop.id clean_loops;
   (**
       Remove the loops with missing information and
       the loops containing break statements.
@@ -657,6 +599,8 @@ let processFile cfile =
     (fun sid -> IH.remove programLoops sid)
     loops_to_remove;
   visited_funcs
+
+
 
 (**
     Return the set of processed loops. To check if a program has been

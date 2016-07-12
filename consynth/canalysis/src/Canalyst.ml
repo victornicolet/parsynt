@@ -37,7 +37,6 @@ let processFile fileName =
   let sketchSet = IH.create 10 in
   IH.iter (fun k v ->
     IH.add sketchSet k (build_sketch v)) floops;
-  IH.iter (fun k sketch -> SPretty.printSketch sketch) sketchSet;
   floops
 
 

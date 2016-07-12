@@ -262,4 +262,29 @@ module IHTools = struct
         (fun k v ->
           if IH.mem add_to k then () else IH.add add_to k v)
         to_add
+
+    let add_list (add_to : 'a IH.t) (getk : 'a -> int) (l : 'a list) =
+      List.iter (fun b -> IH.add add_to (getk b) b) l
+
+    let iter_bottom_up
+        (h : 'a IH.t)
+        (isroot : 'a -> bool)
+        (children : 'a -> 'a list)
+        (app : 'a -> unit) : 'a list =
+      let select_roots =
+        IH.fold
+          (fun k a roots ->
+            if isroot a then a::roots else roots)
+          h []
+      in
+      let rec build_botup stack acc =
+        match stack with
+        | [] -> acc
+        | hd :: tl ->
+           build_botup (tl@(children hd)) (hd::acc)
+      in
+      let upbots = build_botup select_roots [] in
+      List.iter app upbots;
+      upbots ;;
+
 end

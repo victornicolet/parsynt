@@ -34,6 +34,8 @@ let wf_test_case fname (func : C2F.letin) =
           end
        | _ -> false
      end
+  | "test_nested_loops" ->
+     true
   | _ -> false
 
 
@@ -43,6 +45,7 @@ let test () =
   ignore(C.processFile filename);
   printf "%s Functional rep. %s\n" (color "blue") default;
   let loops = C.getLoops () in
+  C2F.init loops;
   IH.iter
     (fun k cl ->
       let stmt = mkBlock(cl.statements) in
@@ -57,8 +60,8 @@ let test () =
            (color "green") fname default)
       else
         (printf "%s[test for loop %i in %s failed]%s@."
-           (color "red") cl.sid fname default;
-         C2F.printlet func;
-         printf "@.";
-        ))
+           (color "red") cl.sid fname default;);
+      C2F.printlet func;
+      printf "@.";
+    )
     loops;;

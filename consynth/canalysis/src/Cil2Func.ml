@@ -189,7 +189,13 @@ and do_s vs let_form s =
 
   | Loop (b, loc,_,_) ->
      let block_loop = do_b vs b in
-     let igu = checkOption ((IH.find !loops s.sid).Cloop.loopIGU) in
+     let igu =
+     try
+       checkOption ((IH.find !loops s.sid).Cloop.loopIGU)
+     with
+       Not_found ->
+         failwith (sprintf "Couldn't find loop %i." s.sid)
+     in
      let loop_fun = LetRec (igu, block_loop, empty_state vs, loc) in
      let_add let_form loop_fun
 
@@ -324,8 +330,11 @@ and reduce let_form = red let_form IM.empty
 (**
    MAIN ENTRY POINT
  *)
+let init map_loops = loops := map_loops;;
 
 let cil2func block statevs =
+  if IH.length !loops = 0 then
+    failwith "You forgot to initialize the set of loops in Cil2Func.";
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in
   reduce let_expression
