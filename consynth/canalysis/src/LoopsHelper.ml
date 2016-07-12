@@ -19,12 +19,21 @@ let rec remLastInstr (bdy : stmt list) =
        begin
          match il with
          | [i] ->
-            removeFromCFG lastStmt;
-           Some i, Some (remove_last bdy)
+            begin
+              removeFromCFG lastStmt;
+              let stmtli = (remove_last bdy) in
+              Some i, Some stmtli
+            end
+
          | hd::tl ->
-            lastStmt.skind <- Instr (remove_last il);
-           Some (last il), Some bdy
+            begin
+              lastStmt.skind <- Instr (remove_last il);
+              Some (last il), Some bdy
+            end
+
          | [] -> None, None
        end
+
     | Block b -> remLastInstr b.bstmts
+
     | _ -> None, Some bdy

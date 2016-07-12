@@ -3,6 +3,7 @@ open Format
 open LoopsHelper
 open Utils
 open ListTools
+open PpHelper
 
 module E = Errormsg
 module IH = Inthash
@@ -123,7 +124,7 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
            | Some expr ->
               expr
            | None ->
-              raise (Failure "couldn't get the term condition.")
+              raise (Failure "couldn't get the termination condition.")
          in
          let init = lastInstr (List.nth loop_stmt.preds 1) in
          let update, newbody =

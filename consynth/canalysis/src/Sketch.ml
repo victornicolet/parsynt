@@ -83,11 +83,23 @@ and hole_fexpr (vs : VS.t) =
        with Not_found ->
          SkHoleR
      end
+
   (** TODO : array -> region *)
   | Array (vi, el) ->
      SkHoleR
-  | Container (e, subs) ->
 
+  | Container (e, subs) ->
+     let usv = VS.inter (VSOps.sove e) vs in
+     if VS.cardinal usv > 0 then
+       hole_cils vs e
+     else
+       SkHoleR
+
+  | FQuestion (ecil, expr1, expr2) ->
+     SkHoleR
+
+  | FRec ((i, g, u), expr) ->
+     SkRec ((i, g, u), hole_fexpr vs expr)
 
 and hole_cils (vs : VS.t) =
   function

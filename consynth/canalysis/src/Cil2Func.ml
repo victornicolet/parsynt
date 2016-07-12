@@ -6,7 +6,7 @@ open PpHelper
 
 
 (**
-   Implementatoni of a simple CPS comversion from the
+   Implementation of a simple CPS comversion from the
    Cil program to a let-forms program with conditonals
    and loops.
    The loops can be translated in a straightforawrd
@@ -40,18 +40,38 @@ and expr =
 
 and substitutions = expr IM.t
 
+
+
+(**
+   Check well-formedness of let-in forms. The two main points are
+   that the only subsitutions occur for state-variables (the are
+   defined as the only variables we write in, in the loop body)
+   and the specific def-state construct must contain a state as its
+   first component.
+*)
 let rec wf_letin =
   function
-  | State (vs, emap) -> true
-  | Let (vi, expr, letin, loc) -> true
-  | LetCond (c, let_if, let_else, let_cont, loc) -> true
-  | LetRec ((i, g, u), let_body, let_cont, loc) -> true
+  | State (vs, emap) ->
+     (IM.fold
+       (fun k v ok -> ok && (VSOps.hasVid k vs)) emap true)
+
+  | Let (vi, expr, letin, loc) -> wf_letin letin
+
+  | LetCond (c, let_if, let_else, let_cont, loc) ->
+     wf_letin let_if && wf_letin let_else && wf_letin let_cont
+
+  | LetRec ((i, g, u), let_body, let_cont, loc) ->
+     wf_letin let_body && wf_letin let_cont
+
   | LetState (def_state, let_cont) ->
-     begin
+     let wf_def_state =
        match def_state with
        | State (vs, emap) -> wf_letin def_state
        | _ -> false
-     end
+     in
+     wf_def_state && wf_letin let_cont
+
+
 
 (** Helpers *)
 
@@ -75,30 +95,6 @@ let rec is_not_identity_substitution vid expr =
 
 let remove_identity_subs substs =
   IM.filter is_not_identity_substitution substs
-
-(**
-   Convert a let-in form of a loop body into
-   an expression if possible. The conversion is
-   performed when :
-   - only one variable is modified in the loop body
-   (without conisdering the index)
-   - (* TODO *) inlining expressions and splitting
-   loops for each written variable is not too expensive.
-*)
-
-let convert_loop let_body igu let_cont loc =
-  match let_body with
-  | State (vars, subs) ->
-     let subs' = remove_identity_subs subs in
-     if (IM.cardinal subs') = 1
-     then
-       let vid, expr = IM.max_binding subs' in
-       let rec_expr = FRec (igu, expr) in
-       true, Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
-     else
-       false, let_body
-
-  | _ -> false, let_body
 
 
 let rec apply_subs expr subs =
@@ -130,6 +126,8 @@ let rec apply_subs expr subs =
 
   | FRec (igu, e) ->
      FRec (igu, apply_subs e subs)
+
+
 
 (**
    Add a new let-form at the end of an old one,
@@ -204,7 +202,14 @@ and do_s vs let_form s =
      failwith "Statement unsupported in CPS conversion"
 
 
+
 (** Reduction and simplification of expressions and lets *)
+
+(**
+   Merge two conditions, if each branche is irreducible (already
+   reduced to a single state) then tranform each substitution
+   expression into a FQuestion (an expression instead of a lambda)
+*)
 
 let merge_cond c let_if let_else =
   match let_if, let_else with
@@ -239,6 +244,33 @@ let merge_cond c let_if let_else =
      else
        false, let_if
   | _ -> false, let_if
+
+
+
+(**
+   Convert a let-in form of a loop body into
+   an expression if possible. The conversion is
+   performed when :
+   - only one variable is modified in the loop body
+   (without conisdering the index)
+   - (* TODO *) inlining expressions and splitting
+   loops for each written variable when not too expensive.
+*)
+
+let convert_loop let_body igu let_cont loc =
+  match let_body with
+  | State (vars, subs) ->
+     let subs' = remove_identity_subs subs in
+     if (IM.cardinal subs') = 1
+     then
+       let vid, expr = IM.max_binding subs' in
+       let rec_expr = FRec (igu, expr) in
+       true, Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
+     else
+       false, let_body
+
+  | _ -> false, let_body
+
 
 
 (**
@@ -288,6 +320,7 @@ let rec red let_form substs =
 and reduce let_form = red let_form IM.empty
 
 
+
 (**
    MAIN ENTRY POINT
  *)
@@ -296,6 +329,7 @@ let cil2func block statevs =
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in
   reduce let_expression
+
 
 
 (** Pretty-printing functions *)
