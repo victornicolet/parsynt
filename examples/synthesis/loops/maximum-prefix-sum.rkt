@@ -87,33 +87,37 @@
 
 (current-bitwidth #f)
 
-(define-symbolic li0 li1 li2 li3 li4 integer?)
-(define-symbolic li5 li6 li7 integer?)
+(define (functional-form)
+  (define-symbolic li0 li1 li2 li3 li4 integer?)
+  (define-symbolic li5 li6 li7 integer?)
 
 
-(define symb-list (list li0 li1 li2 li3 li4 li5 li6 li7))
-(define tek integer?)
-(define-values (l1 l2) (split-at symb-list 4))
-(define-values (l3 l4) (split-at symb-list 3))
-(define-values (l5 l6) (split-at symb-list 5))
-;;(define-values (l7 l8) (split-at symb-list 6))
+  (define symb-list (list li0 li1 li2 li3 li4 li5 li6 li7))
+  (define tek integer?)
+  (define-values (l1 l2) (split-at symb-list 4))
+  (define-values (l3 l4) (split-at symb-list 3))
+  (define-values (l5 l6) (split-at symb-list 5))
+  (define-values (l7 l8) (split-at symb-list 6))
+  (define-values (l9 l10) (split-at symb-list 7))
 
-(if (unsat? (verify (assert (problem mps-join l1 l2))))
-    (display "Given join is not correct !\n")
-    (display "Given join is correct.\n"))
+  (if (unsat? (verify (assert (problem mps-join l1 l2))))
+      (display "Given join is not correct !\n")
+      (display "Given join is correct.\n"))
 
-(define odot
-  (time
-   (synthesize
-    #:forall (list li0 li1 li2 li3 li4 li5 li6 li7)
-    #:guarantee (assert (and
-                         (problem mps-join l1 l2)
-                         (problem mps-join l5 l6)
-                         (problem mps-join l3 l4))))))
+  (define odot
+    (time
+     (synthesize
+      #:forall (list li0 li1 li2 li3 li4 li5 li6 li7)
+      #:guarantee (assert (and
+                           (problem mps-join l9 l10)
+                           (problem mps-join l7 l8)
+                           (problem mps-join l1 l2)
+                           (problem mps-join l5 l6)
+                           (problem mps-join l3 l4))))))
 
-(if (sat? odot) (print-forms odot) (core odot))
+  (if (sat? odot) (print-forms odot) (core odot)))
 
-;; Output with VC on three list splits, timeout with four.
+;; Output with VC on three list splits.
 ;; Given join is correct.
 ;; cpu time: 123 real time: 2682 gc time: 0
 ;; /home/victorn/repos/consynth/examples/synthesis/loops/maximum-prefix-sum.rkt:56:0
@@ -121,35 +125,53 @@
 ;;    (let ((mpsL (car L)) (sL (cdr L)) (mpsR (car R)) (sR (cdr R)))
 ;;      (mps-and-sum (list (+ mpsL 0) (- sL mpsL) (+ 0 mpsR) (- sR mpsR)))))
 
+;; Adding the following join associativity condition to the three example
+;; synthesis problem doesn't change significantly the syntheisis time.
+;; Associativity condition :
+;; (eq? (mps-join (mps-and-sum l1)
+;;                (mps-join (mps-and-sum l2) (mps-and-sum l3)))
+;;      (mps-join (mps-join (mps-and-sum l1) (mps-and-sum l2)) (mps-and-sum l3)))
+
 ;; -----------------------------------------------------------------------------
 ;; Join problem in its "imperative" form, where the join appears on each side of
 ;; the = : s # B(s',i) = B(s#s',i) where s, s' are ANY state and not only a
 ;; state resulting from the application of a body.
-(clear-asserts!)
-(define-symbolic mps1 sum1 mps2 sum2 mps3 sum3 a integer?)
 
-(define s0-prim (cons 0 0))
-(define state1 (cons mps1 sum1))
-(define state2 (cons mps2 sum2))
-(define state3 (cons mps3 sum3))
 
-(assert (>= 0 mps1))
-(assert (>= 0 mps2))
+(define (imperative-form)
+  (clear-asserts!)
+  (define-symbolic mps1 sum1 mps2 sum2 mps3 sum3 a integer?)
 
-(define one-iter-list (list a))
-(define odot-prim
-  (time
-   (synthesize
-    #:forall (list mps1 sum1 mps2 sum2 a)
-    #:guarantee (assert
-                 (and
-                  (eq? (mps-join state3 s0-prim) state3)
-                  (eq? (mps-join s0-prim state3) state3)
-                  (eq? (mps-join state1
-                                (mpss one-iter-list state2))
-                      (mpss
-                       one-iter-list (mps-join state1 state2))))))))
+  (define s0-prim (cons 0 0))
+  (define state1 (cons mps1 sum1))
+  (define state2 (cons mps2 sum2))
+  (define state3 (cons mps3 sum3))
 
-;; Timeout after running the solver for 10 minutes.
+  (assert (>= 0 mps1))
+  (assert (>= 0 mps2))
 
-(if (sat? odot-prim) (print-forms odot-prim) (core odot-prim))
+  (define one-iter-list (list a))
+  (define odot-prim
+    (time
+     (synthesize
+      #:forall (list mps1 sum1 mps2 sum2 a)
+      #:guarantee (assert
+                   (and
+                    (eq? (mps-join state3 s0-prim) state3)
+                    (eq? (mps-join s0-prim state3) state3)
+                    (eq? (mps-join state1
+                                   (mpss one-iter-list state2))
+                         (mpss
+                          one-iter-list (mps-join state1 state2))))))))
+
+  ;; Timeout after running the solver for 10 minutes.
+
+  (if (sat? odot-prim) (print-forms odot-prim) (core odot-prim)))
+
+(displayln "Try solving functional form ? [y/n]")
+(define functional? (read))
+(if (eq? functional? 'y) (functional-form) (displayln "No."))
+
+(displayln "Try solving imperative form ? [y/n]")
+(define imperative? (read))
+(if (eq? imperative? 'y) (imperative-form) (displayln "Exit."))
