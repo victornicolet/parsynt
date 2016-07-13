@@ -2,7 +2,7 @@
 
 (require rosette/lib/synthax racket/syntax)
 
-(provide ScalarExpr LinearScalarExpr Expr)
+(provide ScalarExpr LinearScalarExpr Expr bExpr:int->int bExpr:int->bool )
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -53,7 +53,7 @@
           ))
 
 ;; WIP : vector expressions = arrays with subscripts
-(define-synthax ArrayIndex 
+(define-synthax ArrayIndex
   ([(ArrayIndex [a ...] x ... k) (Expr [a ...] x ... k)]
    [(ArrayIndex) (??)]))
 
@@ -67,7 +67,7 @@
 
 (define-synthax (GenExpr [a ...] x ... depth)
   #:base (choose (Scalar x ...) (ArrayCell [a ...] [x ...]))
-  #:else (choose 
+  #:else (choose
           ; Binary expressions
           ((BinopsChoice)
            (GenExpr [a ...] [x ...] (sub1 depth))
@@ -77,19 +77,44 @@
           ((UnopsChoice)
            (GenExpr [a ...] [x ...] (sub1 depth)))
           ; Scalars or ArrayCells
-          (Scalar x ...) 
+          (Scalar x ...)
           (ArrayCell [a ...] [x ...])
   ))
 
-;; Expression, containing Scalars and vectors 
+;; Expression, containing Scalars and vectors
 ;; General interface to place holes for expressions :
 ;; (Expr x1 x2 x3 2) generates scalar expressions of depth 2 possibly containing
 ;;                   variables x1 x2 x3.
 ;; (Expr [a1 a2] x1 x2 2) generate a general expression with scalars and array subscripts
 ;;                   containing array variables a1 a2 and scalar variables x1 x2.
 
-(define-synthax Expr 
+(define-synthax Expr
   ([(Expr [a ...] x ... depth) (GenExpr [a ...] x ... depth)]
    [(Expr x ... depth) (ScalarExpr x ... depth)]))
 
 
+;; Type-specific expressions
+(define-synthax BasicBinops:int->int
+  ([(BasicBinops:int->int) (choose + - min max)]))
+
+(define-synthax BasicUnops:int->int
+  ([(BasicUnops:int->int) (choose add1 sub1)]))
+
+(define-synthax (bExpr:int->int x ... depth)
+  #:base (Scalar x ...)
+  #:else (choose
+          (Scalar x ...)
+          (Scalar x ...)
+          ; Binary expression
+          ((BasicBinops:int->int)
+           (ScalarExpr x ... (sub1 depth))
+           (ScalarExpr x ... (sub1 depth)))
+          ; Unary expression
+          ((BasicUnops:int->int)
+           (ScalarExpr x ... (sub1 depth)))))
+
+(define-synthax bExpr:int->bool
+  ([(bExpr:int->bool x ...) ((choose not identity)
+                             ((choose > >= < <= =)
+                              (bExpr:int->int x ... 1)
+                              (bExpr:int->int x ... 1)))]))
