@@ -97,25 +97,54 @@
     (displayln "Unsatisfifable verification conditions.")
     (displayln "Verif passed."))
 
+;; Symbolic list, but splitting over concrete integer values.
 (define odot
-  (synthesize
-   #:forall (list a0 a1 a2 a3 a4 a5 a6 a7)
-   #:guarantee (assert (and
-                        (eq-states total2 join_res2)
-                        (eq-states total1 join_res1)
-                        (eq-states total0 join_res0)
-                        (eq-states total join_res)))))
-
-
+  (time
+   (synthesize
+    #:forall (list a0 a1 a2 a3 a4 a5 a6 a7)
+    #:guarantee (assert (and
+                         (eq-states total2 join_res2)
+                         (eq-states total1 join_res1)
+                         (eq-states total0 join_res0)
+                         (eq-states total join_res))))))
 (if (sat? odot) (print-forms odot) (core odot))
+;; cpu time: 150 real time: 1113 gc time: 18
+;; /home/victorn/repos/consynth/examples/synthesis/loops/balanced_par_string.rkt:50:0
+;; '(define (join L R)
+;;    (let ((l_wb (state-wb L))
+;;          (r_wb (state-wb R))
+;;          (l_diff (state-diff L))
+;;          (r_diff (state-diff R))
+;;          (l_h (state-hmin L))
+;;          (r_h (state-hmin R)))
+;;      (state
+;;       (& l_wb (identity (<= (- 0 r_h) l_diff)))
+;;       (+ l_diff r_diff)
+;;       (min (+ l_diff r_h) l_h))))
 
+
+;; List of symbolic values with a symbolic integer for the spli index.
 (define-values (l r tot)
   (synth-case sym_string 0 5 8))
 (define jr (join l r))
 
 (define odot-symb
-  (synthesize
-   #:forall (list a0 a1 a2 a3 a4 a5 a6 a7 len)
-   #:guarantee (assert (eq-states jr tot))))
+  (time
+   (synthesize
+    #:forall (list a0 a1 a2 a3 a4 a5 a6 a7 len)
+    #:guarantee (assert (eq-states jr tot)))))
 
 (if (sat? odot-symb) (print-forms odot-symb) (core odot-symb))
+;; cpu time: 174 real time: 998 gc time: 4
+;; /home/victorn/repos/consynth/examples/synthesis/loops/balanced_par_string.rkt:50:0
+;; '(define (join L R)
+;;    (let ((l_wb (state-wb L))
+;;          (r_wb (state-wb R))
+;;          (l_diff (state-diff L))
+;;          (r_diff (state-diff R))
+;;          (l_h (state-hmin L))
+;;          (r_h (state-hmin R)))
+;;      (state
+;;       (& l_wb (not (< (- r_h -1068) (- 1068 l_diff))))
+;;       (+ r_diff l_diff)
+;;       (min l_h (+ r_h l_diff)))))
