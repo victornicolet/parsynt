@@ -75,6 +75,8 @@
         (display i)
         (displayln "Failed"))))
 
+
+;; Split the list in different points for the verification condition
 (define-values (ll rr total)
   (synth-case sym_string 0 4 8))
 (define join_res (join ll rr))
@@ -106,3 +108,14 @@
 
 
 (if (sat? odot) (print-forms odot) (core odot))
+
+(define-values (l r tot)
+  (synth-case sym_string 0 5 8))
+(define jr (join l r))
+
+(define odot-symb
+  (synthesize
+   #:forall (list a0 a1 a2 a3 a4 a5 a6 a7 len)
+   #:guarantee (assert (eq-states jr tot))))
+
+(if (sat? odot-symb) (print-forms odot-symb) (core odot-symb))
