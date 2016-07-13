@@ -175,3 +175,43 @@
 (displayln "Try solving imperative form ? [y/n]")
 (define imperative? (read))
 (if (eq? imperative? 'y) (imperative-form) (displayln "Exit."))
+
+;; -----------------------------------------------------------------------------
+;; Adding some compleixity in the homomorphism condition.
+(define-syntax problem2
+  (syntax-rules ()
+    [(problem2 join ll rl rr) (eq? (mps-and-sum (append (append ll rl) rr))
+                                (join (join (mps-and-sum ll) (mps-and-sum rl))
+                                      (mps-and-sum rr)))]))
+
+
+(current-bitwidth #f)
+
+(define (functional-form2)
+  (define-symbolic li0 li1 li2 li3 li4 integer?)
+  (define-symbolic li5 li6 li7 integer?)
+  (define symb-list (list li0 li1 li2 li3 li4 li5 li6 li7))
+  (define-values (l1l l1) (split-at symb-list 4))
+  (define-values (l1m l1r) (split-at symb-list 2))
+  (define-values (l2l l2) (split-at symb-list 4))
+  (define-values (l2m l2r) (split-at symb-list 2))
+
+
+  (if (unsat? (verify (assert (problem2 mps-join l1l l1m l1r))))
+      (display "Given join is not correct !\n")
+      (display "Given join is correct.\n"))
+
+  (define odot
+    (time
+     (synthesize
+      #:forall (list li0 li1 li2 li3 li4 li5 li6 li7)
+      #:guarantee (assert (and
+                           (problem2 mps-join l1l l1m l1r)
+                           (problem2 mps-join l2l l2m l2r))))))
+
+  (if (sat? odot) (print-forms odot) (core odot)))
+
+
+(displayln "Try solving functional form bis? [y/n]")
+(define functional2? (read))
+(if (eq? functional2? 'y) (functional-form2) (displayln "No."))
