@@ -84,6 +84,49 @@ let rec wf_letin =
      in
      wf_def_state && wf_letin let_cont
 
+let rec rec_topdown funct letin =
+  let letin' = funct letin in
+  match letin' with
+  | Let (vi, expr, letin, loc) ->
+     Let (vi, expr, rec_topdown funct letin, loc)
+
+  | LetCond (c, let_if, let_else, let_cont, loc) ->
+     LetCond (c, rec_topdown funct let_if,
+              rec_topdown funct let_else,
+              rec_topdown funct let_cont,
+              loc)
+
+  | LetRec ((i, g, u), let_body, let_cont, loc) ->
+     LetRec ((i, g, u), rec_topdown funct let_body,
+             rec_topdown funct let_cont, loc)
+
+  | LetState (def_state, let_cont) ->
+     LetState (def_state, rec_topdown funct let_cont)
+
+  | _ -> letin'
+
+let rec rec_botup funct letin =
+  let applied_in =
+    match letin with
+    | Let (vi, expr, letin, loc) ->
+       Let (vi, expr, rec_botup funct letin, loc)
+
+    | LetCond (c, let_if, let_else, let_cont, loc) ->
+       LetCond (c, rec_botup funct let_if,
+                rec_botup funct let_else,
+                rec_botup funct let_cont,
+                loc)
+
+    | LetRec ((i, g, u), let_body, let_cont, loc) ->
+       LetRec ((i, g, u), rec_botup funct let_body,
+               rec_botup funct let_cont, loc)
+
+    | LetState (def_state, let_cont) ->
+       LetState (def_state, rec_botup funct let_cont)
+
+    | _ -> funct letin
+  in
+  funct applied_in
 
 
 (** Helpers *)
