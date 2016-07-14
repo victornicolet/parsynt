@@ -37,3 +37,19 @@ int test_nested_loops (int **a, int n, int m) {
   }
   return sum;
 }
+
+int test_balanced_bool (int *a, int n) {
+  int wb;
+  int diff, min;
+
+  wb = 1;
+  diff = 0;
+  min = 0;
+
+  for(int i = 0; i < n; i++) {
+    if(a[i]) {diff++;} else {diff--;}
+    wb = ((wb = 1) & (diff < 0)) ? 1 : 0;
+    min = min < diff ? min : diff;
+  }
+  return wb;
+}

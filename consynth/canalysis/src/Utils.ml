@@ -224,6 +224,9 @@ module VSOps = struct
   let subset_of_list (li : int list) (vs : VS.t) =
     VS.filter (fun vi -> List.mem vi.vid li) vs
 
+  let unions (vsl : VS.t list) : VS.t =
+    List.fold_left VS.union VS.empty vsl
+
   let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
       VS.t =
     let vs = VS.empty in
@@ -286,5 +289,36 @@ module IHTools = struct
       let upbots = build_botup select_roots [] in
       List.iter app upbots;
       upbots ;;
+
+end
+
+module IMTools = struct
+
+    let add_all add_to to_add =
+      IM.fold
+        (fun k v mp ->
+          if IM.mem k to_add then mp else
+            IM.add k v mp)
+        to_add add_to
+
+    let inter a b =
+      IM.fold
+        (fun k v mp ->
+          if IM.mem k a
+          then IM.add k v b
+          else mp)
+        b
+        IM.empty
+
+    let is_disjoint a b=
+      try
+        IM.fold
+          (fun k v bol ->
+            if IM.mem k a
+            then failwith "iom"
+            else bol)
+          b
+          false
+      with Failure s -> true
 
 end

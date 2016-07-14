@@ -18,10 +18,15 @@ let debug = ref false
 (** The loops in the files *)
 let loops = ref (IH.create 10)
 
+let uses = ref (IH.create 10)
+let add_uses id vs = IH.add !uses id vs
+
+let __letin_index = ref 0
+let gen_id () = incr __letin_index; !__letin_index
 
 type letin =
   | State of VS.t * (expr IM.t)
-  | Let of varinfo * expr * letin * location
+  | Let of varinfo * expr * letin * int * location
   | LetRec of Loops.forIGU * letin * letin * location
   | LetCond of exp * letin * letin * letin * location
 (**
@@ -68,7 +73,7 @@ let rec wf_letin =
      (IM.fold
        (fun k v ok -> ok && (VSOps.hasVid k vs)) emap true)
 
-  | Let (vi, expr, letin, loc) -> wf_letin letin
+  | Let (vi, expr, letin, id, loc) -> wf_letin letin
 
   | LetCond (c, let_if, let_else, let_cont, loc) ->
      wf_letin let_if && wf_letin let_else && wf_letin let_cont
@@ -84,45 +89,45 @@ let rec wf_letin =
      in
      wf_def_state && wf_letin let_cont
 
-let rec rec_topdown funct letin =
+let rec transform_topdown funct letin =
   let letin' = funct letin in
   match letin' with
-  | Let (vi, expr, letin, loc) ->
-     Let (vi, expr, rec_topdown funct letin, loc)
+  | Let (vi, expr, cont, id, loc) ->
+     Let (vi, expr, transform_topdown funct cont, id, loc)
 
   | LetCond (c, let_if, let_else, let_cont, loc) ->
-     LetCond (c, rec_topdown funct let_if,
-              rec_topdown funct let_else,
-              rec_topdown funct let_cont,
+     LetCond (c, transform_topdown funct let_if,
+              transform_topdown funct let_else,
+              transform_topdown funct let_cont,
               loc)
 
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     LetRec ((i, g, u), rec_topdown funct let_body,
-             rec_topdown funct let_cont, loc)
+     LetRec ((i, g, u), transform_topdown funct let_body,
+             transform_topdown funct let_cont, loc)
 
   | LetState (def_state, let_cont) ->
-     LetState (def_state, rec_topdown funct let_cont)
+     LetState (def_state, transform_topdown funct let_cont)
 
   | _ -> letin'
 
-let rec rec_botup funct letin =
+let rec transform_bottomup funct letin =
   let applied_in =
     match letin with
-    | Let (vi, expr, letin, loc) ->
-       Let (vi, expr, rec_botup funct letin, loc)
+    | Let (vi, expr, letin, id, loc) ->
+       Let (vi, expr, transform_bottomup funct letin, id, loc)
 
     | LetCond (c, let_if, let_else, let_cont, loc) ->
-       LetCond (c, rec_botup funct let_if,
-                rec_botup funct let_else,
-                rec_botup funct let_cont,
+       LetCond (c, transform_bottomup funct let_if,
+                transform_bottomup funct let_else,
+                transform_bottomup funct let_cont,
                 loc)
 
     | LetRec ((i, g, u), let_body, let_cont, loc) ->
-       LetRec ((i, g, u), rec_botup funct let_body,
-               rec_botup funct let_cont, loc)
+       LetRec ((i, g, u), transform_bottomup funct let_body,
+               transform_bottomup funct let_cont, loc)
 
     | LetState (def_state, let_cont) ->
-       LetState (def_state, rec_botup funct let_cont)
+       LetState (def_state, transform_bottomup funct let_cont)
 
     | _ -> funct letin
   in
@@ -186,6 +191,72 @@ let rec apply_subs expr subs =
   | _ -> failwith "Cannot apply substitutions for this expressions."
 
 
+let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
+  match exp with
+  | Container (e, subs) ->
+     let in_e = VSOps.sove e in
+     let in_subs =
+       IM.fold (fun k e vs -> VS.union vs (used_vars_expr e)) subs VS.empty in
+     VS.union in_e in_subs
+
+  | Var vi -> VS.singleton vi
+
+  | Array (vi, subs) ->
+     let in_subs =
+       (if onlyNoOffset then
+         VS.empty
+       else
+         List.fold_left
+           (fun vs e -> VS.union vs (used_vars_expr e))
+           VS.empty subs)
+     in
+     VS.add vi in_subs
+
+  | FQuestion (c, e, e') ->
+     let vc = VSOps.sove c in
+     let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
+     let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
+     VS.union ve (VS.union ve' vc)
+
+  | FAlignofE e
+  | FSizeofE e
+  | FCastE (_, e)
+  | FUnop (_, e)
+  | FRec (_, e) ->
+     used_vars_expr ~onlyNoOffset:onlyNoOffset e
+
+  | FBinop (op, e', e) ->
+     let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
+     let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
+     VS.union ve ve'
+
+  | _ -> VS.empty
+
+let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
+  match letform with
+  | State (vs, substitutions) ->
+     IM.fold (fun k e vs -> VS.union vs (used_vars_expr e))
+       substitutions VS.empty
+
+  | Let (vi, e, cont, id, loc) ->
+     VS.union (used_vars_expr e) (used_vars_letin cont)
+
+  | LetCond (c, let_if, let_else, cont, loc) ->
+     VSOps.unions
+       [(VSOps.sove c);
+        (used_vars_letin let_if);
+        (used_vars_letin let_else);
+        (used_vars_letin cont)]
+
+  | LetRec (igu, let_body, cont, loc) ->
+     VS.union (used_vars_letin let_body) (used_vars_letin cont)
+
+  | LetState (state, cont) ->
+     let in_subs = used_vars_letin state in
+     VS.union in_subs (used_vars_letin cont)
+
+
+
 
 (**
    Add a new let-form at the end of an old one,
@@ -193,14 +264,14 @@ let rec apply_subs expr subs =
 *)
 
 let rec let_add old_let new_let =
-  match old_let with
+ match old_let with
   | State (vs, subs) ->
      if IM.is_empty subs then
        new_let
      else
        failwith "Substitutions should be empty while bulding let-forms"
-  | Let (v, e, olet, lc) ->
-     Let (v, e, let_add olet new_let, lc)
+  | Let (v, e, olet, id, lc) ->
+     Let (v, e, let_add olet new_let, id, lc)
 
   | LetCond (e, bif, belse, cont, lc) ->
      LetCond (e, bif, belse, let_add cont new_let, lc)
@@ -209,7 +280,6 @@ let rec let_add old_let new_let =
      LetRec (igu, letform, let_add let_cont new_let, lc)
 
   | _ -> failwith "Construct not allowed while building expressions"
-
 
 let rec do_il vs il =
   List.fold_left (do_i vs) (empty_state vs) il
@@ -221,7 +291,9 @@ and do_i vs let_form =
      if VS.cardinal vset = 1 then
        let lh_var = VS.max_elt vset in
        let e = Container (exp, IM.empty) in
-       let_add let_form (Let (lh_var, e, (empty_state vs), loc))
+       let id = gen_id () in
+       add_uses id (used_vars_expr e);
+       let_add let_form (Let (lh_var, e, (empty_state vs), id, loc))
      else
        raise (Failure "do_il : set with left-hand side variables amount != 1")
 
@@ -270,12 +342,12 @@ and do_s vs let_form s =
 (** Reduction and simplification of expressions and lets *)
 
 (**
-   Merge two conditions, if each branche is irreducible (already
+   Merge two conditions, if each branch is irreducible (already
    reduced to a single state) then tranform each substitution
    expression into a FQuestion (an expression instead of a lambda)
 *)
 
-let rec  merge_cond c let_if let_else =
+let rec  merge_cond c let_if let_else pre_substs =
   match let_if, let_else with
   | State (vs_if, subs_if) , State (vs_else, subs_else) ->
      if VS.equal vs_if vs_else
@@ -298,16 +370,17 @@ let rec  merge_cond c let_if let_else =
                   Some
                     (FQuestion
                        (c, cur_var, else_expr))
-               | None, None -> None
-             )
+               | None, None -> None)
              subs_if
              subs_else
          in
-         true, State (vs_if, new_subs)
+         if IMTools.is_disjoint pre_substs new_subs
+         then true, Some (IM.add_all pre_substs new_subs), None
+         else true, Some new_subs, Some (State (vs_ifs, new_subs))
        end
      else
-       false, let_if
-  | _ -> false, let_if
+       false, None
+  | _ -> false, None
 
 
 
@@ -329,7 +402,9 @@ and convert_loop let_body igu let_cont loc =
      then
        let vid, expr = IM.max_binding subs' in
        let rec_expr = FRec (igu, expr) in
-       true,  Let (VSOps.getVi vid vars, rec_expr, let_cont, loc)
+       let id = gen_id () in
+       add_uses id (used_vars_expr rec_expr);
+       true,  Let (VSOps.getVi vid vars, rec_expr, let_cont, id, loc)
      else
        false, let_body
 
@@ -355,7 +430,7 @@ and red let_form substs =
      in
      State (vs, final_state_exprs)
 
-  | Let (vi, expr, cont, _) ->
+  | Let (vi, expr, cont, id, _) ->
      let nexpr = apply_subs expr substs in
      let nsubs = IM.add vi.vid nexpr substs in
      red cont nsubs
@@ -373,11 +448,14 @@ and red let_form substs =
   | LetCond (e, bif, belse, cont, loc) ->
      let red_if = reduce bif in
      let red_else = reduce belse in
-     let red_cont = reduce cont in
-     let merged, exprs = merge_cond e red_if red_else in
+     let merged, exprs = merge_cond e red_if red_else substs in
      if merged
-     then exprs
-     else LetCond (e, red_if, red_else, red_cont, loc)
+     then
+       let new_subs = (checkOption exprs) in
+       (if id_disjoint new_subs substs
+        then red cont (IMTools.add_all substs new_subs)
+        else LetState (State(VS.empty, new_subs)
+     else LetCond (e, red_if, red_else, reduce cont, loc)
 
   | LetState (state, let_cont) ->
      LetState (state,reduce let_cont)
@@ -412,7 +490,7 @@ let rec pp_letin ?(wloc = false) ppf =
          VSOps.pvs vs
          (ppimap pp_expr) expr_map
 
-  | Let (vi, expr, letn, loc) ->
+  | Let (vi, expr, letn, id, loc) ->
      fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s@."
        (color "red") default vi.vname pp_expr expr
        (color "red") default

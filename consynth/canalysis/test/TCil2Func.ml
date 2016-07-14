@@ -39,7 +39,7 @@ let wf_test_case fname (func : C2F.letin) =
      (** Two cases depending on if it is the outer/inner loop *)
      (wf_single_subst func) ||
        (match func with
-       | C2F.Let (vid, expr, cont, loc) ->
+       | C2F.Let (vid, expr, cont, id, loc) ->
           (match expr with
           | C2F.FRec (_, _) -> true
           | _ -> false) &&
@@ -47,6 +47,7 @@ let wf_test_case fname (func : C2F.letin) =
 
        | _ -> false
        )
+  | "test_balanced_bool" -> true
 
   | _ -> false
 
