@@ -8,10 +8,12 @@
 (define limit 10)
 (current-bitwidth #f)
 
-(define-struct state (mps sum start end))
+(define-struct state (mps mss mts sum start end))
 
 (define (state-eq a b)
   (and (= (state-mps a) (state-mps b))
+       (= (state-mss a) (state-mss b))
+       (= (state-mts a) (state-mts b))
        (= (state-sum a) (state-sum b))))
 
 (define (body v s_)
@@ -23,37 +25,53 @@
             (let* ([start (state-start s)]
                    [end (state-end s)]
                    [mps (state-mps s)]
+                   [mts (state-mts s)]
+                   [mss (state-mss s)]
                    [sum (state-sum s)]
                    [a (vector-ref v i)])
               (state
                (max mps (+ sum a))
+               (max mss (+ mts a))
+               (max 0 (+ mts a))
                (+ sum a)
                start
                end))))))
 
-(define (init-state start end) (state (??) (??) start end))
+(define (init-state start end) (state (??) (??) (??) (??) start end))
 
 (define (join L R)
   (let
       ([start-left (state-start L)]
        [end-left (state-end L)]
+
        [start-right (state-start R)]
        [end-right (state-end R)]
+
        [sum-left (state-sum L)]
        [sum-right (state-sum R)]
+
        [mps-left (state-mps L)]
-       [mps-right (state-mps R)])
+       [mps-right (state-mps R)]
+
+       [mss-left (state-mss L)]
+       [mss-right (state-mss R)]
+
+       [mts-left (state-mts L)]
+       [mts-right (state-mts R)]
+       )
     (state
-     ;; Old idea for the sketch
-     ;; (state-mps
-     ;; (body (vector (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1))
-     ;;       (init-state 0 4)))
-     (max (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right 1))
-     (bExpr:int->int sum-left sum-right mps-left mps-right 1)
+     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
+          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+
+     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
+          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
+          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+
+     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
+          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+
+     (+ sum-left sum-right)
+     ;;(bExpr:int->int sum-left sum-right mps-left mps-right 1)
 
      start-left
      end-right)))
@@ -63,16 +81,15 @@
 ;; Benchmark 1 wth h(x++y) = h(x) # h(y) vcs
 
 (define-syntax-rule (problem v st m end)
-  (let ([sum 0][mps 0])
-    (state-eq (body v (state mps sum  st end))
-              (join (body v (state mps sum st m))
+  (let ([sum 0][mps 0][mts 0][mss 0])
+    (state-eq (body v (state mps mss mts sum st end))
+              (join (body v (state mps mss mts sum st m))
                     (body v (init-state m end))))))
 
 (define-symbolic b0 b1 b2 b3 b4 b5 b6 b7 b8 integer?)
 (define symbv
   (vector b0 b1 b2 b3 b4 b5 b6 b7 b8))
 
-(verify (assert (problem symbv 0 2 9)))
 
 (define (solve-func-pb)
 
@@ -99,27 +116,27 @@
    (/ (foldl
        (λ (s i) (+ s
                    (test-unit))) 0 tests)
-      (integer->real(length tests)))))
+      (integer->real (length tests)))))
 
-(if (sat? solve-func-pb)
-    (displayln "Benchmark / functional")
-    (displayln "Bench1 failed."))
+;; (if (sat? solve-func-pb)
+;;     (displayln "Benchmark / functional")
+;;     (displayln "Bench1 failed."))
 
-(benchmark1)
+;(benchmark1)
 
 ;; ****************************************************************
 ;; Benchmark 2 : vcs s # B(s,i) = B(s # s, i)
 
 (define-syntax-rule (problem2 v st m end)
-  (let ([mps 0][sum 0])
+  (let ([mps 0][mss 0][mts 0][sum 0])
     (and
-     (state-eq (join (state mps sum m m)
-                     (body v (state mps sum m end)))
-               (body v (join (state mps sum m m)
-                             (state mps sum m end))))
+     (state-eq (join (state mps mss mts sum  m m)
+                     (body v (state mps mss mts sum m end)))
+               (body v (join (state mps mss mts sum m m)
+                             (state mps mss mts sum m end))))
 
-     (state-eq (join (state mps sum st m) (init-state m end))
-               (state mps sum st m)))))
+     (state-eq (join (state mps mss mts st m) (init-state m end))
+               (state mps mss mts st m)))))
 
 
 (define (solve-imper-pb)
@@ -158,8 +175,8 @@
       (integer->real(length tests)))))
 
 
-(if (solve-imper-pb)
-    (displayln "Benchmark / imperative")
-    (displayln "Bench2 failed."))
+;; (if (solve-imper-pb)
+;;     (displayln "Benchmark / imperative")
+;;     (displayln "Bench2 failed."))
 
-(benchmark2)
+;(benchmark2)
