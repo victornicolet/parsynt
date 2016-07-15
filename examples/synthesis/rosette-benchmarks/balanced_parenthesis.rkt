@@ -20,25 +20,26 @@
 
 (define (body str s_)
   (let
-       ([start (state-start s_)]
-        [end (state-end s_)])
-  (Loop start end limit s_
-        (lambda (s i)
-          (let* ([start (state-start s)]
-                 [end (state-end s)]
-                 [wbin (state-wb s)]
-                 [diff (state-diff s)]
-                 [hmin (state-hmin s)]
-                 [diff0 (if (vector-ref str i)
-                            (add1 diff)
-                            (sub1 diff))])
-            (state
-             (& (not (< diff0 0)) wbin)
-             diff0
-             (min diff0 hmin)
-             start end))))))
+      ([start (state-start s_)]
+       [end (state-end s_)])
+    (Loop start end limit s_
+          (lambda (s i)
+            (let* ([start (state-start s)]
+                   [end (state-end s)]
+                   [wbin (state-wb s)]
+                   [diff (state-diff s)]
+                   [hmin (state-hmin s)]
+                   [diff0 (if (vector-ref str i)
+                              (add1 diff)
+                              (sub1 diff))])
+              (state
+               (& (not (< diff0 0)) wbin)
+               diff0
+               (min diff0 hmin)
+               start
+               end))))))
 
-(define (init-state start end) (state (choose true false) (??) (??) start end))
+(define (init-state start end) (state (choose #t #f) (??) (??) start end))
 
 (define (join L R)
   (let
@@ -64,27 +65,28 @@
 ;; ****************************************************************
 ;; Benchmark 1 wth h(x++y) = h(x) # h(y) vcs
 
-(define-syntax-rule (problem v st m end wb0 diff0 hmin0)
+(define-syntax-rule (problem v st m end)
+  (let ([wb0 #t][diff0 0][hmin0 0])
   (state-eq (body v (state wb0 diff0 hmin0 st end))
             (join (body v (state wb0 diff0 hmin0 st m))
-                  (body v (init-state m end)))))
+                  (body v (init-state m end))))))
 
 (define (solve-func-pb)
-  (define-symbolic i0 i1 i2 i3 i4 i5 i6 i7 i8 diff hm integer?)
-  (define-symbolic wb boolean?)
+  (define-symbolic diff hm integer?)
+  (define-symbolic b0 b1 b2 b3 b4 b5 b6 b7 b8 wb boolean?)
   ;; Join point (symbolic)
 
   (define symbv
-    (list->vector (list i0 i1 i2 i3 i4 i5 i6 i7 i8)))
+    (list->vector (list b0 b1 b2 b3 b4 b5 b6 b7 b8)))
+
   (sat? (synthesize
-   #:forall (list i0 i1 i2 i3 i4 i5 i6 i7 i8 diff hm)
+   #:forall (list b0 b1 b2 b3 b4 b5 b6 b7 b8)
    #:guarantee (assert (and
-                        (problem symbv 0 0 8 wb diff hm)
-                        (problem symbv 0 4 7 wb diff hm)
-                        (problem symbv 0 5 7 wb diff hm)
-                        (problem symbv 0 6 6 wb diff hm)
-                        (problem symbv 6 6 6 wb diff hm)
-                        )))))
+                        (problem symbv 0 0 8)
+                        (problem symbv 0 4 7)
+                        (problem symbv 0 5 8)
+                        (problem symbv 0 6 6)
+                        (problem symbv 6 6 6))))))
 (define (test-unit)
   (define-values (modl cpu real gbc)
     (time-apply solve-func-pb '()))
@@ -95,45 +97,49 @@
   (exact->inexact
    (/ (foldl
        (λ (s i) (+ s
-                   (test-unit)))
-       0
-       tests)
+                   (test-unit))) 0 tests)
       (integer->real(length tests)))))
+
+(if (solve-func-pb)
+    (displayln "Benchmark / functional")
+    (displayln "Bench1 failed."))
 
 (benchmark1)
 
 ;; ****************************************************************
 ;; Benchmark 2 : vcs s # B(s,i) = B(s # s, i)
 
-(define-syntax-rule (problem2 v wb0 diff0 hmin0 wb1 diff1 hmin1 st m end)
-   (and
-    (state-eq (join (state wb0 diff0 hmin0 m m)
-                    (body v (state wb1 diff1 hmin1 m end)))
-              (body v (join (state wb0 diff0 hmin0 m m)
-                            (state wb1 diff1 hmin1 m end))))
+(define-syntax-rule (problem2 v st m end)
+  (let ([wb0 #t][diff0 0][hmin0 0])
+    (and
+     (state-eq (join (state wb0 diff0 hmin0 m m)
+                     (body v (state wb0 diff0 hmin0 m end)))
+               (body v (join (state wb0 diff0 hmin0 m m)
+                             (state wb0 diff0 hmin0 m end))))
 
-    (state-eq (join (state wb0 diff0 hmin0 st m) (init-state m end))
-              (state wb0 diff0 hmin0 st m))))
+     (state-eq (join (state wb0 diff0 hmin0 st m) (init-state m end))
+               (state wb0 diff0 hmin0 st m)))))
 
 
 (define (solve-imper-pb)
-  (define-symbolic i0 i1 i2 i3 i4 i5 i6 i7 i8 di di0 hm hm0 integer?)
-  (define-symbolic wb wb0 boolean?)
+  (define-symbolic  b0 b1 b2 b3 b4 b5 b6 b7 b8 boolean?)
   ;; Join point (symbolic)
 
   (define symbv
-    (list->vector (list i0 i1 i2 i3 i4 i5 i6 i7 i8)))
+    (list->vector (list  b0 b1 b2 b3 b4 b5 b6 b7 b8)))
+
+   (sat? (synthesize
+    #:forall (list  b0 b1 b2 b3 b4 b5 b6 b7 b8)
+    #:guarantee (assert
+                 (and
+                  (problem symbv 0 0 8)
+                  (problem symbv 0 4 7)
+                  (problem symbv 0 5 8)
+                  (problem symbv 0 6 6)
+                  (problem symbv 6 6 6)
+                  )))))
 
 
-   (synthesize
-    #:forall (list i0 i1 i2 i3 i4 i5 i6 i7 i8 di di0 hm hm0 wb wb0)
-    #:guarantee (assert (and
-                        (problem2 symbv wb di hm wb0 di0 hm0 0 3 7)
-                        (problem2 symbv wb di hm wb0 di0 hm0 1 3 3)
-                        (problem2 symbv wb di hm wb0 di0 hm0 0 4 5)
-                        (problem2 symbv wb di hm wb0 di0 hm0 5 6 7)
-                        (problem2 symbv wb di hm wb0 di0 hm0 3 8 8)
-                        ))))
 (define (test-unit2)
   (define-values (modl cpu real gbc)
     (time-apply solve-imper-pb '()))
@@ -149,4 +155,9 @@
        tests)
       (integer->real(length tests)))))
 
-;(benchmark2)
+
+(if (solve-imper-pb)
+    (displayln "Benchmark / imperative")
+    (displayln "Bench2 failed."))
+
+(benchmark2)
