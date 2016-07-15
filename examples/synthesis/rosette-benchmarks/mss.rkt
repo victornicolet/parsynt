@@ -118,11 +118,11 @@
                    (test-unit))) 0 tests)
       (integer->real (length tests)))))
 
-;; (if (sat? solve-func-pb)
-;;     (displayln "Benchmark / functional")
-;;     (displayln "Bench1 failed."))
+(if (sat? (solve-func-pb))
+    (displayln "Benchmark / functional")
+    (displayln "Bench1 failed."))
 
-;(benchmark1)
+(benchmark1)
 
 ;; ****************************************************************
 ;; Benchmark 2 : vcs s # B(s,i) = B(s # s, i)
@@ -175,8 +175,8 @@
       (integer->real(length tests)))))
 
 
-;; (if (solve-imper-pb)
-;;     (displayln "Benchmark / imperative")
-;;     (displayln "Bench2 failed."))
+(if (solve-imper-pb)
+    (displayln "Benchmark / imperative")
+    (displayln "Bench2 failed."))
 
-;(benchmark2)
+(benchmark2)
