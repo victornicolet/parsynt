@@ -145,6 +145,9 @@ and hole_prefunc (vs : VS.t) =
   | Empty x -> (x, SkLetExpr (SkVar x))
   | Func (x,l) -> (x, hole_lam vs l)
 
+and hole_letin (vs : VS.t) =
+    | State of VS.t * (expr IM.t)
+
 (*** MAIN ENTRY POINT ***)
 
 let build_sketch (loopinfo : LF.t): sketch =
