@@ -2,7 +2,7 @@ open Cil
 open Format
 open LoopsHelper
 open Utils
-open ListTools
+open Utils.ListTools
 open PpHelper
 
 module E = Errormsg
@@ -574,7 +574,9 @@ let processFile cfile =
       the loops containing break statements.
   *)
   let rem_cond cl =
-    cl.Cloop.hasBreaks(** ||
+    cl.Cloop.hasBreaks ||
+      (is_empty_state cl.Cloop.rwset)
+  (** ||
       ((IH.length cl.Cloop.definedInVars) = 0)*)
   in
   let loops_to_remove =
@@ -598,7 +600,13 @@ let processFile cfile =
   List.iter
     (fun sid -> IH.remove programLoops sid)
     loops_to_remove;
-  visited_funcs
+  let loopmap =
+    IH.fold
+      (fun k cl m -> IM.add k cl m)
+      programLoops
+      IM.empty in
+  IH.clear programLoops;
+  loopmap, visited_funcs
 
 
 

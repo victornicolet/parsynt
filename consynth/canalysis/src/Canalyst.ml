@@ -7,7 +7,6 @@ module F = Frontc
 module E = Errormsg
 module C = Cil
 module IH = Inthash
-module L2S = Loops2ssa
 
 let debug = ref false
 let verbose = ref false
@@ -23,7 +22,6 @@ the filename might contain errors"
   in
   cil
 
-let loops = IH.create 10
 
 let processFile fileName =
   C.insertImplicitCasts := false;
@@ -36,16 +34,5 @@ let processFile fileName =
   Loops.debug := !debug;
   Loops.verbose := !verbose;
   Rmtmps.removeUnusedTemps cfile;
-  ignore(Loops.processFile cfile);
-  IHTools.add_all loops (Loops.processedLoops ());
-  let loopscpy = (IH.copy loops) in
-  L2S.debug := !debug;
-  let floops = L2S.processFile_l2s loopscpy in
-  let sketchSet = IH.create 10 in
-  IH.iter (fun k v ->
-    IH.add sketchSet k (build_sketch v)) floops;
-  floops
-
-
-
-let getLoops () = loops
+  let loops, _ = Loops.processFile cfile in
+  loops

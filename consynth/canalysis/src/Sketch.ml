@@ -1,6 +1,5 @@
 open Utils
 open Format
-open Prefunc
 open Core.Std
 open Utils
 open SketchTypes
@@ -9,7 +8,6 @@ open PpHelper
 open Cil2Func
 
 module VS = VS
-module LF = Loops2ssa.Floop
 module SM = Map.Make (String)
 
 
@@ -38,42 +36,9 @@ let hole_or_exp2 constr e1 e2 =
   | SkHoleR, SkHoleR -> SkHoleR
   | _, _ -> constr e1 e2
 
-let rec hole (vs: VS.t) =
- function
-  | Id i ->
-     begin
-       try
-         let vi = VSOps.getVi i vs in
-         SkVar vi
-       with Not_found ->
-         SkHoleR
-     end
-  | Container (e, subs) ->
-     let usv = VS.inter (VSOps.sove e) vs in
-     if VS.cardinal usv > 0 then
-       hole_cils vs e
-     else SkHoleR
 
-  | Binop (op, e1, e2) ->
-     let e1' = hole vs e1 in
-     let e2' = hole vs e2 in
-     begin
-       match e1', e2' with
-       | SkHoleR, SkHoleR -> SkHoleR
-       | _, _ -> SkBinop (op, hole vs e1, hole vs e2)
-     end
-  | Unop (op, e) ->
-     SkUnop (op, hole vs e)
-  | Loop (igu, e) ->
-     SkRec (igu, hole vs e)
-  | Cond (c, e1, e2) ->
-     (**
-         TODO : figure out how to generate the bookkeeping variable for conds.
-         This might require analysis of the subexpressions into the condition
-     *)
-     SkHoleR
 
-and hole_fexpr (vs : VS.t) =
+let rec hole (vs : VS.t) =
   function
   | Var vi ->
      begin
@@ -89,7 +54,7 @@ and hole_fexpr (vs : VS.t) =
     begin
       try
         let vi = VSOps.getVi vi.Cil.vid vs in
-        SkArray (vi, List.map el (hole_fexpr vs))
+        SkArray (vi, List.map el (hole vs))
       with Not_found ->
         SkHoleR
     end
@@ -105,7 +70,9 @@ and hole_fexpr (vs : VS.t) =
      SkHoleR
 
   | FRec ((i, g, u), expr) ->
-     SkRec ((i, g, u), hole_fexpr vs expr)
+     SkRec ((i, g, u), hole vs expr)
+
+  | _ -> failwith "not yet implemented"
 
 and hole_cils (vs : VS.t) =
   function

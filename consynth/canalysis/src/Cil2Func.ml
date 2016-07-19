@@ -2,6 +2,7 @@ open Utils
 open Cil
 open Format
 open Loops
+open Utils
 open PpHelper
 open SketchTypes
 
@@ -43,8 +44,8 @@ and expr =
   | FQuestion of exp * expr * expr
   | FRec of Loops.forIGU * expr
   (** Types for translated expressions *)
-  | FBinop of symbBinops * expr * expr
-  | FUnop of symbUnops * expr
+  | FBinop of symb_binops * expr * expr
+  | FUnop of symb_unops * expr
   | FConst of constants
   | FSizeof of typ
   | FSizeofE of expr
@@ -375,12 +376,12 @@ let rec  merge_cond c let_if let_else pre_substs =
              subs_else
          in
          if IMTools.is_disjoint pre_substs new_subs
-         then true, Some (IM.add_all pre_substs new_subs), None
-         else true, Some new_subs, Some (State (vs_ifs, new_subs))
+         then true, Some (IMTools.add_all pre_substs new_subs), None
+         else true, Some new_subs, Some (State (vs_if, new_subs))
        end
      else
-       false, None
-  | _ -> false, None
+       false, None , None
+  | _ -> false, None, None
 
 
 
@@ -448,13 +449,13 @@ and red let_form substs =
   | LetCond (e, bif, belse, cont, loc) ->
      let red_if = reduce bif in
      let red_else = reduce belse in
-     let merged, exprs = merge_cond e red_if red_else substs in
+     let merged, exprs, _ = merge_cond e red_if red_else substs in
      if merged
      then
        let new_subs = (checkOption exprs) in
-       (if id_disjoint new_subs substs
+       (if IMTools.is_disjoint new_subs substs
         then red cont (IMTools.add_all substs new_subs)
-        else LetState (State(VS.empty, new_subs)
+        else LetState (State (VS.empty, new_subs), cont))
      else LetCond (e, red_if, red_else, reduce cont, loc)
 
   | LetState (state, let_cont) ->

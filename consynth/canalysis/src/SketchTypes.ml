@@ -1,4 +1,3 @@
-open Cil
 open Utils
 open Format
 open Loops
@@ -10,33 +9,33 @@ let use_unsafe_operations = ref false
 
 type sklet =
   | SkLetExpr of skExpr
-  | SkLetIn of varinfo * skExpr * sklet
+  | SkLetIn of Cil.varinfo * skExpr * sklet
 
 and skExpr =
-  | SkVar of varinfo
-  | SkArray of varinfo * (skExpr list)
-  | SkCil of exp (** If expression doesn't contain state variables *)
-  | SkBinop of binop * skExpr * skExpr
-  | SkUnop of unop * skExpr
+  | SkVar of Cil.varinfo
+  | SkArray of Cil.varinfo * (skExpr list)
+  | SkCil of Cil.exp (** If expression doesn't contain state variables *)
+  | SkBinop of Cil.binop * skExpr * skExpr
+  | SkUnop of Cil.unop * skExpr
   | SkRec of  forIGU * skExpr
   | SkCond of skExpr * skExpr * skExpr
   | SkHoleL
   | SkHoleR
 (** Simple translation of Cil exp needed to nest
     sub-expressions with state variables *)
-  | SkConst of constant
-  | SkLval of lval
-  | SkSizeof of typ
+  | SkConst of Cil.constant
+  | SkLval of Cil.lval
+  | SkSizeof of Cil.typ
   | SkSizeofE of skExpr
   | SkSizeofStr of string
-  | SkAlignof of typ
+  | SkAlignof of Cil.typ
   | SkAlignofE of skExpr
-  | SkCastE of typ * skExpr
-  | SkAddrof of lval
-  | SkAddrofLabel of stmt ref
-  | SkStartOf of lval
+  | SkCastE of Cil.typ * skExpr
+  | SkAddrof of Cil.lval
+  | SkAddrofLabel of Cil.stmt ref
+  | SkStartOf of Cil.lval
 
-and skStmt =  varinfo * sklet
+and skStmt =  Cil.varinfo * sklet
 
 type sketch = VS.t * skStmt list
 
@@ -101,27 +100,27 @@ let ostring_of_baseSymbolicType =
 
 let rec symb_type_of_ciltyp =
   function
-  | TInt (ik, _) ->
+  | Cil.TInt (ik, _) ->
      begin
        match ik with
-       | IBool -> Boolean
+       | Cil.IBool -> Boolean
        | _ -> Integer
      end
 
-  | TFloat _ -> Real
+  | Cil.TFloat _ -> Real
 
-  | TArray (t, _, _) ->
+  | Cil.TArray (t, _, _) ->
      Vector (symb_type_of_ciltyp t, None)
 
-  | TFun (t, arglisto, _, _) ->
+  | Cil.TFun (t, arglisto, _, _) ->
      Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
-  | TComp (ci, _) -> Unit
-  | TVoid _ -> Unit
-  | TPtr (t, _) ->
+  | Cil.TComp (ci, _) -> Unit
+  | Cil.TVoid _ -> Unit
+  | Cil.TPtr (t, _) ->
      Vector (symb_type_of_ciltyp t, None)
-  | TNamed (ti, _) ->
-     symb_type_of_ciltyp ti.ttype
-  | TEnum _ | TBuiltin_va_list _ -> failwith "Not implemented"
+  | Cil.TNamed (ti, _) ->
+     symb_type_of_ciltyp ti.Cil.ttype
+  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
 
 and symb_type_of_args argslisto =
   try
@@ -142,7 +141,7 @@ and symb_type_of_args argslisto =
   Operators : Cil operators and C function names.
 *)
 
-type symbUnops =
+type symb_unops =
   | Not | Add1 | Sub1
 (**
    From C++11 : 4 different ops.
@@ -160,7 +159,7 @@ type symbUnops =
   (** Misc*)
   | Sgn
 
-type symbBinops =
+type symb_binops =
   (** Booleans*)
   | And | Nand | Or | Nor | Implies | Xor
   (** Integers and reals *)
@@ -177,7 +176,7 @@ type symbBinops =
    Some racket function that are otherwise unsafe
    to use in Racket, but we might still need them.
 *)
-type symbUnsafeUnops =
+and symb_unsafe_unops =
   (** Trigonometric + hyp. functions *)
   | Sin | Cos | Tan | Sinh | Cosh | Tanh
   (** Anti functions *)
@@ -186,41 +185,41 @@ type symbUnsafeUnops =
   | Log | Log2 | Log10
   | Exp | Sqrt
 
-type symbUnsafeBinops =
+and symb_unsafe_binops =
   | TODO
 
 (** Some pre-defined constants existing in C99 *)
-type constants =
+and constants =
   | Int of int
   | Real of float
   | Bool of bool
-  | CUnop of symbUnops * constants
-  | CBinop of symbBinops * constants * constants
-  | CUnsafeUnop of symbUnsafeUnops * constants
-  | CUnsafeBinop of symbUnsafeBinops * constants * constants
+  | CUnop of symb_unops * constants
+  | CBinop of symb_binops * constants * constants
+  | CUnsafeUnop of symb_unsafe_unops * constants
+  | CUnsafeBinop of symb_unsafe_binops * constants * constants
   | Pi | SqrtPi
   | Sqrt2
   | Ln2 | Ln10 | E
 
 let symb_unop_of_cil =
   function
-  | LNot | BNot -> Not
-  | Neg -> Neg
+  | Cil.LNot | Cil.BNot -> Not
+  | Cil.Neg -> Neg
 
 let symb_binop_of_cil =
   function
-  | IndexPI -> Plus
-  | PlusA | PlusPI -> Plus
-  | MinusA | MinusPI | MinusPP-> Minus
-  | Mult -> Times
-  | Div -> Div
-  | Mod -> Mod
-  | BXor -> Xor
-  | BAnd | LAnd -> And
-  | BOr | LOr -> Or
-  | Lt -> Lt | Le -> Le | Gt -> Gt | Ge -> Ge
-  | Eq -> Eq | Ne -> Neq
-  | Shiftlt -> ShiftL | Shiftrt -> ShiftR
+  | Cil.IndexPI -> Plus
+  | Cil.PlusA | Cil.PlusPI -> Plus
+  | Cil.MinusA | Cil.MinusPI | Cil.MinusPP-> Minus
+  | Cil.Mult -> Times
+  | Cil.Div -> Div
+  | Cil.Mod -> Mod
+  | Cil.BXor -> Xor
+  | Cil.BAnd | Cil.LAnd -> And
+  | Cil.BOr | Cil.LOr -> Or
+  | Cil.Lt -> Lt | Cil.Le -> Le | Cil.Gt -> Gt | Cil.Ge -> Ge
+  | Cil.Eq -> Eq | Cil.Ne -> Neq
+  | Cil.Shiftlt -> ShiftL | Cil.Shiftrt -> ShiftR
 
   (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
   (* inexact->exact, exact->inexact, quotient , sgn *)

@@ -30,6 +30,6 @@ module Cloop : sig
   val string_of_cloop: t -> String.t
 end
 
-val processFile: Cil.file -> int list
+val processFile: Cil.file -> Cloop.t Utils.IM.t * int list
 val processedLoops: unit -> Cloop.t Inthash.t
 val clear : unit -> unit

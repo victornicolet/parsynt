@@ -6,7 +6,6 @@ open Loops
 open Utils
 
 module C2F = Cil2Func
-module LF = Loops2ssa.Floop
 
 module TC2F = TCil2Func
 
