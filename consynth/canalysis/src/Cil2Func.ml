@@ -3,8 +3,10 @@ open Cil
 open Format
 open Loops
 open Utils
+open Utils.CilTools
 open PpHelper
 open SketchTypes
+open SPretty
 
 (**
    Implementation of a simple CPS comversion from the

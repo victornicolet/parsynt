@@ -10,6 +10,7 @@ module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
+module Ct = CilTools
 
 let verbose = ref true
 let debug = ref false
@@ -50,9 +51,9 @@ let checkIGU ((init, guard, update) : forIGU) : bool =
 
 let sprint_IGU ((init, guard, update) : forIGU) : string =
   sprintf "for(%s; %s; %s)"
-    (psprint80 Cil.d_instr init)
-    (psprint80 Cil.d_exp guard)
-    (psprint80 Cil.d_instr update)
+    (Ct.psprint80 Cil.d_instr init)
+    (Ct.psprint80 Cil.d_exp guard)
+    (Ct.psprint80 Cil.d_instr update)
 
 module Cloop = struct
   type t = {
@@ -405,7 +406,7 @@ end
 let addBoundaryInfo clp =
   let sid = clp.Cloop.sid in
   let rds =
-    match (setOfReachingDefs
+    match (Ct.setOfReachingDefs
              (Reachingdefs.getRDs sid))
     with
     | Some x -> x
@@ -415,7 +416,7 @@ let addBoundaryInfo clp =
            eprintf
              "Error : addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
              sid
-             (psprint80 d_stmt clp.Cloop.loopStatement);
+             (Ct.psprint80 d_stmt clp.Cloop.loopStatement);
            flush_all ();
          end;
       IH.create 2
@@ -434,7 +435,7 @@ let addBoundaryInfo clp =
             eprintf
               "addBoundaryInfo - no live variables in (sid : %i):\n %s\n"
               sid
-              (psprint80 d_stmt clp.Cloop.loopStatement);
+              (Ct.psprint80 d_stmt clp.Cloop.loopStatement);
             flush_all ();
           end;
         raise (Failure "addBoundaryInfo : no live variables.");
@@ -465,9 +466,9 @@ module RW = struct
 
   let prws u d =
 	print_endline "--Uses";
-	VS.iter ppv u;
+	VS.iter Ct.ppv u;
 	print_endline "Defs";
-	VS.iter ppv d
+	VS.iter Ct.ppv d
 
   let computeRWs (loop : Cil.stmt) (fnames : VS.t) : VS.t * VS.t  =
 	Usedef.onlyNoOffsetsAreDefs := true;
@@ -487,7 +488,7 @@ let addRWinformation sid clp =
   then
     begin
       print_string "AddRW information :";
-	  print_endline (psprint80 Cil.d_stmt (last stmts))
+	  print_endline (Ct.psprint80 Cil.d_stmt (last stmts))
     end
   else ();
   let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGlobalFuncVS ()) in

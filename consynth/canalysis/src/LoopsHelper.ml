@@ -2,6 +2,7 @@ open Cil
 open Utils
 open ListTools
 module EC = Expcompare
+module Ct = CilTools
 
 let debug = ref false
 
@@ -198,14 +199,14 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
               instr, s
            | None, Some s ->
               begin
-                ppbk (Cil.mkBlock s);
+                Ct.ppbk (Cil.mkBlock s);
                 raise (Failure "failed to find last intruction.")
               end
            | Some _, None
            | None, None ->
               raise (Failure "failed to find last statement in body.")
          in
-         Some (init, (neg_exp term_expr), update), newbody
+         Some (init, (Ct.neg_exp term_expr), update), newbody
        with Failure s ->
 		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
      end

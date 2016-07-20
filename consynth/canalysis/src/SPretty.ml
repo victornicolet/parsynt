@@ -3,6 +3,7 @@ open PpHelper
 open SketchTypes
 open Format
 open Loops
+open Utils.CilTools
 
 (** Pretty-printing operators *)
 
@@ -179,8 +180,10 @@ let fp = Format.fprintf in
   | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
   | SkAlignof typ -> fp ppf "(AlignOf typ)"
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
-  | SkArray (v, subsd) ->
-     fp ppf "%s[%a]" v.Cil.vname (fun fmt -> ppli fmt pp_skexpr) subsd
+  | SkArray (name, subsd, len_o) ->
+     fp ppf "%a[%a]"
+       pp_skexpr name
+       (fun fmt -> ppli fmt pp_skexpr) subsd
   | SkBinop (op, e1, e2) ->
      fp ppf "%a %s %a"
        pp_skexpr e1 (string_of_symb_binop op) pp_skexpr e2
@@ -207,7 +210,7 @@ let fp = Format.fprintf in
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
   | SkCastE (t,e) ->
      fp ppf "(%a) %a" pp_symb_type t pp_skexpr e
-  | SkStartOf l -> fp ppf "(StartOf %a)" pp_sklvar l
+  | SkStartOf l -> fp ppf "(StartOf %a)" pp_skexpr l
 
 
 (** Print statements **)

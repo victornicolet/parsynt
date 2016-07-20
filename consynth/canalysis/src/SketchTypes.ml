@@ -22,10 +22,11 @@ and skExpr =
   | SkCond of skExpr * sklet * sklet
 
   | SkVar of Cil.varinfo
-  | SkArray of Cil.varinfo * (skExpr list)
+  | SkArray of skExpr * (skExpr list) * (skExpr option)
   | SkBinop of symb_binop * skExpr * skExpr
-  | SkQuestion of skExpr * skExpr * skExpr
   | SkUnop of symb_unop * skExpr
+  | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
+  | SkQuestion of skExpr * skExpr * skExpr
   | SkHoleL
   | SkHoleR
 (** Simple translation of Cil exp needed to nest
@@ -39,7 +40,7 @@ and skExpr =
   | SkCastE of symbolic_type * skExpr
   | SkAddrof of skExpr
   | SkAddrofLabel of Cil.stmt ref
-  | SkStartOf of skLVar
+  | SkStartOf of skExpr
 
 
 (** Structure types for Rosette sketches *)
@@ -316,13 +317,6 @@ let uninterpeted fname =
 
 
 (** ********************************************************** SYMBOLIC TYPES *)
-
-let ostring_of_baseSymbolicType =
-  function
-  | Integer -> Some "integer?"
-  | Real -> Some "real?"
-  | Boolean -> Some "boolean?"
-  | _ -> None
 
 let rec symb_type_of_ciltyp =
   function

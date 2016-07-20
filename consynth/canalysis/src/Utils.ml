@@ -144,35 +144,45 @@ let appendC l a =
 
 (** Cil specific utility functions *)
 (** Pretty printing shortcuts *)
-let psprint80 f x = Pretty.sprint 80 (f () x)
-let ppe e = print_endline (psprint80 Cil.dn_exp e)
-let pps s = print_endline ("Statement : "^(psprint80 Cil.dn_stmt s))
-let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
-let ppv v = print_endline v.vname
-let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
-let ppbk blk = List.iter pps blk.bstmts
+module CilTools = struct
+  let psprint80 f x = Pretty.sprint 80 (f () x)
+  let ppe e = print_endline (psprint80 Cil.dn_exp e)
+  let pps s = print_endline ("Statement : "^(psprint80 Cil.dn_stmt s))
+  let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
+  let ppv v = print_endline v.vname
+  let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
+  let ppbk blk = List.iter pps blk.bstmts
 
-let setOfReachingDefs rdef =
-  match rdef with
-  | Some (_,_, setXhash) -> Some setXhash
-  | None -> None
+  let setOfReachingDefs rdef =
+    match rdef with
+    | Some (_,_, setXhash) -> Some setXhash
+    | None -> None
 
-let getBody stmt =
-  match stmt.skind with
-  | Loop (blk, _, _, _) -> blk.bstmts
-  | _ -> []
+  let getBody stmt =
+    match stmt.skind with
+    | Loop (blk, _, _, _) -> blk.bstmts
+    | _ -> []
 
-let neg_exp (exp : Cil.exp) =
-  match exp with
-  | UnOp (LNot, b, _) -> b
-  | UnOp (Neg, x, _) -> x
-  | _ -> UnOp (LNot, exp, TInt (IBool, []))
+  let neg_exp (exp : Cil.exp) =
+    match exp with
+    | UnOp (LNot, b, _) -> b
+    | UnOp (Neg, x, _) -> x
+    | _ -> UnOp (LNot, exp, TInt (IBool, []))
 
-let is_like_array (vi : Cil.varinfo) =
-  match vi.vtype with
-  | TPtr _ | TArray _ -> true
-  | _ -> false
+  let is_like_array (vi : Cil.varinfo) =
+    match vi.vtype with
+    | TPtr _ | TArray _ -> true
+    | _ -> false
 
+  let rec get_host_var host =
+    match host with
+    | Var vi -> Some vi
+    | Mem e ->
+       match e with
+       | Lval (hst, offset) -> get_host_var hst
+       | _ -> None
+
+end
 (**
     Extract the variables used in statements/expressions/instructions/..
     Used variables can be on either side of an assignment.

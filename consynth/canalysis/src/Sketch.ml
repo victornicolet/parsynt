@@ -47,7 +47,7 @@ let rec convert (cur_v : skLVar) (vs : VS.t) =
     begin
       try
         let vi = VSOps.getVi vi.Cil.vid vs in
-        SkArray (vi, List.map el ~f:(fun e -> convert cur_v vs e))
+        SkArray (SkVar vi, List.map el ~f:(fun e -> convert cur_v vs e), None)
       with Not_found ->
         SkHoleR
     end
@@ -67,11 +67,11 @@ let rec convert (cur_v : skLVar) (vs : VS.t) =
 
   | _ -> failwith "not yet implemented"
 
-and convert_cils (vs : VS.t) =
+and convert_cils ?(cur_v = SkState) (vs : VS.t) =
   function
   | Cil.Const c -> SkHoleR
 
-  | Cil.Lval v -> skexpr_of_lval v
+  | Cil.Lval v -> skexpr_of_lval cur_v vs v
 
   | Cil.SizeOf t->
      let typ = symb_type_of_ciltyp t in
@@ -84,81 +84,77 @@ and convert_cils (vs : VS.t) =
      SkSizeofStr s
 
   | Cil.AlignOf t ->
-     SkAlignof t
+     SkAlignof (symb_type_of_ciltyp t)
 
   | Cil.AlignOfE e ->
      hole_or_exp (fun x -> SkAlignofE x) (convert_cils vs e)
 
   | Cil.AddrOf lv ->
-     SkAddrof lv
+     SkAddrof (skexpr_of_lval cur_v vs lv)
 
   | Cil.AddrOfLabel stm_ref ->
      SkAddrofLabel stm_ref
 
   | Cil.UnOp (op, e1, t) ->
-     hole_or_exp (fun x -> SkUnop (op,x)) (convert_cils vs e1)
+     let op' = symb_unop_of_cil op in
+     SkUnop (op',convert_cils vs e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
-     hole_or_exp2
-       (fun x1 x2 -> SkBinop (op, x1, x2))
-       (convert_cils vs e1)
-       (convert_cils vs e2)
+     let op' = symb_binop_of_cil op in
+     SkBinop (op', convert_cils vs e1, convert_cils vs e2)
 
   | Cil.Question (c, e1, e2, t) ->
      let c' = convert_cils vs c in
      (** TODO : do something more specific with the question *)
-     hole_or_exp2
-       (fun x1 x2 -> SkQuestion (c', x1, x2))
-       (convert_cils vs e1)
-       (convert_cils vs e2)
+     SkQuestion (c', convert_cils vs e1, convert_cils vs e2)
+
   | Cil.CastE (t, e) ->
-     SkCastE (t, convert_cils vs e)
+     SkCastE (symb_type_of_ciltyp t, convert_cils vs e)
   | Cil.StartOf lv ->
-     SkStartOf lv
+     SkStartOf (skexpr_of_lval cur_v vs lv)
+
+
+and skexpr_of_lval (cur_v : skLVar)
+    (vs : VS.t)
+    ((host, offset) : Cil.lval) =
+  match convert_offset cur_v vs offset with
+  | [] -> SkVar (checkOption (CilTools.get_host_var host))
+  | off_list->
+     let vi =
+       match CilTools.get_host_var host with
+       | None ->
+          (fun t x -> SkApp (t, None, off_list))
+       | Some vi ->
+          (fun t x -> x (SkVar vi))
+     in
+     match Cil.typeOfLval (host,offset) with
+     | Cil.TArray (t, eo, attrs) ->
+        (** Maybe array length *)
+        let eo' =
+          match eo with
+          | None -> None
+          | Some e -> Some (convert_cils vs e)
+        in
+        vi (symb_type_of_ciltyp t) (fun x -> SkArray (x , off_list, eo'))
+
+     | Cil.TPtr (t, attrs) ->
+        vi (symb_type_of_ciltyp t) (fun x -> SkArray (x , off_list, None))
+     | _ -> failwith "Bad type."
 
 
 
-and skexpr_of_lval ((host, offset) : Cil.lval) =
-  match host with
-  | Cil.Var vi ->
-     begin
-       match convert_offset offset with
-       | Some off_list -> SkArray (vi, off_list)
-       | None -> SkVar vi
-     end
-  | Cil.Mem e -> failwith "Not implemented yet"
+and convert_offset cur_v vs offs =
+  match offs with
+  | Cil.NoOffset ->
+     []
 
-and convert_offset offs =
-  let rec aux cil_off sk_off =
-    match offs with
-    | Cil.NoOffset ->
-       None
+  | Cil.Field (finfo, offset)->
+     failwith "Not implemented yet"
 
-    | Cil.Field (finfo, offset)->
-       failwith "Not implemented yet"
+  | Cil.Index (exp, offset) ->
+     let sk_off = convert_offset cur_v vs offset in
+     (convert_cils vs ~cur_v:cur_v exp)::sk_off
 
-    | Cil.Index (exp, offset) ->
-       let sk_off = convert_offset offset in
-
-
-(* and hole_lam (vs: VS.t) = *)
-(*   function *)
-(*   | Prefunc.Exp e -> SkLetExpr (hole vs e) *)
-(*   | Prefunc.Let (i, e, l) -> *)
-(*      try *)
-(*        let vi = VSOps.getVi i vs in *)
-(*        SkLetIn (vi, hole vs e, hole_lam vs l) *)
-(*      with Not_found -> *)
-(*        if !debug then *)
-(*          printerr *)
-(*            (Format.sprintf "Didn't find variable id  %s in %s" *)
-(*               (string_of_int i) (VSOps.spvs vs)); *)
-(*        failwith "Not_found : a variable in let is not in the state" *)
-
-(* and hole_prefunc (vs : VS.t) = *)
-(*   function *)
-(*   | Empty x -> (x, SkLetExpr (SkVar x)) *)
-(*   | Func (x,l) -> (x, hole_lam vs l) *)
 
 (** TODO : add the current loop index *)
 and convert_letin (vs : VS.t) =
