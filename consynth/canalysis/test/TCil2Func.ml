@@ -6,7 +6,6 @@ open Utils
 
 module C = Canalyst
 module C2F = Cil2Func
-module LF = Loops2ssa.Floop
 
 let wf_single_subst func =
   match func with
@@ -55,11 +54,10 @@ let wf_test_case fname (func : C2F.letin) =
 let test () =
   let filename = "test/test-cil2func.c" in
   printf "-- test Cil -> Func  -- \n";
-  ignore(C.processFile filename);
+  let loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") default;
-  let loops = C.getLoops () in
   C2F.init loops;
-  IH.iter
+  IM.iter
     (fun k cl ->
       let stmt = mkBlock(cl.statements) in
       let stateVars = ListTools.outer_join_lists

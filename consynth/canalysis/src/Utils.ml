@@ -210,6 +210,18 @@ module VSOps = struct
     | Index (e, offs) -> VS.union (sove e) (sovoff offs)
     | Field _ -> VS.empty
 
+  let bindings (vs : VS.t) =
+    VS.fold (fun v l -> l@[(v.vid, v)]) vs []
+
+  let of_bindings (l : (int * VS.elt) list) : VS.t =
+    List.fold_left (fun vs (k, v) -> VS.add v vs) VS.empty l
+
+  let varlist (vs : VS.t) =
+    VS.fold (fun v l -> l@[v]) vs []
+
+  let of_varlist (l : VS.elt list) =
+    VS.of_list l
+
   let hasVid (id : int) (vs : VS.t) =
     VS.exists (fun vi -> vi.vid = id) vs
 

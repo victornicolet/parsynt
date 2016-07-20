@@ -15,19 +15,30 @@ let rec pp_skstmt ppf ((vi, sklet) : varinfo * sklet)  =
 
 and pp_sklet ppf =
   function
-  | SkLetExpr e -> pp_skexpr ppf e
-  | SkLetIn (vi, e, l) ->
-     Format.fprintf ppf "@[%slet%s %s = %a %sin%s@] %a"
+  | SkLetExpr el ->
+     pp_print_list (fun ppf (v,e) -> pp_skexpr ppf e) ppf el
+
+  | SkLetIn (el, l) ->
+     fprintf ppf "@[(%slet%s (%a)@;%a@]"
        (color "red") default
-       vi.vname pp_skexpr e
-       (color "red") default
+       (fun ppf el ->
+         (pp_print_list
+            (fun ppf (v, e) ->
+              Format.fprintf ppf "@[ [%a %a]"
+                pp_sklvar v pp_skexpr e) ppf el)) el
        pp_sklet l
+
+and pp_sklvar (ppf : Format.formatter) sklvar =
+  match sklvar with
+  | SkState -> fprintf ppf "<s>"
+  | SkVarinfo v -> fprintf ppf "%s" v.Cil.vname
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
   match skexpr with
   | SkVar i -> fp ppf "%s" i.vname
   | SkConst c -> fp ppf "const %s" (psprint80 Cil.d_const c)
+  | SkFun l -> pp_sklet ppf l
   | SkLval l -> fp ppf "%s" (psprint80 Cil.d_lval l)
   | SkHoleR -> fp ppf "(??_R)"
   | SkHoleL -> fp ppf "(??_L)"
@@ -44,8 +55,12 @@ let fp = Format.fprintf in
   | SkUnop (op, e) ->
      fp ppf "%s %a" (psprint80 Cil.d_unop op) pp_skexpr e
   | SkCond (c, e1, e2) ->
-      fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
-        (color "blue") default
+     fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
+       (color "blue") default
+       pp_skexpr c pp_sklet e1 pp_sklet e2
+  | SkQuestion (c, e1, e2) ->
+     fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
+       (color "blue") default
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
   | SkRec ((i, g, u), e) ->
      fp ppf "%s recursive(%s %s;%s) %s %a"
@@ -54,7 +69,7 @@ let fp = Format.fprintf in
        (psprint80 Cil.dn_exp g)
        (psprint80 Cil.dn_instr u)
        default
-       pp_skexpr e
+       pp_sklet e
   | SkSizeof t -> fp ppf "(SizeOf %s)" (psprint80 Cil.d_type t)
   | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str

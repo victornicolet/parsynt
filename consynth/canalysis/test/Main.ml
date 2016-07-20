@@ -18,11 +18,10 @@ let testProcessFile () =
     end;
   let filename = "test/"^(Array.get Sys.argv 1) in
   printf "-- test processing file -- \n";
-  ignore(Canalyst.processFile filename);
+  let loops = Canalyst.processFile filename in
   printf "-- finished --\n";
   printf "%s Functional rep. %s\n" (color "blue") default;
-  let loops = Canalyst.getLoops () in
-  IH.iter
+  IM.iter
     (fun k cl ->
       let stmt = mkBlock(cl.Cloop.statements) in
       let stateVars = ListTools.outer_join_lists

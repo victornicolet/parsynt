@@ -17,7 +17,7 @@ open SketchTypes
 
 let debug = ref false
 (** The loops in the files *)
-let loops = ref (IH.create 10)
+let loops = ref (IM.empty)
 
 let uses = ref (IH.create 10)
 let add_uses id vs = IH.add !uses id vs
@@ -322,7 +322,7 @@ and do_s vs let_form s =
      let block_loop = do_b vs b in
      let igu =
      try
-       checkOption ((IH.find !loops s.sid).Cloop.loopIGU)
+       checkOption ((IM.find s.sid !loops).Cloop.loopIGU)
      with
        Not_found ->
          failwith (sprintf "Couldn't find loop %i." s.sid)
@@ -471,7 +471,7 @@ and reduce let_form = red let_form IM.empty
 let init map_loops = loops := map_loops;;
 
 let cil2func block statevs =
-  if IH.length !loops = 0 then
+  if IM.cardinal !loops = 0 then
     failwith "You forgot to initialize the set of loops in Cil2Func.";
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in

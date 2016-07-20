@@ -8,17 +8,25 @@ let use_unsafe_operations = ref false
 (** Internal type for building sketches *)
 
 type sklet =
-  | SkLetExpr of skExpr
-  | SkLetIn of Cil.varinfo * skExpr * sklet
+  | SkLetExpr of (skLVar * skExpr) list
+  (**  (let ([var expr]) let)*)
+  | SkLetIn of (skLVar * skExpr) list * sklet
+
+and skLVar =
+  | SkState
+  | SkVarinfo of Cil.varinfo
 
 and skExpr =
+  | SkFun of sklet
+  | SkRec of  forIGU * sklet
+  | SkCond of skExpr * sklet * sklet
+
   | SkVar of Cil.varinfo
   | SkArray of Cil.varinfo * (skExpr list)
   | SkCil of Cil.exp (** If expression doesn't contain state variables *)
   | SkBinop of Cil.binop * skExpr * skExpr
+  | SkQuestion of skExpr * skExpr * skExpr
   | SkUnop of Cil.unop * skExpr
-  | SkRec of  forIGU * skExpr
-  | SkCond of skExpr * skExpr * skExpr
   | SkHoleL
   | SkHoleR
 (** Simple translation of Cil exp needed to nest
