@@ -38,23 +38,16 @@ let hole_or_exp2 constr e1 e2 =
 
 
 
-let rec hole (cur_v : skLVar) (vs : VS.t) =
+let rec convert (cur_v : skLVar) (vs : VS.t) =
   function
-  | Var vi ->
-     begin
-       try
-         let vi = VSOps.getVi vi.Cil.vid vs in
-         SkVar vi
-       with Not_found ->
-         SkHoleR
-     end
+  | Var vi -> SkVar vi
 
   (** TODO : array -> region *)
   | Array (vi, el) ->
     begin
       try
         let vi = VSOps.getVi vi.Cil.vid vs in
-        SkArray (vi, List.map el ~f:(fun e -> hole cur_v vs e))
+        SkArray (vi, List.map el ~f:(fun e -> convert cur_v vs e))
       with Not_found ->
         SkHoleR
     end
@@ -62,7 +55,7 @@ let rec hole (cur_v : skLVar) (vs : VS.t) =
   | Container (e, subs) ->
      let usv = VS.inter (VSOps.sove e) vs in
      if VS.cardinal usv > 0 then
-       hole_cils vs e
+       convert_cils vs e
      else
        SkHoleR
 
@@ -70,25 +63,22 @@ let rec hole (cur_v : skLVar) (vs : VS.t) =
      SkHoleR
 
   | FRec ((i, g, u), expr) ->
-     SkRec ((i, g, u), SkLetExpr [(cur_v, hole cur_v vs expr)])
+     SkRec ((i, g, u), SkLetExpr [(cur_v, convert cur_v vs expr)])
 
   | _ -> failwith "not yet implemented"
 
-and hole_cils (vs : VS.t) =
+and convert_cils (vs : VS.t) =
   function
   | Cil.Const c -> SkHoleR
 
-  | Cil.Lval v ->
-     if VSOps.hasLval v vs then
-       SkLval v (** TODO : better matching lvalue -> SkVar or Skvar + offset *)
-     else
-       SkHoleR
+  | Cil.Lval v -> skexpr_of_lval v
 
   | Cil.SizeOf t->
-     SkSizeof t
+     let typ = symb_type_of_ciltyp t in
+     SkSizeof typ
 
   | Cil.SizeOfE e ->
-     hole_or_exp (fun x -> SkSizeofE x) (hole_cils vs e)
+     hole_or_exp (fun x -> SkSizeofE x) (convert_cils vs e)
 
   | Cil.SizeOfStr s ->
      SkSizeofStr s
@@ -97,7 +87,7 @@ and hole_cils (vs : VS.t) =
      SkAlignof t
 
   | Cil.AlignOfE e ->
-     hole_or_exp (fun x -> SkAlignofE x) (hole_cils vs e)
+     hole_or_exp (fun x -> SkAlignofE x) (convert_cils vs e)
 
   | Cil.AddrOf lv ->
      SkAddrof lv
@@ -106,25 +96,50 @@ and hole_cils (vs : VS.t) =
      SkAddrofLabel stm_ref
 
   | Cil.UnOp (op, e1, t) ->
-     hole_or_exp (fun x -> SkUnop (op,x)) (hole_cils vs e1)
+     hole_or_exp (fun x -> SkUnop (op,x)) (convert_cils vs e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
      hole_or_exp2
        (fun x1 x2 -> SkBinop (op, x1, x2))
-       (hole_cils vs e1)
-       (hole_cils vs e2)
+       (convert_cils vs e1)
+       (convert_cils vs e2)
 
   | Cil.Question (c, e1, e2, t) ->
-     let c' = hole_cils vs c in
+     let c' = convert_cils vs c in
      (** TODO : do something more specific with the question *)
      hole_or_exp2
        (fun x1 x2 -> SkQuestion (c', x1, x2))
-       (hole_cils vs e1)
-       (hole_cils vs e2)
+       (convert_cils vs e1)
+       (convert_cils vs e2)
   | Cil.CastE (t, e) ->
-     SkCastE (t, hole_cils vs e)
+     SkCastE (t, convert_cils vs e)
   | Cil.StartOf lv ->
      SkStartOf lv
+
+
+
+and skexpr_of_lval ((host, offset) : Cil.lval) =
+  match host with
+  | Cil.Var vi ->
+     begin
+       match convert_offset offset with
+       | Some off_list -> SkArray (vi, off_list)
+       | None -> SkVar vi
+     end
+  | Cil.Mem e -> failwith "Not implemented yet"
+
+and convert_offset offs =
+  let rec aux cil_off sk_off =
+    match offs with
+    | Cil.NoOffset ->
+       None
+
+    | Cil.Field (finfo, offset)->
+       failwith "Not implemented yet"
+
+    | Cil.Index (exp, offset) ->
+       let sk_off = convert_offset offset in
+
 
 (* and hole_lam (vs: VS.t) = *)
 (*   function *)
@@ -146,14 +161,14 @@ and hole_cils (vs : VS.t) =
 (*   | Func (x,l) -> (x, hole_lam vs l) *)
 
 (** TODO : add the current loop index *)
-and hole_letin (vs : VS.t) =
+and convert_letin (vs : VS.t) =
   function
     | State (vs, subs) ->
        let state =
          List.map (IM.bindings subs)
             ~f:(fun (k,e) ->
               let cur_v = SkVarinfo (VSOps.getVi k vs) in
-                                    (cur_v, hole cur_v vs e))
+                                    (cur_v, convert cur_v vs e))
               in
        let complete_state =
          state@(List.map
@@ -165,37 +180,37 @@ and hole_letin (vs : VS.t) =
 
     | Let (v, e, cont, i, loc) ->
        let cur_v = SkVarinfo v in
-       SkLetIn ([(cur_v, hole cur_v vs e)], hole_letin vs cont)
+       SkLetIn ([(cur_v, convert cur_v vs e)], convert_letin vs cont)
 
     | LetRec (igu, let_body, let_cont, loc) ->
        (** Tail position *)
        if is_empty_state let_cont then
-         SkLetExpr [(SkState, SkRec (igu, hole_letin vs let_body))]
+         SkLetExpr [(SkState, SkRec (igu, convert_letin vs let_body))]
        else
-         SkLetIn ([(SkState, SkRec (igu, hole_letin vs let_body))],
-                  hole_letin vs let_cont)
+         SkLetIn ([(SkState, SkRec (igu, convert_letin vs let_body))],
+                  convert_letin vs let_cont)
 
     | LetCond (c, let_if, let_else, let_cont, loc) ->
        if is_empty_state let_cont then
          SkLetExpr [(SkState,
-                     SkCond (hole_cils vs c,
-                             hole_letin vs let_if,
-                             hole_letin vs let_else))]
+                     SkCond (convert_cils vs c,
+                             convert_letin vs let_if,
+                             convert_letin vs let_else))]
        else
           SkLetIn ( [(SkState,
-                     SkCond (hole_cils vs c,
-                             hole_letin vs let_if,
-                             hole_letin vs let_else))],
-                  hole_letin vs let_cont)
+                     SkCond (convert_cils vs c,
+                             convert_letin vs let_if,
+                             convert_letin vs let_else))],
+                  convert_letin vs let_cont)
     | LetState (let_state, let_cont) ->
-       SkLetIn ([(SkState, SkFun (hole_letin vs let_state))],
-                hole_letin vs let_cont)
+       SkLetIn ([(SkState, SkFun (convert_letin vs let_state))],
+                convert_letin vs let_cont)
 
 
 (*** MAIN ENTRY POINT ***)
 
 let build_sketch (let_form : letin) (state : VS.t) =
-  hole_letin state let_form
+  convert_letin state let_form
 
 (******************************************************************************)
 

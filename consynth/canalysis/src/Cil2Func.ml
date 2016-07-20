@@ -44,8 +44,8 @@ and expr =
   | FQuestion of exp * expr * expr
   | FRec of Loops.forIGU * expr
   (** Types for translated expressions *)
-  | FBinop of symb_binops * expr * expr
-  | FUnop of symb_unops * expr
+  | FBinop of symb_binop * expr * expr
+  | FUnop of symb_unop * expr
   | FConst of constants
   | FSizeof of typ
   | FSizeofE of expr
@@ -558,13 +558,13 @@ and pp_expr ppf =
 
     | FBinop (op, e1, e2) ->
        fprintf ppf "%s %a %a"
-         (string_of_symb_binops op)
+         (string_of_symb_binop op)
          pp_expr e1
          pp_expr e2
 
     | FUnop (op, expr) ->
        fprintf ppf "%s %a"
-         (string_of_symb_unops op)
+         (string_of_symb_unop op)
          pp_expr expr
 
     | FConst c ->

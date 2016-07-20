@@ -23,133 +23,84 @@ and skExpr =
 
   | SkVar of Cil.varinfo
   | SkArray of Cil.varinfo * (skExpr list)
-  | SkCil of Cil.exp (** If expression doesn't contain state variables *)
-  | SkBinop of Cil.binop * skExpr * skExpr
+  | SkBinop of symb_binop * skExpr * skExpr
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkUnop of Cil.unop * skExpr
+  | SkUnop of symb_unop * skExpr
   | SkHoleL
   | SkHoleR
 (** Simple translation of Cil exp needed to nest
     sub-expressions with state variables *)
-  | SkConst of Cil.constant
-  | SkLval of Cil.lval
-  | SkSizeof of Cil.typ
+  | SkConst of constants
+  | SkSizeof of symbolic_type
   | SkSizeofE of skExpr
   | SkSizeofStr of string
-  | SkAlignof of Cil.typ
+  | SkAlignof of symbolic_type
   | SkAlignofE of skExpr
-  | SkCastE of Cil.typ * skExpr
-  | SkAddrof of Cil.lval
+  | SkCastE of symbolic_type * skExpr
+  | SkAddrof of skExpr
   | SkAddrofLabel of Cil.stmt ref
-  | SkStartOf of Cil.lval
+  | SkStartOf of skLVar
 
-and skStmt =  Cil.varinfo * sklet
-
-type sketch = VS.t * skStmt list
 
 (** Structure types for Rosette sketches *)
 
-type initialDefs =
+and initial_defs =
   | Initials of (string * string) list [@@deriving_sexp]
 
 (**
    The body of the join and the loop are Racket programs with
    holes insides.
 *)
-type racket_with_holes = string list [@@deriving_sexp]
+and racket_with_holes = string list [@@deriving_sexp]
 
 (**
    A state is simply a list of variables that are modified
    during the loop.
 *)
-type state = string list [@@deriving_sexp]
+and state = string list [@@deriving_sexp]
 
 (**
    We generate the body of the oririginal loop simply from
    the state variables and the list of function that are
    applied to each state variable.
 *)
-type bodyFunc =
+and body_func =
   | DefineBody of state * racket_with_holes
   | DefineJoin of state * racket_with_holes
       [@@deriving_sexp]
 
 (** Interface types with Rosette/Racket *)
 
-type symbolicType =
+and symbolic_type =
   | Unit
   (** Base types : only booleans, integers and reals *)
   | Integer
   | Real
   | Boolean
   (** Type tuple *)
-  | Tuple of symbolicType list
+  | Tuple of symbolic_type list
   (** Other lifted types *)
-  | Bitvector of symbolicType * int
+  | Bitvector of symbolic_type * int
   (** A function in Rosette is an uniterpreted function *)
-  | Function of symbolicType * symbolicType
+  | Function of symbolic_type * symbolic_type
   (** A procdedure is a reference to a procedure object *)
-  | Procedure of symbolicType * symbolicType
+  | Procedure of symbolic_type * symbolic_type
   (** Pairs and lists *)
-  | Pair of symbolicType
-  | List of symbolicType * int option
+  | Pair of symbolic_type
+  | List of symbolic_type * int option
   (** Vector and box *)
-  | Vector of symbolicType * int option
-  | Box of symbolicType
+  | Vector of symbolic_type * int option
+  | Box of symbolic_type
   (** User-defined structures *)
-  | Struct of symbolicType
+  | Struct of symbolic_type
 
-let ostring_of_baseSymbolicType =
-  function
-  | Integer -> Some "integer?"
-  | Real -> Some "real?"
-  | Boolean -> Some "boolean?"
-  | _ -> None
-
-let rec symb_type_of_ciltyp =
-  function
-  | Cil.TInt (ik, _) ->
-     begin
-       match ik with
-       | Cil.IBool -> Boolean
-       | _ -> Integer
-     end
-
-  | Cil.TFloat _ -> Real
-
-  | Cil.TArray (t, _, _) ->
-     Vector (symb_type_of_ciltyp t, None)
-
-  | Cil.TFun (t, arglisto, _, _) ->
-     Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
-  | Cil.TComp (ci, _) -> Unit
-  | Cil.TVoid _ -> Unit
-  | Cil.TPtr (t, _) ->
-     Vector (symb_type_of_ciltyp t, None)
-  | Cil.TNamed (ti, _) ->
-     symb_type_of_ciltyp ti.Cil.ttype
-  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
-
-and symb_type_of_args argslisto =
-  try
-    let argslist = checkOption argslisto in
-    let symb_types_list =
-      List.map
-        (fun (s, t, atr) -> symb_type_of_ciltyp t)
-        argslist
-    in
-    match symb_types_list with
-    | [] -> Unit
-    | [st] -> st
-    | _ -> Tuple symb_types_list
-  with Failure s -> Unit
 
 
 (*
   Operators : Cil operators and C function names.
 *)
 
-type symb_unops =
+and symb_unop =
   | Not | Add1 | Sub1
 (**
    From C++11 : 4 different ops.
@@ -166,8 +117,9 @@ type symb_unops =
   | Neg
   (** Misc*)
   | Sgn
+  | UnsafeUnop of symb_unsafe_unop
 
-type symb_binops =
+and symb_binop =
   (** Booleans*)
   | And | Nand | Or | Nor | Implies | Xor
   (** Integers and reals *)
@@ -179,12 +131,13 @@ type symb_binops =
   (** Shift*)
   | ShiftL | ShiftR
   | Expt
+  | UnsafeBinop of symb_unsafe_binop
 
 (**
    Some racket function that are otherwise unsafe
    to use in Racket, but we might still need them.
 *)
-and symb_unsafe_unops =
+and symb_unsafe_unop =
   (** Trigonometric + hyp. functions *)
   | Sin | Cos | Tan | Sinh | Cosh | Tanh
   (** Anti functions *)
@@ -193,18 +146,19 @@ and symb_unsafe_unops =
   | Log | Log2 | Log10
   | Exp | Sqrt
 
-and symb_unsafe_binops =
+
+and symb_unsafe_binop =
   | TODO
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
-  | Int of int
-  | Real of float
-  | Bool of bool
-  | CUnop of symb_unops * constants
-  | CBinop of symb_binops * constants * constants
-  | CUnsafeUnop of symb_unsafe_unops * constants
-  | CUnsafeBinop of symb_unsafe_binops * constants * constants
+  | CInt of int
+  | CReal of float
+  | CBool of bool
+  | CUnop of symb_unop * constants
+  | CBinop of symb_binop * constants * constants
+  | CUnsafeUnop of symb_unsafe_unop * constants
+  | CUnsafeBinop of symb_unsafe_binop * constants * constants
   | Pi | SqrtPi
   | Sqrt2
   | Ln2 | Ln10 | E
@@ -299,23 +253,23 @@ let c_constant  ccst =
   | "M_LN2" -> Some Ln2
   | "M_LN10" -> Some Ln10
   | "M_PI" -> Some Pi
-  | "M_PI_2" -> Some (CBinop (Div, Pi, (Int 2)))
-  | "M_PI_4" -> Some (CBinop (Div, Pi, (Int 2)))
-  | "M_1_PI" -> Some (CBinop (Div, (Real 1.0), Pi))
-  | "M_2_PI" -> Some (CBinop (Div, (Real 2.0), Pi))
+  | "M_PI_2" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_PI_4" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
+  | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
   | _ ->
      if !use_unsafe_operations then
        begin
          match ccst with
          | "M_SQRT2" -> Some Sqrt2
          | "M_SQRT1_2" ->
-            Some (CBinop (Div, (Real 1.0), Sqrt2))
+            Some (CBinop (Div, (CReal 1.0), Sqrt2))
          | "M_2_SQRTPI" ->
-            Some (CBinop (Div, (Real 2.0), SqrtPi))
+            Some (CBinop (Div, (CReal 2.0), SqrtPi))
          | "M_LOG10E" ->
-            Some (CBinop (Div, (Real 1.0), Ln10))
+            Some (CBinop (Div, (CReal 1.0), Ln10))
          | "M_LOG2E" ->
-            Some (CBinop (Div, (Real 1.0), Ln2))
+            Some (CBinop (Div, (CReal 1.0), Ln2))
          | _ -> None
        end
      else
@@ -360,62 +314,50 @@ let uninterpeted fname =
       not_in_safe && not_in_unsafe
 
 
-(** Pretty-printing operators *)
 
-let string_of_symb_unops =
-  function
-  | Not -> "Not" | Add1 -> "Add1" | Sub1 -> "Sub1"| Abs -> "Abs"
-  | Floor -> "Floor" | Ceiling -> "Ceiling"  | Truncate -> "Truncate"
-  | Round -> "Round" | Neg -> "Neg" | Sgn -> "Sgn"
+(** ********************************************************** SYMBOLIC TYPES *)
 
-let string_of_symb_binops =
+let ostring_of_baseSymbolicType =
   function
-  | And -> "and"
-  | Nand -> "nand" | Or -> "or" | Nor -> "nor" | Implies -> "implies"
-  | Xor -> "xor"
-  (** Integers and reals *)
-  | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
-  | Quot -> "quot" | Rem -> "rem" | Mod -> "mod"
-  (** Max and min *)
-  | Max -> "max" | Min -> "min"
-  (** Comparison *)
-  | Eq -> "=" | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
-  | Neq -> "neq"
-  (** Shift*)
-  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
-  | Expt -> "expt"
+  | Integer -> Some "integer?"
+  | Real -> Some "real?"
+  | Boolean -> Some "boolean?"
+  | _ -> None
 
-(**
-   Some racket function that are otherwise unsafe
-   to use in Racket, but we might still need them.
-*)
-let string_of_unsafe_unops =
+let rec symb_type_of_ciltyp =
   function
-  (** Trigonometric + hyp. functions *)
-  | Sin -> "sin" | Cos -> "cos" | Tan -> "tan" | Sinh -> "sinh"
-  | Cosh -> "cosh" | Tanh -> "tanh"
-  (** Anti functions *)
-  | ASin -> "asin" | ACos -> "acos" | ATan -> "atan" | ASinh -> "asinh"
-  | ACosh -> "acosh" | ATanh
-  (** Other functions *)
-  | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
-  | Exp -> "exp" | Sqrt -> "sqrt"
+  | Cil.TInt (ik, _) ->
+     begin
+       match ik with
+       | Cil.IBool -> Boolean
+       | _ -> Integer
+     end
 
-let rec pp_constants ppf =
-  function
-  | Int i -> fprintf ppf "%i" i
-  | Real f -> fprintf ppf "%10.3f" f
-  | Bool b -> fprintf ppf "%b" b
-  | CUnop (op, c) ->
-     fprintf ppf "(%s %a)" (string_of_symb_unops op) pp_constants c
-  | CBinop (op, c1, c2) ->
-     fprintf ppf "(%s %a %a)" (string_of_symb_binops op)
-       pp_constants c1 pp_constants c2
-  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
-  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
-  | Pi -> fprintf ppf "pi"
-  | Sqrt2 -> fprintf ppf "(sqrt 2)"
-  | Ln2 -> fprintf ppf "(log 2)"
-  | Ln10 -> fprintf ppf "(log 10)"
-  | SqrtPi -> fprintf ppf "(sqrt pi)"
-  | E -> fprintf ppf "(exp 1)"
+  | Cil.TFloat _ -> Real
+
+  | Cil.TArray (t, _, _) ->
+     Vector (symb_type_of_ciltyp t, None)
+
+  | Cil.TFun (t, arglisto, _, _) ->
+     Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
+  | Cil.TComp (ci, _) -> Unit
+  | Cil.TVoid _ -> Unit
+  | Cil.TPtr (t, _) ->
+     Vector (symb_type_of_ciltyp t, None)
+  | Cil.TNamed (ti, _) ->
+     symb_type_of_ciltyp ti.Cil.ttype
+  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
+
+and symb_type_of_args argslisto =
+  try
+    let argslist = checkOption argslisto in
+    let symb_types_list =
+      List.map
+        (fun (s, t, atr) -> symb_type_of_ciltyp t)
+        argslist
+    in
+    match symb_types_list with
+    | [] -> Unit
+    | [st] -> st
+    | _ -> Tuple symb_types_list
+  with Failure s -> Unit

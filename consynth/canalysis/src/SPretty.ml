@@ -1,14 +1,148 @@
-open Cil
 open Utils
 open PpHelper
 open SketchTypes
 open Format
 open Loops
 
+(** Pretty-printing operators *)
+
+let string_of_unsafe_binop =
+  function
+  | TODO -> "TODO"
+
+let string_of_symb_binop =
+  function
+  | And -> "and"
+  | Nand -> "nand" | Or -> "or" | Nor -> "nor" | Implies -> "implies"
+  | Xor -> "xor"
+  (** Integers and reals *)
+  | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
+  | Quot -> "quot" | Rem -> "rem" | Mod -> "mod"
+  (** Max and min *)
+  | Max -> "max" | Min -> "min"
+  (** Comparison *)
+  | Eq -> "=" | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
+  | Neq -> "neq"
+  (** Shift*)
+  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
+  | Expt -> "expt"
+  | UnsafeBinop op -> string_of_unsafe_binop op
+
+(** ********************************************************* UNARY OPERATORS *)
+(**
+   Some racket function that are otherwise unsafe
+   to use in Racket, but we might still need them.
+*)
+let string_of_unsafe_unop =
+  function
+  (** Trigonometric + hyp. functions *)
+  | Sin -> "sin" | Cos -> "cos" | Tan -> "tan" | Sinh -> "sinh"
+  | Cosh -> "cosh" | Tanh -> "tanh"
+  (** Anti functions *)
+  | ASin -> "asin" | ACos -> "acos" | ATan -> "atan" | ASinh -> "asinh"
+  | ACosh -> "acosh" | ATanh
+  (** Other functions *)
+  | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
+  | Exp -> "exp" | Sqrt -> "sqrt"
+
+
+let string_of_symb_unop =
+  function
+  | UnsafeUnop op -> string_of_unsafe_unop op
+  | Not -> "Not" | Add1 -> "Add1" | Sub1 -> "Sub1"| Abs -> "Abs"
+  | Floor -> "Floor" | Ceiling -> "Ceiling"  | Truncate -> "Truncate"
+  | Round -> "Round" | Neg -> "Neg" | Sgn -> "Sgn"
+
+let ostring_of_baseSymbolicType =
+  function
+  | Integer -> Some "integer?"
+  | Real -> Some "real?"
+  | Boolean -> Some "boolean?"
+  | _ -> None
+
+let rec pp_symb_type ppf t =
+  match ostring_of_baseSymbolicType t with
+  | Some s -> fprintf ppf "%s" s
+  | None ->
+     begin
+       match t with
+       | Unit -> fprintf ppf "unit"
+       | Tuple tl ->
+          fprintf ppf "(%a)"
+            (fun ppf l ->
+              pp_print_list
+                ~pp_sep:(fun ppf () -> fprintf ppf ",")
+                (fun ppf ty -> pp_symb_type ppf ty)
+                ppf
+                l)
+            tl
+
+       | Bitvector (t, i)->
+          fprintf ppf "(bitvector %a %i)"
+            pp_symb_type t i
+
+       | Function (a, b)
+       | Procedure (a, b) ->
+          fprintf ppf "%a->%a"
+            pp_symb_type a
+            pp_symb_type b
+
+       | Pair t -> fprintf ppf "(pair %a)" pp_symb_type t
+
+       | List (t, io) ->
+          begin
+            match io with
+            | Some i ->
+               fprintf ppf "(list %a %i)"
+                 pp_symb_type t i
+            | None ->
+               fprintf ppf "(list %a ??)"
+                 pp_symb_type t
+          end
+
+       | Vector (t, io) ->
+          begin
+            match io with
+            | Some i ->
+               fprintf ppf "(vector %a %i)"
+                 pp_symb_type t i
+            | None ->
+               fprintf ppf "(vector %a ??)"
+                 pp_symb_type t
+          end
+
+       | Box t ->
+          fprintf ppf "(box %a)" pp_symb_type t
+
+       | Struct t ->
+          fprintf ppf "(struct %a)" pp_symb_type t
+
+       | _ -> ()
+     end
+
+let rec pp_constants ppf =
+  function
+  | CInt i -> fprintf ppf "%i" i
+  | CReal f -> fprintf ppf "%10.3f" f
+  | CBool b -> fprintf ppf "%b" b
+  | CUnop (op, c) ->
+     fprintf ppf "(%s %a)" (string_of_symb_unop op) pp_constants c
+  | CBinop (op, c1, c2) ->
+     fprintf ppf "(%s %a %a)" (string_of_symb_binop op)
+       pp_constants c1 pp_constants c2
+  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
+  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
+  | Pi -> fprintf ppf "pi"
+  | Sqrt2 -> fprintf ppf "(sqrt 2)"
+  | Ln2 -> fprintf ppf "(log 2)"
+  | Ln10 -> fprintf ppf "(log 10)"
+  | SqrtPi -> fprintf ppf "(sqrt pi)"
+  | E -> fprintf ppf "(exp 1)"
+
 (** Basic pretty-printing *)
-let rec pp_skstmt ppf ((vi, sklet) : varinfo * sklet)  =
+let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
   Format.fprintf  ppf "%s = %sbegin%s@.@[%a@] %send%s\n"
-    vi.vname
+    vi.Cil.vname
     (color "yellow") default
     pp_sklet sklet
     (color "yellow") default
@@ -36,10 +170,9 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
   match skexpr with
-  | SkVar i -> fp ppf "%s" i.vname
-  | SkConst c -> fp ppf "const %s" (psprint80 Cil.d_const c)
+  | SkVar i -> fp ppf "%s" i.Cil.vname
+  | SkConst c -> fp ppf "const %a" pp_constants c
   | SkFun l -> pp_sklet ppf l
-  | SkLval l -> fp ppf "%s" (psprint80 Cil.d_lval l)
   | SkHoleR -> fp ppf "(??_R)"
   | SkHoleL -> fp ppf "(??_L)"
   | SkAddrof e -> fp ppf "(AddrOf )"
@@ -47,13 +180,12 @@ let fp = Format.fprintf in
   | SkAlignof typ -> fp ppf "(AlignOf typ)"
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
   | SkArray (v, subsd) ->
-     fp ppf "%s[%a]" v.vname (fun fmt -> ppli fmt pp_skexpr) subsd
-  | SkCil e -> fp ppf "<cil expr>"
+     fp ppf "%s[%a]" v.Cil.vname (fun fmt -> ppli fmt pp_skexpr) subsd
   | SkBinop (op, e1, e2) ->
      fp ppf "%a %s %a"
-       pp_skexpr e1 (psprint80 Cil.d_binop op) pp_skexpr e2
+       pp_skexpr e1 (string_of_symb_binop op) pp_skexpr e2
   | SkUnop (op, e) ->
-     fp ppf "%s %a" (psprint80 Cil.d_unop op) pp_skexpr e
+     fp ppf "%s %a" (string_of_symb_unop op) pp_skexpr e
   | SkCond (c, e1, e2) ->
      fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
        (color "blue") default
@@ -70,12 +202,12 @@ let fp = Format.fprintf in
        (psprint80 Cil.dn_instr u)
        default
        pp_sklet e
-  | SkSizeof t -> fp ppf "(SizeOf %s)" (psprint80 Cil.d_type t)
+  | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
   | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
   | SkCastE (t,e) ->
-     fp ppf "(%s) %a" (psprint80 Cil.d_type t) pp_skexpr e
-  | SkStartOf l -> fp ppf "(StartOf %s)" (psprint80 Cil.d_lval l)
+     fp ppf "(%a) %a" pp_symb_type t pp_skexpr e
+  | SkStartOf l -> fp ppf "(StartOf %a)" pp_sklvar l
 
 
 (** Print statements **)
