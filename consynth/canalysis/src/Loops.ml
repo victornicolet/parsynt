@@ -300,6 +300,7 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
     | Loop (b, loc, o1, o2) ->
        let cloop = (Cloop.create s topFunc f) in
        let igu, stmts = get_loop_IGU s in
+       let conds, stmts = check_irregular_breaks s in
        begin
          match igu with
          | Some figu ->
@@ -520,7 +521,6 @@ let replaceInnerBodies cl =
   cl.Cloop.statements <- nstmts
 
 
-
 (******************************************************************************)
 (** Exported functions *)
 (**
@@ -566,7 +566,7 @@ let processFile cfile =
         List.map
           (fun stm -> IH.find programLoops stm.sid)
           cl.Cloop.childrenLoops)
-      replaceInnerBodies
+      (fun cl -> replaceInnerBodies cl; findBreakPoints cl)
   in
   IH.clear programLoops;
   IHTools.add_list programLoops Cloop.id clean_loops;

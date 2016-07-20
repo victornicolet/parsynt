@@ -214,3 +214,33 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
      raise(
        Failure(
          "get_loop_IGU : bad argument, expected a Loop statement."))
+
+
+let mkcond expr_list =
+  List.fold_left
+    (fun c nc -> BinOp (Cil.BAnd, c, nc, TInt (IBool, []))
+      expr_list
+
+let search_loop_exits loop_statement body =
+  let rec aux (cond_stack, breaks) stm =
+    match stm.skind with
+    | If (c, sif, selse, loc) ->
+       let _, breaks_if =
+         List.fold_left aux (cond_stack@[c], []) sif.bstmts
+       in
+       let _, breaks_else =
+         List.fold_left
+           aux (cond_stack@[CilTools.neg_exp c], []) selse.bstmts
+       in
+       (cond_stack, breaks@breaks_if@breaks_else)
+
+    | Break _ ->
+       (cond_stack, breaks@[(stm,mkcond cond_stack)])
+
+    | Block b
+    | Loop (b, _, _, _) ->
+       List.fold_left aux (cond_stack, []) b.bstmts
+    | Goto (stmtr, _) -> (cond_stack, breaks)
+    | _ -> (cond_stack, breaks)
+  in
+  List.fold_left  aux ([],[]) body
