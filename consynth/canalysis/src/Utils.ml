@@ -234,8 +234,7 @@ module VSOps = struct
     List.fold_left (fun vs (k, v) -> VS.add v vs) VS.empty l
 
   let varlist (vs : VS.t) =
-    VS.fold (fun v l -> l@[v]) vs []
-
+    VS.elements vs
   let of_varlist (l : VS.elt list) =
     VS.of_list l
 

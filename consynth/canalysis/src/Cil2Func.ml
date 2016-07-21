@@ -381,10 +381,20 @@ let rec  merge_cond c let_if let_else pre_substs =
              subs_if
              subs_else
          in
-         if IMTools.is_disjoint ~non_empty:is_not_identity_substitution
-           pre_substs new_subs
-         then true, (IMTools.add_all pre_substs new_subs), None
-         else true, pre_substs, Some (State (vs_if, new_subs))
+         let used_in_new_subs =
+           (IM.fold (fun k v b -> VS.union b (used_vars_expr v))
+              new_subs VS.empty)
+         in
+         if
+           (* Check if the variables that are assigned in pre_substs
+              are used in new_subs *)
+           (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
+             pre_substs new_subs) &&
+             not (IM.exists (fun k v -> VSOps.hasVid k used_in_new_subs)
+                 pre_substs)
+         then
+              true, (IMTools.add_all pre_substs new_subs), None
+         else true, new_subs, Some (State (vs_if, pre_substs))
        end
      else
        false, pre_substs, None
