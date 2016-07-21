@@ -9,7 +9,7 @@ module C2F = Cil2Func
 
 let wf_single_subst func =
   match func with
-  | C2F.State (vs, subs) ->
+  | C2F.State subs ->
      begin
        (IM.cardinal subs = 1) &&
          (match IM.max_binding subs with
@@ -23,7 +23,7 @@ let wf_test_case fname (func : C2F.letin) =
   | "test_merge_ifs" ->
      begin
        match func with
-       | C2F.State (vs, subs) ->
+       | C2F.State subs ->
           (IM.cardinal subs = 1) &&
             (match (IM.max_binding subs) with
             | k, C2F.FQuestion (e,
@@ -57,7 +57,7 @@ let test () =
   let loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") default;
   C2F.init loops;
-  IM.iter
+  IM.fold
     (fun k cl ->
       let stmt = mkBlock(cl.statements) in
       let stateVars = ListTools.outer_join_lists
@@ -72,7 +72,10 @@ let test () =
       else
         (printf "%s[test for loop %i in %s failed]%s@."
            (color "red") cl.sid fname default;);
-      C2F.printlet func;
+      C2F.printlet (stv, func);
       printf "@.";
+      SM.add fname (stv,func)
     )
-    loops;;
+    loops
+    SM.empty
+;;

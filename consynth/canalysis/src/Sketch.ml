@@ -38,47 +38,52 @@ let hole_or_exp2 constr e1 e2 =
 
 
 
-let rec convert (cur_v : skLVar) (vs : VS.t) =
+let rec convert (cur_v : skLVar) =
   function
   | Var vi -> SkVar vi
 
   (** TODO : array -> region *)
   | Array (vi, el) ->
-    begin
-      try
-        let vi = VSOps.getVi vi.Cil.vid vs in
-        SkArray (SkVar vi, List.map el ~f:(fun e -> convert cur_v vs e), None)
-      with Not_found ->
-        SkHoleR
-    end
+     SkArray (SkVar vi, List.map el ~f:(fun e -> convert cur_v e), None)
 
   | Container (e, subs) ->
-     let usv = VS.inter (VSOps.sove e) vs in
-     if VS.cardinal usv > 0 then
-       convert_cils vs e
-     else
-       SkHoleR
+     convert_cils ~cur_v:cur_v e
 
-  | FQuestion (ecil, expr1, expr2) ->
-     SkHoleR
+  | FQuestion (ecil, e1, e2) ->
+     SkQuestion (convert_cils ecil, (convert cur_v e1), (convert cur_v e2))
 
   | FRec ((i, g, u), expr) ->
-     SkRec ((i, g, u), SkLetExpr [(cur_v, convert cur_v vs expr)])
+     SkRec ((i, g, u), SkLetExpr [(cur_v, convert cur_v expr)])
 
+  | FBinop (op, e1, e2) ->
+     SkBinop (op, convert cur_v e1, convert cur_v e2)
+
+  | FUnop (op, e) -> SkUnop (op, convert cur_v e)
+
+  | FConst c -> SkConst c
+
+  | FSizeof t -> SkSizeof (symb_type_of_ciltyp t)
+  | FSizeofE e -> SkSizeofE (convert cur_v e)
+  | FSizeofStr s -> SkSizeofStr s
+  | FAlignof t -> SkAlignof (symb_type_of_ciltyp t)
+  | FAlignofE e -> SkAlignofE (convert cur_v e)
+  | FCastE (t, e) -> SkCastE (symb_type_of_ciltyp t, convert cur_v e)
+  | FAddrof lval -> SkAddrof (skexpr_of_lval cur_v lval)
   | _ -> failwith "not yet implemented"
 
-and convert_cils ?(cur_v = SkState) (vs : VS.t) =
+
+and convert_cils ?(cur_v = SkState) =
   function
   | Cil.Const c -> skexpr_of_constant c
 
-  | Cil.Lval v -> skexpr_of_lval cur_v vs v
+  | Cil.Lval v -> skexpr_of_lval cur_v v
 
   | Cil.SizeOf t->
      let typ = symb_type_of_ciltyp t in
      SkSizeof typ
 
   | Cil.SizeOfE e ->
-     SkSizeofE (convert_cils vs e)
+     SkSizeofE (convert_cils e)
 
   | Cil.SizeOfStr s ->
      SkSizeofStr s
@@ -87,37 +92,36 @@ and convert_cils ?(cur_v = SkState) (vs : VS.t) =
      SkAlignof (symb_type_of_ciltyp t)
 
   | Cil.AlignOfE e ->
-     SkAlignofE (convert_cils vs e)
+     SkAlignofE (convert_cils e)
 
   | Cil.AddrOf lv ->
-     SkAddrof (skexpr_of_lval cur_v vs lv)
+     SkAddrof (skexpr_of_lval cur_v lv)
 
   | Cil.AddrOfLabel stm_ref ->
      SkAddrofLabel stm_ref
 
   | Cil.UnOp (op, e1, t) ->
      let op' = symb_unop_of_cil op in
-     SkUnop (op',convert_cils vs e1)
+     SkUnop (op',convert_cils e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
      let op' = symb_binop_of_cil op in
-     SkBinop (op', convert_cils vs e1, convert_cils vs e2)
+     SkBinop (op', convert_cils e1, convert_cils e2)
 
   | Cil.Question (c, e1, e2, t) ->
-     let c' = convert_cils vs c in
-     SkQuestion (c', convert_cils vs e1, convert_cils vs e2)
+     let c' = convert_cils c in
+     SkQuestion (c', convert_cils e1, convert_cils e2)
 
   | Cil.CastE (t, e) ->
-     SkCastE (symb_type_of_ciltyp t, convert_cils vs e)
+     SkCastE (symb_type_of_ciltyp t, convert_cils e)
 
   | Cil.StartOf lv ->
-     SkStartOf (skexpr_of_lval cur_v vs lv)
+     SkStartOf (skexpr_of_lval cur_v lv)
 
 
 and skexpr_of_lval (cur_v : skLVar)
-    (vs : VS.t)
     ((host, offset) : Cil.lval) =
-  match convert_offset cur_v vs offset with
+  match convert_offset offset with
   | [] -> SkVar (checkOption (CilTools.get_host_var host))
   | off_list->
      let vi =
@@ -134,7 +138,7 @@ and skexpr_of_lval (cur_v : skLVar)
         let eo' =
           match eo with
           | None -> None
-          | Some e -> Some (convert_cils vs e)
+          | Some e -> Some (convert_cils e)
         in
         vi (symb_type_of_ciltyp t) (fun x -> SkArray (x , off_list, eo'))
 
@@ -144,7 +148,7 @@ and skexpr_of_lval (cur_v : skLVar)
 
 
 
-and convert_offset cur_v vs offs =
+and convert_offset offs =
   match offs with
   | Cil.NoOffset ->
      []
@@ -153,8 +157,8 @@ and convert_offset cur_v vs offs =
      failwith "Not implemented yet"
 
   | Cil.Index (exp, offset) ->
-     let sk_off = convert_offset cur_v vs offset in
-     (convert_cils vs ~cur_v:cur_v exp)::sk_off
+     let sk_off = convert_offset offset in
+     (convert_cils exp)::sk_off
 
 and skexpr_of_constant c =
   let const =  match c with
@@ -173,12 +177,12 @@ and skexpr_of_constant c =
 (** TODO : add the current loop index *)
 and convert_letin (vs : VS.t) =
   function
-    | State (vs, subs) ->
+    | State subs  ->
        let state =
          List.map (IM.bindings subs)
             ~f:(fun (k,e) ->
               let cur_v = SkVarinfo (VSOps.getVi k vs) in
-                                    (cur_v, convert cur_v vs e))
+                                    (cur_v, convert cur_v e))
               in
        let complete_state =
          state@(List.map
@@ -190,7 +194,7 @@ and convert_letin (vs : VS.t) =
 
     | Let (v, e, cont, i, loc) ->
        let cur_v = SkVarinfo v in
-       SkLetIn ([(cur_v, convert cur_v vs e)], convert_letin vs cont)
+       SkLetIn ([(cur_v, convert cur_v e)], convert_letin vs cont)
 
     | LetRec (igu, let_body, let_cont, loc) ->
        (** Tail position *)
@@ -203,12 +207,12 @@ and convert_letin (vs : VS.t) =
     | LetCond (c, let_if, let_else, let_cont, loc) ->
        if is_empty_state let_cont then
          SkLetExpr [(SkState,
-                     SkCond (convert_cils vs c,
+                     SkCond (convert_cils c,
                              convert_letin vs let_if,
                              convert_letin vs let_else))]
        else
           SkLetIn ( [(SkState,
-                     SkCond (convert_cils vs c,
+                     SkCond (convert_cils c,
                              convert_letin vs let_if,
                              convert_letin vs let_else))],
                   convert_letin vs let_cont)

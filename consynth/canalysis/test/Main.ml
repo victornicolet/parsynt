@@ -6,13 +6,14 @@ open Loops
 open Utils
 
 module C2F = Cil2Func
-
 module TC2F = TCil2Func
+module TF2S = TFunc2Sketch
 
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
     begin
-      TC2F.test ();
+      let loopsm = TC2F.test () in
+        TF2S.test loopsm;
       eprintf "Usage : ./Main.native [test file name]\n\n";
       exit 0
     end;
@@ -28,7 +29,7 @@ let testProcessFile () =
 	    (match cl.Cloop.rwset with (r, w, rw) -> w, rw) in
       let vars = VSOps.vs_of_defsMap cl.Cloop.definedInVars in
       let stv = VSOps.subset_of_list stateVars vars in
-      C2F.printlet (C2F.cil2func stmt stv))
+      C2F.printlet (stv, (C2F.cil2func stmt stv)))
     loops;;
 
 

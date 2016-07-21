@@ -20,7 +20,6 @@ and skExpr =
   | SkFun of sklet
   | SkRec of  forIGU * sklet
   | SkCond of skExpr * sklet * sklet
-
   | SkVar of Cil.varinfo
   | SkArray of skExpr * (skExpr list) * (skExpr option)
   | SkBinop of symb_binop * skExpr * skExpr

@@ -154,15 +154,18 @@ let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
 and pp_sklet ppf =
   function
   | SkLetExpr el ->
-     pp_print_list (fun ppf (v,e) -> pp_skexpr ppf e) ppf el
+     fprintf ppf "@[(state %a)@]"
+       (pp_print_list
+          ~pp_sep:(fun ppf () -> fprintf ppf " ")
+          (fun ppf (v,e) -> pp_skexpr ppf e)) el
 
   | SkLetIn (el, l) ->
-     fprintf ppf "@[(%slet%s (%a)@;%a@]"
+     fprintf ppf "(%slet%s @[<hov 2>(%a)@]@;@[<hov 2> %a@]"
        (color "red") default
        (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
-              Format.fprintf ppf "@[[%a %a]]@"
+              Format.fprintf ppf "@[[%a %a]@]"
                 pp_sklvar v pp_skexpr e) ppf el)) el
        pp_sklet l
 
@@ -175,7 +178,7 @@ and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
   match skexpr with
   | SkVar i -> fp ppf "%s" i.Cil.vname
-  | SkConst c -> fp ppf "const %a" pp_constants c
+  | SkConst c -> fp ppf "%a" pp_constants c
   | SkFun l -> pp_sklet ppf l
   | SkApp (t, vio, argl) ->
      let funname =
@@ -196,20 +199,20 @@ let fp = Format.fprintf in
        pp_skexpr name
        (fun fmt -> ppli fmt pp_skexpr) subsd
   | SkBinop (op, e1, e2) ->
-     fp ppf "%a %s %a"
-       pp_skexpr e1 (string_of_symb_binop op) pp_skexpr e2
+     fp ppf "(%s %a %a)"
+        (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2
   | SkUnop (op, e) ->
-     fp ppf "%s %a" (string_of_symb_unop op) pp_skexpr e
+     fp ppf "(%s %a)" (string_of_symb_unop op) pp_skexpr e
   | SkCond (c, e1, e2) ->
-     fp ppf "%sif%s @[(%a)@]@[(%a)@]@[(%a)@]"
+     fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
        (color "blue") default
        pp_skexpr c pp_sklet e1 pp_sklet e2
   | SkQuestion (c, e1, e2) ->
-     fp ppf "%sif%s @[(%a)@]@[(%a)@]@[(%a)@]"
+     fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
        (color "blue") default
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
   | SkRec ((i, g, u), e) ->
-     fp ppf "%s(Loop%s %s %s %s @; %a)"
+     fp ppf "(%sLoop%s %s %s %s %a)"
        (color "blue") default
        (Ct.psprint80 Cil.dn_instr i)
        (Ct.psprint80 Cil.dn_exp g)

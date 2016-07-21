@@ -28,7 +28,7 @@ let __letin_index = ref 0
 let gen_id () = incr __letin_index; !__letin_index
 
 type letin =
-  | State of VS.t * (expr IM.t)
+  | State of (expr IM.t)
   | Let of varinfo * expr * letin * int * location
   | LetRec of Loops.forIGU * letin * letin * location
   | LetCond of exp * letin * letin * letin * location
@@ -70,27 +70,27 @@ and substitutions = expr IM.t
    and the specific def-state construct must contain a state as its
    first component.
 *)
-let rec wf_letin =
+let rec wf_letin vs =
   function
-  | State (vs, emap) ->
+  | State emap ->
      (IM.fold
        (fun k v ok -> ok && (VSOps.hasVid k vs)) emap true)
 
-  | Let (vi, expr, letin, id, loc) -> wf_letin letin
+  | Let (vi, expr, letin, id, loc) -> wf_letin vs letin
 
   | LetCond (c, let_if, let_else, let_cont, loc) ->
-     wf_letin let_if && wf_letin let_else && wf_letin let_cont
+     wf_letin vs let_if && wf_letin vs let_else && wf_letin vs let_cont
 
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     wf_letin let_body && wf_letin let_cont
+     wf_letin vs let_body && wf_letin vs let_cont
 
   | LetState (def_state, let_cont) ->
      let wf_def_state =
        match def_state with
-       | State (vs, emap) -> wf_letin def_state
+       | State emap -> wf_letin vs def_state
        | _ -> false
      in
-     wf_def_state && wf_letin let_cont
+     wf_def_state && wf_letin vs let_cont
 
 let rec transform_topdown funct letin =
   let letin' = funct letin in
@@ -139,7 +139,7 @@ let rec transform_bottomup funct letin =
 
 (** Helpers *)
 
-let empty_state vs = State (vs, IM.empty)
+let empty_state vs = State IM.empty
 
 let rec is_not_identity_substitution vid expr =
   match expr with
@@ -154,7 +154,7 @@ let rec is_not_identity_substitution vid expr =
 
 let is_empty_state state =
   match state with
-  | State (vs, emap) ->
+  | State emap ->
      (IM.is_empty emap) ||
        (IM.is_empty
           (IM.filter is_not_identity_substitution emap))
@@ -241,7 +241,7 @@ let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
 
 let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
   match letform with
-  | State (vs, substitutions) ->
+  | State substitutions ->
      IM.fold (fun k e vs -> VS.union vs (used_vars_expr e))
        substitutions VS.empty
 
@@ -272,7 +272,7 @@ let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
 
 let rec let_add old_let new_let =
  match old_let with
-  | State (vs, subs) ->
+  | State subs ->
      if IM.is_empty subs then
        new_let
      else
@@ -348,56 +348,53 @@ and do_s vs let_form s =
 
 (** Reduction and simplification of expressions and lets *)
 
+let merge_substs vs old_subs new_subs =
+  let used_in_new_subs =
+    (IM.fold (fun k v b -> VS.union b (used_vars_expr v))
+       new_subs VS.empty)
+  in
+  if
+           (* Check if the variables that are assigned in old_subs
+              are used in new_subs *)
+    (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
+       old_subs new_subs) &&
+      not (IM.exists (fun k v -> VSOps.hasVid k used_in_new_subs)
+             old_subs)
+  then
+    true, (IMTools.add_all old_subs new_subs), None
+  else true, new_subs, Some (State old_subs)
+
 (**
    Merge two conditions, if each branch is irreducible (already
    reduced to a single state) then tranform each substitution
    expression into a FQuestion (an expression instead of a lambda)
 *)
 
-let rec  merge_cond c let_if let_else pre_substs =
+let rec  merge_cond vs c let_if let_else pre_substs =
   match let_if, let_else with
-  | State (vs_if, subs_if) , State (vs_else, subs_else) ->
-     if VS.equal vs_if vs_else
-     then
-       begin
-         let new_subs =
-           IM.merge
-             (fun vid if_expr_o else_expr_o ->
-               let cur_var = Var (VSOps.getVi vid vs_if) in
-               match if_expr_o, else_expr_o with
-               | Some if_expr, Some else_expr ->
-                  Some (FQuestion (c, if_expr, else_expr))
+  | State subs_if , State subs_else ->
+     let new_subs =
+       IM.merge
+         (fun vid if_expr_o else_expr_o ->
+           let cur_var = Var (VSOps.getVi vid vs) in
+           match if_expr_o, else_expr_o with
+           | Some if_expr, Some else_expr ->
+              Some (FQuestion (c, if_expr, else_expr))
 
-               | Some if_expr, None ->
-                  Some
-                    (FQuestion
-                       (c, if_expr, cur_var))
+           | Some if_expr, None ->
+              Some
+                (FQuestion
+                   (c, if_expr, cur_var))
 
-               | None, Some else_expr->
-                  Some
-                    (FQuestion
-                       (c, cur_var, else_expr))
-               | None, None -> None)
-             subs_if
-             subs_else
-         in
-         let used_in_new_subs =
-           (IM.fold (fun k v b -> VS.union b (used_vars_expr v))
-              new_subs VS.empty)
-         in
-         if
-           (* Check if the variables that are assigned in pre_substs
-              are used in new_subs *)
-           (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
-             pre_substs new_subs) &&
-             not (IM.exists (fun k v -> VSOps.hasVid k used_in_new_subs)
-                 pre_substs)
-         then
-              true, (IMTools.add_all pre_substs new_subs), None
-         else true, new_subs, Some (State (vs_if, pre_substs))
-       end
-     else
-       false, pre_substs, None
+           | None, Some else_expr->
+              Some
+                (FQuestion
+                   (c, cur_var, else_expr))
+           | None, None -> None)
+         subs_if
+         subs_else
+     in
+     merge_substs vs pre_substs new_subs
   | _ -> false, pre_substs, None
 
 
@@ -412,9 +409,9 @@ let rec  merge_cond c let_if let_else pre_substs =
    loops for each written variable when not too expensive.
 *)
 
-and convert_loop let_body igu let_cont loc =
+and convert_loop vs let_body igu let_cont loc =
   match let_body with
-  | State (vars, subs) ->
+  | State subs ->
      let subs' = remove_identity_subs subs in
      if (IM.cardinal subs') = 1
      then
@@ -422,7 +419,7 @@ and convert_loop let_body igu let_cont loc =
        let rec_expr = FRec (igu, expr) in
        let id = gen_id () in
        add_uses id (used_vars_expr rec_expr);
-       true,  Let (VSOps.getVi vid vars, rec_expr, let_cont, id, loc)
+       true,  Let (VSOps.getVi vid vs, rec_expr, let_cont, id, loc)
      else
        false, let_body
 
@@ -439,45 +436,45 @@ and convert_loop let_body igu let_cont loc =
    from variable ids to expressions with conditionals inside.
 *)
 
-and red let_form substs =
+and red vs let_form substs =
   match let_form with
-  | State (vs, im) ->
+  | State emap ->
      let id_list = VSOps.vids_of_vs vs in
      let final_state_exprs =
        IM.filter (fun k v -> List.mem k id_list) substs
      in
-     State (vs, final_state_exprs)
+     State final_state_exprs
 
   | Let (vi, expr, cont, id, _) ->
      let nexpr = apply_subs expr substs in
      let nsubs = IM.add vi.vid nexpr substs in
-     red cont nsubs
+     red vs cont nsubs
 
   | LetRec (igu, body, cont, loc) ->
-     let redd_body = reduce body in
-     let redd_cont = reduce cont in
+     let redd_body = reduce vs body in
+     let redd_cont = reduce vs cont in
      let converted, conversion =
-       convert_loop redd_body igu redd_cont loc in
+       convert_loop vs redd_body igu redd_cont loc in
      if converted then
        conversion
      else
-       LetRec (igu, redd_body, reduce cont, loc)
+       LetRec (igu, redd_body, reduce vs  cont, loc)
 
   | LetCond (e, bif, belse, cont, loc) ->
-     let red_if = reduce bif in
-     let red_else = reduce belse in
-     let merged, prev_e, next_e = merge_cond e red_if red_else substs in
+     let red_if = reduce vs  bif in
+     let red_else = reduce vs belse in
+     let merged, prev_e, next_e = merge_cond vs e red_if red_else substs in
      if merged
      then
        (if Core.Std.is_none next_e
-       then red cont prev_e
-       else LetState (checkOption next_e, red cont prev_e))
-     else LetCond (e, red_if, red_else, reduce cont, loc)
+       then red vs cont prev_e
+       else LetState (checkOption next_e, red vs cont prev_e))
+     else LetCond (e, red_if, red_else, reduce vs cont, loc)
 
   | LetState (state, let_cont) ->
-     LetState (state,reduce let_cont)
+     LetState (state, reduce vs let_cont)
 
-and reduce let_form = red let_form IM.empty
+and reduce vs let_form = red vs let_form IM.empty
 
 
 
@@ -491,27 +488,26 @@ let cil2func block statevs =
     failwith "You forgot to initialize the set of loops in Cil2Func.";
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in
-  reduce let_expression
+  reduce statevs let_expression
 
 
 
 (** Pretty-printing functions *)
-let rec pp_letin ?(wloc = false) ppf =
-  function
-  | State (vs, expr_map) ->
+let rec pp_letin ?(wloc = false) ppf (vs,letin) =
+  match letin with
+  | State expr_map ->
      if IM.is_empty expr_map then
        fprintf ppf "@[{%a}@]"
          VSOps.pvs vs
      else
-       fprintf ppf "@[{%a ::@. %a}@]@."
-         VSOps.pvs vs
+       fprintf ppf "@[%a@]@."
          (ppimap pp_expr) expr_map
 
   | Let (vi, expr, letn, id, loc) ->
      fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s@."
        (color "red") default vi.vname pp_expr expr
        (color "red") default
-       (pp_letin ~wloc:wloc) letn
+       (pp_letin ~wloc:wloc) (vs, letn)
        (if wloc then string_of_loc loc else "")
 
   | LetRec ((i, g , u), let1, letcont, loc) ->
@@ -519,9 +515,9 @@ let rec pp_letin ?(wloc = false) ppf =
        (color "red") default
        (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
        (psprint80 Cil.dn_instr u)
-       (pp_letin ~wloc:wloc) let1
+       (pp_letin ~wloc:wloc) (vs, let1)
        (color "red") default
-       (pp_letin ~wloc:wloc) letcont
+       (pp_letin ~wloc:wloc) (vs, letcont)
        (if wloc then string_of_loc loc else "")
 
   | LetCond (exp, letif, letelse, letcont, loc) ->
@@ -530,19 +526,19 @@ let rec pp_letin ?(wloc = false) ppf =
        (color "red") default
        (psprint80 Cil.dn_exp exp)
        (color "red") default
-       (pp_letin ~wloc:wloc) letif
+       (pp_letin ~wloc:wloc) (vs, letif)
        (color "red") default
-       (pp_letin ~wloc:wloc)  letelse
+       (pp_letin ~wloc:wloc)  (vs, letelse)
        (color "red") default
-       (pp_letin ~wloc:wloc) letcont
+       (pp_letin ~wloc:wloc) (vs, letcont)
        (if wloc then string_of_loc loc else "")
 
   | LetState (let_state, let_cont) ->
-      fprintf ppf "@[%slet%s %a@]@[%sin%s  %a @]@."
-        (color "red") default
-        (pp_letin ~wloc:wloc) let_state
-        (color "red") default
-        (pp_letin ~wloc:wloc) let_cont
+     fprintf ppf "@[%slet%s %a@]@[%sin%s  %a @]@."
+       (color "red") default
+       (pp_letin ~wloc:wloc) (vs, let_state)
+       (color "red") default
+       (pp_letin ~wloc:wloc) (vs, let_cont)
 
 
 and pp_expr ppf =

@@ -11,6 +11,7 @@ module IS = Set.Make (struct
   type t = int
   let compare = Pervasives.compare
 end)
+module SM = Map.Make (String)
 
 module VS = Usedef.VS
 module IM = Map.Make(struct type t = int let compare = compare end)
@@ -147,6 +148,7 @@ let appendC l a =
 module CilTools = struct
   let psprint80 f x = Pretty.sprint 80 (f () x)
   let ppe e = print_endline (psprint80 Cil.dn_exp e)
+  let ppt t = print_endline (psprint80 Cil.d_type t)
   let pps s = print_endline ("Statement : "^(psprint80 Cil.dn_stmt s))
   let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
   let ppv v = print_endline v.vname
@@ -185,10 +187,16 @@ module CilTools = struct
     match host with
     | Var vi -> Some vi
     | Mem e ->
-       match e with
+       (match e with
        | Lval (hst, offset) -> get_host_var hst
+       | BinOp (op, e1, e2, t) ->
+          get_var e1
        | _ -> None
-
+       )
+  and get_var e =
+    match e with
+    | Lval (host,offset) -> get_host_var host
+    | _ -> None
 end
 (**
     Extract the variables used in statements/expressions/instructions/..
