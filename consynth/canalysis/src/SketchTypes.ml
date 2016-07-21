@@ -154,8 +154,12 @@ and symb_unsafe_binop =
 (** Some pre-defined constants existing in C99 *)
 and constants =
   | CInt of int
+  | CInt64 of int64
   | CReal of float
   | CBool of bool
+  | CBox of Cil.constant
+  | CChar of char
+  | CString of string
   | CUnop of symb_unop * constants
   | CBinop of symb_binop * constants * constants
   | CUnsafeUnop of symb_unsafe_unop * constants
@@ -313,6 +317,25 @@ let uninterpeted fname =
     else true
   in
       not_in_safe && not_in_unsafe
+
+let mkVar vi =
+  match c_constant vi.Cil.vname with
+  | Some c -> SkConst c
+  | None -> SkVar vi
+
+let mkOp ?(t = Unit) vi argl =
+  let fname = vi.Cil.vname in
+  match symb_unop_of_fname fname with
+  | Some unop ->
+     SkUnop (unop, List.hd argl)
+  | None ->
+     match symb_binop_of_fname fname with
+     | Some binop ->
+        SkBinop (binop, List.hd argl, List.nth argl 2)
+     | None ->
+        SkApp (t, Some vi, argl)
+
+
 
 
 

@@ -141,11 +141,6 @@ let rec transform_bottomup funct letin =
 
 let empty_state vs = State (vs, IM.empty)
 
-let is_empty_state state =
-  match state with
-  | State (vs, emap) when IM.is_empty emap -> true
-  | _ -> false
-
 let rec is_not_identity_substitution vid expr =
   match expr with
   | Var (vi) -> vi.vid != vid
@@ -156,6 +151,15 @@ let rec is_not_identity_substitution vid expr =
       ||
         ((VS.max_elt (VSOps.sove e)).vid != vid))
   | _ -> true
+
+let is_empty_state state =
+  match state with
+  | State (vs, emap) ->
+     (IM.is_empty emap) ||
+       (IM.is_empty
+          (IM.filter is_not_identity_substitution emap))
+
+  | _ -> false
 
 let remove_identity_subs substs =
   IM.filter is_not_identity_substitution substs
@@ -377,13 +381,14 @@ let rec  merge_cond c let_if let_else pre_substs =
              subs_if
              subs_else
          in
-         if IMTools.is_disjoint pre_substs new_subs
-         then true, Some (IMTools.add_all pre_substs new_subs), None
-         else true, Some new_subs, Some (State (vs_if, new_subs))
+         if IMTools.is_disjoint ~non_empty:is_not_identity_substitution
+           pre_substs new_subs
+         then true, (IMTools.add_all pre_substs new_subs), None
+         else true, pre_substs, Some (State (vs_if, new_subs))
        end
      else
-       false, None , None
-  | _ -> false, None, None
+       false, pre_substs, None
+  | _ -> false, pre_substs, None
 
 
 
@@ -451,13 +456,12 @@ and red let_form substs =
   | LetCond (e, bif, belse, cont, loc) ->
      let red_if = reduce bif in
      let red_else = reduce belse in
-     let merged, exprs, _ = merge_cond e red_if red_else substs in
+     let merged, prev_e, next_e = merge_cond e red_if red_else substs in
      if merged
      then
-       let new_subs = (checkOption exprs) in
-       (if IMTools.is_disjoint new_subs substs
-        then red cont (IMTools.add_all substs new_subs)
-        else LetState (State (VS.empty, new_subs), cont))
+       (if Core.Std.is_none next_e
+       then red cont prev_e
+       else LetState (checkOption next_e, red cont prev_e))
      else LetCond (e, red_if, red_else, reduce cont, loc)
 
   | LetState (state, let_cont) ->

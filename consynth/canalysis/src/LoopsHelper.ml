@@ -218,8 +218,9 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
 
 let mkcond expr_list =
   List.fold_left
-    (fun c nc -> BinOp (Cil.BAnd, c, nc, TInt (IBool, []))
-      expr_list
+    (fun c nc -> BinOp (Cil.BAnd, c, nc, TInt (IBool, [])))
+    (Cil.Const (Cil.CInt64 (Int64.of_int 1, Cil.IBool, None)))
+    expr_list
 
 let search_loop_exits loop_statement body =
   let rec aux (cond_stack, breaks) stm =

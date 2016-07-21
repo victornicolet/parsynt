@@ -174,6 +174,13 @@ module CilTools = struct
     | TPtr _ | TArray _ -> true
     | _ -> false
 
+  let is_like_bool =
+    function
+    | IBool -> true
+    | _ -> false
+
+  let bool_of_int64 i = (i = (Int64.of_int 1))
+
   let rec get_host_var host =
     match host with
     | Var vi -> Some vi
@@ -319,7 +326,7 @@ module IMTools = struct
     let add_all add_to to_add =
       IM.fold
         (fun k v mp ->
-          if IM.mem k to_add then mp else
+          if IM.mem k add_to then mp else
             IM.add k v mp)
         to_add add_to
 
@@ -332,15 +339,17 @@ module IMTools = struct
         b
         IM.empty
 
-    let is_disjoint a b=
+    let is_disjoint ?(non_empty = (fun k v -> true)) a b=
       try
         IM.fold
           (fun k v bol ->
-            if IM.mem k a
-            then failwith "iom"
+            if non_empty k v
+            then
+              (if IM.mem k a
+               then failwith "iom"
+               else bol)
             else bol)
           b
-          false
-      with Failure s -> true
-
+          true
+      with Failure s -> false
 end

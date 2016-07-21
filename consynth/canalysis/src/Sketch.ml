@@ -9,7 +9,7 @@ open Cil2Func
 
 module VS = VS
 module SM = Map.Make (String)
-
+module Ct = CilTools
 
 let debug = ref false;;
 
@@ -69,7 +69,7 @@ let rec convert (cur_v : skLVar) (vs : VS.t) =
 
 and convert_cils ?(cur_v = SkState) (vs : VS.t) =
   function
-  | Cil.Const c -> SkHoleR
+  | Cil.Const c -> skexpr_of_constant c
 
   | Cil.Lval v -> skexpr_of_lval cur_v vs v
 
@@ -78,7 +78,7 @@ and convert_cils ?(cur_v = SkState) (vs : VS.t) =
      SkSizeof typ
 
   | Cil.SizeOfE e ->
-     hole_or_exp (fun x -> SkSizeofE x) (convert_cils vs e)
+     SkSizeofE (convert_cils vs e)
 
   | Cil.SizeOfStr s ->
      SkSizeofStr s
@@ -87,7 +87,7 @@ and convert_cils ?(cur_v = SkState) (vs : VS.t) =
      SkAlignof (symb_type_of_ciltyp t)
 
   | Cil.AlignOfE e ->
-     hole_or_exp (fun x -> SkAlignofE x) (convert_cils vs e)
+     SkAlignofE (convert_cils vs e)
 
   | Cil.AddrOf lv ->
      SkAddrof (skexpr_of_lval cur_v vs lv)
@@ -105,11 +105,11 @@ and convert_cils ?(cur_v = SkState) (vs : VS.t) =
 
   | Cil.Question (c, e1, e2, t) ->
      let c' = convert_cils vs c in
-     (** TODO : do something more specific with the question *)
      SkQuestion (c', convert_cils vs e1, convert_cils vs e2)
 
   | Cil.CastE (t, e) ->
      SkCastE (symb_type_of_ciltyp t, convert_cils vs e)
+
   | Cil.StartOf lv ->
      SkStartOf (skexpr_of_lval cur_v vs lv)
 
@@ -123,9 +123,10 @@ and skexpr_of_lval (cur_v : skLVar)
      let vi =
        match CilTools.get_host_var host with
        | None ->
+          (** Anonymous function with type *)
           (fun t x -> SkApp (t, None, off_list))
        | Some vi ->
-          (fun t x -> x (SkVar vi))
+          (fun t x -> x (mkVar vi))
      in
      match Cil.typeOfLval (host,offset) with
      | Cil.TArray (t, eo, attrs) ->
@@ -155,6 +156,19 @@ and convert_offset cur_v vs offs =
      let sk_off = convert_offset cur_v vs offset in
      (convert_cils vs ~cur_v:cur_v exp)::sk_off
 
+and skexpr_of_constant c =
+  let const =  match c with
+    | Cil.CInt64 (i, ik, stro) ->
+       if Ct.is_like_bool ik then CBool (Ct.bool_of_int64 i)
+       else CInt64 i
+    | Cil.CReal (f, fk, stro) ->
+       CReal f
+    | Cil.CChr cr ->
+       CChar cr
+    | Cil.CStr s ->
+       CString s
+    | _ -> CBox c
+  in SkConst const
 
 (** TODO : add the current loop index *)
 and convert_letin (vs : VS.t) =

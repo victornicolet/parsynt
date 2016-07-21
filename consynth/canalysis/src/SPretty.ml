@@ -1,9 +1,8 @@
-open Utils
 open PpHelper
 open SketchTypes
 open Format
-open Loops
-open Utils.CilTools
+
+module Ct = Utils.CilTools
 
 (** Pretty-printing operators *)
 
@@ -124,8 +123,12 @@ let rec pp_symb_type ppf t =
 let rec pp_constants ppf =
   function
   | CInt i -> fprintf ppf "%i" i
+  | CInt64 i -> fprintf ppf "%i" (Int64.to_int i)
   | CReal f -> fprintf ppf "%10.3f" f
   | CBool b -> fprintf ppf "%b" b
+  | CBox cst -> fprintf ppf "<Cil.constant>"
+  | CChar c -> fprintf ppf "%c" c
+  | CString s -> fprintf ppf "%s" s
   | CUnop (op, c) ->
      fprintf ppf "(%s %a)" (string_of_symb_unop op) pp_constants c
   | CBinop (op, c1, c2) ->
@@ -159,7 +162,7 @@ and pp_sklet ppf =
        (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
-              Format.fprintf ppf "@[ [%a %a]"
+              Format.fprintf ppf "@[[%a %a]]@"
                 pp_sklvar v pp_skexpr e) ppf el)) el
        pp_sklet l
 
@@ -174,6 +177,14 @@ let fp = Format.fprintf in
   | SkVar i -> fp ppf "%s" i.Cil.vname
   | SkConst c -> fp ppf "const %a" pp_constants c
   | SkFun l -> pp_sklet ppf l
+  | SkApp (t, vio, argl) ->
+     let funname =
+       match vio with
+       | Some vi -> vi.Cil.vname
+       | None -> "()"
+     in
+     fp ppf "%s (%a)" funname
+       (pp_print_list pp_skexpr) argl
   | SkHoleR -> fp ppf "(??_R)"
   | SkHoleL -> fp ppf "(??_L)"
   | SkAddrof e -> fp ppf "(AddrOf )"
@@ -181,7 +192,7 @@ let fp = Format.fprintf in
   | SkAlignof typ -> fp ppf "(AlignOf typ)"
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
   | SkArray (name, subsd, len_o) ->
-     fp ppf "%a[%a]"
+     fp ppf "(vector-ref %a %a)"
        pp_skexpr name
        (fun fmt -> ppli fmt pp_skexpr) subsd
   | SkBinop (op, e1, e2) ->
@@ -190,20 +201,19 @@ let fp = Format.fprintf in
   | SkUnop (op, e) ->
      fp ppf "%s %a" (string_of_symb_unop op) pp_skexpr e
   | SkCond (c, e1, e2) ->
-     fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
+     fp ppf "%sif%s @[(%a)@]@[(%a)@]@[(%a)@]"
        (color "blue") default
        pp_skexpr c pp_sklet e1 pp_sklet e2
   | SkQuestion (c, e1, e2) ->
-     fp ppf "%sif%s @[%a@] then @[%a@] else @[%a@]"
+     fp ppf "%sif%s @[(%a)@]@[(%a)@]@[(%a)@]"
        (color "blue") default
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
   | SkRec ((i, g, u), e) ->
-     fp ppf "%s recursive(%s %s;%s) %s %a"
-       (color "blue")
-       (psprint80 Cil.dn_instr i)
-       (psprint80 Cil.dn_exp g)
-       (psprint80 Cil.dn_instr u)
-       default
+     fp ppf "%s(Loop%s %s %s %s @; %a)"
+       (color "blue") default
+       (Ct.psprint80 Cil.dn_instr i)
+       (Ct.psprint80 Cil.dn_exp g)
+       (Ct.psprint80 Cil.dn_instr u)
        pp_sklet e
   | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
   | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
@@ -240,7 +250,7 @@ let eprintSkexpr s = pp_skexpr err_formatter s
 (** Pritn the whole intermediary sketch *)
 let pp_sketch ppf (state_set, stmt_li) =
   fprintf ppf "@[State = %a@]@;@[%a@]"
-    VSOps.pvs state_set
+    Utils.VSOps.pvs state_set
     (pp_print_list
        ~pp_sep:(fun fmt x -> fprintf fmt "\n@.")
        pp_skstmt) stmt_li
