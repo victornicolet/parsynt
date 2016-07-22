@@ -15,13 +15,14 @@ type sklet =
 and skLVar =
   | SkState
   | SkVarinfo of Cil.varinfo
+  (** Access to an array cell *)
+  | SkArray of skLVar * skExpr
 
 and skExpr =
+  | SkVar of skLVar
   | SkFun of sklet
   | SkRec of  forIGU * sklet
   | SkCond of skExpr * sklet * sklet
-  | SkVar of Cil.varinfo
-  | SkArray of skExpr * (skExpr list) * (skExpr option)
   | SkBinop of symb_binop * skExpr * skExpr
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
@@ -317,10 +318,14 @@ let uninterpeted fname =
   in
       not_in_safe && not_in_unsafe
 
-let mkVar vi =
+let mkVar ?(offsets = []) vi =
   match c_constant vi.Cil.vname with
   | Some c -> SkConst c
-  | None -> SkVar vi
+  | None ->
+	List.fold_left
+	  (fun sklvar offset ->
+
+	  (SkVarinfo vi)
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in

@@ -155,15 +155,20 @@ module CilTools = struct
   let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
   let ppbk blk = List.iter pps blk.bstmts
 
-  let setOfReachingDefs rdef =
-    match rdef with
-    | Some (_,_, setXhash) -> Some setXhash
-    | None -> None
 
   let getBody stmt =
     match stmt.skind with
     | Loop (blk, _, _, _) -> blk.bstmts
     | _ -> []
+
+  let addStmt block stmt =
+	{ block with bstmts = block.bstmts @ stmt }
+
+  let setOfReachingDefs rdef =
+    match rdef with
+    | Some (_,_, setXhash) -> Some setXhash
+    | None -> None
+
 
   let neg_exp (exp : Cil.exp) =
     match exp with

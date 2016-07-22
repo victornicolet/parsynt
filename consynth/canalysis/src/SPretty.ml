@@ -171,13 +171,17 @@ and pp_sklet ppf =
 
 and pp_sklvar (ppf : Format.formatter) sklvar =
   match sklvar with
-  | SkState -> fprintf ppf "<s>"
-  | SkVarinfo v -> fprintf ppf "%s" v.Cil.vname
+  | SkState ->
+	fprintf ppf "<s>"
+  | SkVarinfo v ->
+	fprintf ppf "%s" v.Cil.vname
+  | SkArray (v, offset) ->
+	fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
   match skexpr with
-  | SkVar i -> fp ppf "%s" i.Cil.vname
+  | SkVar v -> fp ppf "%a" pp_sklvar v
   | SkConst c -> fp ppf "%a" pp_constants c
   | SkFun l -> pp_sklet ppf l
   | SkApp (t, vio, argl) ->
@@ -194,10 +198,6 @@ let fp = Format.fprintf in
   | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
   | SkAlignof typ -> fp ppf "(AlignOf typ)"
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
-  | SkArray (name, subsd, len_o) ->
-     fp ppf "(vector-ref %a %a)"
-       pp_skexpr name
-       (fun fmt -> ppli fmt pp_skexpr) subsd
   | SkBinop (op, e1, e2) ->
      fp ppf "(%s %a %a)"
         (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2

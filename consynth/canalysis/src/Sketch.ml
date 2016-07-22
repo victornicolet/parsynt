@@ -40,11 +40,10 @@ let hole_or_exp2 constr e1 e2 =
 
 let rec convert (cur_v : skLVar) =
   function
-  | Var vi -> SkVar vi
+  | Var vi -> mkVar vi
 
   (** TODO : array -> region *)
-  | Array (vi, el) ->
-     SkArray (SkVar vi, List.map el ~f:(fun e -> convert cur_v e), None)
+  | Array (vi, el) -> mkVar ~offsets:el vi
 
   | Container (e, subs) ->
      convert_cils ~cur_v:cur_v e
@@ -225,6 +224,30 @@ and convert_letin (vs : VS.t) =
 
 let build_sketch (let_form : letin) (state : VS.t) =
   convert_letin state let_form
+
+
+(** Transform the converted sketch to a loop body and a join sketch *)
+
+let rec make_conditional_guards (initial_vs : VS.t) (letin_form : sklet) =
+  match letin_form with
+  | SkLetIn (bindings, body) ->
+	let new_bindings, new_state_vars = mk_cg bindings initial_vs in
+	let new_body, state_vars' = make_conditional_guards new_state_vars body in
+	SkLetIn (new_bindings, new_body), state_vars'
+
+  | SkLetExpr bindings ->
+	let new_bindings, new_state_vars = mk_cg bindings initial_vs in
+	SkLetExpr new_bindings, new_state_vars
+
+and mk_cg bindings vs =
+  (List.fold
+	bindings
+	~init: []
+	~f:(fun acc binding -> acc @ [mk_cg_binding vs binding])), vs
+
+and mk_cg_binding vs ((var, expr) : skLVar * skExpr) =
+  (var, expr)
+
 
 (******************************************************************************)
 
