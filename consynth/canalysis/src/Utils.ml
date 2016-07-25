@@ -96,10 +96,17 @@ let checkOption (ao : 'a option) : 'a =
   | Some a -> a
   | None -> raise (Failure "checkOption")
 
-let appOption (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
+let appOption (f:'a->'b) (v: 'a option) : 'b option =
+  match v with
+  | Some a -> Some (f a)
+  | None -> None
+
+let appOptionDefault (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
   match v with
   | Some a -> f a
   | None -> default
+
+
 
 let xorOpt o1 o2 =
   match o1, o2 with
@@ -188,20 +195,31 @@ module CilTools = struct
 
   let bool_of_int64 i = (i = (Int64.of_int 1))
 
+  let combine_expression_option op e1 e2 t=
+    match e1, e2 with
+    | Some e1, Some e2 -> Some (BinOp (op, e1, e2, t))
+    | Some e1, None -> Some e1
+    | None, Some e2 -> Some e2
+    | None, None -> None
+
   let rec get_host_var host =
     match host with
-    | Var vi -> Some vi
+    | Var vi -> Some vi, []
     | Mem e ->
-       (match e with
-       | Lval (hst, offset) -> get_host_var hst
+       match e with
+       | Lval (hst, offset) ->
+          let v1, ofs = get_host_var hst in
+          v1, ofs@[offset]
        | BinOp (op, e1, e2, t) ->
-          get_var e1
-       | _ -> None
-       )
+          let v1, o1 = get_var e1 in
+          let offset = Index (e2, NoOffset) in
+          v1, o1@[offset]
+       | _ -> None, []
+
   and get_var e =
     match e with
     | Lval (host,offset) -> get_host_var host
-    | _ -> None
+    | _ -> None, []
 end
 (**
     Extract the variables used in statements/expressions/instructions/..
@@ -215,7 +233,7 @@ module VSOps = struct
        let vs_exp = sove exp in
        VS.union vs_exp vs_ls
     | Call (lvo, ef, elist, _) ->
-       let vs_ls = appOption sovv lvo VS.empty in
+       let vs_ls = appOptionDefault sovv lvo VS.empty in
        let vs_el = ListTools.foldl_union sove elist in
        VS.union vs_ls vs_el
     | _ -> VS.empty

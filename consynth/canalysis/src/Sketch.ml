@@ -43,7 +43,9 @@ let rec convert (cur_v : skLVar) =
   | Var vi -> mkVar vi
 
   (** TODO : array -> region *)
-  | Array (vi, el) -> mkVar ~offsets:el vi
+  | Array (vi, el) ->
+     let skexpr_list = List.map el ~f:(convert cur_v) in
+     mkVar ~offsets:skexpr_list vi
 
   | Container (e, subs) ->
      convert_cils ~cur_v:cur_v e
@@ -118,46 +120,47 @@ and convert_cils ?(cur_v = SkState) =
      SkStartOf (skexpr_of_lval cur_v lv)
 
 
+and convert_offset =
+  function
+  | Cil.NoOffset -> []
+  | Cil.Index (e, offset) ->
+     ((convert_cils e)::(convert_offset offset))
+  | Cil.Field _ -> []
+
+and convert_offsets offsets_list =
+  List.fold_left offsets_list
+    ~init:[]
+    ~f:(fun acc x -> acc@(convert_offset x))
+
+
 and skexpr_of_lval (cur_v : skLVar)
     ((host, offset) : Cil.lval) =
   match convert_offset offset with
-  | [] -> SkVar (checkOption (CilTools.get_host_var host))
-  | off_list->
-     let vi =
-       match CilTools.get_host_var host with
+  | [] ->
+     let vo, ofs_li = CilTools.get_host_var host in
+     begin
+       match vo with
+       | Some vi ->
+          mkVar ~offsets:(convert_offsets ofs_li) vi
+       | None -> failwith "Is it an lval ?"
+     end
+
+  | off_list ->
+     let vi_to_expr =
+       let vo, ofs_li =  CilTools.get_host_var host in
+       let off_list = (convert_offsets ofs_li)@off_list in
+       match vo with
        | None ->
           (** Anonymous function with type *)
           (fun t x -> SkApp (t, None, off_list))
        | Some vi ->
-          (fun t x -> x (mkVar vi))
+          (fun t x -> x vi)
      in
-     match Cil.typeOfLval (host,offset) with
-     | Cil.TArray (t, eo, attrs) ->
-        (** Maybe array length *)
-        let eo' =
-          match eo with
-          | None -> None
-          | Some e -> Some (convert_cils e)
-        in
-        vi (symb_type_of_ciltyp t) (fun x -> SkArray (x , off_list, eo'))
+     let t =  Cil.typeOfLval (host,offset) in
+        vi_to_expr
+          (symb_type_of_ciltyp t)
+          (fun vi -> mkVar ~offsets:off_list vi)
 
-     | Cil.TPtr (t, attrs) ->
-        vi (symb_type_of_ciltyp t) (fun x -> SkArray (x , off_list, None))
-     | _ -> failwith "Bad type."
-
-
-
-and convert_offset offs =
-  match offs with
-  | Cil.NoOffset ->
-     []
-
-  | Cil.Field (finfo, offset)->
-     failwith "Not implemented yet"
-
-  | Cil.Index (exp, offset) ->
-     let sk_off = convert_offset offset in
-     (convert_cils exp)::sk_off
 
 and skexpr_of_constant c =
   let const =  match c with
@@ -187,7 +190,7 @@ and convert_letin (vs : VS.t) =
          state@(List.map
                   (VSOps.varlist
                      (VS.filter (fun v -> not (IM.mem v.Cil.vid subs)) vs))
-                  ~f:(fun vi -> (SkVarinfo vi, SkVar vi)))
+                  ~f:(fun vi -> (SkVarinfo vi, mkVar vi)))
        in
        SkLetExpr complete_state
 

@@ -318,14 +318,22 @@ let uninterpeted fname =
   in
       not_in_safe && not_in_unsafe
 
+(**
+   Generate a SkVar expression from a varinfo, with possible offsets
+   for arrays. Checks first if the name of the variable is a predefined
+   constants.
+*)
 let mkVar ?(offsets = []) vi =
   match c_constant vi.Cil.vname with
   | Some c -> SkConst c
   | None ->
-	List.fold_left
-	  (fun sklvar offset ->
-
-	  (SkVarinfo vi)
+	 let var =
+       List.fold_left
+	     (fun sklvar offset ->
+           SkArray (sklvar, offset))
+	     (SkVarinfo vi)
+         offsets
+     in SkVar var
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
