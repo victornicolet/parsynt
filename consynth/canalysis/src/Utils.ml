@@ -161,6 +161,7 @@ module CilTools = struct
   let ppv v = print_endline v.vname
   let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
   let ppbk blk = List.iter pps blk.bstmts
+  let ppofs offs = print_endline (psprint80 (Cil.d_offset Pretty.nil) offs)
 
 
   let getBody stmt =

@@ -136,6 +136,11 @@ and convert_offsets offsets_list =
 and skexpr_of_lval (cur_v : skLVar)
     ((host, offset) : Cil.lval) =
   match convert_offset offset with
+  (**
+      A null list only means there is no offset in the offset part
+      of the Cil.lval, but the offset might still in the expression
+      if it is a Cil memory access.
+  *)
   | [] ->
      let vo, ofs_li = CilTools.get_host_var host in
      begin
@@ -145,21 +150,21 @@ and skexpr_of_lval (cur_v : skLVar)
        | None -> failwith "Is it an lval ?"
      end
 
-  | off_list ->
-     let vi_to_expr =
-       let vo, ofs_li =  CilTools.get_host_var host in
-       let off_list = (convert_offsets ofs_li)@off_list in
-       match vo with
-       | None ->
+  | new_off_list ->
+       let vo, prev_offs_list =  CilTools.get_host_var host in
+       let off_list = (convert_offsets prev_offs_list)@new_off_list in
+       let vi_to_expr =
+         match vo with
+         | None ->
           (** Anonymous function with type *)
-          (fun t x -> SkApp (t, None, off_list))
-       | Some vi ->
-          (fun t x -> x vi)
-     in
-     let t =  Cil.typeOfLval (host,offset) in
-        vi_to_expr
-          (symb_type_of_ciltyp t)
-          (fun vi -> mkVar ~offsets:off_list vi)
+            (fun t x -> SkApp (t, None, off_list))
+         | Some vi ->
+            (fun t x -> x vi)
+       in
+       let t =  Cil.typeOfLval (host,offset) in
+       vi_to_expr
+         (symb_type_of_ciltyp t)
+         (mkVar ~offsets:off_list)
 
 
 and skexpr_of_constant c =
