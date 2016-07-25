@@ -193,7 +193,8 @@ let fp = Format.fprintf in
      fp ppf "%s (%a)" funname
        (pp_print_list pp_skexpr) argl
   | SkHoleR -> fp ppf "(??_R)"
-  | SkHoleL -> fp ppf "(??_L)"
+  | SkHoleL v -> fp ppf "(state-%s L)"
+     (Utils.checkOption (vi_of v)).Cil.vname
   | SkAddrof e -> fp ppf "(AddrOf )"
   | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
   | SkAlignof typ -> fp ppf "(AlignOf typ)"

@@ -13,7 +13,11 @@ let test loopsm =
   SM.iter
     (fun fname vals ->
       let vs, func = vals in
-      let sketch_form = S.build_sketch func vs in
+      let body_form = S.build_body func vs in
       printf"%s%s%s : @; %a@." (color "green") fname default
-        pp_sklet sketch_form)
+        pp_sklet body_form;
+      let join = S.build_join body_form vs in
+      printf"Join : @; %a@."
+         pp_sklet join
+    )
     loopsm

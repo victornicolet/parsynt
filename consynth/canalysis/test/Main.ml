@@ -13,7 +13,7 @@ let testProcessFile () =
   if Array.length Sys.argv < 2 then
     begin
       let loopsm = TC2F.test () in
-        TF2S.test loopsm;
+      TF2S.test loopsm;
       eprintf "Usage : ./Main.native [test file name]\n\n";
       exit 0
     end;

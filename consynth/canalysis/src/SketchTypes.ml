@@ -20,6 +20,7 @@ and skLVar =
 
 and skExpr =
   | SkVar of skLVar
+  | SkConst of constants
   | SkFun of sklet
   | SkRec of  forIGU * sklet
   | SkCond of skExpr * sklet * sklet
@@ -27,11 +28,10 @@ and skExpr =
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL
+  | SkHoleL of skLVar
   | SkHoleR
 (** Simple translation of Cil exp needed to nest
     sub-expressions with state variables *)
-  | SkConst of constants
   | SkSizeof of symbolic_type
   | SkSizeofE of skExpr
   | SkSizeofStr of string
@@ -334,6 +334,26 @@ let mkVar ?(offsets = []) vi =
 	     (SkVarinfo vi)
          offsets
      in SkVar var
+
+let rec cmpVar sklvar1 sklvar2 =
+  match sklvar1, sklvar2 with
+  | SkState, SkState -> 0
+  | SkVarinfo vi, SkVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
+  | SkArray (sklv1, _), SkArray (sklv2, _) ->
+     cmpVar sklv1 sklv2
+  | SkState, _ -> 1
+  | _ , SkState -> -1
+  | SkArray _ , _ -> 1
+  | _ , SkArray _ -> -1
+
+let rec vi_of sklv =
+  match sklv with
+  | SkState -> None
+  | SkVarinfo vi' -> Some vi'
+  | SkArray (sklv', _) -> vi_of sklv'
+
+let is_vi sklv vi = appOptionDefault (fun x -> vi = x) (vi_of sklv)
+
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in

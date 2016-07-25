@@ -6,6 +6,7 @@ open SketchTypes
 open SPretty
 open PpHelper
 open Cil2Func
+open Join
 
 module VS = VS
 module SM = Map.Make (String)
@@ -19,23 +20,6 @@ let debug = ref false;;
    for each state variable representing the ody of the
    loop).
 *)
-(**
-    Replacing old expressions by sketch epxressions, and putting holes
-    in some places.
-*)
-
-let hole_or_exp constr e =
-  match e with
-  | SkHoleL -> SkHoleL
-  | SkHoleR -> SkHoleR
-  | _ -> constr e
-
-let hole_or_exp2 constr e1 e2 =
-  match e1, e2 with
-  | SkHoleL, SkHoleL -> SkHoleL
-  | SkHoleR, SkHoleR -> SkHoleR
-  | _, _ -> constr e1 e2
-
 
 
 let rec convert (cur_v : skLVar) =
@@ -227,12 +211,34 @@ and convert_letin (vs : VS.t) =
        SkLetIn ([(SkState, SkFun (convert_letin vs let_state))],
                 convert_letin vs let_cont)
 
+(** Optimisations *)
+let remove_simple_state_rewritings (var , expr) =
+  match var, expr with
+  | SkState, SkFun (SkLetExpr li) ->
+     begin
+       match List.filter li
+         ~f:(fun e -> match e with _, SkVar _ -> false |_, _-> true)
+       with
+       | [(v, e)] -> v, e
+       | _ -> (var, expr)
+     end
+  | _ -> (var, expr)
+
+let optims sklet =
+  match sklet with
+  | SkLetExpr el -> sklet
+  | SkLetIn (el, cont) ->
+     let new_rewrites = List.map el ~f:remove_simple_state_rewritings in
+     SkLetIn (new_rewrites, cont)
+
 
 (*** MAIN ENTRY POINT ***)
 
-let build_sketch (let_form : letin) (state : VS.t) =
-  convert_letin state let_form
+let build_body (let_form : letin) (state : VS.t) =
+  optims (convert_letin state let_form)
 
+let build_join (sklet : sklet) (state : VS.t) =
+  make_join state sklet
 
 (** Transform the converted sketch to a loop body and a join sketch *)
 
