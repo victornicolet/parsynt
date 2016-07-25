@@ -4,6 +4,26 @@ open Format
 
 module Ct = Utils.CilTools
 
+(** String representing holes *)
+let current_hole_l_expression = ref "(??_L)"
+let current_hole_r_expression = ref "(??_R)"
+
+let wrap (t : symbolic_type) ppf =
+  fprintf ppf
+    (match t with
+    | Unit -> "(bExpr %s)"
+    | Integer -> "(bExpr:int %s)"
+    | Real -> "(bExpr:real %s)"
+    | Boolean -> "(bExpr:boolean %s)"
+    | Function (a, b) ->
+       begin
+         match a, b with
+         | Integer, Boolean -> "(bExpr:int->bool %s)"
+         | Integer, Integer -> "(bExpr:int_>int %s)"
+         | _ ,_ -> "(bExpr %s)"
+       end
+    | _ -> "(bExpr %s)")
+
 (** Pretty-printing operators *)
 
 let string_of_unsafe_binop =
@@ -182,8 +202,11 @@ and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
   match skexpr with
   | SkVar v -> fp ppf "%a" pp_sklvar v
+
   | SkConst c -> fp ppf "%a" pp_constants c
+
   | SkFun l -> pp_sklet ppf l
+
   | SkApp (t, vio, argl) ->
      let funname =
        match vio with
@@ -192,26 +215,36 @@ let fp = Format.fprintf in
      in
      fp ppf "%s (%a)" funname
        (pp_print_list pp_skexpr) argl
-  | SkHoleR -> fp ppf "(??_R)"
-  | SkHoleL v -> fp ppf "(state-%s L)"
-     (Utils.checkOption (vi_of v)).Cil.vname
+
+  | SkHoleR t -> fp ppf "%a" (wrap t) !current_hole_r_expression
+
+  | SkHoleL (v, t) -> fp ppf "%a" (wrap t) !current_hole_l_expression
+
   | SkAddrof e -> fp ppf "(AddrOf )"
+
   | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
+
   | SkAlignof typ -> fp ppf "(AlignOf typ)"
+
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
+
   | SkBinop (op, e1, e2) ->
      fp ppf "(%s %a %a)"
         (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2
+
   | SkUnop (op, e) ->
      fp ppf "(%s %a)" (string_of_symb_unop op) pp_skexpr e
+
   | SkCond (c, e1, e2) ->
      fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
        (color "blue") default
        pp_skexpr c pp_sklet e1 pp_sklet e2
+
   | SkQuestion (c, e1, e2) ->
      fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
        (color "blue") default
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
+
   | SkRec ((i, g, u), e) ->
      fp ppf "(%sLoop%s %s %s %s %a)"
        (color "blue") default
@@ -219,11 +252,16 @@ let fp = Format.fprintf in
        (Ct.psprint80 Cil.dn_exp g)
        (Ct.psprint80 Cil.dn_instr u)
        pp_sklet e
+
   | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
+
   | SkSizeofE e -> fp ppf "(SizeOf %a)" pp_skexpr e
+
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
+
   | SkCastE (t,e) ->
      fp ppf "(%a) %a" pp_symb_type t pp_skexpr e
+
   | SkStartOf l -> fp ppf "(StartOf %a)" pp_skexpr l
 
 

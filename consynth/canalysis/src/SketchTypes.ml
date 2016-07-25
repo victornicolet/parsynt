@@ -28,8 +28,8 @@ and skExpr =
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL of skLVar
-  | SkHoleR
+  | SkHoleL of skLVar * symbolic_type
+  | SkHoleR of symbolic_type
 (** Simple translation of Cil exp needed to nest
     sub-expressions with state variables *)
   | SkSizeof of symbolic_type
