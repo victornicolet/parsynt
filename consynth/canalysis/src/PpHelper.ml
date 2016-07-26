@@ -36,6 +36,9 @@ let pp_int_list ppf =
 
 let print_int_list = pp_int_list std_formatter
 
+let pp_string_list fmt =
+  ppli fmt ~sep:" " (fun fmt s -> fprintf fmt "%s" s)
+
 (** Map printing *)
 let ppimap
     (pelt : formatter -> 'a -> unit)

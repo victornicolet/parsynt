@@ -303,7 +303,7 @@ and mk_cg_binding vs ((var, expr) : skLVar * skExpr) =
 (** A symbolic definition defines a list of values of a given type,
     the second string in the type corresponds *)
 
-(** Type for building the defintions list *)
+(** Type for building the definitions list *)
 type defsRec =
   { ints : string list ;
     reals : string list ;
@@ -319,7 +319,18 @@ type symbDef =
   | Reals of string list
   | Booleans of string list
   | RoArray of string * string list
-[@@deriving sexp]
+
+let pp_symbDef fmt sd =
+  let fp = Format.fprintf in
+  match sd with
+  | Integers li ->
+     fp fmt "(define-symbolic %a integer?)" pp_string_list li
+  | Reals li ->
+     fp fmt "(define-symbolic %a real?)" pp_string_list li
+  | Booleans li ->
+     fp fmt "(define-symbolic %a boolean?)" pp_string_list li
+  | RoArray (sty, varnames) ->
+     fp fmt "(define-symbolic %a (~> integer? %s))" pp_string_list varnames sty
 
 let add_to_reals s defs =
   { defs with reals = s::defs.reals }
@@ -351,6 +362,12 @@ let adding_function vtype =
 let add_varinfo vi defs  =
   (adding_function vi.Cil.vtype) vi.Cil.vname defs
 
+let defsRec_of_varinfos subset_list vars =
+  let empty_defrec = { ints = [] ; reals = []; bools = []; vecs = [] } in
+  let vars_set = VSOps.subset_of_list subset_list vars in
+  VS.fold add_varinfo vars_set empty_defrec
+
+
 let defsRec_to_symbDefs defs_rec
     : (symbDef * symbDef * symbDef * (symbDef list) ) =
   let ro_arrays_map =
@@ -373,15 +390,40 @@ let defsRec_to_symbDefs defs_rec
     roArrays
   )
 
+let is_empty_symbDefs =
+  function
+  | Integers [] | Booleans [] | Reals [] | RoArray (_, []) -> true
+  | _ -> false
+
 
 (** Sketch -> Rosette sketch *)
 
-let strings_of_symbdefs1 symbdef =
-  let sexpr = sexp_of_symbDef symbdef in
-  string_of_sexp sexpr
+let pp_ne_symbdefs fmt sd =
+  if is_empty_symbDefs sd
+  then Format.fprintf fmt ""
+  else
+    begin
+      Format.fprintf fmt "@[<hov 0>@.%a@]@."
+        pp_symbDef sd
+    end
+
+let strings_of_symbdefs symbdef =
+  pp_ne_symbdefs str_formatter symbdef; flush_str_formatter ()
 
 
-let symbolic_definitions_of vars = []
+let pp_symbolic_definitions_of fmt readvars vars =
+  let (ints, reals, booleans, arrays)
+      = defsRec_to_symbDefs (defsRec_of_varinfos readvars vars) in
+  Format.fprintf fmt
+    ";; Symbolic definitions for read-only variables @.%a%a%a%a@."
+    pp_ne_symbdefs ints
+    pp_ne_symbdefs reals
+    pp_ne_symbdefs booleans
+    (pp_print_list
+       ~pp_sep:(fun fmt () -> Format.fprintf fmt "@.")
+       (fun fmt sd -> pp_ne_symbdefs fmt sd))
+    arrays
+
 
 let join_sketch_of sketch = []
 
@@ -391,13 +433,16 @@ let assertions_of sketch = []
 
 let synthesis_statement_of sketch = []
 
-let rosette_sketch_of sketch =
-  let symbolic_definitions = symbolic_definitions_of sketch in
+let rosette_sketch_of
+    (read_vars, state, all_vars, loop_body, join_body)
+    fmt sketch =
+  let symbolic_definitions =
+    pp_symbolic_definitions_of fmt read_vars all_vars in
   let join_sketch = join_sketch_of sketch in
   let loop_body = loop_body_of sketch in
   let additional_assertions = assertions_of sketch in
   let main_pb = synthesis_statement_of sketch in
-  Stream.of_list     (symbolic_definitions@
+  Stream.of_list     (
                         join_sketch@
                         loop_body@
                         additional_assertions@

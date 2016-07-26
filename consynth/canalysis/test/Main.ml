@@ -6,12 +6,16 @@ open Loops
 open Utils
 
 module C2F = Cil2Func
+
+(** Different test modules *)
 module TC2F = TCil2Func
 module TF2S = TFunc2Sketch
+module TGDef  = TGenDefs
 
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
     begin
+      TGDef.test ();
       let loopsm = TC2F.test () in
       TF2S.test loopsm;
       eprintf "Usage : ./Main.native [test file name]\n\n";
