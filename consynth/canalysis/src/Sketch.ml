@@ -362,9 +362,8 @@ let adding_function vtype =
 let add_varinfo vi defs  =
   (adding_function vi.Cil.vtype) vi.Cil.vname defs
 
-let defsRec_of_varinfos subset_list vars =
+let defsRec_of_varinfos vars_set =
   let empty_defrec = { ints = [] ; reals = []; bools = []; vecs = [] } in
-  let vars_set = VSOps.subset_of_list subset_list vars in
   VS.fold add_varinfo vars_set empty_defrec
 
 
@@ -398,6 +397,13 @@ let is_empty_symbDefs =
 
 (** Sketch -> Rosette sketch *)
 
+let pp_state_definition fmt state_vars =
+  Format.fprintf fmt
+    "@[(DefStruct %a)@]@;@[(Define-struct-eq state (%a))@]@."
+    VSOps.pp_var_names state_vars
+    VSOps.pp_var_names state_vars
+
+
 let pp_ne_symbdefs fmt sd =
   if is_empty_symbDefs sd
   then Format.fprintf fmt ""
@@ -411,11 +417,11 @@ let strings_of_symbdefs symbdef =
   pp_ne_symbdefs str_formatter symbdef; flush_str_formatter ()
 
 
-let pp_symbolic_definitions_of fmt readvars vars =
+let pp_symbolic_definitions_of fmt vars =
   let (ints, reals, booleans, arrays)
-      = defsRec_to_symbDefs (defsRec_of_varinfos readvars vars) in
+      = defsRec_to_symbDefs (defsRec_of_varinfos vars) in
   Format.fprintf fmt
-    ";; Symbolic definitions for read-only variables @.%a%a%a%a@."
+    "%a%a%a%a@."
     pp_ne_symbdefs ints
     pp_ne_symbdefs reals
     pp_ne_symbdefs booleans
@@ -441,6 +447,7 @@ let pp_loop fmt (loop_body, state_vars) =
     !iterations_limit
     pp_loop_body (loop_body, state_vars)
 
+
 let pp_join fmt (join_body, state_vars) =
   let left_state_vars = VSOps.vs_with_suffix state_vars "-left" in
   let right_state_vars = VSOps.vs_with_suffix state_vars "-right" in
@@ -452,13 +459,51 @@ let pp_join fmt (join_body, state_vars) =
     pp_sklet join_body
 
 
-let assertions_of join = []
+let pp_states fmt state_vars read_vars st1 st2 st0 =
+  set_hole_vars read_vars read_vars;
+  let s0_sketch_printer =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      (fun fmt vi ->
+        let t = symb_type_of_ciltyp vi.Cil.vtype in
+        let hole = SkHoleR t in
+        Format.fprintf fmt "%a" pp_skexpr hole)
+  in
+  Format.fprintf fmt
+    "@[(define %s (state %a))@]"
+    st0
+    s0_sketch_printer (VSOps.varlist state_vars);
 
-let synthesis_statement_of join = []
+  let st1_vars = VSOps.vs_with_suffix state_vars "1" in
+  let st2_vars = VSOps.vs_with_suffix state_vars "2" in
+  pp_symbolic_definitions_of fmt st1_vars;
+  pp_symbolic_definitions_of fmt st2_vars;
+  Format.fprintf fmt
+    "@[(define %s (state %a))@]@.@[(define %s (state %a)))@]@."
+    st1
+    VSOps.pp_var_names st1_vars
+    st2
+    VSOps.pp_var_names st2_vars
+
+
+let pp_synth fmt s1 s2 s0 state_vars =
+  Format.fprintf fmt
+    "@[(define odot@;@[<hov 2>(Synthesize %s %s %s (%a))@])@]@."
+    s1 s2 s0
+    VSOps.pp_var_names state_vars
+
 
 let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
   let state_vars = VSOps.subset_of_list state all_vars in
-  SPretty.read_only_arrays := VSOps.subset_of_list read_vars all_vars;
-  pp_symbolic_definitions_of fmt read_vars all_vars;
+  let read_vars = VSOps.subset_of_list read_vars all_vars in
+  let st1, st2, st0 = "state1", "state2", "init-state" in
+  SPretty.read_only_arrays := read_vars;
+  pp_symbolic_definitions_of fmt read_vars;
+  pp_force_newline fmt ();
+  pp_state_definition fmt state_vars;
+  pp_force_newline fmt ();
   pp_loop fmt (loop_body, state_vars);
-  pp_join fmt (join_body, state_vars)
+  pp_join fmt (join_body, state_vars);
+  pp_force_newline fmt ();
+  pp_states fmt state_vars read_vars st1 st2 st0;
+  pp_synth fmt st1 st2 st0 state_vars

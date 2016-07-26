@@ -5,7 +5,7 @@
          rosette/lib/synthax
          "../utils.rkt")
 
-(define limit 10)
+(define limit 30)
 (current-bitwidth #f)
 
 (define-struct state (mps sum start end))
@@ -24,7 +24,7 @@
                    [end (state-end s)]
                    [mps (state-mps s)]
                    [sum (state-sum s)]
-                   [a (vector-ref v i)])
+                   [a (v i)])
               (state
                (max mps (+ sum a))
                (+ sum a)
@@ -70,12 +70,10 @@
 
 (define (solve-func-pb)
 
-  (define-symbolic b0 b1 b2 b3 b4 b5 b6 b7 b8 integer?)
-  (define symbv
-    (vector b0 b1 b2 b3 b4 b5 b6 b7 b8))
+  (define-symbolic symbv (~> integer? integer?))
 
    (synthesize
-    #:forall (list b0 b1 b2 b3 b4 b5 b6 b7 b8)
+    #:forall (list symbv)
     #:guarantee (assert (and
                          (problem symbv 0 0 8)
                          (problem symbv 0 4 7)
@@ -117,22 +115,18 @@
 
 
 (define (solve-imper-pb)
-  (define-symbolic  i0 i1 i2 i3 i4 i5 i6 i7 i8 integer?)
+  (define-symbolic symbv (~> integer? integer?))
   ;; Join point (symbolic)
-
-  (define symbv
-    (list->vector (list  i0 i1 i2 i3 i4 i5 i6 i7 i8)))
-
-   (sat?
-    (synthesize
-     #:forall (list  i0 i1 i2 i3 i4 i5 i6 i7 i8)
-     #:guarantee (assert
-                  (and
-                   (problem symbv 0 0 8)
-                   (problem symbv 0 4 7)
-                   (problem symbv 0 5 8)
-                   (problem symbv 0 3 6)
-                   (problem symbv 6 6 6)
+  (sat?
+   (synthesize
+    #:forall (list symbv)
+    #:guarantee (assert
+                 (and
+                  (problem symbv 0 0 8)
+                  (problem symbv 0 4 7)
+                  (problem symbv 0 5 8)
+                  (problem symbv 0 3 6)
+                  (problem symbv 6 6 6)
                   )))))
 
 
