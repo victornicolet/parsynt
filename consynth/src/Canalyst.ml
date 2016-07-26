@@ -76,3 +76,5 @@ let func2sketch funcreps =
       let join_body = Sketch.build_join loop_body state_vars in
       (ro_vars_ids, state_vars_ids, var_set, loop_body, join_body))
     funcreps
+
+let pp_sketch = Sketch.pp_rosette_sketch

@@ -2,7 +2,7 @@ OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-Name: ConSynthClient
+Name: ConSynth
 Version: 0.1
 Synopsis: Concurrent programs synthesis.
 Authors: Victor Nicolet
@@ -12,27 +12,40 @@ Description: A library that synthesizes concurrent C programs from sequential sp
 Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
-
-Executable csclient
-  Path: ./
-  MainIs: client.ml
-  CompiledObject: best
-  Install: false
-  Build: true
-  BuildDepends: unix
-
-Executable cslocal
-  Path: ./
-  MainIs: local.ml
-  CompiledObject: best
-  Install: false
-  Build: true
-  BuildDepends: str
-
 XOCamlbuildExtraArgs: "-tag thread"
+
+PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
+PreUninstallCommand: $ocamlfind remove ppx_getenv
+
+Library canalyst
+  Path: src
+  Modules: Canalyst
+  CompiledObject: best
+  BuildDepends: cil, core, sexplib, ppx_sexp_conv, ppx_type_conv
+
+
+Executable test_main
+  Path: test
+  MainIs: Main.ml
+  CompiledObject: best
+  Install: false
+  BuildDepends: cil, canalyst
+
+Test test_main
+  TestTools: test_main
+  Command: $test_main
+  WorkingDirectory: test
 
 SourceRepository "master"
   Type: git
   Location: https://github.com/victornicolet/consynth.git
   Branch: master
   Browser: https://github.com/victornicolet/consynth
+
+Executable Parsy
+  Path: ./
+  MainIs: Parsy.ml
+  CompiledObject: best
+  Install: false
+  Build: true
+  BuildDepends: canalyst, str

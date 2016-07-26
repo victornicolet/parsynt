@@ -35,7 +35,7 @@ let compile sketch =
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
   completeFile sketch_tmp_file solution_tmp_file sketch;
   let errno = racket sketch_tmp_file in
-  Sys.remove sketch_tmp_file;
+(**  Sys.remove sketch_tmp_file;*)
   errno, solution_tmp_file
 
 let fetch_solution filename =
@@ -51,9 +51,7 @@ let fetch_solution filename =
   Sys.remove filename
 
 
-let test () =
-  let isketch = line_stream_of_channel (open_in (templateDir^"sketch.rkt")) in
+let from_input input_chan =
+  let isketch = line_stream_of_channel input_chan in
   let err, solFileName = compile isketch in
   fetch_solution solFileName;;
-
-test ()

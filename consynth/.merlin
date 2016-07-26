@@ -1,4 +1,5 @@
 B _build/
-B canalysis/_build
-S canalysis/src
+B _build/src
+S src
+S ./
 PKG cil core async
