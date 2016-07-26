@@ -31,8 +31,28 @@ let rec convert (cur_v : skLVar) =
      let skexpr_list = List.map el ~f:(convert cur_v) in
      mkVar ~offsets:skexpr_list vi
 
+  | FunApp (ef, arg_l) ->
+     let is_c_def, vi_o, ty = is_exp_function ef in
+     let sty = symb_type_of_ciltyp ty in
+     let fargs =  List.map arg_l ~f:(convert cur_v) in
+     if is_c_def then
+       SkApp (sty, vi_o, fargs)
+     else
+       let fname = (checkOption vi_o).Cil.vname in
+       (match fargs with
+       | [e] ->
+          let unop = (checkOption (symb_unop_of_fname fname)) in
+          SkUnop (unop, e)
+       | e1::[e2] ->
+          let binop = (checkOption (symb_binop_of_fname fname)) in
+          SkBinop (binop, e1, e2)
+       | _ -> SkApp (sty, vi_o, fargs)
+       )
+
+
   | Container (e, subs) ->
-     convert_cils ~cur_v:cur_v e
+     let converted_substitutions = IM.map (convert cur_v) subs in
+     convert_cils ~cur_v:cur_v ~subs:converted_substitutions e
 
   | FQuestion (ecil, e1, e2) ->
      SkQuestion (convert_cils ecil, (convert cur_v e1), (convert cur_v e2))
@@ -57,18 +77,25 @@ let rec convert (cur_v : skLVar) =
   | _ -> failwith "not yet implemented"
 
 
-and convert_cils ?(cur_v = SkState) =
+and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) =
   function
   | Cil.Const c -> skexpr_of_constant c
 
-  | Cil.Lval v -> skexpr_of_lval cur_v v
+  | Cil.Lval v ->
+     let skvar = skexpr_of_lval cur_v v in
+     begin
+       match skvar with
+       | SkVar (SkVarinfo vi) when IM.mem vi.Cil.vid subs ->
+          IM.find vi.Cil.vid subs
+       | _ ->skvar
+     end
 
   | Cil.SizeOf t->
      let typ = symb_type_of_ciltyp t in
      SkSizeof typ
 
   | Cil.SizeOfE e ->
-     SkSizeofE (convert_cils e)
+     SkSizeofE (convert_cils ~subs:subs e)
 
   | Cil.SizeOfStr s ->
      SkSizeofStr s
@@ -77,7 +104,7 @@ and convert_cils ?(cur_v = SkState) =
      SkAlignof (symb_type_of_ciltyp t)
 
   | Cil.AlignOfE e ->
-     SkAlignofE (convert_cils e)
+     SkAlignofE (convert_cils ~subs:subs e)
 
   | Cil.AddrOf lv ->
      SkAddrof (skexpr_of_lval cur_v lv)
@@ -87,18 +114,18 @@ and convert_cils ?(cur_v = SkState) =
 
   | Cil.UnOp (op, e1, t) ->
      let op' = symb_unop_of_cil op in
-     SkUnop (op',convert_cils e1)
+     SkUnop (op',convert_cils ~subs:subs e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
      let op' = symb_binop_of_cil op in
-     SkBinop (op', convert_cils e1, convert_cils e2)
+     SkBinop (op', convert_cils ~subs:subs e1, convert_cils ~subs:subs e2)
 
   | Cil.Question (c, e1, e2, t) ->
      let c' = convert_cils c in
-     SkQuestion (c', convert_cils e1, convert_cils e2)
+     SkQuestion (c',  convert_cils ~subs:subs e1, convert_cils ~subs:subs e2)
 
   | Cil.CastE (t, e) ->
-     SkCastE (symb_type_of_ciltyp t, convert_cils e)
+     SkCastE (symb_type_of_ciltyp t, convert_cils ~subs:subs e)
 
   | Cil.StartOf lv ->
      SkStartOf (skexpr_of_lval cur_v lv)

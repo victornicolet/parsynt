@@ -318,6 +318,15 @@ let uninterpeted fname =
   in
       not_in_safe && not_in_unsafe
 
+let is_exp_function ef =
+  match ef with
+  | Cil.Lval (Cil.Var vi, _) ->
+     let fname = vi.Cil.vname in
+     let ty = vi.Cil.vtype in
+     uninterpeted fname, Some vi, ty
+
+  | _ -> false,  None , Cil.typeOf ef
+
 (**
    Generate a SkVar expression from a varinfo, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined

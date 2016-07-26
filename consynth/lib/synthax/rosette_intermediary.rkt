@@ -26,10 +26,9 @@
 
 ;; Macros generating function definitions body and join
 
-(define-syntax-rule (LamBody (vnames ...) (b ...))
-     (lambda (stt)
-       (D-struct state stt (vnames ...)
-                         (state b ...))))
+(define-syntax-rule (LamBody (vnames ...) b)
+     (lambda (stt i)
+       (D-struct state stt (vnames ...) b)))
 
 (define-syntax-rule (LamJoin (vnames ...) (rnames ...) (b ...))
   (lambda (ll lr)
@@ -49,19 +48,19 @@
 
 
 ;; Test macros
-;; (struct state (a b c))
-;; (define s0 (state 1 2 3))
-;; (define s1 (state 3 3 4))
+(struct state (a b c))
+(define s0 (state 1 2 3))
+(define s1 (state 3 3 4))
 
-;; (Define-struct-eq state (a b c))
+(Define-struct-eq state (a b c))
 
-;; (Integers i1 i2 i3)
-;; (assert (map integer? (list i1 i2 i3)))
-;; (Reals r1 r2 r3)
-;; (assert (map real? (list r1 r2 r3)))
-;; (Booleans b1 b2 b3)
-;; (assert (map boolean? (list b1 b2 b3)))
-;; (RoArray integer? (a))
-;; (assert (integer? (a i1)))
-;; (define body (LamBody (a b c) ((+ a b) (+ 1 b) (add1 c))))
-;; (define join (LamJoin (a b c) (x y z) ((+ a x) (+ b y) (+ c z))))
+(Integers i1 i2 i3)
+(assert (map integer? (list i1 i2 i3)))
+(Reals r1 r2 r3)
+(assert (map real? (list r1 r2 r3)))
+(Booleans b1 b2 b3)
+(assert (map boolean? (list b1 b2 b3)))
+(RoArray integer? (a))
+(assert (integer? (a i1)))
+(define body (LamBody (a b c) (state (+ a b) (+ 1 b) (add1 c))))
+(define join (LamJoin (a b c) (x y z) (state (+ a x) (+ b y) (+ c z))))

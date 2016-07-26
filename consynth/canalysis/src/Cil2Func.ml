@@ -43,6 +43,7 @@ and expr =
   | Var of varinfo
   | Array of varinfo * (expr list)
   | Container of exp * substitutions
+  | FunApp of exp * (expr list)
   | FQuestion of exp * expr * expr
   | FRec of Loops.forIGU * expr
   (** Types for translated expressions *)
@@ -141,6 +142,8 @@ let rec transform_bottomup funct letin =
 
 let empty_state vs = State IM.empty
 
+let container e = Container (e, IM.empty)
+
 let rec is_not_identity_substitution vid expr =
   match expr with
   | Var (vi) -> vi.vid != vid
@@ -188,6 +191,9 @@ let rec apply_subs expr subs =
                   | None -> bo)
                   subs
                   subs')
+
+  | FunApp (ef, el) ->
+     FunApp (ef, List.map (fun e -> apply_subs e subs) el)
 
   | FQuestion (e, e1, e2) ->
      FQuestion (e, apply_subs e1 subs, apply_subs e2 subs)
@@ -292,21 +298,28 @@ let rec do_il vs il =
   List.fold_left (do_i vs) (empty_state vs) il
 
 and do_i vs let_form =
-  function
-  | Set (lv, exp, loc) ->
+  let from_lval lv expre loc =
      let vset = VSOps.sovv ~onlyNoOffset:true lv in
      if VS.cardinal vset = 1 then
-       let lh_var = VS.max_elt vset in
-       let e = Container (exp, IM.empty) in
        let id = gen_id () in
-       add_uses id (used_vars_expr e);
-       let_add let_form (Let (lh_var, e, (empty_state vs), id, loc))
+       add_uses id (used_vars_expr expre);
+       let lh_var = VS.max_elt vset in
+       let_add let_form (Let (lh_var, expre, (empty_state vs), id, loc))
      else
        raise (Failure "do_il : set with left-hand side variables amount != 1")
+  in
+  function
+  | Set (lv, exp, loc) ->
+       from_lval lv (container exp) loc
 
   | Call (lvo, ef, e_argli, loc) ->
-     failwith "call not supported"
-
+     begin
+       match lvo with
+       | Some lv ->
+          let func_app =  FunApp (ef, (List.map container e_argli)) in
+          from_lval lv func_app loc
+       | _ -> failwith "Side effects not supported"
+     end
   | _ -> failwith "form not supported"
 
 and do_b vs b =
@@ -546,6 +559,9 @@ and pp_expr ppf =
     | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
 
     | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
+       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" pp_expr e)) el
+
+    | FunApp (ef, el) -> fprintf ppf "%s (%a)" (psprint80 Cil.dn_exp ef)
        (pp_print_list (fun ppf e -> fprintf ppf"[%a]" pp_expr e)) el
 
     | Container (e, subs) ->

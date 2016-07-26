@@ -5,8 +5,8 @@ open Format
 module Ct = Utils.CilTools
 
 (** String representing holes *)
-let current_hole_l_expression = ref "(??_L)"
-let current_hole_r_expression = ref "(??_R)"
+let current_hole_l_expression = ref "x y z"
+let current_hole_r_expression = ref "x y z"
 
 let wrap (t : symbolic_type) ppf =
   fprintf ppf
@@ -213,7 +213,7 @@ let fp = Format.fprintf in
        | Some vi -> vi.Cil.vname
        | None -> "()"
      in
-     fp ppf "%s (%a)" funname
+     fp ppf "(%s%s%s %a)" (color "yellow") funname default
        (pp_print_list pp_skexpr) argl
 
   | SkHoleR t -> fp ppf "%a" (wrap t) !current_hole_r_expression

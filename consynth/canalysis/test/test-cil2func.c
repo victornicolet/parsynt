@@ -32,7 +32,7 @@ int test_nested_loops (int a[100][100], int n, int m) {
   int sum = 0;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      sum += a[i][j] + j;
+      sum += abs(a[i][j] + j);
     }
   }
   return sum;
