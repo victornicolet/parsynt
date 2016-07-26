@@ -53,7 +53,7 @@ let wf_test_case fname (func : C2F.letin) =
 
 let test () =
   let filename = "test/test-cil2func.c" in
-  printf "-- test Cil -> Func  -- \n";
+  printf "%s-- test Cil -> Func  -- %s\n" (color "red") default;
   let loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") default;
   C2F.init loops;

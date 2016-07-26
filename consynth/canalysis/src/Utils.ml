@@ -259,16 +259,22 @@ module VSOps = struct
     | Index (e, offs) -> VS.union (sove e) (sovoff offs)
     | Field _ -> VS.empty
 
+  (** List to set and inverse functions *)
+
   let bindings (vs : VS.t) =
     VS.fold (fun v l -> l@[(v.vid, v)]) vs []
 
   let of_bindings (l : (int * VS.elt) list) : VS.t =
     List.fold_left (fun vs (k, v) -> VS.add v vs) VS.empty l
 
+
   let varlist (vs : VS.t) =
     VS.elements vs
+
   let of_varlist (l : VS.elt list) =
     VS.of_list l
+
+  (** Member testing functions *)
 
   let hasVid (id : int) (vs : VS.t) =
     VS.exists (fun vi -> vi.vid = id) vs
@@ -278,11 +284,18 @@ module VSOps = struct
     | Var vi -> hasVid vi.vid vs
     | _-> VS.cardinal (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
 
+  (** Get-element functions*)
+
   let getVi (id: int) (vs : VS.t) =
     VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
 
   let subset_of_list (li : int list) (vs : VS.t) =
     VS.filter (fun vi -> List.mem vi.vid li) vs
+
+  let vids_of_vs (vs : VS.t) : int list =
+    List.map (fun vi -> vi.vid) (VS.elements vs)
+
+  (** Set construction functions *)
 
   let unions (vsl : VS.t list) : VS.t =
     List.fold_left VS.union VS.empty vsl
@@ -295,8 +308,22 @@ module VSOps = struct
   let vs_of_inthash ih =
     IH.fold (fun i vi set -> VS.add vi set) ih VS.empty
 
-  let vids_of_vs (vs : VS.t) : int list =
-    List.map (fun vi -> vi.vid) (VS.elements vs)
+  let vs_with_suffix vs suffix =
+    VS.fold
+      (fun var new_vs ->
+        VS.add {var with vname = var.vname^suffix} new_vs)
+      vs
+      VS.empty
+
+  (** Pretty printing variable set *)
+
+  let pp_var_names fmt (vs : VS.t) =
+     let vi_list = varlist vs in
+     pp_print_list
+       ~pp_sep:(fun fmt () -> fprintf fmt " ")
+       (fun fmt vi -> fprintf fmt "%s" vi.Cil.vname)
+       fmt
+       vi_list
 
   let pvs ppf (vs: VS.t) =
     if VS.cardinal vs > 0 then

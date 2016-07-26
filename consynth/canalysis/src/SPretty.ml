@@ -1,12 +1,25 @@
 open PpHelper
 open SketchTypes
 open Format
+open Utils
 
 module Ct = Utils.CilTools
+module VS = Utils.VS
 
 (** String representing holes *)
 let current_hole_l_expression = ref "x y z"
 let current_hole_r_expression = ref "x y z"
+let read_only_arrays = ref VS.empty
+
+let set_hole_vars lvs rvs =
+  let l_str, r_str =
+    (VSOps.pp_var_names str_formatter lvs;
+    flush_str_formatter ()),
+    (VSOps.pp_var_names str_formatter rvs;
+    flush_str_formatter ())
+  in
+  current_hole_r_expression := r_str;
+  current_hole_l_expression := l_str
 
 let wrap (t : symbolic_type) ppf =
   fprintf ppf
@@ -196,7 +209,17 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
   | SkVarinfo v ->
 	fprintf ppf "%s" v.Cil.vname
   | SkArray (v, offset) ->
-	fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
+    match vi_of v with
+    | Some vi ->
+       begin
+         if VS.mem vi !read_only_arrays
+         then
+           fprintf ppf "(%a %a)" pp_sklvar v pp_skexpr offset
+         else
+	       fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
+       end
+    | None ->
+       	fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in

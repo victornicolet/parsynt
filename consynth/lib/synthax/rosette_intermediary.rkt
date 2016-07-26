@@ -30,11 +30,11 @@
      (lambda (stt i)
        (D-struct state stt (vnames ...) b)))
 
-(define-syntax-rule (LamJoin (vnames ...) (rnames ...) (b ...))
+(define-syntax-rule (LamJoin (vnames ...) (rnames ...) b)
   (lambda (ll lr)
     (D-struct state ll (vnames ...)
                       (D-struct state lr (vnames ...) (rnames ...)
-                      (state b ...)))))
+                       b ))))
 
 (define-syntax (Synthesize stx)
   (syntax-rules ()

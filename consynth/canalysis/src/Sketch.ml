@@ -13,7 +13,7 @@ module SM = Map.Make (String)
 module Ct = CilTools
 
 let debug = ref false;;
-
+let iterations_limit = ref "10"
 (**
    The main entry point of the file is build_sketch :
    build a sketch from the Floop (vector of functions
@@ -425,25 +425,40 @@ let pp_symbolic_definitions_of fmt readvars vars =
     arrays
 
 
-let join_sketch_of sketch = []
+(** Loop body *)
+let pp_loop_body fmt (loop_body, state_vars) =
+  Format.fprintf fmt "(LamBody (%a) %a)"
+    VSOps.pp_var_names state_vars
+    pp_sklet loop_body
 
-let loop_body_of sketch = []
+let pp_loop fmt (loop_body, state_vars) =
+  Format.fprintf fmt
+    "(define (body s)@; \
+@[<hov 2>(Loop @[<hov 4>(state-start s)@] \
+@[<hov 4> (state-end s)@] \
+@[<hov 4> %s s@] @.\
+@[<hov 4> %a@] )@])@."
+    !iterations_limit
+    pp_loop_body (loop_body, state_vars)
 
-let assertions_of sketch = []
+let pp_join fmt (join_body, state_vars) =
+  let left_state_vars = VSOps.vs_with_suffix state_vars "-left" in
+  let right_state_vars = VSOps.vs_with_suffix state_vars "-right" in
+  set_hole_vars left_state_vars right_state_vars;
+  Format.fprintf fmt
+    "(define join @[<hov 2>(LamJoin (%a) (%a) @;@[<hov 4>%a@])@])@."
+    VSOps.pp_var_names left_state_vars
+    VSOps.pp_var_names right_state_vars
+    pp_sklet join_body
 
-let synthesis_statement_of sketch = []
 
-let rosette_sketch_of
-    (read_vars, state, all_vars, loop_body, join_body)
-    fmt sketch =
-  let symbolic_definitions =
-    pp_symbolic_definitions_of fmt read_vars all_vars in
-  let join_sketch = join_sketch_of sketch in
-  let loop_body = loop_body_of sketch in
-  let additional_assertions = assertions_of sketch in
-  let main_pb = synthesis_statement_of sketch in
-  Stream.of_list     (
-                        join_sketch@
-                        loop_body@
-                        additional_assertions@
-                        main_pb)
+let assertions_of join = []
+
+let synthesis_statement_of join = []
+
+let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
+  let state_vars = VSOps.subset_of_list state all_vars in
+  SPretty.read_only_arrays := VSOps.subset_of_list read_vars all_vars;
+  pp_symbolic_definitions_of fmt read_vars all_vars;
+  pp_loop fmt (loop_body, state_vars);
+  pp_join fmt (join_body, state_vars)

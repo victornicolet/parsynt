@@ -49,6 +49,7 @@ let processFile fileName =
    - the function representing the body of the loop.
 *)
 let cil2func loops =
+  Cil2Func.init loops;
   IM.map
     (fun cl ->
       let stmt = mkBlock(cl.Cl.statements) in

@@ -12,11 +12,10 @@ let test () =
   let filename = "test/test-gendefs.c" in
   printf "%s-- test C -> Rosette definitions  -- %s\n"
     (color "red") default;
-  let loops = C.processFile filename in
+  let loops = C.func2sketch (C.cil2func (C.processFile filename)) in
   IM.iter
-    (fun k cl ->
-      let vars = VSOps.vs_of_defsMap cl.Cl.definedInVars in
-      let (r, rw, w) = cl.Cl.rwset in
-      pp_symbolic_definitions_of std_formatter r vars
+    (fun k (rv, state, all_v, loop_b, join_b) ->
+      pp_rosette_sketch std_formatter (rv, state, all_v, loop_b, join_b);
+      print_endline "";
     )
     loops
