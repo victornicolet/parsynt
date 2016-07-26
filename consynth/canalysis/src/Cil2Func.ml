@@ -497,8 +497,12 @@ and reduce vs let_form = red vs let_form IM.empty
 let init map_loops = loops := map_loops;;
 
 let cil2func block statevs =
+  (**
+      We need the other loops in case of nested loops to avoid
+      recomputing the for statement in the inner loops.
+  *)
   if IM.cardinal !loops = 0 then
-    failwith "You forgot to initialize the set of loops in Cil2Func.";
+    failwith "You forgot to initialize the set of loops in Cil2Func ?";
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in
   reduce statevs let_expression
