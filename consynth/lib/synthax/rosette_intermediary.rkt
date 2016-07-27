@@ -4,7 +4,8 @@
          "../utils.rkt"
          (for-syntax "../utils.rkt"))
 
-(provide Integers Reals Booleans RoArray DefStruct LamJoin LamBody Synthesize)
+(provide Integers Reals Booleans RoArray State
+         LamJoin LamBody Synthesize)
 
 ;; Macros generating symbolic definitions
 
@@ -18,8 +19,6 @@
 (define-syntax-rule (RoArray type (id ...))
   (define-symbolic id ... (~> integer? type)))
 
-(define-syntax-rule (DefStruct vals ...)
-  (struct state (vals ...)))
 
 (define-syntax-rule (State s (vals ...))
   (define s (state vals ...)))
@@ -48,19 +47,21 @@
 
 
 ;; Test macros
-(struct state (a b c))
-(define s0 (state 1 2 3))
-(define s1 (state 3 3 4))
+;; (define (test)
+;;   (struct state (a b c))
+;;   (define s0 (state 1 2 3))
+;;   (define s1 (state 3 3 4))
 
-(Define-struct-eq state (a b c))
+;;   (Define-struct-eq state (a b c))
 
-(Integers i1 i2 i3)
-(assert (map integer? (list i1 i2 i3)))
-(Reals r1 r2 r3)
-(assert (map real? (list r1 r2 r3)))
-(Booleans b1 b2 b3)
-(assert (map boolean? (list b1 b2 b3)))
-(RoArray integer? (a))
-(assert (integer? (a i1)))
-(define body (LamBody (a b c) (state (+ a b) (+ 1 b) (add1 c))))
-(define join (LamJoin (a b c) (x y z) (state (+ a x) (+ b y) (+ c z))))
+;;   (Integers i1 i2 i3)
+;;   (assert (map integer? (list i1 i2 i3)))
+;;   (Reals r1 r2 r3)
+;;   (assert (map real? (list r1 r2 r3)))
+;;   (Booleans b1 b2 b3)
+;;   (assert (map boolean? (list b1 b2 b3)))
+;;   (RoArray integer? (a))
+;;   (assert (integer? (a i1)))
+;;   (define body (LamBody (a b c) (state (+ a b) (+ 1 b) (add1 c))))
+;;   (define join (LamJoin (a b c) (x y z) (state (+ a x) (+ b y) (+ c z))))
+;;   join)

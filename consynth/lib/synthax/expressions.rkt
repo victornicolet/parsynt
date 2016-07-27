@@ -126,9 +126,9 @@
 
 (define-synthax bExpr:num->bool
   ([(bExpr:num->bool x ... d) ((BasicUnops:bool)
-                             ((BasicBinops:num->bool)
-                              (bExpr:num->num x ... 1)
-                              (bExpr:num->num x ... 1)))]))
+                               ((BasicBinops:num->bool)
+                                (bExpr:num->num x ... 1)
+                                (bExpr:num->num x ... 1)))]))
 
 (define-synthax (bExpr:bool->bool x ... depth)
   #:base (Scalar x ...)

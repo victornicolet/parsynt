@@ -4,7 +4,8 @@
          (for-syntax syntax/struct syntax/parse racket/syntax))
 
 
-(provide (all-defined-out))
+(provide map-apply hash-set-pair! c-append pre-incr
+         post-incr D-struct Define-struct-eq)
 
 (define (map-apply func items)
   (if (list? items) (map func items) (func items)))
@@ -51,7 +52,6 @@
 
 (define-syntax (D-struct stx)
   (syntax-parse stx
-
     [(D structname s (fieldnames ...) body)
      (with-syntax
        ([(field-assignments ...)
@@ -90,11 +90,13 @@
                                (and (eq? fields tmps) ...)))))]))
 
 (struct state (a b c))
+(Define-struct-eq state (a b c))
+
 (define s (state 1 2 3))
 
 (define (test) (D-struct state s (a b c) (x y z) #t))
 (define (test2) (D-struct state s (a b c) #t))
 
-(Define-struct-eq state (a b c))
+
 
 (assert (and (test) (test2) (state-eq? s (state 1 2 3))))

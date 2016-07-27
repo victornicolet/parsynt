@@ -13,7 +13,6 @@ examples/Basic
 *.zo
 
 # Build / compilation directories
-
 # OCaml
 consynth/_build
 consynth/canalysis/_build
@@ -24,3 +23,6 @@ consynth/synthServ
 
 #Oasis
 setup.data
+
+#Temporary dump files
+consynth/conSynth*

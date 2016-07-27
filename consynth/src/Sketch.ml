@@ -7,6 +7,7 @@ open SPretty
 open PpHelper
 open Cil2Func
 open Join
+open Racket
 
 module VS = VS
 module SM = Map.Make (String)
@@ -396,12 +397,11 @@ let is_empty_symbDefs =
 
 
 (** Sketch -> Rosette sketch *)
+let main_struct_name = "state"
 
-let pp_state_definition fmt state_vars =
-  Format.fprintf fmt
-    "@[(DefStruct %a)@]@;@[(Define-struct-eq state (%a))@]@."
-    VSOps.pp_var_names state_vars
-    VSOps.pp_var_names state_vars
+let pp_state_definition fmt main_struct =
+  pp_struct_defintion fmt main_struct;
+  pp_struct_equality fmt main_struct
 
 
 let pp_ne_symbdefs fmt sd =
@@ -496,11 +496,14 @@ let pp_synth fmt s1 s2 s0 state_vars =
 let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
   let state_vars = VSOps.subset_of_list state all_vars in
   let read_vars = VSOps.subset_of_list read_vars all_vars in
+  let field_names =
+    List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
+  let main_struct = (main_struct_name, field_names) in
   let st1, st2, st0 = "state1", "state2", "init-state" in
   SPretty.read_only_arrays := read_vars;
   pp_symbolic_definitions_of fmt read_vars;
   pp_force_newline fmt ();
-  pp_state_definition fmt state_vars;
+  pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
   pp_loop fmt (loop_body, state_vars);
   pp_join fmt (join_body, state_vars);
