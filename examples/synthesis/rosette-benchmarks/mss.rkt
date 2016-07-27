@@ -1,7 +1,6 @@
 #lang rosette
 
-(require consynth/lib/synthax/constructors
-         consynth/lib/synthax/expressions
+(require consynth/lib
          rosette/lib/synthax
          "../utils.rkt")
 
@@ -60,18 +59,26 @@
        [mts-right (state-mts R)]
        )
     (state
-     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+     (max (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1)
+          (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1))
 
-     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+     (max (bExpr:num->num
+           sum-left sum-right mps-left mps-right
+           mts-left mts-right mss-left mss-right 1)
+          (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1)
+          (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1))
 
-     (max (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right mts-left mts-right mss-left mss-right 1))
+     (max (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1)
+          (bExpr:num->num sum-left sum-right mps-left mps-right mts-left
+                          mts-right mss-left mss-right 1))
 
      (+ sum-left sum-right)
-     ;;(bExpr:int->int sum-left sum-right mps-left mps-right 1)
+     ;;(bExpr:num->num sum-left sum-right mps-left mps-right 1)
 
      start-left
      end-right)))
@@ -122,7 +129,7 @@
     (displayln "Benchmark / functional")
     (displayln "Bench1 failed."))
 
-(benchmark1)
+;(benchmark1)
 
 ;; ****************************************************************
 ;; Benchmark 2 : vcs s # B(s,i) = B(s # s, i)
@@ -179,4 +186,4 @@
     (displayln "Benchmark / imperative")
     (displayln "Bench2 failed."))
 
-(benchmark2)
+;(benchmark2)

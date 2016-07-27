@@ -4,7 +4,7 @@
          "../utils.rkt"
          (for-syntax "../utils.rkt"))
 
-(provide (all-defined-out))
+(provide Integers Reals Booleans RoArray DefStruct LamJoin LamBody Synthesize)
 
 ;; Macros generating symbolic definitions
 

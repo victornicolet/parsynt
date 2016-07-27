@@ -1,7 +1,6 @@
 #lang rosette
 
-(require consynth/lib/synthax/constructors
-         consynth/lib/synthax/expressions
+(require consynth/lib
          rosette/lib/synthax
          "../utils.rkt")
 
@@ -34,7 +33,7 @@
        [end-left (state-end L)]
        [start-right (state-start R)]
        [end-right (state-end R)])
-    (state (bExpr:int->int sum-left sum-right 1) start-left end-right)))
+    (state (bExpr:num->num sum-left sum-right 1) start-left end-right)))
 
 ;; ****************************************************************
 ;; Benchmark 1 wth h(x++y) = h(x) # h(y) vcs

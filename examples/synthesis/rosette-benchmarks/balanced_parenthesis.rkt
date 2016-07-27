@@ -1,7 +1,6 @@
 #lang rosette
 
-(require consynth/lib/synthax/constructors
-         consynth/lib/synthax/expressions
+(require consynth/lib
          rosette/lib/synthax
          "../utils.rkt")
 
@@ -55,10 +54,10 @@
        [l_h (state-hmin L)]
        [r_h (state-hmin R)])
     (state
-     (& l_wb (bExpr:int->bool l_diff r_diff l_h r_h))
-     (bExpr:int->int l_h r_h l_diff r_diff 1)
-     (min (bExpr:int->int l_h r_h l_diff r_diff 1)
-          (bExpr:int->int l_h r_h l_diff r_diff 1))
+     (& l_wb (bExpr:num->bool l_diff r_diff l_h r_h 1))
+     (bExpr:num->num l_h r_h l_diff r_diff 1)
+     (min (bExpr:num->num l_h r_h l_diff r_diff 1)
+          (bExpr:num->num l_h r_h l_diff r_diff 1))
      start-left
      end-right)))
 
@@ -72,21 +71,20 @@
                   (body v (init-state m end))))))
 
 (define (solve-func-pb)
-  (define-symbolic diff hm integer?)
-  (define-symbolic b0 b1 b2 b3 b4 b5 b6 b7 b8 wb boolean?)
+  (define-symbolic b0 b1 b2 b3 b4 b5 b6 b7 b8 boolean?)
   ;; Join point (symbolic)
 
   (define symbv
     (list->vector (list b0 b1 b2 b3 b4 b5 b6 b7 b8)))
 
-  (sat? (synthesize
+  (synthesize
    #:forall (list b0 b1 b2 b3 b4 b5 b6 b7 b8)
    #:guarantee (assert (and
                         (problem symbv 0 0 8)
                         (problem symbv 0 4 7)
                         (problem symbv 0 5 8)
                         (problem symbv 0 6 6)
-                        (problem symbv 6 6 6))))))
+                        (problem symbv 6 6 6)))))
 (define (test-unit)
   (define-values (modl cpu real gbc)
     (time-apply solve-func-pb '()))
@@ -100,11 +98,11 @@
                    (test-unit))) 0 tests)
       (integer->real(length tests)))))
 
-(if (solve-func-pb)
+(if (sat? (solve-func-pb))
     (displayln "Benchmark / functional")
     (displayln "Bench1 failed."))
 
-(benchmark1)
+;; (benchmark1)
 
 ;; ****************************************************************
 ;; Benchmark 2 : vcs s # B(s,i) = B(s # s, i)
@@ -128,7 +126,7 @@
   (define symbv
     (list->vector (list  b0 b1 b2 b3 b4 b5 b6 b7 b8)))
 
-   (sat? (synthesize
+   (synthesize
     #:forall (list  b0 b1 b2 b3 b4 b5 b6 b7 b8)
     #:guarantee (assert
                  (and
@@ -137,7 +135,7 @@
                   (problem symbv 0 5 8)
                   (problem symbv 0 6 6)
                   (problem symbv 6 6 6)
-                  )))))
+                  ))))
 
 
 (define (test-unit2)
@@ -156,8 +154,8 @@
       (integer->real(length tests)))))
 
 
-(if (solve-imper-pb)
+(if (sat? (solve-imper-pb))
     (displayln "Benchmark / imperative")
     (displayln "Bench2 failed."))
 
-(benchmark2)
+;;(benchmark2)

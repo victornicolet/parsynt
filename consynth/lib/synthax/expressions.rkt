@@ -2,7 +2,8 @@
 
 (require rosette/lib/synthax racket/syntax)
 
-(provide ScalarExpr LinearScalarExpr Expr bExpr:int->int bExpr:int->bool )
+(provide ScalarExpr LinearScalarExpr bExpr
+         bExpr:num->num bExpr:num->bool bExpr:bool->bool)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -17,7 +18,7 @@
   ([(BasicUnops) (choose identity -)]))
 
 (define-synthax UnopsChoice
-  ([(UnopsChoixe) (choose identity - add1 sub1)]))
+  ([(UnopsChoice) (choose identity - add1 sub1)]))
 
 ;; A scalar is a variable or a constant
 (define-synthax Scalar
@@ -88,33 +89,51 @@
 ;; (Expr [a1 a2] x1 x2 2) generate a general expression with scalars and array subscripts
 ;;                   containing array variables a1 a2 and scalar variables x1 x2.
 
-(define-synthax Expr
-  ([(Expr [a ...] x ... depth) (GenExpr [a ...] x ... depth)]
-   [(Expr x ... depth) (ScalarExpr x ... depth)]))
+(define-synthax bExpr
+  ([(bExpr [a ...] x ... depth) (GenExpr [a ...] x ... depth)]
+   [(bExpr x ... depth) (ScalarExpr x ... depth)]))
 
 
 ;; Type-specific expressions
-(define-synthax BasicBinops:int->int
-  ([(BasicBinops:int->int) (choose + - min max)]))
+(define-synthax BasicBinops:num->num
+  ([(BasicBinops:num->num) (choose + - min max)]))
 
-(define-synthax BasicUnops:int->int
-  ([(BasicUnops:int->int) (choose add1 sub1)]))
+(define-synthax BasicUnops:num->num
+  ([(BasicUnops:num->num) (choose add1 sub1)]))
 
-(define-synthax (bExpr:int->int x ... depth)
+(define-synthax BasicBinops:num->bool
+  ([(BasicBinops:bool->bool) (choose > >= < <= =)]))
+
+
+(define-synthax BasicBinops:bool->bool
+  ([(BasicBinops:bool->bool) (choose and or)]))
+
+
+(define-synthax BasicUnops:bool
+  ([(BasicUnops:bool) (choose not identity)]))
+
+(define-synthax (bExpr:num->num x ... depth)
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)
-          (Scalar x ...)
           ; Binary expression
-          ((BasicBinops:int->int)
-           (ScalarExpr x ... (sub1 depth))
-           (ScalarExpr x ... (sub1 depth)))
+          ((BasicBinops:num->num)
+           (bExpr:num->num x ... (sub1 depth))
+           (bExpr:num->num x ... (sub1 depth)))
           ; Unary expression
-          ((BasicUnops:int->int)
-           (ScalarExpr x ... (sub1 depth)))))
+          ((BasicUnops:num->num)
+           (bExpr:num->num x ... (sub1 depth)))))
 
-(define-synthax bExpr:int->bool
-  ([(bExpr:int->bool x ...) ((choose not identity)
-                             ((choose > >= < <= =)
-                              (bExpr:int->int x ... 1)
-                              (bExpr:int->int x ... 1)))]))
+(define-synthax bExpr:num->bool
+  ([(bExpr:num->bool x ... d) ((BasicUnops:bool)
+                             ((BasicBinops:num->bool)
+                              (bExpr:num->num x ... 1)
+                              (bExpr:num->num x ... 1)))]))
+
+(define-synthax (bExpr:bool->bool x ... depth)
+  #:base (Scalar x ...)
+  #:else (choose
+          (Scalar x ...)
+          ((BasicBinops:bool->bool)
+           (bExpr:bool->bool x ... (sub1 depth))
+           (bExpr:bool->bool x ... (sub1 depth)))))

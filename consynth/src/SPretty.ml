@@ -7,8 +7,9 @@ module Ct = Utils.CilTools
 module VS = Utils.VS
 
 (** String representing holes *)
-let current_hole_l_expression = ref "x y z"
-let current_hole_r_expression = ref "x y z"
+let current_hole_l_expression = ref ""
+let current_hole_r_expression = ref ""
+let current_expr_depth = ref 2
 let read_only_arrays = ref VS.empty
 
 let set_hole_vars lvs rvs =
@@ -24,18 +25,19 @@ let set_hole_vars lvs rvs =
 let wrap (t : symbolic_type) ppf =
   fprintf ppf
     (match t with
-    | Unit -> "(bExpr %s)"
-    | Integer -> "(bExpr:int %s)"
-    | Real -> "(bExpr:real %s)"
-    | Boolean -> "(bExpr:boolean %s)"
+    | Unit -> "(bExpr %s %d)"
+    | Integer -> "(bExpr:num %s %d)"
+    | Real -> "(bExpr:num %s %d)"
+    | Boolean -> "(bExpr:boolean %s %d)"
     | Function (a, b) ->
        begin
          match a, b with
-         | Integer, Boolean -> "(bExpr:int->bool %s)"
-         | Integer, Integer -> "(bExpr:int_>int %s)"
-         | _ ,_ -> "(bExpr %s)"
+         | Integer, Boolean -> "(bExpr:num->bool %s %d)"
+         | Boolean, Boolean -> "(bexpr:bool->bool %s %d)"
+         | Integer, Integer -> "(bExpr:num->num %s %d)"
+         | _ ,_ -> "(bExpr %s %d)"
        end
-    | _ -> "(bExpr %s)")
+    | _ -> "(bExpr %s %d)")
 
 (** Pretty-printing operators *)
 
@@ -239,9 +241,15 @@ let fp = Format.fprintf in
      fp ppf "(%s%s%s %a)" (color "yellow") funname default
        (pp_print_list pp_skexpr) argl
 
-  | SkHoleR t -> fp ppf "%a" (wrap t) !current_hole_r_expression
+  | SkHoleR t ->
+     fp ppf "%a"
+       (fun ppf -> wrap t ppf !current_hole_r_expression)
+       !current_expr_depth
 
-  | SkHoleL (v, t) -> fp ppf "%a" (wrap t) !current_hole_l_expression
+  | SkHoleL (v, t) ->
+     fp ppf "%a"
+       (fun ppf -> wrap t ppf !current_hole_l_expression)
+       !current_expr_depth
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 

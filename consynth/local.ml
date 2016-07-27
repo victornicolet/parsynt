@@ -1,5 +1,6 @@
 open Str
 open Printf
+open PpHelper
 
 module C = Canalyst
 (**
@@ -65,7 +66,8 @@ let compile sketch =
           let dump_file =
             String.concat dumpDir [(Filename.basename sketch_tmp_file)] in
           copy_file sketch_tmp_file dump_file;
-          eprintf "Error while running racket on sketch.";
+          eprintf "%sError%s while running racket on sketch.\n"
+          (color "red") default;
           eprintf "Dumping sketch file in %s\n" dump_file;
           Sys.remove sketch_tmp_file;
         end;

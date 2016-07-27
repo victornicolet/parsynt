@@ -1,7 +1,6 @@
 #lang rosette
 
-(require consynth/lib/synthax/constructors
-         consynth/lib/synthax/expressions
+(require consynth/lib
          rosette/lib/synthax
          "../utils.rkt")
 
@@ -46,14 +45,14 @@
     (state
      ;; Old idea for the sketch
      ;; (state-mps
-     ;; (body (vector (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-     ;;             (bExpr:int->int sum-left sum-right mps-left mps-right 1))
+     ;; (body (vector (bExpr:num->num sum-left sum-right mps-left mps-right 1)
+     ;;             (bExpr:num->num sum-left sum-right mps-left mps-right 1)
+     ;;             (bExpr:num->num sum-left sum-right mps-left mps-right 1)
+     ;;             (bExpr:num->num sum-left sum-right mps-left mps-right 1))
      ;;       (init-state 0 4)))
-     (max (bExpr:int->int sum-left sum-right mps-left mps-right 1)
-          (bExpr:int->int sum-left sum-right mps-left mps-right 1))
-     (bExpr:int->int sum-left sum-right mps-left mps-right 1)
+     (max (bExpr:num->num sum-left sum-right mps-left mps-right 1)
+          (bExpr:num->num sum-left sum-right mps-left mps-right 1))
+     (bExpr:num->num sum-left sum-right mps-left mps-right 1)
 
      start-left
      end-right)))
