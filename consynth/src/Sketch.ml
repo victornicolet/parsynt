@@ -22,7 +22,6 @@ let iterations_limit = ref "10"
    loop).
 *)
 
-
 let rec convert (cur_v : skLVar) =
   function
   | Var vi -> mkVar vi
@@ -47,8 +46,7 @@ let rec convert (cur_v : skLVar) =
        | e1::[e2] ->
           let binop = (checkOption (symb_binop_of_fname fname)) in
           SkBinop (binop, e1, e2)
-       | _ -> SkApp (sty, vi_o, fargs)
-       )
+       | _ -> SkApp (sty, vi_o, fargs))
 
 
   | Container (e, subs) ->
@@ -397,10 +395,11 @@ let is_empty_symbDefs =
 
 
 (** Sketch -> Rosette sketch *)
-let main_struct_name = "state"
+let main_struct_name = "__state"
 
 let pp_state_definition fmt main_struct =
   pp_struct_defintion fmt main_struct;
+  pp_force_newline fmt ();
   pp_struct_equality fmt main_struct
 
 
@@ -432,20 +431,26 @@ let pp_symbolic_definitions_of fmt vars =
 
 
 (** Loop body *)
-let pp_loop_body fmt (loop_body, state_vars) =
-  Format.fprintf fmt "(LamBody (%a) %a)"
-    VSOps.pp_var_names state_vars
+let pp_assignments state_struct_name state_name fmt =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;")
+    (fun fmt s -> Format.fprintf fmt "[%s (%s-%s %s)]"
+      s state_struct_name s state_name) fmt
+
+let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
+ let field_names =
+    List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
+  Format.fprintf fmt "(lambda (s i) @[<hov 2>(let@;(%a) %a)@])"
+    (pp_assignments state_struct_name "s") field_names
     pp_sklet loop_body
 
-let pp_loop fmt (loop_body, state_vars) =
+let pp_loop fmt (loop_body, state_vars) state_struct_name =
   Format.fprintf fmt
-    "(define (body s)@; \
-@[<hov 2>(Loop @[<hov 4>(state-start s)@] \
-@[<hov 4> (state-end s)@] \
-@[<hov 4> %s s@] @.\
-@[<hov 4> %a@] )@])@."
+    "(define (body s start end)@; \
+@[<hov 2>(Loop  @[<hov 4> start end  %s s@] @.\
+@[<hov 4> %a@])@])@."
     !iterations_limit
-    pp_loop_body (loop_body, state_vars)
+    pp_loop_body (loop_body, state_vars, state_struct_name)
 
 
 let pp_join fmt (join_body, state_vars) =
@@ -470,8 +475,8 @@ let pp_states fmt state_vars read_vars st1 st2 st0 =
         Format.fprintf fmt "%a" pp_skexpr hole)
   in
   Format.fprintf fmt
-    "@[(define %s (state %a))@]"
-    st0
+    "@[(define %s (%s %a))@]"
+    st0 main_struct_name
     s0_sketch_printer (VSOps.varlist state_vars);
 
   let st1_vars = VSOps.vs_with_suffix state_vars "1" in
@@ -479,10 +484,12 @@ let pp_states fmt state_vars read_vars st1 st2 st0 =
   pp_symbolic_definitions_of fmt st1_vars;
   pp_symbolic_definitions_of fmt st2_vars;
   Format.fprintf fmt
-    "@[(define %s (state %a))@]@.@[(define %s (state %a))@]@."
+    "@[(define %s (%s %a))@]@.@[(define %s (%s %a))@]@."
     st1
+    main_struct_name
     VSOps.pp_var_names st1_vars
     st2
+    main_struct_name
     VSOps.pp_var_names st2_vars
 
 
@@ -500,12 +507,14 @@ let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in
   let st1, st2, st0 = "state1", "state2", "init-state" in
+  (** SPretty configuration for the current sketch *)
   SPretty.read_only_arrays := read_vars;
+  SPretty.state_struct_name := main_struct_name;
   pp_symbolic_definitions_of fmt read_vars;
   pp_force_newline fmt ();
   pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
-  pp_loop fmt (loop_body, state_vars);
+  pp_loop fmt (loop_body, state_vars) main_struct_name;
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
   pp_states fmt state_vars read_vars st1 st2 st0;

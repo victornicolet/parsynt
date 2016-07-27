@@ -11,6 +11,7 @@ let current_hole_l_expression = ref ""
 let current_hole_r_expression = ref ""
 let current_expr_depth = ref 2
 let read_only_arrays = ref VS.empty
+let state_struct_name = ref "__state"
 
 let set_hole_vars lvs rvs =
   let l_str, r_str =
@@ -189,7 +190,8 @@ let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
 and pp_sklet ppf =
   function
   | SkLetExpr el ->
-     fprintf ppf "@[(state %a)@]"
+     fprintf ppf "@[(%s %a)@]"
+       !state_struct_name
        (pp_print_list
           ~pp_sep:(fun ppf () -> fprintf ppf " ")
           (fun ppf (v,e) -> pp_skexpr ppf e)) el

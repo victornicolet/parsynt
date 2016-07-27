@@ -20,7 +20,7 @@ let copy_file from_filename to_filename =
   try
     while true do
       let line = input_line ic in
-      output_string oc line
+      output_string oc (line^"\n");
     done
   with End_of_file ->
     begin
