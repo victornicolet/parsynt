@@ -479,7 +479,7 @@ let pp_states fmt state_vars read_vars st1 st2 st0 =
   pp_symbolic_definitions_of fmt st1_vars;
   pp_symbolic_definitions_of fmt st2_vars;
   Format.fprintf fmt
-    "@[(define %s (state %a))@]@.@[(define %s (state %a)))@]@."
+    "@[(define %s (state %a))@]@.@[(define %s (state %a))@]@."
     st1
     VSOps.pp_var_names st1_vars
     st2
