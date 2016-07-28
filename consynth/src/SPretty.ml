@@ -25,9 +25,9 @@ let set_hole_vars lvs rvs =
 let wrap (t : symbolic_type) ppf =
   fprintf ppf
     (match t with
-    | Unit -> "(bExpr %s %d)"
-    | Integer -> "(bExpr %s %d)"
-    | Real -> "(bExpr %s %d)"
+    | Unit -> "(bExpr:unit %s %d)"
+    | Integer -> "(bExpr:num->num %s %d)"
+    | Real -> "(bExpr:num->num %s %d)"
     | Boolean -> "(bExpr:boolean %s %d)"
     | Function (a, b) ->
        begin
@@ -35,9 +35,9 @@ let wrap (t : symbolic_type) ppf =
          | Integer, Boolean -> "(bExpr:num->bool %s %d)"
          | Boolean, Boolean -> "(bexpr:bool->bool %s %d)"
          | Integer, Integer -> "(bExpr:num->num %s %d)"
-         | _ ,_ -> "(bExpr %s %d)"
+         | _ ,_ -> "(bExpr:num->num %s %d)"
        end
-    | _ -> "(bExpr %s %d)")
+    | _ -> "(bExpr:num->num %s %d)")
 
 (** Pretty-printing operators *)
 
