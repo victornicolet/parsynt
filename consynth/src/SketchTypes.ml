@@ -214,8 +214,8 @@ let symb_binop_of_fname =
   | "fmod" | "fmodl" | "fmodf" -> Some Mod
   | "remainder" | "remainderf" | "remainderl"
   | "drem" | "dremf" | "dreml" -> Some Rem
-  | "fmax" | "fmaxf" | "fmaxl" -> Some Max
-  | "fmin" | "fminf" | "fminl" -> Some Min
+  | "max" | "fmax" | "fmaxf" | "fmaxl" -> Some Max
+  | "min" | "fmin" | "fminf" | "fminl" -> Some Min
   (**
       Comparison macros/functions in C++11
       /!\ Unsafe
@@ -317,6 +317,12 @@ let uninterpeted fname =
     else true
   in
       not_in_safe && not_in_unsafe
+
+
+let remove_interpreted_symbols (vars : VS.t) =
+  VS.filter
+    (fun v -> uninterpeted v.Cil.vname)
+    vars
 
 let is_exp_function ef =
   match ef with

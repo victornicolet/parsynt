@@ -41,6 +41,10 @@ let rec make_holes (state : VS.t) =
      let hc = make_holes state c in
      merge_holes h1 h2 (fun a b -> SkQuestion (hc, a, b))
 
+  | SkApp (t, vo, args) ->
+     let new_args = List.map (make_holes state) args in
+     SkApp (t, vo, new_args)
+
   | _ as skexpr ->  skexpr
 
 

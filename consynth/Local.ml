@@ -59,7 +59,7 @@ let compile sketch =
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
   completeFile sketch_tmp_file solution_tmp_file sketch;
   let errno = racket sketch_tmp_file in
-  if errno != 0 then
+  if errno != 0 || true then
     begin
       if !debug then
         begin

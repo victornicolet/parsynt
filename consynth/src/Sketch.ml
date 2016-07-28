@@ -437,9 +437,11 @@ let pp_symbolic_definitions_of fmt vars =
 (** Loop body *)
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
+let state_arg_name = "__s" in
   let field_names = VSOps.namelist state_vars in
-  Format.fprintf fmt "(lambda (s i) @[<hov 2>(let@;(%a) %a)@])"
-    (pp_assignments state_struct_name "s")
+  Format.fprintf fmt "(lambda (%s i)@.@[<hov 2>(let@;(%a) %a)@])"
+    state_arg_name
+    (pp_assignments state_struct_name state_arg_name)
     (ListTools.pair field_names field_names)
     pp_sklet loop_body
 
@@ -447,8 +449,8 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
   pp_comment fmt "Functional reprensentation of the loop body.";
   Format.fprintf fmt
     "(define (%s s start end)@; \
-@[<hov 2>(Loop  @[<hov 4> start end  %s s@] @.\
-@[<hov 4> %a@])@])@."
+@[<hov 2>(Loop @[<hov 2>start end %s s@] @.\
+@[<hov 2> %a@])@])@."
     body_name
     !iterations_limit
     pp_loop_body (loop_body, state_vars, state_struct_name)
@@ -465,7 +467,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
   let field_names = VSOps.namelist state_vars in
   set_hole_vars left_state_vars right_state_vars;
   Format.fprintf fmt
-    "@[<hov 2>(let@;@[<hov 2> (%a@;%a)@]@;@[<hov 2>%a@])@]"
+    "@[<hov 2>(let@.@[<hov 2> (%a@;%a)@]@;@[<hov 2>%a@])@]@."
     (pp_assignments main_struct_name lstate_name)
     (ListTools.pair lvar_names field_names)
     (pp_assignments main_struct_name rstate_name)
@@ -507,7 +509,7 @@ let pp_states fmt state_vars read_vars st0 =
     main_struct_name
     VSOps.pp_var_names st0_vars
 
-(** The ysnthesis problem in Rosette *)
+(** The synthesis problem in Rosette *)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
   Format.fprintf fmt
     "@[<hov 2>(%s-eq?@. %a @.@[<hov 2>(%s@; %a@; %a)@])@]@."
@@ -522,7 +524,7 @@ let pp_synth_body fmt (s0, state_vars, read_vars) =
   Format.fprintf fmt
     "@[<hov 2>#:forall (list %a)@]@." VSOps.pp_var_names read_vars;
   Format.fprintf fmt
-    "@[<hov 2>#:guarantee @[(assert @[<hov 2>(and %a)@])@]@]@."
+    "@[<hov 2>#:guarantee @[(assert @.@[<hov 2>(and@. %a)@])@]@]@."
     (pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
          pp_verification_condition fmt (s0, i_st, i_m, i_end)))
@@ -532,13 +534,18 @@ let pp_synth_body fmt (s0, state_vars, read_vars) =
 
 let pp_synth fmt s0 state_vars read_vars=
   Format.fprintf fmt
-    "@[(define odot (synthesize %a))@]@."
+    "@[(define odot@.@[<hov 2>(synthesize@.%a)@])@]@."
     pp_synth_body (s0, state_vars, read_vars)
 
 
-let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
+let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
   let state_vars = VSOps.subset_of_list state all_vars in
-  let read_vars = VSOps.subset_of_list read_vars all_vars in
+  let read_vars =
+    VS.diff
+    (remove_interpreted_symbols
+      (VSOps.subset_of_list read all_vars))
+      state_vars
+  in
   let field_names =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in

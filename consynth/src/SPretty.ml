@@ -8,7 +8,7 @@ module VS = Utils.VS
 (** String representing holes *)
 let current_hole_l_expression = ref ""
 let current_hole_r_expression = ref ""
-let current_expr_depth = ref 2
+let current_expr_depth = ref 1
 let read_only_arrays = ref VS.empty
 let state_struct_name = ref "__state"
 
@@ -19,7 +19,7 @@ let set_hole_vars lvs rvs =
     (VSOps.pp_var_names str_formatter rvs;
     flush_str_formatter ())
   in
-  current_hole_r_expression := r_str;
+  current_hole_r_expression := l_str^" "^r_str;
   current_hole_l_expression := l_str
 
 let wrap (t : symbolic_type) ppf =
