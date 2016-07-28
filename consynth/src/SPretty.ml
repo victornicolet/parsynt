@@ -9,7 +9,6 @@ module VS = Utils.VS
 let current_hole_l_expression = ref ""
 let current_hole_r_expression = ref ""
 let current_expr_depth = ref 1
-let read_only_arrays = ref VS.empty
 let state_struct_name = ref "__state"
 
 let set_hole_vars lvs rvs =
@@ -211,13 +210,7 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
   | SkArray (v, offset) ->
     match vi_of v with
     | Some vi ->
-       begin
-         if VS.mem vi !read_only_arrays
-         then
-           fprintf ppf "(%a %a)" pp_sklvar v pp_skexpr offset
-         else
-	       fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
-       end
+	   fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
     | None ->
        	fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
 

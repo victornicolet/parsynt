@@ -8,13 +8,15 @@ open PpHelper
 open Cil2Func
 open Join
 open Racket
+open Utils.ListTools
 
 module VS = VS
 module SM = Map.Make (String)
 module Ct = CilTools
 
+
 let debug = ref false;;
-let iterations_limit = ref "10"
+let iterations_limit = ref 10
 (**
    The main entry point of the file is build_sketch :
    build a sketch from the Floop (vector of functions
@@ -319,17 +321,6 @@ type symbDef =
   | Booleans of string list
   | RoArray of string * string list
 
-let pp_symbDef fmt sd =
-  let fp = Format.fprintf in
-  match sd with
-  | Integers li ->
-     fp fmt "(define-symbolic %a integer?)" pp_string_list li
-  | Reals li ->
-     fp fmt "(define-symbolic %a real?)" pp_string_list li
-  | Booleans li ->
-     fp fmt "(define-symbolic %a boolean?)" pp_string_list li
-  | RoArray (sty, varnames) ->
-     fp fmt "(define-symbolic %a (~> integer? %s))" pp_string_list varnames sty
 
 let add_to_reals s defs =
   { defs with reals = s::defs.reals }
@@ -395,23 +386,73 @@ let is_empty_symbDefs =
 
 
 (** Sketch -> Rosette sketch *)
-let main_struct_name = "__state"
+let main_struct_name = "$"
 let join_name = "__join__"
 let body_name = "__loop_body__"
-let init_state_name = "__S0__"
+let init_state_name = "__$0__"
+
+let string__symbs_of_symbDef sd =
+ match sd with
+  | Integers li ->
+     li
+  | Reals li ->
+     li
+  | Booleans li ->
+     li
+  | RoArray (sty, varnames) ->
+     (** Array are finitized and represented
+         by vectors containig symbolic values *)
+     List.fold_left
+       varnames
+       ~init:[]
+       ~f:(fun str_list array_name ->
+         let cell_names =
+           List.fold
+             (1 -- !iterations_limit)
+             ~init:""
+             ~f:(fun str i -> str^" "^array_name^"$"^(string_of_int i))
+         in str_list@[cell_names])
+
+
+
+let pp_symbDef fmt sd =
+  let fp = Format.fprintf in
+  begin
+    match sd with
+    | Integers li ->
+       fp fmt "(define-symbolic %a integer?)@." pp_string_list li
+    | Reals li ->
+       fp fmt "(define-symbolic %a real?)@." pp_string_list li
+    | Booleans li ->
+       fp fmt "(define-symbolic %a boolean?)@." pp_string_list li
+    | RoArray (sty, varnames) ->
+     (** Array are finitized and represented
+         by vectors containig symbolic values *)
+       List.iter
+         varnames
+         ~f:(fun array_name ->
+           let cell_names =
+             List.map
+               (1 -- !iterations_limit)
+               ~f:(fun i -> array_name^"$"^(string_of_int i))
+           in
+           fp fmt "(define-symbolic %a %s)@." pp_string_list cell_names sty;
+           fp fmt "(define %s (vector %a))@."
+             array_name pp_string_list cell_names)
+  end;
+  string__symbs_of_symbDef sd
 
 
 let pp_ne_symbdefs fmt sd =
   if is_empty_symbDefs sd
-  then Format.fprintf fmt ""
+  then (Format.fprintf fmt "" ; [""])
   else
     begin
-      Format.fprintf fmt "@[<hov 0>@.%a@]@."
-        pp_symbDef sd
+      pp_symbDef fmt sd
     end
 
 let strings_of_symbdefs symbdef =
-  pp_ne_symbdefs str_formatter symbdef; flush_str_formatter ()
+  ignore(pp_ne_symbdefs str_formatter symbdef); flush_str_formatter ()
 
 
 (** Define the state structure with an equality preidcate *)
@@ -423,15 +464,13 @@ let pp_state_definition fmt main_struct =
 let pp_symbolic_definitions_of fmt vars =
   let (ints, reals, booleans, arrays)
       = defsRec_to_symbDefs (defsRec_of_varinfos vars) in
-  Format.fprintf fmt
-    "%a%a%a%a@."
-    pp_ne_symbdefs ints
-    pp_ne_symbdefs reals
-    pp_ne_symbdefs booleans
-    (pp_print_list
-       ~pp_sep:(fun fmt () -> Format.fprintf fmt "@.")
-       (fun fmt sd -> pp_ne_symbdefs fmt sd))
-    arrays
+  let int_symbs, real_symbs, bool_symbs, array_cells =
+    pp_ne_symbdefs fmt ints,
+    pp_ne_symbdefs fmt reals,
+    pp_ne_symbdefs fmt booleans,
+    List.fold arrays ~init:[] ~f:(fun li sd -> li@(pp_ne_symbdefs fmt sd))
+  in
+  int_symbs @ real_symbs @ bool_symbs @ array_cells
 
 
 (** Loop body *)
@@ -446,10 +485,10 @@ let state_arg_name = "__s" in
     pp_sklet loop_body
 
 let pp_loop fmt (loop_body, state_vars) state_struct_name =
-  pp_comment fmt "Functional reprensentation of the loop body.";
+  pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
     "(define (%s s start end)@; \
-@[<hov 2>(Loop @[<hov 2>start end %s s@] @.\
+@[<hov 2>(Loop @[<hov 2>start end %d s@] @.\
 @[<hov 2> %a@])@])@."
     body_name
     !iterations_limit
@@ -460,8 +499,8 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
 (** Join operator *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
-  let left_state_vars = VSOps.vs_with_suffix state_vars "-left" in
-  let right_state_vars = VSOps.vs_with_suffix state_vars "-right" in
+  let left_state_vars = VSOps.vs_with_suffix state_vars "-$L" in
+  let right_state_vars = VSOps.vs_with_suffix state_vars "-$R" in
   let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
@@ -477,8 +516,8 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
 
 let pp_join fmt (join_body, state_vars) =
-  let lstate_name = "__left__" in
-  let rstate_name = "__right__" in
+  let lstate_name = "$L" in
+  let rstate_name = "$R" in
   Format.fprintf fmt
     "(define (%s %s %s)@.@[<hov 2>%a@])@."
     join_name  lstate_name rstate_name
@@ -487,14 +526,11 @@ let pp_join fmt (join_body, state_vars) =
 (** Some state definitons *)
 
 let pp_states fmt state_vars read_vars st0 =
-  set_hole_vars read_vars read_vars;
   let s0_sketch_printer =
     pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-        let t = symb_type_of_ciltyp vi.Cil.vtype in
-        let hole = SkHoleR t in
-        Format.fprintf fmt "%a" pp_skexpr hole)
+        Format.fprintf fmt "(choose 0 1 #t #f)")
   in
   Format.fprintf fmt
     "@[(define %s (%s %a))@]"
@@ -502,7 +538,7 @@ let pp_states fmt state_vars read_vars st0 =
     s0_sketch_printer (VSOps.varlist state_vars);
 
   let st0_vars = VSOps.vs_with_suffix state_vars "0" in
-  pp_symbolic_definitions_of fmt st0_vars;
+  ignore(pp_symbolic_definitions_of fmt st0_vars);
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     st0
@@ -520,9 +556,9 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
     pp_body_app (body_name, init_state_name, i_m, i_end)
 
 
-let pp_synth_body fmt (s0, state_vars, read_vars) =
+let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
   Format.fprintf fmt
-    "@[<hov 2>#:forall (list %a)@]@." VSOps.pp_var_names read_vars;
+    "@[<hov 2>#:forall (list %a)@]@." pp_string_list symbolic_variable_names;
   Format.fprintf fmt
     "@[<hov 2>#:guarantee @[(assert @.@[<hov 2>(and@. %a)@])@]@]@."
     (pp_print_list
@@ -532,10 +568,10 @@ let pp_synth_body fmt (s0, state_vars, read_vars) =
 
 
 
-let pp_synth fmt s0 state_vars read_vars=
+let pp_synth fmt s0 state_vars symb_var_names =
   Format.fprintf fmt
     "@[(define odot@.@[<hov 2>(synthesize@.%a)@])@]@."
-    pp_synth_body (s0, state_vars, read_vars)
+    pp_synth_body (s0, state_vars, symb_var_names)
 
 
 let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
@@ -549,11 +585,10 @@ let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
   let field_names =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in
-  let st0 = "state0" in
+  let st0 = "$initial" in
   (** SPretty configuration for the current sketch *)
-  SPretty.read_only_arrays := read_vars;
   SPretty.state_struct_name := main_struct_name;
-  pp_symbolic_definitions_of fmt read_vars;
+  let symbolic_variables = pp_symbolic_definitions_of fmt read_vars in
   pp_force_newline fmt ();
   pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
@@ -561,4 +596,4 @@ let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
   pp_states fmt state_vars read_vars st0;
-  pp_synth fmt st0 state_vars read_vars
+  pp_synth fmt st0 state_vars symbolic_variables

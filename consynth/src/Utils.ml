@@ -53,6 +53,11 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
 
 (** Lists *)
 module ListTools = struct
+  (** a -- b -- > list of integers from a to b *)
+  let (--) i j =
+    let rec aux n acc =
+      if n < i then acc else aux (n-1) (n :: acc)
+    in aux j []
 
   let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
     List.fold_left (fun set a -> VS.union set (f a)) VS.empty l

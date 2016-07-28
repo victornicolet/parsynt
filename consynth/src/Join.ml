@@ -20,8 +20,14 @@ let rec make_holes (state : VS.t) =
           else SkHoleR t
      end
 
-  | SkConst c -> SkHoleR Unit
-
+  | SkConst c ->
+     begin
+       match c with
+       | CInt _ | CInt64 _ -> SkHoleR Integer
+       | CReal _ -> SkHoleR Real
+       | CBool _ -> SkHoleR Boolean
+       | _ -> SkHoleR Unit
+     end
   | SkFun skl -> SkFun (make_join state skl)
 
   | SkBinop (op, e1, e2) ->
