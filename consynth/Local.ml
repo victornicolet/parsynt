@@ -63,8 +63,7 @@ let compile sketch =
     begin
       if !debug then
         begin
-          let dump_file =
-            String.concat dumpDir [(Filename.basename sketch_tmp_file)] in
+          let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
           copy_file sketch_tmp_file dump_file;
           eprintf "%sError%s while running racket on sketch.\n"
           (color "red") default;

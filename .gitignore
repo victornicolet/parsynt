@@ -1,5 +1,4 @@
 # File extensions
-
 *~
 *#
 *.byte
@@ -25,4 +24,4 @@ consynth/synthServ
 setup.data
 
 #Temporary dump files
-consynth/conSynth*
+consynth/dump/conSynth*

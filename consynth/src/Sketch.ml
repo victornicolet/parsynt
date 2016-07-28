@@ -396,11 +396,9 @@ let is_empty_symbDefs =
 
 (** Sketch -> Rosette sketch *)
 let main_struct_name = "__state"
-
-let pp_state_definition fmt main_struct =
-  pp_struct_defintion fmt main_struct;
-  pp_force_newline fmt ();
-  pp_struct_equality fmt main_struct
+let join_name = "__join__"
+let body_name = "__loop_body__"
+let init_state_name = "__S0__"
 
 
 let pp_ne_symbdefs fmt sd =
@@ -415,6 +413,12 @@ let pp_ne_symbdefs fmt sd =
 let strings_of_symbdefs symbdef =
   pp_ne_symbdefs str_formatter symbdef; flush_str_formatter ()
 
+
+(** Define the state structure with an equality preidcate *)
+let pp_state_definition fmt main_struct =
+  pp_struct_defintion fmt main_struct;
+  pp_force_newline fmt ();
+  pp_struct_equality fmt main_struct
 
 let pp_symbolic_definitions_of fmt vars =
   let (ints, reals, booleans, arrays)
@@ -431,40 +435,56 @@ let pp_symbolic_definitions_of fmt vars =
 
 
 (** Loop body *)
-let pp_assignments state_struct_name state_name fmt =
-  pp_print_list
-    ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;")
-    (fun fmt s -> Format.fprintf fmt "[%s (%s-%s %s)]"
-      s state_struct_name s state_name) fmt
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
- let field_names =
-    List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
+  let field_names = VSOps.namelist state_vars in
   Format.fprintf fmt "(lambda (s i) @[<hov 2>(let@;(%a) %a)@])"
-    (pp_assignments state_struct_name "s") field_names
+    (pp_assignments state_struct_name "s")
+    (ListTools.pair field_names field_names)
     pp_sklet loop_body
 
 let pp_loop fmt (loop_body, state_vars) state_struct_name =
+  pp_comment fmt "Functional reprensentation of the loop body.";
   Format.fprintf fmt
-    "(define (body s start end)@; \
+    "(define (%s s start end)@; \
 @[<hov 2>(Loop  @[<hov 4> start end  %s s@] @.\
 @[<hov 4> %a@])@])@."
+    body_name
     !iterations_limit
     pp_loop_body (loop_body, state_vars, state_struct_name)
 
 
-let pp_join fmt (join_body, state_vars) =
+
+(** Join operator *)
+let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
+
   let left_state_vars = VSOps.vs_with_suffix state_vars "-left" in
   let right_state_vars = VSOps.vs_with_suffix state_vars "-right" in
+  let lvar_names = VSOps.namelist left_state_vars in
+  let rvar_names = VSOps.namelist right_state_vars in
+  let field_names = VSOps.namelist state_vars in
   set_hole_vars left_state_vars right_state_vars;
   Format.fprintf fmt
-    "(define join @[<hov 2>(LamJoin (%a) (%a) @;@[<hov 4>%a@])@])@."
-    VSOps.pp_var_names left_state_vars
-    VSOps.pp_var_names right_state_vars
+    "@[<hov 2>(let@;@[<hov 2> (%a@;%a)@]@;@[<hov 2>%a@])@]"
+    (pp_assignments main_struct_name lstate_name)
+    (ListTools.pair lvar_names field_names)
+    (pp_assignments main_struct_name rstate_name)
+    (ListTools.pair rvar_names field_names)
     pp_sklet join_body
 
 
-let pp_states fmt state_vars read_vars st1 st2 st0 =
+
+let pp_join fmt (join_body, state_vars) =
+  let lstate_name = "__left__" in
+  let rstate_name = "__right__" in
+  Format.fprintf fmt
+    "(define (%s %s %s)@.@[<hov 2>%a@])@."
+    join_name  lstate_name rstate_name
+    pp_join_body (join_body, state_vars, lstate_name, rstate_name)
+
+(** Some state definitons *)
+
+let pp_states fmt state_vars read_vars st0 =
   set_hole_vars read_vars read_vars;
   let s0_sketch_printer =
     pp_print_list
@@ -476,28 +496,44 @@ let pp_states fmt state_vars read_vars st1 st2 st0 =
   in
   Format.fprintf fmt
     "@[(define %s (%s %a))@]"
-    st0 main_struct_name
+    init_state_name main_struct_name
     s0_sketch_printer (VSOps.varlist state_vars);
 
-  let st1_vars = VSOps.vs_with_suffix state_vars "1" in
-  let st2_vars = VSOps.vs_with_suffix state_vars "2" in
-  pp_symbolic_definitions_of fmt st1_vars;
-  pp_symbolic_definitions_of fmt st2_vars;
+  let st0_vars = VSOps.vs_with_suffix state_vars "0" in
+  pp_symbolic_definitions_of fmt st0_vars;
   Format.fprintf fmt
-    "@[(define %s (%s %a))@]@.@[(define %s (%s %a))@]@."
-    st1
+    "@[(define %s (%s %a))@]@."
+    st0
     main_struct_name
-    VSOps.pp_var_names st1_vars
-    st2
+    VSOps.pp_var_names st0_vars
+
+(** The ysnthesis problem in Rosette *)
+let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
+  Format.fprintf fmt
+    "@[<hov 2>(%s-eq?@. %a @.@[<hov 2>(%s@; %a@; %a)@])@]@."
     main_struct_name
-    VSOps.pp_var_names st2_vars
+    pp_body_app (body_name, s0, i_st, i_end)
+    join_name
+    pp_body_app (body_name, s0, i_st, i_m)
+    pp_body_app (body_name, init_state_name, i_m, i_end)
 
 
-let pp_synth fmt s1 s2 s0 state_vars =
+let pp_synth_body fmt (s0, state_vars, read_vars) =
   Format.fprintf fmt
-    "@[(define odot@;@[<hov 2>(Synthesize %s %s %s (%a))@])@]@."
-    s1 s2 s0
-    VSOps.pp_var_names state_vars
+    "@[<hov 2>#:forall (list %a)@]@." VSOps.pp_var_names read_vars;
+  Format.fprintf fmt
+    "@[<hov 2>#:guarantee @[(assert @[<hov 2>(and %a)@])@]@]@."
+    (pp_print_list
+       (fun fmt (i_st, i_m, i_end) ->
+         pp_verification_condition fmt (s0, i_st, i_m, i_end)))
+    [(0,0,0);(0,0,9);(0,9,9);(0,4,9);(0,5,9);(3,6,9);(9,9,9)]
+
+
+
+let pp_synth fmt s0 state_vars read_vars=
+  Format.fprintf fmt
+    "@[(define odot (synthesize %a))@]@."
+    pp_synth_body (s0, state_vars, read_vars)
 
 
 let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
@@ -506,7 +542,7 @@ let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
   let field_names =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in
-  let st1, st2, st0 = "state1", "state2", "init-state" in
+  let st0 = "state0" in
   (** SPretty configuration for the current sketch *)
   SPretty.read_only_arrays := read_vars;
   SPretty.state_struct_name := main_struct_name;
@@ -517,5 +553,5 @@ let pp_rosette_sketch fmt (read_vars, state, all_vars, loop_body, join_body) =
   pp_loop fmt (loop_body, state_vars) main_struct_name;
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
-  pp_states fmt state_vars read_vars st1 st2 st0;
-  pp_synth fmt st1 st2 st0 state_vars
+  pp_states fmt state_vars read_vars st0;
+  pp_synth fmt st0 state_vars read_vars

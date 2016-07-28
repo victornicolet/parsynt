@@ -1,4 +1,3 @@
-open PpHelper
 open SketchTypes
 open Format
 open Utils
@@ -27,8 +26,8 @@ let wrap (t : symbolic_type) ppf =
   fprintf ppf
     (match t with
     | Unit -> "(bExpr %s %d)"
-    | Integer -> "(bExpr:num %s %d)"
-    | Real -> "(bExpr:num %s %d)"
+    | Integer -> "(bExpr %s %d)"
+    | Real -> "(bExpr %s %d)"
     | Boolean -> "(bExpr:boolean %s %d)"
     | Function (a, b) ->
        begin
@@ -181,11 +180,9 @@ let rec pp_constants ppf =
 
 (** Basic pretty-printing *)
 let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
-  Format.fprintf  ppf "%s = %sbegin%s@.@[%a@] %send%s\n"
+  Format.fprintf  ppf "%s = begin @.@[%a@] end\n"
     vi.Cil.vname
-    (color "yellow") default
     pp_sklet sklet
-    (color "yellow") default
 
 and pp_sklet ppf =
   function
@@ -197,8 +194,7 @@ and pp_sklet ppf =
           (fun ppf (v,e) -> pp_skexpr ppf e)) el
 
   | SkLetIn (el, l) ->
-     fprintf ppf "(%slet%s @[<hov 2>(%a)@]@;@[<hov 2> %a@]"
-       (color "red") default
+     fprintf ppf "(let @[<hov 2>(%a)@]@;@[<hov 2> %a@])"
        (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
@@ -240,7 +236,7 @@ let fp = Format.fprintf in
        | Some vi -> vi.Cil.vname
        | None -> "()"
      in
-     fp ppf "(%s%s%s %a)" (color "yellow") funname default
+     fp ppf "(%s %a)" funname
        (pp_print_list pp_skexpr) argl
 
   | SkHoleR t ->
@@ -269,18 +265,15 @@ let fp = Format.fprintf in
      fp ppf "(%s %a)" (string_of_symb_unop op) pp_skexpr e
 
   | SkCond (c, e1, e2) ->
-     fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
-       (color "blue") default
+     fp ppf "(if @[%a@] @[%a@] @[%a@])"
        pp_skexpr c pp_sklet e1 pp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
-     fp ppf "(%sif%s @[%a@] @[%a@] @[%a@])"
-       (color "blue") default
+     fp ppf "(if @[%a@] @[%a@] @[%a@])"
        pp_skexpr c pp_skexpr e1 pp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
-     fp ppf "(%sLoop%s %s %s %s %a)"
-       (color "blue") default
+     fp ppf "(Loop %s %s %s %a)"
        (Ct.psprint80 Cil.dn_instr i)
        (Ct.psprint80 Cil.dn_exp g)
        (Ct.psprint80 Cil.dn_instr u)

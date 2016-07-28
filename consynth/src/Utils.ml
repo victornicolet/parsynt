@@ -62,6 +62,9 @@ module ListTools = struct
 	  let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
 	  (VS.empty, VS.empty) l
 
+  let pair a_li b_li =
+    List.fold_left2
+      (fun c_li a_elt b_elt -> c_li@[(a_elt, b_elt)]) []  a_li b_li
 
   let outer_join_lists (a, b) =
     List.fold_left
@@ -273,6 +276,9 @@ module VSOps = struct
 
   let of_varlist (l : VS.elt list) =
     VS.of_list l
+
+  let namelist (vs : VS.t) =
+    List.map (fun vi -> vi.vname) (varlist vs)
 
   (** Member testing functions *)
 

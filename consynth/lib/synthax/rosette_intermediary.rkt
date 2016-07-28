@@ -4,8 +4,7 @@
          "../utils.rkt"
          (for-syntax "../utils.rkt"))
 
-(provide Integers Reals Booleans RoArray State
-         LamJoin LamBody Synthesize)
+(provide Integers Reals Booleans RoArray Synthesize)
 
 ;; Macros generating symbolic definitions
 
@@ -19,21 +18,7 @@
 (define-syntax-rule (RoArray type (id ...))
   (define-symbolic id ... (~> integer? type)))
 
-
-(define-syntax-rule (State s (vals ...))
-  (define s (state vals ...)))
-
 ;; Macros generating function definitions body and join
-
-(define-syntax-rule (LamBody (vnames ...) b)
-     (lambda (stt i)
-       (D-struct state stt (vnames ...) b)))
-
-(define-syntax-rule (LamJoin (vnames ...) (rnames ...) b)
-  (lambda (ll lr)
-    (D-struct state ll (vnames ...)
-                      (D-struct state lr (vnames ...) (rnames ...)
-                       b ))))
 
 (define-syntax (Synthesize stx)
   (syntax-rules ()
