@@ -10,6 +10,7 @@ module C = Canalyst
 *)
 
 let debug = ref false
+let dump_sketch = ref false
 
 let templateDir = Filename.current_dir_name^"/templates/"
 let dumpDir = Filename.current_dir_name^"/dump/"
@@ -24,15 +25,36 @@ let copy_file from_filename to_filename =
     done
   with End_of_file ->
     begin
-    close_in ic;
-    close_out oc
+      close_in ic;
+      close_out oc
     end
-
+let remove_in_dir dirname =
+  try
+    begin
+      if Sys.is_directory dirname then
+        begin
+          let filenames = Sys.readdir dirname in
+          let complete_fn =
+            Array.map (fun s -> dirname^s) filenames in
+          Array.iter
+            (fun filename ->
+              if Sys.is_directory filename then
+                ()
+              else
+                Sys.remove filename)
+            complete_fn
+        end
+      else
+        raise (Sys_error "Not a directory name")
+    end
+  with
+    Sys_error s ->
+      eprintf "Remove_in_dir : %s" s
 
 let line_stream_of_channel channel =
-    Stream.from
-      (fun _ ->
-         try Some (input_line channel) with End_of_file -> None);;
+  Stream.from
+    (fun _ ->
+      try Some (input_line channel) with End_of_file -> None);;
 
 let completeFile filename solution_file_name sketch =
   let oc = open_out filename in
@@ -59,25 +81,28 @@ let compile sketch =
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
   completeFile sketch_tmp_file solution_tmp_file sketch;
   let errno = racket sketch_tmp_file in
+  if !dump_sketch|| (errno != 0 && !debug) then
+    begin
+      remove_in_dir dumpDir;
+      let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
+      copy_file sketch_tmp_file dump_file;
+      eprintf "Dumping sketch file in %s\n" dump_file;
+    end;
+  Sys.remove sketch_tmp_file;
   if errno != 0 then
     begin
       if !debug then
         begin
-          let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
-          copy_file sketch_tmp_file dump_file;
           eprintf "%sError%s while running racket on sketch.\n"
-          (color "red") default;
-          eprintf "Dumping sketch file in %s\n" dump_file;
-          Sys.remove sketch_tmp_file;
+            (color "red") default;
         end;
       exit 1;
     end;
-  Sys.remove sketch_tmp_file;
   errno, solution_tmp_file
 
 let fetch_solution filename =
   (**
-      TODO : parse the solution given by racket into a set of Cil
+     TODO : parse the solution given by racket into a set of Cil
      expressions.
   *)
   let is = line_stream_of_channel (open_in filename) in
