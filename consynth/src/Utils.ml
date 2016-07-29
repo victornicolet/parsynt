@@ -188,6 +188,9 @@ module CilTools = struct
   let ppbk blk = List.iter pps blk.bstmts
   let ppofs offs = print_endline (psprint80 (Cil.d_offset Pretty.nil) offs)
 
+  let is_literal_zero = function
+    | Const (CInt64 (0L, _, _)) -> true
+    | _ -> false
 
   let getBody stmt =
     match stmt.skind with
