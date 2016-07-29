@@ -331,6 +331,9 @@ module VSOps = struct
   let unions (vsl : VS.t list) : VS.t =
     List.fold_left VS.union VS.empty vsl
 
+  let union_map li f =
+    List.fold_left (fun vs elt -> VS.union vs (f elt)) VS.empty li
+
   let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
       VS.t =
     let vs = VS.empty in
