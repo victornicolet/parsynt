@@ -51,6 +51,9 @@ let map_2 (f : 'a -> 'b) ((a,b): ('a * 'a)) : ('b * 'b) = (f a, f b)
 let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
   (f a, f b, f c)
 
+let fst (a,b)  = a
+let snd (a,b) = b
+
 (** Lists *)
 module ListTools = struct
   (** a -- b -- > list of integers from a to b *)
@@ -58,6 +61,16 @@ module ListTools = struct
     let rec aux n acc =
       if n < i then acc else aux (n-1) (n :: acc)
     in aux j []
+
+  (**
+      Returns the max of a list.
+      /!\ The max of an empty list is min_int.
+  *)
+  let intlist_max li =
+    List.fold_left
+      (fun max elt -> if elt > max then elt else max)
+      min_int
+      li
 
   let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
     List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
@@ -70,6 +83,10 @@ module ListTools = struct
   let pair a_li b_li =
     List.fold_left2
       (fun c_li a_elt b_elt -> c_li@[(a_elt, b_elt)]) []  a_li b_li
+
+  let unpair a_b_li =
+    List.fold_left
+      (fun (a_li, b_li) (a, b) -> (a_li@[a], b_li@[b])) ([],[]) a_b_li
 
   let outer_join_lists (a, b) =
     List.fold_left
@@ -202,7 +219,7 @@ module CilTools = struct
     | IBool -> true
     | _ -> false
 
-  let bool_of_int64 i = (i = (Int64.of_int 1))
+  let bool_of_int64 i = (i == (Int64.of_int 1))
 
   let combine_expression_option op e1 e2 t=
     match e1, e2 with

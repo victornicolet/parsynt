@@ -11,6 +11,13 @@ let current_hole_r_expression = ref ""
 let current_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
+
+(**
+   TODO : find a way to be able to generate different hole
+   expressions for R-holes and L-holes. Also, might be useful
+   to refine available variables with the type of the hole.
+*)
+
 let set_hole_vars lvs rvs =
   let l_str, r_str =
     (VSOps.pp_var_names str_formatter lvs;
@@ -19,7 +26,7 @@ let set_hole_vars lvs rvs =
     flush_str_formatter ())
   in
   current_hole_r_expression := l_str^" "^r_str;
-  current_hole_l_expression := l_str
+  current_hole_l_expression := l_str^" "^r_str
 
 let wrap (t : symbolic_type) ppf =
   fprintf ppf
@@ -166,7 +173,7 @@ let rec pp_constants ppf =
   | CUnop (op, c) ->
      fprintf ppf "(%s %a)" (string_of_symb_unop op) pp_constants c
   | CBinop (op, c1, c2) ->
-     fprintf ppf "(%s %a %a)" (string_of_symb_binop op)
+     fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
        pp_constants c1 pp_constants c2
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
@@ -189,11 +196,12 @@ and pp_sklet ppf =
      fprintf ppf "@[(%s %a)@]"
        !state_struct_name
        (pp_print_list
-          ~pp_sep:(fun ppf () -> fprintf ppf " ")
-          (fun ppf (v,e) -> pp_skexpr ppf e)) el
+          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
+          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+            pp_skexpr e)) el
 
   | SkLetIn (el, l) ->
-     fprintf ppf "(let @[<hov 2>(%a)@]@;@[<hov 2> %a@])"
+     fprintf ppf "(let @[<hov 2>(%a)@]@.@[<hov 2> %a@])"
        (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
@@ -251,7 +259,7 @@ let fp = Format.fprintf in
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
 
   | SkBinop (op, e1, e2) ->
-     fp ppf "(%s %a %a)"
+     fp ppf "(%s@; %a@; %a)"
         (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2
 
   | SkUnop (op, e) ->

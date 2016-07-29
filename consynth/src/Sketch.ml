@@ -533,7 +533,7 @@ let pp_states fmt state_vars read_vars st0 =
         Format.fprintf fmt "(choose 0 1 #t #f)")
   in
   Format.fprintf fmt
-    "@[(define %s (%s %a))@]"
+    "@[(define %s (%s %a))@]@."
     init_state_name main_struct_name
     s0_sketch_printer (VSOps.varlist state_vars);
 
@@ -595,5 +595,8 @@ let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
   pp_loop fmt (loop_body, state_vars) main_struct_name;
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
+  pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0;
+  pp_comment fmt "Actual synthesis work happens here";
+  pp_force_newline fmt ();
   pp_synth fmt st0 state_vars symbolic_variables

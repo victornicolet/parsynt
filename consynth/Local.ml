@@ -87,6 +87,7 @@ let compile sketch =
       let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
       copy_file sketch_tmp_file dump_file;
       eprintf "Dumping sketch file in %s\n" dump_file;
+      ignore(Sys.command ("cat "^dump_file));
     end;
   Sys.remove sketch_tmp_file;
   if errno != 0 then
