@@ -98,3 +98,70 @@ and write_instr (inst : instr) =
   | Set (lv, e, _) -> basic lv
   | Call (lvo, _, _, _) -> appOptionDefault basic lvo empty
   | _ -> empty
+
+
+let used b = un (write b) (read b)
+
+let rec aliased b =
+  union_map b.bstmts aliased_stmt
+
+and aliased_stmt stmt =
+  match stmt.skind with
+  | Instr il -> union_map il aliased_instr
+  | Block b -> aliased b
+  | Return (eo, _) -> appOptionDefault aliased_expr eo empty
+  | If(c, b1, b2, _) -> un (un (aliased_expr c) (aliased b1)) (aliased b2)
+  | Loop(b, _, _, _) -> aliased b
+  | Switch (e, _ , sl, _) ->
+     un (aliased_expr e) (union_map sl aliased_stmt)
+  | _ -> empty
+
+and aliased_instr instr =
+  match instr with
+  | Set (lv, e, _) -> un (aliased_expr e) (aliased_lval lv)
+  | Call (lvo, ef, args, _) ->
+     un (appOptionDefault aliased_lval lvo empty) (union_map args aliased_expr)
+  | _ -> empty
+
+and aliased_expr expr =
+  match expr with
+  | Lval lv -> aliased_lval lv
+  | StartOf lv| AddrOf lv -> un (basic lv) (aliased_lval lv)
+  | UnOp(_ ,e, _)  | CastE (_, e) -> aliased_expr e
+  | BinOp (_, e, e', _) -> un (aliased_expr e) (aliased_expr e')
+  | _ -> empty
+
+and aliased_lval (host, offset) =
+  match host with
+  | Var v -> aliased_o offset
+  | Mem e -> un (aliased_o offset) (aliased_expr e)
+
+and aliased_o off =
+  match off with
+  | NoOffset -> empty
+  | Field (f, o) -> aliased_o o
+  | Index (e, o) -> un (aliased_o o) (aliased_expr e)
+
+(** Variable classification *)
+let is_simple v =
+  match v.vtype with
+  | TFloat _ | TInt _ | TEnum _ -> true
+  | _ -> false
+
+let is_complex v =
+  match v.vtype with
+  | TComp _ -> true | _ -> false
+
+let is_array v =
+  match v.vtype with
+  | TArray _ -> true | _ -> false
+
+let is_pointer v =
+  match v.vtype with
+  | TPtr  _ -> true | _ -> false
+
+(** Set of analyzable variables of b *)
+let analyzable b =
+  let simple_vars = VS.filter is_simple (used b) in
+  let complex_vars = VS.filter is_complex (used b) in
+  VS.diff (un simple_vars complex_vars) (aliased b)
