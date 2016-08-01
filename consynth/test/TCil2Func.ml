@@ -60,10 +60,7 @@ let test () =
   IM.fold
     (fun k cl ->
       let stmt = mkBlock(cl.statements) in
-      let stateVars = ListTools.outer_join_lists
-	    (match cl.rwset with (r, w, rw) -> w, rw) in
-      let vars = VSOps.vs_of_defsMap cl.definedInVars in
-      let stv = VSOps.subset_of_list stateVars vars in
+      let r, stv = cl.rwset in
       let func = C2F.cil2func stmt stv in
       let fname = cl.parentFunction.vname in
       if wf_test_case fname func then

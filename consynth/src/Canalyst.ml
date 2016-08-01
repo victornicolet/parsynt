@@ -53,10 +53,9 @@ let cil2func loops =
   IM.map
     (fun cl ->
       let stmt = mkBlock(cl.Cl.statements) in
-      let r, w, rw = cl.Cl.rwset in
-      let stateVars = ListTools.outer_join_lists (w,rw) in
+      let r, w = cl.Cl.rwset in
+      let stv = w in
       let vars = VSOps.vs_of_defsMap cl.Cl.definedInVars in
-      let stv = VSOps.subset_of_list stateVars vars in
       let func = Cil2Func.cil2func stmt stv in
       if !verbose then
         begin
@@ -65,7 +64,7 @@ let cil2func loops =
           Cil2Func.printlet (stv, func);
           printf "@.";
         end;
-      (r,stateVars, vars, func))
+      (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars, func))
     loops
 
 let func2sketch funcreps =

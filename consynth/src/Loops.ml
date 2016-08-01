@@ -4,6 +4,7 @@ open LoopsHelper
 open Utils
 open Utils.ListTools
 open PpHelper
+open VariableAnalysis
 
 module E = Errormsg
 module IH = Inthash
@@ -79,7 +80,7 @@ module Cloop = struct
     mutable usedOutVars : varinfo list;
     (** A map of variable ids to integers, to determine if the variable is in
     the read or write set*)
-    mutable rwset : int list * int list * int list;
+    mutable rwset : VS.t * VS.t;
   (**
       Some variables too keep track of the state of the work done on the loop.
       - is the loop in normal form : the loop is in normal form when the outer
@@ -103,7 +104,7 @@ module Cloop = struct
       calledFunctions = [];
       definedInVars = IH.create 32;
       usedOutVars = [];
-      rwset = ([], [], []);
+      rwset = VS.empty , VS.empty;
       hasBreaks = false;
     }
 
@@ -190,23 +191,17 @@ is not defined at the beginning of the loop.\n"
             end
         in ignore(vi))
       uses;
-	let r = List.map (fun v -> v.vid) (VS.elements uses) in
-	let w = List.map (fun v -> v.vid) (VS.elements defs) in
-	let rw = List.map (fun v -> v.vid)
-	  (VS.elements (VS.inter uses defs)) in
-	l.rwset <- (r, w, rw)
+	l.rwset <- (uses, defs)
 
 
   let string_of_rwset (cl : t) =
-    let (r, w, rw) = cl.rwset in
-    let transform l = String.concat " "
-      (List.map (fun k ->
-		try
-		  (getVarinfo cl k).vname
-	  with Failure s -> "*")l)
-	in
-    let (rs, ws, rws) = (transform r, transform w, transform rw) in
-    "Read set : "^rs^"\nWrite set : "^ws^"\nRead-Write set:"^rws^"\n"
+    let r, w = cl.rwset in
+    let fmt = str_formatter in
+    fprintf fmt "Read variables : %a@.Write variables: %a@."
+      VSOps.pp_var_names r VSOps.pp_var_names w;
+    flush_str_formatter ()
+
+
   (**
       Append a parent loop to the list of parent loops.
       The AST is visited top-down, so the list should contains
@@ -299,6 +294,9 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
     match s.skind with
     | Loop (b, loc, o1, o2) ->
        let cloop = (Cloop.create s topFunc f) in
+       let wset = write b in
+       let rset = read b in
+       Cloop.setRW cloop (rset, wset) ~checkDefinedIn:false;
        let igu, stmts = get_loop_IGU s in
        let conds, stmts' = search_loop_exits s stmts in
        begin
@@ -493,8 +491,12 @@ let addRWinformation sid clp =
     end
   else ();
   let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGlobalFuncVS ()) in
+  let old_r, old_w = clp.Cloop.rwset in
   try
-    Cloop.setRW clp rwinfo ~checkDefinedIn:false
+    Cloop.setRW clp rwinfo ~checkDefinedIn:false;
+    printf  "Old : @.Read :%a @. Wrtie : %a @.New @.%s"
+      VSOps.pp_var_names old_r VSOps.pp_var_names old_w
+      (Cloop.string_of_rwset clp)
   with Failure s ->
     eprintf "%s\n" s;
     raise (Failure "Failed to set RW info with defined-in check")

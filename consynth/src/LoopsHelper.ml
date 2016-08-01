@@ -62,10 +62,8 @@ and expr_eq e e'=
   e = e'
 
 (** Is the read-write set empty *)
-let is_empty_state (r, w, rw) =
-  match w, rw with
-  | [], [] -> true
-  | _, _ -> false
+let is_empty_state (r, w) =
+  VS.is_empty w
 
 (**
     When a loop contains an inner loop, we want to remove the index
