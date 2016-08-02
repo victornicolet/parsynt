@@ -295,9 +295,6 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
     match s.skind with
     | Loop (b, loc, o1, o2) ->
        let cloop = (Cloop.create s topFunc f) in
-       let wset = write b in
-       let rset = read b in
-       Cloop.setRW cloop (rset, wset) ~checkDefinedIn:false;
        let igu, stmts = get_loop_IGU s in
        (* let conds, stmts' = search_loop_exits s stmts in*)
        begin
@@ -340,7 +337,7 @@ let find_loops fd f : unit =
     - functions used
     - presence of break/gotos statements in cf *)
 
-class loopInspector (tl : Cloop.t) = object
+class loopAnalysis (tl : Cloop.t) = object
   inherit nopCilVisitor
 
   method vstmt (s : Cil.stmt) =
@@ -403,7 +400,7 @@ end
    are used after the loop
 *)
 
-let addBoundaryInfo clp =
+let analyse_loop_context clp =
   let sid = clp.Cloop.sid in
   let rds =
     match (Ct.simplify_rds
@@ -414,7 +411,7 @@ let addBoundaryInfo clp =
        if !debug || true then
          begin
            eprintf
-             "Error : addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
+             "Error : analyse_loop_context - no reaching defs in (sid : %i):\n %s\n"
              sid
              (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
            flush_all ();
@@ -423,7 +420,7 @@ let addBoundaryInfo clp =
   in
   let livevars =
 	try IH.find LF.stmtStartData sid
-	with Not_found -> (raise (Failure "addBoundaryInfo : live variables \
+	with Not_found -> (raise (Failure "analyse_loop_context : live variables \
  statement data not found "))
   in
   let stmt =
@@ -433,75 +430,21 @@ let addBoundaryInfo clp =
         if !debug || true then
           begin
             eprintf
-              "addBoundaryInfo - no live variables in (sid : %i):\n %s\n"
+              "analyse_loop_context - no live variables in (sid : %i):\n %s\n"
               sid
               (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
             flush_all ();
           end;
-        raise (Failure "addBoundaryInfo : no live variables.");
+        raise (Failure "analyse_loop_context : no live variables.");
       end
     else
       begin
         Cloop.setDefinedInVars clp rds livevars;
       (** Visit the loop statement and compute some information *)
-        visitCilStmt (new loopInspector clp) clp.Cloop.old_loop_stmt
+        visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop_stmt
       end
   in
   clp.Cloop.old_loop_stmt <- stmt
-
-
-
-(******************************************************************************)
-(** Read/write set *)
-(**
-    Custom dataflow analysis not provided by Cil.
-    Main components :
-    - Read/Write set of a body
-*)
-(** Here we do not use Cil's Dataflow framework *)
-
-module RW = struct
-
-  let verbose = ref false
-
-  let prws u d =
-	print_endline "--Uses";
-	VS.iter Ct.ppv u;
-	print_endline "Defs";
-	VS.iter Ct.ppv d
-
-  let computeRWs (loop : Cil.stmt) (fnames : VS.t) : VS.t * VS.t  =
-	Usedef.onlyNoOffsetsAreDefs := true;
-	let _u, _d = Usedef.computeDeepUseDefStmtKind loop.skind in
-	let u, d = VS.diff _u fnames, VS.diff _d fnames in
-	if !verbose then prws u d;
-	u, d
-end
-
-let addRWinformation sid clp =
-  RW.verbose := !verbose;
-  let stmts =
-    match clp.Cloop.old_loop_stmt.skind with
-    | Loop (blk,_, _, _) -> blk.bstmts
-    | _ -> raise (Failure "Expected a loop statement") in
-  if !verbose
-  then
-    begin
-      print_string "AddRW information :";
-	  print_endline (Ct.psprint80 Cil.d_stmt (last stmts))
-    end
-  else ();
-  let rwinfo =  RW.computeRWs clp.Cloop.old_loop_stmt (getGlobalFuncVS ()) in
-  let old_r, old_w = clp.Cloop.rwset in
-  try
-    Cloop.setRW clp rwinfo ~checkDefinedIn:false;
-    printf  "Old : @.Read :%a @. Wrtie : %a @.New @.%s"
-      VSOps.pp_var_names old_r VSOps.pp_var_names old_w
-      (Cloop.string_of_rwset clp)
-  with Failure s ->
-    eprintf "%s\n" s;
-    raise (Failure "Failed to set RW info with defined-in check")
-
 
 (******************************************************************************)
 (**
@@ -511,7 +454,7 @@ let addRWinformation sid clp =
    been computed.
    Must be executed from the bottom up in the inner-loops tree.
 *)
-let replaceInnerBodies cl =
+let replace_inner_loops cl =
   let replace_matching_body stmt =
     {stmt with skind =
         match stmt.skind with
@@ -522,6 +465,12 @@ let replaceInnerBodies cl =
   in
   let nstmts = List.map replace_matching_body cl.Cloop.new_body in
   cl.Cloop.new_body <- nstmts
+
+let set_rw_info cl =
+  let new_body_block = mkBlock(cl.Cloop.new_body) in
+  let r = read new_body_block in
+  let w = write new_body_block in
+  cl.Cloop.rwset <- (r , w)
 
 
 (******************************************************************************)
@@ -556,20 +505,24 @@ let processFile cfile =
         in
         Reachingdefs.computeRDs fdc;
         Liveness.computeLiveness fdc;
-        addBoundaryInfo cl;
-        addRWinformation k cl;
+        analyse_loop_context cl;
         vis_fids)
       programLoops []
   in
+  (**
+      Clean loops from innermost loop bodies to outermost
+      ones. Add transformed body read/write information.
+  *)
   let clean_loops =
     IHTools.iter_bottom_up
       programLoops
+      (** Is a leaf if it has no nested loops *)
       (fun cl -> List.length cl.Cloop.parent_loops = 0)
       (fun cl ->
         List.map
           (fun stm -> IH.find programLoops stm.sid)
           cl.Cloop.inner_loops)
-      replaceInnerBodies
+      (fun cl -> replace_inner_loops cl; set_rw_info cl)
   in
   IH.clear programLoops;
   IHTools.add_list programLoops Cloop.id clean_loops;
