@@ -1,8 +1,10 @@
 open Cil
 open Utils
+open VariableAnalysis
 open ListTools
 module EC = Expcompare
 module Ct = CilTools
+module VS = Utils.VS
 
 let debug = ref false
 
@@ -13,7 +15,7 @@ type loop_info = {
   initial_values : Cil.constant IM.t;
   added_vars : VS.t;
   index : Cil.varinfo list;
-  array_access :
+  array_access : int;
 }
 
 let rem_stmt_in_cfg (stm : stmt) =
@@ -251,3 +253,26 @@ let search_loop_exits loop_statement body =
     | _ -> (cond_stack, breaks)
   in
   List.fold_left  aux ([],[]) body
+
+
+(** Reduction to constants *)
+let reduce_expr e =
+  match e with
+  | Const c -> Some c
+  | _ -> None
+
+let reduce_def_to_const vid stmt =
+  let aux_for_instr vid instr =
+    match instr with
+    | Set (lv, e, _) ->
+       let vi = VS.max_elt (basic lv) in
+       if vi.vid = vid
+       then reduce_expr e
+       else None
+    | _ -> None
+  in
+  match stmt.skind with
+  | Instr il ->
+     let l = List.filter is_some (List.map (aux_for_instr vid) il) in
+     (match l with | [c] -> c | _ -> None)
+  | _ -> None

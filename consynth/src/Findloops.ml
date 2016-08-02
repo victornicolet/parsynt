@@ -61,6 +61,7 @@ module Cloop = struct
     sid: int;
     (** The original statement of the loop *)
     mutable old_loop_stmt : Cil.stmt;
+    mutable old_loop_sids : Cil.stmt IH.t;
     (** Modified body of the loop *)
     mutable new_body : Cil.stmt list;
     (** If it is a for loop the init-guard-update can be summarized*)
@@ -95,6 +96,7 @@ module Cloop = struct
       (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
       old_loop_stmt = lstm;
+      old_loop_sids = IH.create 10;
       new_body = [];
       loop_igu = None;
       parent_file = f;
@@ -228,6 +230,9 @@ is not defined at the beginning of the loop.\n"
     let called_in = List.mem l1.host_function l2.called_functions  in
     nested_in || called_in
 
+  (** Returns true if the loop contains a statements of id sid *)
+  let contains_stmt l sid = IH.mem l.old_loop_sids sid
+
   let isForLoop l = match l.loop_igu with Some s -> true | None -> false
 
   let string_of_cloop (cl : t) =
@@ -341,6 +346,7 @@ class loopAnalysis (tl : Cloop.t) = object
   inherit nopCilVisitor
 
   method vstmt (s : Cil.stmt) =
+    IH.add tl.Cloop.old_loop_sids s.sid s;
     match s.skind with
     | Loop _ ->
        if Cloop.id tl != s.sid then
@@ -398,6 +404,38 @@ end
    the reaching definitions (variables defined in) and the set of variables that
    are used after the loop
 *)
+let add_def_info cl vid vid2const def_id =
+  try
+    let stmt =
+      IH.find Reachingdefs.ReachingDef.defIdStmtHash def_id
+    in
+    if Cloop.contains_stmt cl stmt.sid
+    (** Default action if the stmt is in the loop *)
+    then raise Not_found
+    (**
+        Handle only the case where the statement is
+        outside the loop.
+    *)
+    else
+      match reduce_def_to_const vid stmt with
+      | Some const ->
+         IM.add vid const vid2const
+      | None -> raise Not_found
+  with Not_found ->
+    vid2const
+
+let analyze_definitions cl (x : IOS.t IH.t) =
+  IH.fold
+    (fun vid ioset vid2const ->
+      (IOS.fold
+         (fun maybe_defid vmap ->
+           maybe_apply_default
+             (add_def_info cl vid vmap)
+             maybe_defid
+             vmap)
+         ioset vid2const))
+    x IM.empty
+
 
 let analyse_loop_context clp =
   let sid = clp.Cloop.sid in
@@ -405,7 +443,11 @@ let analyse_loop_context clp =
     match (Ct.simplify_rds
              (Reachingdefs.getRDs sid))
     with
-    | Some x -> x
+    | Some x ->
+       begin
+         let vid2const_map = analyze_definitions clp x in
+         x
+       end
     | None ->
        if !debug || true then
          begin

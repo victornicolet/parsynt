@@ -41,6 +41,9 @@ let ih_join_left (newh : ('a * 'b option) IH.t)
 let identity x = x
 let identity2 x y = y
 
+let is_some = Core.Std.is_some
+let is_none = Core.Std.is_none
+
 (** Convert a varinfo to an expression *)
 let v2e (v : varinfo): Cil.exp = Lval (var v)
 
