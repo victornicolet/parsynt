@@ -1,4 +1,3 @@
-open Utils
 open Cil
 open Format
 open Loops
@@ -341,7 +340,7 @@ and do_s vs let_form s =
      let block_loop = do_b vs b in
      let igu =
      try
-       checkOption ((IM.find s.sid !loops).Cloop.loopIGU)
+       check_option ((IM.find s.sid !loops).Cloop.loop_igu)
      with
        Not_found ->
          failwith (sprintf "Couldn't find loop %i." s.sid)
@@ -481,7 +480,7 @@ and red vs let_form substs =
      then
        (if Core.Std.is_none next_e
        then red vs cont prev_e
-       else LetState (checkOption next_e, red vs cont prev_e))
+       else LetState (check_option next_e, red vs cont prev_e))
      else LetCond (e, red_if, red_else, reduce vs cont, loc)
 
   | LetState (state, let_cont) ->

@@ -1,15 +1,11 @@
-open Cil
-open Hashtbl
 open Sketch
 open PpHelper
 open Format
 open Utils
 
-module F = Frontc
 module E = Errormsg
 module C = Cil
 module Cl = Loops.Cloop
-module IH = Inthash
 
 let debug = ref false
 let verbose = ref false
@@ -52,15 +48,15 @@ let cil2func loops =
   Cil2Func.init loops;
   IM.map
     (fun cl ->
-      let stmt = mkBlock(cl.Cl.statements) in
+      let stmt = C.mkBlock(cl.Cl.new_body) in
       let r, w = cl.Cl.rwset in
       let stv = w in
-      let vars = VSOps.vs_of_defsMap cl.Cl.definedInVars in
+      let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
       let func = Cil2Func.cil2func stmt stv in
       if !verbose then
         begin
           (printf "%s[test for loop %i in %s failed]%s@."
-             (color "red") cl.Cl.sid cl.Cl.parentFunction.vname default;);
+             (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
           Cil2Func.printlet (stv, func);
           printf "@.";
         end;

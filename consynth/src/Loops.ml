@@ -40,17 +40,17 @@ type forIGU = LoopsHelper.forIGU
     it has to refer to the loop index i.
 *)
 
-let indexOfIGU ((init, guard, update) : forIGU) : VS.t =
+let index_of_igu ((init, guard, update) : forIGU) : VS.t =
   VS.inter
     (VS.inter (VSOps.sovi init) (VSOps.sove guard))
     (VSOps.sovi update)
 
-let checkIGU ((init, guard, update) : forIGU) : bool =
-  let i = indexOfIGU (init, guard, update) in
+let check_igu ((init, guard, update) : forIGU) : bool =
+  let i = index_of_igu (init, guard, update) in
   (VS.cardinal i) = 1
 
 
-let sprint_IGU ((init, guard, update) : forIGU) : string =
+let sprint_igu ((init, guard, update) : forIGU) : string =
   sprintf "for(%s; %s; %s)"
     (Ct.psprint80 Cil.d_instr init)
     (Ct.psprint80 Cil.d_exp guard)
@@ -60,24 +60,25 @@ module Cloop = struct
   type t = {
   (** Each loop has a statement id in a Cil program *)
     sid: int;
-    mutable loopStatement : Cil.stmt;
+    (** The original statement of the loop *)
+    mutable old_loop_stmt : Cil.stmt;
     (** Modified body of the loop *)
-    mutable statements : Cil.stmt list;
+    mutable new_body : Cil.stmt list;
     (** If it is a for loop the init-guard-update can be summarized*)
-    mutable loopIGU : forIGU option;
+    mutable loop_igu : forIGU option;
     (** The file in which the loop appears *)
-    mutable parentFile: Cil.file;
+    mutable parent_file: Cil.file;
     (** Loops can be nested. *)
-    mutable parentLoops : int list;
-    mutable childrenLoops : stmt list;
+    mutable parent_loops : int list;
+    mutable inner_loops : stmt list;
   (** A loop appears in the body of a parent function declared globally *)
-    mutable parentFunction : varinfo;
+    mutable host_function : varinfo;
   (** The set of function called in a loop body *)
-    mutable calledFunctions : varinfo list;
+    mutable called_functions : varinfo list;
   (** The variables declared before entering the loop*)
-    mutable definedInVars : defsMap;
+    mutable defined_in : defsMap;
   (** The variables used after exiting the loop *)
-    mutable usedOutVars : varinfo list;
+    mutable used_out : varinfo list;
     (** A map of variable ids to integers, to determine if the variable is in
     the read or write set*)
     mutable rwset : VS.t * VS.t;
@@ -88,37 +89,37 @@ module Cloop = struct
       - is the loop body in SSA Form ?
       - does the loops contain break / continue / goto statements ?
   *)
-    mutable hasBreaks : bool;
+    mutable has_breaks : bool;
   }
 
   let create (lstm : Cil.stmt)
       (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
-      loopStatement = lstm;
-      statements = [];
-      loopIGU = None;
-      parentFile = f;
-      parentLoops = [];
-      childrenLoops = [];
-      parentFunction = parent;
-      calledFunctions = [];
-      definedInVars = IH.create 32;
-      usedOutVars = [];
+      old_loop_stmt = lstm;
+      new_body = [];
+      loop_igu = None;
+      parent_file = f;
+      parent_loops = [];
+      inner_loops = [];
+      host_function = parent;
+      called_functions = [];
+      defined_in = IH.create 32;
+      used_out = [];
       rwset = VS.empty , VS.empty;
-      hasBreaks = false;
+      has_breaks = false;
     }
 
   let id l = l.sid
 
   (** Parent function *)
 
-  let setParent l par = l.parentFunction <- par
+  let setParent l par = l.host_function <- par
 
-  let getParent l = l.parentFunction
+  let getParent l = l.host_function
 
   let getParentFundec l =
-    checkOption
-      (getFn l.parentFile l.parentFunction.vname)
+    check_option
+      (get_fun l.parent_file l.host_function.vname)
 
   (** Defined variables at the loop statement*)
   let string_of_defvars l =
@@ -128,7 +129,7 @@ module Cloop = struct
                             match dio with
                             | Some mapping -> vS^"[defs]"
                             | None -> vS)
-      l.definedInVars setname in
+      l.defined_in setname in
     str^"}"
 
 
@@ -141,10 +142,10 @@ module Cloop = struct
      loop body.
   *)
   let setDefinedInVars l vid2did vs =
-    let vid2v = hashVS vs in
-    addHash l.definedInVars vid2v vid2did
+    let vid2v = ih_of_vs vs in
+    ih_join_left l.defined_in vid2v vid2did
 
-  let getDefinedInVars l = l.definedInVars
+  let getDefinedInVars l = l.defined_in
 
   (**
      Once the defined vars are set we can have variable information directly
@@ -153,16 +154,16 @@ module Cloop = struct
 
   let getVarinfo  ?(varname = "") l vid =
     try
-      match IH.find l.definedInVars vid with
+      match IH.find l.defined_in vid with
       | (vi, _) -> vi
     with
       Not_found ->
         begin
-          if IH.length l.definedInVars < 1
+          if IH.length l.defined_in < 1
           then
             raise
               (Failure
-                 "The definedInVars are empty. Perhaps you \
+                 "The defined_in are empty. Perhaps you \
 forgot initializing them ?")
           else
             raise
@@ -208,35 +209,35 @@ is not defined at the beginning of the loop.\n"
       parent loops for outermost to innermost.
   *)
   let addParentLoop l  parentSid =
-    l.parentLoops <- appendC l.parentLoops parentSid
+    l.parent_loops <- appendC l.parent_loops parentSid
 
   let addChild l child =
-    l.childrenLoops <- appendC l.childrenLoops child.loopStatement
+    l.inner_loops <- appendC l.inner_loops child.old_loop_stmt
 
   let addCalledFunc l vi =
-    l.calledFunctions <- appendC l.calledFunctions vi
+    l.called_functions <- appendC l.called_functions vi
 
   (** The loops contains either a break, a continue or a goto statement *)
   let setBreak l =
-    l.hasBreaks <- true
+    l.has_breaks <- true
 
   (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
-    let n_in = List.mem l1.loopStatement l2.childrenLoops in
-    let nested_in = n_in || List.mem l2.sid l1.parentLoops in
-    let called_in = List.mem l1.parentFunction l2.calledFunctions  in
+    let n_in = List.mem l1.old_loop_stmt l2.inner_loops in
+    let nested_in = n_in || List.mem l2.sid l1.parent_loops in
+    let called_in = List.mem l1.host_function l2.called_functions  in
     nested_in || called_in
 
-  let isForLoop l = match l.loopIGU with Some s -> true | None -> false
+  let isForLoop l = match l.loop_igu with Some s -> true | None -> false
 
   let string_of_cloop (cl : t) =
     let sid = string_of_int cl.sid in
-    let pfun = cl.parentFunction.vname in
+    let pfun = cl.host_function.vname in
     let cfuns = String.concat ", "
-      (List.map (fun y -> y.vname) cl.calledFunctions) in
+      (List.map (fun y -> y.vname) cl.called_functions) in
     let defvarS = string_of_defvars cl in
     let oigu = if isForLoop cl
-      then "\n"^(sprint_IGU (checkOption cl.loopIGU))
+      then "\n"^(sprint_igu (check_option cl.loop_igu))
       else ""
     in
     let rwsets = string_of_rwset cl in
@@ -264,7 +265,7 @@ let getFuncWithLoops () : Cil.fundec list =
     (fun k v l ->
       let f =
         try
-          Pf.find v.Cloop.parentFunction.vname !programFuncs
+          Pf.find v.Cloop.host_function.vname !programFuncs
         with Not_found -> raise (Failure "x")
       in
       f::l)
@@ -288,7 +289,7 @@ let getGlobalFuncVS () =
     graph, we store the loop locations, with the containing functions
 *)
 
-class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
+class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
     match s.skind with
@@ -298,14 +299,14 @@ class loopLocator (topFunc : Cil.varinfo) (f : Cil.file) = object
        let rset = read b in
        Cloop.setRW cloop (rset, wset) ~checkDefinedIn:false;
        let igu, stmts = get_loop_IGU s in
-       let conds, stmts' = search_loop_exits s stmts in
+       (* let conds, stmts' = search_loop_exits s stmts in*)
        begin
          match igu with
          | Some figu ->
-            if checkIGU figu then
+            if check_igu figu then
               begin
-                cloop.Cloop.loopIGU <- Some figu;
-                cloop.Cloop.statements <- stmts;
+                cloop.Cloop.loop_igu <- Some figu;
+                cloop.Cloop.new_body <- stmts;
               end
             else ()
          | _ -> ()
@@ -324,9 +325,9 @@ end ;;
 
 
 
-let locateLoops fd f : unit =
+let find_loops fd f : unit =
   addGlobalFunc fd;
-  let visitor = new loopLocator fd.svar f in
+  let visitor = new loop_finder fd.svar f in
   ignore (visitCilFunction visitor fd)
 
 
@@ -351,11 +352,11 @@ class loopInspector (tl : Cloop.t) = object
            let child_loop = IH.find programLoops s.sid in
            Cloop.addParentLoop child_loop (Cloop.id tl);
            Cloop.addChild tl child_loop;
-           let (i, g, u) = checkOption (child_loop.Cloop.loopIGU) in
+           let (i, g, u) = check_option (child_loop.Cloop.loop_igu) in
            let new_statements =
-             removeInitInstr
-               tl.Cloop.statements [] i child_loop.Cloop.loopStatement in
-           tl.Cloop.statements <- new_statements;
+             rem_loop_init
+               tl.Cloop.new_body [] i child_loop.Cloop.old_loop_stmt in
+           tl.Cloop.new_body <- new_statements;
          (** Remove init statements of inner loop present in outer loop *)
 
            DoChildren
@@ -405,7 +406,7 @@ end
 let addBoundaryInfo clp =
   let sid = clp.Cloop.sid in
   let rds =
-    match (Ct.setOfReachingDefs
+    match (Ct.simplify_rds
              (Reachingdefs.getRDs sid))
     with
     | Some x -> x
@@ -415,7 +416,7 @@ let addBoundaryInfo clp =
            eprintf
              "Error : addBoundaryInfo - no reaching defs in (sid : %i):\n %s\n"
              sid
-             (Ct.psprint80 d_stmt clp.Cloop.loopStatement);
+             (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
            flush_all ();
          end;
       IH.create 2
@@ -434,7 +435,7 @@ let addBoundaryInfo clp =
             eprintf
               "addBoundaryInfo - no live variables in (sid : %i):\n %s\n"
               sid
-              (Ct.psprint80 d_stmt clp.Cloop.loopStatement);
+              (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
             flush_all ();
           end;
         raise (Failure "addBoundaryInfo : no live variables.");
@@ -443,10 +444,10 @@ let addBoundaryInfo clp =
       begin
         Cloop.setDefinedInVars clp rds livevars;
       (** Visit the loop statement and compute some information *)
-        visitCilStmt (new loopInspector clp) clp.Cloop.loopStatement
+        visitCilStmt (new loopInspector clp) clp.Cloop.old_loop_stmt
       end
   in
-  clp.Cloop.loopStatement <- stmt
+  clp.Cloop.old_loop_stmt <- stmt
 
 
 
@@ -480,7 +481,7 @@ end
 let addRWinformation sid clp =
   RW.verbose := !verbose;
   let stmts =
-    match clp.Cloop.loopStatement.skind with
+    match clp.Cloop.old_loop_stmt.skind with
     | Loop (blk,_, _, _) -> blk.bstmts
     | _ -> raise (Failure "Expected a loop statement") in
   if !verbose
@@ -490,7 +491,7 @@ let addRWinformation sid clp =
 	  print_endline (Ct.psprint80 Cil.d_stmt (last stmts))
     end
   else ();
-  let rwinfo =  RW.computeRWs clp.Cloop.loopStatement (getGlobalFuncVS ()) in
+  let rwinfo =  RW.computeRWs clp.Cloop.old_loop_stmt (getGlobalFuncVS ()) in
   let old_r, old_w = clp.Cloop.rwset in
   try
     Cloop.setRW clp rwinfo ~checkDefinedIn:false;
@@ -516,11 +517,11 @@ let replaceInnerBodies cl =
         match stmt.skind with
         | Loop (b, x, y ,loc) ->
            let cl = IH.find programLoops stmt.sid in
-           Loop (mkBlock cl.Cloop.statements, x, y, loc)
+           Loop (mkBlock cl.Cloop.new_body, x, y, loc)
         | _ -> stmt.skind}
   in
-  let nstmts = List.map replace_matching_body cl.Cloop.statements in
-  cl.Cloop.statements <- nstmts
+  let nstmts = List.map replace_matching_body cl.Cloop.new_body in
+  cl.Cloop.new_body <- nstmts
 
 
 (******************************************************************************)
@@ -535,7 +536,7 @@ let replaceInnerBodies cl =
 let processFile cfile =
   fileName := cfile.fileName;
   (** Locate the loops in the file *)
-  iterGlobals cfile (onlyFunc (fun fd -> locateLoops fd cfile));
+  iterGlobals cfile (global_filter_only_func (fun fd -> find_loops fd cfile));
   (**
 	 Visit each function containing a loop, but compute cil information
 	 like Reaching defintions and live variables each time the function
@@ -563,11 +564,11 @@ let processFile cfile =
   let clean_loops =
     IHTools.iter_bottom_up
       programLoops
-      (fun cl -> List.length cl.Cloop.parentLoops = 0)
+      (fun cl -> List.length cl.Cloop.parent_loops = 0)
       (fun cl ->
         List.map
           (fun stm -> IH.find programLoops stm.sid)
-          cl.Cloop.childrenLoops)
+          cl.Cloop.inner_loops)
       replaceInnerBodies
   in
   IH.clear programLoops;
@@ -577,10 +578,10 @@ let processFile cfile =
       the loops containing break statements.
   *)
   let rem_cond cl =
-    cl.Cloop.hasBreaks ||
+    cl.Cloop.has_breaks ||
       (is_empty_state cl.Cloop.rwset)
   (** ||
-      ((IH.length cl.Cloop.definedInVars) = 0)*)
+      ((IH.length cl.Cloop.defined_in) = 0)*)
   in
   let loops_to_remove =
     IH.fold

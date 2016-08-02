@@ -19,7 +19,7 @@ and read_stmt (stmt : stmt) =
       union_map il read_instr
 
   | Return (eo, loc) ->
-     appOptionDefault read_expr eo empty
+     maybe_apply_default read_expr eo empty
 
   | If (c, bi , be, _) ->
      uns [(read_expr c); (read bi); (read be)]
@@ -46,7 +46,7 @@ and read_instr (instr : instr) =
 
   | Call (lvo, ef,  args, _) ->
      un
-       (appOptionDefault index lvo empty)
+       (maybe_apply_default index lvo empty)
        (uns (map read_expr args))
 
   | _ -> empty
@@ -96,7 +96,7 @@ and write_stmt (stm : stmt) =
 and write_instr (inst : instr) =
   match inst with
   | Set (lv, e, _) -> basic lv
-  | Call (lvo, _, _, _) -> appOptionDefault basic lvo empty
+  | Call (lvo, _, _, _) -> maybe_apply_default basic lvo empty
   | _ -> empty
 
 
@@ -109,7 +109,7 @@ and aliased_stmt stmt =
   match stmt.skind with
   | Instr il -> union_map il aliased_instr
   | Block b -> aliased b
-  | Return (eo, _) -> appOptionDefault aliased_expr eo empty
+  | Return (eo, _) -> maybe_apply_default aliased_expr eo empty
   | If(c, b1, b2, _) -> un (un (aliased_expr c) (aliased b1)) (aliased b2)
   | Loop(b, _, _, _) -> aliased b
   | Switch (e, _ , sl, _) ->
@@ -120,7 +120,7 @@ and aliased_instr instr =
   match instr with
   | Set (lv, e, _) -> un (aliased_expr e) (aliased_lval lv)
   | Call (lvo, ef, args, _) ->
-     un (appOptionDefault aliased_lval lvo empty) (union_map args aliased_expr)
+     un (maybe_apply_default aliased_lval lvo empty) (union_map args aliased_expr)
   | _ -> empty
 
 and aliased_expr expr =

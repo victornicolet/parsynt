@@ -28,7 +28,7 @@ let testProcessFile () =
   printf "%s Functional rep. %s\n" (color "blue") default;
   IM.iter
     (fun k cl ->
-      let stmt = mkBlock(cl.Cloop.statements) in
+      let stmt = mkBlock(cl.Cloop.new_body) in
       let r, stv = cl.Cloop.rwset in
       C2F.printlet (stv, (C2F.cil2func stmt stv)))
     loops;;

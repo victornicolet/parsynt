@@ -17,7 +17,7 @@ module VS = Usedef.VS
 module IM = Map.Make(struct type t = int let compare = compare end)
 
 (** Hash a set of variables with their variable id *)
-let hashVS vset =
+let ih_of_vs vset =
   let ihs = IH.create 10 in
   VS.iter (fun v -> IH.add ihs v.vid v) vset;
   ihs
@@ -29,7 +29,7 @@ let hashVS vset =
     element if not found).
 *)
 
-let addHash (newh : ('a * 'b option) IH.t)
+let ih_join_left (newh : ('a * 'b option) IH.t)
     (h1 : 'a IH.t)  (h2 : 'b IH.t) : unit =
   IH.iter
     (fun k v1 ->
@@ -110,23 +110,23 @@ end
 
 
 
-let lastInstr instr_stmt =
+let last_instr instr_stmt =
   match instr_stmt.skind with
   | Instr il -> ListTools.last il
   | _ -> raise
-     (Failure "lastInstr expected a statement of instruction list kind" )
+     (Failure "last_instr expected a statement of instruction list kind" )
 
-let checkOption (ao : 'a option) : 'a =
+let check_option (ao : 'a option) : 'a =
   match ao with
   | Some a -> a
-  | None -> raise (Failure "checkOption")
+  | None -> raise (Failure "check_option")
 
-let appOption (f:'a->'b) (v: 'a option) : 'b option =
+let maybe_apply (f:'a->'b) (v: 'a option) : 'b option =
   match v with
   | Some a -> Some (f a)
   | None -> None
 
-let appOptionDefault (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
+let maybe_apply_default (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
   match v with
   | Some a -> f a
   | None -> default
@@ -141,7 +141,7 @@ let xorOpt o1 o2 =
 
 
 (** Get the function named fname in the file cf *)
-let getFn cf fname =
+let get_fun cf fname =
   let auxoptn cfile =
     Cil.foldGlobals cfile
       (fun fdeco g ->
@@ -161,12 +161,12 @@ let getFn cf fname =
 let non_empty_block (b : Cil.block) =
   (List.length b.bstmts) > 0
 
-let onlyFunc fn g =
+let global_filter_only_func fn g =
   match g with
   | GFun (f, loc) -> fn f
   | _ -> ()
 
-let onlyFuncLoc fn g =
+let global_filter_only_funcLoc fn g =
   match g with
   | GFun (f, loc) -> fn f loc
   | _ -> ()
@@ -192,15 +192,10 @@ module CilTools = struct
     | Const (CInt64 (0L, _, _)) -> true
     | _ -> false
 
-  let getBody stmt =
-    match stmt.skind with
-    | Loop (blk, _, _, _) -> blk.bstmts
-    | _ -> []
-
   let addStmt block stmt =
 	{ block with bstmts = block.bstmts @ stmt }
 
-  let setOfReachingDefs rdef =
+  let simplify_rds rdef =
     match rdef with
     | Some (_,_, setXhash) -> Some setXhash
     | None -> None
@@ -262,7 +257,7 @@ module VSOps = struct
        let vs_exp = sove exp in
        VS.union vs_exp vs_ls
     | Call (lvo, ef, elist, _) ->
-       let vs_ls = appOptionDefault sovv lvo VS.empty in
+       let vs_ls = maybe_apply_default sovv lvo VS.empty in
        let vs_el = ListTools.foldl_union sove elist in
        VS.union vs_ls vs_el
     | _ -> VS.empty

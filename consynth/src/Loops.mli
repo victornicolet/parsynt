@@ -7,24 +7,24 @@ val debug : bool ref
 
 type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
-val indexOfIGU: forIGU -> VS.t
-val checkIGU: forIGU -> bool
+val index_of_igu: forIGU -> VS.t
+val check_igu: forIGU -> bool
 
 module Cloop : sig
   type t = {
     sid: int;
-    mutable loopStatement : Cil.stmt;
-    mutable statements : Cil.stmt list;
-    mutable loopIGU : forIGU option;
-    mutable parentFile : Cil.file;
-    mutable parentLoops : int list;
-    mutable childrenLoops : stmt list;
-    mutable parentFunction : Cil.varinfo;
-    mutable calledFunctions : Cil.varinfo list;
-    mutable definedInVars : defsMap;
-    mutable usedOutVars : Cil.varinfo list;
+    mutable old_loop_stmt : Cil.stmt;
+    mutable new_body : Cil.stmt list;
+    mutable loop_igu : forIGU option;
+    mutable parent_file : Cil.file;
+    mutable parent_loops : int list;
+    mutable inner_loops : stmt list;
+    mutable host_function : Cil.varinfo;
+    mutable called_functions : Cil.varinfo list;
+    mutable defined_in : defsMap;
+    mutable used_out : Cil.varinfo list;
     mutable rwset : Utils.VS.t * Utils.VS.t;
-    mutable hasBreaks : bool;
+    mutable has_breaks : bool;
   }
   val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t
   val string_of_cloop: t -> String.t

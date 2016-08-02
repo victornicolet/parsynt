@@ -59,10 +59,10 @@ let test () =
   C2F.init loops;
   IM.fold
     (fun k cl ->
-      let stmt = mkBlock(cl.statements) in
+      let stmt = mkBlock(cl.new_body) in
       let r, stv = cl.rwset in
       let func = C2F.cil2func stmt stv in
-      let fname = cl.parentFunction.vname in
+      let fname = cl.host_function.vname in
       if wf_test_case fname func then
         (printf "%s%s :\t passed.%s@."
            (color "green") fname default)

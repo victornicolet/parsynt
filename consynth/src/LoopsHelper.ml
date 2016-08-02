@@ -8,14 +8,14 @@ let debug = ref false
 
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 
-let removeFromCFG (stm : stmt) =
+let rem_stmt_in_cfg (stm : stmt) =
   let succs = stm.succs in
   let preds = stm.preds in
   let eq_stm s = (stm.sid = s.sid) in
   List.iter (fun s -> (s.succs <- List.filter eq_stm s.succs)) preds;
   List.iter (fun s -> (s.preds <- List.filter eq_stm s.preds)) succs
 
-let rec remLastInstr (bdy : stmt list) =
+let rec rem_last_instr (bdy : stmt list) =
   if List.length bdy < 1
   then None, None
   else
@@ -26,7 +26,7 @@ let rec remLastInstr (bdy : stmt list) =
          match il with
          | [i] ->
             begin
-              removeFromCFG lastStmt;
+              rem_stmt_in_cfg lastStmt;
               let stmtli = (remove_last bdy) in
               Some i, Some stmtli
             end
@@ -40,7 +40,7 @@ let rec remLastInstr (bdy : stmt list) =
          | [] -> None, None
        end
 
-    | Block b -> remLastInstr b.bstmts
+    | Block b -> rem_last_instr b.bstmts
 
     | _ -> None, Some bdy
 
@@ -71,7 +71,7 @@ let is_empty_state (r, w) =
     original program, where the init statement is in the for statement.
 *)
 
-let rec removeInitInstr (bdy : stmt list) nbdy (init : instr) (inner : stmt)
+let rec rem_loop_init (bdy : stmt list) nbdy (init : instr) (inner : stmt)
     : stmt list =
   let rem_instr stmt =
     let stmtskind =
@@ -189,10 +189,10 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
            | None ->
               raise (Failure "couldn't get the termination condition.")
          in
-         let init = lastInstr (List.nth loop_stmt.preds 1) in
+         let init = last_instr (List.nth loop_stmt.preds 1) in
          (** Removing the last instruction **should** remove the index update *)
          let update, newbody =
-           match  remLastInstr rem with
+           match  rem_last_instr rem with
            | Some instr, Some s ->
               instr, s
            | None, Some s ->

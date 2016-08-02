@@ -367,7 +367,7 @@ let rec vi_of sklv =
   | SkVarinfo vi' -> Some vi'
   | SkArray (sklv', _) -> vi_of sklv'
 
-let is_vi sklv vi = appOptionDefault (fun x -> vi = x) (vi_of sklv)
+let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv)
 
 
 let mkOp ?(t = Unit) vi argl =
@@ -414,7 +414,7 @@ let rec symb_type_of_ciltyp =
 
 and symb_type_of_args argslisto =
   try
-    let argslist = checkOption argslisto in
+    let argslist = check_option argslisto in
     let symb_types_list =
       List.map
         (fun (s, t, atr) -> symb_type_of_ciltyp t)

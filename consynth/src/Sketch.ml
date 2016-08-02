@@ -40,13 +40,13 @@ let rec convert (cur_v : skLVar) =
      if is_c_def then
        SkApp (sty, vi_o, fargs)
      else
-       let fname = (checkOption vi_o).Cil.vname in
+       let fname = (check_option vi_o).Cil.vname in
        (match fargs with
        | [e] ->
-          let unop = (checkOption (symb_unop_of_fname fname)) in
+          let unop = (check_option (symb_unop_of_fname fname)) in
           SkUnop (unop, e)
        | e1::[e2] ->
-          let binop = (checkOption (symb_binop_of_fname fname)) in
+          let binop = (check_option (symb_binop_of_fname fname)) in
           SkBinop (binop, e1, e2)
        | _ -> SkApp (sty, vi_o, fargs))
 
