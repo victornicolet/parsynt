@@ -5,7 +5,7 @@ open Utils
 
 module E = Errormsg
 module C = Cil
-module Cl = Loops.Cloop
+module Cl = Findloops.Cloop
 
 let debug = ref false
 let verbose = ref false
@@ -30,10 +30,10 @@ let processFile fileName =
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
   Deadcodeelim.dce cfile;
-  Loops.debug := !debug;
-  Loops.verbose := !verbose;
+  Findloops.debug := !debug;
+  Findloops.verbose := !verbose;
   Rmtmps.removeUnusedTemps cfile;
-  let loops, _ = Loops.processFile cfile in
+  let loops, _ = Findloops.processFile cfile in
   loops
 
 

@@ -1,6 +1,6 @@
 open Cil
 open Format
-open Loops
+open Findloops
 open Utils
 open Utils.CilTools
 open PpHelper
@@ -29,7 +29,7 @@ let gen_id () = incr __letin_index; !__letin_index
 type letin =
   | State of (expr IM.t)
   | Let of varinfo * expr * letin * int * location
-  | LetRec of Loops.forIGU * letin * letin * location
+  | LetRec of forIGU * letin * letin * location
   | LetCond of exp * letin * letin * letin * location
 (**
     LetState is used for the reduction, it allows us to simplify
@@ -44,7 +44,7 @@ and expr =
   | Container of exp * substitutions
   | FunApp of exp * (expr list)
   | FQuestion of exp * expr * expr
-  | FRec of Loops.forIGU * expr
+  | FRec of forIGU * expr
   (** Types for translated expressions *)
   | FBinop of symb_binop * expr * expr
   | FUnop of symb_unop * expr

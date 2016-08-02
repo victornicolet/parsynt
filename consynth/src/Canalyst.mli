@@ -1,7 +1,7 @@
 open Cil
 
-val processFile: string -> Loops.Cloop.t Utils.IM.t
-val cil2func : Loops.Cloop.t Utils.IM.t ->
+val processFile: string -> Findloops.Cloop.t Utils.IM.t
+val cil2func : Findloops.Cloop.t Utils.IM.t ->
   (int list * int list * Usedef.VS.t * Cil2Func.letin) Utils.IM.t
 val func2sketch :
   (int list * int list * Usedef.VS.t * Cil2Func.letin) Utils.IM.t ->

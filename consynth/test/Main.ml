@@ -2,7 +2,7 @@ open Cil
 open Canalyst
 open Format
 open PpHelper
-open Loops
+open Findloops
 open Utils
 
 module C2F = Cil2Func
