@@ -574,7 +574,8 @@ let pp_synth fmt s0 state_vars symb_var_names =
     pp_synth_body (s0, state_vars, symb_var_names)
 
 
-let pp_rosette_sketch fmt (read, state, all_vars, loop_body, join_body) =
+let pp_rosette_sketch fmt
+    (read, state, all_vars, loop_body, join_body, reach_consts) =
   let state_vars = VSOps.subset_of_list state all_vars in
   let read_vars =
     VS.diff

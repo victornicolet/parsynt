@@ -75,7 +75,12 @@ module Cloop = struct
     mutable host_function : varinfo;
   (** The set of function called in a loop body *)
     mutable called_functions : varinfo list;
-  (** The variables declared before entering the loop*)
+  (**
+      If a variable is defined as a constant when entering the loop, this
+      constant added to the mapping.
+  *)
+    mutable constant_in : Cil.constant IM.t;
+    (** Cil's reaching definitions information *)
     mutable defined_in : defsMap;
   (** The variables used after exiting the loop *)
     mutable used_out : varinfo list;
@@ -104,6 +109,7 @@ module Cloop = struct
       inner_loops = [];
       host_function = parent;
       called_functions = [];
+      constant_in = IM.empty;
       defined_in = IH.create 32;
       used_out = [];
       rwset = VS.empty , VS.empty;
@@ -149,6 +155,8 @@ module Cloop = struct
 
   let getDefinedInVars l = l.defined_in
 
+  let add_constant_in l vid2const_map =
+    l.constant_in <- IMTools.add_all l.constant_in vid2const_map
   (**
      Once the defined vars are set we can have variable information directly
      from within the Cloop module.
@@ -446,6 +454,7 @@ let analyse_loop_context clp =
     | Some x ->
        begin
          let vid2const_map = analyze_definitions clp x in
+         Cloop.add_constant_in clp vid2const_map;
          x
        end
     | None ->

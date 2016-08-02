@@ -53,6 +53,7 @@ let cil2func loops =
       let stv = w in
       let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
       let func = Cil2Func.cil2func stmt stv in
+      let reaching_consts = cl.Cl.constant_in in
       if !verbose then
         begin
           (printf "%s[test for loop %i in %s failed]%s@."
@@ -60,16 +61,17 @@ let cil2func loops =
           Cil2Func.printlet (stv, func);
           printf "@.";
         end;
-      (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars, func))
+      (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars, func, reaching_consts))
     loops
 
 let func2sketch funcreps =
   IM.map
-    (fun (ro_vars_ids, state_vars_ids, var_set, func) ->
+    (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
+      let reach_consts = IM.convert_consts reach_ (** TODO *)
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body = Sketch.build_body func state_vars in
       let join_body = Sketch.build_join loop_body state_vars in
-      (ro_vars_ids, state_vars_ids, var_set, loop_body, join_body))
+      (ro_vars_ids, state_vars_ids, var_set, loop_body, join_body, reach_consts))
     funcreps
 
 let pp_sketch = Sketch.pp_rosette_sketch
