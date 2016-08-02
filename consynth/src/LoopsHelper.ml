@@ -8,6 +8,14 @@ let debug = ref false
 
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 
+type loop_info = {
+  lid : int;
+  initial_values : Cil.constant IM.t;
+  added_vars : VS.t;
+  index : Cil.varinfo list;
+  array_access :
+}
+
 let rem_stmt_in_cfg (stm : stmt) =
   let succs = stm.succs in
   let preds = stm.preds in
