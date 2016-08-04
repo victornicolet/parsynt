@@ -44,6 +44,14 @@ let processFile fileName =
    - the set of variables defined in the loop.
    - the function representing the body of the loop.
 *)
+type func_info =
+  int list * int list * Usedef.VS.t *
+    Cil2Func.letin * (Cil.constant Utils.IM.t)
+
+type sketch_info =
+  int list * int list * Usedef.VS.t * SketchTypes.sklet *
+     SketchTypes.sklet * (SketchTypes.skExpr Utils.IM.t)
+
 let cil2func loops =
   Cil2Func.init loops;
   IM.map
@@ -67,11 +75,12 @@ let cil2func loops =
 let func2sketch funcreps =
   IM.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
-      let reach_consts = IM.convert_consts reach_ (** TODO *)
+      let reach_consts = IM.map Sketch.convert_const reach_consts in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body = Sketch.build_body func state_vars in
       let join_body = Sketch.build_join loop_body state_vars in
-      (ro_vars_ids, state_vars_ids, var_set, loop_body, join_body, reach_consts))
+      (ro_vars_ids, state_vars_ids, var_set,
+       loop_body, join_body, reach_consts))
     funcreps
 
 let pp_sketch = Sketch.pp_rosette_sketch

@@ -268,6 +268,8 @@ let build_body (let_form : letin) (state : VS.t) =
 let build_join (sklet : sklet) (state : VS.t) =
   make_join state sklet
 
+let convert_const = skexpr_of_constant
+
 (** Transform the converted sketch to a loop body and a join sketch *)
 
 let rec make_conditional_guards (initial_vs : VS.t) (letin_form : sklet) =
@@ -525,7 +527,8 @@ let pp_join fmt (join_body, state_vars) =
 
 (** Some state definitons *)
 
-let pp_states fmt state_vars read_vars st0 =
+
+let pp_states fmt state_vars read_vars st0 reach_consts =
   let s0_sketch_printer =
     pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
@@ -538,12 +541,24 @@ let pp_states fmt state_vars read_vars st0 =
     s0_sketch_printer (VSOps.varlist state_vars);
 
   let st0_vars = VSOps.vs_with_suffix state_vars "0" in
-  ignore(pp_symbolic_definitions_of fmt st0_vars);
+  ignore(pp_symbolic_definitions_of fmt
+           (VS.filter
+              (fun vi -> not (IM.mem vi.Cil.vid reach_consts)) st0_vars));
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     st0
     main_struct_name
-    VSOps.pp_var_names st0_vars
+    (fun fmt li ->
+      (ppli fmt ~sep:" "
+         (fun fmt (vid, vi) ->
+           (if IM.mem vid reach_consts
+            then
+               pp_skexpr fmt (IM.find vid reach_consts)
+            else
+               Format.fprintf fmt "%s" vi.Cil.vname)))
+        li)
+    (VSOps.bindings st0_vars)
+
 
 (** The synthesis problem in Rosette *)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
@@ -597,7 +612,7 @@ let pp_rosette_sketch fmt
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
-  pp_states fmt state_vars read_vars st0;
+  pp_states fmt state_vars read_vars st0 reach_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_force_newline fmt ();
   pp_synth fmt st0 state_vars symbolic_variables

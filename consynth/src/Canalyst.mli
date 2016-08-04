@@ -1,13 +1,17 @@
 open Cil
 
-val processFile: string -> Findloops.Cloop.t Utils.IM.t
-val cil2func : Findloops.Cloop.t Utils.IM.t ->
-  (int list * int list * Usedef.VS.t * Cil2Func.letin) Utils.IM.t
-val func2sketch :
-  (int list * int list * Usedef.VS.t * Cil2Func.letin) Utils.IM.t ->
-  (int list * int list * Usedef.VS.t * SketchTypes.sklet *
-     SketchTypes.sklet) Utils.IM.t
+type func_info =
+  int list * int list * Usedef.VS.t *
+    Cil2Func.letin * (Cil.constant Utils.IM.t)
 
-val pp_sketch : Format.formatter ->
-  int list * int list * Usedef.VS.t * SketchTypes.sklet * SketchTypes.sklet
-  -> unit
+type sketch_info =
+  int list * int list * Usedef.VS.t * SketchTypes.sklet *
+     SketchTypes.sklet * (SketchTypes.skExpr Utils.IM.t)
+
+val processFile: string -> Findloops.Cloop.t Utils.IM.t
+
+val cil2func : Findloops.Cloop.t Utils.IM.t -> func_info Utils.IM.t
+
+val func2sketch : func_info Utils.IM.t -> sketch_info  Utils.IM.t
+
+val pp_sketch : Format.formatter -> sketch_info  -> unit
