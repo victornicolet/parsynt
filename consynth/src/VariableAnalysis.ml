@@ -165,3 +165,24 @@ let analyzable b =
   let simple_vars = VS.filter is_simple (used b) in
   let complex_vars = VS.filter is_complex (used b) in
   VS.diff (un simple_vars complex_vars) (aliased b)
+
+
+(** Host / Offset *)
+let rec analyze_host host  =
+  match host with
+  | Var vi -> [vi], []
+  | Mem e ->
+     match e with
+     | Lval (host, offset) ->
+        let o2 = analyze_offset offset in
+        let v, o1 = analyze_host host in
+        v, o1@o2
+     | Binop (op, (Lval (host, offset), e2, t)) ->
+        match op with
+        (** PlusPI and IndexPI are semantically equivalent *)
+        | PlusPI
+        | IndexPI ->
+        | MinusPI ->
+        | _ -> failwith "Unexpected operator in Lval host expressions"
+
+and analyze_offset offset =

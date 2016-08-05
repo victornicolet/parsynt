@@ -245,7 +245,9 @@ module CilTools = struct
 
   and get_var e =
     match e with
-    | Lval (host,offset) -> get_host_var host
+    | Lval (host,offset) ->
+       let hvar, offsets' = get_host_var host in
+       hvar
     | _ -> None, []
 end
 (**
