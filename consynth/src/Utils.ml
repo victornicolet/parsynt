@@ -229,26 +229,6 @@ module CilTools = struct
     | None, Some e2 -> Some e2
     | None, None -> None
 
-  let rec get_host_var host =
-    match host with
-    | Var vi -> Some vi, []
-    | Mem e ->
-       match e with
-       | Lval (hst, offset) ->
-          let v1, ofs = get_host_var hst in
-          v1, ofs@[offset]
-       | BinOp (op, e1, e2, t) ->
-          let v1, o1 = get_var e1 in
-          let offset = Index (e2, NoOffset) in
-          v1, o1@[offset]
-       | _ -> None, []
-
-  and get_var e =
-    match e with
-    | Lval (host,offset) ->
-       let hvar, offsets' = get_host_var host in
-       hvar
-    | _ -> None, []
 end
 (**
     Extract the variables used in statements/expressions/instructions/..

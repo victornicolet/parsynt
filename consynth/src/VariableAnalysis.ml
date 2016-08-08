@@ -170,19 +170,34 @@ let analyzable b =
 (** Host / Offset *)
 let rec analyze_host host  =
   match host with
-  | Var vi -> [vi], []
+  | Var vi -> Some vi, []
   | Mem e ->
      match e with
      | Lval (host, offset) ->
         let o2 = analyze_offset offset in
         let v, o1 = analyze_host host in
         v, o1@o2
-     | Binop (op, (Lval (host, offset), e2, t)) ->
-        match op with
-        (** PlusPI and IndexPI are semantically equivalent *)
-        | PlusPI
-        | IndexPI ->
-        | MinusPI ->
-        | _ -> failwith "Unexpected operator in Lval host expressions"
+     | BinOp (op, Lval (host, offset), e2, t) ->
+        let host_varinfo_opt =
+          match analyze_host host with
+          | Some vinf , [] -> Some vinf
+          | _, _ -> None
+        in
+        let expr_op =
+          match op with
+          (** PlusPI and IndexPI are semantically equivalent *)
+          | PlusPI
+          | IndexPI ->
+             e2
+          | MinusPI ->
+             UnOp (Neg, e2, t)
+          | _ -> failwith "Unexpected operator in Lval host expressions"
+        in host_varinfo_opt, [expr_op]
+
+     |_ -> None, []
 
 and analyze_offset offset =
+  match offset with
+  | NoOffset -> []
+  | Index (e, off) -> e :: (analyze_offset off)
+  | _ -> []

@@ -18,19 +18,28 @@ module Ct = CilTools
 (**
     Given a loop body, extract all the array subscripts in array
     variables and return a mapping from variable ids to two lists of
-    read,write array subscripts and the statement where it appears.
+    read,write array subscripts and the statement where they appear.
 *)
 let extract_subscripts (loop_body : block) (vars : VS.t) =
-  let from_stmt stmt =
+  let rec from_stmt stmt =
     match stmt.skind with
       Instr il ->
         List.fold_left
-          (fun ih instr -> IH.add )
-    | Block b ->
+          (fun acc instr ->
+            acc@(from_instr stmt instr))
+          []
+          il
+
+    | Block b
     | Loop (b, _, _, _) ->
+       from_block b []
+
+    | Switch (e, b, _, _) ->
+       (from_block b  (from_expr stmt false e))
 
     | If (c, b1, b2, _) ->
-    | Switch (e, b, _, _) ->
+       (from_block b1 (from_block b2 (from_expr stmt false c)))
+
     | TryFinally _
     | TryExcept _
     | Return _
@@ -39,26 +48,68 @@ let extract_subscripts (loop_body : block) (vars : VS.t) =
     | Break _
     | Continue _ -> failwith "Unsupported statement."
 
-  and from_instr instr =
+  and from_block b acc_subs =
+    List.fold_left
+      (fun acc stmt ->
+        acc@(from_stmt stmt))
+      acc_subs
+      b.bstmts
+
+  and from_instr stmt instr =
     match instr with
     | Set (lv, e, t) ->
-
+       (ex_from_lval stmt true lv)@(from_expr stmt false e)
     | Call (lvo, ef, args, t) ->
+       (maybe_apply_default (ex_from_lval stmt true) lvo [])@
+         (from_expr stmt false ef)@
+         (List.fold_left (fun acc expr -> acc@(from_expr stmt false expr)) [] args)
     | _ -> failwith "Unsupported instruction."
 
-  and from_expr expr =
+  and from_expr stmt on_left_hand expr =
     match expr with
-    | LVar (host, offset) ->
-       let offset =
-       let main_host, offsets = Ct.get_host_var lv in
-       if Ct.is_like_array main_host
-       then Some (vi.vid, Ct.g
+    | Lval lv -> ex_from_lval stmt on_left_hand lv
+
     | CastE (_, e) | SizeOfE e | AlignOfE e
     | UnOp (_, e, _) ->
+       from_expr stmt on_left_hand  e
 
     | BinOp (_, e1, e2, _) ->
+       (from_expr stmt on_left_hand e1)@(from_expr stmt on_left_hand e2)
 
     | Question (c, e1, e2, _) ->
+       (from_expr stmt on_left_hand e1)@
+         (from_expr stmt on_left_hand e2)@
+         (from_expr stmt on_left_hand c)
+
+    | _ -> []
+
+  and ex_from_lval stmt on_left_hand (host, off) =
+       let offset = analyze_offset off in
+       let main_host, offsets = analyze_host host in
+       match main_host with
+       | Some vi_host ->
+          [(vi_host.vid, offsets@offset, on_left_hand, stmt)]
+       | _ -> []
+  in
+  let subs_list = from_block loop_body [] in
+  let init_map =
+    VS.fold (fun vi map -> IM.add vi.vid ([],[]) map) vars IM.empty
+  in
+  let aggregate_subs =
+    List.fold_left
+      (fun imap (varid, offsets, on_lh, stmt) ->
+        let read_offs, write_offs = IM.find varid imap in
+        let new_binding =
+          if on_lh then (read_offs, write_offs@[(offsets, stmt)])
+          else (read_offs@[(offsets, stmt)], write_offs)
+        in
+        IM.add varid new_binding imap
+      )
+      init_map
+      subs_list
+  in
+  aggregate_subs
+
 
 (**
    Condition for accepting loops :

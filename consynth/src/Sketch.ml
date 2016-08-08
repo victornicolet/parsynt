@@ -9,6 +9,7 @@ open Cil2Func
 open Join
 open Racket
 open Utils.ListTools
+open VariableAnalysis
 
 module VS = VS
 module SM = Map.Make (String)
@@ -142,7 +143,7 @@ and convert_offset =
 and convert_offsets offsets_list =
   List.fold_left offsets_list
     ~init:[]
-    ~f:(fun acc x -> acc@(convert_offset x))
+    ~f:(fun acc x -> acc@[convert_cils x])
 
 
 and skexpr_of_lval (cur_v : skLVar)
@@ -154,7 +155,7 @@ and skexpr_of_lval (cur_v : skLVar)
       if it is a Cil memory access.
   *)
   | [] ->
-     let vo, ofs_li = CilTools.get_host_var host in
+     let vo, ofs_li = analyze_host host in
      begin
        match vo with
        | Some vi ->
@@ -163,7 +164,7 @@ and skexpr_of_lval (cur_v : skLVar)
      end
 
   | new_off_list ->
-       let vo, prev_offs_list =  CilTools.get_host_var host in
+       let vo, prev_offs_list =  analyze_host host in
        let off_list = (convert_offsets prev_offs_list)@new_off_list in
        let vi_to_expr =
          match vo with
