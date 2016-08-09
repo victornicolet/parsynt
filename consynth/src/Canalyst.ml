@@ -79,10 +79,10 @@ let cil2func loops =
 let func2sketch funcreps =
   List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
-      let reach_consts = IM.map Sketch.convert_const reach_consts in
+      let reach_consts = IM.map Sketch.Build.convert_const reach_consts in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
-      let loop_body = Sketch.build_body func state_vars in
-      let join_body = Sketch.build_join loop_body state_vars in
+      let loop_body = Sketch.Build.build_body func state_vars in
+      let join_body = Sketch.Build.build_join loop_body state_vars in
       (ro_vars_ids, state_vars_ids, var_set,
        loop_body, join_body, reach_consts))
     funcreps

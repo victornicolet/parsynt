@@ -1,6 +1,4 @@
-val build_body : Cil2Func.letin -> Utils.VS.t -> SketchTypes.sklet
-val build_join : SketchTypes.sklet -> Utils.VS.t -> SketchTypes.sklet
-val convert_const : Cil.constant -> SketchTypes.skExpr
+module Build = BuildSketch
 
 val pp_rosette_sketch : Format.formatter ->
   (int list * int list * Utils.VS.t *
