@@ -10,8 +10,8 @@ type sketch_info =
 
 val processFile: string -> Findloops.Cloop.t Utils.IM.t
 
-val cil2func : Findloops.Cloop.t Utils.IM.t -> func_info Utils.IM.t
+val cil2func : Findloops.Cloop.t Utils.IM.t -> func_info list
 
-val func2sketch : func_info Utils.IM.t -> sketch_info  Utils.IM.t
+val func2sketch : func_info list -> sketch_info list
 
 val pp_sketch : Format.formatter -> sketch_info  -> unit

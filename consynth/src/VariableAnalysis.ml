@@ -192,7 +192,8 @@ let rec analyze_host host  =
           | MinusPI ->
              UnOp (Neg, e2, t)
           | _ -> failwith "Unexpected operator in Lval host expressions"
-        in host_varinfo_opt, [expr_op]
+        in
+        host_varinfo_opt, [expr_op]
 
      |_ -> None, []
 

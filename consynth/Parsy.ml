@@ -27,8 +27,8 @@ let main () =
       | _ -> ()
     end;
   let sketch_map = C.func2sketch (C.cil2func (C.processFile filename)) in
-  IM.iter
-    (fun k sketch -> compile_and_fetch sketch)
+  List.iter
+    (fun sketch -> compile_and_fetch sketch)
     sketch_map ;;
 
 main ();

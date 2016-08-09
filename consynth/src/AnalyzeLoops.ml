@@ -5,6 +5,7 @@ open VariableAnalysis
 open Findloops
 open Findloops.Cloop
 open LoopsHelper
+open PpHelper
 
 module IM = Utils.IM
 module Ct = CilTools
@@ -20,7 +21,8 @@ module Ct = CilTools
     variables and return a mapping from variable ids to two lists of
     read,write array subscripts and the statement where they appear.
 *)
-let extract_subscripts (loop_body : block) (vars : VS.t) =
+let extract_subscripts (loop_body : block) ((r, w) : VS.t * VS.t) =
+  let vars = VS.union r w in
   let rec from_stmt stmt =
     match stmt.skind with
       Instr il ->
@@ -88,7 +90,10 @@ let extract_subscripts (loop_body : block) (vars : VS.t) =
        let main_host, offsets = analyze_host host in
        match main_host with
        | Some vi_host ->
-          [(vi_host.vid, offsets@offset, on_left_hand, stmt)]
+         let offs = offsets@offset in
+         (if List.length offs > 0 then
+           [(vi_host.vid, offs, on_left_hand, stmt)]
+         else [])
        | _ -> []
   in
   let subs_list = from_block loop_body [] in
@@ -98,7 +103,9 @@ let extract_subscripts (loop_body : block) (vars : VS.t) =
   let aggregate_subs =
     List.fold_left
       (fun imap (varid, offsets, on_lh, stmt) ->
-        let read_offs, write_offs = IM.find varid imap in
+        let read_offs, write_offs =
+          try IM.find varid imap with Not_found -> ([], [])
+        in
         let new_binding =
           if on_lh then (read_offs, write_offs@[(offsets, stmt)])
           else (read_offs@[(offsets, stmt)], write_offs)
@@ -116,7 +123,7 @@ let extract_subscripts (loop_body : block) (vars : VS.t) =
    - no variable aliasing
    - no loop exit in the new_body
 *)
-let accept lid loop  =
+let accept (lid : int) (loop : Cloop.t)  =
   let _, state = loop.rwset in
   (**  Don't accept loops with breaks/exits in its body *)
   (not loop.has_breaks) &&
@@ -127,14 +134,17 @@ let accept lid loop  =
      VS.is_empty (VS.inter (aliased loop_body) state))
 
 
-let transform loop = loop
+let transform (lid, loop) =
+  let subscripts_map =
+    extract_subscripts (mkBlock loop.new_body) loop.rwset in
+  loop
 
 
 (**
     If (loop1 <= loop2) we will try to parallelize loop1 first because
     it is a simpler task (we order loops by their 'complexity')
 *)
-let compare (lid1, loop1) (lid2, loop2) =
+let compare_cl ((lid1, loop1) : int * Cloop.t) (lid2, loop2) =
   if List.mem loop1.sid loop2.parent_loops
   then -1
   else
@@ -151,6 +161,7 @@ let compare (lid1, loop1) (lid2, loop2) =
     end
 
 
-let transform (loop_map : Cloop.t IM.t) =
+let transform_and_sort (loop_map : Cloop.t IM.t) =
   List.map transform
-    (List.sort compare (IM.bindings (IM.filter accept loop_map)))
+    (List.sort compare_cl
+       (IM.bindings (IM.filter accept loop_map)))

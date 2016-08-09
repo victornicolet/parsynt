@@ -3,9 +3,11 @@ open PpHelper
 open Format
 open Utils
 
+
 module E = Errormsg
 module C = Cil
 module Cl = Findloops.Cloop
+module A = AnalyzeLoops
 
 let debug = ref false
 let verbose = ref false
@@ -52,9 +54,11 @@ type sketch_info =
   int list * int list * Usedef.VS.t * SketchTypes.sklet *
      SketchTypes.sklet * (SketchTypes.skExpr Utils.IM.t)
 
+
 let cil2func loops =
   Cil2Func.init loops;
-  IM.map
+  let sorted_lps = A.transform_and_sort loops in
+  List.map
     (fun cl ->
       let stmt = C.mkBlock(cl.Cl.new_body) in
       let r, w = cl.Cl.rwset in
@@ -70,10 +74,10 @@ let cil2func loops =
           printf "@.";
         end;
       (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars, func, reaching_consts))
-    loops
+    sorted_lps
 
 let func2sketch funcreps =
-  IM.map
+  List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
       let reach_consts = IM.map Sketch.convert_const reach_consts in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
