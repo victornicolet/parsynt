@@ -73,6 +73,7 @@ and body_func =
 (** Interface types with Rosette/Racket *)
 
 and symbolic_type =
+  | Bottom | Num
   | Unit
   (** Base types : only booleans, integers and reals *)
   | Integer
@@ -81,7 +82,7 @@ and symbolic_type =
   (** Type tuple *)
   | Tuple of symbolic_type list
   (** Other lifted types *)
-  | Bitvector of symbolic_type * int
+  | Bitvector of int
   (** A function in Rosette is an uniterpreted function *)
   | Function of symbolic_type * symbolic_type
   (** A procdedure is a reference to a procedure object *)
@@ -170,23 +171,27 @@ and constants =
 
 let symb_unop_of_cil =
   function
-  | Cil.LNot | Cil.BNot -> Not
-  | Cil.Neg -> Neg
+  | Cil.LNot -> Not, Bottom
+  | Cil.BNot -> Not, Boolean
+  | Cil.Neg -> Neg, Num
 
 let symb_binop_of_cil =
   function
-  | Cil.IndexPI -> Plus
-  | Cil.PlusA | Cil.PlusPI -> Plus
-  | Cil.MinusA | Cil.MinusPI | Cil.MinusPP-> Minus
-  | Cil.Mult -> Times
-  | Cil.Div -> Div
-  | Cil.Mod -> Mod
-  | Cil.BXor -> Xor
-  | Cil.BAnd | Cil.LAnd -> And
-  | Cil.BOr | Cil.LOr -> Or
-  | Cil.Lt -> Lt | Cil.Le -> Le | Cil.Gt -> Gt | Cil.Ge -> Ge
-  | Cil.Eq -> Eq | Cil.Ne -> Neq
-  | Cil.Shiftlt -> ShiftL | Cil.Shiftrt -> ShiftR
+  | Cil.IndexPI -> Plus, Num
+  | Cil.PlusA | Cil.PlusPI -> Plus, Num
+  | Cil.MinusA | Cil.MinusPI | Cil.MinusPP-> Minus, Num
+  | Cil.Mult -> Times, Num
+  | Cil.Div -> Div, Num
+  | Cil.Mod -> Mod, Integer
+  | Cil.BXor -> Xor, Bitvector 0
+  | Cil.BAnd -> And, Bitvector 0
+  | Cil.LAnd -> And, Boolean
+  | Cil.BOr -> Or, Bitvector 0
+  | Cil.LOr -> Or, Boolean
+  | Cil.Lt -> Lt, Num | Cil.Le -> Le, Num | Cil.Gt -> Gt, Num
+  | Cil.Ge -> Ge, Num
+  | Cil.Eq -> Eq, Num | Cil.Ne -> Neq, Num
+  | Cil.Shiftlt -> ShiftL, Bitvector 0 | Cil.Shiftrt -> ShiftR, Bitvector 0
 
   (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
   (* inexact->exact, exact->inexact, quotient , sgn *)

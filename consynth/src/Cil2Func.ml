@@ -388,7 +388,7 @@ let rec  merge_cond vs c let_if let_else pre_substs =
      let new_subs =
        IM.merge
          (fun vid if_expr_o else_expr_o ->
-           let cur_var = Var (VSOps.getVi vid vs) in
+           let cur_var = Var (VSOps.find_by_id vid vs) in
            match if_expr_o, else_expr_o with
            | Some if_expr, Some else_expr ->
               Some (FQuestion (c, if_expr, else_expr))
@@ -431,7 +431,7 @@ and convert_loop vs let_body igu let_cont loc =
        let rec_expr = FRec (igu, expr) in
        let id = gen_id () in
        add_uses id (used_vars_expr rec_expr);
-       true,  Let (VSOps.getVi vid vs, rec_expr, let_cont, id, loc)
+       true,  Let (VSOps.find_by_id vid vs, rec_expr, let_cont, id, loc)
      else
        false, let_body
 

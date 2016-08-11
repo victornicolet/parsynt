@@ -79,7 +79,19 @@ let cil2func loops =
 let func2sketch funcreps =
   List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
-      let reach_consts = IM.map Sketch.Body.convert_const reach_consts in
+      let reach_consts =
+        IM.mapi
+          (fun vid cilc ->
+            let expect_type =
+              try
+                (SketchTypes.symb_type_of_ciltyp
+                   ((VSOps.find_by_id vid var_set).Cil.vtype))
+              with Not_found ->
+                SketchTypes.Bottom
+            in
+            Sketch.Body.convert_const expect_type cilc)
+          reach_consts
+      in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body = Sketch.Body.build func state_vars in
       let join_body = Sketch.Join.build loop_body state_vars in

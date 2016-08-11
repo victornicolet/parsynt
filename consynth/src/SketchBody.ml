@@ -17,7 +17,7 @@ module Ct = CilTools
    loop).
 *)
 
-let rec convert (cur_v : skLVar) =
+let rec convert  (cur_v : skLVar)  =
   function
   | Var vi -> mkVar vi
 
@@ -49,7 +49,9 @@ let rec convert (cur_v : skLVar) =
      convert_cils ~cur_v:cur_v ~subs:converted_substitutions e
 
   | FQuestion (ecil, e1, e2) ->
-     SkQuestion (convert_cils ecil, (convert cur_v e1), (convert cur_v e2))
+     SkQuestion (convert_cils ~expect_ty:Boolean ecil,
+                 (convert cur_v e1),
+                 (convert cur_v e2))
 
   | FRec ((i, g, u), expr) ->
      SkRec ((i, g, u), SkLetExpr [(cur_v, convert cur_v expr)])
@@ -71,9 +73,9 @@ let rec convert (cur_v : skLVar) =
   | _ -> failwith "not yet implemented"
 
 
-and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) =
+and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
   function
-  | Cil.Const c -> skexpr_of_constant c
+  | Cil.Const c -> skexpr_of_constant expect_ty c
 
   | Cil.Lval v ->
      let skvar = skexpr_of_lval cur_v v in
@@ -107,19 +109,22 @@ and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) =
      SkAddrofLabel stm_ref
 
   | Cil.UnOp (op, e1, t) ->
-     let op' = symb_unop_of_cil op in
-     SkUnop (op',convert_cils ~subs:subs e1)
+     let op', ex_ty = symb_unop_of_cil op in
+     SkUnop (op',convert_cils ~subs:subs ~expect_ty:ex_ty e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
-     let op' = symb_binop_of_cil op in
-     SkBinop (op', convert_cils ~subs:subs e1, convert_cils ~subs:subs e2)
+     let op', ex_ty = symb_binop_of_cil op in
+     SkBinop (op',
+              convert_cils ~subs:subs ~expect_ty:ex_ty e1,
+              convert_cils ~subs:subs ~expect_ty:ex_ty e2)
 
   | Cil.Question (c, e1, e2, t) ->
-     let c' = convert_cils c in
+     let c' = convert_cils ~expect_ty:Boolean c in
      SkQuestion (c',  convert_cils ~subs:subs e1, convert_cils ~subs:subs e2)
 
   | Cil.CastE (t, e) ->
-     SkCastE (symb_type_of_ciltyp t, convert_cils ~subs:subs e)
+     let ty = symb_type_of_ciltyp t in
+     SkCastE (ty , convert_cils ~subs:subs ~expect_ty:ty e)
 
   | Cil.StartOf lv ->
      SkStartOf (skexpr_of_lval cur_v lv)
@@ -172,10 +177,11 @@ and skexpr_of_lval (cur_v : skLVar)
          (mkVar ~offsets:off_list)
 
 
-and skexpr_of_constant c =
+and skexpr_of_constant t c =
   let const =  match c with
     | Cil.CInt64 (i, ik, stro) ->
-       if Ct.is_like_bool ik then CBool (Ct.bool_of_int64 i)
+       if Ct.is_like_bool ik || (t = Boolean)
+       then CBool (Ct.bool_of_int64 i)
        else CInt64 i
     | Cil.CReal (f, fk, stro) ->
        CReal f
@@ -193,7 +199,7 @@ and convert_letin (vs : VS.t) =
        let state =
          List.map (IM.bindings subs)
             ~f:(fun (k,e) ->
-              let cur_v = SkVarinfo (VSOps.getVi k vs) in
+              let cur_v = SkVarinfo (VSOps.find_by_id k vs) in
                                     (cur_v, convert cur_v e))
               in
        let complete_state =

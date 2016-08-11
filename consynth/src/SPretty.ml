@@ -118,9 +118,8 @@ let rec pp_symb_type ppf t =
                 l)
             tl
 
-       | Bitvector (t, i)->
-          fprintf ppf "(bitvector %a %i)"
-            pp_symb_type t i
+       | Bitvector  i ->
+          fprintf ppf "(bitvector %i)" i
 
        | Function (a, b)
        | Procedure (a, b) ->

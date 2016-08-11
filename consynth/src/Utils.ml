@@ -220,7 +220,8 @@ module CilTools = struct
     | IBool -> true
     | _ -> false
 
-  let bool_of_int64 i = (i == (Int64.of_int 1))
+  let bool_of_int64 i =
+    (Int64.compare (Int64.of_int 1) i) == 0
 
   let combine_expression_option op e1 e2 t=
     match e1, e2 with
@@ -293,12 +294,16 @@ module VSOps = struct
   let hasLval ((host,offset): lval) (vs: VS.t) =
     match host  with
     | Var vi -> hasVid vi.vid vs
-    | _-> VS.cardinal (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
+    | _-> VS.cardinal
+       (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
 
   (** Get-element functions*)
 
-  let getVi (id: int) (vs : VS.t) =
-    VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
+  let find_by_id (id: int) (vs : VS.t) =
+    if hasVid id vs then
+      VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
+    else
+      raise Not_found
 
   let subset_of_list (li : int list) (vs : VS.t) =
     VS.filter (fun vi -> List.mem vi.vid li) vs
