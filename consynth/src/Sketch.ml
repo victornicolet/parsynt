@@ -13,7 +13,8 @@ module VS = VS
 module SM = Map.Make (String)
 module Ct = CilTools
 
-module Build = BuildSketch
+module Body = SketchBody
+module Join = SketchJoin
 
 let iterations_limit = ref 10
 (******************************************************************************)

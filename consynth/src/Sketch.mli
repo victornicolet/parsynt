@@ -1,4 +1,5 @@
-module Build = BuildSketch
+module Body = SketchBody
+module Join = SketchJoin
 
 val pp_rosette_sketch : Format.formatter ->
   (int list * int list * Utils.VS.t *

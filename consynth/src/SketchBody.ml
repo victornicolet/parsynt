@@ -3,8 +3,6 @@ open Utils
 open SketchTypes
 open SPretty
 open Cil2Func
-open Join
-open Racket
 open Utils.ListTools
 open VariableAnalysis
 
@@ -13,7 +11,7 @@ module SM = Map.Make (String)
 module Ct = CilTools
 
 (**
-   The main entry point of the file is build_sketch :
+   The main entry point of the file is build :
    build a sketch from the Floop (vector of functions
    for each state variable representing the ody of the
    loop).
@@ -257,11 +255,8 @@ let optims sklet =
 
 (*** MAIN ENTRY POINT ***)
 
-let build_body (let_form : letin) (state : VS.t) =
+let build (let_form : letin) (state : VS.t) =
   optims (convert_letin state let_form)
-
-let build_join (sklet : sklet) (state : VS.t) =
-  make_join state sklet
 
 let convert_const = skexpr_of_constant
 
