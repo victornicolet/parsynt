@@ -7,8 +7,7 @@ open Utils
 module C = Canalyst
 
 let debug = ref true
-
-
+let elapsed_time = ref 0.
 
 let main () =
   if Array.length Sys.argv < 2 then
@@ -26,9 +25,14 @@ let main () =
          Local.dump_sketch := true
       | _ -> ()
     end;
+  elapsed_time := Unix.gettimeofday ();
+  printf "Compiling sketches ...\t\t";
   let sketch_map = C.func2sketch (C.cil2func (C.processFile filename)) in
+  printf "%sDONE%s@.@.Solving sketches ...\t\t" (color "green") default;
   List.iter
     (fun sketch -> compile_and_fetch sketch)
-    sketch_map ;;
+    sketch_map;
+  elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
+  printf "%sFINISHED in %.3f s%s@." (color "green") !elapsed_time default;;
 
 main ();
