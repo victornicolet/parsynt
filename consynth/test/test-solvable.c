@@ -1,17 +1,35 @@
 #include "stdio.h"
 
-/* int sum_2 (int* a, int* b, int n) { */
-/*   int sum = 0; */
-/*   for (int i = 0; i < n; i++) { */
-/*     sum += a [i]; */
-/*     for(int j = 0; j < n; j ++) { */
-/*       sum += b [i]; */
-/*     } */
-/*   } */
-/*   return sum; */
-/* } */
+int sum(int *a, int n) {
+  int sum = 0;
+
+  for(int i = 0; i < n; i++) {
+    sum += a[i];
+  }
+  return sum;
+}
+
+int length(int *a, int n) {
+  int length = 0;
+   for(int i = 0; i < n; i++) {
+     length++;
+  }
+   return length;
+}
+
 
 int mps(int* a, int n) {
+  int sum = 0, mps = 0;
+
+  for(int i = 0 ; i < n; i++) {
+    sum += a[i];
+    mps = max(mps, sum);
+  }
+  return mps + sum;
+}
+
+
+int mts(int* a, int n) {
   int sum = 0, mts = 0;
 
   for(int i = 0 ; i < n; i++) {
@@ -19,4 +37,18 @@ int mps(int* a, int n) {
     mts = max(0, mts + a[i]);
   }
   return mts + sum;
+}
+
+
+int mss(int* a, int n) {
+  int sum = 0, mts = 0, mps = 0, mss = 0;
+
+  for(int i = 0 ; i < n; i++) {
+    sum += a[i];
+    mps = max(mps, sum);
+    mts = max(0, mts + a[i]);
+    mss = max(mss, mts);
+  }
+
+  return mts + sum + mps + mss;
 }
