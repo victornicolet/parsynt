@@ -106,7 +106,7 @@
 
 
 (define-synthax BasicBinops:bool->bool
-  ([(BasicBinops:bool->bool) (choose and or)]))
+  ([(BasicBinops:bool->bool) (choose && ||)]))
 
 
 (define-synthax BasicUnops:bool
@@ -134,6 +134,8 @@
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)
+          ((BasicUnops:bool)
+           (bExpr:bool->bool x ... (sub1 depth)))
           ((BasicBinops:bool->bool)
            (bExpr:bool->bool x ... (sub1 depth))
            (bExpr:bool->bool x ... (sub1 depth)))))
