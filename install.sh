@@ -18,4 +18,6 @@ else
     fi
 fi
 
+echo "Checking installation of Racket components : raco, Rosette"
+
 MAYBE_INSTALLED=$(raco pkg show consynth)
