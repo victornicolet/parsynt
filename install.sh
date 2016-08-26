@@ -98,7 +98,7 @@ else
     msg_success "Package $PKG_CONSYNTH already present."
 fi
 
-msg_success "All Racket componenents present."
+msg_success "All Racket components present."
 sep
 echo "Checking Ocaml components."
 sep
@@ -111,3 +111,18 @@ then
 else
     msg_success "Ocaml $OCAML_VERSION is installed."
 fi
+
+# Check for Ocaml packages
+declare -a OCAML_PACKAGES=("cil" "core" "sexplib")
+
+for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
+do
+	PKG_SRC=$(ocamlfind query $OCAML_REQ_PACKAGE)
+	PKG_NOT_FOUND=$(ocamlfind query $OCAML_REQ_PACKAGE | grep 'not found')
+	if [[ -z $PKG_NOT_FOUND ]]
+	then
+		msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
+	else
+		msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
+	fi
+done
