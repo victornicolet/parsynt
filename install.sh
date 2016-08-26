@@ -106,14 +106,41 @@ sep
 OCAML_VERSION=$(ocaml -vnum)
 if [ -z $OCAML_VERSION ]
 then
-    msg_fail "Ocaml not installed ! Please install Racket."
+    msg_fail "Ocaml not installed ! Please install Ocaml."
     exit 0
 else
     msg_success "Ocaml $OCAML_VERSION is installed."
 fi
 
+# Check if OPAM is installed
+OPAM_VERSION=$(opam --version)
+if [[ -z $OPAM_VERSION ]]
+then
+    msg_fail "Opam not installed ! We won't install packages automatically."
+else
+    msg_success "opam $OPAM_VERSION is installed."
+fi
+
+# Automatic package installation with OPAM
+opam_install () {
+	if [[-z $OPAM_VERSION ]]
+	then
+	   msg_fail "Please installl $1 manually before running the installation script again."
+	else
+		opam install $1;
+		PKG_VERSION=$(opam show $1 | sed -n "s/^\s*version:\s\([0-9]\)*/\1/p")
+		if [[ -z $PACKAGE_VERSION ]]
+		then
+			msg_fail "Failed to install package $1. Please install it manually !"
+			exit 0;
+		else
+			msg_sucess "$1 $PACKAGE_VERSION has been successfully installed."
+		fi
+	fi
+}
 # Check for Ocaml packages
-declare -a OCAML_PACKAGES=("cil" "core" "sexplib")
+# We rely on ocamlfind to find OCaml packages but on OPAM for installation
+declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -126,3 +153,14 @@ do
 		msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
 	fi
 done
+
+sep
+echo "Creating Makefiles for Ocaml sources ..."
+sep
+
+cd ./consynth
+oasis setup -setup-update dynamic
+cd ..
+msg_success "Makefiles created, trying make in consynth"
+cd consynth
+make
