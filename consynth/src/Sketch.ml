@@ -83,20 +83,22 @@ let defsRec_of_varinfos vars_set =
   VS.fold add_varinfo vars_set empty_defrec
 
 
+(* Convert a record of definitions to a printable set of definitions *)
 let defsRec_to_symbDefs defs_rec
     : (symbDef * symbDef * symbDef * (symbDef list) ) =
   let ro_arrays_map =
     List.fold_left
       defs_rec.vecs
-      ~init:SM.empty
+      ~init:Utils.SM.empty
       ~f:(fun tmap (vname, sty) ->
-        SM.update tmap sty
-          (function
-          | Some l -> vname::l
-          | None -> [vname] ))
+        SMTools.update
+		  tmap
+		  sty
+		  [vname]
+          (fun pval nval -> pval@nval))
   in
-  let ro_arrays = SM.to_alist ro_arrays_map in
-  let roArrays = List.map  ro_arrays ~f:(fun (k,v) -> RoArray (k, v))
+  let ro_arrays = Utils.SM.bindings ro_arrays_map in
+  let roArrays = List.map ro_arrays ~f:(fun (k,v) -> RoArray (k, v))
   in
   (
     Integers defs_rec.ints,

@@ -430,3 +430,12 @@ module IMTools = struct
           true
       with Failure s -> false
 end
+
+module SMTools = struct
+  let update (map : 'a SM.t) (key : SM.key) (nval : 'a) (update : 'a -> 'a -> 'a) : 'a SM.t =
+	try
+	  let pval = SM.find key map in
+	  SM.add key (update pval nval) map
+	with Not_found ->
+	  SM.add key nval map
+end
