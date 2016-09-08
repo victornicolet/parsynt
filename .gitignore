@@ -17,11 +17,12 @@ consynth/_build
 consynth/canalysis/_build
 
 #Racket
-compiled/
+*/compiled/
 consynth/synthServ
 
 #Oasis
 setup.data
+consynth/setup.ml
 
 #Temporary dump files
 consynth/dump/conSynth*
