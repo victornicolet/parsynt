@@ -2,7 +2,7 @@ open Sketch
 open PpHelper
 open Format
 open Utils
-
+open Variable
 
 module E = Errormsg
 module C = Cil
