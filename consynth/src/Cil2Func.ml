@@ -74,7 +74,7 @@ let rec wf_letin vs =
   function
   | State emap ->
      (IM.fold
-       (fun k v ok -> ok && (VSOps.hasVid k vs)) emap true)
+       (fun k v ok -> ok && (VSOps.has_vid k vs)) emap true)
 
   | Let (vi, expr, letin, id, loc) -> wf_letin vs letin
 
@@ -370,7 +370,7 @@ let merge_substs vs old_subs new_subs =
               are used in new_subs *)
     (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
        old_subs new_subs) &&
-      not (IM.exists (fun k v -> VSOps.hasVid k used_in_new_subs)
+      not (IM.exists (fun k v -> VSOps.has_vid k used_in_new_subs)
              old_subs)
   then
     true, (IMTools.add_all old_subs new_subs), None

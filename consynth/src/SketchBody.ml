@@ -181,7 +181,7 @@ and skexpr_of_constant t c =
   let const =  match c with
     | Cil.CInt64 (i, ik, stro) ->
        if Ct.is_like_bool ik || (t = Boolean)
-       then CBool (Ct.bool_of_int64 i)
+       then CBool (bool_of_int64 i)
        else CInt64 i
     | Cil.CReal (f, fk, stro) ->
        CReal f

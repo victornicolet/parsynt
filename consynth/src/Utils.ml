@@ -4,13 +4,12 @@ open List
 open Printf
 open Format
 
-module E = Errormsg
 module S = Str
 module IH = Inthash
 module IS = Set.Make (struct
-  type t = int
-  let compare = Pervasives.compare
-end)
+    type t = int
+    let compare = Pervasives.compare
+  end)
 module SM = Map.Make (String)
 
 module VS = Usedef.VS
@@ -57,6 +56,11 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
 let fst (a,b)  = a
 let snd (a,b) = b
 
+
+let bool_of_int64 i =
+  (Int64.compare (Int64.of_int 1) i) == 0
+
+
 (** Lists *)
 module ListTools = struct
   (** a -- b -- > list of integers from a to b *)
@@ -75,10 +79,10 @@ module ListTools = struct
       min_int
       li
 
-  let foldl_union (f: 'a -> VS.t) (l: 'a list) : VS.t =
+  let foldl_union f l =
     List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
 
-  let foldl_union2 (f: 'a -> VS.t * VS.t) (l: 'a list) : VS.t * VS.t =
+  let foldl_union2 f l =
     List.fold_left (fun (acc1, acc2) a ->
 	  let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
 	  (VS.empty, VS.empty) l
@@ -133,8 +137,6 @@ let maybe_apply_default (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
   match v with
   | Some a -> f a
   | None -> default
-
-
 
 let xorOpt o1 o2 =
   match o1, o2 with
@@ -195,7 +197,7 @@ module CilTools = struct
     | Const (CInt64 (0L, _, _)) -> true
     | _ -> false
 
-  let addStmt block stmt =
+  let add_stmt block stmt =
 	{ block with bstmts = block.bstmts @ stmt }
 
   let simplify_rds rdef =
@@ -219,9 +221,6 @@ module CilTools = struct
     function
     | IBool -> true
     | _ -> false
-
-  let bool_of_int64 i =
-    (Int64.compare (Int64.of_int 1) i) == 0
 
   let combine_expression_option op e1 e2 t=
     match e1, e2 with
@@ -288,19 +287,19 @@ module VSOps = struct
 
   (** Member testing functions *)
 
-  let hasVid (id : int) (vs : VS.t) =
+  let has_vid (id : int) (vs : VS.t) =
     VS.exists (fun vi -> vi.vid = id) vs
 
-  let hasLval ((host,offset): lval) (vs: VS.t) =
+  let has_lval ((host,offset): lval) (vs: VS.t) =
     match host  with
-    | Var vi -> hasVid vi.vid vs
+    | Var vi -> has_vid vi.vid vs
     | _-> VS.cardinal
        (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
 
   (** Get-element functions*)
 
   let find_by_id (id: int) (vs : VS.t) =
-    if hasVid id vs then
+    if has_vid id vs then
       VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
     else
       raise Not_found
@@ -356,9 +355,7 @@ module VSOps = struct
   let spvs vs = pvs Format.str_formatter vs; Format.flush_str_formatter ()
   let epvs vs = pvs Format.err_formatter vs
 
-  let string_of_vs vs = pvs str_formatter vs ; flush_str_formatter ()
-  let ppvs = pvs std_formatter
-  let epvs = pvs err_formatter
+  let string_of_vs = spvs
 end
 
 module IHTools = struct
@@ -432,7 +429,7 @@ module IMTools = struct
 end
 
 module SMTools = struct
-  let update (map : 'a SM.t) (key : SM.key) (nval : 'a) (update : 'a -> 'a -> 'a) : 'a SM.t =
+  let update map key nval update =
 	try
 	  let pval = SM.find key map in
 	  SM.add key (update pval nval) map

@@ -5,6 +5,7 @@ open ListTools
 module EC = Expcompare
 module Ct = CilTools
 module VS = Utils.VS
+module E = Errormsg
 
 let debug = ref false
 
