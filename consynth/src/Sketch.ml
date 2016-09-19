@@ -200,7 +200,6 @@ let pp_symbolic_definitions_of fmt vars =
   in
   int_symbs @ real_symbs @ bool_symbs @ array_cells
 
-
 (** Loop body *)
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =

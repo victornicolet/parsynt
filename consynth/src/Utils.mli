@@ -163,6 +163,7 @@ module CilTools : sig
   val is_like_bool : ikind -> bool
   val combine_expression_option :
     Cil.binop -> Cil.exp option -> Cil.exp option -> Cil.typ -> Cil.exp option
+  val gen_var_with_suffix : Cil.varinfo -> string -> Cil.varinfo
 end
 
 module VSOps : sig
