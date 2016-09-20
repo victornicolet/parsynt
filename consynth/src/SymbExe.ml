@@ -48,8 +48,9 @@ let gen_var v =
       with Not_found ->
         let vname = vi.vname in
         let new_vi = Ct.gen_var_with_suffix vi (string_of_int !exec_count) in
+        let new_v = Ty.SkVarinfo new_vi in
         add_to_genvars vi.vid scalar_default_offset vname v;
-        (scalar_default_offset, new_vi.vname, v)
+        (scalar_default_offset, new_vi.vname, new_v)
     end
   | _ ->
     failwith "Bad input variable in gen_var"
@@ -82,15 +83,15 @@ let exec_once stv exprs func index_expr =
        replacing every state variable in expr by the corresponding expression
        in exprs and introducing new read variables. *)
     match var with
-    | Ty.SkState -> exprs
+    | Ty.SkState -> old_exprs
     | Ty.SkVarinfo vi ->
       let vid = vi.vid in
-      IM.add vid (exec_exp old_exprs expr) exprs (* TODO : update the corresponding expression *)
+      IM.add vid (exec_expr old_exprs expr) new_exprs
     | Ty.SkArray (v, e) ->
       failwith
         "Unsupported arrays in state variables for variable discovery algorithm"
 
-  and exec_exp old_exprs expr =
+  and exec_expr old_exprs expr =
     match expr with
     (* Where all the work is done : when encountering an expression in
        the function*)
@@ -104,15 +105,14 @@ let exec_once stv exprs func index_expr =
             if VSOps.has_vid vi.vid stv then
               IM.find vi.vid old_exprs
             else
-              (* It is a scalar input variable, we have to check if this variable
-                 has been used previously, if not we create a new variable for
-                 this use.
+              (* It is a scalar input variable, we have to check if this
+                 variable has been used previously, if not we create a
+                 new variable for this use.
               *)
               gen_expr v
           end
         | _ ->
           gen_expr v
-
       end
 
     | Ty.SkConst c -> expr
@@ -120,25 +120,25 @@ let exec_once stv exprs func index_expr =
     (* Recursive cases with only expressions as subexpressions *)
     | Ty.SkFun sklet -> expr (* TODO recursive *)
     | Ty.SkBinop (binop, e1, e2) ->
-      let e1' = exec_exp old_exprs e1 in
-      let e2' = exec_exp old_exprs e2 in
+      let e1' = exec_expr old_exprs e1 in
+      let e2' = exec_expr old_exprs e2 in
       Ty.SkBinop (binop, e1', e2')
 
     | Ty.SkQuestion (c, e1, e2) ->
-      let c' = exec_exp old_exprs c in
-      let e1' = exec_exp old_exprs e1 in
-      let e2' = exec_exp old_exprs e2 in
+      let c' = exec_expr old_exprs c in
+      let e1' = exec_expr old_exprs e1 in
+      let e2' = exec_expr old_exprs e2 in
       Ty.SkQuestion (c', e1', e2')
 
-    | Ty.SkUnop (unop, expr') -> Ty.SkUnop (unop, exec_exp old_exprs expr')
+    | Ty.SkUnop (unop, expr') -> Ty.SkUnop (unop, exec_expr old_exprs expr')
     | Ty.SkApp (sty, vi_o, elist) ->
-      let elist' = List.map (exec_exp old_exprs) elist in
+      let elist' = List.map (exec_expr old_exprs) elist in
       Ty.SkApp (sty, vi_o, elist')
 
     | Ty.SkAddrof expr' | Ty.SkStartOf expr'
-    | Ty.SkAlignofE expr' | Ty.SkSizeofE expr' -> exec_exp old_exprs expr'
+    | Ty.SkAlignofE expr' | Ty.SkSizeofE expr' -> exec_expr old_exprs expr'
     | Ty.SkSizeof _ | Ty.SkSizeofStr _ | Ty.SkAlignof _ -> expr
-    | Ty.SkCastE (sty, expr') -> Ty.SkCastE (sty, exec_exp old_exprs expr')
+    | Ty.SkCastE (sty, expr') -> Ty.SkCastE (sty, exec_expr old_exprs expr')
 
 
     (* Special cases where we have irreducible conitionals and nested for

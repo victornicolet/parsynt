@@ -22,6 +22,14 @@ let make_bool_varinfo ?(init = cil_true) varname =
 
 let exp_skvar vi =
   T.SkVar (T.SkVarinfo vi)
+let cil_exp_of_vi vi =
+  Lval (Var vi, NoOffset)
+
+let rec vi_of_var =
+  function
+  | T.SkState -> None
+  | T.SkVarinfo vi -> Some vi
+  | T.SkArray (v, _) -> vi_of_var v
 
 (* Sketch type expression *)
 let sk_tail_state =

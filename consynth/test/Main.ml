@@ -13,6 +13,9 @@ module TF2S = TFunc2Sketch
 module TGDef  = TGenDefs
 module TSbx = TSymbExe
 
+let unit_tests () =
+  TSbx.test ();;
+
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
     begin
@@ -34,5 +37,6 @@ let testProcessFile () =
       C2F.printlet (stv, (C2F.cil2func stmt stv)))
     loops;;
 
+unit_tests ();
 
-testProcessFile ()
+(* testProcessFile () *)

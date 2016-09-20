@@ -2,6 +2,7 @@ open SymbExe
 open Utils
 open Cil
 open TestUtils
+open SPretty
 
 module T = SketchTypes
 
@@ -18,3 +19,22 @@ let a, b, c =
 
 let f_a_plus_b =
   (T.SkLetIn ([(a, T.SkBinop (T.Plus, T.SkVar b, T.SkVar a))], sk_tail_state))
+
+let index_expr = exp_skvar (make_int_varinfo "i")
+
+let a_vi = check_option (vi_of_var a)
+let stv = VS.singleton a_vi
+let init_exprs = IM.singleton a_vi.vid (exp_skvar a_vi)
+
+let r1 = exec_once stv init_exprs f_a_plus_b index_expr
+let r2 = exec_once stv r1 f_a_plus_b index_expr
+
+let print_exprs str exprs =
+  Format.printf "%s :\n" str;
+  IM.iter
+    (fun vid expr -> Format.printf "%i : %a\n" vid pp_skexpr expr)
+    exprs
+
+let test () =
+  print_exprs "r1" r1;
+  print_exprs "r2" r2
