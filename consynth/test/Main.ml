@@ -11,6 +11,7 @@ module C2F = Cil2Func
 module TC2F = TCil2Func
 module TF2S = TFunc2Sketch
 module TGDef  = TGenDefs
+module TSbx = TSymbExe
 
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
