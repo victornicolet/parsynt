@@ -23,15 +23,40 @@ let f_a_plus_b =
 let g =
   (T.SkLetIn ([a, T.SkBinop (T.Max, T.SkVar a, T.SkVar c)], f_a_plus_b))
 
-let index_expr = exp_skvar (make_int_varinfo "i")
-let array = T.SkArray (a, index_expr)
+let index_var = make_int_varinfo "i"
+let index_expr = exp_skvar index_var
+let array = T.SkArray (c, index_expr)
 
 let a_vi = check_option (vi_of_var a)
 let stv = VS.singleton a_vi
 let init_exprs = IM.singleton a_vi.vid (exp_skvar a_vi)
 
-let r1 = exec_once stv init_exprs g index_expr
-let r2 = exec_once stv r1 g index_expr
+let sum_array =
+  (T.SkLetIn ([a, T.SkBinop (T.Plus, T.SkVar a, T.SkVar array)],
+             sk_tail_state))
+
+let increment_all_indexes index_exprs =
+  IM.fold
+    (fun vid expr ->
+       IM.add vid (T.SkBinop (T.Plus, expr, sk_one))
+    )
+    index_exprs
+    IM.empty
+let index_map1 = IM.singleton index_var.vid index_expr
+let index_map2 = increment_all_indexes index_map1
+let index_map3 = increment_all_indexes index_map2
+(** Apply the functions to states *)
+
+let r1 = exec_once stv init_exprs g (VS.singleton index_var, index_map1)
+
+let r2 = exec_once stv r1 g (VS.singleton index_var, index_map2)
+
+let r1_array = exec_once stv init_exprs sum_array
+    (VS.singleton index_var, index_map1)
+
+let r2_array = exec_once stv r1_array sum_array
+    (VS.singleton index_var, index_map2)
+
 
 let print_exprs str exprs =
   Format.printf "%s :\n" str;
@@ -41,4 +66,6 @@ let print_exprs str exprs =
 
 let test () =
   print_exprs "r1" r1;
-  print_exprs "r2" r2
+  print_exprs "r2" r2;
+  print_exprs "r1_array" r1_array;
+  print_exprs "r2_array" r2_array

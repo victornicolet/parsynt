@@ -17,7 +17,7 @@ let exception_on_variable msg var =
   raise_on "variable" msg pp_sklvar var
 
 let exception_on_expression msg expr =
-  raise_on "expression" msg pp_sklvar expr
+  raise_on "expression" msg pp_skexpr expr
 
 let exception_on_function msg sklet  =
   raise_on "function" msg pp_sklet sklet

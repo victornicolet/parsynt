@@ -10,6 +10,11 @@ let cil_true = Const (CInt64 (1L, IBool, None))
 let cil_false = Const (CInt64 (0L, IBool, None))
 let singl_init x = SingleInit x
 
+let sk_zero = T.SkConst (T.CInt 0)
+let sk_one = T.SkConst (T.CInt 1)
+let sk_true = T.SkConst (T.CBool true)
+let sk_false = T.SkConst (T.CBool false)
+
 let cil_int = TInt (IInt, [])
 let cil_bool = TInt (IBool, [])
 
