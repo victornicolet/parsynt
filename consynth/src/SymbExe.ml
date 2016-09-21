@@ -12,8 +12,8 @@ let scalar_default_offset = -1
 let genvars = IH.create 30
 
 (* Add variable to the map with a vid key and offset key *)
-let add_to_genvars vid offset vname expr =
-  IH.add genvars vid (offset, vname, expr)
+let add_to_genvars vid offset vname subst =
+  IH.add genvars vid (offset, vname, subst)
 
 (* Find variable id with offset (for arrays or default offset for scalars)*)
 let find_vid_offset vid offset =
@@ -27,11 +27,15 @@ let init () =
   IH.clear genvars;
   exec_count := 0
 
+(* Find a variable that has the same expression. We want to avoid to create
+   two different variable name for the same input (case of arrays if we access
+   the same cell, we don't want to create two differnt symbols).
+*)
 let find_from_exp vid cexp =
   let symb_inp_list = IH.find_all genvars vid in
   let same_exp =
     List.find_all
-      (fun (offset, vname, vexp) -> vexp = cexp)
+      (fun (offset, vname, (vexp, nexp)) -> vexp = cexp)
       symb_inp_list
   in
   if List.length same_exp < 1 then
@@ -39,27 +43,66 @@ let find_from_exp vid cexp =
   else
     List.nth same_exp 0
 
-let gen_var v =
-  match v with
-  | Ty.SkVarinfo vi ->
-    begin
-      try
-        find_from_exp vi.vid v
-      with Not_found ->
-        let vname = vi.vname in
-        let new_vi = Ct.gen_var_with_suffix vi (string_of_int !exec_count) in
-        let new_v = Ty.SkVarinfo new_vi in
-        add_to_genvars vi.vid scalar_default_offset vname v;
-        (scalar_default_offset, new_vi.vname, new_v)
-    end
-  | _ ->
-    failwith "Bad input variable in gen_var"
+(** From a sketch variable, generate a new name and a new variable
+    and memorize the old expression and the new expression of the
+    variable.
+    @param v the variable expression, a SkLVar
+    @return the offset of the varaible corresponding to the number of
+    expansions realised, the new name of the variable and a pair
+    representing the substituion of the expression in the code by
+    the new expression of the variable.
+*)
 
+let rec gen_var v =
+  try
+    let host_vi = check_option (Ty.vi_of v) in
+    try
+      find_from_exp host_vi.vid v
+    with Not_found ->
+      let vname = host_vi.vname in
+      let new_vi = Ct.gen_var_with_suffix host_vi (string_of_int !exec_count) in
+      let new_v = Ty.SkVarinfo new_vi in
+      let offset =
+        match v with
+        | Ty.SkState -> scalar_default_offset
+        | Ty.SkVarinfo _ -> scalar_default_offset
+        | Ty.SkArray _ -> !exec_count
+      in
+      add_to_genvars host_vi.vid offset vname (v, new_v);
+      (offset, new_vi.vname, (v,new_v))
+  with Failure s ->
+    raise
+      (Failure
+         (Format.fprintf Format.str_formatter
+            "%s@.Variable:%a@.Initial message: %s@."
+            "Failed to find host variable in gen_var"
+            SPretty.pp_sklvar v
+            s;
+          Format.flush_str_formatter ()))
+
+(* Filter out the new variable part in the variable generatoin output *)
 let gen_expr v =
-  let _, _, ev = gen_var v in Ty.SkVar ev
+  let _, _, (_, ev) = gen_var v in Ty.SkVar ev
 
 (** --------------------------------------------------------------------------*)
+(** exec_once : simulate the applciation of a function body to a set of
+    expressions for the state variables. The inputs are replaced by fresh
+    variables.
+    @raise {e Not_found} if an elemt is missing at some stage of the
+    algorithm.
 
+    @param stv the state variable of the function, they have to have the same
+    ids as the variables present in the input expressions.
+    @param exprs the inital expressions of the state variable before applying
+    the function.
+    @param func the function that we want to apply to the expressions.
+    @param index_expr the index is a special expression not appearing in the
+    state nor in the expressions so we have to add it to avoid creating false
+    read-only input symbols.
+
+    @return a map of variable ids in the state to the expressions resulting from
+    the application of the function to the input variables expressions.
+*)
 let exec_once stv exprs func index_expr =
   incr exec_count;
   (* Simply replace the occurrences of state variables
@@ -96,24 +139,7 @@ let exec_once stv exprs func index_expr =
     (* Where all the work is done : when encountering an expression in
        the function*)
 
-    | Ty.SkVar v ->
-      begin
-        match v with
-        | Ty.SkState -> expr
-        | Ty.SkVarinfo vi ->
-          begin
-            if VSOps.has_vid vi.vid stv then
-              IM.find vi.vid old_exprs
-            else
-              (* It is a scalar input variable, we have to check if this
-                 variable has been used previously, if not we create a
-                 new variable for this use.
-              *)
-              gen_expr v
-          end
-        | _ ->
-          gen_expr v
-      end
+    | Ty.SkVar v -> exec_var old_exprs v
 
     | Ty.SkConst c -> expr
 
@@ -149,7 +175,30 @@ let exec_once stv exprs func index_expr =
     | Ty.SkAddrofLabel _ | _ ->
       failwith "Unsupported expression in variable discovery algorithm"
 
+  and exec_var old_exprs v =
+    match v with
+    | Ty.SkState -> Ty.SkVar v
+    | Ty.SkVarinfo vi ->
+      begin
+        if VSOps.has_vid vi.vid stv then
+          IM.find vi.vid old_exprs
+        else
+          (* It is a scalar input variable, we have to check if this
+             variable has been used previously, if not we create a
+             new variable for this use.
+          *)
+          gen_expr v
+      end
+    | Ty.SkArray (v', offset_expr) ->
+      begin
+        let new_v' =
+          match exec_var old_exprs v' with
+          | Ty.SkVar v -> v
+          | _ ->
+            raise (Failure "TODO better error message")
+        in
+        let new_offset = exec_expr old_exprs offset_expr in
+        Ty.SkVar (Ty.SkArray (new_v', new_offset))
+      end
   in
   exec exprs func
-
-let rewrite state expr_list = expr_list

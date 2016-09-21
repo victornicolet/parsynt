@@ -123,7 +123,12 @@ let last_instr instr_stmt =
   | _ -> raise
      (Failure "last_instr expected a statement of instruction list kind" )
 
-let check_option (ao : 'a option) : 'a =
+(** Simple function to check if the argument is {e Some a}.
+    @param ao some argument of type 'a option
+    @return the object in the option
+    @raise Failure if the argument is None
+*)
+let check_option ao =
   match ao with
   | Some a -> a
   | None -> raise (Failure "check_option")
