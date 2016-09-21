@@ -12,12 +12,15 @@ module Ty = SketchTypes
     @param exprs the inital expressions of the state variable before applying
     the function.
     @param func the function that we want to apply to the expressions.
-    @param index_expr the index is a special expression not appearing in the
-    state nor in the expressions so we have to add it to avoid creating false
-    read-only input symbols.
+    @param index_var The set of variable composing the index, in most cases just
+    a singleton
+    @param index_exprs A mapping from index variables ids to the current index
+    expressions for the iteration to compute.
 
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
+
 val exec_once :
-  VS.t -> Ty.skExpr IM.t -> Ty.sklet -> Ty.skExpr -> Ty.skExpr IM.t
+  VS.t -> Ty.skExpr IM.t -> Ty.sklet -> (VS.t * Ty.skExpr IM.t) ->
+  Ty.skExpr IM.t

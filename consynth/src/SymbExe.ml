@@ -1,5 +1,6 @@
 open Utils
 open Cil
+open SError
 
 module Ty = SketchTypes
 module Ct = CilTools
@@ -103,7 +104,7 @@ let gen_expr v =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-let exec_once stv exprs func index_expr =
+let exec_once stv exprs func (index_vars, index_exprs) =
   incr exec_count;
   (* Simply replace the occurrences of state variables
      in the function by the expression corresponding
@@ -131,8 +132,9 @@ let exec_once stv exprs func index_expr =
       let vid = vi.vid in
       IM.add vid (exec_expr old_exprs expr) new_exprs
     | Ty.SkArray (v, e) ->
-      failwith
-        "Unsupported arrays in state variables for variable discovery algorithm"
+      exception_on_variable
+        "Unsupported arrays in state variables for variable discovery algorithm."
+        v
 
   and exec_expr old_exprs expr =
     match expr with
@@ -180,22 +182,39 @@ let exec_once stv exprs func index_expr =
     | Ty.SkState -> Ty.SkVar v
     | Ty.SkVarinfo vi ->
       begin
+        (* Is the variable a state variable ?*)
         if VSOps.has_vid vi.vid stv then
-          IM.find vi.vid old_exprs
+          try
+            IM.find vi.vid old_exprs
+          with Not_found ->
+            exception_on_variable "Expression not found for state variable" v
         else
-          (* It is a scalar input variable, we have to check if this
-             variable has been used previously, if not we create a
-             new variable for this use.
-          *)
-          gen_expr v
+          begin
+            (* Is the variable an index variable ? *)
+            if VSOps.has_vid vi.vid index_vars then
+              try
+                IM.find vi.vid index_exprs
+              with Not_found ->
+                exception_on_variable "Expression not found for index" v
+            else
+              (** It is a scalar input variable, we have to check if this
+                   variable has been used previously, if not we create a
+                   new variable for this use.
+              *)
+              gen_expr v
+          end
       end
     | Ty.SkArray (v', offset_expr) ->
+      (** TODO : add support for arrays in state variables. For now,
+          we assume all state variables are scalars, so if we have
+          an array in an expression it is necessarily an input variable.
+      *)
       begin
         let new_v' =
           match exec_var old_exprs v' with
           | Ty.SkVar v -> v
-          | _ ->
-            raise (Failure "TODO better error message")
+          | bad_v ->
+            exception_on_expression "Unexpected variable form in exec_var" bad_v
         in
         let new_offset = exec_expr old_exprs offset_expr in
         Ty.SkVar (Ty.SkArray (new_v', new_offset))
