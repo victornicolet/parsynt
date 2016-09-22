@@ -180,6 +180,7 @@ let exec_once stv exprs func (index_vars, index_exprs) =
   and exec_var old_exprs v =
     match v with
     | Ty.SkState -> Ty.SkVar v
+
     | Ty.SkVarinfo vi ->
       begin
         (* Is the variable a state variable ?*)
@@ -204,6 +205,7 @@ let exec_once stv exprs func (index_vars, index_exprs) =
               gen_expr v
           end
       end
+
     | Ty.SkArray (v', offset_expr) ->
       (** TODO : add support for arrays in state variables. For now,
           we assume all state variables are scalars, so if we have
