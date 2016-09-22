@@ -430,3 +430,63 @@ and symb_type_of_args argslisto =
     | [st] -> st
     | _ -> Tuple symb_types_list
   with Failure s -> Unit
+
+
+(** *********************************************** Recursion in expresssions *)
+
+(** Helper for recursion in expressions
+    @param join join two return values, the join operation must be associtaive
+    to avoid unexpected behaviour.
+    @param init an identity value for the return value
+    @param const_handler return a value for constants
+    @param var_handler returns a vlaue for variables
+    @param expre the input expression to apply the recursion on.
+    @return a return value obtained by recusrively joining the values
+    depending on the values in the leaves.
+*)
+let rec_expr
+    (join : 'a -> 'a -> 'a)
+    (init : 'a)
+    (const_handler: constants -> 'a)
+    (var_handler : skLVar -> 'a)
+    (expre : skExpr) : 'a =
+
+  let rec recurse_aux =
+    function
+    | SkVar v -> var_handler v
+    | SkConst c -> const_handler c
+
+    | SkBinop (_, e1, e2) ->
+      join (recurse_aux e1) (recurse_aux e2)
+
+    | SkCastE (_, e)
+    | SkAlignofE e
+    | SkAddrof e
+    | SkSizeofE e | SkStartOf e
+    | SkUnop (_, e) -> recurse_aux e
+
+    | SkQuestion (c, e1, e2) ->
+      join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
+
+    | SkApp (_, _, el) ->
+      List.fold_left join init el
+
+    | SkFun letin
+    | SkRec (_, letin) -> recurse_letin letin
+
+    | SkCond (c, l1, l2) ->
+      join (recurse_aux c) (join (recurse_letin l1) (recurse_letin l2))
+
+    | _ -> init
+
+  and recurse_letin =
+    function
+    | SkLetExpr velist ->
+      List.fold_left (fun acc (v, e) -> join acc (recurse_aux e)) init velist
+
+    | SkLetIn (velist, letin) ->
+      let in_letin = recurse_letin letin in
+      List.fold_left
+        (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
+  in
+  recurse_aux expre
