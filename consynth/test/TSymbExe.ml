@@ -3,6 +3,7 @@ open Utils
 open Cil
 open TestUtils
 open SPretty
+open ExpressionReduction
 
 module T = SketchTypes
 
@@ -32,7 +33,10 @@ let stv = VS.singleton a_vi
 let init_exprs = IM.singleton a_vi.vid (exp_skvar a_vi)
 
 let sum_array =
-  (T.SkLetIn ([a, T.SkBinop (T.Plus, T.SkVar a, T.SkVar array)],
+  (T.SkLetIn ([a,
+               T.SkBinop(T.Max,
+                         sk_zero,
+                         T.SkBinop (T.Plus, T.SkVar a, T.SkVar array))],
              sk_tail_state))
 
 let increment_all_indexes index_exprs =
@@ -57,6 +61,7 @@ let r1_array = exec_once stv init_exprs sum_array
 let r2_array = exec_once stv r1_array sum_array
     (VS.singleton index_var, index_map2)
 
+let reduced_r2_array = IM.map (cost_reduce stv) r2_array
 
 let print_exprs str exprs =
   Format.printf "%s :\n" str;
@@ -68,4 +73,5 @@ let test () =
   print_exprs "r1" r1;
   print_exprs "r2" r2;
   print_exprs "r1_array" r1_array;
-  print_exprs "r2_array" r2_array
+  print_exprs "r2_array" r2_array;
+  print_exprs "red_r2_array" reduced_r2_array

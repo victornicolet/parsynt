@@ -70,9 +70,12 @@ and depth_c_func stv func =
 
 
 
+let cost stv expr =
+  let dep, count = depth_cost stv expr in
+  dep
 
 (** op2 is right-distributive over op1 if :
-    (a op1 b) op2 c = (a op1 c) op2 (b op1 c)
+    (a op1 b) op2 c = (a op2 c) op1 (b op2 c)
     @param op1 'sum' like operator
     @param op2 distributes over op1
     @return true if op2 is right distributive over op1
@@ -89,3 +92,21 @@ let is_associative op =
   match op with
   | And | Or | Plus | Times | Max | Min -> true
   | _ -> false
+
+let rec cost_reduce stv expr =
+  print_endline "Cost reduce";
+  match expr with
+  | SkBinop (op2, SkBinop (op1, a, b), c) ->
+    print_endline "Matched";
+    let a' = cost_reduce stv a in
+    let b' = cost_reduce stv b in
+    let c' = cost_reduce stv c in
+    if is_right_distributive op1 op2
+    && ((max (cost stv a') (cost stv b')) >= (cost stv c'))
+    then
+      SkBinop (op1, SkBinop (op2, a', c'), SkBinop (op2, b', c'))
+    else
+      expr
+  | SkBinop (op, a, b) ->
+    SkBinop (op, cost_reduce stv a, cost_reduce stv b)
+  | _ -> expr
