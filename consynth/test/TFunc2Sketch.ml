@@ -12,12 +12,12 @@ let test loopsm =
   printf "%s--------TEST Func ---> Sketch%s@." (color "red") default;
   SM.iter
     (fun fname vals ->
-      let vs, func = vals in
-      let body_form = S.Body.build func vs in
-      printf"%s%s%s : @; %a@." (color "green") fname default
-        pp_sklet body_form;
-      let join = S.Join.build body_form vs in
-      printf"Join : @; %a@."
+       let vs, igu, func = vals in
+       let body_form, sigu = S.Body.build vs func igu in
+       printf"%s%s%s : @; %a@." (color "green") fname default
+         pp_sklet body_form;
+       let join = S.Join.build vs body_form in
+       printf"Join : @; %a@."
          pp_sklet join
     )
     loopsm

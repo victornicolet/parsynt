@@ -10,7 +10,7 @@ module C2F = Cil2Func
 (** Different test modules *)
 module TC2F = TCil2Func
 module TF2S = TFunc2Sketch
-module TGDef  = TGenDefs
+module TGDef = TGenDefs
 module TSbx = TSymbExe
 
 let unit_tests () =
@@ -32,11 +32,13 @@ let testProcessFile () =
   printf "%s Functional rep. %s\n" (color "blue") default;
   IM.iter
     (fun k cl ->
-      let stmt = mkBlock(cl.Cloop.new_body) in
-      let r, stv = cl.Cloop.rwset in
-      C2F.printlet (stv, (C2F.cil2func stmt stv)))
+       let stmt = mkBlock(cl.Cloop.new_body) in
+       let igu = check_option cl.Cloop.loop_igu in
+       let r, stv = cl.Cloop.rwset in
+       let letn, _ = C2F.cil2func stv stmt igu in
+       C2F.printlet (stv, letn))
     loops;;
 
 unit_tests ();
 
-(* testProcessFile () *)
+testProcessFile ();;

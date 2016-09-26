@@ -261,8 +261,14 @@ let optims sklet =
 
 (*** MAIN ENTRY POINT ***)
 
-let build (let_form : letin) (state : VS.t) =
-  optims (convert_letin state let_form)
+let build state let_form (index, (ilet, gexpr, ulet)) =
+  let ext_state = VS.union state index in
+  let iletin = convert_letin ext_state ilet in
+  let uletin = convert_letin ext_state ulet in
+  (** TODO implement records to manage index *)
+  let gskexpr = convert (SkVarinfo (VS.max_elt index)) gexpr in
+  optims (convert_letin state let_form), (index, (iletin, gskexpr, uletin))
+
 
 let convert_const = skexpr_of_constant
 

@@ -1,4 +1,7 @@
-val build : Cil2Func.letin -> Utils.VS.t -> SketchTypes.sklet
+val build : Utils.VS.t -> Cil2Func.letin ->
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) ->
+  SketchTypes.sklet * (Utils.VS.t *(SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+
 val convert : SketchTypes.skLVar -> Cil2Func.expr -> SketchTypes.skExpr
 val convert_const :
   SketchTypes.symbolic_type -> Cil.constant -> SketchTypes.skExpr

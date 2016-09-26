@@ -102,5 +102,5 @@ and merge_leaves max_depth (e,d) =
   else
     (e, d + 1)
 
-let build (sklet : sklet) (state : VS.t) =
+let build (state : VS.t) (sklet : sklet) =
   make_join state sklet

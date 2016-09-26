@@ -57,8 +57,14 @@ let update_map map vi vi_used =
   with Not_found ->
     IM.add vi.vid vi_used map
 
+(** Given a function an a set of state variables, return a mapping
+    from state variable ids to the list of variable ids used in the
+    function.
+    @param stv A set of state variables.
+    @input_func the function on which to compute the uses
+    @return A maaping from state variable ids to lists of variable ids.
+*)
 let uses stv input_func =
-  let uses_map = VS.fold (fun vi m -> IM.add vi.vid 0 m) stv IM.empty in
   let rec aux_used_stvs stv inpt map =
     match inpt with
     | Ty.SkLetIn (velist, letin) ->
@@ -78,5 +84,19 @@ let uses stv input_func =
              (VS.singleton (check_option (Ty.vi_of v))) stv) (* Variables *)
     in
     update_map map vi (f_expr expr)
+  in
+  IM.map VSOps.vids_of_vs (aux_used_stvs stv input_func IM.empty)
 
-let discover stv input_func (i,g,u) = ()
+(** Main algorithm. Discovers new variables that can be useful in parallelizing
+    the computation.
+    @param stv the set of state variables.
+    @param input_func the input function of the algorithm.
+    @param igu the init, guard and update statements of the enclosing loop. It
+    will be used in computing the symbolic index in the algorithm.
+    @return A new set of state variables and a new function with the varaibles
+    discovered by the algortihm.
+*)
+let discover stv input_func (i,g,u) =
+  (** Analyze the index and produce the update function for
+      the index.
+  *)

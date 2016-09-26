@@ -59,19 +59,25 @@ let test () =
   C2F.init loops;
   IM.fold
     (fun k cl ->
-      let stmt = mkBlock(cl.new_body) in
-      let r, stv = cl.rwset in
-      let func = C2F.cil2func stmt stv in
-      let fname = cl.host_function.vname in
-      if wf_test_case fname func then
-        (printf "%s%s :\t passed.%s@."
-           (color "green") fname default)
-      else
-        (printf "%s[test for loop %i in %s failed]%s@."
-           (color "red") cl.sid fname default;);
-      C2F.printlet (stv, func);
-      printf "@.";
-      SM.add fname (stv,func)
+       let igu =
+         try
+           check_option cl.loop_igu
+         with Failure s ->
+           failwith ("test failure"^s)
+       in
+       let stmt = mkBlock(cl.new_body) in
+       let r, stv = cl.rwset in
+       let func, figu = C2F.cil2func stv stmt igu in
+       let fname = cl.host_function.vname in
+       if wf_test_case fname func then
+         (printf "%s%s :\t passed.%s@."
+            (color "green") fname default)
+       else
+         (printf "%s[test for loop %i in %s failed]%s@."
+            (color "red") cl.sid fname default;);
+       C2F.printlet (stv, func);
+       printf "@.";
+       SM.add fname (stv, figu,func)
     )
     loops
     SM.empty

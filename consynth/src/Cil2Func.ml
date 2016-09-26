@@ -495,7 +495,7 @@ and reduce vs let_form = red vs let_form IM.empty
  *)
 let init map_loops = loops := map_loops;;
 
-let cil2func block statevs =
+let cil2func statevs block (i,g,u) =
   (**
       We need the other loops in case of nested loops to avoid
       recomputing the for statement in the inner loops.
@@ -504,7 +504,11 @@ let cil2func block statevs =
     failwith "You forgot to initialize the set of loops in Cil2Func ?";
   if !debug then eprintf "-- Cil --> Functional --";
   let let_expression = do_b statevs block in
-  reduce statevs let_expression
+  let index = index_of_igu (i,g,u) in
+  let init_f = do_il statevs [i] in
+  let update_f = do_il statevs [u] in
+  let guard_e = Container (g, IM.empty) in
+  reduce statevs let_expression, (index, (init_f, guard_e, update_f))
 
 
 

@@ -3,11 +3,13 @@ open PpHelper
 open Format
 open Utils
 open SymbExe
+open SError
 
 module E = Errormsg
 module C = Cil
 module Cl = Findloops.Cloop
 module A = AnalyzeLoops
+module T = SketchTypes
 
 let debug = ref false
 let verbose = ref false
@@ -44,15 +46,29 @@ let processFile fileName =
    - list of variables ids that a read in the loop.
    - list of state variables (written)
    - the set of variables defined in the loop.
+   - a triplet for the init, guard and update of the index of the loop.
    - the function representing the body of the loop.
+   - a mapping from variables to constants for variables
+   that have a static initialization before the loop.
 *)
+type figu = VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
+type varset_info = int list * int list * VS.t
 type func_info =
-  int list * int list * Usedef.VS.t *
-    Cil2Func.letin * (Cil.constant Utils.IM.t)
+  int list * int list * VS.t *
+  Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
+(** Sketch info type :
+    - subset of read variables
+    - subset of written variables,
+    - set of variables in the function
+    - body of the function
+    - init, guard and update of the enclosing loop
+    - sketch of the join.
+*)
+type sigu = VS.t * (T.sklet * T.skExpr * T.sklet)
 type sketch_info =
-  int list * int list * Usedef.VS.t * SketchTypes.sklet *
-     SketchTypes.sklet * (SketchTypes.skExpr Utils.IM.t)
+  int list * int list * Usedef.VS.t * T.sklet *
+     T.sklet * sigu * (T.skExpr Utils.IM.t)
 
 
 let cil2func loops =
@@ -60,43 +76,52 @@ let cil2func loops =
   let sorted_lps = A.transform_and_sort loops in
   List.map
     (fun cl ->
-      let stmt = C.mkBlock(cl.Cl.new_body) in
-      let r, w = cl.Cl.rwset in
-      let stv = w in
-      let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
-      let func = Cil2Func.cil2func stmt stv in
-      let reaching_consts = cl.Cl.constant_in in
-      if !verbose then
-        begin
-          (printf "%s[test for loop %i in %s failed]%s@."
-             (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
-          Cil2Func.printlet (stv, func);
-          printf "@.";
-        end;
-      (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars, func, reaching_consts))
+       (** Index *)
+       let i,g,u =
+         try
+           check_option cl.Cl.loop_igu
+         with Failure s ->
+           skip_exn "Couldn't use index form in loop.";
+       in
+       let stmt = C.mkBlock(cl.Cl.new_body) in
+       let r, w = cl.Cl.rwset in
+       let stv = w in
+       let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
+       let func, figu = Cil2Func.cil2func stv stmt (i,g,u) in
+       let reaching_consts = cl.Cl.constant_in in
+       if !verbose then
+         begin
+           (printf "%s[test for loop %i in %s failed]%s@."
+              (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
+           Cil2Func.printlet (stv, func);
+           printf "@.";
+         end;
+       (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars,
+        func, figu,
+        reaching_consts))
     sorted_lps
 
 let func2sketch funcreps =
   List.map
-    (fun (ro_vars_ids, state_vars_ids, var_set, func, reach_consts) ->
+    (fun (ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
       let reach_consts =
         IM.mapi
           (fun vid cilc ->
             let expect_type =
               try
-                (SketchTypes.symb_type_of_ciltyp
+                (T.symb_type_of_ciltyp
                    ((VSOps.find_by_id vid var_set).Cil.vtype))
               with Not_found ->
-                SketchTypes.Bottom
+                T.Bottom
             in
             Sketch.Body.convert_const expect_type cilc)
           reach_consts
       in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
-      let loop_body = Sketch.Body.build func state_vars in
-      let join_body = Sketch.Join.build loop_body state_vars in
+      let loop_body, sigu = Sketch.Body.build state_vars func figu in
+      let join_body = Sketch.Join.build state_vars loop_body in
       (ro_vars_ids, state_vars_ids, var_set,
-       loop_body, join_body, reach_consts))
+       loop_body, join_body, sigu, reach_consts))
     funcreps
 
 let pp_sketch = Sketch.pp_rosette_sketch
