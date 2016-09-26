@@ -50,16 +50,19 @@ let index_map1 = IM.singleton index_var.vid index_expr
 let index_map2 = increment_all_indexes index_map1
 let index_map3 = increment_all_indexes index_map2
 (** Apply the functions to states *)
+let index_set = VS.singleton index_var
 
-let r1 = exec_once stv init_exprs g (VS.singleton index_var, index_map1)
+let r1 = exec_once ~index_set:index_set ~index_exprs:index_map1 stv init_exprs g
 
-let r2 = exec_once stv r1 g (VS.singleton index_var, index_map2)
+let r2 = exec_once ~index_set:index_set ~index_exprs:index_map2 stv r1 g
 
-let r1_array = exec_once stv init_exprs sum_array
-    (VS.singleton index_var, index_map1)
+let r1_array =
+  exec_once ~index_set:index_set ~index_exprs:index_map1
+    stv init_exprs sum_array
 
-let r2_array = exec_once stv r1_array sum_array
-    (VS.singleton index_var, index_map2)
+
+let r2_array = exec_once ~index_set:index_set ~index_exprs:index_map1
+    stv r1_array sum_array
 
 let reduced_r2_array = IM.map (cost_reduce stv) r2_array
 

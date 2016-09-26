@@ -1,5 +1,5 @@
 open Utils
-module Ty = SketchTypes
+module T = SketchTypes
 
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
@@ -22,5 +22,5 @@ module Ty = SketchTypes
 *)
 
 val exec_once :
-  VS.t -> Ty.skExpr IM.t -> Ty.sklet -> (VS.t * Ty.skExpr IM.t) ->
-  Ty.skExpr IM.t
+  ?index_set:VS.t -> ?index_exprs:T.skExpr IM.t ->
+  VS.t -> T.skExpr IM.t -> T.sklet -> T.skExpr IM.t

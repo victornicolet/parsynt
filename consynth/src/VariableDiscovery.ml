@@ -2,9 +2,9 @@ open Cil
 open Utils
 open Pretty
 open ExpressionReduction
-open SymbExe
 
-module Ty = SketchTypes
+module Sx = SymbExe
+module T = SketchTypes
 
 
 (**
@@ -12,14 +12,14 @@ module Ty = SketchTypes
     function discovery.
 *)
 
-let rec check_wf (input_function : Ty.sklet) (stv : VS.t) : Ty.sklet =
+let rec check_wf (input_function : T.sklet) (stv : VS.t) : T.sklet =
   match input_function with
-  | Ty.SkLetExpr assignments ->
+  | T.SkLetExpr assignments ->
     input_function
-  | Ty.SkLetIn (assignments, skletexpr) ->
+  | T.SkLetIn (assignments, skletexpr) ->
     failwith "TODO : body with inner dependencies"
 
-and check_wf_assignments (assignments : (Ty.skLVar * Ty.skExpr) list)
+and check_wf_assignments (assignments : (T.skLVar * T.skExpr) list)
     (state : VS.t)=
   try
     List.iter
@@ -32,11 +32,11 @@ and check_wf_assignments (assignments : (Ty.skLVar * Ty.skExpr) list)
 
 and accepted_expression e =
   match e with
-  | Ty.SkVar _
-  | Ty.SkConst _ -> true
-  | Ty.SkQuestion _ -> true
-  | Ty.SkUnop (_, e') -> accepted_expression e'
-  | Ty.SkBinop (_, e', e'') ->
+  | T.SkVar _
+  | T.SkConst _ -> true
+  | T.SkQuestion _ -> true
+  | T.SkUnop (_, e') -> accepted_expression e'
+  | T.SkBinop (_, e', e'') ->
     (accepted_expression e') && (accepted_expression e'')
   | _ -> false
 
@@ -67,25 +67,29 @@ let update_map map vi vi_used =
 let uses stv input_func =
   let rec aux_used_stvs stv inpt map =
     match inpt with
-    | Ty.SkLetIn (velist, letin) ->
+    | T.SkLetIn (velist, letin) ->
       let new_uses = List.fold_left used_in_assignment map velist in
       let letin_uses = aux_used_stvs stv inpt IM.empty in
       IM.merge merge_union new_uses letin_uses
-    | Ty.SkLetExpr velist -> List.fold_left used_in_assignment map velist
+    | T.SkLetExpr velist -> List.fold_left used_in_assignment map velist
 
   and used_in_assignment map (v, expr) =
-    let vi = check_option (Ty.vi_of v) in
-    let f_expr = Ty.rec_expr
+    let vi = check_option (T.vi_of v) in
+    let f_expr = T.rec_expr
         VS.union (* Join *)
         VS.empty (* Leaf *)
         (fun c -> VS.empty) (* Handle constants *)
         (fun v ->
            VS.inter
-             (VS.singleton (check_option (Ty.vi_of v))) stv) (* Variables *)
+             (VS.singleton (check_option (T.vi_of v))) stv) (* Variables *)
     in
     update_map map vi (f_expr expr)
   in
   IM.map VSOps.vids_of_vs (aux_used_stvs stv input_func IM.empty)
+
+let create_symbol_map vs=
+  VS.fold
+    (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
 
 (** Main algorithm. Discovers new variables that can be useful in parallelizing
     the computation.
@@ -96,7 +100,19 @@ let uses stv input_func =
     @return A new set of state variables and a new function with the varaibles
     discovered by the algortihm.
 *)
-let discover stv input_func (i,g,u) =
+let discover stv input_func (idx, (i,g,u)) =
   (** Analyze the index and produce the update function for
       the index.
   *)
+  let init_idx_exprs = create_symbol_map idx in
+  let init_exprs = create_symbol_map stv in
+  let rec fixpoint cur_exprs cur_idx_exprs aux_var_set aux_var_map =
+    let new_exprs =
+      Sx.exec_once ~index_set:idx ~index_exprs:cur_idx_exprs
+        stv cur_exprs input_func
+    in
+    let new_idx_exprs =
+      Sx.exec_once idx cur_idx_exprs u in
+    new_exprs, new_idx_exprs, aux_var_map
+  in
+  fixpoint init_exprs init_idx_exprs VS.empty IM.empty
