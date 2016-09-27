@@ -4,6 +4,7 @@ open Format
 open Utils
 open SymbExe
 open SError
+open VariableDiscovery
 
 module E = Errormsg
 module C = Cil

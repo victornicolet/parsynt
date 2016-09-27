@@ -447,12 +447,15 @@ and symb_type_of_args argslisto =
 let rec_expr
     (join : 'a -> 'a -> 'a)
     (init : 'a)
+    (case : skExpr -> bool)
+    (case_handler : skExpr -> 'a)
     (const_handler: constants -> 'a)
     (var_handler : skLVar -> 'a)
     (expre : skExpr) : 'a =
 
   let rec recurse_aux =
     function
+    | e when case e -> case_handler e
     | SkVar v -> var_handler v
     | SkConst c -> const_handler c
 
@@ -469,7 +472,7 @@ let rec_expr
       join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
 
     | SkApp (_, _, el) ->
-      List.fold_left join init el
+      List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | SkFun letin
     | SkRec (_, letin) -> recurse_letin letin
