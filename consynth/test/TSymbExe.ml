@@ -4,6 +4,7 @@ open Cil
 open TestUtils
 open SPretty
 open ExpressionReduction
+open VariableDiscovery
 
 module T = SketchTypes
 
@@ -46,25 +47,30 @@ let increment_all_indexes index_exprs =
     )
     index_exprs
     IM.empty
+
 let index_map1 = IM.singleton index_var.vid index_expr
 let index_map2 = increment_all_indexes index_map1
 let index_map3 = increment_all_indexes index_map2
 (** Apply the functions to states *)
 let index_set = VS.singleton index_var
 
-let r1 = exec_once ~index_set:index_set ~index_exprs:index_map1 stv init_exprs g
+let r0 = { state_set = stv; state_exprs = init_exprs;
+           index_set = index_set; index_exprs = index_map1}
 
-let r2 = exec_once ~index_set:index_set ~index_exprs:index_map2 stv r1 g
+let r1 = {r0 with state_exprs = exec_once r0 g;
+                  index_exprs = index_map2;}
 
-let r1_array =
-  exec_once ~index_set:index_set ~index_exprs:index_map1
-    stv init_exprs sum_array
+let r2 = exec_once r1 g
+
+let r1_array = { r0 with state_exprs = exec_once r0 sum_array;
+                         index_exprs = index_map2 }
 
 
-let r2_array = exec_once ~index_set:index_set ~index_exprs:index_map1
-    stv r1_array sum_array
+let r2_array = { r1_array with state_exprs = exec_once r1_array sum_array;
+                         index_exprs = index_map3 }
 
-let reduced_r2_array = IM.map (cost_reduce stv) r2_array
+
+let reduced_r2_array = IM.map (cost_reduce stv) r2_array.state_exprs
 
 let print_exprs str exprs =
   Format.printf "%s :\n" str;
@@ -73,8 +79,27 @@ let print_exprs str exprs =
     exprs
 
 let test () =
-  print_exprs "r1" r1;
+  print_exprs "r1" r1.state_exprs;
   print_exprs "r2" r2;
-  print_exprs "r1_array" r1_array;
-  print_exprs "r2_array" r2_array;
+  print_exprs "r1_array" r1_array.state_exprs;
+  print_exprs "r2_array" r2_array.state_exprs;
   print_exprs "red_r2_array" reduced_r2_array
+
+(** Test variable discovery algortihm *)
+let index_incr =
+  T.SkLetExpr ([T.SkVarinfo index_var,
+               (T.SkBinop (T.Plus, T.SkVar (T.SkVarinfo index_var), sk_one))])
+
+let index_init =
+  T.SkLetExpr ([T.SkVarinfo index_var, sk_zero])
+
+let index_guard =
+  T.SkBinop (T.Le, T.SkVar (T.SkVarinfo index_var), T.SkConst (T.CInt 10))
+
+let igu = (index_init, index_guard, index_incr)
+
+let discovered, newfunc = discover stv sum_array (index_set, igu)
+
+let test2 () =
+  VS.iter (fun vi -> Format.printf "New variable : %s@." vi.vname) discovered;
+  Format.printf "New function :@.%a@." pp_sklet newfunc

@@ -5,6 +5,13 @@ open SError
 module T = SketchTypes
 module Ct = CilTools
 
+type exec_info =
+  { state_set : VS.t;
+    state_exprs : T.skExpr IM.t;
+    index_set : VS.t;
+    index_exprs : T.skExpr IM.t;
+  }
+
 (** --------------------------------------------------------------------------*)
 (*Keep track of the generated names during symbolic execution *)
 type symbolic_input = (int * string * T.skLVar)
@@ -87,19 +94,19 @@ let gen_expr v =
 
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for exec_once *)
-let rec exec stv (is, ies) exprs func =
-  let rec  apply_let_exprs let_list old_exprs =
-    List.fold_left (update_expressions old_exprs) IM.empty let_list
+let rec exec exec_info func =
+  let rec  apply_let_exprs let_list exec_info =
+    List.fold_left (update_expressions exec_info) IM.empty let_list
 
-  and update_expressions old_exprs new_exprs (var, expr) =
+  and update_expressions exec_info new_exprs (var, expr) =
     (* TODO : find the new expression of a variable by
        replacing every state variable in expr by the corresponding expression
        in exprs and introducing new read variables. *)
     match var with
-    | T.SkState -> old_exprs
+    | T.SkState -> exec_info.state_exprs
     | T.SkVarinfo vi ->
       let vid = vi.vid in
-      IM.add vid (exec_expr stv (is, ies) old_exprs expr) new_exprs
+      IM.add vid (exec_expr exec_info expr) new_exprs
     | T.SkArray (v, e) ->
       exception_on_variable
         "Unsupported arrays in state variables for variable discovery algorithm."
@@ -107,31 +114,31 @@ let rec exec stv (is, ies) exprs func =
   in
   match func with
   | T.SkLetExpr let_list ->
-    apply_let_exprs let_list exprs
+    apply_let_exprs let_list exec_info
   | T.SkLetIn (let_list, let_cont) ->
-    let new_exprs = apply_let_exprs let_list exprs in
-    exec stv (is, ies) new_exprs let_cont
+    let new_exprs = apply_let_exprs let_list exec_info in
+    exec {exec_info with state_exprs = new_exprs} let_cont
 
 
 
-and exec_var stv (is, ies) old_exprs v =
+and exec_var exec_info v =
   match v with
   | T.SkState -> T.SkVar v
 
   | T.SkVarinfo vi ->
     begin
       (* Is the variable a state variable ?*)
-      if VSOps.has_vid vi.vid stv then
+      if VSOps.has_vid vi.vid exec_info.state_set then
         try
-          IM.find vi.vid old_exprs
+          IM.find vi.vid exec_info.state_exprs
         with Not_found ->
           exception_on_variable "Expression not found for state variable" v
       else
         begin
           (* Is the variable an index variable ? *)
-          if VSOps.has_vid vi.vid is then
+          if VSOps.has_vid vi.vid exec_info.index_set then
             try
-              IM.find vi.vid ies
+              IM.find vi.vid exec_info.index_exprs
             with Not_found ->
               exception_on_variable "Expression not found for index" v
           else
@@ -149,46 +156,46 @@ and exec_var stv (is, ies) old_exprs v =
     *)
     begin
       let new_v' =
-        match exec_var stv (is, ies) old_exprs v' with
+        match exec_var exec_info v' with
         | T.SkVar v -> v
         | bad_v ->
           exception_on_expression "Unexpected variable form in exec_var" bad_v
       in
-      let new_offset = exec_expr stv (is, ies) old_exprs offset_expr in
+      let new_offset = exec_expr exec_info offset_expr in
       T.SkVar (T.SkArray (new_v', new_offset))
     end
 
-and exec_expr stv (is, ies) old_exprs expr =
+and exec_expr exec_info expr =
   match expr with
   (* Where all the work is done : when encountering an expression in
        the function*)
 
-  | T.SkVar v -> exec_var stv (is, ies) old_exprs v
+  | T.SkVar v -> exec_var exec_info v
 
   | T.SkConst c -> expr
 
   (* Recursive cases with only expressions as subexpressions *)
   | T.SkFun sklet -> expr (* TODO recursive *)
   | T.SkBinop (binop, e1, e2) ->
-    let e1' = exec_expr stv (is, ies) old_exprs e1 in
-    let e2' = exec_expr stv (is, ies) old_exprs e2 in
+    let e1' = exec_expr exec_info e1 in
+    let e2' = exec_expr exec_info e2 in
     T.SkBinop (binop, e1', e2')
 
   | T.SkQuestion (c, e1, e2) ->
-    let c' = exec_expr stv (is, ies) old_exprs c in
-    let e1' = exec_expr stv (is, ies) old_exprs e1 in
-    let e2' = exec_expr stv (is, ies) old_exprs e2 in
+    let c' = exec_expr exec_info c in
+    let e1' = exec_expr exec_info e1 in
+    let e2' = exec_expr exec_info e2 in
     T.SkQuestion (c', e1', e2')
 
-  | T.SkUnop (unop, expr') -> T.SkUnop (unop, exec_expr stv (is, ies) old_exprs expr')
+  | T.SkUnop (unop, expr') -> T.SkUnop (unop, exec_expr exec_info expr')
   | T.SkApp (sty, vi_o, elist) ->
-    let elist' = List.map (exec_expr stv (is, ies) old_exprs) elist in
+    let elist' = List.map (exec_expr exec_info) elist in
     T.SkApp (sty, vi_o, elist')
 
   | T.SkAddrof expr' | T.SkStartOf expr'
-  | T.SkAlignofE expr' | T.SkSizeofE expr' -> exec_expr stv (is, ies) old_exprs expr'
+  | T.SkAlignofE expr' | T.SkSizeofE expr' -> exec_expr exec_info expr'
   | T.SkSizeof _ | T.SkSizeofStr _ | T.SkAlignof _ -> expr
-  | T.SkCastE (sty, expr') -> T.SkCastE (sty, exec_expr stv (is, ies) old_exprs expr')
+  | T.SkCastE (sty, expr') -> T.SkCastE (sty, exec_expr exec_info expr')
   (* Special cases where we have irreducible conitionals and nested for
      loops*)
   | T.SkRec ((i, g, u), sklet) -> expr (* TODO recusrive + test on IGU *)
@@ -214,12 +221,6 @@ and exec_expr stv (is, ies) old_exprs expr =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-let exec_once ?(silent = false) ?(index_set = VS.empty)
-    ?(index_exprs = IM.empty) stv exprs func =
+let exec_once ?(silent = false) exec_nfo inp_func =
   if silent then () else incr exec_count;
-  (* Simply replace the occurrences of state variables
-     in the function by the expression corresponding
-     to the state variable and introduce new symbolic
-     read variables in place of the read variables.
-  *)
-  exec stv (index_set, index_exprs) exprs func
+  exec exec_nfo inp_func

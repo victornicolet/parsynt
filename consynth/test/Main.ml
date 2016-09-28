@@ -14,7 +14,8 @@ module TGDef = TGenDefs
 module TSbx = TSymbExe
 
 let unit_tests () =
-  TSbx.test ();;
+  TSbx.test ();
+  TSbx.test2 ()
 
 let testProcessFile () =
   if Array.length Sys.argv < 2 then
@@ -41,4 +42,4 @@ let testProcessFile () =
 
 unit_tests ();
 
-testProcessFile ();;
+(* testProcessFile ();; *)

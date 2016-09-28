@@ -60,6 +60,11 @@ let snd (a,b) = b
 let bool_of_int64 i =
   (Int64.compare (Int64.of_int 1) i) == 0
 
+let str_contains s1 s2 =
+  let re = Str.regexp_string s2
+  in
+  try ignore (Str.search_forward re s1 0); true
+  with Not_found -> false
 
 (** Lists *)
 module ListTools = struct

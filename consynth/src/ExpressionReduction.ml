@@ -94,10 +94,8 @@ let is_associative op =
   | _ -> false
 
 let rec cost_reduce stv expr =
-  print_endline "Cost reduce";
   match expr with
   | SkBinop (op2, SkBinop (op1, a, b), c) ->
-    print_endline "Matched";
     let a' = cost_reduce stv a in
     let b' = cost_reduce stv b in
     let c' = cost_reduce stv c in

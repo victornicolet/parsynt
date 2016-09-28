@@ -2,8 +2,8 @@ open Cil
 open Utils
 open Pretty
 open ExpressionReduction
+open SymbExe
 
-module Sx = SymbExe
 module T = SketchTypes
 
 
@@ -40,6 +40,33 @@ and accepted_expression e =
     (accepted_expression e') && (accepted_expression e'')
   | _ -> false
 
+(** Generation of new auxiliary variables *)
+let allvars = ref VS.empty
+
+let aux_var_prefix = ref "aux"
+
+let aux_var_counter = ref 0
+
+let aux_init vs =
+  allvars := vs;
+  aux_var_counter := 0;
+  aux_var_prefix :=
+    VS.fold
+      (fun vi gen_prefix ->
+         if str_contains vi.vname gen_prefix then
+           gen_prefix^vi.vname
+         else
+           gen_prefix)
+      !allvars
+      !aux_var_prefix
+
+let gen_fresh () =
+  let fresh_name = (!aux_var_prefix)^(string_of_int (!aux_var_counter)) in
+  incr aux_var_counter;
+  let fresh_var = makeVarinfo false fresh_name (TInt (IInt, [])) in
+  allvars := VS.add fresh_var !allvars;
+  fresh_var
+
 
 (** Rank the state variable according to sequential order assignment and then
     the number of incoming edges in the use-def graph.
@@ -69,12 +96,21 @@ let uses stv input_func =
     match inpt with
     | T.SkLetIn (velist, letin) ->
       let new_uses = List.fold_left used_in_assignment map velist in
-      let letin_uses = aux_used_stvs stv inpt IM.empty in
+      let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
     | T.SkLetExpr velist -> List.fold_left used_in_assignment map velist
 
   and used_in_assignment map (v, expr) =
-    let vi = check_option (T.vi_of v) in
+    (* Ignore assignment to 'state' it is only a terminal symbol in the
+       function *)
+    if v = T.SkState then IM.empty
+    else
+    let vi =
+      try
+        check_option (T.vi_of v)
+      with Failure s ->
+        SError.exception_on_variable s v
+    in
     let f_expr = T.rec_expr
         VS.union (* Join *)
         VS.empty (* Leaf *)
@@ -117,7 +153,8 @@ let create_symbol_map vs=
     @return the pair of state variables and mapping from ids to the pair of
     expression and function.
 *)
-let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
+let find_auxiliaries xinfo expr aux_var_set aux_var_map =
+  let stv = xinfo.state_set in
   let rec is_stv =
     function
     | T.SkVar v ->
@@ -170,8 +207,8 @@ let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
   let match_increment fe =
     List.filter
       (fun (vid,(e, fe)) ->
-         let fe' = Sx.exec_once ~silent:true stv other_exprs fe in
-         (IM.find vid fe') = fe)
+         let fe' = exec_expr xinfo fe in
+         fe' = fe)
   in
   let update_aux (aux_vs, aux_exprs) ce =
     (* The expression is exactly the expression of a aux *)
@@ -181,7 +218,7 @@ let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
          case ? Now only pick the first expression to come.
       *)
       let vid, (e, f) = List.nth expr_func_list 0 in
-      let new_aux_exprs = IM.add vid (e, T.identity_sk) aux_exprs in
+      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkState)) aux_exprs in
       (aux_vs, new_aux_exprs)
       with Not_found ->
         let ef_list = find_subexpr ce aux_exprs in
@@ -195,7 +232,12 @@ let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
             (aux_vs, new_aux_exprs)
           else
             (* We have to create a new variable *)
-            (aux_vs, aux_exprs)
+            let new_aux = gen_fresh () in
+            let new_aux_vs = VS.add new_aux aux_vs in
+            let new_exprs =
+              IM.add new_aux.vid (ce, T.SkVar T.SkState) aux_exprs
+            in
+            (new_aux_vs, new_exprs)
         end
   in
   List.fold_left update_aux (aux_var_set, aux_var_map) (candidates expr)
@@ -204,15 +246,18 @@ let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
     and the set of state variable and a function, return a new set
     of state variables and a function.
 *)
-let compose stv stv_func aux_vs aux_ef =
-  let new_stv = VS.union stv aux_vs in
+let compose xinfo f aux_vs aux_ef =
+  let new_stv = VS.union xinfo.state_set aux_vs in
   let new_func =
-    IM.fold
-      (fun aux_vid (e, f) assgn_list ->
-         assgn_list@[(T.skVarinfo (VSOps.find_by_id aux_vid)),
-                    ])
+    T.compose_head
+      (IM.fold
+         (fun aux_vid (e, f) assgn_list ->
+            assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), f])
+         aux_ef [])
+      f
   in
   (new_stv, new_func)
+
 (** Discover a set a auxiliary variables for a given variable.
     @param stv the set of state variables.
     @param idx the set of index variables.
@@ -224,24 +269,35 @@ let discover_for_id stv (idx, update) input_func varid =
   SymbExe.init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
-  let rec fixpoint cur_exprs cur_idx_exprs aux_var_set aux_var_map =
+  let rec fixpoint xinfo aux_var_set aux_var_map =
     let new_exprs =
-      Sx.exec_once ~index_set:idx ~index_exprs:cur_idx_exprs
-        stv cur_exprs input_func
+      exec_once xinfo input_func
     in
-    let aux_var_set, aux_var_map =
-      find_auxiliaries stv (IM.find varid new_exprs) cur_exprs
-        aux_var_set aux_var_map
+    let xinfo_index = { state_set = xinfo.index_set ;
+                        state_exprs = xinfo.index_exprs ;
+                        index_set = VS.empty ;
+                        index_exprs = IM.empty ;
+                      }
     in
     let new_idx_exprs =
-      Sx.exec_once ~silent:true idx cur_idx_exprs update in
-    new_exprs, new_idx_exprs, (aux_var_set, aux_var_map)
+      exec_once ~silent:true xinfo_index update in
+    let aux_var_set, aux_var_map =
+      find_auxiliaries xinfo (IM.find varid new_exprs) aux_var_set aux_var_map
+    in
+    {xinfo with state_exprs = new_exprs;
+                index_exprs = new_idx_exprs},
+    (aux_var_set, aux_var_map)
   in
-  let _, _, (aux_vs, aux_ef) =
-    fixpoint init_exprs init_idx_exprs VS.empty IM.empty
+  let init_i = { state_set = stv ;
+               state_exprs = init_exprs ;
+               index_set = idx ;
+               index_exprs = init_idx_exprs ;
+               }
   in
-  (VS.union stv aux_vs),
-  compose (** Compose the new aux functions and the old function *)
+  let _ , (aux_vs, aux_ef) =
+    fixpoint init_i VS.empty IM.empty
+  in
+  compose init_i input_func aux_vs aux_ef
 
 
 (** Main algorithm. Discovers new variables that can be useful in parallelizing
@@ -254,6 +310,7 @@ let discover_for_id stv (idx, update) input_func varid =
     discovered by the algortihm.
 *)
 let discover stv input_func (idx, (i,g,u)) =
+  aux_init (VS.union stv idx);
   (** Analyze the index and produce the update function for
       the index.
   *)

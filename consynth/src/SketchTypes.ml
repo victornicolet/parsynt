@@ -498,3 +498,13 @@ let rec_expr
         (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
   in
   recurse_aux expre
+
+(** Compose a function by adding new assignments *)
+let compose_head assignments func =
+  SkLetIn (assignments, func)
+
+let rec compose_tail assignments func =
+  match func with
+  | SkLetExpr el ->
+    SkLetIn (el, SkLetExpr assignments)
+  | SkLetIn (el, l) -> compose_tail assignments l

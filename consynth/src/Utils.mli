@@ -100,7 +100,7 @@ module SM : sig
 end
 
 module VS = Usedef.VS
-              
+
 val ih_of_vs : VS.t -> VS.elt IH.t
 val ih_join_left : ('a * 'b option) IH.t -> 'a IH.t -> 'b IH.t -> unit
 
@@ -108,7 +108,7 @@ val identity : 'a -> 'a
 val identity2 : 'a -> 'b -> 'b
 
 val is_some : 'a option -> bool
-val is_none : 'a option -> bool 
+val is_none : 'a option -> bool
 
 val v2e : varinfo -> exp
 val (|>) : 'a -> ('a -> 'b) -> 'b
@@ -118,6 +118,8 @@ val fst : 'a * 'b -> 'a
 val snd : 'a * 'b -> 'b
 
 val bool_of_int64 : Int64.t -> bool
+
+val str_contains : string -> string -> bool
 
 module ListTools : sig
   val (--): int -> int -> int list
@@ -192,7 +194,7 @@ module VSOps : sig
   (* Return the union of the sets created by mapping the function
      over the list *)
   val union_map  : 'a list -> ('a -> VS.t) -> VS.t
-  (* Return the set of variables defined in the Reaching 
+  (* Return the set of variables defined in the Reaching
      definitions type of Cil *)
   val vs_of_defsMap : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t -> VS.t
   val vs_of_inthash : VS.elt IH.t -> VS.t
@@ -205,7 +207,7 @@ module VSOps : sig
   val spvs : VS.t -> string
   val epvs : VS.t -> unit
 
-  val string_of_vs : VS.t -> string    
+  val string_of_vs : VS.t -> string
 end
 
 module IHTools : sig

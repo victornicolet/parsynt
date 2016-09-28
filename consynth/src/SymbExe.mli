@@ -1,6 +1,13 @@
 open Utils
 module T = SketchTypes
 
+type exec_info =
+  { state_set : VS.t;
+    state_exprs : T.skExpr IM.t;
+    index_set : VS.t;
+    index_exprs : T.skExpr IM.t;
+  }
+
 (** Init : initialize the generated variables map and the execution count. *)
 val init : unit -> unit
 
@@ -24,10 +31,6 @@ val init : unit -> unit
     the application of the function to the input variables expressions.
 *)
 
-val exec : VS.t -> (VS.t * T.skExpr IM.t) -> T.skExpr IM.t -> T.sklet->
-  T.skExpr IM.t
-val exec_expr : VS.t -> VS.t * T.skExpr IM.t -> T.skExpr IM.t -> T.skExpr ->
-  T.skExpr
-val exec_once :
-  ?silent:bool -> ?index_set:VS.t -> ?index_exprs:T.skExpr IM.t ->
-  VS.t -> T.skExpr IM.t -> T.sklet -> T.skExpr IM.t
+val exec : exec_info -> T.sklet-> T.skExpr IM.t
+val exec_expr : exec_info -> T.skExpr -> T.skExpr
+val exec_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t

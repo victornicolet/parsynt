@@ -5,11 +5,14 @@ open SPretty
 exception Exception_on of string * string
 
 let raise_on except_name msg pp_obj obj =
+  let str_message =
+    fprintf str_formatter
+      "%s@.Failed on %s:%a@." msg except_name pp_obj obj;
+    flush_str_formatter ()
+  in
   raise
-    (Exception_on (except_name,
-                   (fprintf str_formatter
-                      "%s@.Failed on %s:%a@." msg except_name pp_obj obj;
-                    flush_str_formatter ())))
+    (Exception_on (except_name, str_message))
+
 
 let exception_on_variable msg var =
   raise_on "variable" msg pp_sklvar var
