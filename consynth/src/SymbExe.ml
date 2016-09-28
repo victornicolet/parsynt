@@ -86,6 +86,116 @@ let gen_expr v =
   let _, _, (_, ev) = gen_var v in T.SkVar ev
 
 (** --------------------------------------------------------------------------*)
+(** Intermediary functions for exec_once *)
+let rec exec stv (is, ies) exprs func =
+  let rec  apply_let_exprs let_list old_exprs =
+    List.fold_left (update_expressions old_exprs) IM.empty let_list
+
+  and update_expressions old_exprs new_exprs (var, expr) =
+    (* TODO : find the new expression of a variable by
+       replacing every state variable in expr by the corresponding expression
+       in exprs and introducing new read variables. *)
+    match var with
+    | T.SkState -> old_exprs
+    | T.SkVarinfo vi ->
+      let vid = vi.vid in
+      IM.add vid (exec_expr stv (is, ies) old_exprs expr) new_exprs
+    | T.SkArray (v, e) ->
+      exception_on_variable
+        "Unsupported arrays in state variables for variable discovery algorithm."
+        v
+  in
+  match func with
+  | T.SkLetExpr let_list ->
+    apply_let_exprs let_list exprs
+  | T.SkLetIn (let_list, let_cont) ->
+    let new_exprs = apply_let_exprs let_list exprs in
+    exec stv (is, ies) new_exprs let_cont
+
+
+
+and exec_var stv (is, ies) old_exprs v =
+  match v with
+  | T.SkState -> T.SkVar v
+
+  | T.SkVarinfo vi ->
+    begin
+      (* Is the variable a state variable ?*)
+      if VSOps.has_vid vi.vid stv then
+        try
+          IM.find vi.vid old_exprs
+        with Not_found ->
+          exception_on_variable "Expression not found for state variable" v
+      else
+        begin
+          (* Is the variable an index variable ? *)
+          if VSOps.has_vid vi.vid is then
+            try
+              IM.find vi.vid ies
+            with Not_found ->
+              exception_on_variable "Expression not found for index" v
+          else
+            (** It is a scalar input variable, we have to check if this
+                 variable has been used previously, if not we create a
+                 new variable for this use.
+            *)
+            gen_expr v
+        end
+    end
+  | T.SkArray (v', offset_expr) ->
+    (** TODO : add support for arrays in state variables. For now,
+        we assume all state variables are scalars, so if we have
+        an array in an expression it is necessarily an input variable.
+    *)
+    begin
+      let new_v' =
+        match exec_var stv (is, ies) old_exprs v' with
+        | T.SkVar v -> v
+        | bad_v ->
+          exception_on_expression "Unexpected variable form in exec_var" bad_v
+      in
+      let new_offset = exec_expr stv (is, ies) old_exprs offset_expr in
+      T.SkVar (T.SkArray (new_v', new_offset))
+    end
+
+and exec_expr stv (is, ies) old_exprs expr =
+  match expr with
+  (* Where all the work is done : when encountering an expression in
+       the function*)
+
+  | T.SkVar v -> exec_var stv (is, ies) old_exprs v
+
+  | T.SkConst c -> expr
+
+  (* Recursive cases with only expressions as subexpressions *)
+  | T.SkFun sklet -> expr (* TODO recursive *)
+  | T.SkBinop (binop, e1, e2) ->
+    let e1' = exec_expr stv (is, ies) old_exprs e1 in
+    let e2' = exec_expr stv (is, ies) old_exprs e2 in
+    T.SkBinop (binop, e1', e2')
+
+  | T.SkQuestion (c, e1, e2) ->
+    let c' = exec_expr stv (is, ies) old_exprs c in
+    let e1' = exec_expr stv (is, ies) old_exprs e1 in
+    let e2' = exec_expr stv (is, ies) old_exprs e2 in
+    T.SkQuestion (c', e1', e2')
+
+  | T.SkUnop (unop, expr') -> T.SkUnop (unop, exec_expr stv (is, ies) old_exprs expr')
+  | T.SkApp (sty, vi_o, elist) ->
+    let elist' = List.map (exec_expr stv (is, ies) old_exprs) elist in
+    T.SkApp (sty, vi_o, elist')
+
+  | T.SkAddrof expr' | T.SkStartOf expr'
+  | T.SkAlignofE expr' | T.SkSizeofE expr' -> exec_expr stv (is, ies) old_exprs expr'
+  | T.SkSizeof _ | T.SkSizeofStr _ | T.SkAlignof _ -> expr
+  | T.SkCastE (sty, expr') -> T.SkCastE (sty, exec_expr stv (is, ies) old_exprs expr')
+  (* Special cases where we have irreducible conitionals and nested for
+     loops*)
+  | T.SkRec ((i, g, u), sklet) -> expr (* TODO recusrive + test on IGU *)
+  | T.SkCond (c, letif, letelse) -> expr (* TODO recursive *)
+  | T.SkAddrofLabel _ | _ ->
+    failwith "Unsupported expression in variable discovery algorithm"
+
 (** exec_once : simulate the applciation of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
     variables.
@@ -104,122 +214,12 @@ let gen_expr v =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-let exec_once ?(index_set = VS.empty) ?(index_exprs = IM.empty) stv exprs func =
-  incr exec_count;
+let exec_once ?(silent = false) ?(index_set = VS.empty)
+    ?(index_exprs = IM.empty) stv exprs func =
+  if silent then () else incr exec_count;
   (* Simply replace the occurrences of state variables
      in the function by the expression corresponding
      to the state variable and introduce new symbolic
      read variables in place of the read variables.
   *)
-  let rec exec exprs func =
-    match func with
-    | T.SkLetExpr let_list ->
-      apply_let_exprs let_list exprs
-    | T.SkLetIn (let_list, let_cont) ->
-      let new_exprs = apply_let_exprs let_list exprs in
-      exec new_exprs let_cont
-
-  and apply_let_exprs let_list old_exprs =
-    List.fold_left (update_expressions old_exprs) IM.empty let_list
-
-  and update_expressions old_exprs new_exprs (var, expr) =
-    (* TODO : find the new expression of a variable by
-       replacing every state variable in expr by the corresponding expression
-       in exprs and introducing new read variables. *)
-    match var with
-    | T.SkState -> old_exprs
-    | T.SkVarinfo vi ->
-      let vid = vi.vid in
-      IM.add vid (exec_expr old_exprs expr) new_exprs
-    | T.SkArray (v, e) ->
-      exception_on_variable
-        "Unsupported arrays in state variables for variable discovery algorithm."
-        v
-
-  and exec_expr old_exprs expr =
-    match expr with
-    (* Where all the work is done : when encountering an expression in
-       the function*)
-
-    | T.SkVar v -> exec_var old_exprs v
-
-    | T.SkConst c -> expr
-
-    (* Recursive cases with only expressions as subexpressions *)
-    | T.SkFun sklet -> expr (* TODO recursive *)
-    | T.SkBinop (binop, e1, e2) ->
-      let e1' = exec_expr old_exprs e1 in
-      let e2' = exec_expr old_exprs e2 in
-      T.SkBinop (binop, e1', e2')
-
-    | T.SkQuestion (c, e1, e2) ->
-      let c' = exec_expr old_exprs c in
-      let e1' = exec_expr old_exprs e1 in
-      let e2' = exec_expr old_exprs e2 in
-      T.SkQuestion (c', e1', e2')
-
-    | T.SkUnop (unop, expr') -> T.SkUnop (unop, exec_expr old_exprs expr')
-    | T.SkApp (sty, vi_o, elist) ->
-      let elist' = List.map (exec_expr old_exprs) elist in
-      T.SkApp (sty, vi_o, elist')
-
-    | T.SkAddrof expr' | T.SkStartOf expr'
-    | T.SkAlignofE expr' | T.SkSizeofE expr' -> exec_expr old_exprs expr'
-    | T.SkSizeof _ | T.SkSizeofStr _ | T.SkAlignof _ -> expr
-    | T.SkCastE (sty, expr') -> T.SkCastE (sty, exec_expr old_exprs expr')
-
-
-    (* Special cases where we have irreducible conitionals and nested for
-       loops*)
-    | T.SkRec ((i, g, u), sklet) -> expr (* TODO recusrive + test on IGU *)
-    | T.SkCond (c, letif, letelse) -> expr (* TODO recursive *)
-
-    | T.SkAddrofLabel _ | _ ->
-      failwith "Unsupported expression in variable discovery algorithm"
-
-  and exec_var old_exprs v =
-    match v with
-    | T.SkState -> T.SkVar v
-
-    | T.SkVarinfo vi ->
-      begin
-        (* Is the variable a state variable ?*)
-        if VSOps.has_vid vi.vid stv then
-          try
-            IM.find vi.vid old_exprs
-          with Not_found ->
-            exception_on_variable "Expression not found for state variable" v
-        else
-          begin
-            (* Is the variable an index variable ? *)
-            if VSOps.has_vid vi.vid index_set then
-              try
-                IM.find vi.vid index_exprs
-              with Not_found ->
-                exception_on_variable "Expression not found for index" v
-            else
-              (** It is a scalar input variable, we have to check if this
-                   variable has been used previously, if not we create a
-                   new variable for this use.
-              *)
-              gen_expr v
-          end
-      end
-
-    | T.SkArray (v', offset_expr) ->
-      (** TODO : add support for arrays in state variables. For now,
-          we assume all state variables are scalars, so if we have
-          an array in an expression it is necessarily an input variable.
-      *)
-      begin
-        let new_v' =
-          match exec_var old_exprs v' with
-          | T.SkVar v -> v
-          | bad_v ->
-            exception_on_expression "Unexpected variable form in exec_var" bad_v
-        in
-        let new_offset = exec_expr old_exprs offset_expr in
-        T.SkVar (T.SkArray (new_v', new_offset))
-      end
-  in
-  exec exprs func
+  exec stv (index_set, index_exprs) exprs func

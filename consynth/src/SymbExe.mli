@@ -1,9 +1,12 @@
 open Utils
 module T = SketchTypes
 
+(** Init : initialize the generated variables map and the execution count. *)
+val init : unit -> unit
+
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
-    variables.
+    variables. Don't forget to call init when necessary.
     @raise {e Not_found} if an elemt is missing at some stage of the
     algorithm.
 
@@ -21,6 +24,10 @@ module T = SketchTypes
     the application of the function to the input variables expressions.
 *)
 
+val exec : VS.t -> (VS.t * T.skExpr IM.t) -> T.skExpr IM.t -> T.sklet->
+  T.skExpr IM.t
+val exec_expr : VS.t -> VS.t * T.skExpr IM.t -> T.skExpr IM.t -> T.skExpr ->
+  T.skExpr
 val exec_once :
-  ?index_set:VS.t -> ?index_exprs:T.skExpr IM.t ->
+  ?silent:bool -> ?index_set:VS.t -> ?index_exprs:T.skExpr IM.t ->
   VS.t -> T.skExpr IM.t -> T.sklet -> T.skExpr IM.t

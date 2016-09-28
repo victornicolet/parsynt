@@ -117,7 +117,7 @@ let create_symbol_map vs=
     @return the pair of state variables and mapping from ids to the pair of
     expression and function.
 *)
-let find_auxiliaries stv expr aux_var_set aux_var_map =
+let find_auxiliaries stv expr other_exprs aux_var_set aux_var_map =
   let rec is_stv =
     function
     | T.SkVar v ->
@@ -152,9 +152,76 @@ let find_auxiliaries stv expr aux_var_set aux_var_map =
       (fun v -> [])
       e
   in
-  candidates expr
+  let exists_ce ce =
+    IM.exists (fun vid (auxe, f) -> auxe = ce)
+  in
+  let find_ce ce emap =
+    let cemap = IM.filter (fun vid (auxe, f) -> auxe = ce) emap in
+    let ce_list = IM.bindings cemap in
+    if List.length ce_list < 1 then (raise Not_found) else ce_list
+  in
+  let find_subexpr ce emap =
+    T.rec_expr
+      (fun a b -> a@b) []
+      (fun e -> exists_ce e emap) (fun e -> find_ce e emap)
+      (fun c -> []) (fun v -> [])
+      ce
+  in
+  let match_increment fe =
+    List.filter
+      (fun (vid,(e, fe)) ->
+         let fe' = Sx.exec_once ~silent:true stv other_exprs fe in
+         (IM.find vid fe') = fe)
+  in
+  let update_aux (aux_vs, aux_exprs) ce =
+    (* The expression is exactly the expression of a aux *)
+    try
+      let expr_func_list = find_ce ce aux_exprs in
+      (* TODO : how do we choose which expression to use in this
+         case ? Now only pick the first expression to come.
+      *)
+      let vid, (e, f) = List.nth expr_func_list 0 in
+      let new_aux_exprs = IM.add vid (e, T.identity_sk) aux_exprs in
+      (aux_vs, new_aux_exprs)
+      with Not_found ->
+        let ef_list = find_subexpr ce aux_exprs in
+        begin
+          if List.length ef_list > 0
+          then
+            (* A subexpression of the expression is an auxiliary variable *)
+            (* TODO : better tactic to choose expressions *)
+            let vid, (e, f) = List.nth (match_increment ce ef_list) 0 in
+            let new_aux_exprs = IM.add vid (ce, f) aux_exprs in
+            (aux_vs, new_aux_exprs)
+          else
+            (* We have to create a new variable *)
+            (aux_vs, aux_exprs)
+        end
+  in
+  List.fold_left update_aux (aux_var_set, aux_var_map) (candidates expr)
 
-let discover_for_id stv idx input_func varid =
+(** Given a set of auxiliary variables and the associated functions,
+    and the set of state variable and a function, return a new set
+    of state variables and a function.
+*)
+let compose stv stv_func aux_vs aux_ef =
+  let new_stv = VS.union stv aux_vs in
+  let new_func =
+    IM.fold
+      (fun aux_vid (e, f) assgn_list ->
+         assgn_list@[(T.skVarinfo (VSOps.find_by_id aux_vid)),
+                    ])
+  in
+  (new_stv, new_func)
+(** Discover a set a auxiliary variables for a given variable.
+    @param stv the set of state variables.
+    @param idx the set of index variables.
+    @param input_func the input function.
+    @param varid the id of the variable we're analyzing.
+    @return a pair of auxiliary variables and auxiliary functions.
+*)
+let discover_for_id stv (idx, update) input_func varid =
+  SymbExe.init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let rec fixpoint cur_exprs cur_idx_exprs aux_var_set aux_var_map =
@@ -162,14 +229,19 @@ let discover_for_id stv idx input_func varid =
       Sx.exec_once ~index_set:idx ~index_exprs:cur_idx_exprs
         stv cur_exprs input_func
     in
-    let aux_var_map =
-      find_auxiliaries stv (IM.find varid new_exprs) aux_var_set aux_var_map
+    let aux_var_set, aux_var_map =
+      find_auxiliaries stv (IM.find varid new_exprs) cur_exprs
+        aux_var_set aux_var_map
     in
     let new_idx_exprs =
-      Sx.exec_once idx cur_idx_exprs in
-    new_exprs, new_idx_exprs, aux_var_map
+      Sx.exec_once ~silent:true idx cur_idx_exprs update in
+    new_exprs, new_idx_exprs, (aux_var_set, aux_var_map)
   in
-  fixpoint init_exprs init_idx_exprs VS.empty IM.empty
+  let _, _, (aux_vs, aux_ef) =
+    fixpoint init_exprs init_idx_exprs VS.empty IM.empty
+  in
+  (VS.union stv aux_vs),
+  compose (** Compose the new aux functions and the old function *)
 
 
 (** Main algorithm. Discovers new variables that can be useful in parallelizing
@@ -188,6 +260,6 @@ let discover stv input_func (idx, (i,g,u)) =
   let ranked_stv = rank_by_use (uses stv input_func) in
   List.fold_left
     (fun (new_stv, new_func)  (vid, _) ->
-       discover_for_id new_stv idx new_func vid)
+       discover_for_id new_stv (idx, u) new_func vid)
     (stv, input_func)
     ranked_stv

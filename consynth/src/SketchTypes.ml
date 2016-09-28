@@ -42,7 +42,6 @@ and skExpr =
   | SkAddrofLabel of Cil.stmt ref
   | SkStartOf of skExpr
 
-
 (** Structure types for Rosette sketches *)
 
 and initial_defs =
@@ -195,6 +194,12 @@ let symb_binop_of_cil =
 
   (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
   (* inexact->exact, exact->inexact, quotient , sgn *)
+
+
+(** Identity function *)
+let identity_sk =
+  SkLetExpr ([SkState, SkVar (SkState)])
+
 
 (** C Standard Library function names -> Rosette supported functions *)
 let symb_unop_of_fname =
