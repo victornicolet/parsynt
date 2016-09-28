@@ -1,12 +1,13 @@
 open Cil
 open Utils
-open Pretty
+open Format
+open SPretty
 open ExpressionReduction
 open SymbExe
 
 module T = SketchTypes
 
-
+let debug = ref true
 (**
    Entry point : check that the function is a candidate for
     function discovery.
@@ -183,7 +184,11 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
     T.rec_expr
       (fun a b -> a@b)
       []
-      is_candidate
+      (fun e ->
+         let v = is_candidate e in
+         if !debug && v
+         then printf "Candidate : %a@." pp_skexpr e else ();
+         v)
       handle_candidate
       (fun c -> [])
       (fun v -> [])
@@ -258,6 +263,16 @@ let compose xinfo f aux_vs aux_ef =
   in
   (new_stv, new_func)
 
+let same_aux old_aux new_aux =
+  IM.fold
+    (fun n_vid (n_expr, n_f) same->
+       try
+         let  o_expr, o_f = IM.find n_vid old_aux in
+         (if o_f = n_f then true else raise Not_found)
+       with Not_found -> false)
+    new_aux
+    true
+
 (** Discover a set a auxiliary variables for a given variable.
     @param stv the set of state variables.
     @param idx the set of index variables.
@@ -269,33 +284,44 @@ let discover_for_id stv (idx, update) input_func varid =
   SymbExe.init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
-  let rec fixpoint xinfo aux_var_set aux_var_map =
-    let new_exprs =
-      exec_once xinfo input_func
+  let rec fixpoint i xinfo aux_var_set aux_var_map =
+    Format.printf "Unrolling %i@."i;
+    let new_xinfo, (new_var_set, new_aux_exprs) =
+      let new_exprs =
+        IM.map
+          (cost_reduce xinfo.state_set)
+          (exec_once xinfo input_func)
+      in
+      let xinfo_index = { state_set = xinfo.index_set ;
+                          state_exprs = xinfo.index_exprs ;
+                          index_set = VS.empty ;
+                          index_exprs = IM.empty ;
+                        }
+      in
+      let new_idx_exprs =
+        exec_once ~silent:true xinfo_index update in
+      let aux_var_set, aux_var_map =
+        find_auxiliaries xinfo (IM.find varid new_exprs) aux_var_set aux_var_map
+      in
+      VS.iter (fun vi -> Format.printf "Auxiliary %s@." vi.vname) aux_var_set;
+      {xinfo with state_exprs = new_exprs;
+                  index_exprs = new_idx_exprs},
+      (aux_var_set, aux_var_map)
     in
-    let xinfo_index = { state_set = xinfo.index_set ;
-                        state_exprs = xinfo.index_exprs ;
-                        index_set = VS.empty ;
-                        index_exprs = IM.empty ;
-                      }
-    in
-    let new_idx_exprs =
-      exec_once ~silent:true xinfo_index update in
-    let aux_var_set, aux_var_map =
-      find_auxiliaries xinfo (IM.find varid new_exprs) aux_var_set aux_var_map
-    in
-    {xinfo with state_exprs = new_exprs;
-                index_exprs = new_idx_exprs},
-    (aux_var_set, aux_var_map)
+    if (i > 10) || (same_aux aux_var_map new_aux_exprs)
+    then
+      new_xinfo, (new_var_set, new_aux_exprs)
+    else
+      fixpoint (i + 1) new_xinfo new_var_set new_aux_exprs
   in
   let init_i = { state_set = stv ;
-               state_exprs = init_exprs ;
-               index_set = idx ;
-               index_exprs = init_idx_exprs ;
+                 state_exprs = init_exprs ;
+                 index_set = idx ;
+                 index_exprs = init_idx_exprs ;
                }
   in
   let _ , (aux_vs, aux_ef) =
-    fixpoint init_i VS.empty IM.empty
+    fixpoint 0 init_i VS.empty IM.empty
   in
   compose init_i input_func aux_vs aux_ef
 
@@ -306,7 +332,7 @@ let discover_for_id stv (idx, update) input_func varid =
     @param input_func the input function of the algorithm.
     @param igu the init, guard and update statements of the enclosing loop. It
     will be used in computing the symbolic index in the algorithm.
-    @return A new set of state variables and a new function with the varaibles
+    @return A new set of state variables and a new function with the variables
     discovered by the algortihm.
 *)
 let discover stv input_func (idx, (i,g,u)) =
