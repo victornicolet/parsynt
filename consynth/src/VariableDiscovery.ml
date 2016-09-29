@@ -202,6 +202,8 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
     let ce_list = IM.bindings cemap in
     if List.length ce_list < 1 then (raise Not_found) else ce_list
   in
+  (**  Returns a list of (vid, (e, f)) where e is a subexpression
+       of ce. *)
   let find_subexpr ce emap =
     T.rec_expr
       (fun a b -> a@b) []
@@ -209,11 +211,15 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
       (fun c -> []) (fun v -> [])
       ce
   in
-  let match_increment fe =
+  (** Check that the function applied to the old expression gives
+      the new expression. *)
+  let match_increment ne =
     List.filter
-      (fun (vid,(e, fe)) ->
+      (fun (vid, (e, fe)) ->
+         printf "Func expr : %a@." pp_skexpr fe;
          let fe' = exec_expr xinfo fe in
-         fe' = fe)
+         printf "Func expr : %a@." pp_skexpr fe';
+         fe' = ne)
   in
   let update_aux (aux_vs, aux_exprs) ce =
     (* The expression is exactly the expression of a aux *)
@@ -225,25 +231,34 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
       let vid, (e, f) = List.nth expr_func_list 0 in
       let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkState)) aux_exprs in
       (aux_vs, new_aux_exprs)
-      with Not_found ->
-        let ef_list = find_subexpr ce aux_exprs in
-        begin
-          if List.length ef_list > 0
+    with Not_found ->
+      let ef_list = find_subexpr ce aux_exprs in
+      begin
+        if List.length ef_list > 0
+        then
+          (* A subexpression of the expression is an auxiliary variable *)
+          let corresponding_functions = match_increment ce ef_list in
+          if List.length corresponding_functions > 0
           then
-            (* A subexpression of the expression is an auxiliary variable *)
             (* TODO : better tactic to choose expressions *)
-            let vid, (e, f) = List.nth (match_increment ce ef_list) 0 in
+            let vid, (e, f) = List.nth corresponding_functions 0 in
             let new_aux_exprs = IM.add vid (ce, f) aux_exprs in
             (aux_vs, new_aux_exprs)
           else
-            (* We have to create a new variable *)
-            let new_aux = gen_fresh () in
-            let new_aux_vs = VS.add new_aux aux_vs in
-            let new_exprs =
-              IM.add new_aux.vid (ce, T.SkVar T.SkState) aux_exprs
-            in
-            (new_aux_vs, new_exprs)
-        end
+            (* We have to update the function *)
+            let vid, (e, f) = List.nth ef_list 0 in
+            let new_f = replace_subexpr_in e (VSOps.find_by_id )  in
+            let new_aux_exprs = IM.add vid (ce, f) aux_exprs in
+            (aux_vs, new_aux_exprs)
+        else
+          (* We have to create a new variable *)
+          let new_aux = gen_fresh () in
+          let new_aux_vs = VS.add new_aux aux_vs in
+          let new_exprs =
+            IM.add new_aux.vid (ce, T.SkVar T.SkState) aux_exprs
+          in
+          (new_aux_vs, new_exprs)
+      end
   in
   List.fold_left update_aux (aux_var_set, aux_var_map) (candidates expr)
 
@@ -289,7 +304,7 @@ let discover_for_id stv (idx, update) input_func varid =
     let new_xinfo, (new_var_set, new_aux_exprs) =
       let new_exprs =
         IM.map
-          (cost_reduce xinfo.state_set)
+          (reduce_full xinfo.state_set)
           (exec_once xinfo input_func)
       in
       let xinfo_index = { state_set = xinfo.index_set ;

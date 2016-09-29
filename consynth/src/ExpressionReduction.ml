@@ -1,6 +1,8 @@
 open Utils
 open SketchTypes
 open Cil
+open SPretty
+open Format
 
 (** Depth of state variables in the expression tree and number of occurrences
     in the expression tree.
@@ -93,18 +95,45 @@ let is_associative op =
   | And | Or | Plus | Times | Max | Min -> true
   | _ -> false
 
-let rec cost_reduce stv expr =
-  match expr with
+
+let reduce_cost stv expr =
+  let reduction_cases expr =
+    match expr with
+    | SkBinop (_, _, _) -> true
+    | _ -> false
+  in
+  let reduce_transform rfunc expr =
+    match expr with
   | SkBinop (op2, SkBinop (op1, a, b), c) ->
-    let a' = cost_reduce stv a in
-    let b' = cost_reduce stv b in
-    let c' = cost_reduce stv c in
+    let a' = rfunc a in
+    let b' = rfunc b in
+    let c' = rfunc c in
     if is_right_distributive op1 op2
     && ((max (cost stv a') (cost stv b')) >= (cost stv c'))
     then
-      SkBinop (op1, SkBinop (op2, a', c'), SkBinop (op2, b', c'))
+      SkBinop (op1, rfunc (SkBinop (op2, a', c')), rfunc (SkBinop (op2, b', c')))
     else
-      expr
+      begin
+        if (op1 = op2) && (is_associative op1)  &&
+           ((cost stv a') >= (max (cost stv b') (cost stv c')))
+        then
+           (SkBinop (op2, a', SkBinop (op1, b', c')))
+        else
+          expr
+      end
   | SkBinop (op, a, b) ->
-    SkBinop (op, cost_reduce stv a, cost_reduce stv b)
-  | _ -> expr
+    SkBinop (op, rfunc a, rfunc b)
+  | SkUnop (op, e) -> SkUnop(op, rfunc e)
+  | e -> rfunc e
+  in
+  transform_expr
+    reduction_cases reduce_transform
+    identity identity expr
+
+
+
+let rec reduce_full ?(limit = 100) stv expr =
+  let red_expr = reduce_cost stv expr in
+  if red_expr = expr || limit = 0
+  then red_expr
+  else reduce_full ~limit:(limit - 1) stv red_expr

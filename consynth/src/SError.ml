@@ -2,6 +2,10 @@ open Format
 open SketchTypes
 open SPretty
 
+let debug_global = ref true
+let set_debug_global () = debug_global := true
+let unset_debug_global () = debug_global := false
+
 exception Exception_on of string * string
 
 let raise_on except_name msg pp_obj obj =

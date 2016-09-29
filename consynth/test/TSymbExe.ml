@@ -70,7 +70,7 @@ let r2_array = { r1_array with state_exprs = exec_once r1_array sum_array;
                          index_exprs = index_map3 }
 
 
-let reduced_r2_array = IM.map (cost_reduce stv) r2_array.state_exprs
+let reduced_r2_array = IM.map (reduce_full stv) r2_array.state_exprs
 
 let print_exprs str exprs =
   Format.printf "%s :\n" str;

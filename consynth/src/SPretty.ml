@@ -258,7 +258,7 @@ let fp = Format.fprintf in
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
 
   | SkBinop (op, e1, e2) ->
-     fp ppf "(%s@; %a@; %a)"
+     fp ppf "(%s %a %a)"
         (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2
 
   | SkUnop (op, e) ->

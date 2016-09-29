@@ -499,6 +499,56 @@ let rec_expr
   in
   recurse_aux expre
 
+(** Another recursion helper : a syntax tree tranformer *)
+let transform_expr
+    (case : skExpr -> bool)
+    (case_handler : (skExpr -> skExpr) -> skExpr -> skExpr)
+    (const_handler: constants -> constants)
+    (var_handler : skLVar -> skLVar)
+    (expre : skExpr) : 'a =
+
+  let rec recurse_aux =
+    function
+    | e when case e -> case_handler recurse_aux e
+    | SkVar v -> SkVar (var_handler v)
+    | SkConst c -> SkConst (const_handler c)
+
+    | SkBinop (op, e1, e2) ->
+      SkBinop (op, (recurse_aux e1), (recurse_aux e2))
+
+    | SkCastE (t, e) -> SkCastE (t, recurse_aux e)
+    | SkAlignofE e -> SkAlignofE (recurse_aux e)
+    | SkAddrof e -> SkAddrof (recurse_aux e)
+    | SkSizeofE e -> SkSizeofE (recurse_aux e)
+    | SkStartOf e -> SkStartOf (recurse_aux e)
+    | SkUnop (op, e) -> SkUnop (op, recurse_aux e)
+
+    | SkQuestion (c, e1, e2) ->
+      SkQuestion (recurse_aux c, recurse_aux e1, recurse_aux e2)
+
+    | SkApp (a, b, el) ->
+      SkApp (a, b, List.map (fun e -> recurse_aux e) el)
+
+    | SkFun letin -> SkFun (recurse_letin letin)
+    | SkRec (igu, letin) -> SkRec (igu, recurse_letin letin)
+
+    | SkCond (c, l1, l2) ->
+      SkCond (recurse_aux c, recurse_letin l1, recurse_letin l2)
+
+    | e -> e
+
+  and recurse_letin =
+    function
+    | SkLetExpr velist ->
+      SkLetExpr (List.map (fun (v, e) -> (v, recurse_aux e)) velist)
+
+    | SkLetIn (velist, letin) ->
+      let in_letin = recurse_letin letin in
+      SkLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_letin)
+  in
+  recurse_aux expre
+
+
 (** Compose a function by adding new assignments *)
 let compose_head assignments func =
   SkLetIn (assignments, func)
