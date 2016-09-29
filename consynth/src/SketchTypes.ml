@@ -558,3 +558,13 @@ let rec compose_tail assignments func =
   | SkLetExpr el ->
     SkLetIn (el, SkLetExpr assignments)
   | SkLetIn (el, l) -> compose_tail assignments l
+
+
+(** Replace expressions by a variables *)
+let replace_subexpr_in to_replace var expr =
+  transform_expr
+    (fun e -> e = to_replace)
+    (fun f e -> SkVar (SkVarinfo var))
+    identity
+    identity
+    expr

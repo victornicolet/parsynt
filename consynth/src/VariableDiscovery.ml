@@ -8,6 +8,8 @@ open SymbExe
 module T = SketchTypes
 
 let debug = ref true
+
+let max_exec_no = ref 10
 (**
    Entry point : check that the function is a candidate for
     function discovery.
@@ -216,46 +218,51 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
   let match_increment ne =
     List.filter
       (fun (vid, (e, fe)) ->
-         printf "Func expr : %a@." pp_skexpr fe;
          let fe' = exec_expr xinfo fe in
-         printf "Func expr : %a@." pp_skexpr fe';
          fe' = ne)
   in
-  let update_aux (aux_vs, aux_exprs) ce =
+  let update_aux (aux_vs, aux_exprs) current_expr =
     (* The expression is exactly the expression of a aux *)
     try
-      let expr_func_list = find_ce ce aux_exprs in
+      let expr_func_list = find_ce current_expr aux_exprs in
       (* TODO : how do we choose which expression to use in this
          case ? Now only pick the first expression to come.
       *)
       let vid, (e, f) = List.nth expr_func_list 0 in
-      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkState)) aux_exprs in
+      let vi = VSOps.find_by_id vid aux_vs in
+      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkVarinfo vi)) aux_exprs in
       (aux_vs, new_aux_exprs)
+
     with Not_found ->
-      let ef_list = find_subexpr ce aux_exprs in
+      let ef_list = find_subexpr current_expr aux_exprs in
       begin
         if List.length ef_list > 0
         then
           (* A subexpression of the expression is an auxiliary variable *)
-          let corresponding_functions = match_increment ce ef_list in
+          let corresponding_functions = match_increment current_expr ef_list in
           if List.length corresponding_functions > 0
           then
             (* TODO : better tactic to choose expressions *)
             let vid, (e, f) = List.nth corresponding_functions 0 in
-            let new_aux_exprs = IM.add vid (ce, f) aux_exprs in
+            let new_aux_exprs = IM.add vid (current_expr, f) aux_exprs in
             (aux_vs, new_aux_exprs)
           else
             (* We have to update the function *)
             let vid, (e, f) = List.nth ef_list 0 in
-            let new_f = replace_subexpr_in e (VSOps.find_by_id )  in
-            let new_aux_exprs = IM.add vid (ce, f) aux_exprs in
+            let new_f =
+              T.replace_subexpr_in e (VSOps.find_by_id vid aux_vs) current_expr
+            in
+            let new_aux_exprs = IM.add vid (current_expr, new_f) aux_exprs in
             (aux_vs, new_aux_exprs)
         else
           (* We have to create a new variable *)
           let new_aux = gen_fresh () in
           let new_aux_vs = VS.add new_aux aux_vs in
           let new_exprs =
-            IM.add new_aux.vid (ce, T.SkVar T.SkState) aux_exprs
+            IM.add
+              new_aux.vid
+              (current_expr, T.SkVar (T.SkVarinfo new_aux))
+              aux_exprs
           in
           (new_aux_vs, new_exprs)
       end
@@ -323,7 +330,7 @@ let discover_for_id stv (idx, update) input_func varid =
                   index_exprs = new_idx_exprs},
       (aux_var_set, aux_var_map)
     in
-    if (i > 10) || (same_aux aux_var_map new_aux_exprs)
+    if (i > !max_exec_no) || (same_aux aux_var_map new_aux_exprs)
     then
       new_xinfo, (new_var_set, new_aux_exprs)
     else

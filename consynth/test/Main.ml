@@ -42,4 +42,4 @@ let testProcessFile () =
 
 unit_tests ();
 
-(* testProcessFile ();; *)
+testProcessFile ();;
