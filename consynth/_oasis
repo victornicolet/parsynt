@@ -20,7 +20,7 @@ PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
 Library consynth
   Path: src
-  Modules: Canalyst
+  Modules: Consynth
   CompiledObject: best
   BuildDepends: cil, core, sexplib
 
