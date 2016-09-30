@@ -1,3 +1,43 @@
 <**/*.ml{,i}>: warn(-40), no_alias_deps
 # OASIS_START
+# DO NOT EDIT (digest: e25dd14eb173082b383fe059de71ad27)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library consynth
+"src/consynth.cmxs": use_consynth
+<src/*.ml{,i,y}>: pkg_cil
+<src/*.ml{,i,y}>: pkg_core
+<src/*.ml{,i,y}>: pkg_sexplib
+# Executable test_main
+<test/Main.{native,byte}>: pkg_cil
+<test/Main.{native,byte}>: pkg_core
+<test/Main.{native,byte}>: pkg_sexplib
+<test/Main.{native,byte}>: use_consynth
+<test/*.ml{,i,y}>: pkg_cil
+<test/*.ml{,i,y}>: pkg_core
+<test/*.ml{,i,y}>: pkg_sexplib
+<test/*.ml{,i,y}>: use_consynth
+# Executable Parsy
+<Parsy.{native,byte}>: pkg_cil
+<Parsy.{native,byte}>: pkg_core
+<Parsy.{native,byte}>: pkg_sexplib
+<Parsy.{native,byte}>: pkg_str
+<Parsy.{native,byte}>: use_consynth
+<*.ml{,i,y}>: pkg_cil
+<*.ml{,i,y}>: pkg_core
+<*.ml{,i,y}>: pkg_sexplib
+<*.ml{,i,y}>: pkg_str
+<*.ml{,i,y}>: use_consynth
 # OASIS_STOP

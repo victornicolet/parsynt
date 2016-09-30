@@ -107,6 +107,9 @@ let defsRec_to_symbDefs defs_rec
     roArrays
   )
 
+(** Test if a set of symbolic definitions is empty. It is empty when the list
+    of variables to define is empty.
+*)
 let is_empty_symbDefs =
   function
   | Integers [] | Booleans [] | Reals [] | RoArray (_, []) -> true
@@ -114,11 +117,22 @@ let is_empty_symbDefs =
 
 
 (** Sketch -> Rosette sketch *)
+(** The name of the structure used to represent the state of the loop *)
 let main_struct_name = "$"
+(** Name of the join function in the Rosette sketch *)
 let join_name = "__join__"
+(** Name of the loop function in the Rosette sketch *)
 let body_name = "__loop_body__"
+(** Name of the initial state for the loop in the Rosette sketch *)
 let init_state_name = "__$0__"
 
+(** Return the string of variable names from symbolic definitions. This names
+    are the names used when printing the defintions of the symbolic variables
+    in pp_symbDef.
+    @return A list of strings containing all the names of the variables
+    defined using pp_symbDef with the same symbolic definitions. If we an array
+    is defined, the names of the cells will be concatenated into one string.
+*)
 let string__symbs_of_symbDef sd =
  match sd with
   | Integers li ->
@@ -142,7 +156,18 @@ let string__symbs_of_symbDef sd =
          in str_list@[cell_names])
 
 
+(** Print the defintions of the variables we need in the sketch. We use
+    the basic types of Rosette : integers, reals and booleans. The arrays
+    are vectors in Racket, with a finite size defined by the iterations_limit
+    parameter in the module.
+    The function prints the definitions in the fmt parameter and return a list
+    of strings. This list contains the names of the symbolic variables that
+    have been defined in the function.
 
+    @param fmt The formatting argument.
+    @param sd The symbolic defintions.
+    @return A list of strings representing the list of symbols defined.
+*)
 let pp_symbDef fmt sd =
   let fp = Format.fprintf in
   begin
@@ -170,7 +195,10 @@ let pp_symbDef fmt sd =
   end;
   string__symbs_of_symbDef sd
 
-
+(** Wrapper for pp_symbDef to avoid empty symbolic definitions cases. If there
+    is nothing to define, nothing is printed, and the we return a single element
+    list containing the empty string.
+*)
 let pp_ne_symbdefs fmt sd =
   if is_empty_symbDefs sd
   then (Format.fprintf fmt "" ; [""])
@@ -183,12 +211,20 @@ let strings_of_symbdefs symbdef =
   ignore(pp_ne_symbdefs str_formatter symbdef); flush_str_formatter ()
 
 
-(** Define the state structure with an equality preidcate *)
+(** Pretty print the state structure with an equality predicate. The
+    form of the definitions are defined in the Racket module.
+*)
 let pp_state_definition fmt main_struct =
   pp_struct_defintion fmt main_struct;
   pp_force_newline fmt ();
   pp_struct_equality fmt main_struct
 
+(** Given a set of variables, pretty print their definitions and return
+    a list of strings representing the names of the symbolic variables
+    that have been defined.
+    @param fmt A formatter.
+    @param vars The set of variables whose defintion will be printed.
+*)
 let pp_symbolic_definitions_of fmt vars =
   let (ints, reals, booleans, arrays)
       = defsRec_to_symbDefs (defsRec_of_varinfos vars) in
@@ -200,7 +236,12 @@ let pp_symbolic_definitions_of fmt vars =
   in
   int_symbs @ real_symbs @ bool_symbs @ array_cells
 
-(** Loop body *)
+(** Pretty print the body of the loop.
+    @param loop_body The function representing the loop body.
+    @param state_vars The set of state variables of this loop body.
+    @param state_struct_name The name of the struct used to represent
+    the state of the loop (valuation of the state variables).
+ *)
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
 let state_arg_name = "__s" in
@@ -211,6 +252,14 @@ let state_arg_name = "__s" in
     (ListTools.pair field_names field_names)
     pp_sklet loop_body
 
+(** Pretty print the whole loop wrapped in a Racket macro Loop and a function
+    deifinition. The name of this function is set in the variable body_name of
+    this module.
+    @param loop_body The function representing the loop body.
+    @param state_vars The set of state variables of this loop body.
+    @param state_struct_name The name of the struct used to represent
+    the state of the loop (valuation of the state variables).
+*)
 let pp_loop fmt (loop_body, state_vars) state_struct_name =
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
@@ -223,12 +272,17 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
 
 
 
-(** Join operator *)
+(** Pretty print the body of the join function in the Rosette sketch.
+    @param join_body The function of the join.
+    @param state_vars The set of state variables.
+    @param lstate_name The name of the left state argument of the join.
+    @param rstate_name The name of the right state argument of the join.
+*)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
   let left_state_vars = VSOps.vs_with_suffix state_vars "-$L" in
   let right_state_vars = VSOps.vs_with_suffix state_vars "-$R" in
-  let lvar_names = VSOps.namelist left_state_vars in
+  let lvar_names = VSOps.namelist right_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
   set_hole_vars left_state_vars right_state_vars;
@@ -241,7 +295,12 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     pp_sklet join_body
 
 
-
+(** Pretty print the join function using the body pretty printing function
+    wrapped in a defintion. The name of the function is defined in the
+    join_name variable in the module.
+    @param join_body The function of the join.
+    @param state_vars The set of state variables.
+*)
 let pp_join fmt (join_body, state_vars) =
   let lstate_name = "$L" in
   let rstate_name = "$R" in
@@ -252,7 +311,15 @@ let pp_join fmt (join_body, state_vars) =
 
 (** Some state definitons *)
 
-
+(** Pretty print the state (Racket structs) that we need in the Rosette
+    sketch.
+    @param state_vars The state variable of the loop in the current problem.
+    @param read_vars The read-only variable in the current problem.
+    @param st0 The name of the inital state.
+    @param reach_consts A mapping from variable IDs to expressions. If a binding
+    from a variable id to an expression exists, then the value of the variable
+    will be set to this expression in the inital state of the loop.
+*)
 let pp_states fmt state_vars read_vars st0 reach_consts =
   let s0_sketch_printer =
     pp_print_list
@@ -285,7 +352,14 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     (VSOps.bindings st0_vars)
 
 
-(** The synthesis problem in Rosette *)
+(** Pretty print one verification condition, the loop
+    from a starting index to an end index is split over a index
+    i_m between the two.
+    @param s0 The name of the inital state.
+    @param i_st The starting index for this instance.
+    @param i_m The splitting index for this instance.
+    @param i_end The end index for this instance.
+ *)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
   Format.fprintf fmt
     "@[<hov 2>(%s-eq?@. %a @.@[<hov 2>(%s@; %a@; %a)@])@]@."
@@ -295,7 +369,13 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
     pp_body_app (body_name, s0, i_st, i_m)
     pp_body_app (body_name, init_state_name, i_m, i_end)
 
-
+(** Pretty print the whole body of the synthesis problem. (The set of
+    verification conditions is hardcoded here now, we have to change that).
+    @param s0 The name of the initial state.
+    @param state_vars The set of state variables.
+    @param symbolic_variable_names The list of symbolic variable names that will
+    have a universal quantifier over.
+ *)
 let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
   Format.fprintf fmt
     "@[<hov 2>#:forall (list %a)@]@." pp_string_list symbolic_variable_names;
@@ -307,13 +387,32 @@ let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
     [(0,0,0);(0,0,9);(0,9,9);(0,4,9);(0,5,9);(3,6,9);(9,9,9)]
 
 
-
+(** Pretty-print a synthesis problem wrapped in a defintion for further
+    access to the solved problem
+*)
 let pp_synth fmt s0 state_vars symb_var_names =
   Format.fprintf fmt
     "@[(define odot@.@[<hov 2>(synthesize@.%a)@])@]@."
     pp_synth_body (s0, state_vars, symb_var_names)
 
-
+(** Main interface to print the sketch of the whole problem.
+    @param fmt A Format.formatter
+    @param read A list of variable ids representing the subset of read-only
+    variables.
+    @param state A list of varaibles ids representing the set of state
+    variables.
+    @param all_vars The set of all the variables in the problem.
+    @param loop_body The loop body in a functional form.
+    @param join_body The sketch of the join for the loop body.
+    @param idx The set of index variables.
+    @param i The iniitalization of the index.
+    @param g AN expression containinf only index variables representing the
+    termination condition of the loop.
+    @param u A function updating the index from one iteration to another.
+    @param reach_consts A mapping from variable IDs to expressions. If a binding
+    from a variable id to an expression exists, then the value of the variable
+    will be set to this expression in the inital state of the loop.
+*)
 let pp_rosette_sketch fmt
     (read, state, all_vars, loop_body, join_body,
      (idx, (i, g, u)), reach_consts) =

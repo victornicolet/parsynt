@@ -16,8 +16,9 @@ XOCamlbuildExtraArgs: "-tag thread"
 
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
+PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
-Library canalyst
+Library consynth
   Path: src
   Modules: Canalyst
   CompiledObject: best
@@ -29,18 +30,12 @@ Executable test_main
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, canalyst
+  BuildDepends: cil, consynth
 
 Test test_main
   TestTools: test_main
   Command: $test_main
   WorkingDirectory: test
-
-SourceRepository "master"
-  Type: git
-  Location: https://github.com/victornicolet/consynth.git
-  Branch: master
-  Browser: https://github.com/victornicolet/consynth
 
 Executable Parsy
   Path: ./
@@ -48,4 +43,13 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: canalyst, str
+  BuildDepends: consynth, str
+
+Document consynth
+ Title: Consynth Library Doc
+ Authors: Victor Nicolet
+ Type: ocamlbuild (0.4)
+ BuildTools: ocamldoc
+ XOcamlBuildLibraries : consynth
+ XOCamlbuildPath: src
+ XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors -charset utf-8' -tag thread"

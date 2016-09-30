@@ -15,6 +15,11 @@ examples/Basic
 # OCaml
 consynth/_build
 consynth/canalysis/_build
+*.mldylib
+*.mlib
+*.mllib
+*.odocl
+META
 
 #Racket
 */compiled/
@@ -23,6 +28,8 @@ consynth/synthServ
 #Oasis
 setup.data
 consynth/setup.ml
+myocamlbuild.ml
+_tags
 
 #Temporary dump files
 consynth/dump/conSynth*

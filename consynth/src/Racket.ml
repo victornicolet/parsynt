@@ -2,6 +2,8 @@ open Format
 
 type racket_struct = string * (string list)
 
+(** Functions to print Racket constructs *)
+
 let pp_struct_defintion fmt (sname, fields) =
   fprintf fmt "@[<1>(struct %s (%a))@;@]"
     sname
