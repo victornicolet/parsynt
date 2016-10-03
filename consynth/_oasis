@@ -18,19 +18,25 @@ PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
 PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
+Library rosetteInterface
+  Path: src/rosetteInterface
+  BuildDepends: core
+  CompiledObject: best
+  Modules: Local
+
+
 Library consynth
   Path: src
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, core, sexplib
-
+  BuildDepends: cil, core, sexplib, rosetteInterface
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth
+  BuildDepends: cil, consynthPar
 
 Test test_main
   TestTools: test_main
@@ -52,4 +58,4 @@ Document consynth
  BuildTools: ocamldoc
  XOcamlBuildLibraries : consynth
  XOCamlbuildPath: src
- XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors -charset utf-8' -tag thread"
+ XOCamlbuildExtraArgs: "-docflags '-html -all-params -colorize-code -short-functors -charset utf-8' -tag thread"

@@ -1,8 +1,6 @@
 open Str
 open Printf
-open PpHelper
 
-module C = Canalyst
 (**
     Locally, solving sketches is done by writing to files,
     executing a compiled racket program and then retrieving the result
@@ -12,8 +10,8 @@ module C = Canalyst
 let debug = ref false
 let dump_sketch = ref false
 
-let templateDir = Filename.current_dir_name^"/templates/"
-let dumpDir = Filename.current_dir_name^"/dump/"
+let templateDir = Filename.current_dir_name^"/../../templates/"
+let dumpDir = Filename.current_dir_name^"/../../dump/"
 
 let copy_file from_filename to_filename =
   let oc = open_out to_filename in
@@ -56,7 +54,7 @@ let line_stream_of_channel channel =
     (fun _ ->
       try Some (input_line channel) with End_of_file -> None);;
 
-let completeFile filename solution_file_name sketch =
+let completeFile filename solution_file_name sketch_printer sketch =
   let oc = open_out filename in
   let process_line line =
     fprintf oc "%s\n"
@@ -67,7 +65,7 @@ let completeFile filename solution_file_name sketch =
   Stream.iter process_line (line_stream_of_channel header);
   let fmt = Format.make_formatter
     (output oc)  (fun () -> flush oc) in
-  C.pp_sketch fmt sketch;
+  sketch_printer fmt sketch;
   let footer = open_in (templateDir^"footer.rkt") in
   Stream.iter process_line (line_stream_of_channel footer);
   close_out oc
@@ -76,10 +74,10 @@ let completeFile filename solution_file_name sketch =
 let racket filename =
   Sys.command ("racket "^filename)
 
-let compile sketch =
+let compile ?(print_err_msg = fun int -> ()) printer printer_arg =
   let solution_tmp_file = Filename.temp_file "conSynthSol" ".rkt" in
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
-  completeFile sketch_tmp_file solution_tmp_file sketch;
+  completeFile sketch_tmp_file solution_tmp_file printer printer_arg;
   let errno = racket sketch_tmp_file in
   if !dump_sketch|| (errno != 0 && !debug) then
     begin
@@ -94,8 +92,9 @@ let compile sketch =
     begin
       if !debug then
         begin
-          eprintf "%sError%s while running racket on sketch.\n"
-            (color "red") default;
+          print_err_msg errno;
+          (* eprintf "%sError%s while running racket on sketch.\n" *)
+          (*   (color "red") default; *)
         end;
       exit 1;
     end;
@@ -113,6 +112,8 @@ let fetch_solution filename =
   Stream.iter process_line is;
   Sys.remove filename
 
-let compile_and_fetch sketch =
-  let errno, filename = compile sketch in
+let compile_and_fetch ?(print_err_msg = (fun i -> ())) printer printer_arg =
+  let errno, filename =
+    compile ~print_err_msg:print_err_msg printer printer_arg
+  in
   fetch_solution filename

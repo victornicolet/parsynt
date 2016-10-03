@@ -399,7 +399,7 @@ let pp_synth fmt s0 state_vars symb_var_names =
     @param fmt A Format.formatter
     @param read A list of variable ids representing the subset of read-only
     variables.
-    @param state A list of varaibles ids representing the set of state
+    @param state A list of variables ids representing the set of state
     variables.
     @param all_vars The set of all the variables in the problem.
     @param loop_body The loop body in a functional form.

@@ -2,8 +2,8 @@ open Sketch
 open PpHelper
 open Format
 open Utils
-open SymbExe
 open SError
+open SymbExe
 open VariableDiscovery
 
 module E = Errormsg

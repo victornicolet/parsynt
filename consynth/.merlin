@@ -1,5 +1,7 @@
 B _build/
 B _build/src
+S _build/src/rosetteInterface
 S src
+S src/rosetteInterface
 S ./
 PKG cil core async

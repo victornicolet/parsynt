@@ -2,6 +2,11 @@ open Pretty
 open List
 open Printf
 open Format
+
+module SketchBody = SketchBody
+module SketchJoin = SketchJoin
+
+(** Main interface for code analysis and sketch generation *)
 module Canalyst : sig
   open Cil
   module T = SketchTypes
@@ -28,6 +33,24 @@ module Sketch : sig
   module Body = SketchBody
   module Join = SketchJoin
 
+  (** Main interface to print the sketch of the whole problem.
+      @param fmt A Format.formatter
+      @param read A list of variable ids representing the subset of read-only
+      variables.
+      @param state A list of variables ids representing the set of state
+      variables.
+      @param all_vars The set of all the variables in the problem.
+      @param loop_body The loop body in a functional form.
+      @param join_body The sketch of the join for the loop body.
+      @param idx The set of index variables.
+      @param i The iniitalization of the index.
+      @param g AN expression containinf only index variables representing the
+      termination condition of the loop.
+      @param u A function updating the index from one iteration to another.
+      @param reach_consts A mapping from variable IDs to expressions. If a binding
+      from a variable id to an expression exists, then the value of the variable
+      will be set to this expression in the inital state of the loop.
+  *)
   val pp_rosette_sketch : Format.formatter ->
     (int list * int list * Utils.VS.t *
      SketchTypes.sklet * SketchTypes.sklet *
