@@ -568,3 +568,6 @@ let replace_subexpr_in to_replace var expr =
     identity
     identity
     expr
+
+
+(** Translate basic scheme to the Sketch expressions *)

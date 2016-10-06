@@ -37,5 +37,5 @@ let pp_body_app fmt (body_name, s, from, to_n) =
     body_name s from to_n
 
 
-let parse s =
+let parse_scm s =
   Parser.main Lexer.token (Lexing.from_string s)

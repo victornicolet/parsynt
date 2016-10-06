@@ -1,4 +1,5 @@
 open RUtils
+open Format
 
 type id = string
 
@@ -22,25 +23,27 @@ type op =
   | Null
   | Load
 
-let op_to_string = function
-  | Plus -> "+"
-  | Minus -> "-"
-  | Mul -> "*"
-  | Div -> "/"
-  | Mod -> "%"
-  | Eq -> "="
-  | Neq -> "!="
-  | Lt -> "<"
-  | Leq -> "<="
-  | Gt -> ">"
-  | Geq -> ">="
-  | And -> "&"
-  | Or -> "|"
-  | Not -> "~"
-  | Car -> "car"
-  | Cdr -> "cdr"
-  | Null -> "null"
-  | Load -> "load"
+let pp_op fmt op =
+  fprintf fmt "%s"
+    (match op with
+     | Plus -> "+"
+     | Minus -> "-"
+     | Mul -> "*"
+     | Div -> "/"
+     | Mod -> "\\%"
+     | Eq -> "="
+     | Neq -> "!="
+     | Lt -> "<"
+     | Leq -> "<="
+     | Gt -> ">"
+     | Geq -> ">="
+     | And -> "&"
+     | Or -> "|"
+     | Not -> "~"
+     | Car -> "car"
+     | Cdr -> "cdr"
+     | Null -> "null"
+     | Load -> "load")
 
 type expr =
   | Int_e of int
@@ -61,51 +64,53 @@ type expr =
   | Delayed_e of expr
   | Forced_e of expr
 
-let rec to_string (e : expr) : string =
-  let rec cons_to_string (x : expr) : string list =
-    match x with
-    | Nil_e -> []
-    | Cons_e (x, y) -> to_string x :: cons_to_string y
-    | y -> ["."; to_string y]
+let sep_space fmt () = fprintf fmt " "
+
+let rec pp_expr fmt e =
+  let rec pp_cons fmt x =
+    fprintf fmt "%a"
+      (fun fmt' ex ->
+         (match ex with
+           | Nil_e -> fprintf fmt' "%s" "()"
+           | Cons_e (x, y) -> fprintf fmt' "(%a %a)" pp_expr x pp_expr y
+           | y ->  fprintf fmt' "%s" "()")) x
   in
     match e with
-    | Int_e n -> string_of_int n
-    | Str_e s -> s
-    | Bool_e b -> string_of_bool b
-    | Id_e x -> x
-    | Nil_e -> "()"
-    | Cons_e _ -> listify (cons_to_string e)
+    | Int_e n -> pp_print_int fmt n
+    | Str_e s -> fprintf fmt "\"%s\"" s
+    | Bool_e b -> pp_print_bool fmt b
+    | Id_e x -> pp_print_string fmt x
+    | Nil_e -> pp_print_string fmt "()"
+    | Cons_e _ -> pp_cons fmt e
     | Let_e (x, e1, e2) ->
-        let s1 = to_string e1
-        and s2 = to_string e2
-        in listify ["let"; x; s1; s2]
+      fprintf fmt "(let ([%s %a]) %a)" x pp_expr e1 pp_expr e2
     | Letrec_e (x, e1, e2) ->
-        let s1 = to_string e1
-        and s2 = to_string e2
-        in listify ["letrec"; x; s1; s2]
+      fprintf fmt "(letrec ([%s %a]) %a)" x pp_expr e1 pp_expr e2
     | If_e (e0, e1, e2) ->
-        let s0 = to_string e0
-        and s1 = to_string e1
-        and s2 = to_string e2
-        in listify ["if"; s0; s1; s2]
+      fprintf fmt "(if %a %a %a)" pp_expr e0 pp_expr e1 pp_expr e2
     | Apply_e (e1, e2) ->
-        let s1 = to_string e1 in
-        let s2 = String.concat " " (List.map to_string e2)
-        in listify [s1; s2]
+      fprintf fmt "(%a %a)" pp_expr e1
+        (fun fmt l ->
+           pp_print_list ~pp_sep:sep_space
+             pp_expr fmt l) e2
     | Fun_e (xs, e) ->
-      listify ("lambda" :: listify_mult xs :: [to_string e])
+      fprintf fmt "(lambda (%a) %a)"
+        (fun fmt l -> pp_print_list ~pp_sep:sep_space pp_print_string fmt l) xs
+        pp_expr e
+
     | Def_e (xs, e) ->
-      listify ("define" :: listify_mult xs :: [to_string e])
+      fprintf fmt "(define (%a) %a)"
+        (fun fmt l -> pp_print_list ~pp_sep:sep_space pp_print_string fmt l) xs
+        pp_expr e
+
     | Defrec_e (xs, e) ->
-      listify ("definerec" :: listify_mult xs :: [to_string e])
+      fprintf fmt "(define (%a) %a)"
+        (fun fmt l -> pp_print_list ~pp_sep:sep_space pp_print_string fmt l) xs
+        pp_expr e
+
     | Binop_e (op, e1, e2) ->
-        let s0 = op_to_string op
-        and s1 = to_string e1
-        and s2 = to_string e2
-        in listify [s0; s1; s2]
+      fprintf fmt "(%a %a %a)" pp_op op pp_expr e1 pp_expr e2
     | Unop_e (op, e) ->
-        let s0 = op_to_string op
-        and s1 = to_string e
-        in listify [s0; s1]
-    | Delayed_e (ex) -> "delay " ^ to_string ex
-    | Forced_e (ex) -> to_string ex
+      fprintf fmt "(%a %a)" pp_op op pp_expr e
+    | Delayed_e (ex) -> fprintf fmt "delay %a" pp_expr ex
+    | Forced_e (ex) -> pp_expr fmt ex

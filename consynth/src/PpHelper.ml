@@ -54,7 +54,7 @@ let string_of_loc (loc : Cil.location) =
 
 let loc_of_string loca =
   let regexp =
-    Str.regexp "<#line \([0-9]+\) in \([0-9A-Za-z\._-]+\), byte \([0-9]+>\)"
+    Str.regexp "<#line \\([0-9]+\\) in \\([0-9A-Za-z\\._-]+\\), byte \\([0-9]+>\\)"
   in
   try
     let matching = Str.search_forward regexp loca 0 in
