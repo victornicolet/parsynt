@@ -1,4 +1,6 @@
 open Format
+open RUtils
+
 type racket_struct = string * (string list)
 
 (** Functions to print Racket constructs *)
@@ -33,3 +35,7 @@ let pp_comment fmt str =
 let pp_body_app fmt (body_name, s, from, to_n) =
   Format.fprintf fmt "@[<hov 2>(%s %s %i %i)@]"
     body_name s from to_n
+
+
+let parse s =
+  Parser.main Lexer.token (Lexing.from_string s)
