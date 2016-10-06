@@ -1,6 +1,6 @@
 B _build/
 B _build/src
-S _build/src/rosetteInterface
+B _build/src/rosetteInterface
 S src
 S src/rosetteInterface
 S ./
