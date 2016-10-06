@@ -204,8 +204,8 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
     let ce_list = IM.bindings cemap in
     if List.length ce_list < 1 then (raise Not_found) else ce_list
   in
-  (**  Returns a list of (vid, (e, f)) where e is a subexpression
-       of ce. *)
+  (**  Returns a list of (vid, (e, f)) where (f,e) is build such that
+       ce = f (e, ...) *)
   let find_subexpr ce emap =
     T.rec_expr
       (fun a b -> a@b) []

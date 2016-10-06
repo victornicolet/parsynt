@@ -50,10 +50,22 @@ let ppimap
 
 
 let string_of_loc (loc : Cil.location) =
- sprintf "<#line %i in %s>" loc.Cil.line loc.Cil.file
+ sprintf "<#line %i in %s, byte %i>" loc.Cil.line loc.Cil.file loc.Cil.byte
+
+let loc_of_string loca =
+  let regexp =
+    Str.regexp "<#line \([0-9]+\) in \([0-9A-Za-z\._-]+\), byte \([0-9]+>\)"
+  in
+  try
+    let matching = Str.search_forward regexp loca 0 in
+    let line = int_of_string (Str.matched_group 0 loca) in
+    let file_name = Str.matched_group 1 loca in
+    let byte =  int_of_string (Str.matched_group 2 loca) in
+    Some { Cil.line = line; file = file_name; Cil.byte = byte }
+  with Not_found -> None
 
 
-(**TODO : replace characters that are srtting colro back to default in incoming
+(**TODO : replace characters that are setting color back to default in incoming
    string *)
 let printerr s =
   Format.fprintf err_formatter "%s%s%s" (color "red") s default

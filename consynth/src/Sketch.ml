@@ -282,7 +282,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
   let left_state_vars = VSOps.vs_with_suffix state_vars "-$L" in
   let right_state_vars = VSOps.vs_with_suffix state_vars "-$R" in
-  let lvar_names = VSOps.namelist right_state_vars in
+  let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
   set_hole_vars left_state_vars right_state_vars;

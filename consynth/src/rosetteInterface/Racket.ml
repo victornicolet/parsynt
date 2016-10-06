@@ -1,5 +1,4 @@
 open Format
-
 type racket_struct = string * (string list)
 
 (** Functions to print Racket constructs *)

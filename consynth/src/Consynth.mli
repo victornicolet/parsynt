@@ -2,6 +2,7 @@ open Pretty
 open List
 open Printf
 open Format
+open Utils
 
 module SketchBody = SketchBody
 module SketchJoin = SketchJoin
@@ -27,6 +28,39 @@ module Canalyst : sig
   val func2sketch : func_info list -> sketch_info list
 
   val pp_sketch : Format.formatter -> sketch_info  -> unit
+end
+
+module PpHelper : sig
+  (** GIven a color name return the color prefix for printing *)
+  val color : string -> string
+
+  (** Default color code for printing *)
+  val default : string
+
+  (** Pretty print a list given a pretty printer for the elements, a separator
+      (default is ;) *)
+  val ppli : formatter -> ?sep:string -> (formatter -> 'a -> unit) ->
+    ('a list -> unit)
+
+  (** Prretty print a list of integers *)
+  val pp_int_list : formatter -> int list -> unit
+
+  (** Print a list of integers to the standard output defined by
+      Format.std_formatter *)
+  val print_int_list : int list -> unit
+
+  (** Pretty print the elements of an integer map given a pretty printer for the
+      elements of the map *)
+  val ppimap : (formatter -> 'a -> unit) -> formatter -> ('a IM.t -> unit)
+
+  (** Output a string representing a Cil location *)
+  val string_of_loc : Cil.location -> string
+
+  (** Deserialize a string repsenting a CIl location *)
+  val loc_of_string : string -> Cil.location option
+
+  (** Print an error message in red to the Format.err_formatter *)
+  val printerr : string -> unit
 end
 
 module Sketch : sig

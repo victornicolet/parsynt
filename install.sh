@@ -140,7 +140,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib" "datalog")
+declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -160,7 +160,8 @@ sep
 
 cd ./consynth
 oasis setup -setup-update dynamic
-cd ..
+#cd ..
 msg_success "Makefiles created, trying make in consynth"
-cd consynth
+#cd ./consynth
+make $1
 make

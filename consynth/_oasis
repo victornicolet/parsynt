@@ -12,7 +12,7 @@ Description: A library that synthesizes concurrent C programs from sequential sp
 Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
-XOCamlbuildExtraArgs: "-tag thread"
+XOCamlbuildExtraArgs: "-tag thread -use-menhir"
 
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
@@ -23,7 +23,9 @@ Library rosetteInterface
   BuildDepends: core
   CompiledObject: best
   Modules: Local
-
+  BuildTools : ocamlbuild
+  BuildDepends: grammar, lexer
+  Install : false
 
 Library consynth
   Path: src
@@ -36,12 +38,14 @@ Executable test_main
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynthPar
+  BuildDepends: cil, consynth, rosetteInterface
 
-Test test_main
-  TestTools: test_main
-  Command: $test_main
-  WorkingDirectory: test
+Executable test_scheme_parsing
+  Path: test
+  MainIs : TestSchemeParsing.ml
+  Compiledobject: best
+  Install : false
+  BuildDepends: cil, consynth, rosetteInterface, schoca
 
 Executable Parsy
   Path: ./

@@ -4,4 +4,4 @@ S _build/src/rosetteInterface
 S src
 S src/rosetteInterface
 S ./
-PKG cil core async
+PKG cil core schoca

@@ -1,6 +1,6 @@
 <**/*.ml{,i}>: warn(-40), no_alias_deps
 # OASIS_START
-# DO NOT EDIT (digest: 243f343798134a3456e15ff2881749a4)
+# DO NOT EDIT (digest: 954ad0b91ce0203e34779e9f3f49c5c4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -30,8 +30,16 @@ true: annot, bin_annot
 <test/Main.{native,byte}>: pkg_sexplib
 <test/Main.{native,byte}>: use_consynth
 <test/Main.{native,byte}>: use_rosetteInterface
+# Executable test_scheme_parsing
+"test/TestSchemeParsing.byte": pkg_cil
+"test/TestSchemeParsing.byte": pkg_core
+"test/TestSchemeParsing.byte": pkg_schoca
+"test/TestSchemeParsing.byte": pkg_sexplib
+"test/TestSchemeParsing.byte": use_consynth
+"test/TestSchemeParsing.byte": use_rosetteInterface
 <test/*.ml{,i,y}>: pkg_cil
 <test/*.ml{,i,y}>: pkg_core
+<test/*.ml{,i,y}>: pkg_schoca
 <test/*.ml{,i,y}>: pkg_sexplib
 <test/*.ml{,i,y}>: use_consynth
 <test/*.ml{,i,y}>: use_rosetteInterface

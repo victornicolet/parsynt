@@ -137,3 +137,33 @@ let rec reduce_full ?(limit = 100) stv expr =
   if red_expr = expr || limit = 0
   then red_expr
   else reduce_full ~limit:(limit - 1) stv red_expr
+
+(** Using Rosette to solve other reduction/expression matching problems *)
+let find_function x all_vars fe e =
+  let pp_defs fmt () =
+    Sketch.pp_symbolic_definitions_of fmt all_vars
+  in
+  let pp_expr_e fmt () =
+    fprintf fmt "(define e @[%a@])@." pp_skexpr e
+  in
+  let pp_expr_fe fmt () =
+    fprintf fmt "(define fe @[%a@])@." pp_skexpr fe
+  in
+  let pp_f_sketch fmt () =
+    (** TODO : the sketch !*)
+    fprintf fmt "(define (f x) ??)"
+  in
+  let pp_synth_prob fmt s () =
+    fprintf fmt
+      "(define odot (synthesize #:forall (list %s) \
+       #:guarantee (assert (eq? fe (f e)))@."
+  in
+  let pp_all fmt () =
+    let defs_str = pp_defs fmt () in
+    pp_expr_e fmt ();
+    pp_expr_fe fmt ();
+    pp_f_sketch fmt ();
+    pp_synth_prob fmt defs_str ()
+  in
+  let solution = Local.compile_and_fetch pp_all () in
+  ()
