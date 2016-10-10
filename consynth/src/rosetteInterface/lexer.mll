@@ -27,13 +27,13 @@ let _ = List.iter (uncurry (Hashtbl.replace keyword_tbl)) keywords
 
 }
 
-let id = ['a'-'z' 'A'-'Z'] ['_' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
+let id = ['_' 'a'-'z' 'A'-'Z' '$'] ['-' '$' '_' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
 let nl = ['\n' '\r']
 let ws = ['\n' '\t' '\r' ' ']
 let int = ['0'-'9']+
 
 rule token = parse
-    id as id   { try Hashtbl.find keyword_tbl (String.lowercase id) with Not_found -> ID id }
+    id as id   { try Hashtbl.find keyword_tbl id with Not_found -> ID id }
   | "("            { LPAREN }
   | ")"            { RPAREN }
   | "+"            { PLUS }

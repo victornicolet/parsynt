@@ -1,6 +1,6 @@
 open Str
 open Printf
-
+open Parser
 
 (**
     Locally, solving sketches is done by writing to files,
@@ -106,11 +106,10 @@ let fetch_solution filename =
      TODO : parse the solution given by racket into a set of Cil
      expressions.
   *)
-  let is = line_stream_of_channel (open_in filename) in
-  let process_line line =
-    print_endline line
-  in
-  Stream.iter process_line is;
+  let parsed = Parser.main
+      Lexer.token
+      (Lexing.from_string (Std.input_file filename)) in
+  Ast.pp_expr_list Format.std_formatter parsed;
   Sys.remove filename
 
 let compile_and_fetch ?(print_err_msg = (fun i -> ())) printer printer_arg =

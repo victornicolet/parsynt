@@ -4,4 +4,4 @@ B _build/src/rosetteInterface
 S src
 S src/rosetteInterface
 S ./
-PKG cil core schoca
+PKG cil core extlib

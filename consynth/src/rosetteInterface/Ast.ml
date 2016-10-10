@@ -52,8 +52,8 @@ type expr =
   | Id_e of id
   | Nil_e
   | Cons_e of expr * expr
-  | Let_e of id * expr * expr
-  | Letrec_e of id * expr * expr
+  | Let_e of (id * expr) list * expr
+  | Letrec_e of (id * expr) list * expr
   | If_e of expr * expr * expr
   | Apply_e of expr * expr list
   | Fun_e of id list * expr
@@ -82,12 +82,23 @@ let rec pp_expr fmt e =
     | Id_e x -> pp_print_string fmt x
     | Nil_e -> pp_print_string fmt "()"
     | Cons_e _ -> pp_cons fmt e
-    | Let_e (x, e1, e2) ->
-      fprintf fmt "(let ([%s %a]) %a)" x pp_expr e1 pp_expr e2
-    | Letrec_e (x, e1, e2) ->
-      fprintf fmt "(letrec ([%s %a]) %a)" x pp_expr e1 pp_expr e2
+    | Let_e (bindings, e2) ->
+      fprintf fmt "(let (%a) %a)"
+        (fun fmt l -> pp_print_list ~pp_sep:sep_space
+            (fun fmt (i, e) -> fprintf fmt "[%s %a]" i pp_expr e)
+            fmt l) bindings
+        pp_expr e2
+
+    | Letrec_e (bindings, e2) ->
+      fprintf fmt "(letrec (%a) %a)"
+        (fun fmt l -> pp_print_list ~pp_sep:sep_space
+            (fun fmt (i, e) -> fprintf fmt "[%s %a]" i pp_expr e)
+            fmt l) bindings
+        pp_expr e2
+
     | If_e (e0, e1, e2) ->
       fprintf fmt "(if %a %a %a)" pp_expr e0 pp_expr e1 pp_expr e2
+
     | Apply_e (e1, e2) ->
       fprintf fmt "(%a %a)" pp_expr e1
         (fun fmt l ->
@@ -114,3 +125,10 @@ let rec pp_expr fmt e =
       fprintf fmt "(%a %a)" pp_op op pp_expr e
     | Delayed_e (ex) -> fprintf fmt "delay %a" pp_expr ex
     | Forced_e (ex) -> pp_expr fmt ex
+
+let pp_expr_list fmt l =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt "@.")
+    pp_expr
+    fmt l;
+  pp_print_newline fmt ();

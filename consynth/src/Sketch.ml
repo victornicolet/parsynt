@@ -124,7 +124,7 @@ let join_name = "__join__"
 (** Name of the loop function in the Rosette sketch *)
 let body_name = "__loop_body__"
 (** Name of the initial state for the loop in the Rosette sketch *)
-let init_state_name = "__$0__"
+let init_state_name = main_struct_name^"_init"
 
 (** Return the string of variable names from symbolic definitions. This names
     are the names used when printing the defintions of the symbolic variables
@@ -152,7 +152,7 @@ let string__symbs_of_symbDef sd =
            List.fold
              (1 -- !iterations_limit)
              ~init:""
-             ~f:(fun str i -> str^" "^array_name^"$"^(string_of_int i))
+             ~f:(fun str i -> str^" "^array_name^main_struct_name^(string_of_int i))
          in str_list@[cell_names])
 
 
@@ -187,7 +187,7 @@ let pp_symbDef fmt sd =
            let cell_names =
              List.map
                (1 -- !iterations_limit)
-               ~f:(fun i -> array_name^"$"^(string_of_int i))
+               ~f:(fun i -> array_name^main_struct_name^(string_of_int i))
            in
            fp fmt "(define-symbolic %a %s)@." pp_string_list cell_names sty;
            fp fmt "(define %s (vector %a))@."
@@ -280,8 +280,10 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
-  let left_state_vars = VSOps.vs_with_suffix state_vars "-$L" in
-  let right_state_vars = VSOps.vs_with_suffix state_vars "-$R" in
+  let left_state_vars = VSOps.vs_with_suffix state_vars
+      ("-"^main_struct_name^"L") in
+  let right_state_vars = VSOps.vs_with_suffix state_vars
+      ("-"^main_struct_name^"R") in
   let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
@@ -302,8 +304,8 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param state_vars The set of state variables.
 *)
 let pp_join fmt (join_body, state_vars) =
-  let lstate_name = "$L" in
-  let rstate_name = "$R" in
+  let lstate_name = main_struct_name^"L" in
+  let rstate_name = main_struct_name^"R" in
   Format.fprintf fmt
     "(define (%s %s %s)@.@[<hov 2>%a@])@."
     join_name  lstate_name rstate_name
@@ -426,7 +428,7 @@ let pp_rosette_sketch fmt
   let field_names =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in
-  let st0 = "$initial" in
+  let st0 = main_struct_name^"initial" in
   (** SPretty configuration for the current sketch *)
   SPretty.state_struct_name := main_struct_name;
   let symbolic_variables = pp_symbolic_definitions_of fmt read_vars in

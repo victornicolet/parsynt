@@ -607,20 +607,29 @@ let rec scm_to_sk env scm =
     | Bool_e b -> None, Some (SkConst (CBool b))
     | Id_e id -> None, Some (SkVar (SkVarinfo (SM.find id env)))
     | Nil_e -> None, Some (SkConst (CNil))
+
     | Binop_e (op, e1, e2) ->
       let _, e1' = scm_to_sk env e1 in
       let _, e2' = scm_to_sk env e2 in
       None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
+
     | Unop_e (op, e) ->
       let _, e' = scm_to_sk env e in
       None, Some (SkUnop (get_unop_of_scm op, co e'))
+
     | Cons_e (x, y)-> failwith "Cons not supported"
-    | Let_e (v, e1, e2)
-    | Letrec_e (v, e1, e2) ->
-      let skvar = SkVarinfo (SM.find v env) in
-      let _, sk_expr = scm_to_sk env e1 in
+
+    | Let_e (bindings, e2)
+    | Letrec_e (bindings, e2) ->
+      let bds = List.map
+          (fun (ids, e) ->
+             let _, exp = scm_to_sk env e in
+             (SkVarinfo (SM.find ids env)), co exp)
+          bindings
+      in
       let sk_let, _ = scm_to_sk env e2 in
-      Some (SkLetIn ([skvar, co sk_expr], co sk_let)), None
+      Some (SkLetIn (bds, co sk_let)), None
+
     | If_e (c, e1, e2) ->
       let _, cond = scm_to_sk env c in
       let le1, ex1 = scm_to_sk env e1 in

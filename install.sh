@@ -140,7 +140,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib")
+declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib" "extlib")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do

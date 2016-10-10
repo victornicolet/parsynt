@@ -60,6 +60,13 @@ idseq  : ID                { [$1] }
 ids    : ID ids { $1 :: $2 }
        | ID     { [$1] }
 
+bindgroup : LPAREN bindseq RPAREN { $2 }
+
+bindseq : binding bindseq { $1 :: $2 }
+       	| binding { [$1] }
+
+binding : LPAREN ID expr RPAREN { ($2, $3) }
+
 expr   : INT       { Int_e $1 }
        | ID        { Id_e $1 }
        | STRING    { Str_e $1 }
@@ -70,13 +77,11 @@ expr   : INT       { Int_e $1 }
        | LPAREN LAMBDA idseq expr RPAREN    { Fun_e ($3, $4) }
        | LPAREN DEFINE idseq expr RPAREN    { Def_e ($3, $4) }
        | LPAREN DEFINEREC idseq expr RPAREN { Defrec_e ($3, $4) }
-       | LPAREN LET ID expr expr RPAREN     { Let_e ($3, $4, $5) }
-       | LPAREN LETREC ID expr expr RPAREN  { Letrec_e ($3, $4, $5) }
+       | LPAREN LET bindgroup expr RPAREN     { Let_e ($3, $4) }
+       | LPAREN LETREC bindgroup expr RPAREN  { Letrec_e ($3, $4) }
+       | LPAREN binop expr expr RPAREN	      { Binop_e ($2, $3, $4) }
+       | LPAREN unop expr RPAREN	    { Unop_e ($2, $3)}
        | LPAREN IF expr expr expr RPAREN    { If_e ($3, $4, $5) }
-       | LPAREN binop expr expr RPAREN      { Binop_e ($2, $3, $4) }
-       | LPAREN unop expr RPAREN            { Unop_e ($2, $3) }
-       | LPAREN MINUS expr expr RPAREN      { Binop_e (Minus, $3, $4) }
-       | LPAREN MINUS expr RPAREN           { Unop_e (Minus, $3) }
        | LPAREN expr seq RPAREN             { Apply_e ($2, $3) }
        | LPAREN LIST seq RPAREN             { List.fold_right (fun x a -> Cons_e (x, a)) $3 Nil_e }
        | LPAREN LIST RPAREN                 { Nil_e }
@@ -84,7 +89,9 @@ expr   : INT       { Int_e $1 }
        | NIL                                { Nil_e }
        | LPAREN CONS expr expr RPAREN       { Cons_e ($3, $4) }
 
+
 binop : PLUS       { Plus }
+      | MINUS      { Minus }
       | MUL        { Mul }
       | DIV        { Div }
       | MOD        { Mod }
@@ -97,8 +104,8 @@ binop : PLUS       { Plus }
       | AND        { And }
       | OR         { Or }
 
-unop  : NOT         { Not }
-      | CAR         { Car }
-      | CDR         { Cdr }
-      | NULL        { Null }
-      | LOAD        { Load }
+unop : NOT         { Not }
+     | CAR         { Car }
+     | CDR         { Cdr }
+     | NULL        { Null }
+     | LOAD        { Load }

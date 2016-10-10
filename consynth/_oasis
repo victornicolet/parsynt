@@ -24,6 +24,7 @@ Library rosetteInterface
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
+  BuildDepends : extlib
   Install : false
 
 Library consynth
