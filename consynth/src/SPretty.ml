@@ -162,6 +162,7 @@ let rec pp_symb_type ppf t =
 
 let rec pp_constants ppf =
   function
+  | CNil -> fprintf ppf "()"
   | CInt i -> fprintf ppf "%i" i
   | CInt64 i -> fprintf ppf "%i" (Int64.to_int i)
   | CReal f -> fprintf ppf "%10.3f" f

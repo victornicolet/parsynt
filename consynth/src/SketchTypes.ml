@@ -1,6 +1,7 @@
 open Utils
 open Format
 open Findloops
+open Ast
 
 let use_unsafe_operations = ref false
 
@@ -153,6 +154,7 @@ and symb_unsafe_binop =
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
+  | CNil
   | CInt of int
   | CInt64 of int64
   | CReal of float
@@ -570,4 +572,75 @@ let replace_subexpr_in to_replace var expr =
     expr
 
 
-(** Translate basic scheme to the Sketch expressions *)
+(** Translate basic scheme to the Sketch expressions
+    @param env a mapping from variable ids to varinfos.
+*)
+let get_binop_of_scm (op : Ast.op) =
+  match op with
+  | Plus -> Plus
+  | Minus -> Minus
+  | Mul -> Times
+  | Div -> Div
+  | Mod -> Mod
+  | Eq -> Eq
+  | Neq -> Neq
+  | Lt -> Lt
+  | Leq -> Le
+  | Gt -> Gt
+  | Geq -> Ge
+  | And -> And
+  | Or -> Or
+  | _ -> failwith "Scheme binary operator not supported"
+
+let get_unop_of_scm  (op : Ast.op)=
+  match op with
+  | Not -> Not
+  | _ -> failwith "Scheme unary operator not supported"
+
+let co = check_option
+
+let rec scm_to_sk env scm =
+  try
+    match scm with
+    | Int_e i -> None, Some (SkConst (CInt i))
+    | Str_e s -> None, Some (SkConst (CString s))
+    | Bool_e b -> None, Some (SkConst (CBool b))
+    | Id_e id -> None, Some (SkVar (SkVarinfo (SM.find id env)))
+    | Nil_e -> None, Some (SkConst (CNil))
+    | Binop_e (op, e1, e2) ->
+      let _, e1' = scm_to_sk env e1 in
+      let _, e2' = scm_to_sk env e2 in
+      None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
+    | Unop_e (op, e) ->
+      let _, e' = scm_to_sk env e in
+      None, Some (SkUnop (get_unop_of_scm op, co e'))
+    | Cons_e (x, y)-> failwith "Cons not supported"
+    | Let_e (v, e1, e2)
+    | Letrec_e (v, e1, e2) ->
+      let skvar = SkVarinfo (SM.find v env) in
+      let _, sk_expr = scm_to_sk env e1 in
+      let sk_let, _ = scm_to_sk env e2 in
+      Some (SkLetIn ([skvar, co sk_expr], co sk_let)), None
+    | If_e (c, e1, e2) ->
+      let _, cond = scm_to_sk env c in
+      let le1, ex1 = scm_to_sk env e1 in
+      let le2, ex2 = scm_to_sk env e2 in
+      begin
+        if is_some ex1 && is_some ex2 then
+          None, Some (SkQuestion (co cond, co ex1, co ex2))
+        else
+          begin
+            try
+              None, Some (SkCond (co cond, co le1, co le2))
+            with Failure s ->
+              failwith (s^"\nUnexpected form in conditional.")
+          end
+      end
+    | Apply_e (e, arglist) ->
+      failwith "TODO"
+
+    | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
+      failwith "Not supported"
+
+  with Not_found ->
+    failwith "Variable name not found in current environment."

@@ -24,7 +24,6 @@ Library rosetteInterface
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
-  BuildDepends: grammar, lexer
   Install : false
 
 Library consynth

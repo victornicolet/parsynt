@@ -465,7 +465,8 @@ and symb_unsafe_binop =
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
-    | CInt of int
+    | CNil
+  | CInt of int
   | CInt64 of int64
   | CReal of float
   | CBool of bool
