@@ -20,6 +20,7 @@ consynth/canalysis/_build
 *.mllib
 *.odocl
 META
+.idea
 
 #Racket
 */compiled/
