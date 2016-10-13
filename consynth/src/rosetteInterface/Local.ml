@@ -71,16 +71,18 @@ let completeFile filename solution_file_name sketch_printer sketch =
   Stream.iter process_line (line_stream_of_channel footer);
   close_out oc
 
+let default_error i =
+  eprintf "Errno %i : Error while running racket on sketch.\n" i
 
 let racket filename =
   Sys.command ("racket "^filename)
 
-let compile ?(print_err_msg = fun int -> ()) printer printer_arg =
+let compile ?(print_err_msg = default_error) printer printer_arg =
   let solution_tmp_file = Filename.temp_file "conSynthSol" ".rkt" in
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
   completeFile sketch_tmp_file solution_tmp_file printer printer_arg;
   let errno = racket sketch_tmp_file in
-  if !dump_sketch|| (errno != 0 && !debug) then
+  if !dump_sketch || (errno != 0 && !debug) then
     begin
       remove_in_dir dumpDir;
       let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
@@ -94,25 +96,19 @@ let compile ?(print_err_msg = fun int -> ()) printer printer_arg =
       if !debug then
         begin
           print_err_msg errno;
-          (* eprintf "%sError%s while running racket on sketch.\n" *)
-          (*   (color "red") default; *)
         end;
       exit 1;
     end;
   errno, solution_tmp_file
 
 let fetch_solution filename =
-  (**
-     TODO : parse the solution given by racket into a set of Cil
-     expressions.
-  *)
-  let parsed = Parser.main
-      Lexer.token
-      (Lexing.from_string (Std.input_file filename)) in
-  Ast.pp_expr_list Format.std_formatter parsed;
-  Sys.remove filename
+  let parsed =
+    Parser.main Lexer.token (Lexing.from_string (Std.input_file filename)) in
+  Sys.remove filename;
+  parsed
 
-let compile_and_fetch ?(print_err_msg = (fun i -> ())) printer printer_arg =
+
+let compile_and_fetch ?(print_err_msg = default_error) printer printer_arg =
   let errno, filename =
     compile ~print_err_msg:print_err_msg printer printer_arg
   in

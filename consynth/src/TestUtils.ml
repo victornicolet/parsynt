@@ -17,6 +17,7 @@ let sk_false = T.SkConst (T.CBool false)
 
 let cil_int = TInt (IInt, [])
 let cil_bool = TInt (IBool, [])
+let cil_int_array = TArray (cil_int, None, [])
 
 (* Warning : default is zero !*)
 let make_int_varinfo  ?(init = zero) varname =
@@ -24,6 +25,9 @@ let make_int_varinfo  ?(init = zero) varname =
 
 let make_bool_varinfo ?(init = cil_true) varname =
   makeVarinfo false varname ~init:(singl_init init) cil_bool
+
+let make_int_array_varinfo varname =
+  makeVarinfo false varname cil_int_array
 
 let exp_skvar vi =
   T.SkVar (T.SkVarinfo vi)

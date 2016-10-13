@@ -9,15 +9,14 @@ open VariableDiscovery
 module T = SketchTypes
 
 
-let x, y, z =
+let x, y, z, a, b, c, a_n =
   T.SkVarinfo (make_int_varinfo "x"),
   T.SkVarinfo (make_int_varinfo ~init:one "y"),
-  T.SkVarinfo (make_int_varinfo "z")
-
-let a, b, c =
-  T.SkVarinfo (make_bool_varinfo "a"),
+  T.SkVarinfo (make_int_varinfo "z"),
+  T.SkVarinfo (make_int_varinfo "a"),
   T.SkVarinfo (make_bool_varinfo ~init:cil_false "b"),
-  T.SkVarinfo (make_bool_varinfo "c")
+  T.SkVarinfo (make_bool_varinfo "c"),
+  T.SkVarinfo (make_int_array_varinfo "a_n")
 
 let f_a_plus_b =
   (T.SkLetIn ([(a, T.SkBinop (T.Plus, T.SkVar b, T.SkVar a))], sk_tail_state))
@@ -27,7 +26,7 @@ let g =
 
 let index_var = make_int_varinfo "i"
 let index_expr = exp_skvar index_var
-let array = T.SkArray (c, index_expr)
+let array = T.SkArray (a_n, index_expr)
 
 let a_vi = check_option (vi_of_var a)
 let stv = VS.singleton a_vi
@@ -62,8 +61,9 @@ let r1 = {r0 with state_exprs = exec_once r0 g;
 
 let r2 = exec_once r1 g
 
-let r1_array = { r0 with state_exprs = exec_once r0 sum_array;
-                         index_exprs = index_map2 }
+let r1_array = init () ;
+  { r0 with state_exprs = exec_once r0 sum_array;
+            index_exprs = index_map2 }
 
 
 let r2_array = { r1_array with state_exprs = exec_once r1_array sum_array;
@@ -83,7 +83,12 @@ let test () =
   print_exprs "r2" r2;
   print_exprs "r1_array" r1_array.state_exprs;
   print_exprs "r2_array" r2_array.state_exprs;
-  print_exprs "red_r2_array" reduced_r2_array
+  print_exprs "red_r2_array" reduced_r2_array;
+  Format.printf "Find accumulator between r1_array and reduced_r2_array.@.";
+  let decl_vars = declared_vars () in
+  VSOps.ppvs decl_vars;
+  find_function (VSOps.unions [stv; decl_vars; index_set]) (IM.find a_vi.vid reduced_r2_array)
+    (IM.find a_vi.vid r1_array.state_exprs)
 
 (** Test variable discovery algortihm *)
 let index_incr =

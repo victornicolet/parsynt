@@ -10,6 +10,7 @@ type exec_info =
 
 (** Init : initialize the generated variables map and the execution count. *)
 val init : unit -> unit
+val declared_vars : unit -> VS.t
 
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh

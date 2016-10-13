@@ -38,7 +38,7 @@ Executable test_main
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth, rosetteInterface
+  BuildDepends: cil, consynth, rosetteInterface, getopt
 
 Executable test_scheme_parsing
   Path: test
@@ -53,7 +53,7 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, str
+  BuildDepends: consynth, str, getopt
 
 Document consynth
  Title: Consynth Library Doc

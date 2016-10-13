@@ -88,9 +88,17 @@ let rec gen_var v =
             s;
           Format.flush_str_formatter ()))
 
-(* Filter out the new variable part in the variable generatoin output *)
+(* Filter out the new variable part in the variable generation output *)
 let gen_expr v =
   let _, _, (_, ev) = gen_var v in T.SkVar ev
+
+let declared_vars () =
+  IH.fold
+    (fun i (offset, vname, (v, new_v)) vs ->
+       let vi = T.vi_of new_v in
+       if is_some vi then VS.add {(check_option vi) with vname = vname} vs
+       else vs)
+    genvars VS.empty
 
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for exec_once *)

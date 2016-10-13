@@ -4,4 +4,4 @@ B _build/src/rosetteInterface
 S src
 S src/rosetteInterface
 S ./
-PKG cil core extlib
+PKG cil core extlib getopt
