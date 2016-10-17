@@ -32,5 +32,8 @@ consynth/setup.ml
 myocamlbuild.ml
 _tags
 
+#Z3-solver
+z3-master/
+
 #Temporary dump files
 consynth/dump/conSynth*
