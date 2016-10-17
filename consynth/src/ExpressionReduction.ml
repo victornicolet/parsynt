@@ -4,21 +4,25 @@ open Cil
 open SPretty
 open Format
 
-(** Depth of state variables in the expression tree and number of occurrences
-    in the expression tree.
+(** Compute the 'cost' of an expression with respect to a set of other
+    c-expressions : the cost is the pair of the maximum depth of a
+    c-expression in the expressions and the number of c-expressions in
+    the expressions.
     @param stv the set of state variables.
     @param expr the expression of which we need to compute the cost.
-    @return a pair of ints, the first element is the maximum depth of state
-    variables in the expression abstract syntax tree and the second element
-    is the number of occurrences of state variables.
+    @return a pair of ints, the first element is the maximum depth of
+    c-expression in the expression abstract syntax tree and the second element
+    is the number of occurrences of c-expressions.
 *)
-let rec depth_cost stv expr =
+let rec depth_cost (vs : VS.t) (c_exprs : ES.t) expr =
   match expr with
+  | e when ES.mem expr c_exprs ->
+    (1, 1)
   | SkVar v ->
-    begin
+     begin
       try
         let vi = check_option (vi_of v) in
-        let is_stv = if VSOps.has_vid vi.vid stv then 1 else 0 in
+        let is_stv = if VSOps.has_vid vi.vid vs then 1 else 0 in
         (is_stv, is_stv)
       with Failure s -> (0, 0)
     end
@@ -28,52 +32,52 @@ let rec depth_cost stv expr =
   | SkSizeofE e
   | SkAlignofE e
   | SkStartOf e ->
-    let de, ec = depth_cost stv e in
+    let de, ec = depth_cost vs c_exprs e in
     ((if de > 0 then de + 1 else de), ec)
 
   | SkBinop (_, e1, e2) ->
-    let de1, ec1 = depth_cost stv e1 in
-    let de2, ec2 = depth_cost stv e2 in
+    let de1, ec1 = depth_cost vs c_exprs e1 in
+    let de2, ec2 = depth_cost vs c_exprs e2 in
     let mde = max de1 de2 in
     ((if mde > 0 then mde + 1 else 0), ec1 + ec2)
 
   | SkQuestion (c, e1, e2) ->
-    let dec, ecc = depth_cost stv c in
-    let de1, ec1 = depth_cost stv e1 in
-    let de2, ec2 = depth_cost stv e2 in
+    let dec, ecc = depth_cost vs c_exprs c in
+    let de1, ec1 = depth_cost vs c_exprs e1 in
+    let de2, ec2 = depth_cost vs c_exprs e2 in
     let mde = max (max de1 de2) dec in
     ((if mde > 0 then mde + 1 else 0), ecc + ec1+ ec2)
 
   | SkCond (c, l1, l2) ->
-    let dec, ecc = depth_cost stv c in
-    let de1, ec1 = depth_c_func stv l1 in
-    let de2, ec2 = depth_c_func stv l2 in
+    let dec, ecc = depth_cost vs c_exprs c in
+    let de1, ec1 = depth_c_func vs c_exprs l1 in
+    let de2, ec2 = depth_c_func vs c_exprs l2 in
     let mde = max (max de1 de2) dec in
     ((if mde > 0 then mde + 1 else 0), ecc + ec1 + ec2)
 
   | _ -> (0,0)
 
 
-and depth_c_func stv func =
+and depth_c_func vs c_exprs func =
   match func with
   | SkLetIn (velist, l') ->
-    let dl', cl' = depth_c_func stv l' in
+    let dl', cl' = depth_c_func vs c_exprs l' in
     let max_de, sum_c =
       (List.fold_left
          (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
          (0, 0)
-         (List.map (fun (v, e) -> depth_cost stv e) velist)) in
+         (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist)) in
     ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
   | SkLetExpr velist ->
     (List.fold_left
        (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
        (0, 0)
-       (List.map (fun (v, e) -> depth_cost stv e) velist))
+       (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist))
 
 
 
-let cost stv expr =
-  let dep, count = depth_cost stv expr in
+let cost stv c_exprs expr =
+  let dep, count = depth_cost stv c_exprs expr in
   dep
 
 (** op2 is right-distributive over op1 if :
@@ -96,7 +100,7 @@ let is_associative op =
   | _ -> false
 
 
-let reduce_cost stv expr =
+let reduce_cost stv c_exprs expr =
   let reduction_cases expr =
     match expr with
     | SkBinop (_, _, _) -> true
@@ -109,13 +113,16 @@ let reduce_cost stv expr =
     let b' = rfunc b in
     let c' = rfunc c in
     if is_right_distributive op1 op2
-    && ((max (cost stv a') (cost stv b')) >= (cost stv c'))
+    && ((max (cost stv c_exprs a') (cost stv c_exprs b')) >=
+        (cost stv c_exprs c'))
     then
-      SkBinop (op1, rfunc (SkBinop (op2, a', c')), rfunc (SkBinop (op2, b', c')))
+      SkBinop (op1, rfunc (SkBinop (op2, a', c')),
+               rfunc (SkBinop (op2, b', c')))
     else
       begin
         if (op1 = op2) && (is_associative op1)  &&
-           ((cost stv a') >= (max (cost stv b') (cost stv c')))
+           ((cost stv c_exprs a') >=
+            (max (cost stv c_exprs b') (cost stv c_exprs c')))
         then
            (SkBinop (op2, a', SkBinop (op1, b', c')))
         else
@@ -132,14 +139,15 @@ let reduce_cost stv expr =
 
 
 
-let rec reduce_full ?(limit = 100) stv expr =
-  let red_expr = reduce_cost stv expr in
+let rec reduce_full ?(limit = 100) stv c_exprs expr =
+  let red_expr = reduce_cost stv c_exprs expr in
   if red_expr = expr || limit = 0
   then red_expr
-  else reduce_full ~limit:(limit - 1) stv red_expr
+  else reduce_full ~limit:(limit - 1) stv c_exprs red_expr
+
 
 (** Using Rosette to solve other reduction/expression matching problems *)
-let find_function all_vars fe e =
+let find_function_with_rosette all_vars fe e =
   let pp_defs fmt () =
     Sketch.pp_symbolic_definitions_of fmt all_vars
   in

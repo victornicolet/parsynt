@@ -54,23 +54,31 @@ let index_map3 = increment_all_indexes index_map2
 let index_set = VS.singleton index_var
 
 let r0 = { state_set = stv; state_exprs = init_exprs;
-           index_set = index_set; index_exprs = index_map1}
+           index_set = index_set; index_exprs = index_map1;
+           inputs = SketchTypes.ES.empty
+         }
 
-let r1 = {r0 with state_exprs = exec_once r0 g;
+let sexprs, rexprs = exec_once r0 g
+let r1 = {r0 with state_exprs = sexprs;
+                  inputs = rexprs;
                   index_exprs = index_map2;}
 
-let r2 = exec_once r1 g
+let r2, r2' = exec_once r1 g
 
-let r1_array = init () ;
-  { r0 with state_exprs = exec_once r0 sum_array;
+let r1_array = GenVars.init () ;
+  let sexprs, rexprs = exec_once r0 sum_array in
+  { r0 with state_exprs = sexprs;
+            inputs = rexprs;
             index_exprs = index_map2 }
 
+let r2ae, r2ar = exec_once r1_array sum_array
+let r2_array = { r1_array with state_exprs = r2ae;
+                               inputs = r2ar;
+                               index_exprs = index_map3 }
 
-let r2_array = { r1_array with state_exprs = exec_once r1_array sum_array;
-                         index_exprs = index_map3 }
 
-
-let reduced_r2_array = IM.map (reduce_full stv) r2_array.state_exprs
+let reduced_r2_array = IM.map (reduce_full stv SketchTypes.ES.empty)
+    r2_array.state_exprs
 
 let print_exprs str exprs =
   Format.printf "%s :\n" str;
@@ -85,9 +93,7 @@ let test () =
   print_exprs "r2_array" r2_array.state_exprs;
   print_exprs "red_r2_array" reduced_r2_array;
   Format.printf "Find accumulator between r1_array and reduced_r2_array.@.";
-  let decl_vars = declared_vars () in
-  VSOps.ppvs decl_vars;
-  find_function (VSOps.unions [stv; decl_vars; index_set]) (IM.find a_vi.vid reduced_r2_array)
+  find_function_with_rosette (VSOps.unions [stv; index_set]) (IM.find a_vi.vid reduced_r2_array)
     (IM.find a_vi.vid r1_array.state_exprs)
 
 (** Test variable discovery algortihm *)

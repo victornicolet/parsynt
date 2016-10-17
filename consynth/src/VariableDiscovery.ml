@@ -156,7 +156,7 @@ let create_symbol_map vs=
     @return the pair of state variables and mapping from ids to the pair of
     expression and function.
 *)
-let find_auxiliaries xinfo expr aux_var_set aux_var_map =
+let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   let stv = xinfo.state_set in
   let rec is_stv =
     function
@@ -239,7 +239,8 @@ let find_auxiliaries xinfo expr aux_var_set aux_var_map =
         if List.length ef_list > 0
         then
           (* A subexpression of the expression is an auxiliary variable *)
-          let corresponding_functions = match_increment current_expr ef_list in
+          let corresponding_functions =
+            match_increment (current_expr, input_expressions) ef_list in
           if List.length corresponding_functions > 0
           then
             (* TODO : better tactic to choose expressions *)
@@ -303,31 +304,38 @@ let same_aux old_aux new_aux =
     @return a pair of auxiliary variables and auxiliary functions.
 *)
 let discover_for_id stv (idx, update) input_func varid =
-  SymbExe.init ();
+  GenVars.init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let rec fixpoint i xinfo aux_var_set aux_var_map =
     Format.printf "Unrolling %i@."i;
     let new_xinfo, (new_var_set, new_aux_exprs) =
+      let exprs_map, input_expressions = exec_once xinfo input_func in
       let new_exprs =
         IM.map
-          (reduce_full xinfo.state_set)
-          (exec_once xinfo input_func)
+          (reduce_full xinfo.state_set T.ES.empty)
+          exprs_map
       in
       let xinfo_index = { state_set = xinfo.index_set ;
                           state_exprs = xinfo.index_exprs ;
                           index_set = VS.empty ;
                           index_exprs = IM.empty ;
+                          inputs = T.ES.empty;
                         }
       in
-      let new_idx_exprs =
+      let new_idx_exprs, _ =
         exec_once ~silent:true xinfo_index update in
       let aux_var_set, aux_var_map =
-        find_auxiliaries xinfo (IM.find varid new_exprs) aux_var_set aux_var_map
+        find_auxiliaries
+          xinfo
+          (IM.find varid new_exprs)
+          (aux_var_set, aux_var_map)
+          input_expressions
       in
       VS.iter (fun vi -> Format.printf "Auxiliary %s@." vi.vname) aux_var_set;
       {xinfo with state_exprs = new_exprs;
-                  index_exprs = new_idx_exprs},
+                  index_exprs = new_idx_exprs;
+                  inputs = input_expressions },
       (aux_var_set, aux_var_map)
     in
     if (i > !max_exec_no) || (same_aux aux_var_map new_aux_exprs)
@@ -340,6 +348,7 @@ let discover_for_id stv (idx, update) input_func varid =
                  state_exprs = init_exprs ;
                  index_set = idx ;
                  index_exprs = init_idx_exprs ;
+                 inputs = T.ES.empty
                }
   in
   let _ , (aux_vs, aux_ef) =

@@ -6,11 +6,8 @@ type exec_info =
     state_exprs : T.skExpr IM.t;
     index_set : VS.t;
     index_exprs : T.skExpr IM.t;
+    inputs : T.ES.t
   }
-
-(** Init : initialize the generated variables map and the execution count. *)
-val init : unit -> unit
-val declared_vars : unit -> VS.t
 
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
@@ -32,6 +29,6 @@ val declared_vars : unit -> VS.t
     the application of the function to the input variables expressions.
 *)
 
-val exec : exec_info -> T.sklet-> T.skExpr IM.t
-val exec_expr : exec_info -> T.skExpr -> T.skExpr
-val exec_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t
+val exec : exec_info -> T.sklet-> T.skExpr IM.t * T.ES.t
+val exec_expr : exec_info -> T.skExpr -> T.skExpr * T.ES.t
+val exec_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t * T.ES.t

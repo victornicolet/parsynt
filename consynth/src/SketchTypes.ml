@@ -395,9 +395,6 @@ let mkOp ?(t = Unit) vi argl =
         SkApp (t, Some vi, argl)
 
 
-
-
-
 (** ********************************************************** SYMBOLIC TYPES *)
 
 let rec symb_type_of_ciltyp =
@@ -653,3 +650,11 @@ let rec scm_to_sk env scm =
 
   with Not_found ->
     failwith "Variable name not found in current environment."
+
+
+
+module ES = Set.Make (
+  struct
+    let compare = Pervasives.compare
+    type t = skExpr
+  end)
