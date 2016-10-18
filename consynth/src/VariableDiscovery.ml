@@ -234,7 +234,15 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
       (aux_vs, new_aux_exprs)
 
     with Not_found ->
-      let ef_list = find_subexpr current_expr aux_exprs in
+      let lifted_inputs =
+        reduce_full ~limit:10 VS.empty input_expressions current_expr
+      in
+      if !debug then
+        Format.fprintf Format.std_formatter
+          "Lifting inputs transforms @.%a@.to@.%a@."
+          pp_skexpr current_expr pp_skexpr lifted_inputs
+      else ();
+      let ef_list = find_subexpr lifted_inputs aux_exprs in
       begin
         if List.length ef_list > 0
         then
@@ -296,6 +304,22 @@ let same_aux old_aux new_aux =
     new_aux
     true
 
+let reduction_with_warning stv expset expr =
+  let reduced_expression = reduce_full stv expset expr in
+  if (expr = reduced_expression) && !debug then
+    begin
+      Format.fprintf Format.std_formatter
+        "%sWarning%s : expression @;%a@; unchanged after \
+         reduction with state %a @; and expressions %a @."
+        (PpHelper.color "red") PpHelper.default
+        SPretty.pp_skexpr reduced_expression
+        VSOps.pvs stv
+        (fun fmt a -> SPretty.pp_expr_set fmt a) expset
+    end
+  else ();
+  reduced_expression
+
+
 (** Discover a set a auxiliary variables for a given variable.
     @param stv the set of state variables.
     @param idx the set of index variables.
@@ -308,12 +332,13 @@ let discover_for_id stv (idx, update) input_func varid =
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let rec fixpoint i xinfo aux_var_set aux_var_map =
-    Format.printf "Unrolling %i@."i;
+    if !debug then Format.printf "Unrolling %i@."i else ();
     let new_xinfo, (new_var_set, new_aux_exprs) =
-      let exprs_map, input_expressions = exec_once xinfo input_func in
+      let exprs_map, input_expressions =
+        exec_once {xinfo with inputs = T.ES.empty} input_func in
       let new_exprs =
         IM.map
-          (reduce_full xinfo.state_set T.ES.empty)
+          (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
       let xinfo_index = { state_set = xinfo.index_set ;
@@ -332,7 +357,12 @@ let discover_for_id stv (idx, update) input_func varid =
           (aux_var_set, aux_var_map)
           input_expressions
       in
-      VS.iter (fun vi -> Format.printf "Auxiliary %s@." vi.vname) aux_var_set;
+      begin
+        if !debug then
+          VS.iter
+            (fun vi -> Format.printf "Auxiliary %s@." vi.vname) aux_var_set
+        else ()
+      end;
       {xinfo with state_exprs = new_exprs;
                   index_exprs = new_idx_exprs;
                   inputs = input_expressions },

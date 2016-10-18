@@ -6,6 +6,8 @@ module T = SketchTypes
 module Ct = CilTools
 module ES = T.ES
 
+let debug = ref false
+
 type exec_info =
   { state_set : VS.t;
     state_exprs : T.skExpr IM.t;
@@ -20,7 +22,8 @@ type exec_info =
 (** Intermediary functions for exec_once *)
 let rec exec exec_info func =
   let rec apply_let_exprs let_list exec_info =
-    List.fold_left (update_expressions exec_info) (IM.empty, T.ES.empty) let_list
+    List.fold_left
+      (update_expressions exec_info) (IM.empty, exec_info.inputs) let_list
 
   and update_expressions exec_info (new_exprs, read_exprs) (var, expr) =
     match var with
@@ -28,6 +31,12 @@ let rec exec exec_info func =
     | T.SkVarinfo vi ->
       let vid = vi.vid in
       let nexpr, n_rexprs = exec_expr exec_info expr in
+      if !debug then
+        (Format.fprintf Format.std_formatter "Set of read exprs : %a@."
+       (fun fmt a -> SPretty.pp_expr_set fmt a)
+       (T.ES.union n_rexprs read_exprs))
+      else
+        ();
       IM.add vid nexpr new_exprs, T.ES.union n_rexprs read_exprs
     | T.SkArray (v, e) ->
       exception_on_variable
@@ -84,7 +93,8 @@ and exec_var exec_info v =
           exception_on_expression "Unexpected variable form in exec_var" bad_v
       in
       let new_offset, new_reads = exec_expr exec_info offset_expr in
-      T.SkVar (T.SkArray (new_v', new_offset)), ES.singleton (T.SkVar v)
+      T.SkVar (T.SkArray (new_v', new_offset)),
+      ES.union (ES.singleton (T.SkVar (T.SkArray (new_v', new_offset)))) new_reads
     end
 
 and exec_expr exec_info expr =
@@ -94,10 +104,11 @@ and exec_expr exec_info expr =
 
   | T.SkVar v -> exec_var exec_info v
 
-  | T.SkConst c -> expr, T.ES.empty
+  | T.SkConst c -> expr, ES.empty
 
   (* Recursive cases with only expressions as subexpressions *)
-  | T.SkFun sklet -> expr, T.ES.empty (* TODO recursive *)
+  | T.SkFun sklet -> expr, ES.empty (* TODO recursive *)
+
   | T.SkBinop (binop, e1, e2) ->
     let e1', r1 = exec_expr exec_info e1 in
     let e2', r2 = exec_expr exec_info e2 in

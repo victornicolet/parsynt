@@ -18,12 +18,6 @@ let x, y, z, a, b, c, a_n =
   T.SkVarinfo (make_bool_varinfo "c"),
   T.SkVarinfo (make_int_array_varinfo "a_n")
 
-let f_a_plus_b =
-  (T.SkLetIn ([(a, T.SkBinop (T.Plus, T.SkVar b, T.SkVar a))], sk_tail_state))
-
-let g =
-  (T.SkLetIn ([a, T.SkBinop (T.Max, T.SkVar a, T.SkVar c)], f_a_plus_b))
-
 let index_var = make_int_varinfo "i"
 let index_expr = exp_skvar index_var
 let array = T.SkArray (a_n, index_expr)
@@ -58,24 +52,19 @@ let r0 = { state_set = stv; state_exprs = init_exprs;
            inputs = SketchTypes.ES.empty
          }
 
-let sexprs, rexprs = exec_once r0 g
-let r1 = {r0 with state_exprs = sexprs;
-                  inputs = rexprs;
-                  index_exprs = index_map2;}
-
-let r2, r2' = exec_once r1 g
-
 let r1_array = GenVars.init () ;
   let sexprs, rexprs = exec_once r0 sum_array in
   { r0 with state_exprs = sexprs;
             inputs = rexprs;
             index_exprs = index_map2 }
 
-let r2ae, r2ar = exec_once r1_array sum_array
-let r2_array = { r1_array with state_exprs = r2ae;
+let r2_array =
+  let r2ae, r2ar =
+    exec_once {r1_array with inputs = SketchTypes.ES.empty} sum_array
+  in
+  { r1_array with state_exprs = r2ae;
                                inputs = r2ar;
                                index_exprs = index_map3 }
-
 
 let reduced_r2_array = IM.map (reduce_full stv SketchTypes.ES.empty)
     r2_array.state_exprs
@@ -87,14 +76,16 @@ let print_exprs str exprs =
     exprs
 
 let test () =
-  print_exprs "r1" r1.state_exprs;
-  print_exprs "r2" r2;
   print_exprs "r1_array" r1_array.state_exprs;
+  Format.fprintf Format.std_formatter
+    "Inputs at first iteration :@.%a@.@."
+    (fun fmt es ->  pp_expr_set fmt es) r1_array.inputs;
   print_exprs "r2_array" r2_array.state_exprs;
-  print_exprs "red_r2_array" reduced_r2_array;
-  Format.printf "Find accumulator between r1_array and reduced_r2_array.@.";
-  find_function_with_rosette (VSOps.unions [stv; index_set]) (IM.find a_vi.vid reduced_r2_array)
-    (IM.find a_vi.vid r1_array.state_exprs)
+  Format.fprintf Format.std_formatter
+    "Inputs at second iteration :@.%a@.@."
+    (fun fmt es ->  pp_expr_set fmt es) r2_array.inputs;
+  print_exprs "red_r2_array" reduced_r2_array
+
 
 (** Test variable discovery algortihm *)
 let index_incr =

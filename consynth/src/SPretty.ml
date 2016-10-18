@@ -331,3 +331,10 @@ let sprintSketch s =
   flush_str_formatter ()
 
 let eprintSketch s = pp_sketch err_formatter s
+
+let pp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
+  let elt_list = ES.elements es in
+  if List.length elt_list = 0 then
+    fprintf fmt "[Empty]"
+  else
+    pp_print_list ~pp_sep:sep pp_skexpr fmt elt_list

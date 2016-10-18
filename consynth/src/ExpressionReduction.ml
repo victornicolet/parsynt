@@ -87,6 +87,7 @@ let cost stv c_exprs expr =
     @return true if op2 is right distributive over op1
 *)
 let is_right_distributive op1 op2 =
+  (** (a op1 b) op2 c = (a op2 c) op1 (b op2 c) *)
   match op1, op2 with
   | Or, And
   | Min, Plus
@@ -94,10 +95,33 @@ let is_right_distributive op1 op2 =
   | Plus, Times -> true
   | _, _ ->  false
 
+let is_left_distributive op1 op2 =
+  (**  a op2 (b op1 c) = (a op1 b) op2 (a op1 c) *)
+  match op1, op2 with
+  | Plus, Times
+  | Or, And -> true
+  | _ , _ -> false
+
 let is_associative op =
   match op with
   | And | Or | Plus | Times | Max | Min -> true
   | _ -> false
+
+
+(** Input is (a + b) + c *)
+let associative_case_R op (a, ca) (b, cb) (c, cc) =
+  (* (a + b) + c *)
+  if ca > (max cb cc)
+  then SkBinop (op, a, (SkBinop (op, b, c))) (* a + (b + c) *)
+  else SkBinop (op, (SkBinop (op, a, b)), c) (* Unchanged *)
+
+
+let associative_case_L op (a, ca) (b, cb) (c, cc) =
+  (* a + (b + c) *)
+  if cc > (max ca cb)
+  then SkBinop (op, (SkBinop (op, a, b)), c)   (* (a + b) + c *)
+  else SkBinop (op, a, (SkBinop (op, b, c))) (* Unchanged *)
+
 
 
 let reduce_cost stv c_exprs expr =
@@ -108,28 +132,50 @@ let reduce_cost stv c_exprs expr =
   in
   let reduce_transform rfunc expr =
     match expr with
-  | SkBinop (op2, SkBinop (op1, a, b), c) ->
-    let a' = rfunc a in
-    let b' = rfunc b in
-    let c' = rfunc c in
-    if is_right_distributive op1 op2
-    && ((max (cost stv c_exprs a') (cost stv c_exprs b')) >=
-        (cost stv c_exprs c'))
-    then
-      SkBinop (op1, rfunc (SkBinop (op2, a', c')),
-               rfunc (SkBinop (op2, b', c')))
-    else
+    | SkBinop (op2, x, y) ->
+      let x' = rfunc x in
+      let y' = rfunc y in
       begin
-        if (op1 = op2) && (is_associative op1)  &&
-           ((cost stv c_exprs a') >=
-            (max (cost stv c_exprs b') (cost stv c_exprs c')))
-        then
-           (SkBinop (op2, a', SkBinop (op1, b', c')))
-        else
-          expr
+        match x', y' with
+        | SkBinop (op1, a, b), c ->
+          let a' = rfunc a in
+          let b' = rfunc b in
+          let c' = c in
+          let ca = cost stv c_exprs a' in
+          let cb = cost stv c_exprs b' in
+          let cc = cost stv c_exprs c' in
+          (* [(a + b) * c --> a*c + b*c] if no stv in c *)
+          if is_right_distributive op1 op2 && ((max ca cb) > cc)
+          then
+            SkBinop (op1, rfunc (SkBinop (op2, a', c')),
+                     rfunc (SkBinop (op2, b', c')))
+          else
+            begin
+              (* [(a + b) + c -> a + (b + c)]  *)
+              if (op1 = op2) && (is_associative op1)
+              then
+                associative_case_R op1 (a', ca) (b', cb) (c', cc)
+              else
+                expr
+            end
+
+        | a , SkBinop (op1, b, c) ->
+          let a' = x' in
+          let b' = rfunc b in
+          let c' = rfunc c in
+          let ca = cost stv c_exprs a' in
+          let cb = cost stv c_exprs b' in
+          let cc = cost stv c_exprs c' in
+          begin
+            (* [(a + b) + c -> a + (b + c)]  *)
+            if (op1 = op2) && (is_associative op1)
+            then
+              associative_case_L op1 (a', ca) (b', cb) (c', cc)
+            else
+              expr
+          end
+        | _, _ -> SkBinop (op2, x', y')
       end
-  | SkBinop (op, a, b) ->
-    SkBinop (op, rfunc a, rfunc b)
   | SkUnop (op, e) -> SkUnop(op, rfunc e)
   | e -> rfunc e
   in

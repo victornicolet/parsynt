@@ -22,7 +22,8 @@ let unit_tests () =
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
-  ( 'g', "debug", (set Local.debug true), None)
+  ( 'g', "debug", (set Local.debug true), None);
+  ( 'v', "debug-var", (set VariableDiscovery.debug true), None)
 ]
 
 let testProcessFile () =
