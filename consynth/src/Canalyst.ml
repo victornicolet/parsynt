@@ -37,7 +37,6 @@ let processFile fileName =
   Deadcodeelim.dce cfile;
   Findloops.debug := !debug;
   Findloops.verbose := !verbose;
-  Rmtmps.removeUnusedTemps cfile;
   let loops, _ = Findloops.processFile cfile in
   loops
 
@@ -136,6 +135,8 @@ let func2sketch funcreps =
       let new_loop_body =
         SketchTypes.complete_final_state new_state nlb_opt
       in
+      IH.copy_into VariableDiscovery.discovered_aux
+        SketchJoin.auxiliary_variables;
       let join_body = Sketch.Join.build state_vars new_loop_body in
       { ro_vars_ids = ro_vars_ids;
         state_vars_ids = VSOps.vids_of_vs new_state;

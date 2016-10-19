@@ -2,7 +2,7 @@ open SketchTypes
 open Utils
 open SPretty
 
-
+let auxiliary_variables : Cil.varinfo IH.t = IH.create 10
 (**
 
 *)
@@ -17,17 +17,20 @@ let type_of_hole h =
   | _ -> None
 
 
-let rec make_holes ?(max_depth = 1) (state : VS.t) =
+let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
   function
   | SkVar sklv ->
      begin
        match vi_of sklv with
        | None -> failwith "State expression should not appear here"
        | Some vi ->
-          let t = symb_type_of_ciltyp vi.Cil.vtype in
-          if VS.mem vi state
+         let t = symb_type_of_ciltyp vi.Cil.vtype in
+         if (IH.mem auxiliary_variables vi.Cil.vid) && is_final
+         then SkVar sklv, 0
+         else
+         (if VS.mem vi state
           then SkHoleL (sklv, t), 1
-          else SkHoleR t, 1
+          else SkHoleR t, 1)
      end
 
   | SkConst c ->
@@ -69,7 +72,8 @@ let rec make_holes ?(max_depth = 1) (state : VS.t) =
 and make_join state =
   function
   | SkLetExpr li ->
-     SkLetExpr (List.map (fun (v, e) -> (v, fst (make_holes state e))) li)
+    SkLetExpr (List.map (fun (v, e) ->
+        (v, fst (make_holes ~is_final:true state e))) li)
 
   | SkLetIn (li, cont) ->
      SkLetIn ((List.map (fun (v, e) -> (v, fst (make_holes state e))) li),

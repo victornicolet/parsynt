@@ -29,6 +29,6 @@ type exec_info =
     the application of the function to the input variables expressions.
 *)
 
-val exec : exec_info -> T.sklet-> T.skExpr IM.t * T.ES.t
+val exec : T.skExpr IM.t -> exec_info -> T.sklet-> T.skExpr IM.t * T.ES.t
 val exec_expr : exec_info -> T.skExpr -> T.skExpr * T.ES.t
 val exec_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t * T.ES.t

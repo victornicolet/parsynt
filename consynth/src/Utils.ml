@@ -376,11 +376,11 @@ module IHTools = struct
         Add al the key-value bindings of to_add to add_to only
         if the key is not present in add_to.
     *)
-    let add_all add_to to_add =
+    let add_all add_to bindings_to_add =
       IH.iter
         (fun k v ->
           if IH.mem add_to k then () else IH.add add_to k v)
-        to_add
+        bindings_to_add
 
     let add_list (add_to : 'a IH.t) (getk : 'a -> int) (l : 'a list) =
       List.iter (fun b -> IH.add add_to (getk b) b) l
@@ -416,6 +416,12 @@ module IMTools = struct
           if IM.mem k add_to then mp else
             IM.add k v mp)
         to_add add_to
+
+    let update_all add_to to_add =
+      IM.fold
+        (fun k v mp -> IM.add k v mp)
+        to_add add_to
+
 
     let inter a b =
       IM.fold

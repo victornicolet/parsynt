@@ -198,10 +198,10 @@ and convert_letin (vs : VS.t) =
     | State subs  ->
        let state =
          List.map (IM.bindings subs)
-            ~f:(fun (k,e) ->
-              let cur_v = SkVarinfo (VSOps.find_by_id k vs) in
-                                    (cur_v, convert cur_v e))
-              in
+           ~f:(fun (k,e) ->
+               let cur_v = SkVarinfo (VSOps.find_by_id k vs) in
+               (cur_v, convert cur_v e))
+       in
        let complete_state =
          state@(List.map
                   (VSOps.varlist

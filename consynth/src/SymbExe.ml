@@ -17,15 +17,15 @@ type exec_info =
   }
 
 
-
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for exec_once *)
-let rec exec exec_info func =
-  let rec apply_let_exprs let_list exec_info =
-    List.fold_left
-      (update_expressions exec_info) (IM.empty, exec_info.inputs) let_list
+let rec exec new_exprs exec_info func =
 
-  and update_expressions exec_info (new_exprs, read_exprs) (var, expr) =
+  let rec apply_let_exprs new_exprs let_list exec_info =
+    List.fold_left
+      update_expressions (new_exprs, exec_info.inputs) let_list
+
+  and update_expressions (new_exprs, read_exprs) (var, expr) =
     match var with
     | T.SkState -> exec_info.state_exprs, read_exprs
     | T.SkVarinfo vi ->
@@ -45,10 +45,13 @@ let rec exec exec_info func =
   in
   match func with
   | T.SkLetExpr let_list ->
-    apply_let_exprs let_list exec_info
+    apply_let_exprs new_exprs let_list exec_info
   | T.SkLetIn (let_list, let_cont) ->
-    let new_exprs, new_reads = apply_let_exprs let_list exec_info in
-    exec {exec_info with state_exprs = new_exprs; inputs = new_reads} let_cont
+    let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
+    exec new_exprs
+      {exec_info with
+          state_exprs = IMTools.update_all exec_info.state_exprs new_exprs;
+          inputs = ES.union new_reads exec_info.inputs} let_cont
 
 
 
@@ -63,6 +66,13 @@ and exec_var exec_info v =
         try
           IM.find vi.vid exec_info.state_exprs, ES.empty
         with Not_found ->
+          (Format.eprintf "@.%sERROR%s \
+                           I was searching for an expression for variable \
+                           id %s%i%s in map %a@."
+             (PpHelper.color "red") PpHelper.default
+             (PpHelper.color "red") vi.vid  PpHelper.default
+             (fun fmt map -> PpHelper.ppimap SPretty.pp_skexpr fmt map)
+             exec_info.state_exprs);
           exception_on_variable "Expression not found for state variable" v
       else
         begin
@@ -94,7 +104,8 @@ and exec_var exec_info v =
       in
       let new_offset, new_reads = exec_expr exec_info offset_expr in
       T.SkVar (T.SkArray (new_v', new_offset)),
-      ES.union (ES.singleton (T.SkVar (T.SkArray (new_v', new_offset)))) new_reads
+      ES.union (ES.singleton (T.SkVar (T.SkArray (new_v', new_offset))))
+        new_reads
     end
 
 and exec_expr exec_info expr =
@@ -166,6 +177,7 @@ and exec_expr exec_info expr =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-let exec_once ?(silent = false) exec_nfo inp_func =
+let exec_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
-  exec exec_nfo inp_func
+  let em, es = exec IM.empty exec_info inp_func in
+  em,es

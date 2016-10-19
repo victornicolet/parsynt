@@ -210,7 +210,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
     let ce_list = IM.bindings cemap in
     if List.length ce_list < 1 then (raise Not_found) else ce_list
   in
-  (**  Returns a list of (vid, (e, f)) where (f,e) is build such that
+  (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
        ce = f (e, ...) *)
   let find_subexpr ce emap =
     T.rec_expr
@@ -227,7 +227,15 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
          let fe' = exec_expr xinfo fe in
          fe' = ne)
   in
-  let update_aux (aux_vs, aux_exprs) current_expr =
+  let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs) cexpr =
+    let current_expr =
+        reduce_full ~limit:10 VS.empty input_expressions cexpr
+      in
+      if !debug then
+        Format.fprintf Format.std_formatter
+          "Lifting inputs transforms @.%a@.to@.%a@."
+          pp_skexpr current_expr pp_skexpr current_expr
+      else ();
     (* The expression is exactly the expression of a aux *)
     try
       let expr_func_list = find_ce current_expr aux_exprs in
@@ -236,19 +244,14 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
       *)
       let vid, (e, f) = List.nth expr_func_list 0 in
       let vi = VSOps.find_by_id vid aux_vs in
-      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkVarinfo vi)) aux_exprs in
-      (aux_vs, new_aux_exprs)
+      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkVarinfo vi))
+          new_aux_exprs
+      in
+
+      (VS.add vi new_aux_vs, new_aux_exprs)
 
     with Not_found ->
-      let lifted_inputs =
-        reduce_full ~limit:10 VS.empty input_expressions current_expr
-      in
-      if !debug then
-        Format.fprintf Format.std_formatter
-          "Lifting inputs transforms @.%a@.to@.%a@."
-          pp_skexpr current_expr pp_skexpr lifted_inputs
-      else ();
-      let ef_list = find_subexpr lifted_inputs aux_exprs in
+      let ef_list = find_subexpr current_expr aux_exprs in
       begin
         if List.length ef_list > 0
         then
@@ -258,12 +261,19 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
           if List.length corresponding_functions > 0
           then
             (* TODO : better tactic to choose expressions *)
+            (** Here the function is directly matched *)
             let vid, (e, f) = List.nth corresponding_functions 0 in
-            let new_aux_exprs = IM.add vid (current_expr, f) aux_exprs in
-            (aux_vs, new_aux_exprs)
+            let vi = VSOps.find_by_id vid aux_vs in
+            let new_aux_exprs = IM.add vid (current_expr, f) new_aux_exprs in
+
+
+            (VS.add vi new_aux_vs, new_aux_exprs)
+
+
           else
             (* We have to update the function *)
             let vid, (e, f) = List.nth ef_list 0 in
+            let vi = VSOps.find_by_id vid aux_vs in
             (* Replace the index expressions by the index itself *)
             let replace_aux =
               T.replace_expression
@@ -285,21 +295,26 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
             in
 
             let new_aux_exprs = IM.add vid (current_expr, new_f) aux_exprs in
-            (aux_vs, new_aux_exprs)
+
+
+            (VS.add vi new_aux_vs, new_aux_exprs)
+
+
         else
           (* We have to create a new variable *)
           let new_aux = gen_fresh () in
-          let new_aux_vs = VS.add new_aux aux_vs in
+          let new_aux_vs = VS.add new_aux new_aux_vs in
           let new_exprs =
             IM.add
               new_aux.vid
               (current_expr, T.SkVar (T.SkVarinfo new_aux))
-              aux_exprs
+              new_aux_exprs
           in
           (new_aux_vs, new_exprs)
       end
   in
-  List.fold_left update_aux (aux_var_set, aux_var_map) (candidates expr)
+  List.fold_left (update_aux (aux_var_set, aux_var_map))
+    (VS.empty, IM.empty) (candidates expr)
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
@@ -311,6 +326,7 @@ let compose xinfo f aux_vs aux_ef =
     T.compose_head
       (IM.fold
          (fun aux_vid (e, f) assgn_list ->
+
             assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), f])
          aux_ef [])
       f
@@ -355,6 +371,7 @@ let discover_for_id stv (idx, update) input_func varid =
   init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
+
   let init_i = { state_set = stv ;
                  state_exprs = init_exprs ;
                  index_set = idx ;
@@ -368,7 +385,6 @@ let discover_for_id stv (idx, update) input_func varid =
       changed.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
-
     if !debug then Format.printf "Unrolling %i@."i else ();
 
     let new_xinfo, (new_var_set, new_aux_exprs) =
@@ -376,14 +392,12 @@ let discover_for_id stv (idx, update) input_func varid =
       let exprs_map, input_expressions =
         exec_once {xinfo with inputs = T.ES.empty} input_func
       in
-
       (** Reduce the depth of the state variables in the expression *)
       let new_exprs =
         IM.map
           (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
-
 
       (** Compute the new expressions for the index *)
       let xinfo_index = { state_set = xinfo.index_set ;
@@ -416,7 +430,7 @@ let discover_for_id stv (idx, update) input_func varid =
                   inputs = input_expressions },
       (aux_var_set, aux_var_map)
     in
-    (** WIP To avoid non-termination simply use a limit, can fidn better
+    (** WIP To avoid non-termination simply use a limit, can find better
         solution *)
     if (i > !max_exec_no) || (same_aux aux_var_map new_aux_exprs)
     then
@@ -429,10 +443,11 @@ let discover_for_id stv (idx, update) input_func varid =
     fixpoint 0 init_i VS.empty IM.empty
   in
   VS.iter (fun vi -> Inthash.add discovered_aux vi.Cil.vid vi) aux_vs;
-  (** Finally add the auxliaries at the begginning of the function. Since the
+  (** Finally add the auxliaries at the beginning of the function. Since the
       auxliaries depend only on the inputs and not the value of the state
       variables we can safely add the assignments (or let bindings) at
-      the beggiing
+      the beginning.
+      Return the union of the new auxiliaries and the state variables.
   *)
   compose init_i input_func aux_vs aux_ef
 

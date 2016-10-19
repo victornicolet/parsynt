@@ -219,6 +219,7 @@ end
 
 module IMTools : sig
   val add_all : 'a IM.t -> 'a IM.t -> 'a IM.t
+  val update_all : 'a IM.t -> 'a IM.t -> 'a IM.t
   val inter : 'a IM.t -> 'a IM.t -> 'a IM.t
   val is_disjoint :
     ?non_empty:(IM.key -> 'a -> bool) -> 'b IM.t -> 'a IM.t -> bool
