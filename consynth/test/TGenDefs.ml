@@ -14,9 +14,5 @@ let test () =
     (color "red") default;
   let loops = C.func2sketch (C.cil2func (C.processFile filename)) in
   List.iter
-    (fun (rv, state, all_v, loop_b, join_b, sigu, rcs) ->
-       pp_rosette_sketch std_formatter
-         (rv, state, all_v, loop_b, join_b, sigu, rcs);
-      print_endline "";
-    )
+    (fun srp ->  C.pp_sketch Format.std_formatter srp; print_endline "";)
     loops
