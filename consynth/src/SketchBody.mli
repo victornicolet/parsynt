@@ -10,3 +10,5 @@ val convert_cils :
   ?subs:SketchTypes.skExpr Utils.IM.t ->
   ?expect_ty:SketchTypes.symbolic_type ->
   Cil.exp -> SketchTypes.skExpr
+
+val optims : SketchTypes.sklet -> SketchTypes.sklet

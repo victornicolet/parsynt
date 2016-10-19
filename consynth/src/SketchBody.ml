@@ -19,12 +19,12 @@ module Ct = CilTools
 
 let rec convert  (cur_v : skLVar)  =
   function
-  | Var vi -> mkVar vi
+  | Var vi -> mkVarExpr vi
 
   (** TODO : array -> region *)
   | Array (vi, el) ->
      let skexpr_list = List.map el ~f:(convert cur_v) in
-     mkVar ~offsets:skexpr_list vi
+     mkVarExpr ~offsets:skexpr_list vi
 
   | FunApp (ef, arg_l) ->
      let is_c_def, vi_o, ty = is_exp_function ef in
@@ -156,7 +156,7 @@ and skexpr_of_lval (cur_v : skLVar)
      begin
        match vo with
        | Some vi ->
-          mkVar ~offsets:(convert_offsets ofs_li) vi
+          mkVarExpr ~offsets:(convert_offsets ofs_li) vi
        | None -> failwith "Is it an lval ?"
      end
 
@@ -174,7 +174,7 @@ and skexpr_of_lval (cur_v : skLVar)
        let t =  Cil.typeOfLval (host,offset) in
        vi_to_expr
          (symb_type_of_ciltyp t)
-         (mkVar ~offsets:off_list)
+         (mkVarExpr ~offsets:off_list)
 
 
 and skexpr_of_constant t c =
@@ -206,7 +206,7 @@ and convert_letin (vs : VS.t) =
          state@(List.map
                   (VSOps.varlist
                      (VS.filter (fun v -> not (IM.mem v.Cil.vid subs)) vs))
-                  ~f:(fun vi -> (SkVarinfo vi, mkVar vi)))
+                  ~f:(fun vi -> (SkVarinfo vi, mkVarExpr vi)))
        in
        SkLetExpr complete_state
 
@@ -277,17 +277,18 @@ let convert_const = skexpr_of_constant
 let rec make_conditional_guards (initial_vs : VS.t) (letin_form : sklet) =
   match letin_form with
   | SkLetIn (bindings, body) ->
-	let new_bindings, new_state_vars = mk_cg bindings initial_vs in
-	let new_body, state_vars' = make_conditional_guards new_state_vars body in
-	SkLetIn (new_bindings, new_body), state_vars'
+    let new_bindings, new_state_vars = mk_cg bindings initial_vs in
+    let new_body, state_vars' =
+      make_conditional_guards new_state_vars body in
+    SkLetIn (new_bindings, new_body), state_vars'
 
   | SkLetExpr bindings ->
-	let new_bindings, new_state_vars = mk_cg bindings initial_vs in
-	SkLetExpr new_bindings, new_state_vars
+    let new_bindings, new_state_vars = mk_cg bindings initial_vs in
+    SkLetExpr new_bindings, new_state_vars
 
 and mk_cg bindings vs =
   (List.fold
-	bindings
+     bindings
 	~init: []
 	~f:(fun acc binding -> acc @ [mk_cg_binding vs binding])), vs
 

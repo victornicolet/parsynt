@@ -351,16 +351,14 @@ let is_exp_function ef =
    constants.
 *)
 let mkVar ?(offsets = []) vi =
+  List.fold_left (fun sklvar offset -> SkArray (sklvar, offset)) (SkVarinfo vi)
+    offsets
+
+let mkVarExpr ?(offsets = []) vi =
   match c_constant vi.Cil.vname with
   | Some c -> SkConst c
-  | None ->
-	 let var =
-       List.fold_left
-	     (fun sklvar offset ->
-           SkArray (sklvar, offset))
-	     (SkVarinfo vi)
-         offsets
-     in SkVar var
+  | None -> SkVar (mkVar ~offsets:offsets vi)
+
 
 let rec cmpVar sklvar1 sklvar2 =
   match sklvar1, sklvar2 with
@@ -547,6 +545,24 @@ let transform_expr
   in
   recurse_aux expre
 
+(** An application of a function transformer : replace
+    expression to_replace by expression by.
+*)
+let rec replace_expression ?(in_subscripts = false) to_replace by =
+  let case e = (e = to_replace) in
+  let case_handler rfunc e = by in
+  let const_handler c = c in
+  let var_handler v =
+    if in_subscripts then
+      match v with
+      | SkArray (v, e) ->
+        SkArray (v, replace_expression ~in_subscripts:true to_replace by e)
+      | _ -> v
+    else
+      v
+  in
+  transform_expr case case_handler const_handler var_handler
+
 
 (** Compose a function by adding new assignments *)
 let compose_head assignments func =
@@ -558,16 +574,29 @@ let rec compose_tail assignments func =
     SkLetIn (el, SkLetExpr assignments)
   | SkLetIn (el, l) -> compose_tail assignments l
 
+let complete_with_state stv el =
+  (* Map the final expressions *)
+  let emap =
+    List.fold_left
+      (fun map (v,e) ->
+         let vi = check_option (vi_of v) in
+         IM.add vi.Cil.vid (v, e) map)
+      IM.empty el
+  in
+  let map' =
+    VS.fold
+      (fun vi map ->
+         if IM.mem vi.Cil.vid map then map
+         else IM.add vi.Cil.vid (mkVar vi, mkVarExpr vi) map)
+      stv emap
+  in
+  let _, velist = ListTools.unpair (IM.bindings map') in
+  velist
 
-(** Replace expressions by a variables *)
-let replace_subexpr_in to_replace var expr =
-  transform_expr
-    (fun e -> e = to_replace)
-    (fun f e -> SkVar (SkVarinfo var))
-    identity
-    identity
-    expr
-
+let rec complete_final_state stv func =
+    match func with
+  | SkLetExpr el -> SkLetExpr (complete_with_state stv el)
+  | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
 
 (** Translate basic scheme to the Sketch expressions
     @param env a mapping from variable ids to varinfos.
@@ -650,7 +679,6 @@ let rec scm_to_sk env scm =
 
   with Not_found ->
     failwith "Variable name not found in current environment."
-
 
 
 module ES = Set.Make (

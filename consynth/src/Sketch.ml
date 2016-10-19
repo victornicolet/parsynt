@@ -17,6 +17,9 @@ module Body = SketchBody
 module Join = SketchJoin
 
 let iterations_limit = ref 10
+
+let auxiliary_vars : Cil.varinfo IH.t = IH.create 10
+
 (******************************************************************************)
 
 (**
@@ -125,6 +128,8 @@ let join_name = "__join__"
 let body_name = "__loop_body__"
 (** Name of the initial state for the loop in the Rosette sketch *)
 let init_state_name = main_struct_name^"_init"
+(** Choose between a very restricted set of values for intials/identity values *)
+let base_init_value_choice = "(choose 0 1 #t #f)"
 
 (** Return the string of variable names from symbolic definitions. This names
     are the names used when printing the defintions of the symbolic variables
@@ -327,8 +332,9 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-        Format.fprintf fmt "(choose 0 1 #t #f)")
+        Format.fprintf fmt "%s" base_init_value_choice)
   in
+  (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     init_state_name main_struct_name
@@ -338,6 +344,8 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
   ignore(pp_symbolic_definitions_of fmt
            (VS.filter
               (fun vi -> not (IM.mem vi.Cil.vid reach_consts)) st0_vars));
+  (** Pretty print the initial states, with reaching constants and holes
+      for the auxiliaries discovered *)
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     st0
@@ -347,9 +355,13 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
          (fun fmt (vid, vi) ->
            (if IM.mem vid reach_consts
             then
-               pp_skexpr fmt (IM.find vid reach_consts)
+              pp_skexpr fmt (IM.find vid reach_consts)
             else
-               Format.fprintf fmt "%s" vi.Cil.vname)))
+              (if Inthash.mem auxiliary_vars vid
+               then
+                 Format.fprintf fmt "%s" base_init_value_choice
+               else
+                 Format.fprintf fmt "%s" vi.Cil.vname))))
         li)
     (VSOps.bindings st0_vars)
 

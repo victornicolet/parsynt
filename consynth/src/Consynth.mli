@@ -17,17 +17,25 @@ module Canalyst : sig
     Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
   type sigu = Utils.VS.t * (T.sklet * T.skExpr * T.sklet)
-  type sketch_info =
-    int list * int list * Usedef.VS.t * T.sklet *
-    T.sklet * sigu * (T.skExpr Utils.IM.t)
+
+  type sketch_rep =
+    {
+      ro_vars_ids : int list;
+      state_vars_ids : int list;
+      var_set : VS.t;
+      loop_body : T.sklet;
+      join_body : T.sklet;
+      sketch_igu : sigu;
+      reaching_consts : T.skExpr IM.t
+    }
 
   val processFile: string -> Findloops.Cloop.t Utils.IM.t
 
   val cil2func : Findloops.Cloop.t Utils.IM.t -> func_info list
 
-  val func2sketch : func_info list -> sketch_info list
+  val func2sketch : func_info list -> sketch_rep list
 
-  val pp_sketch : Format.formatter -> sketch_info  -> unit
+  val pp_sketch : Format.formatter -> sketch_rep  -> unit
 end
 
 module PpHelper : sig

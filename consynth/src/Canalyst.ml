@@ -67,10 +67,6 @@ type func_info =
     - sketch of the join.
 *)
 type sigu = VS.t * (T.sklet * T.skExpr * T.sklet)
-type sketch_info =
-  int list * int list * Usedef.VS.t * T.sklet *
-     T.sklet * sigu * (T.skExpr Utils.IM.t)
-
 
 let cil2func loops =
   Cil2Func.init loops;
@@ -102,6 +98,17 @@ let cil2func loops =
         reaching_consts))
     sorted_lps
 
+type sketch_rep =
+  {
+    ro_vars_ids : int list;
+    state_vars_ids : int list;
+    var_set : VS.t;
+    loop_body : T.sklet;
+    join_body : T.sklet;
+    sketch_igu : sigu;
+    reaching_consts : T.skExpr IM.t
+  }
+
 let func2sketch funcreps =
   List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
@@ -120,9 +127,33 @@ let func2sketch funcreps =
       in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body, sigu = Sketch.Body.build state_vars func figu in
-      let join_body = Sketch.Join.build state_vars loop_body in
-      (ro_vars_ids, state_vars_ids, var_set,
-       loop_body, join_body, sigu, reach_consts))
+      (** Discover new variables *)
+      let new_state, nlb =
+        discover state_vars loop_body sigu
+      in
+      (** Apply some optimization to reduce the size of the function *)
+      let nlb_opt = Sketch.Body.optims nlb in
+      let new_loop_body =
+        SketchTypes.complete_final_state new_state nlb_opt
+      in
+      let join_body = Sketch.Join.build state_vars new_loop_body in
+      { ro_vars_ids = ro_vars_ids;
+        state_vars_ids = VSOps.vids_of_vs new_state;
+        var_set = VS.union var_set new_state;
+        loop_body = new_loop_body;
+        join_body = join_body;
+        sketch_igu = sigu;
+        reaching_consts = reach_consts;
+      })
     funcreps
 
-let pp_sketch = Sketch.pp_rosette_sketch
+let pp_sketch fmt sketch_rep =
+  IH.copy_into VariableDiscovery.discovered_aux Sketch.auxiliary_vars;
+  Sketch.pp_rosette_sketch fmt
+    (sketch_rep.ro_vars_ids,
+     sketch_rep.state_vars_ids,
+     sketch_rep.var_set,
+     sketch_rep.loop_body,
+     sketch_rep.join_body,
+     sketch_rep.sketch_igu,
+     sketch_rep.reaching_consts)

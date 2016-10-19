@@ -11,6 +11,7 @@ let current_hole_r_expression = ref ""
 let current_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
+let state_vars = ref VS.empty
 
 (**
    TODO : find a way to be able to generate different hole

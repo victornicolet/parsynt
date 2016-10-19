@@ -37,8 +37,14 @@ let main () =
       | _ -> ()
     end;
   elapsed_time := Unix.gettimeofday ();
-  printf "Compiling sketches ...\t\t";
-  let sketch_map = C.func2sketch (C.cil2func (C.processFile filename)) in
+  printf "Reading C program ...\t\t\t\t";
+  let c_program = C.processFile filename in
+  printf "%sDONE%s@.@.C program -> functional representation ...\t"
+    (color "green") default;
+  let functions = C.cil2func c_program in
+  printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
+    (color "green") default;
+  let sketch_map = Canalyst.func2sketch functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") default;
   List.iter
     (fun sketch ->
@@ -48,6 +54,6 @@ let main () =
        in Ast.pp_expr_list std_formatter parsed)
     sketch_map;
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
-  printf "@.%sFINISHED in %.3f s%s@." (color "green") !elapsed_time default;;
+  printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green") !elapsed_time default;;
 
 main ();

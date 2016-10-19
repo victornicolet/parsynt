@@ -7,9 +7,15 @@ open SymbExe
 
 module T = SketchTypes
 
-let debug = ref true
+let debug = ref false
 
 let max_exec_no = ref 10
+
+let discovered_aux = Inthash.create 10
+
+let init () =
+  Inthash.clear discovered_aux
+
 (**
    Entry point : check that the function is a candidate for
     function discovery.
@@ -258,9 +264,26 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
           else
             (* We have to update the function *)
             let vid, (e, f) = List.nth ef_list 0 in
-            let new_f =
-              T.replace_subexpr_in e (VSOps.find_by_id vid aux_vs) current_expr
+            (* Replace the index expressions by the index itself *)
+            let replace_aux =
+              T.replace_expression
+                e (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs)))
+                current_expr
             in
+
+            let new_f =
+              IM.fold
+                (fun ids_id idx_expr e ->
+                   try
+                     T.replace_expression ~in_subscripts:true idx_expr
+                     (T.SkVar
+                        (T.SkVarinfo
+                           (VSOps.find_by_id ids_id xinfo.index_set))) e
+                     with Not_found -> e)
+                xinfo.index_exprs
+                replace_aux
+            in
+
             let new_aux_exprs = IM.add vid (current_expr, new_f) aux_exprs in
             (aux_vs, new_aux_exprs)
         else
@@ -329,18 +352,40 @@ let reduction_with_warning stv expset expr =
 *)
 let discover_for_id stv (idx, update) input_func varid =
   GenVars.init ();
+  init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
+  let init_i = { state_set = stv ;
+                 state_exprs = init_exprs ;
+                 index_set = idx ;
+                 index_exprs = init_idx_exprs ;
+                 inputs = T.ES.empty
+               }
+  in
+  (** Fixpoint stops when the set of auxiliary varaibles is stable,
+      which means the set of auxiliary variables hasn't changed and
+      the functions assiocated to these auxilary variables haven't
+      changed.
+  *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
+
     if !debug then Format.printf "Unrolling %i@."i else ();
+
     let new_xinfo, (new_var_set, new_aux_exprs) =
+      (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
-        exec_once {xinfo with inputs = T.ES.empty} input_func in
+        exec_once {xinfo with inputs = T.ES.empty} input_func
+      in
+
+      (** Reduce the depth of the state variables in the expression *)
       let new_exprs =
         IM.map
           (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
+
+
+      (** Compute the new expressions for the index *)
       let xinfo_index = { state_set = xinfo.index_set ;
                           state_exprs = xinfo.index_exprs ;
                           index_set = VS.empty ;
@@ -349,7 +394,12 @@ let discover_for_id stv (idx, update) input_func varid =
                         }
       in
       let new_idx_exprs, _ =
-        exec_once ~silent:true xinfo_index update in
+        exec_once ~silent:true xinfo_index update
+      in
+
+      (** Find the new set of auxliaries by analyzing the expressions at the
+          current expansion level *)
+
       let aux_var_set, aux_var_map =
         find_auxiliaries
           xinfo
@@ -357,37 +407,38 @@ let discover_for_id stv (idx, update) input_func varid =
           (aux_var_set, aux_var_map)
           input_expressions
       in
-      begin
-        if !debug then
-          VS.iter
-            (fun vi -> Format.printf "Auxiliary %s@." vi.vname) aux_var_set
-        else ()
-      end;
+      (**
+         Generate the new information for the next iteration and the set
+          of auxilaries with their expressions at the current expansion
+      *)
       {xinfo with state_exprs = new_exprs;
                   index_exprs = new_idx_exprs;
                   inputs = input_expressions },
       (aux_var_set, aux_var_map)
     in
+    (** WIP To avoid non-termination simply use a limit, can fidn better
+        solution *)
     if (i > !max_exec_no) || (same_aux aux_var_map new_aux_exprs)
     then
       new_xinfo, (new_var_set, new_aux_exprs)
     else
       fixpoint (i + 1) new_xinfo new_var_set new_aux_exprs
   in
-  let init_i = { state_set = stv ;
-                 state_exprs = init_exprs ;
-                 index_set = idx ;
-                 index_exprs = init_idx_exprs ;
-                 inputs = T.ES.empty
-               }
-  in
+
   let _ , (aux_vs, aux_ef) =
     fixpoint 0 init_i VS.empty IM.empty
   in
+  VS.iter (fun vi -> Inthash.add discovered_aux vi.Cil.vid vi) aux_vs;
+  (** Finally add the auxliaries at the begginning of the function. Since the
+      auxliaries depend only on the inputs and not the value of the state
+      variables we can safely add the assignments (or let bindings) at
+      the beggiing
+  *)
   compose init_i input_func aux_vs aux_ef
 
 
-(** Main algorithm. Discovers new variables that can be useful in parallelizing
+(** Main entry point.
+    Discovers new variables that can be useful in parallelizing
     the computation.
     @param stv the set of state variables.
     @param input_func the input function of the algorithm.
