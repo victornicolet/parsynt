@@ -268,10 +268,14 @@ let state_arg_name = "__s" in
 let pp_loop fmt (loop_body, state_vars) state_struct_name =
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
-    "(define (%s s start end)@; \
-@[<hov 2>(Loop @[<hov 2>start end %d s@] @.\
-@[<hov 2> %a@])@])@."
+    "(define (%s s %s %s)@; \
+@[<hov 2>(Loop @[<hov 2>%s %s %d s@] @.\
+     @[<hov 2> %a@])@])@."
     body_name
+    !start_index_name
+    !end_index_name
+    !start_index_name
+    !end_index_name
     !iterations_limit
     pp_loop_body (loop_body, state_vars, state_struct_name)
 

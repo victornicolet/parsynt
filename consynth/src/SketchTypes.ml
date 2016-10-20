@@ -2,6 +2,7 @@ open Utils
 open Format
 open Findloops
 open Ast
+open StdLabels
 
 let use_unsafe_operations = ref false
 
@@ -351,7 +352,9 @@ let is_exp_function ef =
    constants.
 *)
 let mkVar ?(offsets = []) vi =
-  List.fold_left (fun sklvar offset -> SkArray (sklvar, offset)) (SkVarinfo vi)
+  List.fold_left
+    ~f:(fun sklvar offset -> SkArray (sklvar, offset))
+    ~init:(SkVarinfo vi)
     offsets
 
 let mkVarExpr ?(offsets = []) vi =
@@ -474,7 +477,7 @@ let rec_expr
       join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
 
     | SkApp (_, _, el) ->
-      List.fold_left (fun a e -> join a (recurse_aux e)) init el
+      List.fold_left ~f:(fun a e -> join a (recurse_aux e)) ~init:init el
 
     | SkFun letin
     | SkRec (_, letin) -> recurse_letin letin
@@ -487,18 +490,19 @@ let rec_expr
   and recurse_letin =
     function
     | SkLetExpr velist ->
-      List.fold_left (fun acc (v, e) -> join acc (recurse_aux e)) init velist
+      List.fold_left ~f:(fun acc (v, e) -> join acc (recurse_aux e))
+        ~init:init velist
 
     | SkLetIn (velist, letin) ->
       let in_letin = recurse_letin letin in
       List.fold_left
-        (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
+        ~f:(fun acc (v, e) -> join acc (recurse_aux e)) ~init:in_letin velist
   in
   recurse_aux expre
 
 (** Another recursion helper : a syntax tree tranformer *)
 let transform_expr
-    (case : skExpr -> bool)
+    ~(case : skExpr -> bool)
     (case_handler : (skExpr -> skExpr) -> skExpr -> skExpr)
     (const_handler: constants -> constants)
     (var_handler : skLVar -> skLVar)
@@ -548,20 +552,21 @@ let transform_expr
 (** An application of a function transformer : replace
     expression to_replace by expression by.
 *)
-let rec replace_expression ?(in_subscripts = false) to_replace by =
-  let case e = (e = to_replace) in
-  let case_handler rfunc e = by in
+let rec replace_expression ?(in_subscripts = false) ~to_replace:tr ~by:b =
+  let case e = (e = tr) in
+  let case_handler rfunc e = b in
   let const_handler c = c in
   let var_handler v =
     if in_subscripts then
       match v with
       | SkArray (v, e) ->
-        SkArray (v, replace_expression ~in_subscripts:true to_replace by e)
+        SkArray (v,
+                 replace_expression ~in_subscripts:true ~to_replace:tr ~by:b e)
       | _ -> v
     else
       v
   in
-  transform_expr case case_handler const_handler var_handler
+  transform_expr ~case:case case_handler const_handler var_handler
 
 
 (** Compose a function by adding new assignments *)
@@ -578,10 +583,10 @@ let complete_with_state stv el =
   (* Map the final expressions *)
   let emap =
     List.fold_left
-      (fun map (v,e) ->
+      ~f:(fun map (v,e) ->
          let vi = check_option (vi_of v) in
          IM.add vi.Cil.vid (v, e) map)
-      IM.empty el
+      ~init:IM.empty el
   in
   let map' =
     VS.fold
@@ -686,3 +691,34 @@ module ES = Set.Make (
     let compare = Pervasives.compare
     type t = skExpr
   end)
+
+
+(** Create and manage variables for index boundaries *)
+
+let start_index_name = ref "_iL_"
+let end_index_name = ref "_iR_"
+
+let index_to_boundary : (Cil.varinfo * Cil.varinfo) IH.t = IH.create 10
+
+(** TODO different names for the different bounds but now we only
+    consider scalar indexes *)
+let create_boundary_variables (index_set, igu) =
+  VS.iter
+    (fun index_vi ->
+       let starti =
+         Cil.makeVarinfo false !start_index_name index_vi.Cil.vtype
+       in
+       let endi =
+         Cil.makeVarinfo false !end_index_name index_vi.Cil.vtype
+       in
+       IH.add index_to_boundary index_vi.Cil.vid (starti, endi))
+    index_set
+
+let left_index_vi vi =
+  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
+  let l, _ = IH.find index_to_boundary vi.Cil.vid in l
+
+
+let right_index_vi vi =
+  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
+  let _, r = IH.find index_to_boundary vi.Cil.vid in r

@@ -283,13 +283,18 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
 
             let new_f =
               IM.fold
-                (fun ids_id idx_expr e ->
+                (fun idx_id idx_expr e ->
                    try
-                     T.replace_expression ~in_subscripts:true idx_expr
-                     (T.SkVar
-                        (T.SkVarinfo
-                           (VSOps.find_by_id ids_id xinfo.index_set))) e
-                     with Not_found -> e)
+                     T.replace_expression ~in_subscripts:true
+                       ~to_replace:idx_expr
+                       ~by:(T.SkVar
+                              (T.SkVarinfo
+                                 (VSOps.find_by_id idx_id xinfo.index_set))) e
+                   with Not_found ->
+                     Format.eprintf "@.Index with id %i not found in %a.@."
+                       idx_id VSOps.pvs xinfo.index_set;
+                     raise Not_found
+                )
                 xinfo.index_exprs
                 replace_aux
             in
@@ -326,8 +331,30 @@ let compose xinfo f aux_vs aux_ef =
     T.compose_head
       (IM.fold
          (fun aux_vid (e, f) assgn_list ->
-
-            assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), f])
+            (** Distinguish different cases :
+                - the function is not identity but an accumulator, we add the
+                function 'as is' in the loop body.
+                TODO : graph analysis to place the let-binding at the right
+                position.
+                - the function f is the identity, then the auxliary variable
+                depends on a finite prefix of the inputs. The expression depends
+                on the starting index
+            *)
+            match f with
+            | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
+              (* Replace index by "start index" variable *)
+              let aux_expression =
+                VS.fold
+                  (fun index expr ->
+                     (T.replace_expression
+                        ~in_subscripts:true
+                        ~to_replace:(T.mkVarExpr index)
+                        ~by:(T.mkVarExpr (T.left_index_vi v)) expr))
+                       xinfo.index_set e
+              in
+                assgn_list@[(T.SkVarinfo v, aux_expression)]
+            | _ ->
+              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), f])
          aux_ef [])
       f
   in
@@ -407,8 +434,11 @@ let discover_for_id stv (idx, update) input_func varid =
                           inputs = T.ES.empty;
                         }
       in
-      let new_idx_exprs, _ =
-        exec_once ~silent:true xinfo_index update
+      let new_idx_exprs =
+        let full_map, _ = exec_once ~silent:true xinfo_index update in
+        VS.fold
+          (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
+          xinfo.index_set IM.empty
       in
 
       (** Find the new set of auxliaries by analyzing the expressions at the

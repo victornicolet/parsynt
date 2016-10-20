@@ -34,7 +34,7 @@ let processFile fileName =
   Cabs2cil.doCollapseCallCast := true;
   let cfile = parseOneFile fileName in
   Cfg.computeFileCFG cfile;
-  Deadcodeelim.dce cfile;
+  (*  Deadcodeelim.dce cfile; *)
   Findloops.debug := !debug;
   Findloops.verbose := !verbose;
   let loops, _ = Findloops.processFile cfile in
@@ -126,6 +126,9 @@ let func2sketch funcreps =
       in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body, sigu = Sketch.Body.build state_vars func figu in
+
+      SketchTypes.create_boundary_variables sigu;
+
       (** Discover new variables *)
       let new_state, nlb =
         discover state_vars loop_body sigu

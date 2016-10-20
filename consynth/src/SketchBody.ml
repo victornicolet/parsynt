@@ -193,17 +193,26 @@ and skexpr_of_constant t c =
   in SkConst const
 
 (** TODO : add the current loop index *)
-and convert_letin (vs : VS.t) =
-  function
+and convert_letin (vs : VS.t) letin =
+  match letin with
     | State subs  ->
-       let state =
-         List.map (IM.bindings subs)
-           ~f:(fun (k,e) ->
-               let cur_v = SkVarinfo (VSOps.find_by_id k vs) in
-               (cur_v, convert cur_v e))
-       in
-       let complete_state =
-         state@(List.map
+      let state =
+        List.map (IM.bindings subs)
+          ~f:(fun (k,e) ->
+              let cur_v =
+                try
+                  SkVarinfo (VSOps.find_by_id k vs)
+                with Not_found ->
+                  (Format.eprintf "@.Not found occured while transforming @.%a\
+                                   DIdn't find varaible id %i in %a"
+                     (Cil2Func.pp_letin ?wloc:(Some false)) (vs, letin)
+                     k VSOps.pvs vs;
+                   raise Not_found)
+              in
+              (cur_v, convert cur_v e))
+      in
+      let complete_state =
+        state@(List.map
                   (VSOps.varlist
                      (VS.filter (fun v -> not (IM.mem v.Cil.vid subs)) vs))
                   ~f:(fun vi -> (SkVarinfo vi, mkVarExpr vi)))
