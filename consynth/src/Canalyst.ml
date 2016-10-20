@@ -111,6 +111,7 @@ type sketch_rep =
 let func2sketch funcreps =
   List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
+      SketchTypes.store_all_vars var_set;
       let reach_consts =
         IM.mapi
           (fun vid cilc ->

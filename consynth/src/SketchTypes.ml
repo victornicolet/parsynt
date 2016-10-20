@@ -692,6 +692,15 @@ module ES = Set.Make (
     type t = skExpr
   end)
 
+(** Store all variables *)
+let all_vars : Cil.varinfo IH.t = IH.create 10
+
+let store_all_vars =
+  VS.iter (fun vi -> IH.add all_vars vi.Cil.vid vi)
+
+let get_var = IH.find all_vars
+
+let clear_vars = IH.clear all_vars
 
 (** Create and manage variables for index boundaries *)
 
