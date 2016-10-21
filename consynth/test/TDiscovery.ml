@@ -61,7 +61,7 @@ let counting_block =
 let test () =
   let new_state, new_func =
       discover state counting_block sigu
-  in ()
-  (* fprintf std_formatter *)
-  (*   "New state is : %a@. New function is : @.%a" *)
-  (*   VSOps.pvs new_state pp_sklet new_func;; *)
+  in
+  fprintf std_formatter
+    "New state is : %a@. New function is : @.%a"
+    VSOps.pvs new_state pp_sklet new_func;;

@@ -3,7 +3,7 @@
 (require rosette/lib/synthax racket/syntax)
 
 (provide ScalarExpr LinearScalarExpr bExpr
-         bExpr:num->num bExpr:num->bool bExpr:bool->bool)
+         bExpr:num->num bExpr:num->bool bExpr:boolean)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -130,7 +130,7 @@
                                 (bExpr:num->num x ... 1)
                                 (bExpr:num->num x ... 1)))]))
 
-(define-synthax (bExpr:bool->bool x ... depth)
+(define-synthax (bExpr:boolean x ... depth)
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)

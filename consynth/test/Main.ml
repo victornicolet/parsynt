@@ -83,7 +83,7 @@ let counting_blocks () =
     (vi, T.mkVar vi, T.mkVarExpr vi)
   in
   let state = VS.of_list [f_vi; count_vi] in
-
+  let all_vars = VS.union (VS.add a_vi state) i_set in
   (** Function *)
   let counting_block =
     T.SkLetExpr [(f, a_e);
@@ -95,10 +95,26 @@ let counting_blocks () =
                               sk_one,
                               sk_zero)))]
   in
-  let _, _ =
+  let new_state, new_func =
     VariableDiscovery.discover state counting_block sigu
   in
-  ();;
+  let new_func = SketchBody.optims new_func in
+  fprintf std_formatter
+    "New state is : %a@. New function is : @.%a"
+    VSOps.pvs new_state SPretty.pp_sklet new_func;
+  IH.copy_into VariableDiscovery.discovered_aux Sketch.Join.auxiliary_variables;
+  let join = Sketch.Join.build new_state new_func in
+  Local.dump_sketch := true;
+  let res =  Local.compile_and_fetch Canalyst.pp_sketch
+      { ro_vars_ids = [a_vi.Cil.vid; i_vi.Cil.vid];
+        state_vars_ids = VSOps.vids_of_vs new_state;
+        var_set = VS.union new_state all_vars ;
+        loop_body = new_func; join_body = join;
+        sketch_igu = sigu;
+        reaching_consts = IM.empty;
+      }
+  in ();;
+
 
 
 counting_blocks ();
