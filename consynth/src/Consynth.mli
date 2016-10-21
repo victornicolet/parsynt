@@ -497,7 +497,7 @@ val rec_expr :
   (skExpr -> bool) ->
   (skExpr -> 'a) -> (constants -> 'a) -> (skLVar -> 'a) -> skExpr -> 'a
 val transform_expr :
-  case:(skExpr -> bool) ->
+  (skExpr -> bool) ->
   ((skExpr -> skExpr) -> skExpr -> skExpr) ->
   (constants -> constants) -> (skLVar -> skLVar) -> skExpr -> skExpr
 end

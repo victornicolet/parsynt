@@ -16,15 +16,13 @@ let debug = ref false
 let verbose = ref false
 
 let parseOneFile (fname : string) : C.file =
-  let cabs, cil =
-    try
-      Frontc.parse_with_cabs fname ()
-    with
-      Errormsg.Error ->
-        failwith "Error while parsing input file,\
-the filename might contain errors"
-  in
-  cil
+  try
+    Frontc.parse fname ()
+  with
+    Errormsg.Error ->
+    failwith "Error while parsing input file,\
+              the filename might contain errors"
+
 
 
 let processFile fileName =
@@ -127,9 +125,6 @@ let func2sketch funcreps =
       in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body, sigu = Sketch.Body.build state_vars func figu in
-
-      SketchTypes.create_boundary_variables sigu;
-
       (** Discover new variables *)
       let new_state, nlb =
         discover state_vars loop_body sigu

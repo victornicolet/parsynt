@@ -31,7 +31,7 @@ Library consynth
   Path: src
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, core, sexplib, rosetteInterface
+  BuildDepends: cil, core, rosetteInterface
 
 Executable test_main
   Path: test
@@ -45,7 +45,7 @@ Executable test_scheme_parsing
   MainIs : TestSchemeParsing.ml
   Compiledobject: best
   Install : false
-  BuildDepends: cil, consynth, rosetteInterface, schoca
+  BuildDepends: cil, consynth, rosetteInterface
 
 Executable Parsy
   Path: ./

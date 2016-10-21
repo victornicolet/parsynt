@@ -52,7 +52,7 @@ and accepted_expression e =
 (** Generation of new auxiliary variables *)
 let allvars = ref VS.empty
 
-let aux_var_prefix = ref "aux"
+let aux_var_prefix = ref "x_"
 
 let aux_var_counter = ref 0
 
@@ -60,14 +60,16 @@ let aux_init vs =
   allvars := vs;
   aux_var_counter := 0;
   aux_var_prefix :=
-    VS.fold
-      (fun vi gen_prefix ->
-         if str_contains vi.vname gen_prefix then
-           gen_prefix^vi.vname
+    (VS.fold
+       (fun vi gen_prefix ->
+          let prefix_contains = (vi.vname = gen_prefix)
+          in
+         if prefix_contains then
+           (gen_prefix^vi.vname)
          else
            gen_prefix)
-      !allvars
-      !aux_var_prefix
+      vs
+      !aux_var_prefix);;
 
 let gen_fresh () =
   let fresh_name = (!aux_var_prefix)^(string_of_int (!aux_var_counter)) in
@@ -88,9 +90,9 @@ let merge_union vid ao bo =
   | _ ,_ -> None
 
 let update_map map vi vi_used =
-  try
+  if IM.mem vi.vid map then
     IM.add vi.vid (VS.union vi_used (IM.find vi.vid map)) map
-  with Not_found ->
+  else
     IM.add vi.vid vi_used map
 
 (** Given a function an a set of state variables, return a mapping
@@ -202,22 +204,19 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
       (fun v -> [])
       e
   in
-  let exists_ce ce =
-    IM.exists (fun vid (auxe, f) -> auxe = ce)
-  in
-  let find_ce ce emap =
-    let cemap = IM.filter (fun vid (auxe, f) -> auxe = ce) emap in
-    let ce_list = IM.bindings cemap in
-    if List.length ce_list < 1 then (raise Not_found) else ce_list
+  let find_ce to_match emap =
+    let cemap = IM.filter (fun vid (auxe, f) -> auxe = to_match) emap in
+    IM.bindings cemap
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
        ce = f (e, ...) *)
-  let find_subexpr ce emap =
+  let find_subexpr top_expr emap =
     T.rec_expr
       (fun a b -> a@b) []
-      (fun e -> exists_ce e emap) (fun e -> find_ce e emap)
+      (fun e -> IM.exists (fun vid (auxe, f) -> auxe = e) emap)
+      (fun e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
-      ce
+      top_expr
   in
   (** Check that the function applied to the old expression gives
       the new expression. *)
@@ -237,12 +236,11 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
           pp_skexpr current_expr pp_skexpr current_expr
       else ();
     (* The expression is exactly the expression of a aux *)
-    try
-      let expr_func_list = find_ce current_expr aux_exprs in
+    match  find_ce current_expr aux_exprs with
       (* TODO : how do we choose which expression to use in this
          case ? Now only pick the first expression to come.
       *)
-      let vid, (e, f) = List.nth expr_func_list 0 in
+    | (vid, (e,f)):: _ ->
       let vi = VSOps.find_by_id vid aux_vs in
       let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkVarinfo vi))
           new_aux_exprs
@@ -250,7 +248,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
 
       (VS.add vi new_aux_vs, new_aux_exprs)
 
-    with Not_found ->
+    | []->
       let ef_list = find_subexpr current_expr aux_exprs in
       begin
         if List.length ef_list > 0
@@ -286,8 +284,8 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
                 (fun idx_id idx_expr e ->
                    try
                      T.replace_expression ~in_subscripts:true
-                       ~to_replace:idx_expr
-                       ~by:(T.SkVar
+                       idx_expr
+                       (T.SkVar
                               (T.SkVarinfo
                                  (VSOps.find_by_id idx_id xinfo.index_set))) e
                    with Not_found ->
@@ -348,8 +346,8 @@ let compose xinfo f aux_vs aux_ef =
                   (fun index expr ->
                      (T.replace_expression
                         ~in_subscripts:true
-                        ~to_replace:(T.mkVarExpr index)
-                        ~by:(T.mkVarExpr (T.left_index_vi v)) expr))
+                        (T.mkVarExpr index)
+                        (T.mkVarExpr (T.left_index_vi v)) expr))
                        xinfo.index_set e
               in
                 assgn_list@[(T.SkVarinfo v, aux_expression)]
@@ -361,14 +359,17 @@ let compose xinfo f aux_vs aux_ef =
   (new_stv, new_func)
 
 let same_aux old_aux new_aux =
-  IM.fold
-    (fun n_vid (n_expr, n_f) same->
-       try
-         let  o_expr, o_f = IM.find n_vid old_aux in
-         (if o_f = n_f then true else raise Not_found)
-       with Not_found -> false)
-    new_aux
-    true
+  if IM.cardinal old_aux != IM.cardinal new_aux
+  then false
+  else
+    IM.fold
+      (fun n_vid (n_expr, n_f) same ->
+         try
+           (let  o_expr, o_f = IM.find n_vid old_aux in
+            if o_f = n_f then true && same else false)
+         with Not_found -> false)
+      new_aux
+      true
 
 let reduction_with_warning stv expset expr =
   let reduced_expression = reduce_full stv expset expr in
@@ -493,6 +494,7 @@ let discover_for_id stv (idx, update) input_func varid =
     discovered by the algortihm.
 *)
 let discover stv input_func (idx, (i,g,u)) =
+  T.create_boundary_variables (idx, (i,g,u));
   aux_init (VS.union stv idx);
   (** Analyze the index and produce the update function for
       the index.

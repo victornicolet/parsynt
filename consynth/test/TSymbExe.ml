@@ -19,12 +19,12 @@ let x, y, z, a, b, c, a_n =
   T.SkVarinfo (make_int_array_varinfo "a_n")
 
 let index_var = make_int_varinfo "i"
-let index_expr = exp_skvar index_var
+let index_expr = T.mkVarExpr index_var
 let array = T.SkArray (a_n, index_expr)
 
 let a_vi = check_option (vi_of_var a)
 let stv = VS.singleton a_vi
-let init_exprs = IM.singleton a_vi.vid (exp_skvar a_vi)
+let init_exprs = IM.singleton a_vi.vid (T.mkVarExpr a_vi)
 
 let sum_array =
   (T.SkLetIn ([a,
@@ -33,13 +33,6 @@ let sum_array =
                          T.SkBinop (T.Plus, T.SkVar a, T.SkVar array))],
              sk_tail_state))
 
-let increment_all_indexes index_exprs =
-  IM.fold
-    (fun vid expr ->
-       IM.add vid (T.SkBinop (T.Plus, expr, sk_one))
-    )
-    index_exprs
-    IM.empty
 
 let index_map1 = IM.singleton index_var.vid index_expr
 let index_map2 = increment_all_indexes index_map1
@@ -85,23 +78,3 @@ let test () =
     "Inputs at second iteration :@.%a@.@."
     (fun fmt es ->  pp_expr_set fmt es) r2_array.inputs;
   print_exprs "red_r2_array" reduced_r2_array
-
-
-(** Test variable discovery algortihm *)
-let index_incr =
-  T.SkLetExpr ([T.SkVarinfo index_var,
-               (T.SkBinop (T.Plus, T.SkVar (T.SkVarinfo index_var), sk_one))])
-
-let index_init =
-  T.SkLetExpr ([T.SkVarinfo index_var, sk_zero])
-
-let index_guard =
-  T.SkBinop (T.Le, T.SkVar (T.SkVarinfo index_var), T.SkConst (T.CInt 10))
-
-let igu = (index_init, index_guard, index_incr)
-
-let discovered, newfunc = discover stv sum_array (index_set, igu)
-
-let test2 () =
-  VS.iter (fun vi -> Format.printf "New variable : %s@." vi.vname) discovered;
-  Format.printf "New function :@.%a@." pp_sklet newfunc

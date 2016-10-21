@@ -2,7 +2,6 @@ open Utils
 open Format
 open Findloops
 open Ast
-open StdLabels
 
 let use_unsafe_operations = ref false
 
@@ -353,8 +352,8 @@ let is_exp_function ef =
 *)
 let mkVar ?(offsets = []) vi =
   List.fold_left
-    ~f:(fun sklvar offset -> SkArray (sklvar, offset))
-    ~init:(SkVarinfo vi)
+    (fun sklvar offset -> SkArray (sklvar, offset))
+    (SkVarinfo vi)
     offsets
 
 let mkVarExpr ?(offsets = []) vi =
@@ -477,7 +476,7 @@ let rec_expr
       join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
 
     | SkApp (_, _, el) ->
-      List.fold_left ~f:(fun a e -> join a (recurse_aux e)) ~init:init el
+      List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | SkFun letin
     | SkRec (_, letin) -> recurse_letin letin
@@ -490,19 +489,19 @@ let rec_expr
   and recurse_letin =
     function
     | SkLetExpr velist ->
-      List.fold_left ~f:(fun acc (v, e) -> join acc (recurse_aux e))
-        ~init:init velist
+      List.fold_left (fun acc (v, e) -> join acc (recurse_aux e))
+        init velist
 
     | SkLetIn (velist, letin) ->
       let in_letin = recurse_letin letin in
       List.fold_left
-        ~f:(fun acc (v, e) -> join acc (recurse_aux e)) ~init:in_letin velist
+        (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
   in
   recurse_aux expre
 
 (** Another recursion helper : a syntax tree tranformer *)
 let transform_expr
-    ~(case : skExpr -> bool)
+    (case : skExpr -> bool)
     (case_handler : (skExpr -> skExpr) -> skExpr -> skExpr)
     (const_handler: constants -> constants)
     (var_handler : skLVar -> skLVar)
@@ -552,7 +551,7 @@ let transform_expr
 (** An application of a function transformer : replace
     expression to_replace by expression by.
 *)
-let rec replace_expression ?(in_subscripts = false) ~to_replace:tr ~by:b =
+let rec replace_expression ?(in_subscripts = false) tr b =
   let case e = (e = tr) in
   let case_handler rfunc e = b in
   let const_handler c = c in
@@ -561,12 +560,12 @@ let rec replace_expression ?(in_subscripts = false) ~to_replace:tr ~by:b =
       match v with
       | SkArray (v, e) ->
         SkArray (v,
-                 replace_expression ~in_subscripts:true ~to_replace:tr ~by:b e)
+                 replace_expression ~in_subscripts:true tr b e)
       | _ -> v
     else
       v
   in
-  transform_expr ~case:case case_handler const_handler var_handler
+  transform_expr case case_handler const_handler var_handler
 
 
 (** Compose a function by adding new assignments *)
@@ -583,10 +582,10 @@ let complete_with_state stv el =
   (* Map the final expressions *)
   let emap =
     List.fold_left
-      ~f:(fun map (v,e) ->
+      (fun map (v,e) ->
          let vi = check_option (vi_of v) in
          IM.add vi.Cil.vid (v, e) map)
-      ~init:IM.empty el
+      IM.empty el
   in
   let map' =
     VS.fold
@@ -698,9 +697,9 @@ let all_vars : Cil.varinfo IH.t = IH.create 10
 let store_all_vars =
   VS.iter (fun vi -> IH.add all_vars vi.Cil.vid vi)
 
-let get_var = IH.find all_vars
+let get_var i = IH.find all_vars i
 
-let clear_vars = IH.clear all_vars
+let clear_vars () = IH.clear all_vars
 
 (** Create and manage variables for index boundaries *)
 

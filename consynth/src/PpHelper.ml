@@ -57,7 +57,7 @@ let loc_of_string loca =
     Str.regexp "<#line \\([0-9]+\\) in \\([0-9A-Za-z\\._-]+\\), byte \\([0-9]+>\\)"
   in
   try
-    let matching = Str.search_forward regexp loca 0 in
+    ignore(Str.search_forward regexp loca 0);
     let line = int_of_string (Str.matched_group 0 loca) in
     let file_name = Str.matched_group 1 loca in
     let byte =  int_of_string (Str.matched_group 2 loca) in
