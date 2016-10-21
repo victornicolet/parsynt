@@ -53,7 +53,6 @@ rule token = parse
   | ">="           { GEQ }
   | "#t"           { TRUE }
   | "#f"           { FALSE }
-  | "."            { DOT }
   | int as int     { INT (int_of_string int) }
   | ws             { token lexbuf }
   | ";"            { comment lexbuf }

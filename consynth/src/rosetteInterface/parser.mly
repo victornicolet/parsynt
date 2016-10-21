@@ -12,7 +12,6 @@ open Ast
 %token RPAREN
 %token DELAY
 %token FORCE
-%token DOT
 %token EQ
 %token NEQ
 %token LT
