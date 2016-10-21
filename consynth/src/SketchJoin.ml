@@ -2,7 +2,7 @@ open SketchTypes
 open Utils
 open SPretty
 
-let auxiliary_variables : Cil.varinfo IH.t = IH.create 10
+let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
 (**
 
 *)

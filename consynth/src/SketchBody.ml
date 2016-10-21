@@ -17,7 +17,7 @@ module Ct = CilTools
    loop).
 *)
 
-let rec convert  (cur_v : skLVar)  =
+let rec convert (cur_v : skLVar)  =
   function
   | Var vi -> mkVarExpr vi
 
@@ -193,7 +193,7 @@ and skexpr_of_constant t c =
   in SkConst const
 
 (** TODO : add the current loop index *)
-and convert_letin (vs : VS.t) letin =
+and convert_letin all_vars (vs : VS.t) letin =
   match letin with
   | State subs  ->
     let state =
@@ -202,7 +202,7 @@ and convert_letin (vs : VS.t) letin =
            let cur_v =
              try
                SkVarinfo (VSOps.find_by_id k vs)
-             with Not_found -> SkVarinfo (get_var k)
+             with Not_found -> SkVarinfo (VSOps.find_by_id k all_vars)
            in
            (cur_v, convert cur_v e))
         subs
@@ -220,31 +220,31 @@ and convert_letin (vs : VS.t) letin =
 
     | Let (v, e, cont, i, loc) ->
        let cur_v = SkVarinfo v in
-       SkLetIn ([(cur_v, convert cur_v e)], convert_letin vs cont)
+       SkLetIn ([(cur_v, convert cur_v e)], convert_letin all_vars vs cont)
 
     | LetRec (igu, let_body, let_cont, loc) ->
        (** Tail position *)
        if is_empty_state let_cont then
-         SkLetExpr [(SkState, SkRec (igu, convert_letin vs let_body))]
+         SkLetExpr [(SkState, SkRec (igu, convert_letin all_vars vs let_body))]
        else
-         SkLetIn ([(SkState, SkRec (igu, convert_letin vs let_body))],
-                  convert_letin vs let_cont)
+         SkLetIn ([(SkState, SkRec (igu, convert_letin all_vars vs let_body))],
+                  convert_letin all_vars vs let_cont)
 
     | LetCond (c, let_if, let_else, let_cont, loc) ->
        if is_empty_state let_cont then
          SkLetExpr [(SkState,
                      SkCond (convert_cils c,
-                             convert_letin vs let_if,
-                             convert_letin vs let_else))]
+                             convert_letin all_vars vs let_if,
+                             convert_letin all_vars vs let_else))]
        else
           SkLetIn ( [(SkState,
                      SkCond (convert_cils c,
-                             convert_letin vs let_if,
-                             convert_letin vs let_else))],
-                  convert_letin vs let_cont)
+                             convert_letin all_vars vs let_if,
+                             convert_letin all_vars vs let_else))],
+                  convert_letin all_vars vs let_cont)
     | LetState (let_state, let_cont) ->
-       SkLetIn ([(SkState, SkFun (convert_letin vs let_state))],
-                convert_letin vs let_cont)
+       SkLetIn ([(SkState, SkFun (convert_letin all_vars vs let_state))],
+                convert_letin all_vars vs let_cont)
 
 (** Optimisations *)
 let remove_simple_state_rewritings (var , expr) =
@@ -269,13 +269,14 @@ let optims sklet =
 
 (*** MAIN ENTRY POINT ***)
 
-let build state let_form (index, (ilet, gexpr, ulet)) =
+let build all_vs state let_form (index, (ilet, gexpr, ulet)) =
   let ext_state = VS.union state index in
-  let iletin = convert_letin ext_state ilet in
-  let uletin = convert_letin ext_state ulet in
+  let iletin = convert_letin all_vs ext_state ilet in
+  let uletin = convert_letin all_vs ext_state ulet in
   (** TODO implement records to manage index *)
   let gskexpr = convert (SkVarinfo (VS.max_elt index)) gexpr in
-  optims (convert_letin state let_form), (index, (iletin, gskexpr, uletin))
+  optims (convert_letin all_vs state let_form),
+  (index, (iletin, gskexpr, uletin))
 
 
 let convert_const = skexpr_of_constant

@@ -5,7 +5,27 @@ open Printf
 open Format
 
 module S = Str
-module IH = Inthash
+
+(** Set modules **)
+module IntHash =
+struct
+  type t = int
+  let equal i j = i=j
+  let hash i = i land max_int
+end
+
+module IntHashTbl = Hashtbl.Make(IntHash)
+
+module IH =
+struct
+  include IntHashTbl
+
+  let copy_into to_copy into_copy =
+    IntHashTbl.iter (IntHashTbl.add into_copy) to_copy
+
+end
+
+
 module IS = Set.Make (struct
     type t = int
     let compare = Pervasives.compare
@@ -368,86 +388,92 @@ module VSOps = struct
 end
 
 module IHTools = struct
-    (**
-        Add al the key-value bindings of to_add to add_to only
-        if the key is not present in add_to.
-    *)
-    let add_all add_to bindings_to_add =
-      IH.iter
-        (fun k v ->
-          if IH.mem add_to k then () else IH.add add_to k v)
-        bindings_to_add
 
-    let add_list (add_to : 'a IH.t) (getk : 'a -> int) (l : 'a list) =
-      List.iter (fun b -> IH.add add_to (getk b) b) l
+  let convert inthash =
+    let ih = IH.create 10 in
+    Inthash.iter (IH.add ih) inthash;
+    ih
 
-    let iter_bottom_up
-        (h : 'a IH.t)
-        (isroot : 'a -> bool)
-        (children : 'a -> 'a list)
-        (app : 'a -> unit) : 'a list =
-      let select_roots =
-        IH.fold
-          (fun k a roots ->
-            if isroot a then a::roots else roots)
-          h []
-      in
-      let rec build_botup stack acc =
-        match stack with
-        | [] -> acc
-        | hd :: tl ->
-           build_botup (tl@(children hd)) (hd::acc)
-      in
-      let upbots = build_botup select_roots [] in
-      List.iter app upbots;
-      upbots ;;
+  (**
+      Add al the key-value bindings of to_add to add_to only
+      if the key is not present in add_to.
+  *)
+  let add_all add_to bindings_to_add =
+    IH.iter
+      (fun k v ->
+         if IH.mem add_to k then () else IH.add add_to k v)
+      bindings_to_add
+
+  let add_list (add_to : 'a IH.t) (getk : 'a -> int) (l : 'a list) =
+    List.iter (fun b -> IH.add add_to (getk b) b) l
+
+  let iter_bottom_up
+      (h : 'a IH.t)
+      (isroot : 'a -> bool)
+      (children : 'a -> 'a list)
+      (app : 'a -> unit) : 'a list =
+    let select_roots =
+      IH.fold
+        (fun k a roots ->
+           if isroot a then a::roots else roots)
+        h []
+    in
+    let rec build_botup stack acc =
+      match stack with
+      | [] -> acc
+      | hd :: tl ->
+        build_botup (tl@(children hd)) (hd::acc)
+    in
+    let upbots = build_botup select_roots [] in
+    List.iter app upbots;
+    upbots ;;
 
 end
 
 module IMTools = struct
 
-    let add_all add_to to_add =
-      IM.fold
-        (fun k v mp ->
-          if IM.mem k add_to then mp else
-            IM.add k v mp)
-        to_add add_to
+  let add_all add_to to_add =
+    IM.fold
+      (fun k v mp ->
+         if IM.mem k add_to then mp else
+           IM.add k v mp)
+      to_add add_to
 
-    let update_all add_to to_add =
-      IM.fold
-        (fun k v mp -> IM.add k v mp)
-        to_add add_to
+  let update_all add_to to_add =
+    IM.fold
+      (fun k v mp -> IM.add k v mp)
+      to_add add_to
 
 
-    let inter a b =
+  let inter a b =
+    IM.fold
+      (fun k v mp ->
+         if IM.mem k a
+         then IM.add k v b
+         else mp)
+      b
+      IM.empty
+
+  let is_disjoint ?(non_empty = (fun k v -> true)) a b=
+    try
       IM.fold
-        (fun k v mp ->
-          if IM.mem k a
-          then IM.add k v b
-          else mp)
+        (fun k v bol ->
+           if non_empty k v
+           then
+             (if IM.mem k a
+              then failwith "iom"
+              else bol)
+           else bol)
         b
-        IM.empty
-
-    let is_disjoint ?(non_empty = (fun k v -> true)) a b=
-      try
-        IM.fold
-          (fun k v bol ->
-            if non_empty k v
-            then
-              (if IM.mem k a
-               then failwith "iom"
-               else bol)
-            else bol)
-          b
-          true
-      with Failure s -> false
+        true
+    with Failure s -> false
 end
 
 module SMTools = struct
   let update map key nval update =
-	try
-	  let pval = SM.find key map in
-	  SM.add key (update pval nval) map
-	with Not_found ->
-	  SM.add key nval map
+    try
+      let pval = SM.find key map in
+      SM.add key (update pval nval) map
+    with Not_found ->
+      SM.add key nval map
 end

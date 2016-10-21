@@ -691,15 +691,6 @@ module ES = Set.Make (
     type t = skExpr
   end)
 
-(** Store all variables *)
-let all_vars : Cil.varinfo IH.t = IH.create 10
-
-let store_all_vars =
-  VS.iter (fun vi -> IH.add all_vars vi.Cil.vid vi)
-
-let get_var i = IH.find all_vars i
-
-let clear_vars () = IH.clear all_vars
 
 (** Create and manage variables for index boundaries *)
 
@@ -710,7 +701,7 @@ let index_to_boundary : (Cil.varinfo * Cil.varinfo) IH.t = IH.create 10
 
 (** TODO different names for the different bounds but now we only
     consider scalar indexes *)
-let create_boundary_variables (index_set, igu) =
+let create_boundary_variables index_set =
   VS.iter
     (fun index_vi ->
        let starti =

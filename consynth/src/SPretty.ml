@@ -91,7 +91,7 @@ let string_of_unsafe_unop =
 let string_of_symb_unop =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
-  | Not -> "Not" | Add1 -> "Add1" | Sub1 -> "Sub1"| Abs -> "Abs"
+  | Not -> "not" | Add1 -> "add1" | Sub1 -> "sub1"| Abs -> "Abs"
   | Floor -> "Floor" | Ceiling -> "Ceiling"  | Truncate -> "Truncate"
   | Round -> "Round" | Neg -> "Neg" | Sgn -> "Sgn"
 

@@ -109,7 +109,6 @@ type sketch_rep =
 let func2sketch funcreps =
   List.map
     (fun (ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
-      SketchTypes.store_all_vars var_set;
       let reach_consts =
         IM.mapi
           (fun vid cilc ->
@@ -124,7 +123,7 @@ let func2sketch funcreps =
           reach_consts
       in
       let state_vars = VSOps.subset_of_list state_vars_ids var_set in
-      let loop_body, sigu = Sketch.Body.build state_vars func figu in
+      let loop_body, sigu = Sketch.Body.build var_set state_vars func figu in
       (** Discover new variables *)
       let new_state, nlb =
         discover state_vars loop_body sigu

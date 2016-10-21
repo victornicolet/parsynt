@@ -7,7 +7,6 @@ open PpHelper
 open VariableAnalysis
 
 module E = Errormsg
-module IH = Inthash
 module Pf = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
@@ -415,7 +414,7 @@ end
 let add_def_info cl vid vid2const def_id =
   try
     let stmt =
-      IH.find Reachingdefs.ReachingDef.defIdStmtHash def_id
+      IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
     in
     if Cloop.contains_stmt cl stmt.sid
     (** Default action if the stmt is in the loop *)
@@ -453,7 +452,7 @@ let analyse_loop_context clp =
     with
     | Some x ->
        begin
-         let vid2const_map = analyze_definitions clp x in
+         let vid2const_map = analyze_definitions clp (IHTools.convert x) in
          Cloop.add_constant_in clp vid2const_map;
          x
        end
@@ -467,10 +466,10 @@ let analyse_loop_context clp =
              (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
            flush_all ();
          end;
-      IH.create 2
+      Inthash.create 2
   in
   let livevars =
-	try IH.find LF.stmtStartData sid
+	try Inthash.find LF.stmtStartData sid
 	with Not_found -> (raise (Failure "analyse_loop_context : live variables \
  statement data not found "))
   in
@@ -489,7 +488,7 @@ let analyse_loop_context clp =
     end
   else
     begin
-      Cloop.setDefinedInVars clp rds livevars;
+      Cloop.setDefinedInVars clp (IHTools.convert rds) livevars;
       (** Visit the loop statement and compute some information *)
       visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop_stmt
     end

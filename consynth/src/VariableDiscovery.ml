@@ -11,10 +11,10 @@ let debug = ref false
 
 let max_exec_no = ref 10
 
-let discovered_aux = Inthash.create 10
+let discovered_aux = IH.create 10
 
 let init () =
-  Inthash.clear discovered_aux
+  IH.clear discovered_aux
 
 (**
    Entry point : check that the function is a candidate for
@@ -347,7 +347,7 @@ let compose xinfo f aux_vs aux_ef =
                      (T.replace_expression
                         ~in_subscripts:true
                         (T.mkVarExpr index)
-                        (T.mkVarExpr (T.left_index_vi v)) expr))
+                        (T.mkVarExpr (T.left_index_vi index)) expr))
                        xinfo.index_set e
               in
                 assgn_list@[(T.SkVarinfo v, aux_expression)]
@@ -399,7 +399,6 @@ let discover_for_id stv (idx, update) input_func varid =
   init ();
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
-
   let init_i = { state_set = stv ;
                  state_exprs = init_exprs ;
                  index_set = idx ;
@@ -426,7 +425,6 @@ let discover_for_id stv (idx, update) input_func varid =
           (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
-
       (** Compute the new expressions for the index *)
       let xinfo_index = { state_set = xinfo.index_set ;
                           state_exprs = xinfo.index_exprs ;
@@ -441,7 +439,6 @@ let discover_for_id stv (idx, update) input_func varid =
           (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
           xinfo.index_set IM.empty
       in
-
       (** Find the new set of auxliaries by analyzing the expressions at the
           current expansion level *)
 
@@ -473,7 +470,7 @@ let discover_for_id stv (idx, update) input_func varid =
   let _ , (aux_vs, aux_ef) =
     fixpoint 0 init_i VS.empty IM.empty
   in
-  VS.iter (fun vi -> Inthash.add discovered_aux vi.Cil.vid vi) aux_vs;
+  VS.iter (fun vi -> IH.add discovered_aux vi.Cil.vid vi) aux_vs;
   (** Finally add the auxliaries at the beginning of the function. Since the
       auxliaries depend only on the inputs and not the value of the state
       variables we can safely add the assignments (or let bindings) at
@@ -481,6 +478,7 @@ let discover_for_id stv (idx, update) input_func varid =
       Return the union of the new auxiliaries and the state variables.
   *)
   compose init_i input_func aux_vs aux_ef
+
 
 
 (** Main entry point.
@@ -494,7 +492,8 @@ let discover_for_id stv (idx, update) input_func varid =
     discovered by the algortihm.
 *)
 let discover stv input_func (idx, (i,g,u)) =
-  T.create_boundary_variables (idx, (i,g,u));
+  T.create_boundary_variables idx;
+
   aux_init (VS.union stv idx);
   (** Analyze the index and produce the update function for
       the index.

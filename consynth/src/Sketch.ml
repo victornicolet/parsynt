@@ -361,7 +361,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
             then
               pp_skexpr fmt (IM.find vid reach_consts)
             else
-              (if Inthash.mem auxiliary_vars vid
+              (if IH.mem auxiliary_vars vid
                then
                  Format.fprintf fmt "%s" base_init_value_choice
                else

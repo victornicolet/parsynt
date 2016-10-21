@@ -1,4 +1,4 @@
-val build : Utils.VS.t -> Cil2Func.letin ->
+val build : Utils.VS.t -> Utils.VS.t -> Cil2Func.letin ->
   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) ->
   SketchTypes.sklet * (Utils.VS.t *(SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
 

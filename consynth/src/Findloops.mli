@@ -5,7 +5,7 @@ open Utils
 val verbose : bool ref
 val debug : bool ref
 
-type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  Inthash.t
+type defsMap = (Utils.VS.elt * Reachingdefs.IOS.t option)  IH.t
 type forIGU = (Cil.instr * Cil.exp * Cil.instr)
 val index_of_igu: forIGU -> VS.t
 val check_igu: forIGU -> bool
@@ -34,5 +34,5 @@ module Cloop : sig
 end
 
 val processFile: Cil.file -> Cloop.t Utils.IM.t * int list
-val processedLoops: unit -> Cloop.t Inthash.t
+val processedLoops: unit -> Cloop.t IH.t
 val clear : unit -> unit
