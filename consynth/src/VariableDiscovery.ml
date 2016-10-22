@@ -168,6 +168,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   let stv = xinfo.state_set in
   let rec is_stv =
     function
+    | T.SkUnop (_, T.SkVar v)
     | T.SkVar v ->
       begin
         try
@@ -180,7 +181,12 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   let is_candidate expr =
     match expr with
     | T.SkBinop (_, e1, e2)
-    | T.SkQuestion (_, e1, e2) -> is_stv e1 || is_stv e2
+    | T.SkQuestion (_, e1, e2) ->
+      (** One of the operands must be a state variable
+          but not the other *)
+      (is_stv e1 && (not (T.sk_uses stv e2))) ||
+      (is_stv e2 && (not (T.sk_uses stv e1)))
+
     | _ ->  false
   in
   let handle_candidate =

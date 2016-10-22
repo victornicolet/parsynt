@@ -3,9 +3,19 @@ open Format
 open Findloops
 open Ast
 
+(**
+   1 - Expressions & functions.
+   2-  Symbolic types, operators, helper functions.
+   3 - Recursors.
+   4 - Scheme & sketch trasnformers.
+   5 - Expression sets.
+   6 - Index variables management.
+*)
+
 let use_unsafe_operations = ref false
 
 
+(** ------------------- 1 - EXPRESSIONS & FUNCTIONS---------------------------*)
 (** Internal type for building sketches *)
 
 type sklet =
@@ -70,6 +80,9 @@ and body_func =
   | DefineJoin of state * racket_with_holes
       [@@deriving_sexp]
 
+
+
+(** ----------- 2 - SYMBOLIC TYPES & OPERATORS, HELPER FUNCTIONS -------------*)
 (** Interface types with Rosette/Racket *)
 
 and symbolic_type =
@@ -348,7 +361,7 @@ let is_exp_function ef =
 (**
    Generate a SkVar expression from a varinfo, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined
-   constants.
+   constant.
 *)
 let mkVar ?(offsets = []) vi =
   List.fold_left
@@ -379,7 +392,7 @@ let rec vi_of sklv =
   | SkVarinfo vi' -> Some vi'
   | SkArray (sklv', _) -> vi_of sklv'
 
-let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv)
+let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
 
 
 let mkOp ?(t = Unit) vi argl =
@@ -393,9 +406,6 @@ let mkOp ?(t = Unit) vi argl =
         SkBinop (binop, List.hd argl, List.nth argl 2)
      | None ->
         SkApp (t, Some vi, argl)
-
-
-(** ********************************************************** SYMBOLIC TYPES *)
 
 let rec symb_type_of_ciltyp =
   function
@@ -435,8 +445,8 @@ and symb_type_of_args argslisto =
     | _ -> Tuple symb_types_list
   with Failure s -> Unit
 
+(** ---------------------------- 3 - RECURSORS -------------------------------*)
 
-(** *********************************************** Recursion in expresssions *)
 
 (** Helper for recursion in expressions
     @param join join two return values, the join operation must be associtaive
@@ -567,6 +577,14 @@ let rec replace_expression ?(in_subscripts = false) tr b =
   in
   transform_expr case case_handler const_handler var_handler
 
+let rec sk_uses vs expr =
+  let join a b = a || b in
+  let case e = false in
+  let case_handler e = false in
+  let const_handler c = false in
+  let var_handler v =
+    try VS.mem (check_option (vi_of v)) vs with Not_found -> false
+  in rec_expr join false case case_handler const_handler var_handler expr
 
 (** Compose a function by adding new assignments *)
 let compose_head assignments func =
@@ -602,6 +620,9 @@ let rec complete_final_state stv func =
   | SkLetExpr el -> SkLetExpr (complete_with_state stv el)
   | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
 
+
+
+(** ------------------------ 4 - SCHEME <-> SKETCH -------------------------- *)
 (** Translate basic scheme to the Sketch expressions
     @param env a mapping from variable ids to varinfos.
 *)
@@ -684,6 +705,7 @@ let rec scm_to_sk env scm =
   with Not_found ->
     failwith "Variable name not found in current environment."
 
+(** ------------------------ 5 -  EXPRESSION SET ----------------------------*)
 
 module ES = Set.Make (
   struct
@@ -692,6 +714,7 @@ module ES = Set.Make (
   end)
 
 
+(** ------------------- 6 - INDEX VARIABLES MANAGEMENT -----------------------*)
 (** Create and manage variables for index boundaries *)
 
 let start_index_name = ref "_iL_"
