@@ -10,6 +10,7 @@ open Ast
    4 - Scheme & sketch trasnformers.
    5 - Expression sets.
    6 - Index variables management.
+   7 - Typing expressions.
 *)
 
 let use_unsafe_operations = ref false
@@ -271,6 +272,39 @@ let unsafe_unops_of_fname =
 let unsafe_binops_of_fname =
   function
   | _ -> None
+(**
+    Mathematical constants defined in GNU-GCC math.h.
+   ****   ****   ****   ****   ****   ****   ****
+    TODO : integrate log/ln/pow function, not in
+    rosette/safe AFAIK.
+*)
+let c_constant  ccst =
+  match ccst with
+  | "M_E" -> Some E
+  | "M_LN2" -> Some Ln2
+  | "M_LN10" -> Some Ln10
+  | "M_PI" -> Some Pi
+  | "M_PI_2" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_PI_4" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
+  | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
+  | _ ->
+     if !use_unsafe_operations then
+       begin
+         match ccst with
+         | "M_SQRT2" -> Some Sqrt2
+         | "M_SQRT1_2" ->
+            Some (CBinop (Div, (CReal 1.0), Sqrt2))
+         | "M_2_SQRTPI" ->
+            Some (CBinop (Div, (CReal 2.0), SqrtPi))
+         | "M_LOG10E" ->
+            Some (CBinop (Div, (CReal 1.0), Ln10))
+         | "M_LOG2E" ->
+            Some (CBinop (Div, (CReal 1.0), Ln2))
+         | _ -> None
+       end
+     else
+       None
 (**
     Mathematical constants defined in GNU-GCC math.h.
    ****   ****   ****   ****   ****   ****   ****
@@ -744,3 +778,70 @@ let left_index_vi vi =
 let right_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
   let _, r = IH.find index_to_boundary vi.Cil.vid in r
+
+
+(* ------------------------ 7- TYPING EXPRESSIONS ----------------------------*)
+
+let rec pp_typ fmt t =
+  let fpf = Format.fprintf in
+  match t with
+  | Unit -> fpf fmt "unit"
+  | Bottom -> fpf fmt "<BOT>"
+  | Integer -> fpf fmt "integer"
+  | Real -> fpf fmt "real"
+  | Num -> fpf fmt "num"
+  | Boolean -> fpf fmt "boolean"
+  | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
+  | Tuple tl ->
+    Format.pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      pp_typ fmt tl
+  | Function (argt, rett) ->
+    fpf fmt "%a -> %a" pp_typ argt pp_typ rett
+  | Pair t -> fpf fmt "%a pair" pp_typ t
+  | List (t, _) -> fpf fmt "%a list" pp_typ t
+  | Struct t -> fpf fmt "%a struct" pp_typ t
+  | Bitvector i -> fpf fmt "bitvector[%i]" i
+  | Box t -> fpf fmt "%a box" pp_typ t
+  | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
+
+let rec join_types tmin tmax =
+  match tmin, tmax with
+  | t1, t2 when t1 = t2 -> t1
+  | Integer, Real -> Real
+  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
+  | _, _ ->
+    failwith (Format.fprintf Format.str_formatter
+                "Cannot join these types %a %a" pp_typ tmin pp_typ tmax;
+              Format.flush_str_formatter () )
+
+let rec type_of_var v =
+  match v with
+  | SkState -> Unit
+  | SkVarinfo vi -> symb_type_of_ciltyp vi.Cil.vtype
+  | SkArray (v, e) ->
+    (** We only consider integer indexes for now *)
+    begin
+      match type_of_var v with
+      | Vector (tv, _) as ta -> ta
+      | t -> failwith
+               (Format.fprintf Format.str_formatter
+                  "Unexpected type %a for variable in array access."
+                  pp_typ t ; Format.flush_str_formatter ())
+    end
+
+let rec type_of expr =
+  match expr with
+  | SkVar v -> type_of_var v
+
+  | SkUnop (unop, e) ->
+    let e_typ = type_of e in
+    let expected_type =
+      match unop with
+      | Not -> Boolean
+      | Neg  | Abs | Add1 | Sub1-> Integer
+      | Floor | Ceiling | Round | Truncate -> Real
+      | Round -> Real
+      | Ceiling -> Real
+    in
+    join_types e_typ expected_type
