@@ -21,7 +21,7 @@ let state_vars = ref VS.empty
    expressions for R-holes and L-holes. Also, might be useful
    to refine available variables with the type of the hole.
 *)
-let ref_concat l = List.fold_left (fun ls s-> ls^(!s)) "" l
+let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 
 let set_hole_vars lvs rvs =
   let left_hole_nums, left_hole_bools, right_hole_nums, right_hole_bools =
@@ -61,7 +61,7 @@ let wrap ppf t =
             fpf "(bExpr:num->bool %s %d)"
               (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced
 
-          | Boolean, Boolean -> fpf "(bexpr:bool->bool %s %d)"
+          | Boolean, Boolean -> fpf "(bexpr:boolean %s %d)"
                                   (ref_concat [ch_l_bools; ch_r_bools]) ced
 
          | Integer, Integer -> fpf "(bExpr:num->num %s %d)"

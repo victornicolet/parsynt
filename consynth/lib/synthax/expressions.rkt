@@ -136,10 +136,10 @@
   #:else (choose
           (Scalar x ...)
           ((BasicUnops:bool)
-           (bExpr:bool->bool x ... (sub1 depth)))
+           (bExpr:boolean x ... (sub1 depth)))
           ((BasicBinops:bool->bool)
-           (bExpr:bool->bool x ... (sub1 depth))
-           (bExpr:bool->bool x ... (sub1 depth)))))
+           (bExpr:boolean x ... (sub1 depth))
+           (bExpr:boolean x ... (sub1 depth)))))
 
 
 (define-synthax bExpr:ternary->num

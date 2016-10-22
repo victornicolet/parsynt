@@ -98,7 +98,9 @@ let counting_blocks () =
   let new_state, new_func =
     VariableDiscovery.discover state counting_block sigu
   in
-  let new_func = SketchBody.optims new_func in
+  let new_func = SketchTypes.complete_final_state
+      new_state
+      (SketchBody.optims new_func) in
   fprintf std_formatter
     "New state is : %a@. New function is : @.%a"
     VSOps.pvs new_state SPretty.pp_sklet new_func;
@@ -113,7 +115,7 @@ let counting_blocks () =
         sketch_igu = sigu;
         reaching_consts = IM.empty;
       }
-  in ();;
+  in Ast.pp_expr_list Format.str_formatter res;;
 
 
 

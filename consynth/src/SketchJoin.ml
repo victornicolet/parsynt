@@ -96,7 +96,7 @@ and merge_leaves max_depth (e,d) =
       | SkQuestion (c, ei, ee) ->
          begin
            if is_a_hole ei && is_a_hole ee && is_a_hole c then
-             SkHoleR Integer, d
+             SkQuestion (SkHoleR Boolean, ei, ee), d
            else
              e, 0
          end

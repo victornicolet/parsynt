@@ -402,7 +402,13 @@ let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
     (pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
          pp_verification_condition fmt (s0, i_st, i_m, i_end)))
-    [(0,0,0);(0,0,9);(0,9,9);(0,4,9);(0,5,9);(3,6,9);(9,9,9)]
+    [(0,2,4);
+     (0,3,9);
+     (0,7,9);
+     (0,4,9);
+     (0,5,7);
+     (3,6,9);
+     (2,7,9)]
 
 
 (** Pretty-print a synthesis problem wrapped in a defintion for further
