@@ -3,7 +3,8 @@
 (require rosette/lib/synthax racket/syntax)
 
 (provide ScalarExpr LinearScalarExpr bExpr
-         bExpr:num->num bExpr:num->bool bExpr:boolean)
+         bExpr:num->num bExpr:num->bool bExpr:boolean
+         bExpr:ternary->num)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -139,3 +140,13 @@
           ((BasicBinops:bool->bool)
            (bExpr:bool->bool x ... (sub1 depth))
            (bExpr:bool->bool x ... (sub1 depth)))))
+
+
+(define-synthax bExpr:ternary->num
+  ([(bExpr:ternary->num (r ...) (b ...) d) (if
+                                  (choose
+                                   b ...
+                                   (bExpr:num->bool r ... d)
+                                   (bExpr:boolean b ... d))
+                                  (bExpr:num->num r ... d)
+                                  (bExpr:num->num r ... d))]))

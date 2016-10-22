@@ -282,6 +282,10 @@ module Utils : sig
     val neg_exp : exp -> exp
     val is_like_array : varinfo -> bool
     val is_like_bool : ikind -> bool
+    val fun_ret_type : Cil.typ -> Cil.typ option
+    val is_of_bool_type : Cil.typ -> bool
+    val is_of_real_type : Cil.typ -> bool
+    val is_of_int_type : Cil.typ -> bool
     val combine_expression_option :
       Cil.binop -> Cil.exp option -> Cil.exp option -> Cil.typ -> Cil.exp option
     val gen_var_with_suffix : Cil.varinfo -> string -> Cil.varinfo
@@ -321,6 +325,7 @@ module Utils : sig
     val vs_with_suffix : VS.t -> string -> VS.t
     (* Pretty-printing functions *)
     val pp_var_names : Format.formatter -> VS.t -> unit
+    val to_string : VS.t -> string
     val pvs : Format.formatter -> VS.t -> unit
     val ppvs : VS.t -> unit
     val spvs : VS.t -> string

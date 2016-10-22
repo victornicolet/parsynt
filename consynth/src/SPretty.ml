@@ -6,8 +6,11 @@ module Ct = Utils.CilTools
 module VS = Utils.VS
 
 (** String representing holes *)
-let current_hole_l_expression = ref ""
-let current_hole_r_expression = ref ""
+let ch_l_nums = ref ""
+let ch_l_bools = ref ""
+let ch_r_nums = ref ""
+let ch_r_bools = ref ""
+
 let current_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
@@ -18,33 +21,59 @@ let state_vars = ref VS.empty
    expressions for R-holes and L-holes. Also, might be useful
    to refine available variables with the type of the hole.
 *)
+let ref_concat l = List.fold_left (fun ls s-> ls^(!s)) "" l
 
 let set_hole_vars lvs rvs =
-  let l_str, r_str =
-    (VSOps.pp_var_names str_formatter lvs;
-    flush_str_formatter ()),
-    (VSOps.pp_var_names str_formatter rvs;
-    flush_str_formatter ())
+  let left_hole_nums, left_hole_bools, right_hole_nums, right_hole_bools =
+    VS.filter (fun vi ->
+        Ct.is_of_real_type vi.Cil.vtype || Ct.is_of_int_type vi.Cil.vtype) lvs,
+    VS.filter (fun vi -> Ct.is_of_bool_type vi.Cil.vtype) lvs,
+    VS.filter (fun vi ->
+        Ct.is_of_real_type vi.Cil.vtype || Ct.is_of_int_type vi.Cil.vtype) rvs,
+    VS.filter (fun vi -> Ct.is_of_bool_type vi.Cil.vtype) rvs
   in
-  current_hole_r_expression := l_str^" "^r_str;
-  current_hole_l_expression := l_str^" "^r_str
+    ch_l_nums := VSOps.to_string left_hole_nums;
+    ch_l_bools := VSOps.to_string left_hole_bools;
+    ch_r_nums := VSOps.to_string right_hole_nums;
+    ch_r_bools := VSOps.to_string right_hole_bools
 
-let wrap (t : symbolic_type) ppf =
-  fprintf ppf
+let wrap ppf t =
+  let ced = !current_expr_depth in
+  let fpf =  fprintf ppf in
     (match t with
-    | Unit -> "(bExpr:unit %s %d)"
-    | Integer -> "(bExpr:num->num %s %d)"
-    | Real -> "(bExpr:num->num %s %d)"
-    | Boolean -> "(bExpr:boolean %s %d)"
-    | Function (a, b) ->
-       begin
-         match a, b with
-         | Integer, Boolean -> "(bExpr:num->bool %s %d)"
-         | Boolean, Boolean -> "(bexpr:bool->bool %s %d)"
-         | Integer, Integer -> "(bExpr:num->num %s %d)"
-         | _ ,_ -> "(bExpr:num->num %s %d)"
+      | Unit -> fpf "(bExpr:unit %s %d)"
+                  (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums])
+                  ced
+
+      | Integer -> fpf "(bExpr:num->num %s %d)"
+                     (ref_concat [ch_l_nums; ch_r_nums]) ced
+
+      | Real -> fpf "(bExpr:num->num %s %d)"
+                  (ref_concat [ch_l_nums; ch_r_nums]) ced
+
+      | Boolean -> fpf "(bExpr:boolean %s %d)"
+                     (ref_concat [ch_l_bools; ch_r_bools]) ced
+
+      | Function (a, b) ->
+        begin
+          match a, b with
+          | Integer, Boolean ->
+            fpf "(bExpr:num->bool %s %d)"
+              (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced
+
+          | Boolean, Boolean -> fpf "(bexpr:bool->bool %s %d)"
+                                  (ref_concat [ch_l_bools; ch_r_bools]) ced
+
+         | Integer, Integer -> fpf "(bExpr:num->num %s %d)"
+                                 (ref_concat [ch_l_nums; ch_r_nums]) ced
+
+         | _ ,_ -> fpf "(bExpr:num->num %s %d)"
+                     (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums])
+                     ced
        end
-    | _ -> "(bExpr:num->num %s %d)")
+      | _ -> fpf "(bExpr:num->num %s %d)"
+               (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced)
+
 
 (** Pretty-printing operators *)
 
@@ -243,13 +272,11 @@ let fp = Format.fprintf in
 
   | SkHoleR t ->
      fp ppf "%a"
-       (fun ppf -> wrap t ppf !current_hole_r_expression)
-       !current_expr_depth
+       wrap t
 
   | SkHoleL (v, t) ->
      fp ppf "%a"
-       (fun ppf -> wrap t ppf !current_hole_l_expression)
-       !current_expr_depth
+       wrap t
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 

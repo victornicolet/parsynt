@@ -248,6 +248,29 @@ module CilTools = struct
     | IBool -> true
     | _ -> false
 
+  let fun_ret_type tfunc =
+    match tfunc with
+    | TFun (ret_typ, _, _, _) -> Some ret_typ
+    | _ -> None
+
+  let rec is_of_bool_type vitype =
+    match vitype with
+    | TInt (ityp, _) -> is_like_bool ityp
+    | f ->
+      (match fun_ret_type f with
+       | Some ftyp -> is_of_bool_type ftyp
+       | None -> false )
+
+  let is_of_real_type vitype =
+    match vitype with
+    | TFloat _ -> true
+    | f -> (match fun_ret_type f with Some (TFloat _) -> true | _-> false)
+
+  let rec is_of_int_type vitype =
+    match vitype with
+    | TInt _ -> not (is_of_bool_type vitype)
+    | f -> (match fun_ret_type f with Some x -> is_of_real_type x | None -> false)
+
   let combine_expression_option op e1 e2 t=
     match e1, e2 with
     | Some e1, Some e2 -> Some (BinOp (op, e1, e2, t))
@@ -371,6 +394,9 @@ module VSOps = struct
        (fun fmt vi -> fprintf fmt "%s" vi.Cil.vname)
        fmt
        vi_list
+
+  let to_string vs =
+    (pp_var_names Format.str_formatter vs ; flush_str_formatter ())
 
   let pvs ppf (vs: VS.t) =
     if VS.cardinal vs > 0 then
