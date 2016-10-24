@@ -518,6 +518,14 @@ and constants =
 
 val symb_unop_of_cil : Cil.unop -> symb_unop * symbolic_type
 val symb_binop_of_cil : Cil.binop -> symb_binop * symbolic_type
+val symb_type_of_ciltyp : Cil.typ -> symbolic_type
+val symb_type_of_cilconst : Cil.constant -> symbolic_type
+val ciltyp_of_symb_type : symbolic_type -> Cil.typ option
+
+val type_of_const : constants -> symbolic_type
+val type_of_var : skLVar -> symbolic_type
+val type_of : skExpr -> symbolic_type
+
 val rec_expr :
   ('a -> 'a -> 'a) ->
   'a ->

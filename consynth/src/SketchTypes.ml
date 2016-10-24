@@ -479,6 +479,25 @@ and symb_type_of_args argslisto =
     | _ -> Tuple symb_types_list
   with Failure s -> Unit
 
+let rec symb_type_of_cilconst c =
+  match c with
+  | Cil.CInt64 _  | Cil.CChr _ -> Integer
+  | Cil.CReal _ -> Real
+  | Cil.CStr _ | Cil.CWStr _ -> List (Integer, None)
+  | Cil.CEnum (_, _, einf) -> failwith "Enum types not implemented"
+
+let rec ciltyp_of_symb_type =
+  function
+  | Integer -> Some (Cil.TInt (Cil.IInt, []))
+  | Boolean -> Some (Cil.TInt (Cil.IBool, []))
+  | Real | Num -> Some (Cil.TFloat (Cil.FFloat, []))
+  | Vector (t, _) ->
+    (match ciltyp_of_symb_type t with
+     | Some tc -> Some (Cil.TArray (tc, None, []))
+     | None -> None)
+  | _ -> None
+
+
 (** ---------------------------- 3 - RECURSORS -------------------------------*)
 
 
@@ -805,43 +824,113 @@ let rec pp_typ fmt t =
   | Box t -> fpf fmt "%a box" pp_typ t
   | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
 
-let rec join_types tmin tmax =
-  match tmin, tmax with
+let rec is_subtype t tmax =
+  match t, tmax with
+  | t, tmax when t = tmax -> true
+  | Integer, Real -> true
+  | Num, Real | Real, Num -> true
+  | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
+  | _, _ ->
+    failwith (Format.fprintf Format.str_formatter
+                "Cannot join these types %a %a" pp_typ t pp_typ tmax;
+              Format.flush_str_formatter () )
+
+let rec join_types t1 t2 =
+  match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
-  | Integer, Real -> Real
+  | Integer, Real | Real, Integer
+  | Num, Real | Real, Num -> Real
+  | Integer, Num | Num, Integer -> Num
   | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
   | _, _ ->
     failwith (Format.fprintf Format.str_formatter
-                "Cannot join these types %a %a" pp_typ tmin pp_typ tmax;
+                "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
               Format.flush_str_formatter () )
 
-let rec type_of_var v =
+let type_of_unop t =
+  let type_of_unsafe_unop t =
+    function
+    | _ -> Real
+  in
+  function
+  | Not -> if t = Boolean then Some Boolean else None
+  | Neg  | Abs | Add1 | Sub1->
+    if is_subtype t Real then Some t else None
+  | Floor | Ceiling | Round | Truncate ->
+    if is_subtype t Real then Some Integer else None
+  | Sgn ->
+    if is_subtype t Real then Some Boolean else None
+  | UnsafeUnop op ->
+    Some (type_of_unsafe_unop t op)
+
+let type_of_binop t1 t2 =
+  let join_t = join_types t1 t2 in
+  let type_of_unsafe_binop t1 t2 =
+    function
+    | _ -> Some Real
+  in
+  function
+  | And | Nand | Xor | Or | Implies | Nor ->
+    if is_subtype join_t Boolean then Some Boolean else None
+  | Le | Ge | Gt | Lt | Neq ->
+    if is_subtype join_t Real then Some Boolean else None
+  | Eq | Max | Min  -> Some Boolean
+  | Plus | Minus | Times | Div | Rem | Quot | Expt | Mod ->
+    if is_subtype join_t Real then Some join_t else None
+  | UnsafeBinop o -> type_of_unsafe_binop t1 t2 o
+  | ShiftL | ShiftR -> Some (Bitvector 0)
+
+let rec type_of_const c =
+  match c with
+  | CNil -> Unit
+  | CBool _ -> Boolean
+  | CChar _ -> Integer
+  | CString _ -> List (Integer, None)
+  | CReal _ -> Real
+  | CInt _ | CInt64 _ -> Integer
+  | CBox b -> Box (symb_type_of_cilconst b)
+  | CUnop (op, c) -> type_of (SkUnop (op, SkConst c))
+  | CBinop (op, c, c') -> type_of (SkBinop (op, SkConst c, SkConst c'))
+  | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
+  | CUnsafeBinop (op, c, c') -> join_types (type_of_const c) (type_of_const c')
+  | CUnsafeUnop (op, c) -> (type_of_const c)
+
+and type_of_var v =
   match v with
   | SkState -> Unit
   | SkVarinfo vi -> symb_type_of_ciltyp vi.Cil.vtype
   | SkArray (v, e) ->
     (** We only consider integer indexes for now *)
+    (** Return the type of the array cells *)
     begin
       match type_of_var v with
-      | Vector (tv, _) as ta -> ta
+      | Vector (tv, _) -> tv
       | t -> failwith
                (Format.fprintf Format.str_formatter
                   "Unexpected type %a for variable in array access."
                   pp_typ t ; Format.flush_str_formatter ())
     end
 
-let rec type_of expr =
+
+
+and type_of expr =
   match expr with
   | SkVar v -> type_of_var v
-
+  | SkConst c -> type_of_const c
+  | SkAddrofLabel _ | SkStartOf _
+  | SkSizeof _ | SkSizeofE _ | SkSizeofStr _
+  | SkAlignof _ | SkAlignofE _  | SkAddrof _ -> Integer
+  | SkCastE (t, e) -> t
   | SkUnop (unop, e) ->
-    let e_typ = type_of e in
-    let expected_type =
-      match unop with
-      | Not -> Boolean
-      | Neg  | Abs | Add1 | Sub1-> Integer
-      | Floor | Ceiling | Round | Truncate -> Real
-      | Round -> Real
-      | Ceiling -> Real
-    in
-    join_types e_typ expected_type
+    (match type_of_unop (type_of e) unop with
+     | Some x -> x | None -> failwith "Could not find type of expressions.")
+
+  | SkBinop (binop, e1, e2) ->
+    (match type_of_binop (type_of e1) (type_of e2) binop with
+     | Some x -> x | None -> failwith "Could not find type of expressions.")
+
+  | SkQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
+
+  | SkApp (t, _, _) | SkHoleL (_, t) | SkHoleR t -> t
+
+  | _ -> failwith "Typing subfunctions not yet implemented"

@@ -71,12 +71,16 @@ let aux_init vs =
       vs
       !aux_var_prefix);;
 
-let gen_fresh () =
+let gen_fresh ty () =
   let fresh_name = (!aux_var_prefix)^(string_of_int (!aux_var_counter)) in
   incr aux_var_counter;
-  let fresh_var = makeVarinfo false fresh_name (TInt (IInt, [])) in
-  allvars := VS.add fresh_var !allvars;
-  fresh_var
+  match T.ciltyp_of_symb_type ty with
+  | Some ct ->
+    let fresh_var = makeVarinfo false fresh_name ct in
+    allvars := VS.add fresh_var !allvars;
+    fresh_var
+  | None ->
+    failwith "Failed in variable generation : couldn't find a variable type."
 
 
 (** Rank the state variable according to sequential order assignment and then
@@ -311,7 +315,8 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
 
         else
           (* We have to create a new variable *)
-          let new_aux = gen_fresh () in
+          let typ = T.type_of current_expr in
+          let new_aux = gen_fresh typ () in
           let new_aux_vs = VS.add new_aux new_aux_vs in
           let new_exprs =
             IM.add

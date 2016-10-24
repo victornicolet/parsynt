@@ -54,7 +54,7 @@ let counting_blocks () =
 
   (** Index var *)
   let i_vi, i, i_e =
-    let vi = make_int_varinfo "ind" in
+    let vi = make_int_varinfo "i" in
     (vi, T.mkVar vi, T.mkVarExpr vi)
   in
 
@@ -67,7 +67,7 @@ let counting_blocks () =
   in
   (** Input arrray *)
   let a_vi, a, a_e =
-    let vi = make_int_varinfo "array" in
+    let vi = make_bool_array_varinfo "a" in
     (vi, T.mkVar ~offsets:[i_e] vi, T.mkVarExpr ~offsets:[i_e] vi)
   in
 
@@ -79,7 +79,7 @@ let counting_blocks () =
   in
 
   let count_vi, count, count_e =
-    let vi = make_int_varinfo "count" in
+    let vi = make_int_varinfo "cnt" in
     (vi, T.mkVar vi, T.mkVarExpr vi)
   in
   let state = VS.of_list [f_vi; count_vi] in
