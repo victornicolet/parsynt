@@ -259,12 +259,51 @@ let remove_simple_state_rewritings (var , expr) =
      end
   | _ -> (var, expr)
 
-let optims sklet =
+
+let apply_remove sklet =
   match sklet with
   | SkLetExpr el -> sklet
   | SkLetIn (el, cont) ->
      let new_rewrites = List.map el ~f:remove_simple_state_rewritings in
      SkLetIn (new_rewrites, cont)
+
+let rearrange_ternary_expression (var, expr) =
+  let to_rearrange expr =
+    match expr with
+    | SkQuestion (c, e1, e2) ->
+      begin
+        match e1, e2 with
+        | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
+          true
+        | _ , _ -> false
+      end
+    | _ -> false
+  in
+  let rearrange_aux rfunc expr =
+    match expr with
+    | SkQuestion (c, e1, e2) ->
+      let e1' = rfunc e1 in
+      let e2' = rfunc e2 in
+      begin
+        match e1', e2' with
+        | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
+          SkQuestion (SkBinop(And, c, c'), e1bis, e1ter)
+        | _ , _ -> expr
+      end
+    | _ -> expr
+  in
+  (var, transform_expr to_rearrange rearrange_aux ident ident expr)
+
+let rec apply_rearrange sklet =
+  match sklet with
+  | SkLetExpr el ->
+    SkLetExpr (List.map ~f:rearrange_ternary_expression el)
+  | SkLetIn (el, cont) ->
+     SkLetIn (List.map ~f:rearrange_ternary_expression el, apply_rearrange cont)
+
+let optims sklet =
+  let sklet' = apply_remove sklet in
+  apply_rearrange sklet'
 
 
 (*** MAIN ENTRY POINT ***)

@@ -20,18 +20,25 @@ let type_of_hole h =
 let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
   function
   | SkVar sklv ->
-     begin
-       match vi_of sklv with
-       | None -> failwith "State expression should not appear here"
-       | Some vi ->
-         let t = symb_type_of_ciltyp vi.Cil.vtype in
-         if (IH.mem auxiliary_variables vi.Cil.vid) && is_final
-         then SkVar sklv, 0
-         else
-         (if VS.mem vi state
-          then SkHoleL (sklv, t), 1
-          else SkHoleR t, 1)
-     end
+    begin
+      match sklv with
+      | SkVarinfo vi ->
+        let t = symb_type_of_ciltyp vi.Cil.vtype in
+        if (IH.mem auxiliary_variables vi.Cil.vid) && is_final
+        then SkVar sklv, 0
+        else
+          (if VS.mem vi state
+           then SkHoleL (sklv, t), 1
+           else SkHoleR t, 1)
+      | SkArray (sklv, expr) ->
+        (** Array : for now, cannot be a stv *)
+        let t = type_of_var sklv in
+        (match t with
+        | Vector (t, _) -> SkHoleR t, 1
+        | _ -> failwith "Unexpected type in array")
+
+      | SkState -> SkVar (SkState), 0
+    end
 
   | SkConst c ->
      begin
