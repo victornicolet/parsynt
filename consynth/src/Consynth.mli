@@ -346,6 +346,8 @@ module Utils : sig
     val inter : 'a IM.t -> 'a IM.t -> 'a IM.t
     val is_disjoint :
       ?non_empty:(IM.key -> 'a -> bool) -> 'b IM.t -> 'a IM.t -> bool
+    val disjoint_sets : 'a  IM.t -> 'b IM.t ->
+      ('a IM.t * 'b IM.t * 'a IM.t * 'b IM.t)
   end
 
   module SMTools : sig

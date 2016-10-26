@@ -493,6 +493,34 @@ module IMTools = struct
         b
         true
     with Failure s -> false
+
+  let disjoint_sets im1 im2 =
+    let im1_in_im2 =
+      IM.fold
+        (fun k v map ->
+           if IM.mem k im2 then IM.add k v map else map)
+        im1 IM.empty
+    in
+    let im2_in_im1 =
+      IM.fold
+        (fun k v map ->
+           if IM.mem k im1 then IM.add k v map else map)
+        im2 IM.empty
+    in
+    let im1_only =
+      IM.fold
+        (fun k v map ->
+           if IM.mem k im2 then map else IM.add k v map)
+        im1 IM.empty
+    in
+    let im2_only =
+      IM.fold
+        (fun k v map ->
+           if IM.mem k im1 then map else IM.add k v map)
+        im2 IM.empty
+    in
+    im1_in_im2, im2_in_im1, im1_only, im2_only
+
 end
 
 module SMTools = struct

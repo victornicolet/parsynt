@@ -79,13 +79,13 @@ let cil2func loops =
        in
        let stmt = C.mkBlock(cl.Cl.new_body) in
        let r, w = cl.Cl.rwset in
-       let stv = w in
        let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
+       let stv = VS.filter (fun v -> VS.mem v vars) w in
        let func, figu = Cil2Func.cil2func stv stmt (i,g,u) in
        let reaching_consts = cl.Cl.constant_in in
        if !verbose then
          begin
-           (printf "%s[test for loop %i in %s failed]%s@."
+           (printf "@.%s[test for loop %i in %s failed]%s@."
               (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
            Cil2Func.printlet (stv, func);
            printf "@.";

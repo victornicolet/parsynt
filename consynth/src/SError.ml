@@ -33,3 +33,13 @@ exception Skip_loop of string
 
 let skip_exn msg =
   raise (Skip_loop msg)
+
+exception Functional_conversion of string
+
+let fail_functional_conversion str =
+  raise (Functional_conversion str)
+
+exception Sketch_generation of string
+
+let fail_sketch_generation str =
+  raise (Sketch_generation str)

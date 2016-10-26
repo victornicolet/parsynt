@@ -184,11 +184,11 @@ and skexpr_of_constant t c =
        then CBool (bool_of_int64 i)
        else CInt64 i
     | Cil.CReal (f, fk, stro) ->
-       CReal f
+      CReal f
     | Cil.CChr cr ->
-       CChar cr
+      CChar cr
     | Cil.CStr s ->
-       CString s
+      CString s
     | _ -> CBox c
   in SkConst const
 
@@ -215,11 +215,11 @@ and convert_letin all_vars (vs : VS.t) letin =
              then IM.find state_vi.Cil.vid state
              else (SkVarinfo state_vi, mkVarExpr state_vi)])
         vs []
-       in
-       SkLetExpr complete_state
+    in
+    SkLetExpr complete_state
 
-    | Let (v, e, cont, i, loc) ->
-       let cur_v = SkVarinfo v in
+  | Let (v, e, cont, i, loc) ->
+      let cur_v = SkVarinfo v in
        SkLetIn ([(cur_v, convert cur_v e)], convert_letin all_vars vs cont)
 
     | LetRec (igu, let_body, let_cont, loc) ->
