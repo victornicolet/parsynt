@@ -74,8 +74,7 @@ let completeFile filename solution_file_name sketch_printer sketch =
 let default_error i =
   eprintf "Errno %i : Error while running racket on sketch.\n" i
 
-let racket filename =
-  Sys.command ("racket "^filename)
+let racket filename = Sys.command ("racket "^filename)
 
 let compile ?(print_err_msg = default_error) printer printer_arg =
   let solution_tmp_file = Filename.temp_file "conSynthSol" ".rkt" in
@@ -103,7 +102,14 @@ let compile ?(print_err_msg = default_error) printer printer_arg =
 
 let fetch_solution filename =
   let parsed =
-    Parser.main Lexer.token (Lexing.from_string (Std.input_file filename)) in
+    try
+      Parser.main Lexer.token (Lexing.from_string (Std.input_file filename))
+    with _ ->
+      (let err_code = Sys.command ("cat "^filename) in
+       Format.printf "@.cat %s : %i@." filename err_code;
+        failwith "Error in parser")
+
+  in
   Sys.remove filename;
   parsed
 

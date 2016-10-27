@@ -7,7 +7,8 @@ open Getopt
 module L = Local
 module C = Canalyst
 
-let debug = ref true
+let debug_all = ref false
+let debug = ref false
 let elapsed_time = ref 0.0
 
 let err_handler_sketch i =
@@ -16,6 +17,9 @@ let err_handler_sketch i =
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
+  ( 'g', "debug", (set debug_all true), None);
+  ( 'f', "debug-func", (set Cil2Func.debug true), None);
+  ( 's', "debug-sketch", (set Sketch.debug true), None);
 ]
 
 let main () =
@@ -36,6 +40,18 @@ let main () =
         L.dump_sketch := true
       | _ -> ()
     end;
+
+  if !debug = true then
+    begin
+      Cil2Func.debug := true;
+      Sketch.debug := true;
+      Sketch.Body.debug := true;
+      Sketch.Join.debug := true;
+    end
+  else ();
+    (** Set all the debug flags to true *)
+
+
   elapsed_time := Unix.gettimeofday ();
   printf "Parsing C program ...\t\t\t\t";
   let c_program = C.processFile filename in
@@ -51,7 +67,9 @@ let main () =
        let parsed =
          L.compile_and_fetch
            ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-       in Ast.pp_expr_list std_formatter parsed)
+       in
+       printf "@.%sSOLUTION%s:@.%a"
+         (color "green") default Ast.pp_expr_list parsed)
     sketch_map;
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

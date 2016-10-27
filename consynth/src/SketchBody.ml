@@ -17,6 +17,8 @@ module Ct = CilTools
    loop).
 *)
 
+let debug = ref false
+
 let rec convert (cur_v : skLVar)  =
   function
   | Var vi -> mkVarExpr vi

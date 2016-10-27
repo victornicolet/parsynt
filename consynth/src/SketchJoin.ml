@@ -2,6 +2,8 @@ open SketchTypes
 open Utils
 open SPretty
 
+let debug = ref false
+
 let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
 (**
 

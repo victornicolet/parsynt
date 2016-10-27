@@ -122,6 +122,38 @@ let associative_case_L op (a, ca) (b, cb) (c, cc) =
   then SkBinop (op, (SkBinop (op, a, b)), c)   (* (a + b) + c *)
   else SkBinop (op, a, (SkBinop (op, b, c))) (* Unchanged *)
 
+let rearrange_assoc vs es expr =
+  let cost_fun = cost vs es in
+  let rec get_expr_list assoc_op expr =
+    match expr with
+    | SkBinop (op, e1, e2) when op = assoc_op ->
+      ((get_expr_list assoc_op e1)@(get_expr_list assoc_op e2))
+    | _ -> [expr]
+  in
+  let rebuild_expr op topleft_e el =
+    List.fold_right
+      (fun elt acc -> SkBinop (op, elt, acc)) el topleft_e
+  in
+  let expr_list, maybe_op =
+    match expr with
+    | SkBinop (op, _, _) ->
+      if is_associative op then
+        get_expr_list op expr, Some op
+      else [], None
+    | _ -> [], None
+  in
+  if is_some maybe_op then
+    let op = check_option maybe_op in
+    let ordered_list =
+      List.sort
+        (fun e1 e2 -> compare (cost_fun e1) (cost_fun e2)) expr_list
+    in
+    (** Should be longer than 1 since we're considering binary operators *)
+    match ordered_list with
+    | hd::tl when tl != [] -> Some (rebuild_expr op hd tl)
+    | _ -> None
+  else
+    None
 
 
 let reduce_cost stv c_exprs expr =
@@ -179,13 +211,18 @@ let reduce_cost stv c_exprs expr =
   | SkUnop (op, e) -> SkUnop(op, rfunc e)
   | e -> rfunc e
   in
-  transform_expr
-    reduction_cases reduce_transform
-    identity identity expr
+  let transformed =
+    transform_expr reduction_cases reduce_transform identity identity expr
+  in
+  let red = match rearrange_assoc stv c_exprs transformed with
+    | Some e -> e
+    | None -> transformed
+  in
+  transformed
 
 
 
-let rec reduce_full ?(limit = 100) stv c_exprs expr =
+let rec reduce_full ?(limit = 10) stv c_exprs expr =
   let red_expr = reduce_cost stv c_exprs expr in
   if red_expr = expr || limit = 0
   then red_expr

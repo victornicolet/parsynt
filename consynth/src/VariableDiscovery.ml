@@ -9,7 +9,7 @@ module T = SketchTypes
 
 let debug = ref false
 
-let max_exec_no = ref 10
+let max_exec_no = ref 3
 
 let discovered_aux = IH.create 10
 
@@ -157,6 +157,40 @@ let create_symbol_map vs=
     (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
 
 
+let function_updater xinfo (aux_vs, aux_exprs)
+    current_expr candidates (new_aux_vs, new_aux_exprs) =
+  let vid, (e, _) = List.nth candidates 0 in
+  let vi = VSOps.find_by_id vid aux_vs in
+  (* Replace the old expression of the auxiliary by the auxiliary *)
+  let replace_aux =
+    T.replace_expression
+      e (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs)))
+      current_expr
+  in
+
+  let new_f =
+    IM.fold
+      (fun idx_id idx_expr e ->
+         try
+           (* Replace the index expressions by the index itself *)
+           T.replace_expression ~in_subscripts:true
+             idx_expr
+             (T.SkVar
+                (T.SkVarinfo
+                   (VSOps.find_by_id idx_id xinfo.index_set))) e
+         with Not_found ->
+           Format.eprintf "@.Index with id %i not found in %a.@."
+             idx_id VSOps.pvs xinfo.index_set;
+           raise Not_found
+      )
+      xinfo.index_exprs
+      replace_aux
+  in
+
+  let updated_exprs = IM.add vid (current_expr, new_f) new_aux_exprs in
+
+  (VS.add vi new_aux_vs, updated_exprs)
+
 (** Finding auxiliary variables given a map of state variables to expressions
     and the previous set of auxiliary variables.
     @param id the state variable we are analyzing.
@@ -214,12 +248,13 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
       (fun v -> [])
       e
   in
+  (** Find in a expression map the bindings matching EXACTLY the expression *)
   let find_ce to_match emap =
     let cemap = IM.filter (fun vid (auxe, f) -> auxe = to_match) emap in
     IM.bindings cemap
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
-       ce = f (e, ...) *)
+       ce = g (e, ...) *)
   let find_subexpr top_expr emap =
     T.rec_expr
       (fun a b -> a@b) []
@@ -230,103 +265,82 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   in
   (** Check that the function applied to the old expression gives
       the new expression. *)
-  let match_increment ne =
+  let match_increment aux_vs ne =
     List.filter
       (fun (vid, (e, fe)) ->
-         let fe' = exec_expr xinfo fe in
+         (** Exec expr, replace index variables by their expression and
+             other variables by their expression.
+         *)
+         let fe', _ = exec_expr xinfo fe in
+         (* Finish the work by replacing the auxiliary by its expression. *)
+         let fe' =
+           T.replace_expression
+             (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs))) e
+             fe'
+         in
+         (* We keep the expressions such that applying the function associated
+            to the auxiliary yields the current matched expression *)
+         printf "@.(%a == %a) = %B@." pp_skexpr fe' pp_skexpr ne (fe' = ne);
          fe' = ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs) cexpr =
     let current_expr =
-        reduce_full ~limit:10 VS.empty input_expressions cexpr
-      in
-      if !debug then
-        Format.fprintf Format.std_formatter
-          "Lifting inputs transforms @.%a@.to@.%a@."
-          pp_skexpr current_expr pp_skexpr current_expr
-      else ();
-    (* The expression is exactly the expression of a aux *)
-    match  find_ce current_expr aux_exprs with
-      (* TODO : how do we choose which expression to use in this
-         case ? Now only pick the first expression to come.
-      *)
+      reduce_full ~limit:10 VS.empty input_expressions cexpr
+    in
+    if !debug then
+      Format.fprintf Format.std_formatter
+        "Lifting inputs transforms @.%a@.to@.%a@."
+        pp_skexpr current_expr pp_skexpr current_expr
+    else ();
+    match find_ce current_expr aux_exprs with
+    (* TODO : how do we choose which expression to use in this
+       case ? Now only pick the first expression to come.
+    *)
     | (vid, (e,f)):: _ ->
+      assert (e = current_expr);
+      (* The expression is exactly the expression of a aux *)
       let vi = VSOps.find_by_id vid aux_vs in
-      let new_aux_exprs = IM.add vid (e, T.SkVar (T.SkVarinfo vi))
-          new_aux_exprs
-      in
+      (VS.add vi new_aux_vs,
+       IM.add vid (e, T.SkVar (T.SkVarinfo vi)) new_aux_exprs)
 
-      (VS.add vi new_aux_vs, new_aux_exprs)
-
-    | []->
+    | [] ->
       let ef_list = find_subexpr current_expr aux_exprs in
       begin
         if List.length ef_list > 0
         then
           (* A subexpression of the expression is an auxiliary variable *)
           let corresponding_functions =
-            match_increment (current_expr, input_expressions) ef_list in
-          if List.length corresponding_functions > 0
-          then
-            (* TODO : better tactic to choose expressions *)
-            (** Here the function is directly matched *)
-            let vid, (e, f) = List.nth corresponding_functions 0 in
-            let vi = VSOps.find_by_id vid aux_vs in
-            let new_aux_exprs = IM.add vid (current_expr, f) new_aux_exprs in
+            match_increment aux_vs current_expr ef_list
+          in
+          begin
+            if List.length corresponding_functions > 0
+            then
+              let vid, (e, f) = List.nth corresponding_functions 0 in
+              let vi = VSOps.find_by_id vid aux_vs in
+
+              (VS.add vi new_aux_vs, IM.add vid (current_expr, f) new_aux_exprs)
 
 
-            (VS.add vi new_aux_vs, new_aux_exprs)
-
-
-          else
-            (* We have to update the function *)
-            let vid, (e, f) = List.nth ef_list 0 in
-            let vi = VSOps.find_by_id vid aux_vs in
-            (* Replace the index expressions by the index itself *)
-            let replace_aux =
-              T.replace_expression
-                e (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs)))
-                current_expr
-            in
-
-            let new_f =
-              IM.fold
-                (fun idx_id idx_expr e ->
-                   try
-                     T.replace_expression ~in_subscripts:true
-                       idx_expr
-                       (T.SkVar
-                              (T.SkVarinfo
-                                 (VSOps.find_by_id idx_id xinfo.index_set))) e
-                   with Not_found ->
-                     Format.eprintf "@.Index with id %i not found in %a.@."
-                       idx_id VSOps.pvs xinfo.index_set;
-                     raise Not_found
-                )
-                xinfo.index_exprs
-                replace_aux
-            in
-
-            let new_aux_exprs = IM.add vid (current_expr, new_f) aux_exprs in
-
-
-            (VS.add vi new_aux_vs, new_aux_exprs)
-
-
+            else
+              (* We have to update the function *)
+              function_updater xinfo (aux_vs, aux_exprs)
+                current_expr ef_list (new_aux_vs, new_aux_exprs)
+          end
         else
           (* We have to create a new variable *)
           let typ = T.type_of current_expr in
           let new_aux = gen_fresh typ () in
-          let new_aux_vs = VS.add new_aux new_aux_vs in
-          let new_exprs =
+          let updated_aux = VS.add new_aux new_aux_vs in
+          let updated_exprs =
             IM.add
               new_aux.vid
               (current_expr, T.SkVar (T.SkVarinfo new_aux))
               new_aux_exprs
           in
-          (new_aux_vs, new_exprs)
+          (updated_aux, updated_exprs)
       end
   in
+
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) (candidates expr)
 
@@ -488,6 +502,7 @@ let discover_for_id stv (idx, update) input_func varid =
       the beginning.
       Return the union of the new auxiliaries and the state variables.
   *)
+  printf "@.DICSOVER for variable %i finished.@." varid;
   compose init_i input_func aux_vs aux_ef
 
 
@@ -502,6 +517,8 @@ let discover_for_id stv (idx, update) input_func varid =
     @return A new set of state variables and a new function with the variables
     discovered by the algortihm.
 *)
+
+
 let discover stv input_func (idx, (i,g,u)) =
   T.create_boundary_variables idx;
 

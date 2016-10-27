@@ -5,6 +5,7 @@ open Utils
 module Ct = Utils.CilTools
 module VS = Utils.VS
 
+let print_imp_style = ref false
 (** String representing holes *)
 let ch_l_nums = ref ""
 let ch_l_bools = ref ""
@@ -246,11 +247,10 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
   | SkVarinfo v ->
 	fprintf ppf "%s" v.Cil.vname
   | SkArray (v, offset) ->
-    match vi_of v with
-    | Some vi ->
+      if !print_imp_style then
+        fprintf ppf "%a[%a]" pp_sklvar v pp_skexpr offset
+      else
 	   fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
-    | None ->
-       	fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
@@ -298,8 +298,12 @@ let fp = Format.fprintf in
        pp_skexpr c pp_sklet e1 pp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
-     fp ppf "(if @[%a@] @[%a@] @[%a@])"
-       pp_skexpr c pp_skexpr e1 pp_skexpr e2
+    if !print_imp_style then
+      fp ppf "((@[%a@])? @[%a@]: @[%a@])"
+        pp_skexpr c pp_skexpr e1 pp_skexpr e2
+    else
+      fp ppf "(if @[%a@] @[%a@] @[%a@])"
+        pp_skexpr c pp_skexpr e1 pp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
      fp ppf "(Loop %s %s %s %a)"

@@ -20,6 +20,8 @@ let iterations_limit = ref 10
 
 let auxiliary_vars : Cil.varinfo IH.t = IH.create 10
 
+let debug = ref false
+
 (******************************************************************************)
 
 (**
