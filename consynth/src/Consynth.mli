@@ -13,13 +13,14 @@ module Canalyst : sig
   module T = SketchTypes
   type figu = Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
   type func_info =
-    int list * int list * Usedef.VS.t *
+    string * int list * int list * Usedef.VS.t *
     Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
   type sigu = Utils.VS.t * (T.sklet * T.skExpr * T.sklet)
 
   type sketch_rep =
     {
+      loop_name : string;
       ro_vars_ids : int list;
       state_vars_ids : int list;
       var_set : VS.t;

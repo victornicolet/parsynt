@@ -108,7 +108,9 @@ let counting_blocks () =
   let join = Sketch.Join.build new_state new_func in
   Local.dump_sketch := true;
   let res =  Local.compile_and_fetch Canalyst.pp_sketch
-      { ro_vars_ids = [a_vi.Cil.vid; i_vi.Cil.vid];
+      {
+        loop_name = "Test loop";
+        ro_vars_ids = [a_vi.Cil.vid; i_vi.Cil.vid];
         state_vars_ids = VSOps.vids_of_vs new_state;
         var_set = VS.union new_state all_vars ;
         loop_body = new_func; join_body = join;

@@ -847,6 +847,7 @@ let rec join_types t1 t2 =
                 "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
               Format.flush_str_formatter () )
 
+
 let type_of_unop t =
   let type_of_unsafe_unop t =
     function
@@ -854,14 +855,19 @@ let type_of_unop t =
   in
   function
   | Not -> if t = Boolean then Some Boolean else None
+
   | Neg  | Abs | Add1 | Sub1->
     if is_subtype t Real then Some t else None
+
   | Floor | Ceiling | Round | Truncate ->
     if is_subtype t Real then Some Integer else None
+
   | Sgn ->
     if is_subtype t Real then Some Boolean else None
+
   | UnsafeUnop op ->
     Some (type_of_unsafe_unop t op)
+
 
 let type_of_binop t1 t2 =
   let join_t = join_types t1 t2 in
@@ -872,13 +878,18 @@ let type_of_binop t1 t2 =
   function
   | And | Nand | Xor | Or | Implies | Nor ->
     if is_subtype join_t Boolean then Some Boolean else None
+
   | Le | Ge | Gt | Lt | Neq ->
     if is_subtype join_t Real then Some Boolean else None
-  | Eq | Max | Min  -> Some Boolean
-  | Plus | Minus | Times | Div | Rem | Quot | Expt | Mod ->
+
+  | Eq  -> Some Boolean
+
+  | Plus | Minus | Times | Div | Rem | Quot | Expt | Mod | Max | Min ->
     if is_subtype join_t Real then Some join_t else None
+
   | UnsafeBinop o -> type_of_unsafe_binop t1 t2 o
   | ShiftL | ShiftR -> Some (Bitvector 0)
+
 
 let rec type_of_const c =
   match c with

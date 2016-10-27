@@ -85,30 +85,48 @@ and make_join state =
         (v, fst (make_holes ~is_final:true state e))) li)
 
   | SkLetIn (li, cont) ->
-     SkLetIn ((List.map (fun (v, e) -> (v, fst (make_holes state e))) li),
-              make_join state cont)
+    SkLetIn ((List.map (fun (v, e) -> (v, fst (make_holes state e))) li),
+             make_join state cont)
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
     begin
       match e with
-      | SkUnop (_ , h) when is_a_hole h -> h , d
-      | SkBinop (_, h1, h2) when is_a_hole h1 && is_a_hole h2 -> h1, d
+      | SkUnop (op , h) when is_a_hole h ->
+        let th = check_option (type_of_hole h) in
+        let t_o = type_of_unop th op in
+        (match t_o with
+         | Some t ->
+           if th = t then SkHoleR t, d else SkHoleR (Function (th, t)), d
+
+         | None -> failwith "Type error in holes")
+
+      | SkBinop (op, h1, h2) when is_a_hole h1 && is_a_hole h2 ->
+        let t1 = check_option (type_of_hole h1) in
+        let t2 = check_option (type_of_hole h2) in
+        (match (type_of_binop t1 t2 op) with
+         | Some t ->
+           if t1 = t2 then
+             SkHoleR (Function (t1, t)) , d
+           else
+             SkBinop(op, h1, h2), d + 1
+         | None -> failwith "Type error in holes")
+
       | SkApp (t, ov, el) ->
-         if List.fold_left (fun is_h e -> is_h && is_a_hole e) true el then
-           SkHoleR t, d
-         else
-           let el', _ = ListTools.unpair
-             (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
-           in SkApp (t, ov, el'), d
+        if List.fold_left (fun is_h e -> is_h && is_a_hole e) true el then
+          SkHoleR t, d
+        else
+          let el', _ = ListTools.unpair
+              (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
+          in SkApp (t, ov, el'), d
 
       | SkQuestion (c, ei, ee) ->
-         begin
-           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-             SkQuestion (SkHoleR Boolean, ei, ee), d
-           else
-             e, 0
-         end
+        begin
+          if is_a_hole ei && is_a_hole ee && is_a_hole c then
+            SkQuestion (SkHoleR Boolean, ei, ee), d
+          else
+            e, 0
+        end
       (** Do not propagate expression depth into control statements*)
       | _ -> (e, 0)
     end

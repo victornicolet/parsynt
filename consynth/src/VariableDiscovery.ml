@@ -280,7 +280,10 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
          in
          (* We keep the expressions such that applying the function associated
             to the auxiliary yields the current matched expression *)
-         printf "@.(%a == %a) = %B@." pp_skexpr fe' pp_skexpr ne (fe' = ne);
+         if !debug then
+           printf "@.Matching increment : (%a == %a) = %B@."
+             pp_skexpr fe' pp_skexpr ne (fe' = ne);
+         (** TODO : equality under commutatitivty and associativity *)
          fe' = ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs) cexpr =
@@ -502,7 +505,9 @@ let discover_for_id stv (idx, update) input_func varid =
       the beginning.
       Return the union of the new auxiliaries and the state variables.
   *)
-  printf "@.DICSOVER for variable %i finished.@." varid;
+  if !debug then
+    printf "@.DISCOVER for variable %i finished.@." varid;
+
   compose init_i input_func aux_vs aux_ef
 
 

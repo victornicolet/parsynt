@@ -426,7 +426,7 @@ let bound_state_vars vs lf =
            try
              let vi = VSOps.find_by_id k vs in
              VS.add vi acc
-           with Not_found -> acc) substitutions VS.empty
+           with Not_found -> acc) substitutions bv
 
     | Let (vi, _, cont, _, _) -> bound_vars (VS.add vi bv) cont
     | LetCond (_, l1, l2, l3, _) ->
@@ -761,12 +761,24 @@ let cil2func statevs block (i,g,u) =
       if IM.cardinal !loops = 0 then
         failwith "You forgot to initialize the set of loops in Cil2Func ?";
       if !debug then eprintf "-- Cil --> Functional --";
-      let let_expression = (do_b statevs block) in
-      let let_expression = eliminate_temporaries statevs let_expression in
+      let let_expression_0 = (do_b statevs block) in
+      let let_expression = eliminate_temporaries statevs let_expression_0 in
       let index = index_of_igu (i,g,u) in
       let init_f = do_il statevs [i] in
       let update_f = do_il statevs [u] in
       let guard_e = Container (g, IM.empty) in
-      reduce statevs let_expression, (index, (init_f, guard_e, update_f))
+      let func, figu =
+        reduce statevs let_expression, (index, (init_f, guard_e, update_f))
+      in
+      if !debug then
+        printf "CIL --> FUNCTION transformation result:@.\
+                - Before reduction:@.%a@.\
+                - Eliminate temporaries:@.%a@.\
+                - After reduction:@.%a@."
+          (pp_letin ~wloc:false) (statevs, let_expression_0)
+          (pp_letin ~wloc:false) (statevs, let_expression)
+          (pp_letin ~wloc:false) (statevs, func);
+
+      func, figu
     end
   with Failure s -> fail_functional_conversion s

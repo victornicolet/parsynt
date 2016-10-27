@@ -52,7 +52,7 @@ let processFile fileName =
 type figu = VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
 type varset_info = int list * int list * VS.t
 type func_info =
-  int list * int list * VS.t *
+  string * int list * int list * VS.t *
   Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
 (** Sketch info type :
@@ -77,6 +77,7 @@ let cil2func loops =
          with Failure s ->
            skip_exn "Couldn't use index form in loop.";
        in
+       let loop_ident = cl.Cl.host_function.C.vname in
        let stmt = C.mkBlock(cl.Cl.new_body) in
        let r, w = cl.Cl.rwset in
        let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
@@ -90,13 +91,15 @@ let cil2func loops =
            Cil2Func.printlet (stv, func);
            printf "@.";
          end;
-       (VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars,
+       (loop_ident,
+        VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars,
         func, figu,
         reaching_consts))
     sorted_lps
 
 type sketch_rep =
   {
+    loop_name : string;
     ro_vars_ids : int list;
     state_vars_ids : int list;
     var_set : VS.t;
@@ -108,7 +111,8 @@ type sketch_rep =
 
 let func2sketch funcreps =
   List.map
-    (fun (ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
+    (fun (loop_ident,
+          ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
       let reach_consts =
         IM.mapi
           (fun vid cilc ->
@@ -136,7 +140,9 @@ let func2sketch funcreps =
       IH.copy_into VariableDiscovery.discovered_aux
         SketchJoin.auxiliary_variables;
       let join_body = Sketch.Join.build state_vars new_loop_body in
-      { ro_vars_ids = ro_vars_ids;
+      {
+        loop_name = loop_ident;
+        ro_vars_ids = ro_vars_ids;
         state_vars_ids = VSOps.vids_of_vs new_state;
         var_set = VS.union var_set new_state;
         loop_body = new_loop_body;

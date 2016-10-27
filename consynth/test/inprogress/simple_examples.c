@@ -11,6 +11,15 @@ int explicit_maximum (int *a, int n) {
   return m;
 }
 
+int if_maximum (int *a, int n) {
+  int m = 0;
+  for(int i = 0; i < n; i++) {
+    if (a[i] > m)
+      m = a[i];
+  }
+  return m;
+}
+
 /* Returns the correct join */
 int maximum (int *a, int n) {
   int m = 0;
@@ -23,7 +32,8 @@ int maximum (int *a, int n) {
 /* Again the body is transformed to the identity function */
 int explicit_minimum (int *a, int n) {
   int m = 0;
-  for(int i = 0; i < n; i++) {
+  int i;
+  for(i = 0; i < n; i++) {
     m = ((a[i] < m) ? a[i] : m);
   }
   return m;

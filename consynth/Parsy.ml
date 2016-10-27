@@ -20,6 +20,7 @@ let options = [
   ( 'g', "debug", (set debug_all true), None);
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 's', "debug-sketch", (set Sketch.debug true), None);
+  ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None)
 ]
 
 let main () =
@@ -47,6 +48,7 @@ let main () =
       Sketch.debug := true;
       Sketch.Body.debug := true;
       Sketch.Join.debug := true;
+      VariableDiscovery.debug := true;
     end
   else ();
     (** Set all the debug flags to true *)
@@ -62,15 +64,23 @@ let main () =
     (color "green") default;
   let sketch_map = Canalyst.func2sketch functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") default;
+
   List.iter
     (fun sketch ->
-       let parsed =
-         L.compile_and_fetch
-           ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-       in
-       printf "@.%sSOLUTION%s:@.%a"
-         (color "green") default Ast.pp_expr_list parsed)
+       let lp_name = sketch.C.loop_name in
+       try
+         printf "@.SOLVING sketch for %s.@." lp_name;
+         let parsed =
+           L.compile_and_fetch
+             ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+         in
+         printf "@.%sSOLUTION for %s %s:@.%a"
+           (color "green") lp_name default Ast.pp_expr_list parsed
+       with Failure s ->
+         printf "@.%sFAILED to find a solution for %s%s.@."
+           (color "red") lp_name default)
     sketch_map;
+
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")
     !elapsed_time default;;
