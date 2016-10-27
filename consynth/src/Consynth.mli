@@ -13,7 +13,7 @@ module Canalyst : sig
   module T = SketchTypes
   type figu = Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
   type func_info =
-    string * int list * int list * Usedef.VS.t *
+    string * int list * Usedef.VS.t * Usedef.VS.t *
     Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
   type sigu = Utils.VS.t * (T.sklet * T.skExpr * T.sklet)
@@ -22,7 +22,7 @@ module Canalyst : sig
     {
       loop_name : string;
       ro_vars_ids : int list;
-      state_vars_ids : int list;
+      state_vars : VS.t;
       var_set : VS.t;
       loop_body : T.sklet;
       join_body : T.sklet;
@@ -35,6 +35,8 @@ module Canalyst : sig
   val cil2func : Findloops.Cloop.t Utils.IM.t -> func_info list
 
   val func2sketch : func_info list -> sketch_rep list
+
+  val find_new_variables : sketch_rep -> sketch_rep
 
   val pp_sketch : Format.formatter -> sketch_rep  -> unit
 end

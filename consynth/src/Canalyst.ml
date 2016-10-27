@@ -52,7 +52,7 @@ let processFile fileName =
 type figu = VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
 type varset_info = int list * int list * VS.t
 type func_info =
-  string * int list * int list * VS.t *
+  string * int list * VS.t * VS.t *
   Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
 (** Sketch info type :
@@ -92,7 +92,7 @@ let cil2func loops =
            printf "@.";
          end;
        (loop_ident,
-        VSOps.vids_of_vs r, VSOps.vids_of_vs stv, vars,
+        VSOps.vids_of_vs r, stv, vars,
         func, figu,
         reaching_consts))
     sorted_lps
@@ -101,7 +101,7 @@ type sketch_rep =
   {
     loop_name : string;
     ro_vars_ids : int list;
-    state_vars_ids : int list;
+    state_vars : VS.t;
     var_set : VS.t;
     loop_body : T.sklet;
     join_body : T.sklet;
@@ -112,7 +112,7 @@ type sketch_rep =
 let func2sketch funcreps =
   List.map
     (fun (loop_ident,
-          ro_vars_ids, state_vars_ids, var_set, func, figu, reach_consts) ->
+          ro_vars_ids, state_vars, var_set, func, figu, reach_consts) ->
       let reach_consts =
         IM.mapi
           (fun vid cilc ->
@@ -126,37 +126,51 @@ let func2sketch funcreps =
             Sketch.Body.convert_const expect_type cilc)
           reach_consts
       in
-      let state_vars = VSOps.subset_of_list state_vars_ids var_set in
       let loop_body, sigu = Sketch.Body.build var_set state_vars func figu in
-      (** Discover new variables *)
-      let new_state, nlb =
-        discover state_vars loop_body sigu
-      in
-      (** Apply some optimization to reduce the size of the function *)
-      let nlb_opt = Sketch.Body.optims nlb in
-      let new_loop_body =
-        SketchTypes.complete_final_state new_state nlb_opt
-      in
-      IH.copy_into VariableDiscovery.discovered_aux
-        SketchJoin.auxiliary_variables;
-      let join_body = Sketch.Join.build state_vars new_loop_body in
+
+      IH.clear SketchJoin.auxiliary_variables;
+
+      let join_body = Sketch.Join.build state_vars loop_body in
       {
         loop_name = loop_ident;
         ro_vars_ids = ro_vars_ids;
-        state_vars_ids = VSOps.vids_of_vs new_state;
-        var_set = VS.union var_set new_state;
-        loop_body = new_loop_body;
+        state_vars = state_vars;
+        var_set =  var_set;
+        loop_body = loop_body;
         join_body = join_body;
         sketch_igu = sigu;
         reaching_consts = reach_consts;
       })
     funcreps
 
-let pp_sketch fmt sketch_rep =
+let find_new_variables sketch_rep =
+  let new_state, nlb =
+    discover sketch_rep.state_vars sketch_rep.loop_body sketch_rep.sketch_igu
+  in
+  (** Apply some optimization to reduce the size of the function *)
+  let nlb_opt = Sketch.Body.optims nlb in
+  let new_loop_body =
+    SketchTypes.complete_final_state new_state nlb_opt
+  in
+
+  IH.copy_into VariableDiscovery.discovered_aux
+    SketchJoin.auxiliary_variables;
+
+  let join_body = Sketch.Join.build new_state new_loop_body in
+
+  {
+    sketch_rep with
+    state_vars = new_state;
+    var_set =  VS.union new_state sketch_rep.var_set;
+    loop_body = new_loop_body;
+    join_body = join_body;
+  }
+
+  let pp_sketch fmt sketch_rep =
   IH.copy_into VariableDiscovery.discovered_aux Sketch.auxiliary_vars;
   Sketch.pp_rosette_sketch fmt
     (sketch_rep.ro_vars_ids,
-     sketch_rep.state_vars_ids,
+     VSOps.vids_of_vs sketch_rep.state_vars,
      sketch_rep.var_set,
      sketch_rep.loop_body,
      sketch_rep.join_body,

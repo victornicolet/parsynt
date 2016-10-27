@@ -1,49 +1,31 @@
+#include "stdbool.h"
 
-/* We suppose we have an array of positive integers */
-/* Problem : we get the function m -> m instead of the max
-   in the body. */
-
-int explicit_maximum (int *a, int n) {
-  int m = 0;
-  for(int i = 0; i < n; i++) {
-    m = ((a[i] > m) ? a[i] : m);
-  }
-  return m;
-}
-
-int if_maximum (int *a, int n) {
-  int m = 0;
-  for(int i = 0; i < n; i++) {
-    if (a[i] > m)
-      m = a[i];
-  }
-  return m;
-}
-
-/* Returns the correct join */
-int maximum (int *a, int n) {
-  int m = 0;
-  for(int i = 0; i < n; i++) {
-    m = max(m, a[i]);
-  }
-  return m;
-}
 
 /* Again the body is transformed to the identity function */
-int explicit_minimum (int *a, int n) {
-  int m = 0;
-  int i;
-  for(i = 0; i < n; i++) {
-    m = ((a[i] < m) ? a[i] : m);
-  }
-  return m;
-}
+/* int explicit_minimum (int *a, int n) { */
+/*   int m = 0; */
+/*   int i; */
+/*   for(i = 0; i < n; i++) { */
+/*     m = ((a[i] < m) ? a[i] : m); */
+/*   } */
+/*   return m; */
+/* } */
 
-/* Returns the correct join */
-int minimum (int *a, int n) {
-  int m = 0;
-  for(int i = 0; i < n; i++) {
-    m = min(m, a[i]);
+int longest_seq_of_zeros (_Bool *a, int n) {
+  int cur_length = 0;
+  int max_length = 0;
+  _Bool in_seq = 1;
+
+  for (int i = 0; i < n; i++) {
+
+    if (in_seq && !a[i])
+      cur_length += 1;
+    else
+      cur_length = 0;
+
+    in_seq = a[i];
+    max_length = max (max_length, cur_length);
   }
-  return m;
+
+  return max_length;
 }

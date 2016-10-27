@@ -111,7 +111,7 @@ let counting_blocks () =
       {
         loop_name = "Test loop";
         ro_vars_ids = [a_vi.Cil.vid; i_vi.Cil.vid];
-        state_vars_ids = VSOps.vids_of_vs new_state;
+        state_vars = new_state;
         var_set = VS.union new_state all_vars ;
         loop_body = new_func; join_body = join;
         sketch_igu = sigu;
