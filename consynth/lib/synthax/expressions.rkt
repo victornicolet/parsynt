@@ -133,7 +133,7 @@
 
 (define-synthax (bExpr:boolean x ... depth)
   #:base (Scalar x ...)
-  #:else (choose
+  #:else (choose #t #f
           (Scalar x ...)
           ((BasicUnops:bool)
            (bExpr:boolean x ... (sub1 depth)))

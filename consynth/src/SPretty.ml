@@ -62,7 +62,7 @@ let wrap ppf t =
             fpf "(bExpr:num->bool %s %d)"
               (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced
 
-          | Boolean, Boolean -> fpf "(bexpr:boolean %s %d)"
+          | Boolean, Boolean -> fpf "(bExpr:boolean %s %d)"
                                   (ref_concat [ch_l_bools; ch_r_bools]) ced
 
          | Integer, Integer -> fpf "(bExpr:num->num %s %d)"

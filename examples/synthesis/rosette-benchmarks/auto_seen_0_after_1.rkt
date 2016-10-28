@@ -8,36 +8,41 @@
 (define a (vector a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10))
 (define-symbolic i integer?)
 
-(struct $ (cur_length max_length))
-(define ($-eq? s1 s2) (and (eq? ($-cur_length s1) ($-cur_length s2))
- (eq? ($-max_length s1) ($-max_length s2))
+(struct $ (seen_1 seen_0 res))
+
+(define ($-eq? s1 s2) (and (eq? ($-seen_1 s1) ($-seen_1 s2))
+ (eq? ($-res s1) ($-res s2))
 ))
 ;;Functional representation of the loop body.
 (define (__loop_body__ s _iL_ _iR_)
  (Loop _iL_ _iR_ 10 s
  (lambda (__s i)
-(let ([cur_length ($-cur_length __s)]
-  [max_length ($-max_length __s)]) ($ (if (vector-ref a i) (+ cur_length 1)
-                                        0)
-                                   (max max_length (if (vector-ref a i)
-                                     (+ cur_length 1) 0)))))))
+(let ([seen_1 ($-seen_1 __s)]
+      [res ($-res __s)])
+
+  (let ([seen_1 (if (vector-ref a i) #t seen_1)])
+    ($ seen_1
+       (if (and seen_1 (not (vector-ref a i))) #t res)))))))
+
 (define (__join__ $L $R)
 (let
- ([cur_length-$L ($-cur_length $L)] [max_length-$L ($-max_length $L)]
-  [cur_length-$R ($-cur_length $R)] [max_length-$R ($-max_length $R)])
- ($ (if (bExpr:num->bool cur_length-$L max_length-$L cur_length-$R max_length-$R 1)
-        (bExpr:num->num cur_length-$L max_length-$L cur_length-$R max_length-$R 1)
-        (bExpr:num->num  cur_length-$L max_length-$L cur_length-$R max_length-$R 1))
-    (max (bExpr:num->num  cur_length-$L max_length-$L cur_length-$R max_length-$R 1)
-         (if
-          (bExpr:num->bool cur_length-$L max_length-$L cur_length-$R max_length-$R 1)
-          (bExpr:num->num  cur_length-$L max_length-$L cur_length-$R max_length-$R 1)
-          (bExpr:num->num  cur_length-$L max_length-$L cur_length-$R max_length-$R 1)))))
+    ([seen_1-$L ($-seen_1 $L)]
+     [res-$L ($-res $L)]
+     [seen_1-$R ($-seen_1 $R)]
+     [res-$R ($-res $R)])
+  (let
+      ([seen_1 (if (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1)
+                   (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1)
+                   (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1))])
+    ($ seen_1
+       (if (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1)
+           (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1)
+           (bExpr:boolean  seen_1-$L res-$L seen_1-$R res-$R 1)))))
 )
 
 ;;Symbolic input state and synthesized id state
 (define $_init ($ (choose 0 1 #t #f) (choose 0 1 #t #f)))
-(define $initial ($ 0 0))
+(define $initial ($ #f #f))
 ;;Actual synthesis work happens here
 
 (define odot

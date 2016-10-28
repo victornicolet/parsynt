@@ -11,21 +11,38 @@
 /*   return m; */
 /* } */
 
-int longest_seq_of_zeros (_Bool *a, int n) {
-  int cur_length = 0;
-  int max_length = 0;
-  _Bool in_seq = 1;
+/* int longest_seq_of_ones (_Bool *a, int n) { */
+/*   int cur_length = 0; */
+/*   int max_length = 0; */
+
+/*   for (int i = 0; i < n; i++) { */
+/*     if (a[i]) */
+/*       cur_length = cur_length + 1; */
+/*     else */
+/*       cur_length = 0; */
+
+/*     max_length = max (max_length, cur_length); */
+/*   } */
+
+/*   return max_length; */
+/* } */
+
+_Bool seen_0_after_1 (_Bool *a, int n) {
+  _Bool seen_1 = 0;
+  _Bool res = 0;
+
+  /* Additional auxiliary */
+  _Bool seen_0 = 0;
 
   for (int i = 0; i < n; i++) {
-
-    if (in_seq && !a[i])
-      cur_length += 1;
+    if (a[i])
+      seen_1 = 1;
     else
-      cur_length = 0;
+      seen_0 = 1;
 
-    in_seq = a[i];
-    max_length = max (max_length, cur_length);
+    if (seen_1 && !a[i])
+      res = 1;
   }
 
-  return max_length;
+  return res;
 }
