@@ -498,6 +498,9 @@ let discover_for_id stv (idx, update) input_func varid =
   let _ , (aux_vs, aux_ef) =
     fixpoint 0 init_i VS.empty IM.empty
   in
+  (* Filter out the auxiliaries that are just duplicates of a state variable. *)
+
+
   VS.iter (fun vi -> IH.add discovered_aux vi.Cil.vid vi) aux_vs;
   (** Finally add the auxliaries at the beginning of the function. Since the
       auxliaries depend only on the inputs and not the value of the state
@@ -507,6 +510,8 @@ let discover_for_id stv (idx, update) input_func varid =
   *)
   if !debug then
     printf "@.DISCOVER for variable %i finished.@." varid;
+  printf "@.NEW VARIABLES : %a@." VSOps.pvs aux_vs;
+
 
   compose init_i input_func aux_vs aux_ef
 

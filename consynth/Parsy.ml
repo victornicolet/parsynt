@@ -62,24 +62,82 @@ let main () =
   let functions = C.cil2func c_program in
   printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
     (color "green") default;
-  let sketch_map = Canalyst.func2sketch functions in
+  let sketch_list = Canalyst.func2sketch functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") default;
 
+  (** Try to solve the sketches without adding auxiliary variables *)
+
+  let unsolved =
+    List.fold_left
+      (fun for_discovery sketch ->
+         let lp_name = sketch.C.loop_name in
+         try
+           printf "@.SOLVING sketch for %s.@." lp_name;
+           let parsed =
+             L.compile_and_fetch
+               ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+           in
+           if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+             (* We get an "unsat" answer : add loop to auxliary discovery *)
+             begin
+               printf
+                 "@.%sNO SOLUTION%s found for %s with user-defined variables."
+                 (color "orange") default lp_name;
+               for_discovery@[sketch]
+             end
+           else
+             (* A solution has been found *)
+             begin
+               printf "@.%sSOLUTION for %s %s:@.%a"
+                 (color "green") lp_name default Ast.pp_expr_list parsed;
+               for_discovery
+             end
+         with Failure s ->
+           begin
+             printf "@.%sFAILED to find a solution for %s%s.@."
+               (color "red") lp_name default;
+             for_discovery
+           end)
+      []
+      sketch_list
+  in
+
+  (** Now discover auxiliary variables *)
+
+  if List.length unsolved > 0 then
+    printf "%sDONE%s@.@.Finding auxiliary variables ...@.@."
+      (color "green") default;
+
+  let with_auxiliaries =
+    List.map
+      (fun sketch ->
+         printf "Searching auxiliaries for %s ...@." sketch.C.loop_name;
+         Canalyst.find_new_variables sketch)
+      unsolved
+  in
   List.iter
     (fun sketch ->
-       let lp_name = sketch.C.loop_name in
+       let name = sketch.C.loop_name in
        try
-         printf "@.SOLVING sketch for %s.@." lp_name;
+         printf "@.SOLVING sketch for %s.@." name;
          let parsed =
            L.compile_and_fetch
              ~print_err_msg:err_handler_sketch C.pp_sketch sketch
          in
-         printf "@.%sSOLUTION for %s %s:@.%a"
-           (color "green") lp_name default Ast.pp_expr_list parsed
+         if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+           (* We get an "unsat" answer : add loop to auxliary discovery *)
+           printf
+             "@.%sNO SOLUTION%s found for %s with user-defined variables.@."
+             (color "orange") default name
+         else
+           (* A solution has been found *)
+           printf "@.%sSOLUTION for %s %s:@.%a"
+             (color "green") name default Ast.pp_expr_list parsed;
+
        with Failure s ->
          printf "@.%sFAILED to find a solution for %s%s.@."
-           (color "red") lp_name default)
-    sketch_map;
+           (color "red") name default)
+    with_auxiliaries;
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

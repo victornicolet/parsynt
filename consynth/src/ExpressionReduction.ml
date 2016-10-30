@@ -122,7 +122,7 @@ let associative_case_L op (a, ca) (b, cb) (c, cc) =
   then SkBinop (op, (SkBinop (op, a, b)), c)   (* (a + b) + c *)
   else SkBinop (op, a, (SkBinop (op, b, c))) (* Unchanged *)
 
-let rearrange_assoc vs es expr =
+let flatten_assoc vs es expr =
   let cost_fun = cost vs es in
   let rec get_expr_list assoc_op expr =
     match expr with
@@ -144,9 +144,10 @@ let rearrange_assoc vs es expr =
   in
   if is_some maybe_op then
     let op = check_option maybe_op in
+    (** Ordered in decreasing cost *)
     let ordered_list =
-      List.sort
-        (fun e1 e2 -> compare (cost_fun e1) (cost_fun e2)) expr_list
+      List.rev
+        (List.sort (fun e1 e2 -> compare (cost_fun e1) (cost_fun e2)) expr_list)
     in
     (** Should be longer than 1 since we're considering binary operators *)
     match ordered_list with
@@ -211,23 +212,21 @@ let reduce_cost stv c_exprs expr =
   | SkUnop (op, e) -> SkUnop(op, rfunc e)
   | e -> rfunc e
   in
-  let transformed =
-    transform_expr reduction_cases reduce_transform identity identity expr
+  transform_expr reduction_cases reduce_transform identity identity expr
+
+
+
+let reduce_full ?(limit = 10) stv c_exprs expr =
+  let rec aux_apply_ternary_rules limit red_expr =
+    let red_expr = reduce_cost stv c_exprs expr in
+    if red_expr = expr || limit = 0
+    then red_expr
+    else aux_apply_ternary_rules (limit - 1) red_expr
   in
-  let red = match rearrange_assoc stv c_exprs transformed with
-    | Some e -> e
-    | None -> transformed
-  in
-  transformed
-
-
-
-let rec reduce_full ?(limit = 10) stv c_exprs expr =
-  let red_expr = reduce_cost stv c_exprs expr in
-  if red_expr = expr || limit = 0
-  then red_expr
-  else reduce_full ~limit:(limit - 1) stv c_exprs red_expr
-
+  let r0 = aux_apply_ternary_rules limit expr in
+  match flatten_assoc stv c_exprs r0 with
+  | Some e -> r0
+  | None -> r0
 
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =
