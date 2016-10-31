@@ -835,6 +835,11 @@ let rec is_subtype t tmax =
                 "Cannot join these types %a %a" pp_typ t pp_typ tmax;
               Format.flush_str_formatter () )
 
+let rec res_type t =
+  match t with
+  | Function (t, t') -> t'
+  | _ -> t
+
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1

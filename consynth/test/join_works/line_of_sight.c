@@ -9,14 +9,10 @@
 _Bool line_of_sight(int *a, int n) {
   int amax = 0;
   _Bool visible = 1;
-  int prev = 0;
 
   for(int i = 0; i < n; i++) {
     visible = (amax <= a[i]);
     amax = max(amax, a[i]);
-    prev = a[i];
   }
-  /* Make sure auxliiary prev is not deleted by Cil as a temp */
-  visible = (prev == prev) && visible;
   return visible;
 }

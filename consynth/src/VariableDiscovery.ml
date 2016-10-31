@@ -4,6 +4,8 @@ open Format
 open SPretty
 open ExpressionReduction
 open SymbExe
+open VUtils
+open Expressions
 
 module T = SketchTypes
 
@@ -284,7 +286,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
            printf "@.Matching increment : (%a == %a) = %B@."
              pp_skexpr fe' pp_skexpr ne (fe' = ne);
          (** TODO : equality under commutatitivty and associativity *)
-         fe' = ne)
+         eq_AC fe' ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs) cexpr =
     let current_expr =
@@ -292,7 +294,8 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
     in
     if !debug then
       Format.fprintf Format.std_formatter
-        "Lifting inputs transforms @.%a@.to@.%a@."
+        "Lifting inputs %a transforms @.%a@.to@.%a@."
+        (fun fmt e -> pp_expr_set fmt  ~sep:(fun fmt () -> Format.fprintf fmt " ") e) input_expressions
         pp_skexpr current_expr pp_skexpr current_expr
     else ();
     match find_ce current_expr aux_exprs with
@@ -436,7 +439,7 @@ let discover_for_id stv (idx, update) input_func varid =
   in
   (** Fixpoint stops when the set of auxiliary varaibles is stable,
       which means the set of auxiliary variables hasn't changed and
-      the functions assiocated to these auxilary variables haven't
+      the functions associated to these auxilary variables haven't
       changed.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
@@ -453,6 +456,8 @@ let discover_for_id stv (idx, update) input_func varid =
           (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
+      if !debug then Format.printf "Expression : %a@."
+          pp_skexpr (IM.find varid new_exprs);
       (** Compute the new expressions for the index *)
       let xinfo_index = { state_set = xinfo.index_set ;
                           state_exprs = xinfo.index_exprs ;
@@ -512,8 +517,12 @@ let discover_for_id stv (idx, update) input_func varid =
     printf "@.DISCOVER for variable %i finished.@." varid;
   printf "@.NEW VARIABLES : %a@." VSOps.pvs aux_vs;
 
-
-  compose init_i input_func aux_vs aux_ef
+  (** Remove redundant auxiliaries : auxiliaries that have the same expressions
+      as state variables *)
+  let clean_aux, clean_aux_ef =
+    remove_duplicate_auxiliaries init_i (aux_vs, aux_ef) input_func
+  in
+  compose init_i input_func clean_aux clean_aux_ef
 
 
 

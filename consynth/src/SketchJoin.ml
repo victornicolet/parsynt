@@ -104,7 +104,7 @@ and merge_leaves max_depth (e,d) =
       | SkBinop (op, h1, h2) when is_a_hole h1 && is_a_hole h2 ->
         let t1 = check_option (type_of_hole h1) in
         let t2 = check_option (type_of_hole h2) in
-        (match (type_of_binop t1 t2 op) with
+        (match (type_of_binop (res_type t1) (res_type t2) op) with
          | Some t ->
            if t1 = t2 then
              SkHoleR (Function (t1, t)) , d

@@ -16,6 +16,7 @@ module C2F = Cil2Func
 (*module TSbx = TSymbExe *)
 (* module TScm = TestSchemeParsing *)
 module TDis = TDiscovery
+module TExpr = TExpressions
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
@@ -121,4 +122,4 @@ let counting_blocks () =
 
 
 
-counting_blocks ();
+(* counting_blocks (); *)
