@@ -10,6 +10,7 @@ module C = Canalyst
 let debug_all = ref false
 let debug = ref false
 let elapsed_time = ref 0.0
+let skip_first_solve = ref false
 
 let err_handler_sketch i =
   eprintf "%sError%s while running racket on sketch.@."
@@ -20,6 +21,7 @@ let options = [
   ( 'g', "debug", (set debug_all true), None);
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 's', "debug-sketch", (set Sketch.debug true), None);
+  ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None)
 ]
 
@@ -66,40 +68,41 @@ let main () =
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") default;
 
   (** Try to solve the sketches without adding auxiliary variables *)
-
   let unsolved =
-    List.fold_left
-      (fun for_discovery sketch ->
-         let lp_name = sketch.C.loop_name in
-         try
-           printf "@.SOLVING sketch for %s.@." lp_name;
-           let parsed =
-             L.compile_and_fetch
-               ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-           in
-           if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
-             (* We get an "unsat" answer : add loop to auxliary discovery *)
+    if !skip_first_solve then sketch_list
+    else
+      List.fold_left
+        (fun for_discovery sketch ->
+           let lp_name = sketch.C.loop_name in
+           try
+             printf "@.SOLVING sketch for %s.@." lp_name;
+             let parsed =
+               L.compile_and_fetch
+                 ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+             in
+             if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+               (* We get an "unsat" answer : add loop to auxliary discovery *)
+               begin
+                 printf
+                   "@.%sNO SOLUTION%s found for %s with user-defined variables."
+                   (color "orange") default lp_name;
+                 for_discovery@[sketch]
+               end
+             else
+               (* A solution has been found *)
+               begin
+                 printf "@.%sSOLUTION for %s %s:@.%a"
+                   (color "green") lp_name default Ast.pp_expr_list parsed;
+                 for_discovery
+               end
+           with Failure s ->
              begin
-               printf
-                 "@.%sNO SOLUTION%s found for %s with user-defined variables."
-                 (color "orange") default lp_name;
-               for_discovery@[sketch]
-             end
-           else
-             (* A solution has been found *)
-             begin
-               printf "@.%sSOLUTION for %s %s:@.%a"
-                 (color "green") lp_name default Ast.pp_expr_list parsed;
+               printf "@.%sFAILED to find a solution for %s%s.@."
+                 (color "red") lp_name default;
                for_discovery
-             end
-         with Failure s ->
-           begin
-             printf "@.%sFAILED to find a solution for %s%s.@."
-               (color "red") lp_name default;
-             for_discovery
-           end)
-      []
-      sketch_list
+             end)
+        []
+        sketch_list
   in
 
   (** Now discover auxiliary variables *)

@@ -128,7 +128,34 @@ let rec flatten_AC expr =
 (** Equality under associativity and commutativity. Can be defined
     as structural equality of expressions trees with reordering in flat
     terms *)
-let eq_AC e1 e2 = (flatten_AC e1) = (flatten_AC e2)
+let eq_AC e1 e2 =
+  let rec aux_eq e1 e2=
+  match e1, e2 with
+  | SkBinop (op1, e11, e12), SkBinop (op2, e21, e22) ->
+    op1 = op2 && aux_eq e11 e21 && aux_eq e12 e22
+
+  | SkUnop (op1, e11), SkUnop (op2, e21) ->
+    op1 = op2 && aux_eq e11 e21
+
+  | SkApp (t1, Some v1, el1), SkApp (t2, Some v2, el2) ->
+    if v1 = v2 then
+      try
+        let op = op_from_name v1.vname in
+        is_commutative op &&
+        List.length el1 = List.length el2 &&
+        (List.for_all (fun elt1 -> List.mem elt1 el2) el1) &&
+        (List.for_all (fun elt2 -> List.mem elt2 el1) el2)
+      with Not_found ->
+        el1 = el2
+    else
+      false
+
+  | SkQuestion (c1, e11, e12), SkQuestion (c2, e21, e22) ->
+    aux_eq c1 c2 && aux_eq e11 e21 && aux_eq e12 e22
+
+  | _, _ -> e1 = e2
+  in
+  aux_eq (flatten_AC e1) (flatten_AC e2)
 
 (** Find similar terms in a flat expressions that can be factored *)
 let unifiy_AC e = e
@@ -148,7 +175,13 @@ let expression_cost vs cexprs e =
         if mx > 0 then mx + 1 else 0 }
   in
   let special_case e = ES.mem e cexprs in
-  let handle_spec e =  case1 in let case_var v = case1 in
+  let handle_spec e =  case1 in
+  let case_var v =
+    let vi_o = vi_of v in
+    match vi_o with
+    | Some vi -> if VS.mem vi vs then case1 else case0
+    | _ -> case0
+  in
   let case_const c = case0 in
   rec_expr join_c case0 special_case handle_spec case_const case_var e
 
@@ -175,8 +208,8 @@ let rec rebuild_tree_AC vs cexprs =
         let op = op_from_name f.vname in
         let el' = List.map rfunc el in
         let el_ordered =
-          (List.rev
-             (List.sort (compare_cost vs cexprs) el'))
+
+             (List.sort (compare_cost vs cexprs) el')
         in
         match el_ordered with
         | hd :: tl ->
@@ -265,3 +298,23 @@ let conjunction_comparison_to_max el =
       | _ -> SkApp (Boolean, Some (get_AC_op And), el)
     end
   | None ->  SkApp (Boolean, Some (get_AC_op And), el)
+
+let transform_conj_comps e =
+  let case e =
+    match e with
+    | SkApp (_, Some vi, _) when vi.vname = "and" -> true
+    | _ -> false
+  in
+  let transf rfunc e =
+    match e with
+    | SkApp (_, _, el) ->
+      let el' = List.map rfunc el in
+      conjunction_comparison_to_max el'
+    | _ -> failwith "Not a valid case."
+  in
+  transform_expr case transf identity identity e
+
+(** Put all the special rules here *)
+let apply_special_rules e =
+  let e' = transform_all_comparisons e in
+  transform_conj_comps e'

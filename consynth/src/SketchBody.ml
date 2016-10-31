@@ -303,9 +303,46 @@ let rec apply_rearrange sklet =
   | SkLetIn (el, cont) ->
      SkLetIn (List.map ~f:rearrange_ternary_expression el, apply_rearrange cont)
 
+
+(** Transform expressions (if c true false) in c *)
+let transform_boolean_if_expression =
+  let case e =
+    match e with
+    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false))
+    | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0))
+    | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> true
+    | _ -> false
+  in
+  let transform_bool rfunc e =
+    match e with
+    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) -> rfunc c
+    | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0)) -> rfunc c
+    | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> rfunc c
+    | _ -> failwith "transform_boolean_expression : bad case"
+  in
+  transform_expr case
+    transform_bool
+    identity
+    identity
+
+let booleanize (v, e) =
+  v, (match type_of_var v with
+  | Boolean -> transform_boolean_if_expression e
+  | _ -> e)
+
+let rec remove_boolean_ifs sklet =
+  match sklet with
+  | SkLetExpr el ->
+    SkLetExpr (List.map ~f:booleanize el)
+  | SkLetIn (el, cont) ->
+    SkLetIn (List.map ~f:booleanize el,
+             remove_boolean_ifs cont)
+
+
+(** Apply all optimizations *)
 let optims sklet =
   let sklet' = apply_remove sklet in
-  apply_rearrange sklet'
+  remove_boolean_ifs (apply_rearrange sklet')
 
 
 (*** MAIN ENTRY POINT ***)

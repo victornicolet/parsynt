@@ -252,7 +252,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   in
   (** Find in a expression map the bindings matching EXACTLY the expression *)
   let find_ce to_match emap =
-    let cemap = IM.filter (fun vid (auxe, f) -> auxe = to_match) emap in
+    let cemap = IM.filter (fun vid (auxe, f) -> eq_AC auxe to_match) emap in
     IM.bindings cemap
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
@@ -260,7 +260,7 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
   let find_subexpr top_expr emap =
     T.rec_expr
       (fun a b -> a@b) []
-      (fun e -> IM.exists (fun vid (auxe, f) -> auxe = e) emap)
+      (fun e -> IM.exists (fun vid (auxe, f) -> eq_AC auxe e) emap)
       (fun e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
       top_expr

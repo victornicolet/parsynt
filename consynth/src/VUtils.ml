@@ -2,6 +2,7 @@ open Utils
 open SPretty
 open SketchTypes
 open SymbExe
+open Expressions
 
 module C = Cil
 
@@ -17,7 +18,7 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
              (SkVar (SkVarinfo (VSOps.find_by_id i xinfo.state_set)))
              func_expr
          in
-         e_rep = e) exprs
+         eq_AC e_rep e) exprs
   in
   IM.cardinal candidate_state_variables > 0
 

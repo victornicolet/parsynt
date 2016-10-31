@@ -93,8 +93,10 @@ let reduce_full ?(limit = 10) stv c_exprs expr =
     else aux_apply_ternary_rules (limit - 1) red_expr
   in
   let r0 = aux_apply_ternary_rules limit expr in
-  let r1 = rebuild_tree_AC stv c_exprs (flatten_AC r0) in
-  r1
+  let flat_r = (flatten_AC r0) in
+  let r1 = apply_special_rules flat_r in
+  let r2 = rebuild_tree_AC stv c_exprs r1 in
+  r2
 
 
 (** Using Rosette to solve other reduction/expression matching problems *)
