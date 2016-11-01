@@ -5,41 +5,6 @@ open SPretty
 open Format
 open Expressions
 
-(** Compute the 'cost' of an expression with respect to a set of other
-    c-expressions : the cost is the pair of the maximum depth of a
-    c-expression in the expressions and the number of c-expressions in
-    the expressions.
-    @param stv the set of state variables.
-    @param expr the expression of which we need to compute the cost.
-    @return a pair of ints, the first element is the maximum depth of
-    c-expression in the expression abstract syntax tree and the second element
-    is the number of occurrences of c-expressions.
-*)
-let rec depth_cost (vs : VS.t) (c_exprs : ES.t) expr =
-  let cost = expression_cost vs c_exprs expr in
-  (cost.max_depth, cost.occurrences)
-
-and depth_c_func vs c_exprs func =
-  match func with
-  | SkLetIn (velist, l') ->
-    let dl', cl' = depth_c_func vs c_exprs l' in
-    let max_de, sum_c =
-      (List.fold_left
-         (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
-         (0, 0)
-         (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist)) in
-    ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
-  | SkLetExpr velist ->
-    (List.fold_left
-       (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
-       (0, 0)
-       (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist))
-
-
-let cost stv c_exprs expr =
-  depth_cost stv c_exprs expr
-
-
 (** op2 is right-distributive over op1 if :
     (a op1 b) op2 c = (a op2 c) op1 (b op2 c)
     @param op1 'sum' like operator
@@ -53,6 +18,7 @@ let reduce_cost stv c_exprs expr =
   let reduction_cases expr =
     match expr with
     | SkBinop (_, _, _) -> true
+    | SkQuestion (_, _,_) -> true
     | _ -> false
   in
   let reduce_transform rfunc expr =
@@ -78,8 +44,32 @@ let reduce_cost stv c_exprs expr =
             expr
         | _, _ -> SkBinop (op2, x', y')
       end
-  | SkUnop (op, e) -> SkUnop(op, rfunc e)
-  | e -> rfunc e
+    | SkQuestion (c, x, y)->
+      let x' = rfunc x in let y' = rfunc y in
+      let c = rfunc c in
+      begin
+        match x', y' with
+        | SkBinop (op1, x1, x2), SkBinop (op2, y1, y2)
+          when op1 = op2 && is_associative op1 ->
+          let cx1 = cost stv c_exprs x1 in
+          let cx2 = cost stv c_exprs x2 in
+          let cy1 = cost stv c_exprs y1 in
+          let cy2 = cost stv c_exprs y2 in
+          if x1 = y1 && cx1 > (max cx2 cy2) then
+            let cond = rfunc (SkQuestion (c, x2, y2)) in
+            SkBinop (op1, x1, cond)
+          else
+            begin
+              if x2 = y2 && cx2 > (max cx1 cy1) then
+                let cond = rfunc (SkQuestion (c, x1, y1)) in
+                SkBinop (op1, cond, x2)
+              else
+                SkQuestion (c, x', y')
+            end
+        | _, _ -> SkQuestion (c, x', y')
+      end
+    | SkUnop (op, e) -> SkUnop(op, rfunc e)
+    | e -> rfunc e
   in
   transform_expr reduction_cases reduce_transform identity identity expr
 
@@ -94,7 +84,7 @@ let reduce_full ?(limit = 10) stv c_exprs expr =
   in
   let r0 = aux_apply_ternary_rules limit expr in
   let flat_r = (flatten_AC r0) in
-  let r1 = apply_special_rules flat_r in
+  let r1 = apply_special_rules stv c_exprs flat_r in
   let r2 = rebuild_tree_AC stv c_exprs r1 in
   r2
 

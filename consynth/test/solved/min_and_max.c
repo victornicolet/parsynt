@@ -11,6 +11,10 @@ int explicit_maximum (int *a, int n) {
   return m;
 }
 
+/* Join is : (m-L > -7885) ? max (m-l,  m-r) :  max(m-l, m-r)
+ ---> Simplifies to :  max (m-l, m-r) */
+
+
 int if_maximum (int *a, int n) {
   int m = 0;
   for(int i = 0; i < n; i++) {
@@ -20,7 +24,11 @@ int if_maximum (int *a, int n) {
   return m;
 }
 
-/* Returns the correct join */
+
+/* Join is : (m-L > -7885) ? max (m-l,  m-r) :  max(m-l, m-r)
+ ---> Simplifies to :  max (m-l, m-r) */
+
+
 int maximum (int *a, int n) {
   int m = 0;
   for(int i = 0; i < n; i++) {
@@ -28,6 +36,10 @@ int maximum (int *a, int n) {
   }
   return m;
 }
+
+
+/* Join is : max (m-l, m-r) */
+
 
 /* Returns the correct join */
 int minimum (int *a, int n) {
@@ -37,3 +49,6 @@ int minimum (int *a, int n) {
   }
   return m;
 }
+
+
+/* Join is : min (m-l, m-r) */

@@ -9,3 +9,12 @@ int second_smallest (int * a, int n) {
   }
   return m2;
 }
+
+/*
+   Join found without auxiliary variable:
+
+   m = min(m-l, m-r)
+   m2 = min (min (m2-l, m2-r), max(m-l, m-r))
+
+   in 5.117s.
+*/

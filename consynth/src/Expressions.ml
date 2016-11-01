@@ -194,6 +194,45 @@ let compare_ecost ec1 ec2 =
 let compare_cost vs cexprs e1 e2 =
   compare_ecost (expression_cost vs cexprs e1) (expression_cost vs cexprs e2)
 
+(** Compute the 'cost' of an expression with respect to a set of other
+    c-expressions : the cost is the pair of the maximum depth of a
+    c-expression in the expressions and the number of c-expressions in
+    the expressions.
+    @param stv the set of state variables.
+    @param expr the expression of which we need to compute the cost.
+    @return a pair of ints, the first element is the maximum depth of
+    c-expression in the expression abstract syntax tree and the second element
+    is the number of occurrences of c-expressions.
+*)
+let rec depth_cost (vs : VS.t) (c_exprs : ES.t) expr =
+  let cost = expression_cost vs c_exprs expr in
+  (cost.max_depth, cost.occurrences)
+
+and depth_c_func vs c_exprs func =
+  match func with
+  | SkLetIn (velist, l') ->
+    let dl', cl' = depth_c_func vs c_exprs l' in
+    let max_de, sum_c =
+      (List.fold_left
+         (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
+         (0, 0)
+         (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist)) in
+    ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
+  | SkLetExpr velist ->
+    (List.fold_left
+       (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
+       (0, 0)
+       (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist))
+
+
+let cost stv c_exprs expr =
+  depth_cost stv c_exprs expr
+
+
+
+
+(* AC rules *)
+
 let rec rebuild_tree_AC vs cexprs =
   let rebuild_case expr =
     match expr with
@@ -222,7 +261,107 @@ let rec rebuild_tree_AC vs cexprs =
     | _ -> failwith "Rebuild_flat_expr : Unexpected case."
   in
   transform_expr rebuild_case rebuild_flat_expr identity identity
+
+
 (** SPecial rules, tranformations. *)
+(** Inverse distributivity / factorization.
+    This step rebuilds expression trees, but has to flatten the expressions
+    it returns *)
+let extract_operand_lists el =
+  List.fold_left
+    (fun (l1, l2) e ->
+       match e with
+       | SkBinop (_, e1, e2) -> (l1@[e1], l2@[e2])
+       | _ -> l1, l2)
+    ([], []) el
+
+let __factorize__ stv cexprs top_op el =
+  let el = List.map (rebuild_tree_AC stv cexprs) el in
+  let el_binops, el_no_binops =
+    List.partition (function | SkBinop (_, _, _) -> true | _ -> false) el
+  in
+  let rec regroup el =
+    match el with
+    | hd :: tl ->
+      begin (** begin match list *)
+        match hd with
+        | SkBinop (op, e1, e2) ->
+          let ce1 = cost stv cexprs e1 in
+          let ce2 = cost stv cexprs e2 in
+
+          if is_left_distributive top_op op && ce1 > ce2 then
+            (** Look for similar expressions in the list *)
+            let sim_exprs, rtl =
+              List.partition
+                (fun e ->
+                   match e with
+                   | SkBinop (op', e1', ee) when
+                       op' = op && eq_AC e1' e1 -> true
+                   | _ -> false) tl
+            in
+            let _, sim_exprs_snd = extract_operand_lists sim_exprs in
+            let new_exprs =
+              SkBinop
+                (op,
+                 e1,
+                 SkApp (type_of e2, Some (get_AC_op top_op), e2::sim_exprs_snd))
+            in
+            new_exprs::(regroup rtl)
+
+          else
+
+            begin
+
+              if is_right_distributive top_op op && ce2 < ce1 then
+                let sim_exprs, rtl =
+                  List.partition
+                    (fun e ->
+                       match e with
+                       | SkBinop (op', ee, e2') when
+                           op' = op && eq_AC e2' e2 -> true
+                       | _ -> false) tl
+                in
+                (* Extract the list of the second operands of the list of
+                   binary operators *)
+                let sim_exprs_fst, _ = extract_operand_lists sim_exprs in
+                (* Build the new expression by lifting e2 on top at the
+                   right of the operator *)
+                let new_exprs =
+                  SkBinop
+                    (op,
+                     SkApp (type_of e1, Some (get_AC_op top_op), e1::sim_exprs_fst),
+                     e2)
+                in
+                new_exprs::(regroup rtl)
+
+              else
+                hd::(regroup tl)
+            end
+
+        | _ ->  hd::(regroup tl)
+      end (** end match hd::tl *)
+    | [] -> []
+  in
+  List.map flatten_AC ((regroup el_binops)@(el_no_binops))
+
+let factorize stv cexprs =
+  let case e =
+    match e with
+    | SkApp (_, Some opvar, _) ->
+      (try ignore(op_from_name opvar.vname); true with Not_found -> false)
+    | _ -> false
+  in
+  let fact rfunc e =
+    match e with
+    | SkApp (t, Some opvar, el) ->
+      let op = op_from_name opvar.vname in
+      let fact_el = List.map rfunc (__factorize__ stv cexprs op el) in
+      SkApp (t, Some opvar, fact_el)
+
+    | _ -> failwith "factorize_all : bad case"
+  in
+  transform_expr case fact identity identity
+
 
 (** Transform all comparisons : Lt -> Gt Le -> Ge *)
 let transform_all_comparisons expr =
@@ -245,16 +384,18 @@ let transform_all_comparisons expr =
   in
   transform_expr case transformer identity identity expr
 
-let extract_operand_lists el =
-  List.fold_left
-    (fun (l1, l2) e ->
-       match e with
-       | SkBinop (_, e1, e2) -> (l1@[e1], l2@[e2])
-       | _ -> l1, l2
-    ) ([], []) el
 
-
-let conjunction_comparison_to_max el =
+let __transform_conj_comps__ el =
+  (** Filter a sublist with terms that are comparisons *)
+  (* let no_comp, comp_gt, comp_ge = *)
+  (*   List.fold_left *)
+  (*     (fun (nc, c1, c2) expr -> *)
+  (*        match expr with *)
+  (*        | SkBinop (Gt, e1, e2) -> (nc, expr::c1, c2) *)
+  (*        | SkBinop (Ge, _, _) -> (nc, c1, expr::c2) *)
+  (*        | _ -> (expr::nc, c1, c2)) *)
+  (*     ([],[],[]) el *)
+  (* in *)
   let comp_op, ec1, ec2 =
     (match List.nth el 0 with
     | SkBinop (op, ec1, ec2) -> Some op, Some ec1, Some ec2
@@ -309,12 +450,19 @@ let transform_conj_comps e =
     match e with
     | SkApp (_, _, el) ->
       let el' = List.map rfunc el in
-      conjunction_comparison_to_max el'
+      __transform_conj_comps__ el'
     | _ -> failwith "Not a valid case."
   in
   transform_expr case transf identity identity e
 
 (** Put all the special rules here *)
-let apply_special_rules e =
+let apply_special_rules stv cexprs e =
   let e' = transform_all_comparisons e in
-  transform_conj_comps e'
+  let e'' =   transform_conj_comps e' in
+  factorize stv cexprs e''
+
+let accumulated_subexpression vi e =
+  match e with
+  | SkBinop (op, SkVar (SkVarinfo vi), acc) -> acc
+  | SkBinop (op, acc, SkVar (SkVarinfo vi)) -> acc
+  | _ -> e

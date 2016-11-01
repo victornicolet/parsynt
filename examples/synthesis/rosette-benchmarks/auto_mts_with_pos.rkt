@@ -4,49 +4,45 @@
          consynth/lib)
 
 (current-bitwidth #f)
-(define-symbolic a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10 boolean?)
+(define-symbolic a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10 integer?)
 (define a (vector a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10))
 (define-symbolic i integer?)
 
-(struct $ (flag cnt x_0))
-(define ($-eq? s1 s2) (and (eq? ($-flag s1) ($-flag s2))
- (eq? ($-cnt s1) ($-cnt s2))  (eq? ($-x_0 s1) ($-x_0 s2))
+(struct $ (pos mts aux_1))
+(define ($-eq? s1 s2) (and (eq? ($-pos s1) ($-pos s2))
+ (eq? ($-mts s1) ($-mts s2))  (eq? ($-aux_1 s1) ($-aux_1 s2))
 ))
 ;;Functional representation of the loop body.
 (define (__loop_body__ s _iL_ _iR_)
  (Loop _iL_ _iR_ 10 s
  (lambda (__s i)
-(let ([flag ($-flag __s)] [cnt ($-cnt __s)]
-      [x_0 ($-x_0 __s)])
-  (let ([x_0 (vector-ref a _iL_)])
-    (let ()
-      ($ (vector-ref a i)
-         (+ cnt (if (and (not flag) (vector-ref a i)) 1 0))
-         x_0)))))))
+(let ([pos ($-pos __s)] [mts ($-mts __s)] [aux_1 ($-aux_1 __s)]) (let ()
+ (let ([aux_1 (+ (vector-ref a i) aux_1)])
+   ($ (if (= mts 0) i pos) (max 0 (+ mts (vector-ref a i))) aux_1)))))))
 
 (define (__join__ $L $R)
 (let
- ([flag-$L ($-flag $L)] [cnt-$L ($-cnt $L)] [x_0-$L ($-x_0 $L)]
-  [flag-$R ($-flag $R)] [cnt-$R ($-cnt $R)] [x_0-$R ($-x_0 $R)])
- (let ([x_0 (bExpr:boolean cnt-$L flag-$L x_0-$L flag-$R x_0-$R cnt-$R 1)])
- (let ()
- ($ (bExpr:num->num  cnt-$L flag-$L x_0-$L flag-$R x_0-$R cnt-$R 1)
-    (+ (bExpr:num->num  cnt-$L cnt-$R 1)
-       (if (bExpr:boolean  flag-$L x_0-$L flag-$R x_0-$R 1)
-           (bExpr:num->num  cnt-$L cnt-$R 1)
-           (bExpr:num->num  cnt-$L cnt-$R 1)))
-    x_0)))))
+ ([pos-$L ($-pos $L)] [mts-$L ($-mts $L)] [aux_1-$L ($-aux_1 $L)]
+  [pos-$R ($-pos $R)] [mts-$R ($-mts $R)] [aux_1-$R ($-aux_1 $R)])
+(let ()
+  (let ([aux_1 (+ (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1)
+                  (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1))])
+ ($ (if (bExpr:num->bool  pos-$L mts-$L aux_1-$L   pos-$R mts-$R aux_1-$R 1)
+      (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1)
+      (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1))
+    (max (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1)
+         (bExpr:num->num  pos-$L mts-$L aux_1-$L pos-$R mts-$R aux_1-$R 1))
+   aux_1)))))
 
 ;;Symbolic input state and synthesized id state
 (define $_init ($ (choose 0 1 #t #f) (choose 0 1 #t #f) (choose 0 1 #t #f)))
-(define-symbolic x_00 flag0 boolean?)
-(define-symbolic cnt0 integer?)
-(define $initial ($ flag0 cnt0 (choose 0 1 #t #f)))
+(define-symbolic aux_10 integer?)
+(define $initial ($ -1 0 aux_10))
 ;;Actual synthesis work happens here
 
 (define odot
 (synthesize
-#:forall (list i a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10)
+#:forall (list i    a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10)
 #:guarantee (assert
 (and
  ($-eq?

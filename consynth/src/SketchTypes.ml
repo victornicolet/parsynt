@@ -640,6 +640,20 @@ let rec sk_uses vs expr =
   in rec_expr join false case case_handler const_handler var_handler expr
 
 (** Compose a function by adding new assignments *)
+let rec remove_id_binding func =
+  let aux_rem_from_list el =
+    List.filter
+      (fun (v,e) -> not (e = SkVar v)) el
+  in
+  match func with
+  | SkLetExpr el -> SkLetExpr (aux_rem_from_list el)
+  | SkLetIn (el, c) -> SkLetIn (aux_rem_from_list el, remove_id_binding c)
+
+let rec compose func1 func2 =
+  match func1 with
+  | SkLetExpr el -> SkLetIn (el, func2)
+  | SkLetIn (el, c) -> SkLetIn (el, compose c func2)
+
 let compose_head assignments func =
   SkLetIn (assignments, func)
 

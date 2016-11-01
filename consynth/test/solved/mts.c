@@ -9,3 +9,14 @@ int mts(int* a, int n) {
   }
   return mts;
 }
+
+/*
+   Auxiliary variable found (sum):
+   aux_1 = aux_1 + a[i]
+
+   Join found with the auxiliary:
+   aux_1 = aux_1-l + aux_1-r
+   mts = max (mts-l + aux_1-r, mts-r)
+
+   in 6.490 s
+*/

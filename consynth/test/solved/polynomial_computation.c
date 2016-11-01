@@ -7,3 +7,10 @@ int polynomial_computation (int *coeffs, int n, int x) {
   }
   return res;
 }
+
+/* Join found without auxiliary variable :
+   res = res-l + factor-l * res-r
+   factor = factor-l * factor-r
+
+   in
+*/

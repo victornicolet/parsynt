@@ -319,7 +319,7 @@ let fp = Format.fprintf in
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
 
   | SkCastE (t,e) ->
-     fp ppf "(%a) %a" pp_symb_type t pp_skexpr e
+     fp ppf "%a" pp_skexpr e
 
   | SkStartOf l -> fp ppf "(StartOf %a)" pp_skexpr l
 

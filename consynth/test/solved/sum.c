@@ -8,7 +8,10 @@ int sum_array(int* a, int n) {
   return sum;
 }
 
-/* (define (__join__ $L $R)
-   (let ((sum-$L ($-sum $L)) (sum-$R ($-sum $R)))
-   ($ (+ (add1 sum-$L) (sub1 sum-$R)))))
-   (define __$0__ ($ 0)) */
+/*
+   Join found without auxiliary variable :
+
+   sum = sum-l + sum-r
+
+   in 1.692 s
+*/

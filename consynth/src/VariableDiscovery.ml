@@ -11,7 +11,7 @@ module T = SketchTypes
 
 let debug = ref false
 
-let max_exec_no = ref 3
+let max_exec_no = ref 10
 
 let discovered_aux = IH.create 10
 
@@ -54,7 +54,7 @@ and accepted_expression e =
 (** Generation of new auxiliary variables *)
 let allvars = ref VS.empty
 
-let aux_var_prefix = ref "x_"
+let aux_var_prefix = ref "aux_"
 
 let aux_var_counter = ref 0
 
@@ -162,11 +162,13 @@ let create_symbol_map vs=
 let function_updater xinfo (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
   let vid, (e, _) = List.nth candidates 0 in
-  let vi = VSOps.find_by_id vid aux_vs in
+  (* Create a new auxiliary to avoid deleting the old one *)
+  let new_vi = gen_fresh (T.type_of e) () in
+  let new_vid = new_vi.vid in
   (* Replace the old expression of the auxiliary by the auxiliary *)
   let replace_aux =
     T.replace_expression
-      e (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs)))
+      e (T.SkVar (T.SkVarinfo new_vi))
       current_expr
   in
 
@@ -189,9 +191,9 @@ let function_updater xinfo (aux_vs, aux_exprs)
       replace_aux
   in
 
-  let updated_exprs = IM.add vid (current_expr, new_f) new_aux_exprs in
+  let updated_exprs = IM.add new_vid (current_expr, new_f) new_aux_exprs in
 
-  (VS.add vi new_aux_vs, updated_exprs)
+  (VS.add new_vi new_aux_vs, updated_exprs)
 
 (** Finding auxiliary variables given a map of state variables to expressions
     and the previous set of auxiliary variables.
@@ -204,7 +206,8 @@ let function_updater xinfo (aux_vs, aux_exprs)
     @return the pair of state variables and mapping from ids to the pair of
     expression and function.
 *)
-let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
+let find_auxiliaries ?(not_last_iteration = true)
+    xinfo expr (aux_var_set, aux_var_map) input_expressions =
   let stv = xinfo.state_set in
   let rec is_stv =
     function
@@ -288,67 +291,86 @@ let find_auxiliaries xinfo expr (aux_var_set, aux_var_map) input_expressions =
          (** TODO : equality under commutatitivty and associativity *)
          eq_AC fe' ne)
   in
-  let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs) cexpr =
+  let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
+      candidate_expr =
+
     let current_expr =
-      reduce_full ~limit:10 VS.empty input_expressions cexpr
+      reduce_full ~limit:10 VS.empty input_expressions candidate_expr
     in
-    if !debug then
-      Format.fprintf Format.std_formatter
-        "Lifting inputs %a transforms @.%a@.to@.%a@."
-        (fun fmt e -> pp_expr_set fmt  ~sep:(fun fmt () -> Format.fprintf fmt " ") e) input_expressions
-        pp_skexpr current_expr pp_skexpr current_expr
-    else ();
-    match find_ce current_expr aux_exprs with
-    (* TODO : how do we choose which expression to use in this
-       case ? Now only pick the first expression to come.
-    *)
-    | (vid, (e,f)):: _ ->
-      assert (e = current_expr);
-      (* The expression is exactly the expression of a aux *)
-      let vi = VSOps.find_by_id vid aux_vs in
-      (VS.add vi new_aux_vs,
-       IM.add vid (e, T.SkVar (T.SkVarinfo vi)) new_aux_exprs)
-
-    | [] ->
-      let ef_list = find_subexpr current_expr aux_exprs in
+    (** Replace subexpressions by their auxliiary *)
+    let current_expr =
+      IM.fold
+        (fun vid e ce ->
+           let vi = VSOps.find_by_id vid xinfo.state_set in
+           T.replace_expression
+             (accumulated_subexpression vi e)
+             (T.SkVar (T.SkVarinfo vi))
+             ce)
+        xinfo.state_exprs current_expr
+    in
+    (** If the expression is already "known", stop here *)
+    match current_expr with
+    | T.SkVar (T.SkVarinfo vi) -> (new_aux_vs, new_aux_exprs)
+    | _ ->
       begin
-        if List.length ef_list > 0
-        then
-          (* A subexpression of the expression is an auxiliary variable *)
-          let corresponding_functions =
-            match_increment aux_vs current_expr ef_list
-          in
+        match find_ce current_expr aux_exprs with
+        (* TODO : how do we choose which expression to use in this
+           case ? Now only pick the first expression to come.
+        *)
+        | (vid, (e,f)):: _ ->
+          assert (eq_AC e current_expr);
+          (* The expression is exactly the expression of a aux *)
+          let vi = VSOps.find_by_id vid aux_vs in
+          (VS.add vi new_aux_vs,
+           IM.add vid (e, T.SkVar (T.SkVarinfo vi)) new_aux_exprs)
+
+        | [] ->
+          let ef_list = find_subexpr current_expr aux_exprs in
           begin
-            if List.length corresponding_functions > 0
+            if List.length ef_list > 0
             then
-              let vid, (e, f) = List.nth corresponding_functions 0 in
-              let vi = VSOps.find_by_id vid aux_vs in
+              (* A subexpression of the expression is an auxiliary variable *)
+              let corresponding_functions =
+                match_increment aux_vs current_expr ef_list
+              in
+              begin
+                if List.length corresponding_functions > 0
+                then
+                  let vid, (e, f) = List.nth corresponding_functions 0 in
+                  let vi = VSOps.find_by_id vid aux_vs in
 
-              (VS.add vi new_aux_vs, IM.add vid (current_expr, f) new_aux_exprs)
+                  (VS.add vi new_aux_vs, IM.add vid (current_expr, f) new_aux_exprs)
 
 
+                else
+                  (* We have to update the function *)
+                if not_last_iteration then
+                  function_updater xinfo (aux_vs, aux_exprs)
+                    current_expr ef_list (new_aux_vs, new_aux_exprs)
+                else
+                  (new_aux_vs, new_aux_exprs)
+              end
             else
-              (* We have to update the function *)
-              function_updater xinfo (aux_vs, aux_exprs)
-                current_expr ef_list (new_aux_vs, new_aux_exprs)
+              (* We have to create a new variable *)
+            if not_last_iteration then
+              let typ = T.type_of current_expr in
+              let new_aux = gen_fresh typ () in
+              let updated_aux = VS.add new_aux new_aux_vs in
+              let updated_exprs =
+                IM.add
+                  new_aux.vid
+                  (current_expr, T.SkVar (T.SkVarinfo new_aux))
+                  new_aux_exprs
+              in
+              (updated_aux, updated_exprs)
+            else
+              (new_aux_vs, new_aux_exprs)
           end
-        else
-          (* We have to create a new variable *)
-          let typ = T.type_of current_expr in
-          let new_aux = gen_fresh typ () in
-          let updated_aux = VS.add new_aux new_aux_vs in
-          let updated_exprs =
-            IM.add
-              new_aux.vid
-              (current_expr, T.SkVar (T.SkVarinfo new_aux))
-              new_aux_exprs
-          in
-          (updated_aux, updated_exprs)
       end
   in
-
+  let candidate_exprs = candidates expr in
   List.fold_left (update_aux (aux_var_set, aux_var_map))
-    (VS.empty, IM.empty) (candidates expr)
+    (VS.empty, IM.empty) candidate_exprs
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
@@ -477,6 +499,7 @@ let discover_for_id stv (idx, update) input_func varid =
 
       let aux_var_set, aux_var_map =
         find_auxiliaries
+          ~not_last_iteration:(i < !max_exec_no)
           xinfo
           (IM.find varid new_exprs)
           (aux_var_set, aux_var_map)
@@ -504,7 +527,9 @@ let discover_for_id stv (idx, update) input_func varid =
     fixpoint 0 init_i VS.empty IM.empty
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
-
+  let clean_aux, clean_aux_ef =
+    remove_duplicate_auxiliaries init_i (aux_vs, aux_ef) input_func
+  in
 
   VS.iter (fun vi -> IH.add discovered_aux vi.Cil.vid vi) aux_vs;
   (** Finally add the auxliaries at the beginning of the function. Since the
@@ -513,15 +538,20 @@ let discover_for_id stv (idx, update) input_func varid =
       the beginning.
       Return the union of the new auxiliaries and the state variables.
   *)
-  if !debug then
-    printf "@.DISCOVER for variable %i finished.@." varid;
-  printf "@.NEW VARIABLES : %a@." VSOps.pvs aux_vs;
 
   (** Remove redundant auxiliaries : auxiliaries that have the same expressions
       as state variables *)
-  let clean_aux, clean_aux_ef =
-    remove_duplicate_auxiliaries init_i (aux_vs, aux_ef) input_func
-  in
+  if !debug then
+    begin
+      printf "@.DISCOVER for variable %i finished.@." varid
+    end;
+  printf "@.NEW VARIABLES :@.";
+  VS.iter
+    (fun vi ->
+       printf "@.(%i : %s) = (%a,@; %a)@." vi.C.vid vi.C.vname
+         pp_skexpr (fst (IM.find vi.C.vid aux_ef))
+         pp_skexpr (snd (IM.find vi.C.vid aux_ef))
+    ) aux_vs;
   compose init_i input_func clean_aux clean_aux_ef
 
 
