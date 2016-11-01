@@ -293,7 +293,6 @@ let find_auxiliaries ?(not_last_iteration = true)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
       candidate_expr =
-
     let current_expr =
       reduce_full ~limit:10 VS.empty input_expressions candidate_expr
     in
@@ -368,6 +367,8 @@ let find_auxiliaries ?(not_last_iteration = true)
           end
       end
   in
+  printf "@.Expr to analyze : %a@." pp_skexpr
+    (reduce_full xinfo.state_set T.ES.empty expr);
   let candidate_exprs = candidates expr in
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) candidate_exprs

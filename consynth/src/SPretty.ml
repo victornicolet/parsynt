@@ -247,10 +247,15 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
   | SkVarinfo v ->
 	fprintf ppf "%s" v.Cil.vname
   | SkArray (v, offset) ->
+    let offset_str =
+      fprintf str_formatter "%a" pp_skexpr offset;
+      flush_str_formatter ()
+    in
       if !print_imp_style then
-        fprintf ppf "%a[%a]" pp_sklvar v pp_skexpr offset
+        fprintf ppf "%a[%s]" pp_sklvar v offset_str
       else
-	   fprintf ppf "(vector-ref %a %a)" pp_sklvar v pp_skexpr offset
+	fprintf ppf "(vector-ref %a %s)" pp_sklvar v offset_str
+
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in

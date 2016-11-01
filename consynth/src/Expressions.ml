@@ -458,7 +458,7 @@ let transform_conj_comps e =
 (** Put all the special rules here *)
 let apply_special_rules stv cexprs e =
   let e' = transform_all_comparisons e in
-  let e'' =   transform_conj_comps e' in
+  let e'' = transform_conj_comps e' in
   factorize stv cexprs e''
 
 let accumulated_subexpression vi e =
