@@ -11,7 +11,7 @@ module T = SketchTypes
 
 let debug = ref false
 
-let max_exec_no = ref 3
+let max_exec_no = ref 2
 
 let discovered_aux = IH.create 10
 
@@ -159,7 +159,7 @@ let create_symbol_map vs=
     (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
 
 
-let function_updater xinfo (aux_vs, aux_exprs)
+let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
   let vid, (e, _) = List.nth candidates 0 in
   (* Create a new auxiliary to avoid deleting the old one *)
@@ -171,7 +171,18 @@ let function_updater xinfo (aux_vs, aux_exprs)
       e (T.SkVar (T.SkVarinfo new_vi))
       current_expr
   in
-
+  let current_expr =
+    IM.fold
+      (fun vid e ce ->
+         let vi = VSOps.find_by_id vid xinfo.state_set in
+         replace_AC
+           (xinfo_aux.state_set, T.ES.empty)
+           (T.SkVar (T.SkVarinfo vi))
+           (accumulated_subexpression vi e)
+           ce)
+      xinfo_aux.state_exprs
+      current_expr
+  in
   let new_f =
     IM.fold
       (fun idx_id idx_expr e ->
@@ -193,8 +204,8 @@ let function_updater xinfo (aux_vs, aux_exprs)
 
   let updated_exprs = IM.add new_vid (current_expr, new_f) new_aux_exprs in
   if !debug then
-    printf "@.Updated %s, now has accumulator : %a@."
-      new_vi.vname pp_skexpr new_f;
+    printf "@.Updated %s, now has accumulator : %a and expression %a@."
+      new_vi.vname pp_skexpr new_f pp_skexpr current_expr;
 
   (VS.add new_vi new_aux_vs, updated_exprs)
 
@@ -209,8 +220,9 @@ let function_updater xinfo (aux_vs, aux_exprs)
     @return the pair of state variables and mapping from ids to the pair of
     expression and function.
 *)
-let find_auxiliaries ?(not_last_iteration = true)
-    xinfo expr (aux_var_set, aux_var_map) input_expressions =
+let find_auxiliaries ?(not_last_iteration = true) i
+    xinfo xinfo_aux expr
+    (aux_var_set, aux_var_map) input_expressions =
   let stv = xinfo.state_set in
   let rec is_stv =
     function
@@ -246,8 +258,7 @@ let find_auxiliaries ?(not_last_iteration = true)
     T.rec_expr
       (fun a b -> a@b)
       []
-      (fun e ->
-         let v = is_candidate e in v)
+      is_candidate
       handle_candidate
       (fun c -> [])
       (fun v -> [])
@@ -276,7 +287,8 @@ let find_auxiliaries ?(not_last_iteration = true)
          (** Exec expr, replace index variables by their expression and
              other variables by their expression.
          *)
-         let fe', _ = exec_expr xinfo fe in
+         let fe', _ = exec_expr {xinfo with state_set = VS.empty} fe in
+
          (* Finish the work by replacing the auxiliary by its expression. *)
          let fe' =
            T.replace_expression
@@ -291,18 +303,21 @@ let find_auxiliaries ?(not_last_iteration = true)
       candidate_expr =
     (** Replace subexpressions by their auxliiary *)
     let current_expr =
-      IM.fold
-        (fun vid e ce ->
-           let vi = VSOps.find_by_id vid xinfo.state_set in
-           replace_AC
-             (xinfo.state_set, T.ES.empty)
-             (accumulated_subexpression vi e)
-             (T.SkVar (T.SkVarinfo vi))
-             ce)
-        xinfo.state_exprs candidate_expr
+      if i > 0 then
+        IM.fold
+          (fun vid e ce ->
+             let vi = VSOps.find_by_id vid xinfo.state_set in
+             replace_AC
+               (xinfo_aux.state_set, T.ES.empty)
+               (accumulated_subexpression vi e)
+               (T.SkVar (T.SkVarinfo vi))
+               ce)
+          xinfo_aux.state_exprs candidate_expr
+      else
+        candidate_expr
     in
     let current_expr =
-      reduce_full ~limit:10 VS.empty input_expressions current_expr
+      reduce_full ~limit:10 xinfo_aux.state_set input_expressions current_expr
     in
     (** If the expression is already "known", stop here *)
     match current_expr with
@@ -310,6 +325,7 @@ let find_auxiliaries ?(not_last_iteration = true)
       if !debug then
         printf "@.Elim %a, we have it in %s@."
           pp_skexpr current_expr vi.vname;
+      (** No change to the auxiliary variable set *)
       (new_aux_vs, new_aux_exprs)
 
     | _ ->
@@ -350,7 +366,8 @@ let find_auxiliaries ?(not_last_iteration = true)
                 else
                   (* We have to update the function *)
                 if not_last_iteration then
-                  function_updater xinfo (aux_vs, aux_exprs)
+                  function_updater xinfo xinfo_aux
+                    (aux_vs, aux_exprs)
                     current_expr ef_list (new_aux_vs, new_aux_exprs)
                 else
                   (new_aux_vs, new_aux_exprs)
@@ -474,8 +491,7 @@ let discover_for_id stv (idx, update) input_func varid =
       changed.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
-    if !debug then Format.printf "Unrolling %i@."i else ();
-
+    if !debug then Format.printf "@.---Unrolling %i---@."i else ();
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
@@ -503,11 +519,11 @@ let discover_for_id stv (idx, update) input_func varid =
       in
       (** Find the new set of auxliaries by analyzing the expressions at the
           current expansion level *)
-
+      let xinfo' = { xinfo with state_exprs = new_exprs} in
       let aux_var_set, aux_var_map =
-        find_auxiliaries
+        find_auxiliaries i
           ~not_last_iteration:(i < !max_exec_no)
-          xinfo
+          xinfo xinfo'
           (IM.find varid new_exprs)
           (aux_var_set, aux_var_map)
           input_expressions
@@ -516,6 +532,7 @@ let discover_for_id stv (idx, update) input_func varid =
          Generate the new information for the next iteration and the set
           of auxilaries with their expressions at the current expansion
       *)
+
       {xinfo with state_exprs = new_exprs;
                   index_exprs = new_idx_exprs;
                   inputs = input_expressions },
@@ -523,7 +540,8 @@ let discover_for_id stv (idx, update) input_func varid =
     in
     (** WIP To avoid non-termination simply use a limit, can find better
         solution *)
-    if (i > !max_exec_no) || (same_aux aux_var_map new_aux_exprs)
+    printf "@.--------------------@.";
+    if (i > !max_exec_no - 1) || (same_aux aux_var_map new_aux_exprs)
     then
       new_xinfo, (new_var_set, new_aux_exprs)
     else
