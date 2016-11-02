@@ -35,6 +35,8 @@ let is_left_distributive op1 op2 =
   (**  a op2 (b op1 c) = (a op1 b) op2 (a op1 c) *)
   match op1, op2 with
   | Plus, Times
+  | Max, Plus
+  | Min, Plus
   | Or, And -> true
   | _ , _ -> false
 
@@ -295,8 +297,8 @@ let __factorize__ stv cexprs top_op el =
               List.partition
                 (fun e ->
                    match e with
-                   | SkBinop (op', e1', ee) when
-                       op' = op && eq_AC e1' e1 -> true
+                   | SkBinop (op', e1', ee) when op' = op && eq_AC e1' e1 ->
+                     true
                    | _ -> false) tl
             in
             let _, sim_exprs_snd = extract_operand_lists sim_exprs in
@@ -466,3 +468,55 @@ let accumulated_subexpression vi e =
   | SkBinop (op, SkVar (SkVarinfo vi), acc) -> acc
   | SkBinop (op, acc, SkVar (SkVarinfo vi)) -> acc
   | _ -> e
+
+
+(** Transformations taking AC in account *)
+let replace_AC (vs, cexprs) to_replace by_expr in_expr =
+  let flat_tr = flatten_AC to_replace in
+  let flat_by = flatten_AC by_expr in
+  let flat_in = flatten_AC in_expr in
+  let case =
+    function
+    | SkApp (_, Some opvar, _) ->
+      (try ignore(op_from_name opvar.vname); true with Not_found -> false)
+    | e when eq_AC e flat_tr -> true
+    | _ -> false
+  in
+  let handle_case rfunc =
+    function
+    | SkApp (t, Some opvar, el) ->
+      let op = op_from_name opvar.vname in
+      begin
+        match flat_tr with
+        | SkApp (t', Some opvar', el') ->
+          let op' = op_from_name opvar'.vname in
+          if op = op' then
+            begin
+              (* Split the super list in terms shared by the expression to
+                 replace and other expressions *)
+              let common_terms, remaining_terms =
+                List.partition
+                  (fun e -> List.mem e el') el
+              in
+              (* To have a matchimg expression all the terms in the term to
+                 replace must be in the super term *)
+              let common_is_el' =
+                List.for_all (fun e -> List.mem e common_terms) el' in
+              begin
+                if common_is_el' then
+                  let raw_term = SkApp (t, Some opvar, remaining_terms@[flat_by]) in
+                  flatten_AC (rebuild_tree_AC vs cexprs raw_term)
+                else
+                  SkApp (t, Some opvar, List.map rfunc el)
+              end (* END if common_is_el' *)
+            end
+          else
+            SkApp (t, Some opvar, List.map rfunc el)
+    (* END if op = op' *)
+    | _ -> SkApp (t, Some opvar, List.map rfunc el)
+end
+| e when eq_AC e flat_tr -> flat_by
+       | _ -> failwith "Unexpected case in replace_AC"
+in
+rebuild_tree_AC vs cexprs
+  (transform_expr case handle_case identity identity flat_in)

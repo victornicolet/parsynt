@@ -21,6 +21,7 @@ let reduce_cost stv c_exprs expr =
     | SkQuestion (_, _,_) -> true
     | _ -> false
   in
+  (* Tranform expressions by looking at its leaves *)
   let reduce_transform rfunc expr =
     match expr with
     | SkBinop (op2, x, y) ->
@@ -29,21 +30,21 @@ let reduce_cost stv c_exprs expr =
       begin
         match x', y' with
         | SkBinop (op1, a, b), c ->
-          let a' = rfunc a in
-          let b' = rfunc b in
-          let c' = c in
-          let ca = cost stv c_exprs a' in
-          let cb = cost stv c_exprs b' in
-          let cc = cost stv c_exprs c' in
+          let ca = cost stv c_exprs a in
+          let cb = cost stv c_exprs b in
+          let cc = cost stv c_exprs c in
           (* [(a + b) * c --> a*c + b*c] if no stv in c *)
-          if is_right_distributive op1 op2 && ((max ca cb) > cc)
+          if is_right_distributive op1 op2 && ((max ca cb) >= cc)
           then
-            SkBinop (op1, rfunc (SkBinop (op2, a', c')),
-                     rfunc (SkBinop (op2, b', c')))
+            SkBinop (op1, (SkBinop (op2, a, c)),
+                      (SkBinop (op2, b, c)))
+
           else
-            expr
+            SkBinop (op2, x', y')
+
         | _, _ -> SkBinop (op2, x', y')
-      end
+      end (* End SkBinop (c, x, y) case *)
+
     | SkQuestion (c, x, y)->
       let x' = rfunc x in let y' = rfunc y in
       let c = rfunc c in
@@ -67,25 +68,29 @@ let reduce_cost stv c_exprs expr =
                 SkQuestion (c, x', y')
             end
         | _, _ -> SkQuestion (c, x', y')
-      end
-    | SkUnop (op, e) -> SkUnop(op, rfunc e)
-    | e -> rfunc e
+      end (* End SkQuestion (c, x, y) case *)
+    | _ -> failwith "Unexpected case in expression transformation"
+
+    (* End transform expressions *)
   in
   transform_expr reduction_cases reduce_transform identity identity expr
 
 
 
 let reduce_full ?(limit = 10) stv c_exprs expr =
-  let rec aux_apply_ternary_rules limit red_expr =
-    let red_expr = reduce_cost stv c_exprs expr in
-    if red_expr = expr || limit = 0
+  let rec aux_apply_ternary_rules limit e =
+    let red_expr = reduce_cost stv c_exprs e in
+    if eq_AC red_expr e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr
   in
+  let rules_AC e =
+      let flat_r = (flatten_AC e) in
+      let r1 = apply_special_rules stv c_exprs flat_r in
+      rebuild_tree_AC stv c_exprs r1
+  in
   let r0 = aux_apply_ternary_rules limit expr in
-  let flat_r = (flatten_AC r0) in
-  let r1 = apply_special_rules stv c_exprs flat_r in
-  let r2 = rebuild_tree_AC stv c_exprs r1 in
+  let r2 = rules_AC r0 in
   r2
 
 

@@ -572,7 +572,9 @@ let transform_expr
 
   let rec recurse_aux =
     function
-    | e when case e -> case_handler recurse_aux e
+    | e when case e ->
+      case_handler recurse_aux e
+
     | SkVar v -> SkVar (var_handler v)
     | SkConst c -> SkConst (const_handler c)
 

@@ -11,7 +11,7 @@ module T = SketchTypes
 
 let debug = ref false
 
-let max_exec_no = ref 10
+let max_exec_no = ref 3
 
 let discovered_aux = IH.create 10
 
@@ -31,7 +31,7 @@ let rec check_wf (input_function : T.sklet) (stv : VS.t) : T.sklet =
     failwith "TODO : body with inner dependencies"
 
 and check_wf_assignments (assignments : (T.skLVar * T.skExpr) list)
-    (state : VS.t)=
+    (state : VS.t) =
   try
     List.iter
       (fun (v, e) ->
@@ -192,6 +192,9 @@ let function_updater xinfo (aux_vs, aux_exprs)
   in
 
   let updated_exprs = IM.add new_vid (current_expr, new_f) new_aux_exprs in
+  if !debug then
+    printf "@.Updated %s, now has accumulator : %a@."
+      new_vi.vname pp_skexpr new_f;
 
   (VS.add new_vi new_aux_vs, updated_exprs)
 
@@ -244,10 +247,7 @@ let find_auxiliaries ?(not_last_iteration = true)
       (fun a b -> a@b)
       []
       (fun e ->
-         let v = is_candidate e in
-         if !debug && v
-         then printf "Candidate : %a@." pp_skexpr e else ();
-         v)
+         let v = is_candidate e in v)
       handle_candidate
       (fun c -> [])
       (fun v -> [])
@@ -285,31 +285,33 @@ let find_auxiliaries ?(not_last_iteration = true)
          in
          (* We keep the expressions such that applying the function associated
             to the auxiliary yields the current matched expression *)
-         if !debug then
-           printf "@.Matching increment : (%a == %a) = %B@."
-             pp_skexpr fe' pp_skexpr ne (fe' = ne);
-         (** TODO : equality under commutatitivty and associativity *)
          eq_AC fe' ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
       candidate_expr =
-    let current_expr =
-      reduce_full ~limit:10 VS.empty input_expressions candidate_expr
-    in
     (** Replace subexpressions by their auxliiary *)
     let current_expr =
       IM.fold
         (fun vid e ce ->
            let vi = VSOps.find_by_id vid xinfo.state_set in
-           T.replace_expression
+           replace_AC
+             (xinfo.state_set, T.ES.empty)
              (accumulated_subexpression vi e)
              (T.SkVar (T.SkVarinfo vi))
              ce)
-        xinfo.state_exprs current_expr
+        xinfo.state_exprs candidate_expr
+    in
+    let current_expr =
+      reduce_full ~limit:10 VS.empty input_expressions current_expr
     in
     (** If the expression is already "known", stop here *)
     match current_expr with
-    | T.SkVar (T.SkVarinfo vi) -> (new_aux_vs, new_aux_exprs)
+    | T.SkVar (T.SkVarinfo vi) ->
+      if !debug then
+        printf "@.Elim %a, we have it in %s@."
+          pp_skexpr current_expr vi.vname;
+      (new_aux_vs, new_aux_exprs)
+
     | _ ->
       begin
         match find_ce current_expr aux_exprs with
@@ -337,8 +339,12 @@ let find_auxiliaries ?(not_last_iteration = true)
                 then
                   let vid, (e, f) = List.nth corresponding_functions 0 in
                   let vi = VSOps.find_by_id vid aux_vs in
+                  if !debug then
+                    printf "@.Variable %s is incremented by %a@."
+                      vi.vname pp_skexpr f;
 
-                  (VS.add vi new_aux_vs, IM.add vid (current_expr, f) new_aux_exprs)
+                  (VS.add vi new_aux_vs,
+                   IM.add vid (current_expr, f) new_aux_exprs)
 
 
                 else
@@ -361,14 +367,16 @@ let find_auxiliaries ?(not_last_iteration = true)
                   (current_expr, T.SkVar (T.SkVarinfo new_aux))
                   new_aux_exprs
               in
+              if !debug then
+                printf "@.Adding new variable %s : %a@." new_aux.vname
+                  pp_skexpr current_expr;
+
               (updated_aux, updated_exprs)
             else
               (new_aux_vs, new_aux_exprs)
           end
       end
   in
-  printf "@.Expr to analyze : %a@." pp_skexpr
-    (reduce_full xinfo.state_set T.ES.empty expr);
   let candidate_exprs = candidates expr in
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) candidate_exprs
@@ -479,8 +487,6 @@ let discover_for_id stv (idx, update) input_func varid =
           (reduction_with_warning xinfo.state_set T.ES.empty)
           exprs_map
       in
-      if !debug then Format.printf "Expression : %a@."
-          pp_skexpr (IM.find varid new_exprs);
       (** Compute the new expressions for the index *)
       let xinfo_index = { state_set = xinfo.index_set ;
                           state_exprs = xinfo.index_exprs ;
