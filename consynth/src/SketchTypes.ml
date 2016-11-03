@@ -854,6 +854,7 @@ let rec pp_typ fmt t =
 let rec is_subtype t tmax =
   match t, tmax with
   | t, tmax when t = tmax -> true
+  | Boolean, Integer | Integer, Boolean -> true
   | Integer, Real -> true
   | Num, Real | Real, Num -> true
   | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
@@ -870,6 +871,8 @@ let rec res_type t =
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
+  | Boolean, Integer -> Boolean
+  | Integer, Boolean -> Boolean
   | Integer, Real | Real, Integer
   | Num, Real | Real, Num -> Real
   | Integer, Num | Num, Integer -> Num

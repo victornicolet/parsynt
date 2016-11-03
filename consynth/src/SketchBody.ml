@@ -271,40 +271,98 @@ let apply_remove sklet =
      let new_rewrites = List.map el ~f:remove_simple_state_rewritings in
      SkLetIn (new_rewrites, cont)
 
-let rearrange_ternary_expression (var, expr) =
+let rebuild_and_expressions (var, expr) =
   let to_rearrange expr =
     match expr with
-    | SkQuestion (c, e1, e2) ->
-      begin
-        match e1, e2 with
-        | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
-          true
-        | _ , _ -> false
-      end
+    | SkQuestion (c, e1, e2) -> true
     | _ -> false
   in
   let rearrange_aux rfunc expr =
     match expr with
     | SkQuestion (c, e1, e2) ->
+      let c = rfunc c in
       let e1' = rfunc e1 in
       let e2' = rfunc e2 in
       begin
         match e1', e2' with
+        (* if (a) then if (b) x : y else y -> if (a && b) then x else y *)
         | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
-          SkQuestion (SkBinop(And, c, c'), e1bis, e1ter)
+          SkQuestion (SkBinop (And, c, c'), e1bis, e1ter)
         | _ , _ -> expr
       end
-    | _ -> expr
+    | _ -> failwith "Unexpected case."
   in
   (var, transform_expr to_rearrange rearrange_aux ident ident expr)
+
+let rebuild_simple_or (var, expr) =
+  let to_rearrange expr =
+    match expr with
+    | SkQuestion (c, e1, e2) -> true
+    | _ -> false
+  in
+  let rearrange_aux rfunc expr =
+    match expr with
+    | SkQuestion (c, e1, e2) ->
+      let c = rfunc c in
+      let e1' = rfunc e1 in
+      let e2' = rfunc e2 in
+      begin
+        match e1', e2' with
+        (* if (a) then true else e --> a or e *)
+        | SkConst (CInt 1), e
+        | SkConst (CInt64 1L), e
+        | SkConst (CBool true), e ->
+          SkBinop (Or, c, e)
+        | _ , _ -> expr
+      end
+    | _ -> failwith "Unexpected case."
+  in
+  (var, transform_expr to_rearrange rearrange_aux ident ident expr)
+
 
 let rec apply_rearrange sklet =
   match sklet with
   | SkLetExpr el ->
-    SkLetExpr (List.map ~f:rearrange_ternary_expression el)
+    SkLetExpr (List.map ~f:rebuild_simple_or
+                 (List.map ~f:rebuild_and_expressions el))
   | SkLetIn (el, cont) ->
-     SkLetIn (List.map ~f:rearrange_ternary_expression el, apply_rearrange cont)
+    SkLetIn (List.map ~f:rebuild_simple_or
+                (List.map ~f:rebuild_and_expressions el), apply_rearrange cont)
 
+(** Enforce conversion of 0s and 1s that should be boolean *)
+let force_boolean_constants (v, e) =
+  let cast_bool_cst cst =
+    match cst with
+    | SkConst c ->
+      let new_c =
+        match c with
+        | CInt 1 | CBool true | CInt64 1L -> CBool true
+        | CInt 0 | CBool false | CInt64 0L -> CBool false
+        | _ -> c
+      in SkConst new_c
+    | _ -> cst
+  in
+  let candidate e =
+    match e with
+    | SkBinop (op, _, _) when (op = Or || op  = And) -> true
+    | SkQuestion (_, e1, e2) when (type_of e1 = Boolean) ||
+                                  (type_of e2 = Boolean) -> true
+    | _ -> false
+  in
+  let force_bool rfunc e =
+    match e with
+    | SkBinop (op, e1, e2) when (op = Or || op  = And) ->
+      let e1' = rfunc e1 in let e2' = rfunc e2 in
+      SkBinop (op, cast_bool_cst e1', cast_bool_cst e2')
+
+    | SkQuestion (c, e1, e2) when (type_of e1 = Boolean) ||
+                                  (type_of e2 = Boolean) ->
+      let e1' = rfunc e1 in let e2' = rfunc e2 in let c' = rfunc c in
+      SkQuestion (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
+
+    | _ -> failwith "Unexpected case in force_bool"
+  in
+  (v, transform_expr candidate force_bool identity identity e)
 
 (** Transform expressions (if c true false) in c *)
 let transform_boolean_if_expression =
@@ -313,6 +371,14 @@ let transform_boolean_if_expression =
     | SkQuestion (c, SkConst (CBool true),SkConst (CBool false))
     | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0))
     | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> true
+    | SkBinop (Or, SkConst (CBool true), _)
+    | SkBinop (Or,_, SkConst (CBool true)) -> true
+    | SkBinop (Or, SkConst (CBool false), _)
+    | SkBinop (Or,_, SkConst (CBool false)) -> true
+    | SkBinop (And, SkConst (CBool true), _)
+    | SkBinop (And,_, SkConst (CBool true)) -> true
+    | SkBinop (And, SkConst (CBool false), _)
+    | SkBinop (And,_, SkConst (CBool false)) -> true
     | _ -> false
   in
   let transform_bool rfunc e =
@@ -320,6 +386,14 @@ let transform_boolean_if_expression =
     | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) -> rfunc c
     | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0)) -> rfunc c
     | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> rfunc c
+    | SkBinop (Or, SkConst (CBool true), _)
+    | SkBinop (Or,_, SkConst (CBool true)) -> SkConst (CBool true)
+    | SkBinop (Or, SkConst (CBool false), c)
+    | SkBinop (Or, c, SkConst (CBool false)) -> rfunc c
+    | SkBinop (And, SkConst (CBool true), c)
+    | SkBinop (And, c, SkConst (CBool true)) ->  rfunc c
+    | SkBinop (And, SkConst (CBool false), _)
+    | SkBinop (And,_, SkConst (CBool false)) -> SkConst (CBool false)
     | _ -> failwith "transform_boolean_expression : bad case"
   in
   transform_expr case
@@ -335,16 +409,16 @@ let booleanize (v, e) =
 let rec remove_boolean_ifs sklet =
   match sklet with
   | SkLetExpr el ->
-    SkLetExpr (List.map ~f:booleanize el)
+    SkLetExpr (List.map ~f:booleanize (List.map ~f:force_boolean_constants el))
   | SkLetIn (el, cont) ->
-    SkLetIn (List.map ~f:booleanize el,
+    SkLetIn (List.map ~f:booleanize (List.map ~f:force_boolean_constants el),
              remove_boolean_ifs cont)
 
 
 (** Apply all optimizations *)
 let optims sklet =
   let sklet' = apply_remove sklet in
-  remove_boolean_ifs (apply_rearrange sklet')
+  apply_rearrange ( remove_boolean_ifs sklet')
 
 
 (*** MAIN ENTRY POINT ***)
