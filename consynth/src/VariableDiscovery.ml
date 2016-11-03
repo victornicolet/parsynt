@@ -6,8 +6,7 @@ open ExpressionReduction
 open SymbExe
 open VUtils
 open Expressions
-
-module T = SketchTypes
+open SketchTypes
 
 let debug = ref false
 
@@ -161,14 +160,13 @@ let create_symbol_map vs=
 
 let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
-  let vid, (e, _) = List.nth candidates 0 in
+  let vid, aux = List.nth candidates 0 in
   (* Create a new auxiliary to avoid deleting the old one *)
-  let new_vi = gen_fresh (T.type_of e) () in
-  let new_vid = new_vi.vid in
+  let new_vi = gen_fresh (T.type_of aux.aexpr) () in
   (* Replace the old expression of the auxiliary by the auxiliary *)
   let replace_aux =
     T.replace_expression
-      e (T.SkVar (T.SkVarinfo new_vi))
+      aux.aexpr (T.SkVar (T.SkVarinfo new_vi))
       current_expr
   in
   let current_expr =
@@ -201,8 +199,11 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
       xinfo.index_exprs
       replace_aux
   in
+  let dependencies = used_in_skexpr new_f in
+  let updated_exprs = IM.add new_vi.vid
+      { avarinfo = new_vi; aexpr = current_expr;
+        afunc = new_f; depends = dependencies} new_aux_exprs in
 
-  let updated_exprs = IM.add new_vid (current_expr, new_f) new_aux_exprs in
   if !debug then
     printf "@.Updated %s, now has accumulator : %a and expression %a@."
       new_vi.vname pp_skexpr new_f pp_skexpr current_expr;
@@ -266,7 +267,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
   in
   (** Find in a expression map the bindings matching EXACTLY the expression *)
   let find_ce to_match emap =
-    let cemap = IM.filter (fun vid (auxe, f) -> eq_AC auxe to_match) emap in
+    let cemap = IM.filter (fun vid aux -> eq_AC aux.aexpr to_match) emap in
     IM.bindings cemap
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
@@ -274,7 +275,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
   let find_subexpr top_expr emap =
     T.rec_expr
       (fun a b -> a@b) []
-      (fun e -> IM.exists (fun vid (auxe, f) -> eq_AC auxe e) emap)
+      (fun e -> IM.exists (fun vid aux -> eq_AC aux.aexpr e) emap)
       (fun e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
       top_expr
@@ -283,16 +284,16 @@ let find_auxiliaries ?(not_last_iteration = true) i
       the new expression. *)
   let match_increment aux_vs ne =
     List.filter
-      (fun (vid, (e, fe)) ->
+      (fun (vid, aux) ->
          (** Exec expr, replace index variables by their expression and
              other variables by their expression.
          *)
-         let fe', _ = exec_expr {xinfo with state_set = VS.empty} fe in
+         let fe', _ = exec_expr {xinfo with state_set = VS.empty} aux.afunc in
 
          (* Finish the work by replacing the auxiliary by its expression. *)
          let fe' =
            T.replace_expression
-             (T.SkVar (T.SkVarinfo (VSOps.find_by_id vid aux_vs))) e
+             (T.SkVar (T.SkVarinfo aux.avarinfo)) aux.aexpr
              fe'
          in
          (* We keep the expressions such that applying the function associated
@@ -334,12 +335,12 @@ let find_auxiliaries ?(not_last_iteration = true) i
         (* TODO : how do we choose which expression to use in this
            case ? Now only pick the first expression to come.
         *)
-        | (vid, (e,f)):: _ ->
-          assert (eq_AC e current_expr);
+        | (vid, aux):: _ ->
+          assert (eq_AC aux.aexpr current_expr);
           (* The expression is exactly the expression of a aux *)
           let vi = VSOps.find_by_id vid aux_vs in
           (VS.add vi new_aux_vs,
-           IM.add vid (e, T.SkVar (T.SkVarinfo vi)) new_aux_exprs)
+           IM.add vid aux new_aux_exprs)
 
         | [] ->
           let ef_list = find_subexpr current_expr aux_exprs in
@@ -353,14 +354,13 @@ let find_auxiliaries ?(not_last_iteration = true) i
               begin
                 if List.length corresponding_functions > 0
                 then
-                  let vid, (e, f) = List.nth corresponding_functions 0 in
-                  let vi = VSOps.find_by_id vid aux_vs in
+                  let vid, aux = List.nth corresponding_functions 0 in
                   if !debug then
                     printf "@.Variable %s is incremented by %a@."
-                      vi.vname pp_skexpr f;
+                      aux.avarinfo.vname pp_skexpr aux.afunc;
 
-                  (VS.add vi new_aux_vs,
-                   IM.add vid (current_expr, f) new_aux_exprs)
+                  (VS.add aux.avarinfo new_aux_vs,
+                   IM.add vid { aux with aexpr = current_expr } new_aux_exprs)
 
 
                 else
@@ -381,7 +381,10 @@ let find_auxiliaries ?(not_last_iteration = true) i
               let updated_exprs =
                 IM.add
                   new_aux.vid
-                  (current_expr, T.SkVar (T.SkVarinfo new_aux))
+                  { avarinfo = new_aux;
+                    aexpr = current_expr;
+                    afunc = T.SkVar (T.SkVarinfo new_aux);
+                    depends = VS.singleton new_aux }
                   new_aux_exprs
               in
               if !debug then
@@ -407,7 +410,7 @@ let compose xinfo f aux_vs aux_ef =
   let new_func =
     T.compose_head
       (IM.fold
-         (fun aux_vid (e, f) assgn_list ->
+         (fun aux_vid aux assgn_list ->
             (** Distinguish different cases :
                 - the function is not identity but an accumulator, we add the
                 function 'as is' in the loop body.
@@ -416,8 +419,10 @@ let compose xinfo f aux_vs aux_ef =
                 - the function f is the identity, then the auxliary variable
                 depends on a finite prefix of the inputs. The expression depends
                 on the starting index
+
+                Analyse expressions to respect dependencies.
             *)
-            match f with
+            match aux.afunc with
             | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
               (* Replace index by "start index" variable *)
               let aux_expression =
@@ -427,43 +432,16 @@ let compose xinfo f aux_vs aux_ef =
                         ~in_subscripts:true
                         (T.mkVarExpr index)
                         (T.mkVarExpr (T.left_index_vi index)) expr))
-                       xinfo.index_set e
+                       xinfo.index_set aux.aexpr
               in
                 assgn_list@[(T.SkVarinfo v, aux_expression)]
             | _ ->
-              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), f])
+              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)),
+                          aux.afunc])
          aux_ef [])
       f
   in
   (new_stv, new_func)
-
-let same_aux old_aux new_aux =
-  if IM.cardinal old_aux != IM.cardinal new_aux
-  then false
-  else
-    IM.fold
-      (fun n_vid (n_expr, n_f) same ->
-         try
-           (let  o_expr, o_f = IM.find n_vid old_aux in
-            if o_f = n_f then true && same else false)
-         with Not_found -> false)
-      new_aux
-      true
-
-let reduction_with_warning stv expset expr =
-  let reduced_expression = reduce_full stv expset expr in
-  if (expr = reduced_expression) && !debug then
-    begin
-      Format.fprintf Format.std_formatter
-        "%sWarning%s : expression @;%a@; unchanged after \
-         reduction with state %a @; and expressions %a @."
-        (PpHelper.color "red") PpHelper.default
-        SPretty.pp_skexpr reduced_expression
-        VSOps.pvs stv
-        (fun fmt a -> SPretty.pp_expr_set fmt a) expset
-    end
-  else ();
-  reduced_expression
 
 
 (** Discover a set a auxiliary variables for a given variable.
@@ -574,9 +552,9 @@ let discover_for_id stv (idx, update) input_func varid =
   VS.iter
     (fun vi ->
        printf "@.(%i : %s) = (%a,@; %a)@." vi.C.vid vi.C.vname
-         pp_skexpr (fst (IM.find vi.C.vid aux_ef))
-         pp_skexpr (snd (IM.find vi.C.vid aux_ef))
-    ) aux_vs;
+         pp_skexpr (IM.find vi.C.vid clean_aux_ef).aexpr
+         pp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
+    ) clean_aux;
   compose init_i input_func clean_aux clean_aux_ef
 
 

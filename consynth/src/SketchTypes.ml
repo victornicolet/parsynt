@@ -690,6 +690,17 @@ let rec complete_final_state stv func =
   | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
 
 
+let used_in_skexpr =
+  let join = VS.union in
+  let init = VS.empty in
+  let case e = false in
+  let case_h e = VS.empty in
+  let var_handler v =
+    let vi = vi_of v in
+    match vi with | Some vi -> VS.singleton vi | _ -> VS.empty
+  in
+  let const_handler c= VS.empty in
+  rec_expr join init case case_h const_handler var_handler
 
 (** ------------------------ 4 - SCHEME <-> SKETCH -------------------------- *)
 (** Translate basic scheme to the Sketch expressions
