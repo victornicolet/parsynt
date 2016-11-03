@@ -9,6 +9,7 @@ open Expressions
 open SketchTypes
 
 let debug = ref false
+let debug_dev = ref true
 
 let max_exec_no = ref 2
 
@@ -181,24 +182,9 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
       xinfo_aux.state_exprs
       current_expr
   in
-  let new_f =
-    IM.fold
-      (fun idx_id idx_expr e ->
-         try
-           (* Replace the index expressions by the index itself *)
-           T.replace_expression ~in_subscripts:true
-             idx_expr
-             (T.SkVar
-                (T.SkVarinfo
-                   (VSOps.find_by_id idx_id xinfo.index_set))) e
-         with Not_found ->
-           Format.eprintf "@.Index with id %i not found in %a.@."
-             idx_id VSOps.pvs xinfo.index_set;
-           raise Not_found
-      )
-      xinfo.index_exprs
-      replace_aux
-  in
+  (** Transform all a(i + ...) into a(i) if i + ... is the
+      current index expression *)
+  let new_f = reset_index_expressions xinfo replace_aux in
   let dependencies = used_in_skexpr new_f in
   let updated_exprs = IM.add new_vi.vid
       { avarinfo = new_vi; aexpr = current_expr;
@@ -298,6 +284,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
          in
          (* We keep the expressions such that applying the function associated
             to the auxiliary yields the current matched expression *)
+         if !debug_dev then
+           printf "Increment %a == %a ? %B@."
+             pp_skexpr fe' pp_skexpr ne (eq_AC fe' ne);
          eq_AC fe' ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
@@ -373,76 +362,51 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   (new_aux_vs, new_aux_exprs)
               end
             else
-              (* We have to create a new variable *)
-            if not_last_iteration then
-              let typ = T.type_of current_expr in
-              let new_aux = gen_fresh typ () in
-              let updated_aux = VS.add new_aux new_aux_vs in
-              let updated_exprs =
-                IM.add
-                  new_aux.vid
-                  { avarinfo = new_aux;
-                    aexpr = current_expr;
-                    afunc = T.SkVar (T.SkVarinfo new_aux);
-                    depends = VS.singleton new_aux }
-                  new_aux_exprs
-              in
-              if !debug then
-                printf "@.Adding new variable %s : %a@." new_aux.vname
-                  pp_skexpr current_expr;
+              (* Check that the auxliary is not jsut an update by replacing
+                 the current index expression *)
+              let current_expr_i = reset_index_expressions xinfo current_expr in
+              begin
 
-              (updated_aux, updated_exprs)
-            else
-              (new_aux_vs, new_aux_exprs)
+                match find_ce current_expr_i aux_exprs with
+                | (vid, aux) :: _ ->
+                  if !debug then
+                    printf "Variable with index update %s: %a@."
+                      aux.avarinfo.vname pp_skexpr current_expr_i;
+                  (VS.add aux.avarinfo new_aux_vs,
+                   IM.add aux.avarinfo.vid
+                     { aux with afunc = current_expr_i } new_aux_exprs)
+
+                | _ ->
+                  (* We have to create a new variable *)
+                  if not_last_iteration then
+                    let typ = T.type_of current_expr in
+                    let new_aux = gen_fresh typ () in
+                    let updated_aux = VS.add new_aux new_aux_vs in
+                    let updated_exprs =
+                      IM.add
+                        new_aux.vid
+                        { avarinfo = new_aux;
+                          aexpr = current_expr;
+                          afunc = T.SkVar (T.SkVarinfo new_aux);
+                          depends = VS.singleton new_aux }
+                        new_aux_exprs
+                    in
+                    if !debug then
+                      printf "@.Adding new variable %s : %a@." new_aux.vname
+                        pp_skexpr current_expr;
+
+                    (updated_aux, updated_exprs)
+                  else
+                    (new_aux_vs, new_aux_exprs)
+              end
           end
       end
   in
   let candidate_exprs = candidates expr in
+  printf "Expression to create auxliaries :%a@."
+    pp_skexpr expr;
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) candidate_exprs
-
-(** Given a set of auxiliary variables and the associated functions,
-    and the set of state variable and a function, return a new set
-    of state variables and a function.
-*)
-let compose xinfo f aux_vs aux_ef =
-  let new_stv = VS.union xinfo.state_set aux_vs in
-  let new_func =
-    T.compose_head
-      (IM.fold
-         (fun aux_vid aux assgn_list ->
-            (** Distinguish different cases :
-                - the function is not identity but an accumulator, we add the
-                function 'as is' in the loop body.
-                TODO : graph analysis to place the let-binding at the right
-                position.
-                - the function f is the identity, then the auxliary variable
-                depends on a finite prefix of the inputs. The expression depends
-                on the starting index
-
-                Analyse expressions to respect dependencies.
-            *)
-            match aux.afunc with
-            | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
-              (* Replace index by "start index" variable *)
-              let aux_expression =
-                VS.fold
-                  (fun index expr ->
-                     (T.replace_expression
-                        ~in_subscripts:true
-                        (T.mkVarExpr index)
-                        (T.mkVarExpr (T.left_index_vi index)) expr))
-                       xinfo.index_set aux.aexpr
-              in
-                assgn_list@[(T.SkVarinfo v, aux_expression)]
-            | _ ->
-              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)),
-                          aux.afunc])
-         aux_ef [])
-      f
-  in
-  (new_stv, new_func)
-
 
 (** Discover a set a auxiliary variables for a given variable.
     @param stv the set of state variables.
@@ -546,7 +510,8 @@ let discover_for_id stv (idx, update) input_func varid =
       as state variables *)
   if !debug then
     begin
-      printf "@.DISCOVER for variable %i finished.@." varid
+      printf "@.DISCOVER for variable %s finished.@."
+        (VSOps.find_by_id varid stv).vname;
     end;
   printf "@.NEW VARIABLES :@.";
   VS.iter
@@ -555,7 +520,7 @@ let discover_for_id stv (idx, update) input_func varid =
          pp_skexpr (IM.find vi.C.vid clean_aux_ef).aexpr
          pp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
     ) clean_aux;
-  compose init_i input_func clean_aux clean_aux_ef
+  VUtils.compose init_i input_func clean_aux clean_aux_ef
 
 
 

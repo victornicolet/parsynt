@@ -380,7 +380,7 @@ let transform_all_comparisons expr =
     | SkBinop (cop, e1, e2) ->
       (match cop with
        | Lt -> SkBinop (Gt, rfunc e1, rfunc e2)
-       | Le -> SkBinop (Gt, rfunc e1, rfunc e2)
+       | Le -> SkBinop (Ge, rfunc e1, rfunc e2)
        | _ -> failwith "Not a special recursive case")
     | _ -> failwith "Not a special recursive case"
   in
@@ -460,7 +460,10 @@ let transform_conj_comps e =
 (** Put all the special rules here *)
 let apply_special_rules stv cexprs e =
   let e' = transform_all_comparisons e in
-  let e'' = transform_conj_comps e' in
+  let e'' =
+    let t_e = transform_conj_comps e' in
+    if cost stv cexprs t_e < cost stv cexprs e' then t_e else e'
+  in
   factorize stv cexprs e''
 
 let accumulated_subexpression vi e =

@@ -19,6 +19,50 @@ type auxiliary =
   }
 
 
+(** Given a set of auxiliary variables and the associated functions,
+    and the set of state variable and a function, return a new set
+    of state variables and a function.
+*)
+let compose xinfo f aux_vs aux_ef =
+  let new_stv = VS.union xinfo.state_set aux_vs in
+  let new_func =
+    T.compose_head
+      (IM.fold
+         (fun aux_vid aux assgn_list ->
+            (** Distinguish different cases :
+                - the function is not identity but an accumulator, we add the
+                function 'as is' in the loop body.
+                TODO : graph analysis to place the let-binding at the right
+                position.
+                - the function f is the identity, then the auxliary variable
+                depends on a finite prefix of the inputs. The expression depends
+                on the starting index
+
+                Analyse expressions to respect dependencies.
+            *)
+            match aux.afunc with
+            | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
+              (* Replace index by "start index" variable *)
+              let aux_expression =
+                VS.fold
+                  (fun index expr ->
+                     (T.replace_expression
+                        ~in_subscripts:true
+                        (T.mkVarExpr index)
+                        (T.mkVarExpr (T.left_index_vi index)) expr))
+                       xinfo.index_set aux.aexpr
+              in
+                assgn_list@[(T.SkVarinfo v, aux_expression)]
+            | _ ->
+              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)),
+                          aux.afunc])
+         aux_ef [])
+      f
+  in
+  (new_stv, new_func)
+
+
+
 let same_aux old_aux new_aux =
   if IM.cardinal old_aux != IM.cardinal new_aux
   then false
@@ -72,3 +116,22 @@ let reduction_with_warning stv expset expr =
     end
   else ();
   reduced_expression
+
+
+let reset_index_expressions xinfo aux =
+    IM.fold
+      (fun idx_id idx_expr e ->
+         try
+           (* Replace the index expressions by the index itself *)
+           T.replace_expression ~in_subscripts:true
+             idx_expr
+             (T.SkVar
+                (T.SkVarinfo
+                   (VSOps.find_by_id idx_id xinfo.index_set))) e
+         with Not_found ->
+           Format.eprintf "@.Index with id %i not found in %a.@."
+             idx_id VSOps.pvs xinfo.index_set;
+           raise Not_found
+      )
+      xinfo.index_exprs
+      aux

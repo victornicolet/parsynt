@@ -29,6 +29,22 @@ let reduce_cost stv c_exprs expr =
       let y' = rfunc y in
       begin
         match x', y' with
+        (** Transform comparisions with max min into conjunctions
+            or disjunctions, because conj/disj. are associative *)
+        (* max(a, b) > c --> a > c or b > c *)
+        | SkBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->
+          SkBinop (Or, SkBinop (op2, a, c), SkBinop (op2, b, c))
+        (* c > max(a, b) --> c > a and c > b *)
+        | c, SkBinop (Max, a, b) when op2 = Gt || op2 = Ge ->
+          SkBinop (And, SkBinop (op2, c, a), SkBinop (op2, c, b))
+        (* max(a, b) < c --> a < c and b < c *)
+        | SkBinop (Max, a, b), c when op2 = Lt || op2 = Le ->
+          SkBinop (And, SkBinop (op2, a, c), SkBinop (op2, b, c))
+        (* c < max(a, b) --> c < a or c < b *)
+        | c, SkBinop (Max, a, b) when op2 = Lt || op2 = Le ->
+          SkBinop (Or, SkBinop (op2, c, a), SkBinop (op2, c, b))
+
+        (* Distributivity *)
         | SkBinop (op1, a, b), c ->
           let ca = cost stv c_exprs a in
           let cb = cost stv c_exprs b in
