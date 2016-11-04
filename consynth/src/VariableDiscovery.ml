@@ -4,6 +4,7 @@ open Format
 open SPretty
 open ExpressionReduction
 open SymbExe
+open PpHelper
 open VUtils
 open Expressions
 open SketchTypes
@@ -11,7 +12,7 @@ open SketchTypes
 let debug = ref false
 let debug_dev = ref true
 
-let max_exec_no = ref 2
+let max_exec_no = ref 3
 
 let discovered_aux = IH.create 10
 
@@ -253,7 +254,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
   in
   (** Find in a expression map the bindings matching EXACTLY the expression *)
   let find_ce to_match emap =
-    let cemap = IM.filter (fun vid aux -> eq_AC aux.aexpr to_match) emap in
+    let cemap = IM.filter (fun vid aux -> aux.aexpr @= to_match) emap in
     IM.bindings cemap
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
@@ -261,7 +262,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
   let find_subexpr top_expr emap =
     T.rec_expr
       (fun a b -> a@b) []
-      (fun e -> IM.exists (fun vid aux -> eq_AC aux.aexpr e) emap)
+      (fun e ->
+         IM.exists (fun vid aux -> aux.aexpr @= e) emap)
       (fun e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
       top_expr
@@ -286,8 +288,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
             to the auxiliary yields the current matched expression *)
          if !debug_dev then
            printf "Increment %a == %a ? %B@."
-             pp_skexpr fe' pp_skexpr ne (eq_AC fe' ne);
-         eq_AC fe' ne)
+             pp_skexpr fe' pp_skexpr ne (fe' @= ne);
+         fe' @= ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
       candidate_expr =
@@ -325,7 +327,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
            case ? Now only pick the first expression to come.
         *)
         | (vid, aux):: _ ->
-          assert (eq_AC aux.aexpr current_expr);
+          assert (aux.aexpr @= current_expr);
           (* The expression is exactly the expression of a aux *)
           let vi = VSOps.find_by_id vid aux_vs in
           (VS.add vi new_aux_vs,
@@ -366,11 +368,10 @@ let find_auxiliaries ?(not_last_iteration = true) i
                  the current index expression *)
               let current_expr_i = reset_index_expressions xinfo current_expr in
               begin
-
                 match find_ce current_expr_i aux_exprs with
                 | (vid, aux) :: _ ->
                   if !debug then
-                    printf "Variable with index update %s: %a@."
+                    printf "Variable is incremented after index update %s: %a@."
                       aux.avarinfo.vname pp_skexpr current_expr_i;
                   (VS.add aux.avarinfo new_aux_vs,
                    IM.add aux.avarinfo.vid
@@ -403,8 +404,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
       end
   in
   let candidate_exprs = candidates expr in
-  printf "Expression to create auxliaries :%a@."
-    pp_skexpr expr;
+  if !debug then
+    printf "Expression to create auxliaries :%a@."
+      pp_skexpr expr;
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) candidate_exprs
 

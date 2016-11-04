@@ -1,6 +1,6 @@
 <**/*.ml{,i}>: warn(-40), no_alias_deps
 # OASIS_START
-# DO NOT EDIT (digest: 954ad0b91ce0203e34779e9f3f49c5c4)
+# DO NOT EDIT (digest: 8f89553e5bcdf46433db564b1fa7041c)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -17,42 +17,51 @@ true: annot, bin_annot
 "_darcs": not_hygienic
 # Library rosetteInterface
 "src/rosetteInterface/rosetteInterface.cmxs": use_rosetteInterface
-<src/rosetteInterface/*.ml{,i,y}>: pkg_core
+<src/rosetteInterface/*.ml{,i,y}>: pkg_extlib
 # Library consynth
 "src/consynth.cmxs": use_consynth
 <src/*.ml{,i,y}>: pkg_cil
 <src/*.ml{,i,y}>: pkg_core
-<src/*.ml{,i,y}>: pkg_sexplib
+<src/*.ml{,i,y}>: pkg_extlib
 <src/*.ml{,i,y}>: use_rosetteInterface
 # Executable test_main
 <test/Main.{native,byte}>: pkg_cil
 <test/Main.{native,byte}>: pkg_core
-<test/Main.{native,byte}>: pkg_sexplib
+<test/Main.{native,byte}>: pkg_extlib
+<test/Main.{native,byte}>: pkg_getopt
 <test/Main.{native,byte}>: use_consynth
 <test/Main.{native,byte}>: use_rosetteInterface
+# Executable examples
+<test/Examples.{native,byte}>: pkg_cil
+<test/Examples.{native,byte}>: pkg_core
+<test/Examples.{native,byte}>: pkg_extlib
+<test/Examples.{native,byte}>: pkg_getopt
+<test/Examples.{native,byte}>: use_consynth
+<test/Examples.{native,byte}>: use_rosetteInterface
+<test/*.ml{,i,y}>: pkg_getopt
 # Executable test_scheme_parsing
-"test/TestSchemeParsing.byte": pkg_cil
-"test/TestSchemeParsing.byte": pkg_core
-"test/TestSchemeParsing.byte": pkg_schoca
-"test/TestSchemeParsing.byte": pkg_sexplib
-"test/TestSchemeParsing.byte": use_consynth
-"test/TestSchemeParsing.byte": use_rosetteInterface
+<test/TestSchemeParsing.{native,byte}>: pkg_cil
+<test/TestSchemeParsing.{native,byte}>: pkg_core
+<test/TestSchemeParsing.{native,byte}>: pkg_extlib
+<test/TestSchemeParsing.{native,byte}>: use_consynth
+<test/TestSchemeParsing.{native,byte}>: use_rosetteInterface
 <test/*.ml{,i,y}>: pkg_cil
 <test/*.ml{,i,y}>: pkg_core
-<test/*.ml{,i,y}>: pkg_schoca
-<test/*.ml{,i,y}>: pkg_sexplib
+<test/*.ml{,i,y}>: pkg_extlib
 <test/*.ml{,i,y}>: use_consynth
 <test/*.ml{,i,y}>: use_rosetteInterface
 # Executable Parsy
 <Parsy.{native,byte}>: pkg_cil
 <Parsy.{native,byte}>: pkg_core
-<Parsy.{native,byte}>: pkg_sexplib
+<Parsy.{native,byte}>: pkg_extlib
+<Parsy.{native,byte}>: pkg_getopt
 <Parsy.{native,byte}>: pkg_str
 <Parsy.{native,byte}>: use_consynth
 <Parsy.{native,byte}>: use_rosetteInterface
 <*.ml{,i,y}>: pkg_cil
 <*.ml{,i,y}>: pkg_core
-<*.ml{,i,y}>: pkg_sexplib
+<*.ml{,i,y}>: pkg_extlib
+<*.ml{,i,y}>: pkg_getopt
 <*.ml{,i,y}>: pkg_str
 <*.ml{,i,y}>: use_consynth
 <*.ml{,i,y}>: use_rosetteInterface

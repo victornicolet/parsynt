@@ -245,6 +245,7 @@ module Utils : sig
   module ListTools : sig
     val (--): int -> int -> int list
     val intlist_max : int list -> int
+    val lmin : ('a-> int) -> 'a list -> 'a
     val foldl_union : ('a -> VS.t) -> 'a list -> VS.t
     val foldl_union2 : ('a -> VS.t * VS.t) -> 'a list -> (VS.t * VS.t)
     val pair : 'a list -> 'b list -> ('a * 'b) list

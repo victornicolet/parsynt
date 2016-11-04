@@ -77,8 +77,8 @@ let fst (a,b)  = a
 let snd (a,b) = b
 
 
-let bool_of_int64 i =
-  (Int64.compare (Int64.of_int 1) i) == 0
+let bool_of_int64 i = i = 1L
+
 
 let str_contains str sub = ExtLib.String.exists str sub;;
 
@@ -99,6 +99,17 @@ module ListTools = struct
       (fun max elt -> if elt > max then elt else max)
       min_int
       li
+
+  let lmin score_func l =
+    let scored_list =
+      List.map (fun elt -> (score_func elt, elt)) l in
+    snd (List.hd
+           (List.sort
+              (fun (s1, _) (s2, _) ->
+                 Pervasives.compare s1 s2)
+              scored_list))
+
+
 
   let foldl_union f l =
     List.fold_left (fun set a -> VS.union set (f a)) VS.empty l

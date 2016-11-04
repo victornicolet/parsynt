@@ -111,7 +111,7 @@
 
 
 (define-synthax BasicUnops:bool
-  ([(BasicUnops:bool) (choose not identity)]))
+  ([(BasicUnops:bool) (choose ! identity)]))
 
 (define-synthax (bExpr:num->num x ... depth)
   #:base (Scalar x ...)

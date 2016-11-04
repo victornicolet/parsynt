@@ -96,7 +96,7 @@ let reduce_cost stv c_exprs expr =
 let reduce_full ?(limit = 10) stv c_exprs expr =
   let rec aux_apply_ternary_rules limit e =
     let red_expr = reduce_cost stv c_exprs e in
-    if eq_AC red_expr e || limit = 0
+    if red_expr @= e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr
   in

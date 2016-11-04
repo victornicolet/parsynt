@@ -40,6 +40,13 @@ Executable test_main
   Install: false
   BuildDepends: cil, consynth, rosetteInterface, getopt
 
+Executable examples
+  Path: test
+  MainIs: Examples.ml
+  CompiledObject: best
+  Install: false
+  BuildDepends: cil, consynth, rosetteInterface, getopt
+
 Executable test_scheme_parsing
   Path: test
   MainIs : TestSchemeParsing.ml

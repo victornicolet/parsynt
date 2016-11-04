@@ -84,8 +84,8 @@ let string_of_unsafe_binop =
 
 let string_of_symb_binop =
   function
-  | And -> "and"
-  | Nand -> "nand" | Or -> "or" | Nor -> "nor" | Implies -> "implies"
+  | And -> "&&"
+  | Nand -> "nand" | Or -> "||" | Nor -> "nor" | Implies -> "implies"
   | Xor -> "xor"
   (** Integers and reals *)
   | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
@@ -121,7 +121,7 @@ let string_of_unsafe_unop =
 let string_of_symb_unop =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
-  | Not -> "not" | Add1 -> "add1" | Sub1 -> "sub1"| Abs -> "abs"
+  | Not -> "!" | Add1 -> "add1" | Sub1 -> "sub1"| Abs -> "abs"
   | Floor -> "floor" | Ceiling -> "ceiling"  | Truncate -> "truncate"
   | Round -> "round" | Neg -> "-" | Sgn -> "sgn"
 
@@ -197,7 +197,8 @@ let rec pp_constants ppf =
   | CInt i -> fprintf ppf "%i" i
   | CInt64 i -> fprintf ppf "%i" (Int64.to_int i)
   | CReal f -> fprintf ppf "%10.3f" f
-  | CBool b -> fprintf ppf "%b" b
+  | CBool b ->
+    if b then fprintf ppf "#t" else fprintf ppf "#f"
   | CBox cst -> fprintf ppf "<Cil.constant>"
   | CChar c -> fprintf ppf "%c" c
   | CString s -> fprintf ppf "%s" s
@@ -375,3 +376,6 @@ let pp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
     fprintf fmt "[Empty]"
   else
     pp_print_list ~pp_sep:sep pp_skexpr fmt elt_list
+
+let pp_expr_list fmt el =
+  PpHelper.ppli fmt ~sep:" " pp_skexpr el

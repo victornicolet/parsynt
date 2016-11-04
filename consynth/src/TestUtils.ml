@@ -36,6 +36,8 @@ let make_bool_array_varinfo vname =
 let cil_exp_of_vi vi =
   Lval (Var vi, NoOffset)
 
+let var v = SkVarinfo v
+let evar v = SkVar (var v)
 
 let make_var ?(offsets = []) typ vname =
   match typ with
@@ -70,3 +72,11 @@ let increment_all_indexes index_exprs =
     )
     index_exprs
     IM.empty
+
+let _s vil = VS.of_list vil
+let ( $ ) vi e = SkVar (SkArray ((SkVarinfo vi), e))
+let _b e1 op e2 = SkBinop (op, e1, e2)
+let _u op e1 = SkUnop (op, e1)
+let _Q c e1 e2 = SkQuestion (c, e1, e2)
+let _let el = SkLetExpr el
+let _letin el l = SkLetIn (el, l)
