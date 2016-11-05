@@ -244,11 +244,7 @@ and convert_letin all_vars (vs : VS.t) letin =
                              convert_letin all_vars vs let_if,
                              convert_letin all_vars vs let_else))],
                   convert_letin all_vars vs let_cont)
-    | LetState (let_state, let_cont) ->
-      compose
-        (remove_id_binding
-           (convert_letin all_vars vs let_state))
-        (convert_letin all_vars vs let_cont)
+
 
 (** Optimisations *)
 let remove_simple_state_rewritings (var , expr) =

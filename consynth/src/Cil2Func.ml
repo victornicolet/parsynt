@@ -32,12 +32,6 @@ type letin =
   | Let of varinfo * expr * letin * int * location
   | LetRec of forIGU * letin * letin * location
   | LetCond of exp * letin * letin * letin * location
-(**
-    LetState is used for the reduction, it allows us to simplify
-    the sequence of let ... in .. into a shorter sequence
-    when several let x = .. in .. assign different variables.
- *)
-  | LetState of letin * letin
 
 and expr =
   | Var of varinfo
@@ -106,13 +100,6 @@ let rec pp_letin ?(wloc = false) ppf (vs,letin) =
        (color "red") default
        (pp_letin ~wloc:wloc) (vs, letcont)
        (if wloc then string_of_loc loc else "")
-
-  | LetState (let_state, let_cont) ->
-     fprintf ppf "@[%slet%s %a@]@[%sin%s  %a @]@."
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, let_state)
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, let_cont)
 
 
 and pp_expr ppf =
@@ -218,14 +205,6 @@ let rec wf_letin vs =
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
      wf_letin vs let_body && wf_letin vs let_cont
 
-  | LetState (def_state, let_cont) ->
-     let wf_def_state =
-       match def_state with
-       | State emap -> wf_letin vs def_state
-       | _ -> false
-     in
-     wf_def_state && wf_letin vs let_cont
-
 let rec transform_topdown funct letin =
   let letin' = funct letin in
   match letin' with
@@ -241,9 +220,6 @@ let rec transform_topdown funct letin =
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
      LetRec ((i, g, u), transform_topdown funct let_body,
              transform_topdown funct let_cont, loc)
-
-  | LetState (def_state, let_cont) ->
-     LetState (def_state, transform_topdown funct let_cont)
 
   | _ -> letin'
 
@@ -262,9 +238,6 @@ let rec transform_bottomup funct letin =
     | LetRec ((i, g, u), let_body, let_cont, loc) ->
        LetRec ((i, g, u), transform_bottomup funct let_body,
                transform_bottomup funct let_cont, loc)
-
-    | LetState (def_state, let_cont) ->
-       LetState (def_state, transform_bottomup funct let_cont)
 
     | _ -> funct letin
   in
@@ -336,10 +309,6 @@ let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
 
   | LetRec (igu, let_body, cont, loc) ->
      VS.union (used_vars_letin let_body) (used_vars_letin cont)
-
-  | LetState (state, cont) ->
-     let in_subs = used_vars_letin state in
-     VS.union in_subs (used_vars_letin cont)
 
 
 let rec is_not_identity_substitution vid expr =
@@ -435,7 +404,6 @@ let bound_state_vars vs lf =
       bound_vars (VS.union v1 v2) l3
     | LetRec (_, l1, l2, _) ->
       bound_vars (bound_vars bv l1) l2
-    | LetState (l1, l2) -> bound_vars (bound_vars bv l1) l2
   in
   bound_vars VS.empty lf
 
@@ -460,8 +428,6 @@ let rec let_add old_let new_let =
 
   | LetRec (igu, letform, let_cont, lc) ->
      LetRec (igu, letform, let_add let_cont new_let, lc)
-
-  | _ -> failwith "Construct not allowed while building expressions."
 
 let rec do_il vs il =
   List.fold_left (do_i vs) (empty_state vs) il
@@ -645,15 +611,9 @@ and red vs let_form substs =
      let red_if = reduce vs  bif in
      let red_else = reduce vs belse in
      let merged, prev_e, next_e = merge_cond vs e red_if red_else substs in
-     if merged
-     then
-       (if Core.Std.is_none next_e
-       then red vs cont prev_e
-       else LetState (check_option next_e, red vs cont prev_e))
+     if merged && is_none next_e
+     then red vs cont prev_e
      else LetCond (e, red_if, red_else, reduce vs cont, loc)
-
-  | LetState (state, let_cont) ->
-     LetState (state, reduce vs let_cont)
 
 and clean vs let_form =
   match let_form with
@@ -669,8 +629,6 @@ and clean vs let_form =
 
   | LetRec (figu, lbody, lcont, loc) ->
     LetRec (figu, clean vs lbody, clean vs lcont, loc)
-
-  | LetState (lst, lcont) -> LetState (clean vs lst, clean vs lcont)
 
 and reduce vs let_form =
   let reduced_form = red vs let_form IM.empty in
@@ -734,11 +692,6 @@ let eliminate_temporaries vs let_form =
 
     | State sk ->
       State (IM.map (elim_expr vs subs) sk), subs
-
-    | LetState (let1, letcont) ->
-      let nlet1, nsubs = elim_let_aux let1 subs in
-      let nletcont, fsubs = elim_let_aux letcont nsubs in
-      LetState (nlet1, nletcont), fsubs
 
   and elim_expr vs subs expr =
     apply_subs expr subs
