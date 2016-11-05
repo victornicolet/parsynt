@@ -1,7 +1,9 @@
 B _build/
+B _build/test
 B _build/src
 B _build/src/rosetteInterface
 S src
+S test
 S src/rosetteInterface
 S ./
 PKG cil core extlib getopt parser
