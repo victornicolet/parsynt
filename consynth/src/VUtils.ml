@@ -25,10 +25,11 @@ type auxiliary =
 *)
 let compose xinfo f aux_vs aux_ef =
   let new_stv = VS.union xinfo.state_set aux_vs in
+  let clean_f = remove_id_binding f in
   let new_func =
-    T.compose_head
+    let head_assgn, tail_assgn =
       (IM.fold
-         (fun aux_vid aux assgn_list ->
+         (fun aux_vid aux (head_assgn_list, tail_assgn_list) ->
             (** Distinguish different cases :
                 - the function is not identity but an accumulator, we add the
                 function 'as is' in the loop body.
@@ -52,12 +53,22 @@ let compose xinfo f aux_vs aux_ef =
                         (T.mkVarExpr (T.left_index_vi index)) expr))
                        xinfo.index_set aux.aexpr
               in
-                assgn_list@[(T.SkVarinfo v, aux_expression)]
+              head_assgn_list@[(T.SkVarinfo v, aux_expression)],
+              tail_assgn_list
             | _ ->
-              assgn_list@[(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)),
-                          aux.afunc])
-         aux_ef [])
-      f
+              let assgn =
+                [(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), aux.afunc]
+              in
+              if VS.cardinal (VS.inter aux.depends xinfo.state_set) > 0
+              then
+                head_assgn_list, tail_assgn_list@assgn
+              else
+                head_assgn_list@assgn, tail_assgn_list )
+
+         aux_ef ([], []))
+    in
+    let f = complete_final_state new_stv (T.compose_tail tail_assgn clean_f) in
+    T.compose_head head_assgn f
   in
   (new_stv, new_func)
 

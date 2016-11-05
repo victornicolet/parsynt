@@ -163,7 +163,11 @@ let find_new_variables sketch_rep =
   IH.copy_into VariableDiscovery.discovered_aux
     SketchJoin.auxiliary_variables;
 
-  let join_body = Sketch.Join.build new_state new_loop_body in
+  let join_body =
+    SketchTypes.complete_final_state
+      new_state
+      (Sketch.Join.build new_state nlb_opt)
+  in
 
   {
     sketch_rep with

@@ -522,6 +522,7 @@ let discover_for_id stv (idx, update) input_func varid =
          pp_skexpr (IM.find vi.C.vid clean_aux_ef).aexpr
          pp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
     ) clean_aux;
+
   VUtils.compose init_i input_func clean_aux clean_aux_ef
 
 

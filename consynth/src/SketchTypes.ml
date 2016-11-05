@@ -630,13 +630,18 @@ let rec compose func1 func2 =
   | SkLetIn (el, c) -> SkLetIn (el, compose c func2)
 
 let compose_head assignments func =
-  SkLetIn (assignments, func)
+  match assignments with
+  | [] -> func
+  | _ -> SkLetIn (assignments, func)
 
 let rec compose_tail assignments func =
-  match func with
-  | SkLetExpr el ->
-    SkLetIn (el, SkLetExpr assignments)
-  | SkLetIn (el, l) -> compose_tail assignments l
+  match assignments with
+  | [] -> func
+  | _ ->
+    match func with
+    | SkLetExpr el ->
+      SkLetIn (el, SkLetExpr assignments)
+    | SkLetIn (el, l) -> SkLetIn (el, compose_tail assignments l)
 
 let complete_with_state stv el =
   (* Map the final expressions *)
