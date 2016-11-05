@@ -15,6 +15,8 @@ module T = SketchTypes
 let debug = ref false
 let verbose = ref false
 
+
+
 let parseOneFile (fname : string) : C.file =
   try
     Frontc.parse fname ()
@@ -26,11 +28,16 @@ let parseOneFile (fname : string) : C.file =
 
 
 let processFile fileName =
+  C.initCIL ();
   C.insertImplicitCasts := false;
   C.lineLength := 1000;
   C.warnTruncate := false;
   Cabs2cil.doCollapseCallCast := true;
-  let cfile = parseOneFile fileName in
+  (* Some declarations are found in another file,
+     like __max_integer__, true, false, ... *)
+  let decl_header = parseOneFile ((Sys.getcwd ())^"/templates/decl_header.h") in
+  let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
+
   Cfg.computeFileCFG cfile;
   (*  Deadcodeelim.dce cfile; *)
   Findloops.debug := !debug;

@@ -518,6 +518,7 @@ and constants =
   | CBinop of symb_binop * constants * constants
   | CUnsafeUnop of symb_unsafe_unop * constants
   | CUnsafeBinop of symb_unsafe_binop * constants * constants
+  | Infnty | NInfnty
   | Pi | SqrtPi
   | Sqrt2
   | Ln2 | Ln10 | E

@@ -180,6 +180,7 @@ and constants =
   | CBinop of symb_binop * constants * constants
   | CUnsafeUnop of symb_unsafe_unop * constants
   | CUnsafeBinop of symb_unsafe_binop * constants * constants
+  | Infnty | NInfnty
   | Pi | SqrtPi
   | Sqrt2
   | Ln2 | Ln10 | E
@@ -274,71 +275,43 @@ let unsafe_binops_of_fname =
   | _ -> None
 (**
     Mathematical constants defined in GNU-GCC math.h.
-   ****   ****   ****   ****   ****   ****   ****
-    TODO : integrate log/ln/pow function, not in
-    rosette/safe AFAIK.
-*)
-let c_constant  ccst =
-  match ccst with
-  | "M_E" -> Some E
-  | "M_LN2" -> Some Ln2
-  | "M_LN10" -> Some Ln10
-  | "M_PI" -> Some Pi
-  | "M_PI_2" -> Some (CBinop (Div, Pi, (CInt 2)))
-  | "M_PI_4" -> Some (CBinop (Div, Pi, (CInt 2)))
-  | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
-  | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
-  | _ ->
-     if !use_unsafe_operations then
-       begin
-         match ccst with
-         | "M_SQRT2" -> Some Sqrt2
-         | "M_SQRT1_2" ->
-            Some (CBinop (Div, (CReal 1.0), Sqrt2))
-         | "M_2_SQRTPI" ->
-            Some (CBinop (Div, (CReal 2.0), SqrtPi))
-         | "M_LOG10E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln10))
-         | "M_LOG2E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln2))
-         | _ -> None
-       end
-     else
-       None
-(**
-    Mathematical constants defined in GNU-GCC math.h.
-   ****   ****   ****   ****   ****   ****   ****
-    TODO : integrate log/ln/pow function, not in
-    rosette/safe AFAIK.
-*)
-let c_constant  ccst =
-  match ccst with
-  | "M_E" -> Some E
-  | "M_LN2" -> Some Ln2
-  | "M_LN10" -> Some Ln10
-  | "M_PI" -> Some Pi
-  | "M_PI_2" -> Some (CBinop (Div, Pi, (CInt 2)))
-  | "M_PI_4" -> Some (CBinop (Div, Pi, (CInt 2)))
-  | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
-  | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
-  | _ ->
-     if !use_unsafe_operations then
-       begin
-         match ccst with
-         | "M_SQRT2" -> Some Sqrt2
-         | "M_SQRT1_2" ->
-            Some (CBinop (Div, (CReal 1.0), Sqrt2))
-         | "M_2_SQRTPI" ->
-            Some (CBinop (Div, (CReal 2.0), SqrtPi))
-         | "M_LOG10E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln10))
-         | "M_LOG2E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln2))
-         | _ -> None
-       end
-     else
-       None
+   + other custom constants defined in the decl_header.c
 
+   ****   ****   ****   ****   ****   ****   ****
+    TODO : integrate log/ln/pow function, not in
+    rosette/safe AFAIK.
+*)
+let c_constant  ccst =
+  match ccst with
+  | "true___0" -> Some (CBool true)
+  | "false___0" -> Some (CBool false)
+  | "_min_int" -> Some NInfnty
+  | "_max_int_" -> Some Infnty
+  | "M_E" -> Some E
+  | "M_LN2" -> Some Ln2
+  | "M_LN10" -> Some Ln10
+  | "M_PI" -> Some Pi
+  | "M_PI_2" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_PI_4" -> Some (CBinop (Div, Pi, (CInt 2)))
+  | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
+  | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
+  | _ ->
+     if !use_unsafe_operations then
+       begin
+         match ccst with
+         | "M_SQRT2" -> Some Sqrt2
+         | "M_SQRT1_2" ->
+            Some (CBinop (Div, (CReal 1.0), Sqrt2))
+         | "M_2_SQRTPI" ->
+            Some (CBinop (Div, (CReal 2.0), SqrtPi))
+         | "M_LOG10E" ->
+            Some (CBinop (Div, (CReal 1.0), Ln10))
+         | "M_LOG2E" ->
+            Some (CBinop (Div, (CReal 1.0), Ln2))
+         | _ -> None
+       end
+     else
+       None
 
 (**
     A function name not appearing in the cases above
@@ -854,7 +827,6 @@ let rec pp_typ fmt t =
 let rec is_subtype t tmax =
   match t, tmax with
   | t, tmax when t = tmax -> true
-  | Boolean, Integer | Integer, Boolean -> true
   | Integer, Real -> true
   | Num, Real | Real, Num -> true
   | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
@@ -871,7 +843,6 @@ let rec res_type t =
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
-  | Boolean, Integer -> Boolean
   | Integer, Boolean -> Boolean
   | Integer, Real | Real, Integer
   | Num, Real | Real, Num -> Real
@@ -940,6 +911,7 @@ let rec type_of_const c =
   | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
   | CUnsafeBinop (op, c, c') -> join_types (type_of_const c) (type_of_const c')
   | CUnsafeUnop (op, c) -> (type_of_const c)
+  | Infnty | NInfnty -> Num
 
 and type_of_var v =
   match v with

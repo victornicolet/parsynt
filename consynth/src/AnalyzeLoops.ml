@@ -48,7 +48,9 @@ let extract_subscripts (loop_body : block) ((r, w) : VS.t * VS.t) =
     | Goto _
     | ComputedGoto _
     | Break _
-    | Continue _ -> failwith "Unsupported statement."
+    | Continue _ ->
+      (CilTools.pps stmt;
+       failwith "Unsupported statement.")
 
   and from_block b acc_subs =
     List.fold_left
@@ -64,8 +66,9 @@ let extract_subscripts (loop_body : block) ((r, w) : VS.t * VS.t) =
     | Call (lvo, ef, args, t) ->
        (maybe_apply_default (ex_from_lval stmt true) lvo [])@
          (from_expr stmt false ef)@
-         (List.fold_left (fun acc expr -> acc@(from_expr stmt false expr)) [] args)
-    | _ -> failwith "Unsupported instruction."
+       (List.fold_left (fun acc expr -> acc@(from_expr stmt false expr)) [] args)
+    | Asm _  -> []
+
 
   and from_expr stmt on_left_hand expr =
     match expr with

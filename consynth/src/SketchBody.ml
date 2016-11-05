@@ -311,7 +311,7 @@ let rebuild_simple_or (var, expr) =
         (* if (a) then true else e --> a or e *)
         | SkConst (CInt 1), e
         | SkConst (CInt64 1L), e
-        | SkConst (CBool true), e ->
+        | SkConst (CBool true), e when type_of e = Boolean->
           SkBinop (Or, c, e)
         | _ , _ -> expr
       end
@@ -368,9 +368,9 @@ let force_boolean_constants (v, e) =
 let transform_boolean_if_expression =
   let case e =
     match e with
-    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false))
-    | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0))
-    | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> true
+    | SkQuestion (SkConst (CBool true), _, _) -> true
+    | SkQuestion (SkConst (CBool false), _, _) -> true
+    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) -> true
     | SkBinop (Or, SkConst (CBool true), _)
     | SkBinop (Or,_, SkConst (CBool true)) -> true
     | SkBinop (Or, SkConst (CBool false), _)
@@ -383,17 +383,26 @@ let transform_boolean_if_expression =
   in
   let transform_bool rfunc e =
     match e with
+    (* true ? a : b -> a *)
+    | SkQuestion (SkConst (CBool true), e1, _) -> rfunc e1
+    (* false ? a : b -> b *)
+    | SkQuestion (SkConst (CBool false), _, e2) -> rfunc e2
+    (* c ? true : false --> c *)
     | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) -> rfunc c
-    | SkQuestion (c, SkConst (CInt 1), SkConst (CInt 0)) -> rfunc c
-    | SkQuestion (c, SkConst (CInt64 1L), SkConst (CInt64 0L)) -> rfunc c
+    (* true || c --> true *)
     | SkBinop (Or, SkConst (CBool true), _)
+    (* c || true --> true *)
     | SkBinop (Or,_, SkConst (CBool true)) -> SkConst (CBool true)
+    (* false || c --> c  and commut. *)
     | SkBinop (Or, SkConst (CBool false), c)
     | SkBinop (Or, c, SkConst (CBool false)) -> rfunc c
+    (* true && c --> c and commut. *)
     | SkBinop (And, SkConst (CBool true), c)
     | SkBinop (And, c, SkConst (CBool true)) ->  rfunc c
+    (* false && c --> false and commut. *)
     | SkBinop (And, SkConst (CBool false), _)
     | SkBinop (And,_, SkConst (CBool false)) -> SkConst (CBool false)
+
     | _ -> failwith "transform_boolean_expression : bad case"
   in
   transform_expr case

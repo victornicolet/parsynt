@@ -209,6 +209,8 @@ let rec pp_constants ppf =
        pp_constants c1 pp_constants c2
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
+  | Infnty -> fprintf ppf "+inf.0"
+  | NInfnty -> fprintf ppf "-inf.0"
   | Pi -> fprintf ppf "pi"
   | Sqrt2 -> fprintf ppf "(sqrt 2)"
   | Ln2 -> fprintf ppf "(log 2)"

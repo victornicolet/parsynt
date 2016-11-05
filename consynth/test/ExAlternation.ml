@@ -29,12 +29,11 @@ let reach_const =
   IM.add prev.vid sk_true (IM.add altern.vid sk_true IM.empty)
 
 let _f_ =
-  _letin
+  _let
     [(var altern,
-      _b () And (_b (_b (_u Not (evar prev)) And (a $ (evar i)))
-                   Or
-                   (_b (evar prev) And (_u ))));
-    (var prev, a $ (evar i))]
+      _b (evar altern) And
+        (_Q  (evar prev) (a $ (evar i)) (_u Not (a $ (evar i)))));
+    (var prev, a $ (evar i))];;
 
 VariableDiscovery.debug := true;;
 VariableDiscovery.debug_dev := true;;
@@ -49,7 +48,7 @@ IH.copy_into VariableDiscovery.discovered_aux
 
 let _join_ = Sketch.Join.build new_S_ new_f_
 
-let name = "balanced_parenthesis"
+let name = "alternation_of_0_and_1"
 
 let sketch_info =
   {
