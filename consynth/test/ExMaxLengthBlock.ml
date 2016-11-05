@@ -6,6 +6,7 @@ open Utils
 open TestUtils
 open SketchTypes
 open Canalyst
+open VariableDiscovery
 
 (* C implementation with auxiliary variables
 
@@ -25,38 +26,40 @@ open Canalyst
    }
 *)
 
-let cl, ml, c, conj, a, n, i =
+let cl, ml,  a, n, i =
   make_int_varinfo "cl",
   make_int_varinfo "ml",
-  make_int_varinfo "c",
-  make_bool_varinfo "conj",
   make_bool_array_varinfo "a",
   make_int_varinfo "n",
   make_int_varinfo "i"
 
-let stv = _s [cl; ml; c; conj]
-let all_vs = VS.union stv (_s [a; n; i])
+let old_stv = _s [cl; ml]
+let old_all_vs = VS.union old_stv (_s [a; n; i])
 
 let reach_const =
   IM.add cl.vid sk_zero
-    (IM.add ml.vid sk_zero
-       (IM.add c.vid sk_zero
-          (IM.add conj.vid sk_true IM.empty)))
+    (IM.add ml.vid sk_zero IM.empty)
 
 let name = "max_length_of_1s"
 
-let func =
+let old_func =
   _letin
-    [(var conj, _b (evar conj) And (a $ (evar i)));
-     (var cl,   _Q (a $ (evar i)) (_b (evar cl) Plus sk_one) sk_zero)]
+    [(var cl,   _Q (a $ (evar i)) (_b (evar cl) Plus sk_one) sk_zero)]
     (_let
-       [(var ml, _b (evar ml) Max (evar cl));
-        (var c, _b (evar c) Plus (_Q (evar conj) sk_one sk_zero))])
+       [(var ml, _b (evar ml) Max (evar cl))])
+
 
 let sigu = VS.singleton i,
            (_let ([(var i, sk_zero)]),
             _b (evar i) Lt (evar n),
-            _let [(var i, _b (evar i) Plus sk_one)])
+            _let [(var i, _b (evar i) Plus sk_one)]);;
+
+(** Find new variables *)
+VariableDiscovery.debug := true;;
+
+let stv, func = discover old_stv old_func sigu
+
+let all_vs = VS.union old_stv (_s [a; n; i])
 
 let sketch_info =
   {
@@ -71,6 +74,9 @@ let sketch_info =
   };;
 
 Local.dump_sketch := true;;
+
+
+
 
 try
   printf "@.SOLVING sketch for %s.@." name;

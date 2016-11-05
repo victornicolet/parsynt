@@ -44,7 +44,8 @@ let reduce_cost stv c_exprs expr =
         | c, SkBinop (Max, a, b) when op2 = Lt || op2 = Le ->
           SkBinop (Or, SkBinop (op2, c, a), SkBinop (op2, c, b))
 
-        (* Distributivity *)
+
+        (* Distributivity with operators *)
         | SkBinop (op1, a, b), c ->
           let ca = cost stv c_exprs a in
           let cb = cost stv c_exprs b in
@@ -53,8 +54,26 @@ let reduce_cost stv c_exprs expr =
           if is_right_distributive op1 op2 && ((max ca cb) >= cc)
           then
             SkBinop (op1, (SkBinop (op2, a, c)),
-                      (SkBinop (op2, b, c)))
+                     (SkBinop (op2, b, c)))
 
+          else
+            SkBinop (op2, x', y')
+        (* Distributivity with ternary expressions *)
+        | SkQuestion (cond, a, b), c ->
+          let ca = cost stv c_exprs a in
+          let cb = cost stv c_exprs b in
+          let cc = cost stv c_exprs c in
+          if is_associative op2 &&  (max ca cb) > cc then
+            SkQuestion (cond, SkBinop (op2, a, c), SkBinop (op2, b, c))
+          else
+            SkBinop (op2, x', y')
+
+        | c, SkQuestion (cond, a, b) ->
+          let ca = cost stv c_exprs a in
+          let cb = cost stv c_exprs b in
+          let cc = cost stv c_exprs c in
+          if is_associative op2 && (max ca cb) > cc then
+            SkQuestion (cond, SkBinop (op2, c, a), SkBinop (op2, c, b))
           else
             SkBinop (op2, x', y')
 
@@ -87,23 +106,50 @@ let reduce_cost stv c_exprs expr =
       end (* End SkQuestion (c, x, y) case *)
     | _ -> failwith "Unexpected case in expression transformation"
 
-    (* End transform expressions *)
+  (* End transform expressions *)
   in
   transform_expr reduction_cases reduce_transform identity identity expr
 
-
+let reduce_cost_specials stv c_exprs e=
+  let red_cases e =
+    match e with
+    | SkQuestion _ -> true
+    | _ -> false
+  in
+  let red_apply rfunc e =
+    match e with
+    | SkQuestion (cond1, x, y) ->
+      let x' = rfunc x in
+      let y' = rfunc y in
+      begin
+        match x', y' with
+        | SkQuestion (cond2, a, b), c ->
+          let ca = cost stv c_exprs a in
+          let cb = cost stv c_exprs b in
+          let cc = cost stv c_exprs c in
+          if ca > (max cb cc) then
+            SkQuestion (SkBinop (And, cond1, cond2), a,
+                        SkQuestion (SkUnop (Not, cond2), c, b))
+          else
+            SkQuestion (cond1, x, y)
+        | _ ->  SkQuestion (cond1, x, y)
+      end
+    | _ -> failwith "Unexpected case in reduce_cost_specials"
+  in
+  transform_expr red_cases red_apply identity identity e
 
 let reduce_full ?(limit = 10) stv c_exprs expr =
   let rec aux_apply_ternary_rules limit e =
-    let red_expr = reduce_cost stv c_exprs e in
+    let red_expr0 = reduce_cost stv c_exprs e in
+    let red_expr = reduce_cost_specials stv c_exprs red_expr0 in
     if red_expr @= e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr
   in
   let rules_AC e =
-      let flat_r = (flatten_AC e) in
-      let r1 = apply_special_rules stv c_exprs flat_r in
-      rebuild_tree_AC stv c_exprs r1
+    let flat_r = (flatten_AC e) in
+    let r1 = apply_special_rules stv c_exprs flat_r in
+    rebuild_tree_AC stv c_exprs r1
   in
   let r0 = aux_apply_ternary_rules limit expr in
   let r2 = rules_AC r0 in

@@ -130,7 +130,7 @@ let main () =
          if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
            (* We get an "unsat" answer : add loop to auxliary discovery *)
            printf
-             "@.%sNO SOLUTION%s found for %s with user-defined variables.@."
+             "@.%sNO SOLUTION%s found for %s with discovered variables.@."
              (color "orange") default name
          else
            (* A solution has been found *)

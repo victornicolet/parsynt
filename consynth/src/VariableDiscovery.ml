@@ -12,7 +12,7 @@ open SketchTypes
 let debug = ref false
 let debug_dev = ref true
 
-let max_exec_no = ref 3
+let max_exec_no = ref 10
 
 let discovered_aux = IH.create 10
 
@@ -420,6 +420,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
 let discover_for_id stv (idx, update) input_func varid =
   GenVars.init ();
   init ();
+  max_exec_no := VS.cardinal stv;
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let init_i = { state_set = stv ;
