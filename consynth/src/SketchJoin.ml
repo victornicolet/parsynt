@@ -51,7 +51,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
        | _ -> SkHoleR Unit, 1
      end
 
-  | SkFun skl -> SkFun (make_join state skl), 0
+  | SkFun skl -> SkFun (make_join ~state:state ~skip:[] skl), 0
 
   | SkBinop (op, e1, e2) ->
      let holes1, d1 = merge_leaves max_depth (make_holes state e1) in
@@ -63,7 +63,9 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
 
   | SkCond (c, li, le) ->
      let ch, _ = make_holes state c in
-     SkCond (ch , make_join state li, make_join state le), 0
+     SkCond (ch ,
+             make_join ~state:state ~skip:[] li,
+             make_join ~state:state ~skip:[] le), 0
 
   | SkQuestion (c, ei, ee) ->
      let h1, d1  = merge_leaves max_depth (make_holes state ei) in
@@ -78,15 +80,22 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
 
   | _ as skexpr ->  skexpr, 0
 
-and make_join state =
+and make_join ~(state : VS.t) ~(skip: skLVar list) =
   function
   | SkLetExpr li ->
     SkLetExpr (List.map (fun (v, e) ->
-        (v, fst (make_holes ~is_final:true state e))) li)
+        match e with
+        | SkVar v when List.mem v skip -> (v, e)
+        | _ -> (v, fst (make_holes ~is_final:true state e))) li)
 
   | SkLetIn (li, cont) ->
-    SkLetIn ((List.map (fun (v, e) -> (v, fst (make_holes state e))) li),
-             make_join state cont)
+    let to_skip = fst (ListTools.unpair li) in
+    SkLetIn (
+      List.map (fun (v, e) ->
+          match e with
+          | SkVar v when List.mem v skip -> (v, e)
+          | _ -> (v, fst (make_holes ~is_final:true state e))) li,
+      make_join ~state:state ~skip:(skip@to_skip) cont)
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
@@ -134,4 +143,4 @@ and merge_leaves max_depth (e,d) =
     (e, d + 1)
 
 let build (state : VS.t) (sklet : sklet) =
-  make_join state sklet
+  make_join ~state:state ~skip:[] sklet
