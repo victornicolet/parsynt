@@ -3,4 +3,5 @@ open Getopt
 open Cil
 (* open ExBalancedParenthesis *)
 (* open ExAlternation *)
-open ExMaxLengthBlock
+(* open ExMaxLengthBlock *)
+open ExIsSorted
