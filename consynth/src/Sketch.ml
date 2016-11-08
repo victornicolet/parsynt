@@ -6,6 +6,7 @@ open SPretty
 open PpHelper
 open Cil2Func
 open Racket
+open Cil
 
 open Utils.ListTools
 
@@ -67,7 +68,7 @@ let add_to_vectors ty s defs =
   match osty with
   | Some sty -> { defs with vecs = (s, sty)::defs.vecs }
   | None ->
-     eprintf "add_to_vectors : vector of type too complex";
+    eprintf "add_to_vectors : vector of type too complex";
     defs
 
 let adding_function vtype =
@@ -90,17 +91,17 @@ let defsRec_of_varinfos vars_set =
 
 (* Convert a record of definitions to a printable set of definitions *)
 let defsRec_to_symbDefs defs_rec
-    : (symbDef * symbDef * symbDef * (symbDef list) ) =
+  : (symbDef * symbDef * symbDef * (symbDef list) ) =
   let ro_arrays_map =
     List.fold_left
       defs_rec.vecs
       ~init:Utils.SM.empty
       ~f:(fun tmap (vname, sty) ->
-        SMTools.update
-		  tmap
-		  sty
-		  [vname]
-          (fun pval nval -> pval@nval))
+          SMTools.update
+	    tmap
+	    sty
+	    [vname]
+            (fun pval nval -> pval@nval))
   in
   let ro_arrays = Utils.SM.bindings ro_arrays_map in
   let roArrays = List.map ro_arrays ~f:(fun (k,v) -> RoArray (k, v))
@@ -129,6 +130,7 @@ let join_name = "__join__"
 (** Name of the loop function in the Rosette sketch *)
 let body_name = "__loop_body__"
 (** Name of the initial state for the loop in the Rosette sketch *)
+let ident_state_name = main_struct_name^"_ident"
 let init_state_name = main_struct_name^"_init"
 (** Choose between a very restricted set of values for intials/identity values *)
 let base_init_value_choice = "(choose 0 1 #t #f)"
@@ -141,26 +143,26 @@ let base_init_value_choice = "(choose 0 1 #t #f)"
     is defined, the names of the cells will be concatenated into one string.
 *)
 let string__symbs_of_symbDef sd =
- match sd with
+  match sd with
   | Integers li ->
-     li
+    li
   | Reals li ->
-     li
+    li
   | Booleans li ->
-     li
+    li
   | RoArray (sty, varnames) ->
-     (** Array are finitized and represented
-         by vectors containig symbolic values *)
-     List.fold_left
-       varnames
-       ~init:[]
-       ~f:(fun str_list array_name ->
-         let cell_names =
-           List.fold
-             (1 -- !iterations_limit)
-             ~init:""
-             ~f:(fun str i -> str^" "^array_name^main_struct_name^(string_of_int i))
-         in str_list@[cell_names])
+    (** Array are finitized and represented
+        by vectors containig symbolic values *)
+    List.fold_left
+      varnames
+      ~init:[]
+      ~f:(fun str_list array_name ->
+          let cell_names =
+            List.fold
+              (1 -- !iterations_limit)
+              ~init:""
+              ~f:(fun str i -> str^" "^array_name^main_struct_name^(string_of_int i))
+          in str_list@[cell_names])
 
 
 (** Print the defintions of the variables we need in the sketch. We use
@@ -180,25 +182,25 @@ let pp_symbDef fmt sd =
   begin
     match sd with
     | Integers li ->
-       fp fmt "(define-symbolic %a integer?)@." pp_string_list li
+      fp fmt "(define-symbolic %a integer?)@." pp_string_list li
     | Reals li ->
-       fp fmt "(define-symbolic %a real?)@." pp_string_list li
+      fp fmt "(define-symbolic %a real?)@." pp_string_list li
     | Booleans li ->
-       fp fmt "(define-symbolic %a boolean?)@." pp_string_list li
+      fp fmt "(define-symbolic %a boolean?)@." pp_string_list li
     | RoArray (sty, varnames) ->
-     (** Array are finitized and represented
-         by vectors containig symbolic values *)
-       List.iter
-         varnames
-         ~f:(fun array_name ->
-           let cell_names =
-             List.map
-               (1 -- !iterations_limit)
-               ~f:(fun i -> array_name^main_struct_name^(string_of_int i))
-           in
-           fp fmt "(define-symbolic %a %s)@." pp_string_list cell_names sty;
-           fp fmt "(define %s (vector %a))@."
-             array_name pp_string_list cell_names)
+      (** Array are finitized and represented
+          by vectors containig symbolic values *)
+      List.iter
+        varnames
+        ~f:(fun array_name ->
+            let cell_names =
+              List.map
+                (1 -- !iterations_limit)
+                ~f:(fun i -> array_name^main_struct_name^(string_of_int i))
+            in
+            fp fmt "(define-symbolic %a %s)@." pp_string_list cell_names sty;
+            fp fmt "(define %s (vector %a))@."
+              array_name pp_string_list cell_names)
   end;
   string__symbs_of_symbDef sd
 
@@ -218,6 +220,78 @@ let strings_of_symbdefs symbdef =
   ignore(pp_ne_symbdefs str_formatter symbdef); flush_str_formatter ()
 
 
+
+(** Handle special constants. For examples, -inf.0 is not supported by Rosette
+    so it is replaced by assertions over the input variables with a symbolic
+    variables. *)
+
+let handle_special_consts fmt const_exprs_map all_vars =
+  let ints, reals, booleans, arrays =
+    let i, r, b, ar = defsRec_to_symbDefs (defsRec_of_varinfos all_vars) in
+    (string__symbs_of_symbDef i,
+     string__symbs_of_symbDef r,
+     string__symbs_of_symbDef b,
+     List.fold ar ~init:[]
+       ~f:(fun li sd -> li@(pp_ne_symbdefs fmt sd)))
+  in
+  let conj_comp fmt vname inpts op =
+    match inpts with
+    | [hd] -> Format.fprintf fmt "(%s %s %s)"
+                (string_of_symb_binop op) vname hd
+    | hd::tl ->
+      begin
+      Format.fprintf fmt "%a %a %a"
+        (fun fmt li ->
+           pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt "(&& ")
+             (fun fmt s -> Format.fprintf fmt "(%s %s %s)@;"
+                 (string_of_symb_binop op)
+                 vname
+                 s) fmt li)
+        tl
+        (fun fmt s ->
+           Format.fprintf fmt
+             "(%s %s %s)" (string_of_symb_binop op) vname s)
+        hd
+        (fun fmt li ->
+           pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt "")
+             (fun fmt s -> Format.fprintf fmt ")")
+             fmt li)
+        tl
+      end
+
+    | [] -> ()
+
+  in
+  let ifnotdef s =
+    match s with
+    | "MAX_INT" -> ()
+    | "MIN_INT" -> ()
+    | _ -> ()
+  in
+  let getv s =
+    match s with
+    | "MAX_INT" -> ()
+    | "MIN_INT" -> ()
+    | _ -> ()
+  in
+  IM.fold
+    (fun vid econst new_exprs ->
+       match econst with
+       | SkConst Infnty ->
+         ifnotdef "MAX_INT";
+         IM.add vid (getv "MAX_INT") new_exprs
+
+       | SkConst NInfnty ->
+         ifnotdef "MIN_INT";
+         IM.add vid (getv "MIN_INT") new_exprs
+
+       | _ -> IM.add vid () new_exprs
+    )
+    const_exprs_map IM.empty
+
+
 (** Pretty print the state structure with an equality predicate. The
     form of the definitions are defined in the Racket module.
 *)
@@ -234,7 +308,7 @@ let pp_state_definition fmt main_struct =
 *)
 let pp_symbolic_definitions_of fmt vars =
   let (ints, reals, booleans, arrays)
-      = defsRec_to_symbDefs (defsRec_of_varinfos vars) in
+    = defsRec_to_symbDefs (defsRec_of_varinfos vars) in
   let int_symbs, real_symbs, bool_symbs, array_cells =
     pp_ne_symbdefs fmt ints,
     pp_ne_symbdefs fmt reals,
@@ -248,10 +322,10 @@ let pp_symbolic_definitions_of fmt vars =
     @param state_vars The set of state variables of this loop body.
     @param state_struct_name The name of the struct used to represent
     the state of the loop (valuation of the state variables).
- *)
+*)
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
-let state_arg_name = "__s" in
+  let state_arg_name = "__s" in
   let field_names = VSOps.namelist state_vars in
   Format.fprintf fmt "(lambda (%s i)@.@[<hov 2>(let@;(%a) %a)@])"
     state_arg_name
@@ -271,7 +345,7 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
     "(define (%s s %s %s)@; \
-@[<hov 2>(Loop @[<hov 2>%s %s %d s@] @.\
+     @[<hov 2>(Loop @[<hov 2>%s %s %d s@] @.\
      @[<hov 2> %a@])@])@."
     body_name
     !start_index_name
@@ -338,18 +412,21 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-        Format.fprintf fmt "%s" base_init_value_choice)
+         Format.fprintf fmt "%s" base_init_value_choice)
   in
   (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
-    init_state_name main_struct_name
+    ident_state_name main_struct_name
     s0_sketch_printer (VSOps.varlist state_vars);
 
   let st0_vars = VSOps.vs_with_suffix state_vars "0" in
   ignore(pp_symbolic_definitions_of fmt
            (VS.filter
               (fun vi -> not (IM.mem vi.Cil.vid reach_consts)) st0_vars));
+  (** Handle special constants such as Infnty and NInfnty to create the
+      necessary assertions and symbolic variables *)
+  let mod_consts = handle_special_consts fmt reach_consts in
   (** Pretty print the initial states, with reaching constants and holes
       for the auxiliaries discovered *)
   Format.fprintf fmt
@@ -357,18 +434,18 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     st0
     main_struct_name
     (fun fmt li ->
-      (ppli fmt ~sep:" "
-         (fun fmt (vid, vi) ->
-           (if IM.mem vid reach_consts
-            then
-              pp_skexpr fmt (IM.find vid reach_consts)
-            else
-              (if IH.mem auxiliary_vars vid
-               then
-                 Format.fprintf fmt "%s" base_init_value_choice
-               else
-                 Format.fprintf fmt "%s" vi.Cil.vname))))
-        li)
+       (ppli fmt ~sep:" "
+          (fun fmt (vid, vi) ->
+             (if IM.mem vid reach_consts
+              then
+                pp_skexpr fmt (IM.find vid reach_consts)
+              else
+                (if IH.mem auxiliary_vars vid
+                 then
+                   Format.fprintf fmt "%s" base_init_value_choice
+                 else
+                   Format.fprintf fmt "%s" vi.Cil.vname))))
+         li)
     (VSOps.bindings st0_vars)
 
 
@@ -379,7 +456,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     @param i_st The starting index for this instance.
     @param i_m The splitting index for this instance.
     @param i_end The end index for this instance.
- *)
+*)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
   Format.fprintf fmt
     "@[<hov 2>(%s-eq?@. %a @.@[<hov 2>(%s@; %a@; %a)@])@]@."
@@ -395,7 +472,7 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
     @param state_vars The set of state variables.
     @param symbolic_variable_names The list of symbolic variable names that will
     have a universal quantifier over.
- *)
+*)
 let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
   Format.fprintf fmt
     "@[<hov 2>#:forall (list %a)@]@." pp_string_list symbolic_variable_names;
@@ -403,7 +480,7 @@ let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
     "@[<hov 2>#:guarantee @[(assert @.@[<hov 2>(and@. %a)@])@]@]@."
     (pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-         pp_verification_condition fmt (s0, i_st, i_m, i_end)))
+          pp_verification_condition fmt (s0, i_st, i_m, i_end)))
     [(0,2,4);
      (0,3,9);
      (0,7,9);
@@ -445,14 +522,14 @@ let pp_rosette_sketch fmt
   let state_vars = VSOps.subset_of_list state all_vars in
   let read_vars =
     VS.diff
-    (remove_interpreted_symbols
-      (VSOps.subset_of_list read all_vars))
+      (remove_interpreted_symbols
+         (VSOps.subset_of_list read all_vars))
       state_vars
   in
   let field_names =
     List.map (VSOps.varlist state_vars) ~f:(fun vi -> vi.Cil.vname) in
   let main_struct = (main_struct_name, field_names) in
-  let st0 = main_struct_name^"initial" in
+  let st0 = init_state_name in
   (** SPretty configuration for the current sketch *)
   SPretty.state_struct_name := main_struct_name;
   let symbolic_variables = pp_symbolic_definitions_of fmt read_vars in

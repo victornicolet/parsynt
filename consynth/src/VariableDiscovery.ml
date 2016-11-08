@@ -420,7 +420,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
 let discover_for_id stv (idx, update) input_func varid =
   GenVars.init ();
   init ();
-  max_exec_no := VS.cardinal stv;
+  max_exec_no := VS.cardinal stv + 1;
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let init_i = { state_set = stv ;
