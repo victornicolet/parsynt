@@ -21,6 +21,7 @@ consynth/canalysis/_build
 *.odocl
 META
 .idea
+CMakeFiles
 
 #Racket
 */compiled/
