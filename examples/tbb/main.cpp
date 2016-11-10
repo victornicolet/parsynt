@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
     li.push_back(new ExampleMin("min", problem_size));
     li.push_back(new ExampleCountingOnes("counting blocks of ones (true)", problem_size));
     li.push_back(new ExampleMts("maximum terminal sum", problem_size));
+    li.push_back(new ExampleMss("maximum segment sum", problem_size));
     li.push_back(new ExampleMpsPos("position of max prefix sum", problem_size));
     li.push_back(new ExampleSecondMin("second min element", problem_size));
     li.push_back(new ExampleFirstOne("position of first one in sequence", problem_size));

@@ -17,6 +17,7 @@
  * - Max
  * - Second max element
  * - Mts
+ * - Mss
  * - Mps with pos
  * - Counting blocks of ones
  * - Length of greatest block of trues
@@ -100,6 +101,17 @@ class ExampleMts : public ExampleUnit<int> {
 public:
     ExampleMts(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
     ~ExampleMts();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
+class ExampleMss : public ExampleUnit<int> {
+    size_t n;
+    int *a = nullptr;
+public:
+    ExampleMss(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleMss();
     void init() override;
     int parallel_apply() const;
     int seq_apply() const;
