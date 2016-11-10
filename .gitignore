@@ -10,6 +10,7 @@ examples/Basic
 *.\#*
 *.dep
 *.zo
+*.csv
 
 # Build / compilation directories
 # OCaml

@@ -41,11 +41,9 @@ public:
 
 void ExampleSum::init() {
     if(a == nullptr) {
-        cout << "Initialization ..." << endl;
         a = new int[n];
         for (int i = 0; i < n; i++)
             a[i] = i;
-        cout << "Initialization terminated." << endl;
     }
 }
 
@@ -104,11 +102,9 @@ public:
 
 void ExampleLength::init() {
     if(a == nullptr) {
-        cout << "Initialization of " << name << " ..." << endl;
         a = new int[n];
         for (int i = 0; i < n; i++)
             a[i] = i;
-        cout << "Initialization terminated." << endl;
     }
 }
 
