@@ -423,20 +423,20 @@ class SecondMinCore {
     int* my_a;
 
 public:
-    min2_state s;
+    min2_state dropwState;
     int b, e;
 
     SecondMinCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { s = {INT32_MAX, INT32_MAX};}
+            my_a(a), b(-1), e(-1)  { dropwState = {INT32_MAX, INT32_MAX};}
     SecondMinCore(SecondMinCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MAX, INT32_MAX};}
+            my_a(x.my_a), b(-1), e(-1) { dropwState = {INT32_MAX, INT32_MAX};}
 
 
     void operator()( const blocked_range<size_t>& r )
     {
         int *a = my_a;
-        int amin = s.min;
-        int min2 = s.min2;
+        int amin = dropwState.min;
+        int min2 = dropwState.min2;
 
         size_t end = r.end();
 
@@ -450,13 +450,13 @@ public:
             amin = min (amin, a[i]);
         }
 
-        s = {amin, min2};
+        dropwState = {amin, min2};
     }
 
     void join(const SecondMinCore& rhs) {
-        s = {
-                min(s.min, rhs.s.min),
-                min(min(s.min2, rhs.s.min2), max(s.min, rhs.s.min))
+        dropwState = {
+                min(dropwState.min, rhs.dropwState.min),
+                min(min(dropwState.min2, rhs.dropwState.min2), max(dropwState.min, rhs.dropwState.min))
         };
         e = rhs.e;
     }
@@ -476,7 +476,7 @@ void ExampleSecondMin::init() {
 int ExampleSecondMin::parallel_apply() const{
     SecondMinCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
-    return  coc.s.min2;
+    return  coc.dropwState.min2;
 }
 
 int ExampleSecondMin::seq_apply() const {
@@ -488,6 +488,91 @@ int ExampleSecondMin::seq_apply() const {
     }
     return min2;
 }
+
+
+/** Example : drop the position of the first 1 in the array */
+
+struct  dropw_state {
+    bool drop;
+    int pos;
+};
+
+
+class FirstOneCore {
+    int* my_a;
+
+public:
+    dropw_state dropwState;
+    int b, e;
+
+    FirstOneCore(int a[]) :
+            my_a(a), b(-1), e(-1)  { dropwState = {false, -1};}
+    FirstOneCore(FirstOneCore& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { dropwState = {false, -1};}
+
+
+    void operator()(const blocked_range<size_t>& r )
+    {
+        int *a = my_a;
+        bool drop = dropwState.drop;
+        int _pos = dropwState.pos;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            if(a[i] == 1 && !drop){
+                _pos = i;
+                drop = true;
+            }
+        }
+
+        dropwState = {drop, _pos};
+    }
+
+    void join(const FirstOneCore& rhs) {
+        dropwState = {
+                dropwState.drop && rhs.dropwState.drop,
+                dropwState.drop ? dropwState.pos : rhs.dropwState.pos
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleFirstOne::~ExampleFirstOne() { delete a;}
+
+
+void ExampleFirstOne::init() {
+    a = new int[n];
+    for(int i = 0; i < n; i++) {
+        a[i] = (rand() % 20) - 10;
+    }
+}
+
+
+int ExampleFirstOne::parallel_apply() const{
+    FirstOneCore coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.dropwState.pos;
+}
+
+int ExampleFirstOne::seq_apply() const {
+    int _pos = -1;
+    bool drop = false;
+    for(int i = 0; i < n; i++) {
+        if(a[i] == 1 && !drop){
+            _pos = i;
+            drop = true;
+        }
+    }
+    return _pos;
+}
+
+
 
 /** Example : is_sorted */
 struct is_sorted_state {

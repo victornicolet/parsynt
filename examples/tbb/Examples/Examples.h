@@ -18,6 +18,7 @@
  * - Second max element
  * - Mps with pos
  * - Counting blocks of ones
+ * - Position of first one in block
  * - Line of sight
  * - Is Sorted
  * - Is balanced
@@ -97,6 +98,17 @@ class ExampleSecondMin : public ExampleUnit<int> {
 public:
     ExampleSecondMin(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
     ~ExampleSecondMin();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
+class ExampleFirstOne : public ExampleUnit<int> {
+    size_t n;
+    int *a = nullptr;
+public:
+    ExampleFirstOne(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleFirstOne();
     void init() override;
     int parallel_apply() const;
     int seq_apply() const;

@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     li.push_back(new ExampleCountingOnes("counting blocks of ones (true)", problem_size));
     li.push_back(new ExampleMpsPos("position of max prefix sum", problem_size));
     li.push_back(new ExampleSecondMin("second min element", problem_size));
-
+    li.push_back(new ExampleFirstOne("position of first one in sequence", problem_size));
     for(auto ex : li) {
         (*ex).init();
         (*ex).print_result(cout);
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
 
     li2.push_back(new ExampleLineOfSight("Line of sight", problem_size));
     li2.push_back(new ExampleIsSorted("Is sorted", problem_size));
+    li2.push_back(new ExampleBalancedParenthesis("Balanced parenthesis", problem_size));
 
     for(auto ex : li2) {
         (*ex).init();
