@@ -123,59 +123,59 @@ tbb_test/fast:
 	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/build
 .PHONY : tbb_test/fast
 
-Stopwatch.o: Stopwatch.cpp.o
+Examples/SimpleExamples.o: Examples/SimpleExamples.cpp.o
 
-.PHONY : Stopwatch.o
-
-# target to build an object file
-Stopwatch.cpp.o:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Stopwatch.cpp.o
-.PHONY : Stopwatch.cpp.o
-
-Stopwatch.i: Stopwatch.cpp.i
-
-.PHONY : Stopwatch.i
-
-# target to preprocess a source file
-Stopwatch.cpp.i:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Stopwatch.cpp.i
-.PHONY : Stopwatch.cpp.i
-
-Stopwatch.s: Stopwatch.cpp.s
-
-.PHONY : Stopwatch.s
-
-# target to generate assembly for a file
-Stopwatch.cpp.s:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Stopwatch.cpp.s
-.PHONY : Stopwatch.cpp.s
-
-cavg-i.o: cavg-i.cpp.o
-
-.PHONY : cavg-i.o
+.PHONY : Examples/SimpleExamples.o
 
 # target to build an object file
-cavg-i.cpp.o:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/cavg-i.cpp.o
-.PHONY : cavg-i.cpp.o
+Examples/SimpleExamples.cpp.o:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/SimpleExamples.cpp.o
+.PHONY : Examples/SimpleExamples.cpp.o
 
-cavg-i.i: cavg-i.cpp.i
+Examples/SimpleExamples.i: Examples/SimpleExamples.cpp.i
 
-.PHONY : cavg-i.i
+.PHONY : Examples/SimpleExamples.i
 
 # target to preprocess a source file
-cavg-i.cpp.i:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/cavg-i.cpp.i
-.PHONY : cavg-i.cpp.i
+Examples/SimpleExamples.cpp.i:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/SimpleExamples.cpp.i
+.PHONY : Examples/SimpleExamples.cpp.i
 
-cavg-i.s: cavg-i.cpp.s
+Examples/SimpleExamples.s: Examples/SimpleExamples.cpp.s
 
-.PHONY : cavg-i.s
+.PHONY : Examples/SimpleExamples.s
 
 # target to generate assembly for a file
-cavg-i.cpp.s:
-	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/cavg-i.cpp.s
-.PHONY : cavg-i.cpp.s
+Examples/SimpleExamples.cpp.s:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/SimpleExamples.cpp.s
+.PHONY : Examples/SimpleExamples.cpp.s
+
+Examples/Stopwatch.o: Examples/Stopwatch.cpp.o
+
+.PHONY : Examples/Stopwatch.o
+
+# target to build an object file
+Examples/Stopwatch.cpp.o:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/Stopwatch.cpp.o
+.PHONY : Examples/Stopwatch.cpp.o
+
+Examples/Stopwatch.i: Examples/Stopwatch.cpp.i
+
+.PHONY : Examples/Stopwatch.i
+
+# target to preprocess a source file
+Examples/Stopwatch.cpp.i:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/Stopwatch.cpp.i
+.PHONY : Examples/Stopwatch.cpp.i
+
+Examples/Stopwatch.s: Examples/Stopwatch.cpp.s
+
+.PHONY : Examples/Stopwatch.s
+
+# target to generate assembly for a file
+Examples/Stopwatch.cpp.s:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/Stopwatch.cpp.s
+.PHONY : Examples/Stopwatch.cpp.s
 
 main.o: main.cpp.o
 
@@ -240,12 +240,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... tbb_test"
-	@echo "... Stopwatch.o"
-	@echo "... Stopwatch.i"
-	@echo "... Stopwatch.s"
-	@echo "... cavg-i.o"
-	@echo "... cavg-i.i"
-	@echo "... cavg-i.s"
+	@echo "... Examples/SimpleExamples.o"
+	@echo "... Examples/SimpleExamples.i"
+	@echo "... Examples/SimpleExamples.s"
+	@echo "... Examples/Stopwatch.o"
+	@echo "... Examples/Stopwatch.i"
+	@echo "... Examples/Stopwatch.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

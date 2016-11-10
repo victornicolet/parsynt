@@ -6,10 +6,10 @@ link_libraries(tbb)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ltbb")
 
 set(SOURCE_FILES
-        cavg-i.cpp
-        Stopwatch.cpp
-        Stopwatch.h
-        ExampleUnit.h
+        Examples/SimpleExamples.cpp
+        Examples/Stopwatch.cpp
+        Examples/Stopwatch.h
+        Examples/ExampleUnit.h
         second_min.cpp
         main.cpp
         )

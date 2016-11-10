@@ -2,11 +2,7 @@
 // Created by nicolet on 09/11/16.
 //
 #include <iostream>
-#include <sstream>
-#include <cmath>
 #include <tbb/tbb.h>
-#include "Stopwatch.h"
-#include "ExampleUnit.h"
 
 using namespace tbb;
 

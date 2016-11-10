@@ -2,7 +2,7 @@
 #include <sstream>
 #include <cmath>
 #include <tbb/tbb.h>
-#include "Stopwatch.h"
+#include "Examples/Stopwatch.h"
 
 using namespace tbb;
  
