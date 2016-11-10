@@ -16,9 +16,10 @@
  * - Second min element
  * - Max
  * - Second max element
+ * - Mts
  * - Mps with pos
  * - Counting blocks of ones
- * - Maximum length of blocks of one
+ * - Length of greatest block of trues
  * - Position of first one in block
  * - Line of sight
  * - Is Sorted
@@ -88,6 +89,17 @@ class ExampleMpsPos : public ExampleUnit<int> {
 public:
     ExampleMpsPos(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
     ~ExampleMpsPos();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
+class ExampleMts : public ExampleUnit<int> {
+    size_t n;
+    int *a = nullptr;
+public:
+    ExampleMts(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleMts();
     void init() override;
     int parallel_apply() const;
     int seq_apply() const;

@@ -411,6 +411,80 @@ int ExampleMpsPos::seq_apply() const {
 }
 
 
+/** Example : mts*/
+struct mts_state {
+    int mts;
+    int sum;
+};
+
+class MtsCore {
+    int* my_a;
+
+public:
+    mts_state s;
+    int b, e;
+
+    MtsCore(int a[]) :
+            my_a(a), b(-1), e(-1)  { s = {INT32_MIN, 0};}
+    MtsCore(MtsCore& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, 0};}
+
+
+    void operator()( const blocked_range<size_t>& r )
+    {
+        int *a = my_a;
+        int mts = s.mts;
+        int sum = s.sum;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            sum = sum + a[i];
+            mts = max(0, mts + a[i]);
+        }
+
+        s = {mts, sum};
+    }
+
+    void join(const MtsCore& rhs) {
+        s = {
+                max(rhs.s.sum + s.mts, rhs.s.mts),
+                s.sum + rhs.s.sum
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleMts::~ExampleMts() { delete a;}
+
+
+void ExampleMts::init() {
+    a = new int[n];
+    for(int i = 0; i < n; i++) {
+        a[i] = (rand() % 20) - 10;
+    }
+}
+
+
+int ExampleMts::parallel_apply() const{
+    MtsCore coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.s.mts;
+}
+int ExampleMts::seq_apply() const {
+    int mts = INT32_MIN;
+    for(int i = 0; i < n; i++) {
+        mts = max(0, mts + a[i]);
+    }
+    return mts;
+}
+
+
 /** Example : return the second min element of the array */
 
 struct  min2_state {
