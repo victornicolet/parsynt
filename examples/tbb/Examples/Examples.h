@@ -106,6 +106,18 @@ public:
     int seq_apply() const;
 };
 
+class ExampleMps : public ExampleUnit<int> {
+    size_t n;
+    int *a = nullptr;
+public:
+    ExampleMps(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleMps();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
+
 class ExampleMss : public ExampleUnit<int> {
     size_t n;
     int *a = nullptr;
