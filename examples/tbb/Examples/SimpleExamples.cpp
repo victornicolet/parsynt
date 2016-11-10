@@ -502,20 +502,20 @@ class FirstOneCore {
     int* my_a;
 
 public:
-    dropw_state dropwState;
+    dropw_state state;
     int b, e;
 
     FirstOneCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { dropwState = {false, -1};}
+            my_a(a), b(-1), e(-1)  { state = {false, -1};}
     FirstOneCore(FirstOneCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { dropwState = {false, -1};}
+            my_a(x.my_a), b(-1), e(-1) { state = {false, -1};}
 
 
     void operator()(const blocked_range<size_t>& r )
     {
         int *a = my_a;
-        bool drop = dropwState.drop;
-        int _pos = dropwState.pos;
+        bool drop = state.drop;
+        int _pos = state.pos;
 
         size_t end = r.end();
 
@@ -531,13 +531,13 @@ public:
             }
         }
 
-        dropwState = {drop, _pos};
+        state = {drop, _pos};
     }
 
     void join(const FirstOneCore& rhs) {
-        dropwState = {
-                dropwState.drop && rhs.dropwState.drop,
-                dropwState.drop ? dropwState.pos : rhs.dropwState.pos
+        state = {
+                state.drop && rhs.state.drop,
+                state.drop ? state.pos : rhs.state.pos
         };
         e = rhs.e;
     }
@@ -557,7 +557,7 @@ void ExampleFirstOne::init() {
 int ExampleFirstOne::parallel_apply() const{
     FirstOneCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
-    return  coc.dropwState.pos;
+    return  coc.state.pos;
 }
 
 int ExampleFirstOne::seq_apply() const {
@@ -570,6 +570,94 @@ int ExampleFirstOne::seq_apply() const {
         }
     }
     return _pos;
+}
+
+
+
+/** Example : return the length of the biggest block of (true) in the array */
+
+struct  block1_state {
+    bool conj;
+    int current_len;
+    int first_len;
+    int max_len;
+};
+
+
+class MaxLengthBlockCore {
+    bool* my_a;
+
+public:
+    block1_state state;
+    int b, e;
+
+    MaxLengthBlockCore(bool a[]) :
+            my_a(a), b(-1), e(-1)  { state = {true, 0, 0, 0};}
+    MaxLengthBlockCore(MaxLengthBlockCore& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { state = {true, 0 ,0 ,0};}
+
+
+    void operator()(const blocked_range<size_t>& r )
+    {
+        bool *a = my_a;
+        bool conj = state.conj;
+        int cl = state.current_len;
+        int fl = state.first_len;
+        int ml = state.max_len;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            cl = a[i] ? cl + 1 : 0;
+            ml = max (ml, cl);
+            conj = conj && a[i];
+            fl = fl + (conj ? 1 : 0);
+        }
+
+        state = {conj, cl, fl, ml};
+    }
+
+    void join(const MaxLengthBlockCore& rhs) {
+        state = {
+                state.conj && rhs.state.conj,
+                (rhs.state.conj) ? state.current_len + rhs.state.first_len : rhs.state.current_len,
+                state.first_len + (state.conj) ? rhs.state.first_len : 0,
+                max(state.current_len + rhs.state.first_len, max(state.max_len, rhs.state.max_len))
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleMaxLengthBlock::~ExampleMaxLengthBlock() { delete a;}
+
+
+void ExampleMaxLengthBlock::init() {
+    a = new bool[n];
+    for(int i = 0; i < n; i++) {
+        a[i] = ((rand() % 20) - 10) > 0;
+    }
+}
+
+
+int ExampleMaxLengthBlock::parallel_apply() const{
+    MaxLengthBlockCore coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.state.max_len;
+}
+
+int ExampleMaxLengthBlock::seq_apply() const {
+    int cl = 0;
+    int ml = 0;
+    for(int i = 0; i < n; i++) {
+        cl = a[i] ? cl + 1 : 0;
+        ml = max (ml, cl);
+    }
+    return ml;
 }
 
 

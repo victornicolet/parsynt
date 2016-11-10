@@ -18,6 +18,7 @@
  * - Second max element
  * - Mps with pos
  * - Counting blocks of ones
+ * - Maximum length of blocks of one
  * - Position of first one in block
  * - Line of sight
  * - Is Sorted
@@ -109,6 +110,17 @@ class ExampleFirstOne : public ExampleUnit<int> {
 public:
     ExampleFirstOne(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
     ~ExampleFirstOne();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
+class ExampleMaxLengthBlock : public ExampleUnit<int> {
+    size_t n;
+    bool *a = nullptr;
+public:
+    ExampleMaxLengthBlock(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleMaxLengthBlock();
     void init() override;
     int parallel_apply() const;
     int seq_apply() const;
