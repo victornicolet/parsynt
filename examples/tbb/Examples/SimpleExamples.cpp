@@ -1223,3 +1223,89 @@ bool ExampleBalancedParenthesis::seq_apply() const {
 
     return bal;
 }
+
+/** Boolean example : seen false after true */
+/* We suppose that all buildings have a positive height */
+
+struct seen01_state {
+    bool res;
+    bool seen0;
+    bool seen1;
+};
+
+class Seen01Core {
+    bool* my_a;
+
+public:
+    seen01_state state;
+    int b, e;
+
+    Seen01Core(bool a[]) :
+            my_a(a), b(-1), e(-1)  { state = {false, false, false};}
+    Seen01Core(Seen01Core& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { state = {false, false, false};}
+
+
+    void operator()( const blocked_range<size_t>& r )
+    {
+        bool *a = my_a;
+
+        bool res = state.res;
+        bool seen0 = state.seen0;
+        bool seen1 = state.seen1;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            if (seen1 && !(a[i]))
+                res = true;
+            seen1 = seen1 || a[i];
+            seen0 = seen0 || (!a[i]);
+        }
+
+        state = {res, seen0, seen1};
+    }
+
+    void join(const Seen01Core& rhs) {
+        state = {
+                (state.res || rhs.state.res) || (rhs.state.seen0 && state.seen1),
+                (state.seen0 || rhs.state.seen0) || state.res,
+                (state.seen1 || rhs.state.seen1) || rhs.state.res,
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleSeen01::~ExampleSeen01() { delete a;}
+
+
+void ExampleSeen01::init() {
+    a = new bool[n];
+    for (int i = 0; i < n; i++) {
+        a[i] = (abs(rand() % 100) - 50) > 0;
+    }
+}
+
+
+bool ExampleSeen01::parallel_apply() const{
+    Seen01Core coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.state.res;
+}
+
+bool ExampleSeen01::seq_apply() const {
+    bool res = false;
+    bool seen1 = true;
+    for (int i = 0; i < n; i++) {
+        if (seen1 && !(a[i]))
+            res = true;
+        seen1 = seen1 || a[i];
+    }
+
+    return res;
+}

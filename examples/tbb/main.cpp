@@ -74,7 +74,9 @@ int main(int argc, char *argv[]) {
     li2.push_back(new ExampleLineOfSight("Line of sight", problem_size));
     li2.push_back(new ExampleIsSorted("Is sorted", problem_size));
     li2.push_back(new ExampleBalancedParenthesis("Balanced parenthesis", problem_size));
+    li2.push_back(new ExampleSeen01("Seen true after false", problem_size));
 
+    
     for(auto ex : li2) {
         (*ex).init();
         (*ex).print_result(cout);

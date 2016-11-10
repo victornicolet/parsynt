@@ -10,6 +10,8 @@
 
 /*
  * Examples implemented :
+ *
+ * Examples returning an integer :
  * - Sum
  * - Length
  * - Min
@@ -19,12 +21,16 @@
  * - Mts
  * - Mss
  * - Mps with pos
+ * - Mts with pos
  * - Counting blocks of ones
  * - Length of greatest block of trues
  * - Position of first one in block
+ *
+ * Examples returning a boolean :
  * - Line of sight
  * - Is Sorted
  * - Is balanced
+ * - Seen true after false
  */
 
 using namespace std;
@@ -205,6 +211,17 @@ class ExampleBalancedParenthesis : public ExampleUnit<bool> {
 public:
     ExampleBalancedParenthesis(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
     ~ExampleBalancedParenthesis();
+    void init() override;
+    bool parallel_apply() const;
+    bool seq_apply() const;
+};
+
+class ExampleSeen01 : public ExampleUnit<bool> {
+    size_t n;
+    bool *a = nullptr;
+public:
+    ExampleSeen01(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
+    ~ExampleSeen01();
     void init() override;
     bool parallel_apply() const;
     bool seq_apply() const;
