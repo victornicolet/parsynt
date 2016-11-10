@@ -23,6 +23,7 @@ META
 .idea
 CMakeFiles
 tbb_test
+CMakeCache.txt
 
 #Racket
 */compiled/
