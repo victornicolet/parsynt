@@ -22,6 +22,7 @@ consynth/canalysis/_build
 META
 .idea
 CMakeFiles
+tbb_test
 
 #Racket
 */compiled/

@@ -1,6 +1,9 @@
 //
 // Created by nicolet on 09/11/16.
 //
+#define UT_THREAD_DEFAULT_STACK_SIZE (8U*1024U*1024U)
+
+
 #include <iostream>
 #include <unistd.h>
 #include "Examples/Examples.h"
@@ -36,12 +39,15 @@ int main(int argc, char *argv[]) {
     // If a number of cores is specified and greate than 1,
     // then set then number of cores used by TBB.
     if (num_cores > 1) {
-        task_scheduler_init init(num_cores);
+        static tbb::task_scheduler_init
+                init(tbb::task_scheduler_init::deferred);
+
+        init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
     }
 
     std::list<IntEx*> li = {};
 
-    li.push_back(new ExampleSumFoo("sum", problem_size));
+    li.push_back(new ExampleSum("sum", problem_size));
     li.push_back(new ExampleLength("length", problem_size));
     li.push_back(new ExampleMax("max", problem_size));
     li.push_back(new ExampleMin("min", problem_size));

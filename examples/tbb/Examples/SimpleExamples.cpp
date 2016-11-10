@@ -39,7 +39,7 @@ public:
     }
 };
 
-void ExampleSumFoo::init() {
+void ExampleSum::init() {
     if(a == nullptr) {
         cout << "Initialization ..." << endl;
         a = new int[n];
@@ -49,17 +49,17 @@ void ExampleSumFoo::init() {
     }
 }
 
-ExampleSumFoo::~ExampleSumFoo() {
+ExampleSum::~ExampleSum() {
     delete a;
 }
 
-int ExampleSumFoo::parallel_apply() const {
+int ExampleSum::parallel_apply() const {
     SumFoo sf(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), sf );
     return sf.my_sum;
 }
 
-int ExampleSumFoo::seq_apply() const {
+int ExampleSum::seq_apply() const {
     int sum = 0;
     for (int i = 0; i < n; i++)
         sum += a[i];
@@ -646,4 +646,91 @@ bool ExampleLineOfSight::seq_apply() const {
     }
 
     return is_visible;
+}
+
+
+
+
+/** Boolean example : balanced parenthesis */
+/* We suppose that all buildings have a positive height */
+
+struct bal_par_state {
+    int aux;
+    bool bal;
+    int cnt;
+};
+
+class BalancedParenthesisCore {
+    bool* my_a;
+
+public:
+    bal_par_state parState;
+    int b, e;
+
+    BalancedParenthesisCore(bool a[]) :
+            my_a(a), b(-1), e(-1)  { parState = {INT32_MIN, true, 0};}
+    BalancedParenthesisCore(BalancedParenthesisCore& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { parState = {INT32_MIN, true, 0};}
+
+
+    void operator()( const blocked_range<size_t>& r )
+    {
+        bool *a = my_a;
+
+        int _aux = parState.aux;
+        bool _bal = parState.bal;
+        int _cnt = parState.cnt;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            _cnt += (a[i]? 1 : -1);
+            _bal = _bal && (_cnt >= 0);
+            _aux = min(_aux, _cnt);
+        }
+
+        parState = {_aux, _bal, _cnt};
+    }
+
+    void join(const BalancedParenthesisCore& rhs) {
+        parState = {
+                min(parState.aux, parState.cnt + rhs.parState.aux),
+                parState.bal && (rhs.parState.aux + parState.cnt > 0),
+                parState.cnt + rhs.parState.cnt
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleBalancedParenthesis::~ExampleBalancedParenthesis() { delete a;}
+
+
+void ExampleBalancedParenthesis::init() {
+    a = new bool[n];
+    for (int i = 0; i < n; i++) {
+        a[i] = (abs(rand() % 100) - 50) > 0;
+    }
+}
+
+
+bool ExampleBalancedParenthesis::parallel_apply() const{
+    BalancedParenthesisCore coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.parState.bal;
+}
+
+bool ExampleBalancedParenthesis::seq_apply() const {
+    bool bal = true;
+    int cnt = 0;
+    for (int i = 0; i < n; i++) {
+        cnt += (a[i]? 1 : -1);
+        bal = bal && (cnt >= 0);
+    }
+
+    return bal;
 }

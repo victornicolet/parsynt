@@ -7,14 +7,30 @@
 #ifndef TBB_TESTS_EXAMPLES_H
 #define TBB_TESTS_EXAMPLES_H
 
+
+/*
+ * Examples implemented :
+ * - Sum
+ * - Length
+ * - Min
+ * - Second min element
+ * - Max
+ * - Second max element
+ * - Mps with pos
+ * - Counting blocks of ones
+ * - Line of sight
+ * - Is Sorted
+ * - Is balanced
+ */
+
 using namespace std;
 
-class ExampleSumFoo : public ExampleUnit<int> {
+class ExampleSum : public ExampleUnit<int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleSumFoo(string name, size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleSumFoo();
+    ExampleSum(string name, size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleSum();
     void init() override;
     int parallel_apply() const;
     int seq_apply() const;
@@ -107,6 +123,17 @@ class ExampleLineOfSight : public ExampleUnit<bool> {
 public:
     ExampleLineOfSight(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
     ~ExampleLineOfSight();
+    void init() override;
+    bool parallel_apply() const;
+    bool seq_apply() const;
+};
+
+class ExampleBalancedParenthesis : public ExampleUnit<bool> {
+    size_t n;
+    bool *a = nullptr;
+public:
+    ExampleBalancedParenthesis(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
+    ~ExampleBalancedParenthesis();
     void init() override;
     bool parallel_apply() const;
     bool seq_apply() const;
