@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     li.push_back(new ExampleMts("maximum terminal sum", problem_size));
     li.push_back(new ExampleMss("maximum segment sum", problem_size));
     li.push_back(new ExampleMpsPos("position of max prefix sum", problem_size));
+    li.push_back(new ExampleMtsPos("position of max terminal sum", problem_size));
     li.push_back(new ExampleSecondMin("second min element", problem_size));
     li.push_back(new ExampleFirstOne("position of first one in sequence", problem_size));
     li.push_back(new ExampleMaxLengthBlock("Length of biggest block of true", problem_size));

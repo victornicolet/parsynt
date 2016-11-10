@@ -95,6 +95,17 @@ public:
     int seq_apply() const;
 };
 
+class ExampleMtsPos : public ExampleUnit<int> {
+    size_t n;
+    int *a = nullptr;
+public:
+    ExampleMtsPos(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
+    ~ExampleMtsPos();
+    void init() override;
+    int parallel_apply() const;
+    int seq_apply() const;
+};
+
 class ExampleMts : public ExampleUnit<int> {
     size_t n;
     int *a = nullptr;

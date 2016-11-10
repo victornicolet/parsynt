@@ -325,7 +325,7 @@ int ExampleCountingOnes::seq_apply() const {
 }
 
 
-/** Example : counting the blocks of ones */
+/** Example : position of the end of maximum prefix sum */
 struct mps_pos_state {
     int mps;
     int pos;
@@ -340,9 +340,9 @@ public:
     int b, e;
 
     MpsPosCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { s = {INT32_MIN, 0, 0};}
+            my_a(a), b(-1), e(-1)  { s = {0, 0, 0};}
     MpsPosCore(MpsPosCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, 0, 0};}
+            my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0};}
 
 
     void operator()( const blocked_range<size_t>& r )
@@ -398,7 +398,7 @@ int ExampleMpsPos::parallel_apply() const{
 }
 int ExampleMpsPos::seq_apply() const {
     int sum = 0;
-    int mps = INT32_MIN;
+    int mps = 0;
     int pos = 0;
     for(int i = 0; i < n; i++) {
         sum += a[i];
@@ -410,6 +410,86 @@ int ExampleMpsPos::seq_apply() const {
     return pos;
 }
 
+/** Example : position of start of maximum terminal sum */
+struct mts_pos_state {
+    int mts;
+    int pos;
+    int sum;
+};
+
+class MtsPosCore {
+    int* my_a;
+
+public:
+    mts_pos_state s;
+    int b, e;
+
+    MtsPosCore(int a[]) :
+            my_a(a), b(-1), e(-1)  { s = {0, 0, 0};}
+    MtsPosCore(MtsPosCore& x, split) :
+            my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0};}
+
+
+    void operator()( const blocked_range<size_t>& r )
+    {
+        int *a = my_a;
+        int tmp_mts = s.mts;
+        int tmp_sum = s.sum;
+        int tmp_pos = s.pos;
+
+        size_t end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = (int) r.begin();
+        if (e < 0 || r.end() > e)
+            e = (int) r.end();
+
+        for (size_t i = r.begin(); i!=end; ++i) {
+            tmp_sum += a[i];
+            if(tmp_mts <= 0)
+                tmp_pos = i;
+            tmp_mts = max(tmp_mts + a[i], 0);
+        }
+
+        s = {tmp_mts, tmp_pos, tmp_sum};
+    }
+
+    void join(const MtsPosCore& rhs) {
+        s = {
+                max(s.mts + rhs.s.sum, rhs.s.mts),
+                (rhs.s.sum + s.mts > rhs.s.mts) ? s.pos : rhs.s.pos,
+                rhs.s.sum + s.sum
+        };
+        e = rhs.e;
+    }
+};
+
+ExampleMtsPos::~ExampleMtsPos() { delete a;}
+
+
+void ExampleMtsPos::init() {
+    a = new int[n];
+    for(int i = 0; i < n; i++) {
+        a[i] = (rand() % 20) - 10;
+    }
+}
+
+
+int ExampleMtsPos::parallel_apply() const{
+    MtsPosCore coc(a);
+    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    return  coc.s.pos;
+}
+int ExampleMtsPos::seq_apply() const {
+    int mts = 0;
+    int pos = 0;
+    for(int i = 0; i < n; i++) {
+        if (mts <= 0)
+            pos = i;
+        mts = max(mts + a[i], 0);
+    }
+    return pos;
+}
 
 /** Example : mts*/
 struct mts_state {
@@ -425,9 +505,9 @@ public:
     int b, e;
 
     MtsCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { s = {INT32_MIN, 0};}
+            my_a(a), b(-1), e(-1)  { s = {0, 0};}
     MtsCore(MtsCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, 0};}
+            my_a(x.my_a), b(-1), e(-1) { s = {0, 0};}
 
 
     void operator()( const blocked_range<size_t>& r )
@@ -477,7 +557,7 @@ int ExampleMts::parallel_apply() const{
     return  coc.s.mts;
 }
 int ExampleMts::seq_apply() const {
-    int mts = INT32_MIN;
+    int mts = 0;
     for(int i = 0; i < n; i++) {
         mts = max(0, mts + a[i]);
     }
@@ -502,9 +582,9 @@ public:
     int b, e;
 
     MssCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { s = {INT32_MIN, INT32_MIN, INT32_MIN, 0};}
+            my_a(a), b(-1), e(-1)  { s = {0, 0, 0, 0};}
     MssCore(MssCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, INT32_MIN, INT32_MIN, 0};}
+            my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0, 0};}
 
 
     void operator()( const blocked_range<size_t>& r )
@@ -560,8 +640,8 @@ int ExampleMss::parallel_apply() const{
     return  coc.s.mss;
 }
 int ExampleMss::seq_apply() const {
-    int mts = INT32_MIN;
-    int mss = INT32_MIN;
+    int mts = 0;
+    int mss = 0;
     for(int i = 0; i < n; i++) {
         mss = max (mss, mts + a[i]);
         mts = max (0, mts + a[i]);
@@ -585,9 +665,9 @@ public:
     int b, e;
 
     MpsCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { s = {INT32_MIN, 0};}
+            my_a(a), b(-1), e(-1)  { s = {0, 0};}
     MpsCore(MpsCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, 0};}
+            my_a(x.my_a), b(-1), e(-1) { s = {0, 0};}
 
 
     void operator()( const blocked_range<size_t>& r )
@@ -637,8 +717,8 @@ int ExampleMps::parallel_apply() const{
     return  coc.s.mps;
 }
 int ExampleMps::seq_apply() const {
-    int sum = INT32_MIN;
-    int mps = INT32_MIN;
+    int sum = 0;
+    int mps = 0;
     for(int i = 0; i < n; i++) {
         sum += a[i];
         mps = max (sum, mps);
