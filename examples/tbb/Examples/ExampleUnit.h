@@ -14,14 +14,16 @@
 using namespace tbb;
 using namespace std;
 
-template<class R>
+template<class R, class I>
 class ExampleUnit {
 public:
     string name;
     ExampleUnit(string _n) : name(_n) {}
-    virtual void init() = 0;
+    virtual void init(I*) = 0;
     virtual R parallel_apply() const = 0;
     virtual R seq_apply() const = 0;
+
+
     void print_result(ostream& out) {
         StopWatch u;
         u.start();
@@ -38,19 +40,19 @@ public:
     /* File ofstream must be opened before calling serialize.
      * If the number of cores provided  is 0, use sequential time. */
 
-    void serialize(int num_cores, int pb_size, ofstream& of) {
+    void serialize(int num_cores, size_t pb_size, ofstream& of) {
         if (num_cores == 0) {
             StopWatch u;
             u.start();
             R seq_res = seq_apply();
             double elapsed = u.stop();
-            of << name << "," << num_cores << "," << pb_size <<"," << "," << elapsed << "\n";
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
         } else {
             StopWatch u;
             u.start();
             R par_res = parallel_apply();
             double par_elapsed = u.stop();
-            of << name << "," << num_cores << "," << pb_size <<"," << "," << par_elapsed << "\n";
+            of << name << "," << num_cores << "," << pb_size <<"," << par_elapsed << "\n";
         }
     }
 };

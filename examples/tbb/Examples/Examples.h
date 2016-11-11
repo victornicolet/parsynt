@@ -35,146 +35,134 @@
 
 using namespace std;
 
-class ExampleSum : public ExampleUnit<int> {
+class ExampleSum : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleSum(string name, size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleSum();
-    void init() override;
+    ExampleSum(string name, size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int * _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleLength : public ExampleUnit<int> {
+class ExampleLength : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleLength(string name, size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleLength();
-    void init() override;
+    ExampleLength(string name, size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleMax : public ExampleUnit<int> {
+class ExampleMax : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMax(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMax();
-    void init() override;
+    ExampleMax(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleMin : public ExampleUnit<int> {
+
+class ExampleMin : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMin(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMin();
-    void init() override;
+    ExampleMin(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;} ;
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleCountingOnes : public ExampleUnit<int> {
+class ExampleCountingOnes : public ExampleUnit<int, bool> {
     size_t n;
     bool *a = nullptr;
 public:
-    ExampleCountingOnes(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleCountingOnes();
-    void init() override;
+    ExampleCountingOnes(string name,size_t n) : ExampleUnit<int, bool>(name), n(n) {}
+    void init(bool* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleMpsPos : public ExampleUnit<int> {
+class ExampleMpsPos : public ExampleUnit<size_t,int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMpsPos(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMpsPos();
-    void init() override;
-    int parallel_apply() const;
-    int seq_apply() const;
+    ExampleMpsPos(string name,size_t n) : ExampleUnit<size_t, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
+    size_t parallel_apply() const;
+    size_t seq_apply() const;
 };
 
-class ExampleMtsPos : public ExampleUnit<int> {
+class ExampleMtsPos : public ExampleUnit<size_t, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMtsPos(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMtsPos();
-    void init() override;
-    int parallel_apply() const;
-    int seq_apply() const;
+    ExampleMtsPos(string name,size_t n) : ExampleUnit<size_t, int>(name), n(n) {}
+    void init(int *_a) override {a = _a;};
+    size_t parallel_apply() const;
+    size_t seq_apply() const;
 };
 
-class ExampleMts : public ExampleUnit<int> {
+class ExampleMts : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMts(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMts();
-    void init() override;
+    ExampleMts(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int *_a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleMps : public ExampleUnit<int> {
+class ExampleMps : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMps(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMps();
-    void init() override;
+    ExampleMps(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
 
-class ExampleMss : public ExampleUnit<int> {
+class ExampleMss : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleMss(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMss();
-    void init() override;
+    ExampleMss(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleSecondMin : public ExampleUnit<int> {
+class ExampleSecondMin : public ExampleUnit<int, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleSecondMin(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleSecondMin();
-    void init() override;
+    ExampleSecondMin(string name,size_t n) : ExampleUnit<int, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
 
-class ExampleFirstOne : public ExampleUnit<int> {
+class ExampleFirstOne : public ExampleUnit<size_t, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleFirstOne(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleFirstOne();
-    void init() override;
-    int parallel_apply() const;
-    int seq_apply() const;
+    ExampleFirstOne(string name,size_t n) : ExampleUnit<size_t, int>(name), n(n) {}
+    void init(int* _a) override {a = _a;};
+    size_t parallel_apply() const;
+    size_t seq_apply() const;
 };
 
-class ExampleMaxLengthBlock : public ExampleUnit<int> {
+class ExampleMaxLengthBlock : public ExampleUnit<int, bool> {
     size_t n;
     bool *a = nullptr;
 public:
-    ExampleMaxLengthBlock(string name,size_t n) : ExampleUnit<int>(name), n(n) {}
-    ~ExampleMaxLengthBlock();
-    void init() override;
+    ExampleMaxLengthBlock(string name,size_t n) : ExampleUnit<int, bool>(name), n(n) {}
+    void init(bool *_a) override {a = _a;};
     int parallel_apply() const;
     int seq_apply() const;
 };
@@ -182,47 +170,43 @@ public:
 
 /* Boolean return examples */
 
-class ExampleIsSorted : public ExampleUnit<bool> {
+class ExampleIsSorted : public ExampleUnit<bool, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleIsSorted(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
-    ~ExampleIsSorted();
-    void init() override;
+    ExampleIsSorted(string name,size_t n) : ExampleUnit<bool, int>(name), n(n) {}
+    void init(int *_a) override {a = _a;};
     bool parallel_apply() const;
     bool seq_apply() const;
 };
 
 
-class ExampleLineOfSight : public ExampleUnit<bool> {
+class ExampleLineOfSight : public ExampleUnit<bool, int> {
     size_t n;
     int *a = nullptr;
 public:
-    ExampleLineOfSight(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
-    ~ExampleLineOfSight();
-    void init() override;
+    ExampleLineOfSight(string name,size_t n) : ExampleUnit<bool, int>(name), n(n) {}
+    void init(int *_a) override {a = _a;};
     bool parallel_apply() const;
     bool seq_apply() const;
 };
 
-class ExampleBalancedParenthesis : public ExampleUnit<bool> {
+class ExampleBalancedParenthesis : public ExampleUnit<bool, bool> {
     size_t n;
     bool *a = nullptr;
 public:
-    ExampleBalancedParenthesis(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
-    ~ExampleBalancedParenthesis();
-    void init() override;
+    ExampleBalancedParenthesis(string name,size_t n) : ExampleUnit<bool, bool>(name), n(n) {}
+    void init(bool *_a) override {a = _a;};
     bool parallel_apply() const;
     bool seq_apply() const;
 };
 
-class ExampleSeen01 : public ExampleUnit<bool> {
+class ExampleSeen01 : public ExampleUnit<bool, bool> {
     size_t n;
     bool *a = nullptr;
 public:
-    ExampleSeen01(string name,size_t n) : ExampleUnit<bool>(name), n(n) {}
-    ~ExampleSeen01();
-    void init() override;
+    ExampleSeen01(string name,size_t n) : ExampleUnit<bool, bool>(name), n(n) {}
+    void init(bool *_a) override {a = _a;};
     bool parallel_apply() const;
     bool seq_apply() const;
 };

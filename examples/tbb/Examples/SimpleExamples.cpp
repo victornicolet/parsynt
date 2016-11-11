@@ -39,17 +39,6 @@ public:
     }
 };
 
-void ExampleSum::init() {
-    if(a == nullptr) {
-        a = new int[n];
-        for (int i = 0; i < n; i++)
-            a[i] = i;
-    }
-}
-
-ExampleSum::~ExampleSum() {
-    delete a;
-}
 
 int ExampleSum::parallel_apply() const {
     SumFoo sf(a);
@@ -100,17 +89,6 @@ public:
     }
 };
 
-void ExampleLength::init() {
-    if(a == nullptr) {
-        a = new int[n];
-        for (int i = 0; i < n; i++)
-            a[i] = i;
-    }
-}
-
-ExampleLength::~ExampleLength() {
-    delete a;
-}
 
 int ExampleLength::parallel_apply() const {
     LengthCore sf(a);
@@ -162,13 +140,6 @@ public:
     }
 };
 
-void ExampleMax::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++)
-        a[i] = rand() % 2000;
-}
-
-ExampleMax::~ExampleMax() { delete a;}
 
 int ExampleMax::parallel_apply() const{
     MaxCore maxc(a);
@@ -220,14 +191,6 @@ public:
     }
 };
 
-
-void ExampleMin::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++)
-        a[i] = (rand() % 2000) - (rand() % 1000);
-}
-
-ExampleMin::~ExampleMin() { delete a;}
 
 int ExampleMin::parallel_apply() const{
     MinCore minc(a);
@@ -293,16 +256,6 @@ public:
     }
 };
 
-ExampleCountingOnes::~ExampleCountingOnes() { delete a;}
-
-
-void ExampleCountingOnes::init() {
-    a = new bool[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 2) - 1 > 0;
-    }
-}
-
 
 int ExampleCountingOnes::parallel_apply() const{
     CountingOnesCore coc(a);
@@ -311,9 +264,8 @@ int ExampleCountingOnes::parallel_apply() const{
 }
 int ExampleCountingOnes::seq_apply() const {
     int cnt = 0;
-    bool first = false;
     bool last = false;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         cnt += (a[i] && !last) ? 1 : 0;
         last = a[i];
     }
@@ -324,7 +276,7 @@ int ExampleCountingOnes::seq_apply() const {
 /** Example : position of the end of maximum prefix sum */
 struct mps_pos_state {
     int mps;
-    int pos;
+    size_t pos;
     int sum;
 };
 
@@ -346,7 +298,7 @@ public:
         int *a = my_a;
         int tmp_mps = s.mps;
         int tmp_sum = s.sum;
-        int tmp_pos = s.pos;
+        size_t tmp_pos = s.pos;
 
         size_t end = r.end();
 
@@ -376,27 +328,17 @@ public:
     }
 };
 
-ExampleMpsPos::~ExampleMpsPos() { delete a;}
 
-
-void ExampleMpsPos::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
-
-int ExampleMpsPos::parallel_apply() const{
+size_t ExampleMpsPos::parallel_apply() const{
     MpsPosCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
     return  coc.s.pos;
 }
-int ExampleMpsPos::seq_apply() const {
+size_t ExampleMpsPos::seq_apply() const {
     int sum = 0;
     int mps = 0;
-    int pos = 0;
-    for(int i = 0; i < n; i++) {
+    size_t pos = 0;
+    for(size_t i = 0; i < n; i++) {
         sum += a[i];
         if (sum > mps) {
             pos = i;
@@ -409,7 +351,7 @@ int ExampleMpsPos::seq_apply() const {
 /** Example : position of start of maximum terminal sum */
 struct mts_pos_state {
     int mts;
-    int pos;
+    size_t pos;
     int sum;
 };
 
@@ -431,7 +373,7 @@ public:
         int *a = my_a;
         int tmp_mts = s.mts;
         int tmp_sum = s.sum;
-        int tmp_pos = s.pos;
+        size_t tmp_pos = s.pos;
 
         size_t end = r.end();
 
@@ -460,26 +402,15 @@ public:
     }
 };
 
-ExampleMtsPos::~ExampleMtsPos() { delete a;}
-
-
-void ExampleMtsPos::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
-
-int ExampleMtsPos::parallel_apply() const{
+size_t ExampleMtsPos::parallel_apply() const{
     MtsPosCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
     return  coc.s.pos;
 }
-int ExampleMtsPos::seq_apply() const {
+size_t ExampleMtsPos::seq_apply() const {
     int mts = 0;
-    int pos = 0;
-    for(int i = 0; i < n; i++) {
+    size_t pos = 0;
+    for(size_t i = 0; i < n; i++) {
         if (mts <= 0)
             pos = i;
         mts = max(mts + a[i], 0);
@@ -536,15 +467,6 @@ public:
     }
 };
 
-ExampleMts::~ExampleMts() { delete a;}
-
-
-void ExampleMts::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
 
 
 int ExampleMts::parallel_apply() const{
@@ -554,7 +476,7 @@ int ExampleMts::parallel_apply() const{
 }
 int ExampleMts::seq_apply() const {
     int mts = 0;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         mts = max(0, mts + a[i]);
     }
     return mts;
@@ -619,17 +541,6 @@ public:
     }
 };
 
-ExampleMss::~ExampleMss() { delete a;}
-
-
-void ExampleMss::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
-
 int ExampleMss::parallel_apply() const{
     MssCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
@@ -638,7 +549,7 @@ int ExampleMss::parallel_apply() const{
 int ExampleMss::seq_apply() const {
     int mts = 0;
     int mss = 0;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         mss = max (mss, mts + a[i]);
         mts = max (0, mts + a[i]);
     }
@@ -696,17 +607,6 @@ public:
     }
 };
 
-ExampleMps::~ExampleMps() { delete a;}
-
-
-void ExampleMps::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
-
 int ExampleMps::parallel_apply() const{
     MpsCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
@@ -715,7 +615,7 @@ int ExampleMps::parallel_apply() const{
 int ExampleMps::seq_apply() const {
     int sum = 0;
     int mps = 0;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         sum += a[i];
         mps = max (sum, mps);
     }
@@ -774,16 +674,6 @@ public:
     }
 };
 
-ExampleSecondMin::~ExampleSecondMin() { delete a;}
-
-
-void ExampleSecondMin::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
 
 int ExampleSecondMin::parallel_apply() const{
     SecondMinCore coc(a);
@@ -794,7 +684,7 @@ int ExampleSecondMin::parallel_apply() const{
 int ExampleSecondMin::seq_apply() const {
     int amin = INT32_MAX;
     int min2 = INT32_MAX;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         min2 = min (min2, max(amin, a[i]));
         amin = min (amin, a[i]);
     }
@@ -806,7 +696,7 @@ int ExampleSecondMin::seq_apply() const {
 
 struct  dropw_state {
     bool drop;
-    int pos;
+    size_t pos;
 };
 
 
@@ -818,16 +708,16 @@ public:
     int b, e;
 
     FirstOneCore(int a[]) :
-            my_a(a), b(-1), e(-1)  { state = {false, -1};}
+            my_a(a), b(-1), e(-1)  { state = {false, 0};}
     FirstOneCore(FirstOneCore& x, split) :
-            my_a(x.my_a), b(-1), e(-1) { state = {false, -1};}
+            my_a(x.my_a), b(-1), e(-1) { state = {false, 0};}
 
 
     void operator()(const blocked_range<size_t>& r )
     {
         int *a = my_a;
         bool drop = state.drop;
-        int _pos = state.pos;
+        size_t _pos = state.pos;
 
         size_t end = r.end();
 
@@ -855,27 +745,17 @@ public:
     }
 };
 
-ExampleFirstOne::~ExampleFirstOne() { delete a;}
 
-
-void ExampleFirstOne::init() {
-    a = new int[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = (rand() % 20) - 10;
-    }
-}
-
-
-int ExampleFirstOne::parallel_apply() const{
+size_t ExampleFirstOne::parallel_apply() const{
     FirstOneCore coc(a);
     parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
     return  coc.state.pos;
 }
 
-int ExampleFirstOne::seq_apply() const {
-    int _pos = -1;
+size_t ExampleFirstOne::seq_apply() const {
+    size_t _pos = 0;
     bool drop = false;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         if(a[i] == 1 && !drop){
             _pos = i;
             drop = true;
@@ -945,15 +825,6 @@ public:
     }
 };
 
-ExampleMaxLengthBlock::~ExampleMaxLengthBlock() { delete a;}
-
-
-void ExampleMaxLengthBlock::init() {
-    a = new bool[n];
-    for(int i = 0; i < n; i++) {
-        a[i] = ((rand() % 20) - 10) > 0;
-    }
-}
 
 
 int ExampleMaxLengthBlock::parallel_apply() const{
@@ -965,7 +836,7 @@ int ExampleMaxLengthBlock::parallel_apply() const{
 int ExampleMaxLengthBlock::seq_apply() const {
     int cl = 0;
     int ml = 0;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         cl = a[i] ? cl + 1 : 0;
         ml = max (ml, cl);
     }
@@ -1025,16 +896,6 @@ public:
     }
 };
 
-ExampleIsSorted::~ExampleIsSorted() { delete a;}
-
-
-void ExampleIsSorted::init() {
-    a = new int[n];
-    for (int i = 0; i < n; i++) {
-        a[i] = (rand() % 100);
-    }
-}
-
 
 bool ExampleIsSorted::parallel_apply() const{
     IsSortedCore coc(a);
@@ -1045,7 +906,7 @@ bool ExampleIsSorted::parallel_apply() const{
 bool ExampleIsSorted::seq_apply() const {
     bool is_sorted = true;
     int prev = INT32_MIN;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         is_sorted = is_sorted && (prev < a[i]);
         prev = a[i];
     }
@@ -1105,15 +966,6 @@ public:
     }
 };
 
-ExampleLineOfSight::~ExampleLineOfSight() { delete a;}
-
-
-void ExampleLineOfSight::init() {
-    a = new int[n];
-    for (int i = 0; i < n; i++) {
-        a[i] = abs(rand() % 100);
-    }
-}
 
 
 bool ExampleLineOfSight::parallel_apply() const{
@@ -1125,7 +977,7 @@ bool ExampleLineOfSight::parallel_apply() const{
 bool ExampleLineOfSight::seq_apply() const {
     bool is_visible = true;
     int amax = 0;
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         is_visible = amax <= a[i];
         amax = max(amax, a[i]);
     }
@@ -1192,16 +1044,6 @@ public:
     }
 };
 
-ExampleBalancedParenthesis::~ExampleBalancedParenthesis() { delete a;}
-
-
-void ExampleBalancedParenthesis::init() {
-    a = new bool[n];
-    for (int i = 0; i < n; i++) {
-        a[i] = (abs(rand() % 100) - 50) > 0;
-    }
-}
-
 
 bool ExampleBalancedParenthesis::parallel_apply() const{
     BalancedParenthesisCore coc(a);
@@ -1212,7 +1054,7 @@ bool ExampleBalancedParenthesis::parallel_apply() const{
 bool ExampleBalancedParenthesis::seq_apply() const {
     bool bal = true;
     int cnt = 0;
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         cnt += (a[i]? 1 : -1);
         bal = bal && (cnt >= 0);
     }
@@ -1277,15 +1119,6 @@ public:
     }
 };
 
-ExampleSeen01::~ExampleSeen01() { delete a;}
-
-
-void ExampleSeen01::init() {
-    a = new bool[n];
-    for (int i = 0; i < n; i++) {
-        a[i] = (abs(rand() % 100) - 50) > 0;
-    }
-}
 
 
 bool ExampleSeen01::parallel_apply() const{
@@ -1297,7 +1130,7 @@ bool ExampleSeen01::parallel_apply() const{
 bool ExampleSeen01::seq_apply() const {
     bool res = false;
     bool seen1 = true;
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         if (seen1 && !(a[i]))
             res = true;
         seen1 = seen1 || a[i];
