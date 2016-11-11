@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
          * num_cores from 0 to 64
          * size from 1e6 to 1e10 */
         list<int> exp_num_core_li = {1, 2, 4, 6, 8, 16, 32, 64};
-        list<int> pb_size_li = {1<< 20, 1 << 22, 1 << 24, 1 << 26, 1 << 28, 1 << 30, 1 << 32 - 1};
+        list<int> pb_size_li = {1<< 20, 1 << 22, 1 << 24, 1 << 26, 1 << 28};
 
         ofstream experiments;
         experiments.open("experiments.csv", fstream::app);
