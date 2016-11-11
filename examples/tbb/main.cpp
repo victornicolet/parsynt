@@ -46,6 +46,18 @@ void do_experiment(int exp_sizes) {
 
             cout << "Experiments for " << pb_size << " and " << exp_num_core << " cores." << endl;
 
+            static tbb::task_scheduler_init
+                    init(tbb::task_scheduler_init::deferred);
+
+            if(exp_num_core > 0)
+                init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
+            else
+                init.initialize(task_scheduler_init::automatic, UT_THREAD_DEFAULT_STACK_SIZE);
+
+            ExampleSum test("example sum test", min(10000000, (int) pb_size));
+            test.init(a_int);
+            test.print_result(cout);
+
             for(int i = 0; i < NUM_EXP_PER_CASE; i++) {
 
                 std::list<IIEx> li_ii_ex = {};
@@ -103,6 +115,8 @@ void do_experiment(int exp_sizes) {
                     (*ex).serialize(exp_num_core, pb_size, experiments);
                 }
             }
+
+            init.terminate();
         }
 
         delete a_bool;
