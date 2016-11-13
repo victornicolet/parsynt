@@ -50,7 +50,7 @@ int ExampleSum::parallel_apply() const {
 
 int ExampleSum::seq_apply() const {
     int sum = 0;
-    for (int i = 0; i < n; i++)
+    for (a_size i = 0; i < n; i++)
         sum += a[i];
     return sum;
 }
@@ -102,7 +102,7 @@ int ExampleLength::parallel_apply() const {
 
 int ExampleLength::seq_apply() const {
     int length = 0;
-    for (int i = 0; i < n; i++)
+    for (a_size i = 0; i < n; i++)
         length += 1;
     return length;
 }
