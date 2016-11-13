@@ -33,9 +33,9 @@ void do_experiment(int exp_size, int exp_num_core) {
     int *a_int = new int[pb_size];
     bool *a_bool = new bool[pb_size];
 
-
+    cout << "Arrays allocated" << endl;
     for(a_size ix = 0; ix < pb_size; ix++){
-        a_int[ix] = rand() % 100 - 50;
+        a_int[ix] = rand() % 2000 - 1000;
         a_bool[ix] = a_int[ix] > 0;
     }
     cout << "Initialization succeeded." << endl;
