@@ -5,6 +5,8 @@
 
 using namespace tbb;
 
+typedef long a_size;
+
 class SumFoo {
     int* my_a;
 public:
@@ -15,18 +17,18 @@ public:
     SumFoo(SumFoo& x, split ) : my_a(x.my_a), my_sum(0), b(-1), e(-1) {}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int sum = my_sum;
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             sum +=  a[i];
         }
 
@@ -42,7 +44,7 @@ public:
 
 int ExampleSum::parallel_apply() const {
     SumFoo sf(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), sf );
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), sf );
     return sf.my_sum;
 }
 
@@ -52,6 +54,8 @@ int ExampleSum::seq_apply() const {
         sum += a[i];
     return sum;
 }
+
+int ExampleSum::full_seq_apply() const {return seq_apply();}
 
 /** Example : compute length */
 
@@ -65,18 +69,18 @@ public:
     LengthCore(LengthCore& x, split ) : my_a(x.my_a), my_length(0), b(-1), e(-1) {}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int length = my_length;
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             length+=1;
         }
 
@@ -92,7 +96,7 @@ public:
 
 int ExampleLength::parallel_apply() const {
     LengthCore sf(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), sf );
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), sf );
     return sf.my_length;
 }
 
@@ -103,7 +107,7 @@ int ExampleLength::seq_apply() const {
     return length;
 }
 
-
+int ExampleLength::full_seq_apply() const {return seq_apply();}
 
 /** Other simple example : Max */
 class MaxCore {
@@ -116,18 +120,18 @@ public:
     MaxCore(MaxCore& x, split ) : my_a(x.my_a), amax(INT32_MIN), b(-1), e(-1) {}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_amax = amax;
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_amax = (tmp_amax > a[i]) ? tmp_amax : a[i];
         }
 
@@ -143,17 +147,17 @@ public:
 
 int ExampleMax::parallel_apply() const{
     MaxCore maxc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), maxc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), maxc);
     return  maxc.amax;
 }
 int ExampleMax::seq_apply() const {
     int amax = INT32_MIN;
-    for(size_t i =0; i < n; i++) {
+    for(a_size i =0; i < n; i++) {
         amax = (amax > a[i]) ? amax : a[i];
     }
     return amax;
 }
-
+int ExampleMax::full_seq_apply() const {return seq_apply();}
 
 /** Other example : Min */
 
@@ -167,18 +171,18 @@ public:
     MinCore(MinCore& x, split ) : my_a(x.my_a), amin(INT32_MAX), b(-1), e(-1) {}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_amin = amin;
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_amin = (tmp_amin < a[i]) ? tmp_amin : a[i];
         }
 
@@ -194,16 +198,18 @@ public:
 
 int ExampleMin::parallel_apply() const{
     MinCore minc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), minc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), minc);
     return  minc.amin;
 }
 int ExampleMin::seq_apply() const {
     int amin = INT32_MAX;
-    for(size_t i =0; i < n; i++) {
+    for(a_size i =0; i < n; i++) {
         amin = (amin < a[i]) ? amin : a[i];
     }
     return amin;
 }
+
+int ExampleMin::full_seq_apply() const {return seq_apply();}
 
 /** Example : counting the blocks of ones */
 struct counting_ones_state {
@@ -225,20 +231,20 @@ public:
     my_a(x.my_a), b(-1), e(-1) { s = {0, false, false};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         bool *a = my_a;
         int tmp_cnt = s.count;
         bool f = s.last;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_cnt += (a[i] && !f) ? 1 : 0;
             f = a[i];
         }
@@ -259,24 +265,33 @@ public:
 
 int ExampleCountingOnes::parallel_apply() const{
     CountingOnesCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.count;
 }
 int ExampleCountingOnes::seq_apply() const {
     int cnt = 0;
     bool last = false;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         cnt += (a[i] && !last) ? 1 : 0;
         last = a[i];
     }
     return cnt;
 }
 
-
+int ExampleCountingOnes::full_seq_apply() const {
+    int cnt = 0;
+    bool last = false;
+    for(a_size i = 0; i < n; i++) {
+        cnt += (a[i] && !last) ? 1 : 0;
+        last = a[i];
+    }
+    cnt = a[n-1] ? cnt : cnt;
+    return cnt;
+}
 /** Example : position of the end of maximum prefix sum */
 struct mps_pos_state {
     int mps;
-    size_t pos;
+    a_size pos;
     int sum;
 };
 
@@ -293,21 +308,21 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_mps = s.mps;
         int tmp_sum = s.sum;
-        size_t tmp_pos = s.pos;
+        a_size tmp_pos = s.pos;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_sum += a[i];
             if (tmp_sum > tmp_mps) {
                 tmp_pos = i;
@@ -329,16 +344,16 @@ public:
 };
 
 
-size_t ExampleMpsPos::parallel_apply() const{
+a_size ExampleMpsPos::parallel_apply() const{
     MpsPosCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.pos;
 }
-size_t ExampleMpsPos::seq_apply() const {
+a_size ExampleMpsPos::seq_apply() const {
     int sum = 0;
     int mps = 0;
-    size_t pos = 0;
-    for(size_t i = 0; i < n; i++) {
+    a_size pos = 0;
+    for(a_size i = 0; i < n; i++) {
         sum += a[i];
         if (sum > mps) {
             pos = i;
@@ -348,10 +363,12 @@ size_t ExampleMpsPos::seq_apply() const {
     return pos;
 }
 
+a_size ExampleMpsPos::full_seq_apply() const {return seq_apply();}
+
 /** Example : position of start of maximum terminal sum */
 struct mts_pos_state {
     int mts;
-    size_t pos;
+    a_size pos;
     int sum;
 };
 
@@ -368,21 +385,21 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_mts = s.mts;
         int tmp_sum = s.sum;
-        size_t tmp_pos = s.pos;
+        a_size tmp_pos = s.pos;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_sum += a[i];
             if(tmp_mts <= 0)
                 tmp_pos = i;
@@ -402,20 +419,32 @@ public:
     }
 };
 
-size_t ExampleMtsPos::parallel_apply() const{
+a_size ExampleMtsPos::parallel_apply() const{
     MtsPosCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.pos;
 }
-size_t ExampleMtsPos::seq_apply() const {
+a_size ExampleMtsPos::seq_apply() const {
     int mts = 0;
-    size_t pos = 0;
-    for(size_t i = 0; i < n; i++) {
+    a_size pos = 0;
+    for(a_size i = 0; i < n; i++) {
         if (mts <= 0)
             pos = i;
         mts = max(mts + a[i], 0);
     }
     return pos;
+}
+a_size ExampleMtsPos::full_seq_apply() const {
+    int mts = 0;
+    int sum = 0;
+    a_size pos = 0;
+    for(a_size i = 0; i < n; i++) {
+        if (mts <= 0)
+            pos = i;
+        mts = max(mts + a[i], 0);
+        sum = sum + a[i];
+    }
+    return pos + sum;
 }
 
 /** Example : mts*/
@@ -437,20 +466,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int mts = s.mts;
         int sum = s.sum;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
             mts = max(0, mts + a[i]);
         }
@@ -471,18 +500,27 @@ public:
 
 int ExampleMts::parallel_apply() const{
     MtsCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.mts;
 }
+
 int ExampleMts::seq_apply() const {
     int mts = 0;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         mts = max(0, mts + a[i]);
     }
     return mts;
 }
 
-
+int ExampleMts::full_seq_apply() const {
+    int mts = 0;
+    int sum = 0;
+    for(a_size i = 0; i < n; i++) {
+        mts = max(0, mts + a[i]);
+        sum += a[i];
+    }
+    return mts + sum;
+}
 
 /** Example : Mss*/
 struct mss_state {
@@ -505,7 +543,7 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0, 0, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int mss = s.mss;
@@ -513,14 +551,14 @@ public:
         int mps = s.mps;
         int sum = s.sum;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
             mps = max(sum, mps);
             mss = max (mss, mts + a[i]);
@@ -543,19 +581,33 @@ public:
 
 int ExampleMss::parallel_apply() const{
     MssCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.mss;
 }
+
 int ExampleMss::seq_apply() const {
     int mts = 0;
     int mss = 0;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         mss = max (mss, mts + a[i]);
         mts = max (0, mts + a[i]);
     }
     return mss;
 }
 
+int ExampleMss::full_seq_apply() const {
+    int mts = 0;
+    int mss = 0;
+    int mps = 0;
+    int sum = 0;
+    for(a_size i = 0; i < n; i++) {
+        mss = max (mss, mts + a[i]);
+        mts = max (0, mts + a[i]);
+        sum += a[i];
+        mps = max(mps, sum);
+    }
+    return mss + mps + sum;
+}
 
 /** Example : Mps*/
 
@@ -577,20 +629,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int mps = s.mps;
         int sum = s.sum;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
             mps = max(sum, mps);
         }
@@ -609,19 +661,21 @@ public:
 
 int ExampleMps::parallel_apply() const{
     MpsCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.mps;
 }
+
 int ExampleMps::seq_apply() const {
     int sum = 0;
     int mps = 0;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         sum += a[i];
         mps = max (sum, mps);
     }
     return mps;
 }
 
+int ExampleMps::full_seq_apply() const { return seq_apply();}
 
 /** Example : return the second min element of the array */
 
@@ -644,20 +698,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { dropwState = {INT32_MAX, INT32_MAX};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int amin = dropwState.min;
         int min2 = dropwState.min2;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             min2 = min (min2, max(amin, a[i]));
             amin = min (amin, a[i]);
         }
@@ -677,26 +731,28 @@ public:
 
 int ExampleSecondMin::parallel_apply() const{
     SecondMinCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.dropwState.min2;
 }
 
 int ExampleSecondMin::seq_apply() const {
     int amin = INT32_MAX;
     int min2 = INT32_MAX;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         min2 = min (min2, max(amin, a[i]));
         amin = min (amin, a[i]);
     }
     return min2;
 }
 
+int ExampleSecondMin::full_seq_apply() const { return seq_apply();}
+
 
 /** Example : drop the position of the first 1 in the array */
 
 struct  dropw_state {
     bool drop;
-    size_t pos;
+    a_size pos;
 };
 
 
@@ -713,20 +769,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { state = {false, 0};}
 
 
-    void operator()(const blocked_range<size_t>& r )
+    void operator()(const blocked_range<a_size>& r )
     {
         int *a = my_a;
         bool drop = state.drop;
-        size_t _pos = state.pos;
+        a_size _pos = state.pos;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             if(a[i] == 1 && !drop){
                 _pos = i;
                 drop = true;
@@ -746,16 +802,16 @@ public:
 };
 
 
-size_t ExampleFirstOne::parallel_apply() const{
+a_size ExampleFirstOne::parallel_apply() const{
     FirstOneCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.state.pos;
 }
 
-size_t ExampleFirstOne::seq_apply() const {
-    size_t _pos = 0;
+a_size ExampleFirstOne::seq_apply() const {
+    a_size _pos = 0;
     bool drop = false;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         if(a[i] == 1 && !drop){
             _pos = i;
             drop = true;
@@ -764,7 +820,7 @@ size_t ExampleFirstOne::seq_apply() const {
     return _pos;
 }
 
-
+a_size ExampleFirstOne::full_seq_apply() const { return seq_apply();}
 
 /** Example : return the length of the biggest block of (true) in the array */
 
@@ -789,7 +845,7 @@ public:
             my_a(x.my_a), b(-1), e(-1) { state = {true, 0 ,0 ,0};}
 
 
-    void operator()(const blocked_range<size_t>& r )
+    void operator()(const blocked_range<a_size>& r )
     {
         bool *a = my_a;
         bool conj = state.conj;
@@ -797,14 +853,14 @@ public:
         int fl = state.first_len;
         int ml = state.max_len;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             cl = a[i] ? cl + 1 : 0;
             ml = max (ml, cl);
             conj = conj && a[i];
@@ -829,21 +885,34 @@ public:
 
 int ExampleMaxLengthBlock::parallel_apply() const{
     MaxLengthBlockCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.state.max_len;
 }
+
+int ExampleMaxLengthBlock::full_seq_apply() const {
+    int cl = 0;
+    int ml = 0;
+    bool conj = true;
+    int fl = 0;
+    for(a_size i = 0; i < n; i++) {
+        cl = a[i] ? cl + 1 : 0;
+        ml = max (ml, cl);
+        conj = conj && a[i];
+        fl = fl + (conj ? 1 : 0);
+    }
+    return ml + fl;
+}
+
 
 int ExampleMaxLengthBlock::seq_apply() const {
     int cl = 0;
     int ml = 0;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         cl = a[i] ? cl + 1 : 0;
         ml = max (ml, cl);
     }
     return ml;
 }
-
-
 
 /** Example : is_sorted */
 struct is_sorted_state {
@@ -865,20 +934,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {INT32_MIN, 0, true};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_prev = s.prev;
         bool is_sorted = s.is_sorted;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             is_sorted = is_sorted && (tmp_prev < a[i]);
             tmp_prev = a[i];
         }
@@ -899,17 +968,28 @@ public:
 
 bool ExampleIsSorted::parallel_apply() const{
     IsSortedCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.is_sorted;
 }
 
 bool ExampleIsSorted::seq_apply() const {
     bool is_sorted = true;
     int prev = INT32_MIN;
-    for(size_t i = 0; i < n; i++) {
+    for(a_size i = 0; i < n; i++) {
         is_sorted = is_sorted && (prev < a[i]);
         prev = a[i];
     }
+    return is_sorted;
+}
+
+bool ExampleIsSorted::full_seq_apply() const {
+    bool is_sorted = true;
+    int prev = INT32_MIN;
+    for(a_size i = 0; i < n; i++) {
+        is_sorted = is_sorted && (prev < a[i]);
+        prev = a[i];
+    }
+    int afinal = a[n-1];
     return is_sorted;
 }
 
@@ -935,20 +1015,20 @@ public:
             my_a(x.my_a), b(-1), e(-1) { s = {0, 0, true};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
         int tmp_amax = s.amax;
         bool tmp_visible = s.is_visible;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             tmp_visible = tmp_amax <= a[i];
             tmp_amax = max(tmp_amax, a[i]);
         }
@@ -970,18 +1050,29 @@ public:
 
 bool ExampleLineOfSight::parallel_apply() const{
     LineOfSightCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.s.is_visible;
 }
 
 bool ExampleLineOfSight::seq_apply() const {
     bool is_visible = true;
     int amax = 0;
-    for (size_t i = 0; i < n; i++) {
+    for (a_size i = 0; i < n; i++) {
         is_visible = amax <= a[i];
         amax = max(amax, a[i]);
     }
 
+    return is_visible;
+}
+
+bool ExampleLineOfSight::full_seq_apply() const {
+    bool is_visible = true;
+    int amax = 0;
+    for (a_size i = 0; i < n; i++) {
+        is_visible = amax <= a[i];
+        amax = max(amax, a[i]);
+    }
+    int afinal = a[n-1];
     return is_visible;
 }
 
@@ -1010,7 +1101,7 @@ public:
             my_a(x.my_a), b(-1), e(-1) { parState = {INT32_MIN, true, 0};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         bool *a = my_a;
 
@@ -1018,14 +1109,14 @@ public:
         bool _bal = parState.bal;
         int _cnt = parState.cnt;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             _cnt += (a[i]? 1 : -1);
             _bal = _bal && (_cnt >= 0);
             _aux = min(_aux, _cnt);
@@ -1047,16 +1138,29 @@ public:
 
 bool ExampleBalancedParenthesis::parallel_apply() const{
     BalancedParenthesisCore coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.parState.bal;
 }
 
 bool ExampleBalancedParenthesis::seq_apply() const {
     bool bal = true;
     int cnt = 0;
-    for (size_t i = 0; i < n; i++) {
+    for (a_size i = 0; i < n; i++) {
         cnt += (a[i]? 1 : -1);
         bal = bal && (cnt >= 0);
+    }
+
+    return bal;
+}
+
+bool ExampleBalancedParenthesis::full_seq_apply() const {
+    bool bal = true;
+    int cnt = 0;
+    int minc = 0;
+    for (a_size i = 0; i < n; i++) {
+        cnt += (a[i]? 1 : -1);
+        bal = bal && (cnt >= 0);
+        minc = min(minc, cnt);
     }
 
     return bal;
@@ -1084,7 +1188,7 @@ public:
             my_a(x.my_a), b(-1), e(-1) { state = {false, false, false};}
 
 
-    void operator()( const blocked_range<size_t>& r )
+    void operator()( const blocked_range<a_size>& r )
     {
         bool *a = my_a;
 
@@ -1092,14 +1196,14 @@ public:
         bool seen0 = state.seen0;
         bool seen1 = state.seen1;
 
-        size_t end = r.end();
+        a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
             b = (int) r.begin();
         if (e < 0 || r.end() > e)
             e = (int) r.end();
 
-        for (size_t i = r.begin(); i!=end; ++i) {
+        for (a_size i = r.begin(); i!=end; ++i) {
             if (seen1 && !(a[i]))
                 res = true;
             seen1 = seen1 || a[i];
@@ -1123,18 +1227,32 @@ public:
 
 bool ExampleSeen01::parallel_apply() const{
     Seen01Core coc(a);
-    parallel_reduce(blocked_range<size_t>(0,n,1000000), coc);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
     return  coc.state.res;
 }
 
 bool ExampleSeen01::seq_apply() const {
     bool res = false;
     bool seen1 = true;
-    for (size_t i = 0; i < n; i++) {
+    for (a_size i = 0; i < n; i++) {
         if (seen1 && !(a[i]))
             res = true;
         seen1 = seen1 || a[i];
     }
 
     return res;
+}
+
+bool ExampleSeen01::full_seq_apply() const {
+    bool res = false;
+    bool seen1 = false;
+    bool seen0 = false;
+    for (a_size i = 0; i < n; i++) {
+        if (seen1 && !(a[i]))
+            res = true;
+        seen1 = seen1 || a[i];
+        seen0 = seen0 || (!a[i]);
+    }
+
+    return res && seen0;
 }

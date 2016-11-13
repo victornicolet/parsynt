@@ -17,15 +17,13 @@ typedef ExampleUnit<int, bool>* IBEx;
 typedef ExampleUnit<bool, int>* BIEx;
 typedef ExampleUnit<bool, bool>* BBEx;
 typedef ExampleUnit<int, int>* IIEx;
-typedef ExampleUnit<size_t, int>* PIEx;
+typedef ExampleUnit<a_size, int>* PIEx;
 
 void do_experiment(int exp_size, int exp_num_core) {
     /** Experiments :
             * num_cores from 0 to 64
             * size from 1e6 to 1e10 */
-    list<int> exp_num_core_li = {0, 1, 2, 4, 6, 8, 16, 32, 64};
-
-    size_t pb_size = 1 << exp_size;
+    a_size pb_size = 1 << exp_size;
 
     ofstream experiments;
     experiments.open("experiments.csv", fstream::app);
@@ -36,7 +34,7 @@ void do_experiment(int exp_size, int exp_num_core) {
     bool *a_bool = new bool[pb_size];
 
 
-    for(size_t ix = 0; ix < pb_size; ix++){
+    for(a_size ix = 0; ix < pb_size; ix++){
         a_int[ix] = rand() % 100 - 50;
         a_bool[ix] = a_int[ix] > 0;
     }
@@ -49,12 +47,8 @@ void do_experiment(int exp_size, int exp_num_core) {
 
     if(exp_num_core > 0)
         init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
-    else
-        init.initialize(task_scheduler_init::automatic, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    ExampleSum test("example sum test", min(10000000, (int) pb_size));
-    test.init(a_int);
-    test.print_result(cout);
+
 
     for(int i = 0; i < NUM_EXP_PER_CASE; i++) {
 

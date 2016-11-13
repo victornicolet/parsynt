@@ -13,6 +13,7 @@
 
 using namespace tbb;
 using namespace std;
+typedef long a_size;
 
 template<class R, class I>
 class ExampleUnit {
@@ -22,6 +23,7 @@ public:
     virtual void init(I*) = 0;
     virtual R parallel_apply() const = 0;
     virtual R seq_apply() const = 0;
+    virtual R full_seq_apply() const = 0;
 
 
     void print_result(ostream& out) {
@@ -40,8 +42,15 @@ public:
     /* File ofstream must be opened before calling serialize.
      * If the number of cores provided  is 0, use sequential time. */
 
-    void serialize(int num_cores, size_t pb_size, ofstream& of) {
-        if (num_cores == 0) {
+    void serialize(int num_cores, a_size pb_size, ofstream& of) {
+        if (num_cores == -1) {
+            StopWatch u;
+            u.start();
+            R seq_res = full_seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        }
+        else if (num_cores == 0) {
             StopWatch u;
             u.start();
             R seq_res = seq_apply();
