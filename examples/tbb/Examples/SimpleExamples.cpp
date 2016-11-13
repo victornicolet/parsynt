@@ -11,7 +11,7 @@ class SumFoo {
     int* my_a;
 public:
     int my_sum;
-    int b, e;
+    a_size b, e;
 
     SumFoo(int a[]) : my_a(a), my_sum(0), b(-1), e(-1)  {}
     SumFoo(SumFoo& x, split ) : my_a(x.my_a), my_sum(0), b(-1), e(-1) {}
@@ -24,9 +24,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             sum +=  a[i];
@@ -63,7 +63,7 @@ class LengthCore {
     int* my_a;
 public:
     a_size my_length;
-    int b, e;
+    a_size b, e;
 
     LengthCore(int a[]) : my_a(a), my_length(0), b(-1), e(-1)  {}
     LengthCore(LengthCore& x, split ) : my_a(x.my_a), my_length(0), b(-1), e(-1) {}
@@ -76,9 +76,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             length+=1;
@@ -114,7 +114,7 @@ class MaxCore {
     int* my_a;
 public:
     int amax;
-    int b, e;
+    a_size b, e;
 
     MaxCore(int a[]) : my_a(a), amax(INT32_MIN), b(-1), e(-1)  {}
     MaxCore(MaxCore& x, split ) : my_a(x.my_a), amax(INT32_MIN), b(-1), e(-1) {}
@@ -127,9 +127,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_amax = (tmp_amax > a[i]) ? tmp_amax : a[i];
@@ -165,7 +165,7 @@ class MinCore {
     int* my_a;
 public:
     int amin;
-    int b, e;
+    a_size b, e;
 
     MinCore(int a[]) : my_a(a), amin(INT32_MAX), b(-1), e(-1)  {}
     MinCore(MinCore& x, split ) : my_a(x.my_a), amin(INT32_MAX), b(-1), e(-1) {}
@@ -178,9 +178,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_amin = (tmp_amin < a[i]) ? tmp_amin : a[i];
@@ -223,7 +223,7 @@ class CountingOnesCore {
 
 public:
     counting_ones_state s;
-    int b, e;
+    a_size b, e;
 
     CountingOnesCore(bool a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, false, false};}
@@ -240,9 +240,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_cnt += (a[i] && !f) ? 1 : 0;
@@ -300,7 +300,7 @@ class MpsPosCore {
 
 public:
     mps_pos_state s;
-    int b, e;
+    a_size b, e;
 
     MpsPosCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0, 0};}
@@ -318,9 +318,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_sum += a[i];
@@ -377,7 +377,7 @@ class MtsPosCore {
 
 public:
     mts_pos_state s;
-    int b, e;
+    a_size b, e;
 
     MtsPosCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0, 0};}
@@ -395,9 +395,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_sum += a[i];
@@ -458,7 +458,7 @@ class MtsCore {
 
 public:
     mts_state s;
-    int b, e;
+    a_size b, e;
 
     MtsCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0};}
@@ -475,9 +475,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
@@ -535,7 +535,7 @@ class MssCore {
 
 public:
     mss_state s;
-    int b, e;
+    a_size b, e;
 
     MssCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0, 0, 0};}
@@ -554,9 +554,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
@@ -621,7 +621,7 @@ class MpsCore {
 
 public:
     mps_state s;
-    int b, e;
+    a_size b, e;
 
     MpsCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0};}
@@ -638,9 +638,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             sum = sum + a[i];
@@ -690,7 +690,7 @@ class SecondMinCore {
 
 public:
     min2_state dropwState;
-    int b, e;
+    a_size b, e;
 
     SecondMinCore(int a[]) :
             my_a(a), b(-1), e(-1)  { dropwState = {INT32_MAX, INT32_MAX};}
@@ -707,9 +707,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             min2 = min (min2, max(amin, a[i]));
@@ -761,7 +761,7 @@ class FirstOneCore {
 
 public:
     dropw_state state;
-    int b, e;
+    a_size b, e;
 
     FirstOneCore(int a[]) :
             my_a(a), b(-1), e(-1)  { state = {false, 0};}
@@ -778,9 +778,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             if(a[i] == 1 && !drop){
@@ -837,7 +837,7 @@ class MaxLengthBlockCore {
 
 public:
     block1_state state;
-    int b, e;
+    a_size b, e;
 
     MaxLengthBlockCore(bool a[]) :
             my_a(a), b(-1), e(-1)  { state = {true, 0, 0, 0};}
@@ -856,9 +856,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             cl = a[i] ? cl + 1 : 0;
@@ -926,7 +926,7 @@ class IsSortedCore {
 
 public:
     is_sorted_state s;
-    int b, e;
+    a_size b, e;
 
     IsSortedCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {INT32_MIN, 0, true};}
@@ -943,9 +943,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             is_sorted = is_sorted && (tmp_prev < a[i]);
@@ -1007,7 +1007,7 @@ class LineOfSightCore {
 
 public:
     line_of_sight_state s;
-    int b, e;
+    a_size b, e;
 
     LineOfSightCore(int a[]) :
             my_a(a), b(-1), e(-1)  { s = {0, 0, true};}
@@ -1024,9 +1024,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             tmp_visible = tmp_amax <= a[i];
@@ -1093,7 +1093,7 @@ class BalancedParenthesisCore {
 
 public:
     bal_par_state parState;
-    int b, e;
+    a_size b, e;
 
     BalancedParenthesisCore(bool a[]) :
             my_a(a), b(-1), e(-1)  { parState = {INT32_MIN, true, 0};}
@@ -1112,9 +1112,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             _cnt += (a[i]? 1 : -1);
@@ -1180,7 +1180,7 @@ class Seen01Core {
 
 public:
     seen01_state state;
-    int b, e;
+    a_size b, e;
 
     Seen01Core(bool a[]) :
             my_a(a), b(-1), e(-1)  { state = {false, false, false};}
@@ -1199,9 +1199,9 @@ public:
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
-            b = (int) r.begin();
+            b = r.begin();
         if (e < 0 || r.end() > e)
-            e = (int) r.end();
+            e = r.end();
 
         for (a_size i = r.begin(); i!=end; ++i) {
             if (seen1 && !(a[i]))
