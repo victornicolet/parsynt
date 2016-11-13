@@ -59,7 +59,6 @@ void do_experiment(int exp_size, int exp_num_core) {
         std::list<BIEx> li_bi_ex = {};
 
         li_ii_ex.push_back(new ExampleSum("sum", pb_size));
-        li_ii_ex.push_back(new ExampleLength("len", pb_size));
         li_ii_ex.push_back(new ExampleMax("max", pb_size));
         li_ii_ex.push_back(new ExampleMin("min", pb_size));
         li_ii_ex.push_back(new ExampleSecondMin("mi2", pb_size));
@@ -74,6 +73,7 @@ void do_experiment(int exp_size, int exp_num_core) {
         li_pi_ex.push_back(new ExampleMpsPos("pop", pb_size));
         li_pi_ex.push_back(new ExampleMtsPos("pot", pb_size));
         li_pi_ex.push_back(new ExampleFirstOne("fs1", pb_size));
+        li_pi_ex.push_back(new ExampleLength("len", pb_size));
 
 
         li_bi_ex.push_back(new ExampleLineOfSight("los", pb_size));

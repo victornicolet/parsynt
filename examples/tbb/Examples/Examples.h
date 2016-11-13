@@ -48,15 +48,15 @@ public:
     int full_seq_apply() const;
 };
 
-class ExampleLength : public ExampleUnit<int, int> {
+class ExampleLength : public ExampleUnit<a_size, int> {
     a_size n;
     int *a = nullptr;
 public:
-    ExampleLength(string name, a_size n) : ExampleUnit<int, int>(name), n(n) {}
+    ExampleLength(string name, a_size n) : ExampleUnit<a_size , int>(name), n(n) {}
     void init(int* _a) override {a = _a;};
-    int parallel_apply() const;
-    int seq_apply() const;
-    int full_seq_apply() const;
+    a_size parallel_apply() const;
+    a_size seq_apply() const;
+    a_size full_seq_apply() const;
 };
 
 class ExampleMax : public ExampleUnit<int, int> {

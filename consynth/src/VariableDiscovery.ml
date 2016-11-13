@@ -539,8 +539,10 @@ let discover_for_id stv (idx, update) input_func varid =
     discovered by the algortihm.
 *)
 
+let timec = ref 0.0
 
 let discover stv input_func (idx, (i,g,u)) =
+  timec := Unix.gettimeofday ();
   T.create_boundary_variables idx;
 
   aux_init (VS.union stv idx);
@@ -548,8 +550,13 @@ let discover stv input_func (idx, (i,g,u)) =
       the index.
   *)
   let ranked_stv = rank_by_use (uses stv input_func) in
-  List.fold_left
-    (fun (new_stv, new_func)  (vid, _) ->
-       discover_for_id new_stv (idx, u) new_func vid)
-    (stv, input_func)
-    ranked_stv
+  let final_stv, final_func =
+    List.fold_left
+      (fun (new_stv, new_func)  (vid, _) ->
+         discover_for_id new_stv (idx, u) new_func vid)
+      (stv, input_func)
+      ranked_stv
+  in
+  timec := Unix.gettimeofday () -. !timec;
+  Format.printf "@.Variable discovery in %.3f s@." !timec;
+  final_stv, final_func

@@ -50,7 +50,7 @@ int ExampleSum::parallel_apply() const {
 
 int ExampleSum::seq_apply() const {
     int sum = 0;
-    for (a_size i = 0; i < n; i++)
+    for (a_size i = 0L; i < n; i++)
         sum += a[i];
     return sum;
 }
@@ -62,7 +62,7 @@ int ExampleSum::full_seq_apply() const {return seq_apply();}
 class LengthCore {
     int* my_a;
 public:
-    int my_length;
+    a_size my_length;
     int b, e;
 
     LengthCore(int a[]) : my_a(a), my_length(0), b(-1), e(-1)  {}
@@ -72,7 +72,7 @@ public:
     void operator()( const blocked_range<a_size>& r )
     {
         int *a = my_a;
-        int length = my_length;
+        a_size length = my_length;
         a_size end = r.end();
 
         if (b < 0 || r.begin() < b)
@@ -94,20 +94,20 @@ public:
 };
 
 
-int ExampleLength::parallel_apply() const {
+a_size ExampleLength::parallel_apply() const {
     LengthCore sf(a);
     parallel_reduce(blocked_range<a_size>(0,n,1000000), sf );
     return sf.my_length;
 }
 
-int ExampleLength::seq_apply() const {
-    int length = 0;
+a_size ExampleLength::seq_apply() const {
+    a_size length = 0;
     for (a_size i = 0; i < n; i++)
         length += 1;
     return length;
 }
 
-int ExampleLength::full_seq_apply() const {return seq_apply();}
+a_size ExampleLength::full_seq_apply() const {return seq_apply();}
 
 /** Other simple example : Max */
 class MaxCore {
@@ -1247,7 +1247,7 @@ bool ExampleSeen01::full_seq_apply() const {
     bool res = false;
     bool seen1 = false;
     bool seen0 = false;
-    for (a_size i = 0; i < n; i++) {
+    for (a_size i = 0L; i < n; i++) {
         if (seen1 && !(a[i]))
             res = true;
         seen1 = seen1 || a[i];

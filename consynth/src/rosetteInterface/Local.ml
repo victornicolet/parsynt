@@ -74,7 +74,12 @@ let completeFile filename solution_file_name sketch_printer sketch =
 let default_error i =
   eprintf "Errno %i : Error while running racket on sketch.\n" i
 
-let racket filename = Sys.command ("racket "^filename)
+let racket filename =
+  let start = Unix.gettimeofday () in
+  let errcode = Sys.command ("racket "^filename) in
+  let elapsed = (Unix.gettimeofday ()) -. start in
+  Format.printf "@.Racket : executed in %.3f s@." elapsed;
+  errcode
 
 let compile ?(print_err_msg = default_error) printer printer_arg =
   let solution_tmp_file = Filename.temp_file "conSynthSol" ".rkt" in

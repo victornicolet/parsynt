@@ -3,6 +3,6 @@ open Getopt
 open Cil
 (* open ExBalancedParenthesis *)
 (* open ExAlternation *)
-(* open ExMaxLengthBlock *)
+(* open ExMaxLengthBlockWithAux *)
 (* open ExIsSorted *)
-open ExDropWhile
+(* open ExDropWhile *)

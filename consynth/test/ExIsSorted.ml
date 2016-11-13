@@ -34,7 +34,7 @@ let old_all_vs = VS.union old_stv (_s [a; n; i])
 
 let reach_const =
   IM.add is_sorted.vid sk_true
-    (IM.add prev.vid (SkConst NInfnty) IM.empty)
+    (IM.add prev.vid sk_zero IM.empty)
 
 let name = "is_sorted";;
 
@@ -68,9 +68,6 @@ let sketch_info =
     sketch_igu = sigu;
     reaching_consts = reach_const;
   };;
-
-Local.dump_sketch := true;;
-
 
 
 
