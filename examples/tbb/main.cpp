@@ -83,14 +83,17 @@ void do_experiment(int exp_size, int exp_num_core) {
 
         /* Integer inputs */
         for (auto ex : li_ii_ex) {
+            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_bi_ex) {
+            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_pi_ex) {
+            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
@@ -98,10 +101,12 @@ void do_experiment(int exp_size, int exp_num_core) {
 
         /* Boolean inputs */
         for (auto ex : li_bb_ex) {
+            cout << (*ex).name;
             (*ex).init(a_bool);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_ib_ex) {
+            cout << (*ex).name;
             (*ex).init(a_bool);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
