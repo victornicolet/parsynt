@@ -1,9 +1,9 @@
 #!/bin/sh
 
 
-for EX_SIZE in 20 25 26 27 28 29 30 31 32
+for EX_SIZE in 31
 do
-    for NUM_CORE in 0 1 2 4 6 8 16 32 64
+    for NUM_CORE in 0 1 2 4 8 16 24 32 40 48 56 64
     do
 	eval "./tbb_test -n$NUM_CORE -e$EX_SIZE"
     done

@@ -1256,3 +1256,57 @@ bool ExampleSeen01::full_seq_apply() const {
 
     return res && seen0;
 }
+
+
+class HammingCore {
+    int* my_a = nullptr;
+    int* my_b = nullptr;
+public:
+    int diff;
+    a_size b, e;
+
+    HammingCore(int a[], int b[]) :
+            my_a(a), my_b(b), b(-1), e(-1), diff(0) {}
+    HammingCore(HammingCore& x, split) :
+            my_a(x.my_a), my_b(x.my_b), b(-1), e(-1), diff(0) {}
+
+
+    void operator()( const blocked_range<a_size>& r )
+    {
+        int *_a = my_a;
+        int *_b = my_b;
+
+        int _diff = diff;
+
+        a_size end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = r.begin();
+        if (e < 0 || r.end() > e)
+            e = r.end();
+
+        for (a_size i = r.begin(); i!=end; ++i) {
+            _diff += (_a[i] != _b[i]) ? 0 : 1;
+        }
+
+        diff = _diff;
+    }
+
+    void join(const HammingCore& rhs) {
+        diff = diff + rhs.diff;
+        e = rhs.e;
+    }
+};
+
+int ExampleHamming::parallel_apply() {
+    HammingCore coc(a,b);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
+    return  coc.diff;
+}
+
+int ExampleHamming::seq_apply() {
+    int diff = 0;
+    for(a_size i = 0; i < n; i++) {
+        diff += (a[i] != b[i]) ? 0 : 1;
+    }
+}

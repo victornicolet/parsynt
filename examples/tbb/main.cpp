@@ -83,17 +83,14 @@ void do_experiment(int exp_size, int exp_num_core) {
 
         /* Integer inputs */
         for (auto ex : li_ii_ex) {
-            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_bi_ex) {
-            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_pi_ex) {
-            cout << (*ex).name;
             (*ex).init(a_int);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
@@ -101,12 +98,10 @@ void do_experiment(int exp_size, int exp_num_core) {
 
         /* Boolean inputs */
         for (auto ex : li_bb_ex) {
-            cout << (*ex).name;
             (*ex).init(a_bool);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
         for (auto ex : li_ib_ex) {
-            cout << (*ex).name;
             (*ex).init(a_bool);
             (*ex).serialize(exp_num_core, pb_size, experiments);
         }
@@ -119,12 +114,53 @@ void do_experiment(int exp_size, int exp_num_core) {
     experiments.close();
 }
 
+
+void do_special(int exp_size, int exp_num_core) {
+    a_size pb_size = 1L << exp_size;
+
+    cout << "Initialization for problem size " << pb_size << " ... " << endl;
+    /* Allocate array of integers and array of booleans */
+    int *a_1 = new int[pb_size];
+    int *a_2 = new int[pb_size];
+
+    cout << "Arrays allocated" << endl;
+    for(a_size ix = 0; ix < pb_size; ix++){
+        a_1[ix] = rand() % 2000 - 1000;
+        a_2[ix] = rand() % 2000 - 1000;
+    }
+    cout << "Initialization succeeded." << endl;
+    ofstream experiments;
+    experiments.open("experiments.csv", fstream::app);
+
+    cout << "Experiments for " << pb_size << " and " << exp_num_core << " cores." << endl;
+
+    static tbb::task_scheduler_init
+            init(tbb::task_scheduler_init::deferred);
+
+    if(exp_num_core > 0)
+        init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
+
+    ExampleHamming ham("ham", pb_size);
+
+    for(int i = 0; i < NUM_EXP_PER_CASE; i++) {
+        ham.init(a_1, a_2);
+        ham.serialize(exp_num_core, pb_size, experiments);
+    }
+
+    delete a_1;
+    delete a_2;
+
+    experiments.close();
+}
+
+
 int main(int argc, char *argv[]) {
     int opt;
     int num_cores = 1;
     int exp_sizes = 1;
     bool launch_experiments = false;
-    while ((opt = getopt(argc, argv, "n:e:")) != -1) {
+    bool special_experiment = false;
+    while ((opt = getopt(argc, argv, "n:e:s:")) != -1) {
         switch (opt) {
             case 'n':
                 num_cores = atoi(optarg);
@@ -132,6 +168,10 @@ int main(int argc, char *argv[]) {
             case 'e':
                 exp_sizes = atoi(optarg);
                 launch_experiments = true;
+                break;
+            case 's':
+                exp_sizes = atoi(optarg);
+                special_experiment = true;
                 break;
             default: /* '?' */
                 cerr << "Usage: " << argv[0] << " [-n ncores] [-e power of two size]\n";
@@ -142,6 +182,8 @@ int main(int argc, char *argv[]) {
 
     if(launch_experiments) {
         do_experiment(exp_sizes, num_cores);
+    } else if (special_experiment) {
+        do_special(exp_sizes, num_cores);
     } else {
         cout << "WIP oprtions -n and -s, only -e -n working for now.";
     }

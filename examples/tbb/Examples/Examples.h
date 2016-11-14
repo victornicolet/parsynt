@@ -230,4 +230,43 @@ public:
     bool full_seq_apply() const;
 };
 
+
+/* The only example with two inputs */
+class ExampleHamming  {
+    a_size n;
+    int *a = nullptr;
+    int *b = nullptr;
+public:
+    string name;
+    ExampleHamming(string name, a_size n) : name(name), n(n) {}
+    void init(int *_, int *_b) { a = _a; b = _b;};
+    int parallel_apply ();
+    int seq_apply ();
+    int full_seq_apply() {return seq_apply();}
+
+
+    void serialize(int num_cores, a_size pb_size, ofstream& of) {
+        if (num_cores == -1) {
+            StopWatch u;
+            u.start();
+            int seq_res = full_seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        }
+        else if (num_cores == 0) {
+            StopWatch u;
+            u.start();
+            int seq_res = seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        } else {
+            StopWatch u;
+            u.start();
+            int par_res = parallel_apply();
+            double par_elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << par_elapsed << "\n";
+        }
+    }
+};
+
 #endif //TBB_TESTS_EXAMPLES_H
