@@ -12,7 +12,7 @@ open SketchTypes
 let debug = ref false
 let debug_dev = ref true
 
-let max_exec_no = ref 10
+let max_exec_no = ref 2
 
 let discovered_aux = IH.create 10
 
@@ -232,12 +232,20 @@ let find_auxiliaries ?(not_last_iteration = true) i
           but not the other *)
       (is_stv e1 && (not (T.sk_uses stv e2))) ||
       (is_stv e2 && (not (T.sk_uses stv e1)))
-
+    (* Special rule for conditionals *)
     | _ ->  false
   in
   let handle_candidate =
     function
-    | T.SkBinop (_, e1, e2)
+    | T.SkBinop (_, e1, e2) ->
+      begin
+        match e1, e2 with
+        | SkQuestion(c, _, _), estv when is_stv estv -> [c]
+        | estv, SkQuestion(c, _, _) when is_stv estv -> [c]
+        | e, estv  when is_stv estv -> [e]
+        | estv, e when is_stv estv -> [e]
+        | _ -> []
+      end
     | T.SkQuestion (_, e1, e2) ->
       if is_stv e1 then [e2] else [e1]
     | _ ->  []
@@ -420,7 +428,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
 let discover_for_id stv (idx, update) input_func varid =
   GenVars.init ();
   init ();
-  max_exec_no := VS.cardinal stv + 1;
+  (*  max_exec_no := VS.cardinal stv + 1; *)
   let init_idx_exprs = create_symbol_map idx in
   let init_exprs = create_symbol_map stv in
   let init_i = { state_set = stv ;
