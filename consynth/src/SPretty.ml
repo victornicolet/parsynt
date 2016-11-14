@@ -89,7 +89,7 @@ let string_of_symb_binop =
   | Xor -> "xor"
   (** Integers and reals *)
   | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
-  | Quot -> "quot" | Rem -> "rem" | Mod -> "mod"
+  | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
   (** Max and min *)
   | Max -> "max" | Min -> "min"
   (** Comparison *)

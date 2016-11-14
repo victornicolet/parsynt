@@ -48,36 +48,39 @@
 ;;Actual synthesis work happens here
 
 (define odot
-(synthesize
-#:forall (list i    a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10)
-#:guarantee (assert
-(and
- ($-eq?
- (__loop_body__ $initial 0 4)
-(__join__  (__loop_body__ $initial 0 2)  (__loop_body__ $_init 2 4)))
+  (time
+   (synthesize
+    #:forall (list i    a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10)
+    #:guarantee (assert
+                 (and
+                  ($-eq?
+                   (__loop_body__ $initial 0 4)
+                   (__join__  (__loop_body__ $initial 0 2)  (__loop_body__ $_init 2 4)))
 
-($-eq?
- (__loop_body__ $initial 0 9)
-(__join__  (__loop_body__ $initial 0 3)  (__loop_body__ $_init 3 9)))
+                  ($-eq?
+                   (__loop_body__ $initial 0 9)
+                   (__join__  (__loop_body__ $initial 0 3)  (__loop_body__ $_init 3 9)))
 
-($-eq?
- (__loop_body__ $initial 0 9)
-(__join__  (__loop_body__ $initial 0 7)  (__loop_body__ $_init 7 9)))
+                  ($-eq?
+                   (__loop_body__ $initial 0 9)
+                   (__join__  (__loop_body__ $initial 0 7)  (__loop_body__ $_init 7 9)))
 
-($-eq?
- (__loop_body__ $initial 0 9)
-(__join__  (__loop_body__ $initial 0 4)  (__loop_body__ $_init 4 9)))
+                  ($-eq?
+                   (__loop_body__ $initial 0 9)
+                   (__join__  (__loop_body__ $initial 0 4)  (__loop_body__ $_init 4 9)))
 
-($-eq?
- (__loop_body__ $initial 0 7)
-(__join__  (__loop_body__ $initial 0 5)  (__loop_body__ $_init 5 7)))
+                  ($-eq?
+                   (__loop_body__ $initial 0 7)
+                   (__join__  (__loop_body__ $initial 0 5)  (__loop_body__ $_init 5 7)))
 
-($-eq?
- (__loop_body__ $initial 3 9)
-(__join__  (__loop_body__ $initial 3 6)  (__loop_body__ $_init 6 9)))
+                  ($-eq?
+                   (__loop_body__ $initial 3 9)
+                   (__join__  (__loop_body__ $initial 3 6)  (__loop_body__ $_init 6 9)))
 
-($-eq?
- (__loop_body__ $initial 2 9)
-(__join__  (__loop_body__ $initial 2 7)  (__loop_body__ $_init 7 9)))
-))
-))
+                  ($-eq?
+                   (__loop_body__ $initial 2 9)
+                   (__join__  (__loop_body__ $initial 2 7)  (__loop_body__ $_init 7 9)))
+                  ))
+    )))
+
+(print-forms odot)
