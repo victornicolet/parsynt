@@ -1057,9 +1057,12 @@ bool ExampleLineOfSight::parallel_apply() const{
 bool ExampleLineOfSight::seq_apply() const {
     bool is_visible = true;
     int amax = 0;
-    for (a_size i = 0; i < n; i++) {
-        is_visible = amax <= a[i];
-        amax = max(amax, a[i]);
+    a_size _n = n;
+    int *_a = a;
+
+    for (a_size i = 0; i < _n; i++) {
+        is_visible = amax <= _a[i];
+        amax = max(amax, _a[i]);
     }
 
     return is_visible;

@@ -157,6 +157,39 @@ void do_special(int exp_size, int exp_num_core) {
     experiments.close();
 }
 
+void launch_exp_whyonefaster () {
+    a_size exp_size = 1L << 31;
+    int exp_num_core = 1;
+
+    ofstream whyonefaster;
+    whyonefaster.open("whyonefaster.csv", fstream::app);
+
+    cout << "Initialization for problem size " << exp_size << " ... " << endl;
+    /* Allocate array of integers and array of booleans */
+    int *ar = new int[exp_size];
+
+    cout << "Arrays allocated" << endl;
+    for (a_size ix = 0; ix < exp_size; ix++) {
+        ar[ix] = rand() % 2000 - 1000;
+    }
+    cout << "Initialization succeeded." << endl;
+
+    cout << "Experiments for " << exp_size << " and " << exp_num_core << " cores." << endl;
+
+    static tbb::task_scheduler_init
+            init(tbb::task_scheduler_init::deferred);
+
+    if (exp_num_core > 0)
+        init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
+
+    ExampleLineOfSight los("los", exp_size);
+    los.init(ar);
+    for (int i = 0; i < 10; i++) {
+        los.serialize(0, exp_size, whyonefaster);
+        los.serialize(exp_num_core, exp_size, whyonefaster);
+    }
+    whyonefaster.close();
+}
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -164,7 +197,7 @@ int main(int argc, char *argv[]) {
     int exp_sizes = 1;
     bool launch_experiments = false;
     bool special_experiment = false;
-    while ((opt = getopt(argc, argv, "n:e:s:")) != -1) {
+    while ((opt = getopt(argc, argv, "n:e:s:x:")) != -1) {
         switch (opt) {
             case 'n':
                 num_cores = atoi(optarg);
@@ -177,6 +210,8 @@ int main(int argc, char *argv[]) {
                 exp_sizes = atoi(optarg);
                 special_experiment = true;
                 break;
+            case 'x':
+                launch_exp_whyonefaster();
             default: /* '?' */
                 cerr << "Usage: " << argv[0] << " [-n ncores] [-e power of two size]\n";
                 exit(EXIT_FAILURE);
