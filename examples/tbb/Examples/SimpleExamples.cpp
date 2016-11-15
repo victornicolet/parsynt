@@ -49,9 +49,11 @@ int ExampleSum::parallel_apply() const {
 }
 
 int ExampleSum::seq_apply() const {
+    int *_a = a;
     int sum = 0;
-    for (a_size i = 0L; i < n; i++)
-        sum += a[i];
+    a_size _n = n;
+    for (a_size i = 0L; i < _n; i++)
+        sum += _a[i];
     return sum;
 }
 
@@ -101,8 +103,10 @@ a_size ExampleLength::parallel_apply() const {
 }
 
 a_size ExampleLength::seq_apply() const {
+    int *_a = a;
+    a_size _n = n;
     a_size length = 0;
-    for (a_size i = 0; i < n; i++)
+    for (a_size i = 0; i < _n; i++)
         length += 1;
     return length;
 }
@@ -152,8 +156,10 @@ int ExampleMax::parallel_apply() const{
 }
 int ExampleMax::seq_apply() const {
     int amax = INT32_MIN;
-    for(a_size i =0; i < n; i++) {
-        amax = (amax > a[i]) ? amax : a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i =0; i < _n; i++) {
+        amax = (amax > _a[i]) ? amax : _a[i];
     }
     return amax;
 }
@@ -203,8 +209,10 @@ int ExampleMin::parallel_apply() const{
 }
 int ExampleMin::seq_apply() const {
     int amin = INT32_MAX;
-    for(a_size i =0; i < n; i++) {
-        amin = (amin < a[i]) ? amin : a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i =0; i < _n; i++) {
+        amin = (amin < _a[i]) ? amin : _a[i];
     }
     return amin;
 }
@@ -271,9 +279,11 @@ int ExampleCountingOnes::parallel_apply() const{
 int ExampleCountingOnes::seq_apply() const {
     int cnt = 0;
     bool last = false;
-    for(a_size i = 0; i < n; i++) {
-        cnt += (a[i] && !last) ? 1 : 0;
-        last = a[i];
+    a_size _n = n;
+    bool *_a = a;
+    for(a_size i = 0; i < _n; i++) {
+        cnt += (_a[i] && !last) ? 1 : 0;
+        last = _a[i];
     }
     return cnt;
 }
@@ -281,11 +291,13 @@ int ExampleCountingOnes::seq_apply() const {
 int ExampleCountingOnes::full_seq_apply() const {
     int cnt = 0;
     bool last = false;
-    for(a_size i = 0; i < n; i++) {
-        cnt += (a[i] && !last) ? 1 : 0;
-        last = a[i];
+    a_size _n = n;
+    bool *_a = a;
+    for(a_size i = 0; i < _n; i++) {
+        cnt += (_a[i] && !last) ? 1 : 0;
+        last = _a[i];
     }
-    cnt = a[n-1] ? cnt : cnt;
+    cnt = _a[n-1] ? cnt : cnt;
     return cnt;
 }
 /** Example : position of the end of maximum prefix sum */
@@ -353,8 +365,10 @@ a_size ExampleMpsPos::seq_apply() const {
     int sum = 0;
     int mps = 0;
     a_size pos = 0;
-    for(a_size i = 0; i < n; i++) {
-        sum += a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i < _n; i++) {
+        sum += _a[i];
         if (sum > mps) {
             pos = i;
             mps = sum;
@@ -427,10 +441,12 @@ a_size ExampleMtsPos::parallel_apply() const{
 a_size ExampleMtsPos::seq_apply() const {
     int mts = 0;
     a_size pos = 0;
-    for(a_size i = 0; i < n; i++) {
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i < _n; i++) {
         if (mts <= 0)
             pos = i;
-        mts = max(mts + a[i], 0);
+        mts = max(mts + _a[i], 0);
     }
     return pos;
 }
@@ -438,11 +454,13 @@ a_size ExampleMtsPos::full_seq_apply() const {
     int mts = 0;
     int sum = 0;
     a_size pos = 0;
-    for(a_size i = 0; i < n; i++) {
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i < _n; i++) {
         if (mts <= 0)
             pos = i;
-        mts = max(mts + a[i], 0);
-        sum = sum + a[i];
+        mts = max(mts + _a[i], 0);
+        sum = sum + _a[i];
     }
     return pos + sum;
 }
@@ -506,8 +524,10 @@ int ExampleMts::parallel_apply() const{
 
 int ExampleMts::seq_apply() const {
     int mts = 0;
-    for(a_size i = 0; i < n; i++) {
-        mts = max(0, mts + a[i]);
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i < _n; i++) {
+        mts = max(0, mts + _a[i]);
     }
     return mts;
 }
@@ -515,7 +535,9 @@ int ExampleMts::seq_apply() const {
 int ExampleMts::full_seq_apply() const {
     int mts = 0;
     int sum = 0;
-    for(a_size i = 0; i < n; i++) {
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
         mts = max(0, mts + a[i]);
         sum += a[i];
     }
@@ -588,9 +610,11 @@ int ExampleMss::parallel_apply() const{
 int ExampleMss::seq_apply() const {
     int mts = 0;
     int mss = 0;
-    for(a_size i = 0; i < n; i++) {
-        mss = max (mss, mts + a[i]);
-        mts = max (0, mts + a[i]);
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        mss = max (mss, mts + _a[i]);
+        mts = max (0, mts + _a[i]);
     }
     return mss;
 }
@@ -600,10 +624,12 @@ int ExampleMss::full_seq_apply() const {
     int mss = 0;
     int mps = 0;
     int sum = 0;
-    for(a_size i = 0; i < n; i++) {
-        mss = max (mss, mts + a[i]);
-        mts = max (0, mts + a[i]);
-        sum += a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        mss = max (mss, mts + _a[i]);
+        mts = max (0, mts + _a[i]);
+        sum += _a[i];
         mps = max(mps, sum);
     }
     return mss + mps + sum;
@@ -668,8 +694,10 @@ int ExampleMps::parallel_apply() const{
 int ExampleMps::seq_apply() const {
     int sum = 0;
     int mps = 0;
-    for(a_size i = 0; i < n; i++) {
-        sum += a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        sum += _a[i];
         mps = max (sum, mps);
     }
     return mps;
@@ -738,9 +766,11 @@ int ExampleSecondMin::parallel_apply() const{
 int ExampleSecondMin::seq_apply() const {
     int amin = INT32_MAX;
     int min2 = INT32_MAX;
-    for(a_size i = 0; i < n; i++) {
-        min2 = min (min2, max(amin, a[i]));
-        amin = min (amin, a[i]);
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        min2 = min (min2, max(amin, _a[i]));
+        amin = min (amin, _a[i]);
     }
     return min2;
 }
@@ -811,8 +841,10 @@ a_size ExampleFirstOne::parallel_apply() const{
 a_size ExampleFirstOne::seq_apply() const {
     a_size _pos = 0;
     bool drop = false;
-    for(a_size i = 0; i < n; i++) {
-        if(a[i] == 1 && !drop){
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        if(_a[i] == 1 && !drop){
             _pos = i;
             drop = true;
         }
@@ -894,10 +926,12 @@ int ExampleMaxLengthBlock::full_seq_apply() const {
     int ml = 0;
     bool conj = true;
     int fl = 0;
-    for(a_size i = 0; i < n; i++) {
-        cl = a[i] ? cl + 1 : 0;
+    a_size _n = n;
+    bool *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        cl = _a[i] ? cl + 1 : 0;
         ml = max (ml, cl);
-        conj = conj && a[i];
+        conj = conj && _a[i];
         fl = fl + (conj ? 1 : 0);
     }
     return ml + fl;
@@ -907,8 +941,10 @@ int ExampleMaxLengthBlock::full_seq_apply() const {
 int ExampleMaxLengthBlock::seq_apply() const {
     int cl = 0;
     int ml = 0;
-    for(a_size i = 0; i < n; i++) {
-        cl = a[i] ? cl + 1 : 0;
+    a_size _n = n;
+    bool *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        cl = _a[i] ? cl + 1 : 0;
         ml = max (ml, cl);
     }
     return ml;
@@ -975,9 +1011,11 @@ bool ExampleIsSorted::parallel_apply() const{
 bool ExampleIsSorted::seq_apply() const {
     bool is_sorted = true;
     int prev = INT32_MIN;
-    for(a_size i = 0; i < n; i++) {
-        is_sorted = is_sorted && (prev < a[i]);
-        prev = a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        is_sorted = is_sorted && (prev < _a[i]);
+        prev = _a[i];
     }
     return is_sorted;
 }
@@ -985,11 +1023,13 @@ bool ExampleIsSorted::seq_apply() const {
 bool ExampleIsSorted::full_seq_apply() const {
     bool is_sorted = true;
     int prev = INT32_MIN;
-    for(a_size i = 0; i < n; i++) {
-        is_sorted = is_sorted && (prev < a[i]);
-        prev = a[i];
+    a_size _n = n;
+    int *_a = a;
+    for(a_size i = 0; i <_n; i++) {
+        is_sorted = is_sorted && (prev < _a[i]);
+        prev = _a[i];
     }
-    int afinal = a[n-1];
+    int afinal = _a[_n-1];
     return is_sorted;
 }
 
@@ -1071,11 +1111,13 @@ bool ExampleLineOfSight::seq_apply() const {
 bool ExampleLineOfSight::full_seq_apply() const {
     bool is_visible = true;
     int amax = 0;
-    for (a_size i = 0; i < n; i++) {
-        is_visible = amax <= a[i];
-        amax = max(amax, a[i]);
+    a_size _n = n;
+    int *_a = a;
+    for (a_size i = 0; i <_n; i++) {
+        is_visible = amax <= _a[i];
+        amax = max(amax, _a[i]);
     }
-    int afinal = a[n-1];
+    int afinal = _a[n-1];
     return is_visible;
 }
 
@@ -1148,8 +1190,10 @@ bool ExampleBalancedParenthesis::parallel_apply() const{
 bool ExampleBalancedParenthesis::seq_apply() const {
     bool bal = true;
     int cnt = 0;
-    for (a_size i = 0; i < n; i++) {
-        cnt += (a[i]? 1 : -1);
+    a_size _n = n;
+    bool *_a = a;
+    for (a_size i = 0; i <_n; i++) {
+        cnt += (_a[i]? 1 : -1);
         bal = bal && (cnt >= 0);
     }
 
@@ -1160,8 +1204,10 @@ bool ExampleBalancedParenthesis::full_seq_apply() const {
     bool bal = true;
     int cnt = 0;
     int minc = 0;
-    for (a_size i = 0; i < n; i++) {
-        cnt += (a[i]? 1 : -1);
+    a_size _n = n;
+    bool *_a = a;
+    for (a_size i = 0; i <_n; i++) {
+        cnt += (_a[i]? 1 : -1);
         bal = bal && (cnt >= 0);
         minc = min(minc, cnt);
     }
@@ -1237,10 +1283,12 @@ bool ExampleSeen01::parallel_apply() const{
 bool ExampleSeen01::seq_apply() const {
     bool res = false;
     bool seen1 = true;
-    for (a_size i = 0; i < n; i++) {
-        if (seen1 && !(a[i]))
+    a_size _n = n;
+    bool *_a = a;
+    for (a_size i = 0; i <_n; i++) {
+        if (seen1 && !(_a[i]))
             res = true;
-        seen1 = seen1 || a[i];
+        seen1 = seen1 || _a[i];
     }
 
     return res;
@@ -1250,11 +1298,13 @@ bool ExampleSeen01::full_seq_apply() const {
     bool res = false;
     bool seen1 = false;
     bool seen0 = false;
-    for (a_size i = 0L; i < n; i++) {
-        if (seen1 && !(a[i]))
+    a_size _n = n;
+    bool *_a = a;
+    for (a_size i = 0L; i <_n; i++) {
+        if (seen1 && !(_a[i]))
             res = true;
-        seen1 = seen1 || a[i];
-        seen0 = seen0 || (!a[i]);
+        seen1 = seen1 || _a[i];
+        seen0 = seen0 || (!_a[i]);
     }
 
     return res && seen0;
@@ -1309,10 +1359,15 @@ int ExampleHamming::parallel_apply() {
 
 int ExampleHamming::seq_apply() {
     int diff = 0;
-    for(a_size i = 0; i < n; i++) {
-        diff += (a[i] != b[i]) ? 0 : 1;
+    a_size _n = n;
+    int *_a = a;
+    int *_b = b;
+    for(a_size i = 0; i <_n; i++) {
+        diff += (_a[i] != _b[i]) ? 0 : 1;
     }
+    return diff;
 }
+
 
 struct match_state {
     bool an;
@@ -1380,9 +1435,11 @@ bool ExampleMatchAB::seq_apply() {
     bool bn = true;
     int _a = a;
     int _b = b;
-    for(a_size i = 0; i < n; i++) {
-        an = (ar [i] == _a) && an;
-        bn = ((ar [i] == _b) || an) && bn;
+    int *_ar = ar;
+    a_size _n = n;
+    for(a_size i = 0; i <_n; i++) {
+        an = (_ar[i] == _a) && an;
+        bn = ((_ar[i] == _b) || an) && bn;
     }
 
     return  bn;

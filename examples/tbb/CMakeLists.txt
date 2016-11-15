@@ -3,7 +3,7 @@ project(tbb_tests)
 
 link_libraries(tbb)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ltbb -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ltbb")
 
 set(SOURCE_FILES
         Examples/SimpleExamples.cpp
