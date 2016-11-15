@@ -141,10 +141,14 @@ void do_special(int exp_size, int exp_num_core) {
         init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
 
     ExampleHamming ham("ham", pb_size);
+    ExampleMatchAB anbn("abn", pb_size, 500, 300);
 
     for(int i = 0; i < NUM_EXP_PER_CASE; i++) {
         ham.init(a_1, a_2);
         ham.serialize(exp_num_core, pb_size, experiments);
+
+        anbn.init(a_1);
+        anbn.serialize(exp_num_core, pb_size, experiments);
     }
 
     delete a_1;

@@ -15,7 +15,7 @@ int diff (int *a, int*b, int n) {
 
   aux = a[iL]
 
-  And the following join:
+  And the following join in 1,4s:
 
   aux = aux-l
   prev = prev-r

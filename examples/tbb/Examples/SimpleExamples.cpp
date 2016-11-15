@@ -1310,3 +1310,77 @@ int ExampleHamming::seq_apply() {
         diff += (a[i] != b[i]) ? 0 : 1;
     }
 }
+
+struct match_state {
+    bool an;
+    bool bn;
+    bool fan;
+    bool fbn;
+};
+
+class MatchABCore {
+    int* my_ar = nullptr;
+    int A,B;
+public:
+    match_state s;
+    a_size b, e;
+
+    MatchABCore(int ar[], int A, int B) :
+            my_ar(ar), A(A), B(B), b(-1), e(-1) {s ={true,true,true, true};}
+    MatchABCore(MatchABCore& x, split) :
+            my_ar(x.my_ar), A(x.A), B(x.B), b(-1), e(-1) {s ={true,true,true,true};}
+
+
+    void operator()( const blocked_range<a_size>& r )
+    {
+        int *_ar = my_ar;
+        int _A = A;
+        int _B = B;
+
+        bool an = s.an;
+        bool bn = s.bn;
+
+        a_size end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = r.begin();
+        if (e < 0 || r.end() > e)
+            e = r.end();
+
+        for (a_size i = r.begin(); i!=end; ++i) {
+            an = (_ar [i] == A) && an;
+            bn = ((_ar [i] == B) || an) && bn;
+        }
+
+        s = {an, bn, _ar[b] == A, _ar[b] == B};
+    }
+
+    void join(const MatchABCore& rhs) {
+        s = {
+                s.an && rhs.s.an,
+                (s.bn && rhs.s.bn) && (rhs.s.fbn && s.an),
+                s.fan,
+                s.fbn
+        };
+        e = rhs.e;
+    }
+};
+
+bool ExampleMatchAB::parallel_apply() {
+    MatchABCore coc(ar, a, b);
+    parallel_reduce(blocked_range<a_size>(0,n,1000000), coc);
+    return  coc.s.bn;
+}
+
+bool ExampleMatchAB::seq_apply() {
+    bool an = true;
+    bool bn = true;
+    int _a = a;
+    int _b = b;
+    for(a_size i = 0; i < n; i++) {
+        an = (ar [i] == _a) && an;
+        bn = ((ar [i] == _b) || an) && bn;
+    }
+
+    return  bn;
+}

@@ -1,5 +1,6 @@
 import csv
-
+import numpy
+from collections import defaultdict
 import csv
 import sqlite3
 
@@ -7,7 +8,14 @@ db = sqlite3.connect(':memory:')
 
 examples = (
     "sum", "len", "max", "min", "mi2", "mps",
-    "mts", "mss", "los", "sor", "pop", "pot", "fs1", "bal", "s01", "lbk", "co1")
+    "mts", "mss", "los", "sor", "pop", "pot",
+    "fs1", "bal", "s01", "lbk", "co1","ham")
+
+sizes = (2147483648)
+num_cores = (-1, 0, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64)
+
+def get_ex_file_dump (exname):
+    return "data/" + exname + ".csv"
 
 def clean_csv():
     rdr = csv.reader(open("experiments.csv", 'rb'), delimiter=",")
@@ -19,28 +27,53 @@ def clean_csv():
 def fetch_results():
     fieldnames = ['example', 'num_cores', 'size', 'time']
     rdr = csv.reader(open("experiments_clean.csv", 'rb'), delimiter=",")
-    per_example_csv = {
-        "sum": csv.writer(open("data/sum.csv", 'w'), delimiter = ","),
-        "len": csv.writer(open("data/len.csv", 'w'), delimiter = ","),
-        "max": csv.writer(open("data/max.csv", 'w'), delimiter = ","),
-        "min": csv.writer(open("data/min.csv", 'w'), delimiter = ","),
-        "mi2": csv.writer(open("data/mi2.csv", 'w'), delimiter = ","),
-        "mps": csv.writer(open("data/mps.csv", 'w'), delimiter = ","),
-        "mts": csv.writer(open("data/mts.csv", 'w'), delimiter = ","),
-        "mss": csv.writer(open("data/mss.csv", 'w'), delimiter = ","),
-        "los": csv.writer(open("data/los.csv", 'w'), delimiter = ","),
-        "sor": csv.writer(open("data/sor.csv", 'w'), delimiter = ","),
-        "pop": csv.writer(open("data/pop.csv", 'w'), delimiter = ","),
-        "pot": csv.writer(open("data/pot.csv", 'w'), delimiter = ","),
-        "fs1": csv.writer(open("data/fs1.csv", 'w'), delimiter = ","),
-        "bal": csv.writer(open("data/bal.csv", 'w'), delimiter = ","),
-        "s01": csv.writer(open("data/s01.csv", 'w'), delimiter = ","),
-        "lbk": csv.writer(open("data/lbk.csv", 'w'), delimiter = ","),
-        "co1": csv.writer(open("data/co1.csv", 'w'), delimiter = ",")
-    }
+    per_example_csv = {}
+    for ex in examples:
+        per_example_csv[ex] = csv.writer (open (get_ex_file_dump (ex)),
+                                          delimiter = ",")
+        per_example_csv[ex].writerow(("num_cores", "example_size", "time"))
 
     for row in rdr:
         per_example_csv[row[0]].writerow(row[1:4])
+
+
+
+def get_res_example(ex):
+    ex_csv = csv.reader (open (get_ex_file_dump (ex), 'r'), delimiter = ",")
+    data = defaultdict(dict)
+    next(ex_csv)
+    for row in ex_csv:
+        if len(row) == 3:
+            if row[0] in data[row[1]]:
+                data[row[1]][row[0]].append(float(row[2]));
+            else:
+                data[row[1]][row[0]] = [float(row[2])];
+
+    avg = defaultdict(dict)
+    stddev = defaultdict(dict)
+    for size, sgrp in data.iteritems():
+        for num_core, ngrp in sgrp.iteritems():
+            av = numpy.mean(ngrp, axis=0)
+            stdv = numpy.mean(ngrp, axis=0)
+            avg[size][num_core]= av
+            stddev[size][num_core]= stdv
+
+
+def fetch_results():
+    fieldnames = ['example', 'num_cores', 'size', 'time']
+    rdr = csv.reader(open("experiments_clean.csv", 'rb'), delimiter=",")
+    per_example_csv = {}
+    for ex in examples:
+        per_example_csv[ex] = csv.writer (open (get_ex_file_dump (ex) ,'w'),
+                                          delimiter = ",")
+        per_example_csv[ex].writerow(("num_cores", "example_size", "time"))
+
+    for row in rdr:
+        per_example_csv[row[0]].writerow(row[1:4])
+
+    for ex in examples:
+        get_res_example (ex)
+
 
 clean_csv()
 fetch_results()

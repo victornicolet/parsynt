@@ -239,7 +239,7 @@ class ExampleHamming  {
 public:
     string name;
     ExampleHamming(string name, a_size n) : name(name), n(n) {}
-    void init(int *_, int *_b) { a = _a; b = _b;};
+    void init(int *_a, int *_b) { a = _a; b = _b;};
     int parallel_apply ();
     int seq_apply ();
     int full_seq_apply() {return seq_apply();}
@@ -263,6 +263,45 @@ public:
             StopWatch u;
             u.start();
             int par_res = parallel_apply();
+            double par_elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << par_elapsed << "\n";
+        }
+    }
+};
+
+
+class ExampleMatchAB  {
+    a_size n;
+    int a;
+    int b;
+    int *ar = nullptr;
+public:
+    string name;
+    ExampleMatchAB(string name, a_size n, int a, int b) : name(name), n(n), a(a), b(b) {}
+    void init(int *_ar) { ar = _ar;}
+    bool parallel_apply ();
+    bool seq_apply ();
+    bool full_seq_apply() {return seq_apply();}
+
+
+    void serialize(int num_cores, a_size pb_size, ofstream& of) {
+        if (num_cores == -1) {
+            StopWatch u;
+            u.start();
+            bool seq_res = full_seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        }
+        else if (num_cores == 0) {
+            StopWatch u;
+            u.start();
+            bool seq_res = seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        } else {
+            StopWatch u;
+            u.start();
+            bool par_res = parallel_apply();
             double par_elapsed = u.stop();
             of << name << "," << num_cores << "," << pb_size <<"," << par_elapsed << "\n";
         }

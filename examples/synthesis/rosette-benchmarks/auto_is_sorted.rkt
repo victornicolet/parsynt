@@ -7,6 +7,7 @@
 (define-symbolic a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10 integer?)
 (define a (vector a$1 a$2 a$3 a$4 a$5 a$6 a$7 a$8 a$9 a$10))
 
+
 (struct $ (prev is_sorted aux_0))
 (define ($-eq? s1 s2) (and (eq? ($-prev s1) ($-prev s2))
                            (eq? ($-is_sorted s1) ($-is_sorted s2))
