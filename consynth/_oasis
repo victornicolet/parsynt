@@ -13,18 +13,16 @@ Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
 XOCamlbuildExtraArgs: "-tag thread -use-menhir"
-
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
 PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
 Library rosetteInterface
   Path: src/rosetteInterface
-  BuildDepends: core
+  BuildDepends: core, extlib
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
-  BuildDepends : extlib
   Install : false
 
 Library consynth
@@ -39,6 +37,7 @@ Executable test_main
   CompiledObject: best
   Install: false
   BuildDepends: cil, consynth, rosetteInterface, getopt
+
 
 Executable examples
   Path: test

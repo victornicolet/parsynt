@@ -1,11 +1,14 @@
 open Cil
-open Format
-open Consynth.PpHelper
 open Findloops.Cloop
+open Format
+open PpHelper
+open TestUtils
 open Utils
+
 
 module C = Canalyst
 module C2F = Cil2Func
+
 
 let wf_single_subst func =
   match func with
@@ -65,20 +68,31 @@ let test () =
          with Failure s ->
            failwith ("test failure"^s)
        in
+       let _, w = cl.rwset in
+       let allvars = getAllVars cl in
        let stmt = mkBlock(cl.new_body) in
-       let r, stv = cl.rwset in
+       let stv = getStateVars cl in
+       CilTools.ppbk stmt;
        let func, figu = C2F.cil2func stv stmt igu in
+       let sketch, sigu = Sketch.Body.build allvars stv func figu in
        let fname = cl.host_function.vname in
        if wf_test_case fname func then
          (printf "%s%s :\t passed.%s@."
             (color "green") fname default)
        else
+         begin
          (printf "%s[test for loop %i in %s failed]%s@."
             (color "red") cl.sid fname default;);
-       C2F.printlet (stv, func);
+         printf "State variables : %a@." VSOps.pvs stv
+         end;
+       C2F.printlet (VS.union stv w, func);
+       printf "@.Sketch :@.";
+       SPretty.printSklet sketch;
        printf "@.";
        SM.add fname (stv, figu,func)
     )
     loops
     SM.empty
 ;;
+
+test ();

@@ -245,8 +245,6 @@ and pp_sklet ppf =
 
 and pp_sklvar (ppf : Format.formatter) sklvar =
   match sklvar with
-  | SkState ->
-	fprintf ppf "<s>"
   | SkVarinfo v ->
 	fprintf ppf "%s" v.Cil.vname
   | SkArray (v, offset) ->

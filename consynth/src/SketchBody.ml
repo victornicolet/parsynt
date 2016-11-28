@@ -48,10 +48,10 @@ let rec convert (cur_v : skLVar)  =
 
   | Container (e, subs) ->
      let converted_substitutions = IM.map (convert cur_v) subs in
-     convert_cils ~cur_v:cur_v ~subs:converted_substitutions e
+     convert_cils ~subs:converted_substitutions cur_v e
 
   | FQuestion (ecil, e1, e2) ->
-     SkQuestion (convert_cils ~expect_ty:Boolean ecil,
+     SkQuestion (convert_cils ~expect_ty:Boolean cur_v ecil,
                  (convert cur_v e1),
                  (convert cur_v e2))
 
@@ -75,7 +75,7 @@ let rec convert (cur_v : skLVar)  =
   | _ -> failwith "not yet implemented"
 
 
-and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
+and convert_cils ?(subs = IM.empty) ?(expect_ty = Bottom) cur_v =
   function
   | Cil.Const c -> skexpr_of_constant expect_ty c
 
@@ -85,7 +85,7 @@ and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
        match skvar with
        | SkVar (SkVarinfo vi) when IM.mem vi.Cil.vid subs ->
           IM.find vi.Cil.vid subs
-       | _ ->skvar
+       | _ -> skvar
      end
 
   | Cil.SizeOf t->
@@ -93,7 +93,7 @@ and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
      SkSizeof typ
 
   | Cil.SizeOfE e ->
-     SkSizeofE (convert_cils ~subs:subs e)
+     SkSizeofE (convert_cils ~subs:subs cur_v e)
 
   | Cil.SizeOfStr s ->
      SkSizeofStr s
@@ -102,7 +102,7 @@ and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
      SkAlignof (symb_type_of_ciltyp t)
 
   | Cil.AlignOfE e ->
-     SkAlignofE (convert_cils ~subs:subs e)
+     SkAlignofE (convert_cils ~subs:subs cur_v e)
 
   | Cil.AddrOf lv ->
      SkAddrof (skexpr_of_lval cur_v lv)
@@ -112,21 +112,22 @@ and convert_cils ?(cur_v = SkState) ?(subs = IM.empty) ?(expect_ty = Bottom) =
 
   | Cil.UnOp (op, e1, t) ->
      let op', ex_ty = symb_unop_of_cil op in
-     SkUnop (op',convert_cils ~subs:subs ~expect_ty:ex_ty e1)
+     SkUnop (op',convert_cils ~subs:subs ~expect_ty:ex_ty cur_v e1)
 
   | Cil.BinOp (op, e1, e2, t) ->
      let op', ex_ty = symb_binop_of_cil op in
      SkBinop (op',
-              convert_cils ~subs:subs ~expect_ty:ex_ty e1,
-              convert_cils ~subs:subs ~expect_ty:ex_ty e2)
+              convert_cils ~subs:subs ~expect_ty:ex_ty cur_v e1,
+              convert_cils ~subs:subs ~expect_ty:ex_ty cur_v e2)
 
   | Cil.Question (c, e1, e2, t) ->
-     let c' = convert_cils ~expect_ty:Boolean c in
-     SkQuestion (c',  convert_cils ~subs:subs e1, convert_cils ~subs:subs e2)
+     let c' = convert_cils ~expect_ty:Boolean cur_v c in
+     SkQuestion (c',  convert_cils ~subs:subs cur_v e1,
+                 convert_cils ~subs:subs cur_v e2)
 
   | Cil.CastE (t, e) ->
      let ty = symb_type_of_ciltyp t in
-     SkCastE (ty , convert_cils ~subs:subs ~expect_ty:ty e)
+     SkCastE (ty , convert_cils ~subs:subs ~expect_ty:ty cur_v e)
 
   | Cil.StartOf lv ->
      SkStartOf (skexpr_of_lval cur_v lv)
@@ -249,14 +250,6 @@ and convert_letin all_vars (vs : VS.t) letin =
 (** Optimisations *)
 let remove_simple_state_rewritings (var , expr) =
   match var, expr with
-  | SkState, SkFun (SkLetExpr li) ->
-     begin
-       match List.filter li
-         ~f:(fun e -> match e with _, SkVar _ -> false |_, _-> true)
-       with
-       | [(v, e)] -> v, e
-       | _ -> (var, expr)
-     end
   | _ -> (var, expr)
 
 

@@ -1,6 +1,6 @@
 <**/*.ml{,i}>: warn(-40), no_alias_deps
 # OASIS_START
-# DO NOT EDIT (digest: 8f89553e5bcdf46433db564b1fa7041c)
+# DO NOT EDIT (digest: c1d779a58571b6277bca87645af393c3)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -17,6 +17,7 @@ true: annot, bin_annot
 "_darcs": not_hygienic
 # Library rosetteInterface
 "src/rosetteInterface/rosetteInterface.cmxs": use_rosetteInterface
+<src/rosetteInterface/*.ml{,i,y}>: pkg_core
 <src/rosetteInterface/*.ml{,i,y}>: pkg_extlib
 # Library consynth
 "src/consynth.cmxs": use_consynth
@@ -31,6 +32,12 @@ true: annot, bin_annot
 <test/Main.{native,byte}>: pkg_getopt
 <test/Main.{native,byte}>: use_consynth
 <test/Main.{native,byte}>: use_rosetteInterface
+# Executable test_cil2func
+"test/TCil2func.native": pkg_cil
+"test/TCil2func.native": pkg_core
+"test/TCil2func.native": pkg_extlib
+"test/TCil2func.native": use_consynth
+"test/TCil2func.native": use_rosetteInterface
 # Executable examples
 <test/Examples.{native,byte}>: pkg_cil
 <test/Examples.{native,byte}>: pkg_core

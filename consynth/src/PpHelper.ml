@@ -47,6 +47,13 @@ let ppimap
     (fun i a ->
       fprintf ppf "@[<hov 2> %i -> %a@]@;" i pelt a)
 
+let ppifmap
+    (pi : formatter -> int -> unit)
+    (pelt : formatter -> 'a -> unit)
+    (ppf : formatter) : 'a IM.t -> unit =
+  IM.iter
+    (fun i a ->
+      fprintf ppf "@[<hov 2> %a <- %a@]@;" pi i pelt a)
 
 
 let string_of_loc (loc : Cil.location) =

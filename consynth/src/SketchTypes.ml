@@ -25,7 +25,6 @@ type sklet =
   | SkLetIn of (skLVar * skExpr) list * sklet
 
 and skLVar =
-  | SkState
   | SkVarinfo of Cil.varinfo
   (** Access to an array cell *)
   | SkArray of skLVar * skExpr
@@ -215,7 +214,7 @@ let symb_binop_of_cil =
 
 (** Identity function *)
 let identity_sk =
-  SkLetExpr ([SkState, SkVar (SkState)])
+  SkLetExpr ([])
 
 
 (** C Standard Library function names -> Rosette supported functions *)
@@ -384,18 +383,14 @@ let mkVarExpr ?(offsets = []) vi =
 
 let rec cmpVar sklvar1 sklvar2 =
   match sklvar1, sklvar2 with
-  | SkState, SkState -> 0
   | SkVarinfo vi, SkVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
   | SkArray (sklv1, _), SkArray (sklv2, _) ->
      cmpVar sklv1 sklv2
-  | SkState, _ -> 1
-  | _ , SkState -> -1
   | SkArray _ , _ -> 1
   | _ , SkArray _ -> -1
 
 let rec vi_of sklv =
   match sklv with
-  | SkState -> None
   | SkVarinfo vi' -> Some vi'
   | SkArray (sklv', _) -> vi_of sklv'
 
@@ -920,7 +915,6 @@ let rec type_of_const c =
 
 and type_of_var v =
   match v with
-  | SkState -> Unit
   | SkVarinfo vi -> symb_type_of_ciltyp vi.Cil.vtype
   | SkArray (v, e) ->
     (** We only consider integer indexes for now *)

@@ -68,12 +68,14 @@ let rec pp_letin ?(wloc = false) ppf (vs,letin) =
        fprintf ppf "@[{%a}@]"
          VSOps.pvs vs
      else
-       fprintf ppf "@[%a@]@."
-         (ppimap pp_expr) expr_map
+       fprintf ppf "@[{%a}@]"
+         (ppifmap
+            (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i vs).vname)
+            (pp_expr vs)) expr_map
 
   | Let (vi, expr, letn, id, loc) ->
-     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s@."
-       (color "red") default vi.vname pp_expr expr
+     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s"
+       (color "red") default vi.vname (pp_expr vs) expr
        (color "red") default
        (pp_letin ~wloc:wloc) (vs, letn)
        (if wloc then string_of_loc loc else "")
@@ -90,7 +92,7 @@ let rec pp_letin ?(wloc = false) ppf (vs,letin) =
 
   | LetCond (exp, letif, letelse, letcont, loc) ->
      fprintf ppf
-       "@[%sif%s %s @]@[%sthen%s %a @]@[%selse%s %a @]%sendif%s@[%a@]%s"
+       "@[<v>@[<hv 2>%sif%s %s@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
        (color "red") default
        (psprint80 Cil.dn_exp exp)
        (color "red") default
@@ -102,15 +104,15 @@ let rec pp_letin ?(wloc = false) ppf (vs,letin) =
        (if wloc then string_of_loc loc else "")
 
 
-and pp_expr ppf =
+and pp_expr vs ppf =
   function
     | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
 
     | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
-       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" pp_expr e)) el
+       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" (pp_expr vs) e)) el
 
     | FunApp (ef, el) -> fprintf ppf "%s (%a)" (psprint80 Cil.dn_exp ef)
-       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" pp_expr e)) el
+       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" (pp_expr vs) e)) el
 
     | Container (e, subs) ->
        if IM.is_empty subs then
@@ -119,29 +121,32 @@ and pp_expr ppf =
 
        else
        fprintf ppf "%s [%a]"
-         (psprint80 Cil.dn_exp e)  (ppimap pp_expr) subs
+         (psprint80 Cil.dn_exp e)
+         (ppifmap
+            (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i vs).vname)
+            (pp_expr vs) ) subs
 
     | FQuestion (c, a, b) ->
        fprintf ppf "(%s ? %a : %a)"
-         (psprint80 Cil.dn_exp c) pp_expr a pp_expr b
+         (psprint80 Cil.dn_exp c) (pp_expr vs) a (pp_expr vs) b
 
     | FRec ((i, g, u), expr) ->
        fprintf ppf "%s(%s;%s;%s)%s { %a }"
          (color "blue")
          (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
          (psprint80 Cil.dn_instr u)
-         default pp_expr expr
+         default (pp_expr vs) expr
 
     | FBinop (op, e1, e2) ->
        fprintf ppf "%s %a %a"
          (string_of_symb_binop op)
-         pp_expr e1
-         pp_expr e2
+         (pp_expr vs) e1
+         (pp_expr vs) e2
 
     | FUnop (op, expr) ->
        fprintf ppf "%s %a"
          (string_of_symb_unop op)
-         pp_expr expr
+         (pp_expr vs) expr
 
     | FConst c ->
        fprintf ppf "%a"
@@ -153,7 +158,7 @@ and pp_expr ppf =
 
     | FSizeofE expr ->
        fprintf ppf "(sizeof %a)"
-         pp_expr expr
+         (pp_expr vs) expr
 
     | FSizeofStr s ->
         fprintf ppf "(sizeof %s)" s
@@ -162,10 +167,10 @@ and pp_expr ppf =
        fprintf ppf "(alignof %s)" (psprint80 Cil.d_type typ)
 
     | FAlignofE e ->
-       fprintf ppf "(alignof %a)" pp_expr e
+       fprintf ppf "(alignof %a)" (pp_expr vs) e
 
     | FCastE (t, exp) ->
-       fprintf ppf "(cast %s %a)" (psprint80 Cil.d_type t) pp_expr exp
+       fprintf ppf "(cast %s %a)" (psprint80 Cil.d_type t) (pp_expr vs) exp
 
     | FAddrof (lval) ->
        fprintf ppf "(addrof %s)" (psprint80 Cil.d_lval lval)

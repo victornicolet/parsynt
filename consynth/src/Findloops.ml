@@ -230,6 +230,15 @@ is not defined at the beginning of the loop.\n"
   let setBreak l =
     l.has_breaks <- true
 
+  (** Quick info *)
+  let getAllVars l =
+    VSOps.vs_of_defsMap l.defined_in
+
+  let getStateVars l =
+    let _, w = l.rwset in
+    let vars = getAllVars l in
+    VS.filter (fun v -> VS.mem v vars) w
+
   (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
     let n_in = List.mem l1.old_loop_stmt l2.inner_loops in

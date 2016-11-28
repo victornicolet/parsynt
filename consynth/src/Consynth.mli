@@ -366,7 +366,6 @@ module SketchTypes : sig
     | SkLetIn of (skLVar * skExpr) list * sklet
 
   and skLVar =
-    | SkState
     | SkVarinfo of Cil.varinfo
     (** Access to an array cell *)
     | SkArray of skLVar * skExpr

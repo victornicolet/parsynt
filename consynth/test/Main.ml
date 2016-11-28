@@ -15,7 +15,7 @@ module C2F = Cil2Func
 (* module TGDef = TGenDefs *)
 (*module TSbx = TSymbExe *)
 (* module TScm = TestSchemeParsing *)
-module TDis = TDiscovery
+(* module TDis = TDiscovery *)
 (* module TExpr = TExpressions *)
 
 let options = [
@@ -124,4 +124,5 @@ let counting_blocks () =
 
 (* counting_blocks (); *)
 
-open TMssReductions
+(* open TMssReductions *)
+open TCil2Func

@@ -64,7 +64,6 @@ let rec gen_var v =
       let new_v = T.SkVarinfo new_vi in
       let offset =
         match v with
-        | T.SkState -> scalar_default_offset
         | T.SkVarinfo _ -> scalar_default_offset
         | T.SkArray _ -> !exec_count
       in

@@ -31,6 +31,8 @@ module Cloop : sig
   val state: t -> Utils.VS.t
   val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t
   val string_of_cloop: t -> String.t
+  val getAllVars : t -> VS.t
+  val getStateVars : t -> VS.t
 end
 
 val processFile: Cil.file -> Cloop.t Utils.IM.t * int list

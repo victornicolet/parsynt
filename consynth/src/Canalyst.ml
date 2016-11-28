@@ -87,8 +87,8 @@ let cil2func loops =
        let loop_ident = cl.Cl.host_function.C.vname in
        let stmt = C.mkBlock(cl.Cl.new_body) in
        let r, w = cl.Cl.rwset in
-       let vars = VSOps.vs_of_defsMap cl.Cl.defined_in in
-       let stv = VS.filter (fun v -> VS.mem v vars) w in
+       let vars = Cl.getAllVars cl in
+       let stv = Cl.getStateVars cl in
        let func, figu = Cil2Func.cil2func stv stmt (i,g,u) in
        let reaching_consts = cl.Cl.constant_in in
        if !verbose then

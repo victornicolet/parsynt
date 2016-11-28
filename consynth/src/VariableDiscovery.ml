@@ -121,8 +121,6 @@ let uses stv input_func =
   and used_in_assignment map (v, expr) =
     (* Ignore assignment to 'state' it is only a terminal symbol in the
        function *)
-    if v = T.SkState then IM.empty
-    else
     let vi =
       try
         check_option (T.vi_of v)

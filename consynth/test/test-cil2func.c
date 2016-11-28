@@ -28,15 +28,15 @@ int test_merge_ifs (int *a, int n) {
   return b;
 }
 
-int test_nested_loops (int a[100][100], int n, int m) {
-  int sum = 0;
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      sum += abs(a[i][j] + j);
-    }
-  }
-  return sum;
-}
+/* int test_nested_loops (int a[100][100], int n, int m) { */
+/*   int sum = 0; */
+/*   for (int i = 0; i < n; i++) { */
+/*     for (int j = 0; j < m; j++) { */
+/*       sum += abs(a[i][j] + j); */
+/*     } */
+/*   } */
+/*   return sum; */
+/* } */
 
 int test_balanced_bool (int *a, int n) {
   int wb;
@@ -52,4 +52,16 @@ int test_balanced_bool (int *a, int n) {
     min = min < diff ? min : diff;
   }
   return wb;
+}
+
+int test_and_in_if (_Bool *a, int n) {
+  _Bool bal = 1;
+  int cnt = 0;
+  int tmp;
+
+  for (int i = 0; i < n; i++) {
+    cnt += (a[i] ? 1 : -1);
+    bal = bal && (cnt >= 0);
+  }
+  return bal;
 }

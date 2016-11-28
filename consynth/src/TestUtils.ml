@@ -57,13 +57,12 @@ let make_var ?(offsets = []) typ vname =
 
 let rec vi_of_var =
   function
-  | SkState -> None
   | SkVarinfo vi -> Some vi
   | SkArray (v, _) -> vi_of_var v
 
 (* Sketch type expression *)
 let sk_tail_state =
-  SkLetExpr ([(SkState, SkVar (SkState))])
+  SkLetExpr ([])
 
 let increment_all_indexes index_exprs =
   IM.fold
