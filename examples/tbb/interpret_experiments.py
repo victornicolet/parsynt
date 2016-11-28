@@ -9,7 +9,7 @@ db = sqlite3.connect(':memory:')
 examples = (
     "sum", "len", "max", "min", "mi2", "mps",
     "mts", "mss", "los", "sor", "pop", "pot",
-    "fs1", "bal", "s01", "lbk", "co1","ham")
+    "fs1", "bal", "s01", "lbk", "co1","ham", "abn")
 
 sizes = (2147483648)
 num_cores = (-1, 0, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64)
