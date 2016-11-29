@@ -49,7 +49,8 @@ let wf_test_case fname (func : C2F.letin) =
 
        | _ -> false
        )
-  | "test_balanced_bool" -> true
+  | "test_balanced_bool" ->
+    false
 
   | _ -> false
 
@@ -60,6 +61,7 @@ let test () =
   let loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") default;
   C2F.init loops;
+  C2F.debug := true;
   IM.fold
     (fun k cl ->
        let igu =
@@ -68,12 +70,12 @@ let test () =
          with Failure s ->
            failwith ("test failure"^s)
        in
-       let _, w = cl.rwset in
        let allvars = getAllVars cl in
        let stmt = mkBlock(cl.new_body) in
        let stv = getStateVars cl in
        CilTools.ppbk stmt;
        let func, figu = C2F.cil2func stv stmt igu in
+       let printer = new C2F.cil2func_printer allvars stv in
        let so = new Sketch.Body.sketch_builder allvars stv func figu in
        so#build;
        let sketch, sigu = check_option so#get_sketch in
@@ -87,7 +89,7 @@ let test () =
             (color "red") cl.sid fname default;);
          printf "State variables : %a@." VSOps.pvs stv
          end;
-       C2F.printlet (VS.union stv w, func);
+       printer#printlet func;
        printf "@.Sketch :@.";
        SPretty.printSklet sketch;
        printf "@.";

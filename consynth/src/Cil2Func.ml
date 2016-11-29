@@ -61,132 +61,142 @@ and substitutions = expr IM.t
 
 
 (** Pretty-printing functions *)
-let rec pp_letin ?(wloc = false) ppf (vs,letin) =
-  match letin with
-  | State expr_map ->
-     if IM.is_empty expr_map then
-       fprintf ppf "@[{%a}@]"
-         VSOps.pvs vs
-     else
-       fprintf ppf "@[{%a}@]"
-         (ppifmap
-            (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i vs).vname)
-            (pp_expr vs)) expr_map
+(** A pretty-printing class initialized with all the necessary info *)
+class cil2func_printer allvs stv =
+  object (self)
+    val allvs = allvs
+    val stv = stv
 
-  | Let (vi, expr, letn, id, loc) ->
-     fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s"
-       (color "red") default vi.vname (pp_expr vs) expr
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, letn)
-       (if wloc then string_of_loc loc else "")
+    method pp_letin ?(wloc = false) ppf letin =
+      match letin with
+      | State expr_map ->
+        if IM.is_empty expr_map then
+          fprintf ppf "@[{%a}@]"
+            VSOps.pvs stv
+        else
+          fprintf ppf "@[{%a}@]"
+            (ppifmap
+               (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i allvs).vname)
+               self#pp_expr) expr_map
 
-  | LetRec ((i, g , u), let1, letcont, loc) ->
-     fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]%s"
-       (color "red") default
-       (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
-       (psprint80 Cil.dn_instr u)
-       (pp_letin ~wloc:wloc) (vs, let1)
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, letcont)
-       (if wloc then string_of_loc loc else "")
+      | Let (vi, expr, letn, id, loc) ->
+        fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s"
+          (color "red") default vi.vname self#pp_expr expr
+          (color "red") default
+          (self#pp_letin ~wloc:wloc) letn
+          (if wloc then string_of_loc loc else "")
 
-  | LetCond (exp, letif, letelse, letcont, loc) ->
-     fprintf ppf
-       "@[<v>@[<hv 2>%sif%s %s@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
-       (color "red") default
-       (psprint80 Cil.dn_exp exp)
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, letif)
-       (color "red") default
-       (pp_letin ~wloc:wloc)  (vs, letelse)
-       (color "red") default
-       (pp_letin ~wloc:wloc) (vs, letcont)
-       (if wloc then string_of_loc loc else "")
+      | LetRec ((i, g , u), let1, letcont, loc) ->
+        fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]%s"
+          (color "red") default
+          (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
+          (psprint80 Cil.dn_instr u)
+          (self#pp_letin ~wloc:wloc) let1
+          (color "red") default
+          (self#pp_letin ~wloc:wloc) letcont
+          (if wloc then string_of_loc loc else "")
 
+      | LetCond (exp, letif, letelse, letcont, loc) ->
+        fprintf ppf
+          "@[<v>@[<hv 2>%sif%s %s@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
+          (color "red") default
+          (psprint80 Cil.dn_exp exp)
+          (color "red") default
+          (self#pp_letin ~wloc:wloc) letif
+          (color "red") default
+          (self#pp_letin ~wloc:wloc)  letelse
+          (color "red") default
+          (self#pp_letin ~wloc:wloc) letcont
+          (if wloc then string_of_loc loc else "")
 
-and pp_expr vs ppf =
-  function
-    | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
+    method pp_expr ppf =
+      function
+      | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
 
-    | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
-       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" (pp_expr vs) e)) el
+      | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
+                           (pp_print_list
+                              (fun ppf e -> fprintf ppf"[%a]" self#pp_expr e))
+                           el
 
-    | FunApp (ef, el) -> fprintf ppf "%s (%a)" (psprint80 Cil.dn_exp ef)
-       (pp_print_list (fun ppf e -> fprintf ppf"[%a]" (pp_expr vs) e)) el
+      | FunApp (ef, el) -> fprintf ppf "%s (%a)" (psprint80 Cil.dn_exp ef)
+                             (pp_print_list
+                                (fun ppf e -> fprintf ppf"[%a]" self#pp_expr e))
+                             el
 
-    | Container (e, subs) ->
-       if IM.is_empty subs then
-         fprintf ppf "%s"
-           (psprint80 Cil.dn_exp e)
+      | Container (e, subs) ->
+        if IM.is_empty subs then
+          fprintf ppf "%s"
+            (psprint80 Cil.dn_exp e)
 
-       else
-       fprintf ppf "%s [%a]"
-         (psprint80 Cil.dn_exp e)
-         (ppifmap
-            (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i vs).vname)
-            (pp_expr vs) ) subs
+        else
+          fprintf ppf "%s [%a]"
+            (psprint80 Cil.dn_exp e)
+            (ppifmap
+               (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i allvs).vname)
+               self#pp_expr) subs
 
-    | FQuestion (c, a, b) ->
-       fprintf ppf "(%s ? %a : %a)"
-         (psprint80 Cil.dn_exp c) (pp_expr vs) a (pp_expr vs) b
+      | FQuestion (c, a, b) ->
+        fprintf ppf "(%s ? %a : %a)"
+          (psprint80 Cil.dn_exp c) self#pp_expr a self#pp_expr b
 
-    | FRec ((i, g, u), expr) ->
-       fprintf ppf "%s(%s;%s;%s)%s { %a }"
-         (color "blue")
-         (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
-         (psprint80 Cil.dn_instr u)
-         default (pp_expr vs) expr
+      | FRec ((i, g, u), expr) ->
+        fprintf ppf "%s(%s;%s;%s)%s { %a }"
+          (color "blue")
+          (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
+          (psprint80 Cil.dn_instr u)
+          default self#pp_expr expr
 
-    | FBinop (op, e1, e2) ->
-       fprintf ppf "%s %a %a"
-         (string_of_symb_binop op)
-         (pp_expr vs) e1
-         (pp_expr vs) e2
+      | FBinop (op, e1, e2) ->
+        fprintf ppf "%s %a %a"
+          (string_of_symb_binop op)
+          self#pp_expr e1
+          self#pp_expr e2
 
-    | FUnop (op, expr) ->
-       fprintf ppf "%s %a"
-         (string_of_symb_unop op)
-         (pp_expr vs) expr
+      | FUnop (op, expr) ->
+        fprintf ppf "%s %a"
+          (string_of_symb_unop op)
+          self#pp_expr expr
 
-    | FConst c ->
-       fprintf ppf "%a"
-       pp_constants c
+      | FConst c ->
+        fprintf ppf "%a"
+          pp_constants c
 
-    | FSizeof typ ->
-       fprintf ppf "(sizeof %s)"
-        (psprint80 Cil.d_type typ)
+      | FSizeof typ ->
+        fprintf ppf "(sizeof %s)"
+          (psprint80 Cil.d_type typ)
 
-    | FSizeofE expr ->
-       fprintf ppf "(sizeof %a)"
-         (pp_expr vs) expr
+      | FSizeofE expr ->
+        fprintf ppf "(sizeof %a)"
+          self#pp_expr expr
 
-    | FSizeofStr s ->
+      | FSizeofStr s ->
         fprintf ppf "(sizeof %s)" s
 
-    | FAlignof typ ->
-       fprintf ppf "(alignof %s)" (psprint80 Cil.d_type typ)
+      | FAlignof typ ->
+        fprintf ppf "(alignof %s)" (psprint80 Cil.d_type typ)
 
-    | FAlignofE e ->
-       fprintf ppf "(alignof %a)" (pp_expr vs) e
+      | FAlignofE e ->
+        fprintf ppf "(alignof %a)" self#pp_expr e
 
-    | FCastE (t, exp) ->
-       fprintf ppf "(cast %s %a)" (psprint80 Cil.d_type t) (pp_expr vs) exp
+      | FCastE (t, exp) ->
+        fprintf ppf "(cast %s %a)" (psprint80 Cil.d_type t) self#pp_expr exp
 
-    | FAddrof (lval) ->
-       fprintf ppf "(addrof %s)" (psprint80 Cil.d_lval lval)
+      | FAddrof (lval) ->
+        fprintf ppf "(addrof %s)" (psprint80 Cil.d_lval lval)
 
-    | FAddrofLabel _ -> fprintf ppf ""
-    | FStartOf _ -> fprintf ppf ""
+      | FAddrofLabel _ -> fprintf ppf ""
+      | FStartOf _ -> fprintf ppf ""
 
 
-let printlet ?(wloc=false) letform =
-pp_letin ~wloc:wloc std_formatter letform
+    method printlet ?(wloc=false) letform =
+      self#pp_letin ~wloc:wloc std_formatter letform
 
-let eprintlet ?(wloc=false) letform =
-pp_letin ~wloc:wloc err_formatter letform
+    method eprintlet ?(wloc=false) letform =
+      self#pp_letin ~wloc:wloc err_formatter letform
 
-let sprintlet ?(wloc=false) letform =
-  pp_letin ~wloc:wloc str_formatter letform ; flush_str_formatter ()
+    method sprintlet ?(wloc=false) letform =
+      self#pp_letin ~wloc:wloc str_formatter letform ; flush_str_formatter ()
+  end
 
 
 (**
@@ -500,31 +510,76 @@ and do_s vs let_form s =
 
 
 (** Reduction and simplification of expressions and lets *)
+let let_add2 old_let new_let vs =
+  let rec let_add2_aux old_let new_let =
+    match old_let with
+    | State subs ->
+      if IM.is_empty subs then
+        new_let
+      else
+        let stmt_id = gen_id () in
+        let def_loc = {line = 0; file = "__NONE"; byte = 0} in
+        let let_head =
+          IM.fold
+            (fun i e let_head ->
+               (Let (VSOps.find_by_id i vs, e, let_head, stmt_id, def_loc)))
+            subs
+            (State IM.empty)
+        in
+        let_add2_aux let_head new_let
 
+    | Let (v, e, olet, id, lc) ->
+      Let (v, e, let_add2_aux olet new_let, id, lc)
+
+    | LetCond (e, bif, belse, cont, lc) ->
+      LetCond (e, bif, belse, let_add2_aux cont new_let, lc)
+
+    | LetRec (igu, letform, let_cont, lc) ->
+      LetRec (igu, letform, let_add2_aux let_cont new_let, lc)
+  in
+  let_add2_aux old_let new_let
+
+(** Try merging old and new substitutions. The new subtitutions correspond
+    to a statement summary (ex : an if statement is a susbtituation containing
+    ternary expressions). IF the substitutions are disjoint, meaning that no
+    variable is used in new subs and susbtituted in old subs, we merge.
+    Otherwise we return the new substitutions and a state representing the old
+    substitutions (this will need let-bindings)
+*)
 let merge_substs vs old_subs new_subs =
   let used_in_new_subs =
     (IM.fold (fun k v b -> VS.union b (used_vars_expr v))
        new_subs VS.empty)
   in
   if
-           (* Check if the variables that are assigned in old_subs
-              are used in new_subs *)
+    (* Check if the variables that are assigned in old_subs
+       are used in new_subs *)
     (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
        old_subs new_subs) &&
-      not (IM.exists (fun k v -> VSOps.has_vid k used_in_new_subs)
-             old_subs)
+    not (IM.exists (fun k v -> VSOps.has_vid k used_in_new_subs)
+           old_subs)
   then
     true, (IMTools.add_all old_subs new_subs), None
   else true, new_subs, Some (State old_subs)
 
 (**
    Merge two conditions, if each branch is irreducible (already
-   reduced to a single state) then tranform each substitution
+   reduced to a single state) then transform each substitution
    expression into a FQuestion (an expression instead of a lambda)
+   @param vs The state variables
+   @param c The conditional expression
+   @param let_if the if branch of the LetCond
+   @param let_else the else branch of the LetCond
+   @param pre_substs the substitutions before the LetCond
+   @return A triple containing :
+   - a boolean set to true if the merge succeeds
+   - the substituions after the LetCond
+   - the expression replacing the LetCond
 *)
 
 let rec  merge_cond vs c let_if let_else pre_substs =
   match let_if, let_else with
+
   | State subs_if , State subs_else ->
      let new_subs =
        IM.merge
@@ -615,10 +670,14 @@ and red vs let_form substs =
   | LetCond (e, bif, belse, cont, loc) ->
      let red_if = reduce vs  bif in
      let red_else = reduce vs belse in
-     let merged, prev_e, next_e = merge_cond vs e red_if red_else substs in
-     if merged && is_none next_e
-     then red vs cont prev_e
-     else LetCond (e, red_if, red_else, reduce vs cont, loc)
+     let merged, nsubs, olde_o = merge_cond vs e red_if red_else substs in
+     if merged
+     then
+       match olde_o with
+       | Some olde -> let_add2 olde (red vs cont nsubs) vs
+       | None -> red vs cont nsubs
+     else
+       LetCond (e, red_if, red_else, reduce vs cont, loc)
 
 and clean vs let_form =
   match let_form with
@@ -627,7 +686,7 @@ and clean vs let_form =
 
   | Let (v, e, c, id, loc) ->
     if VS.mem v vs then Let(v, e, clean vs c, id, loc) else
-      failwith "Func2cil : Unexpected non-state variable in binding"
+      failwith "Func2cil : Non-state variable bound in let form."
 
   | LetCond (ce, lif, lelse, lcont, loc) ->
     LetCond (ce, clean vs lif, clean vs lelse, clean vs lcont, loc)
@@ -721,6 +780,7 @@ let cil2func statevs block (i,g,u) =
       if IM.cardinal !loops = 0 then
         failwith "You forgot to initialize the set of loops in Cil2Func ?";
       if !debug then eprintf "-- Cil --> Functional --";
+      let printer = new cil2func_printer statevs statevs in
       let let_expression_0 = (do_b statevs block) in
       let let_expression = eliminate_temporaries statevs let_expression_0 in
       let index = index_of_igu (i,g,u) in
@@ -735,9 +795,9 @@ let cil2func statevs block (i,g,u) =
                 - Before reduction:@.%a@.\
                 - Eliminate temporaries:@.%a@.\
                 - After reduction:@.%a@."
-          (pp_letin ~wloc:false) (statevs, let_expression_0)
-          (pp_letin ~wloc:false) (statevs, let_expression)
-          (pp_letin ~wloc:false) (statevs, func);
+          (printer#pp_letin ~wloc:false) let_expression_0
+          (printer#pp_letin ~wloc:false) let_expression
+          (printer#pp_letin ~wloc:false) func;
 
       func, figu
     end

@@ -92,12 +92,12 @@ let cil2func loops =
        let func, figu = Cil2Func.cil2func stv stmt (i,g,u) in
        let reaching_consts = cl.Cl.constant_in in
        if !verbose then
-         begin
+         let printer = new Cil2Func.cil2func_printer vars stv in
            (printf "@.%s[test for loop %i in %s failed]%s@."
               (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
-           Cil2Func.printlet (stv, func);
+           printer#printlet func;
            printf "@.";
-         end;
+       else ();
        (loop_ident,
         VSOps.vids_of_vs r, stv, vars,
         func, figu,

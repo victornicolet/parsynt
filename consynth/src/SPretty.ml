@@ -256,7 +256,8 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
         fprintf ppf "%a[%s]" pp_sklvar v offset_str
       else
 	fprintf ppf "(vector-ref %a %s)" pp_sklvar v offset_str
-
+  | SkTuple vs ->
+    fprintf ppf "(%a)" VSOps.pvs vs
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
 let fp = Format.fprintf in
