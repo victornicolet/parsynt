@@ -27,7 +27,7 @@ let rec exec new_exprs exec_info func =
 
   and update_expressions (new_exprs, read_exprs) (var, expr) =
     match var with
-    | T.SkState -> exec_info.state_exprs, read_exprs
+    | T.SkTuple vs -> exec_info.state_exprs, read_exprs
     | T.SkVarinfo vi ->
       let vid = vi.vid in
       let nexpr, n_rexprs = exec_expr exec_info expr in
@@ -57,7 +57,7 @@ let rec exec new_exprs exec_info func =
 
 and exec_var exec_info v =
   match v with
-  | T.SkState -> T.SkVar v, ES.empty
+  | T.SkTuple vs -> T.SkVar v, ES.empty
 
   | T.SkVarinfo vi ->
     begin

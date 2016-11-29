@@ -38,8 +38,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
         (match t with
         | Vector (t, _) -> SkHoleR t, 1
         | _ -> failwith "Unexpected type in array")
-
-      | SkState -> SkVar (SkState), 0
+      | SkTuple vs -> SkVar (SkTuple vs), 0
     end
 
   | SkConst c ->

@@ -28,6 +28,8 @@ and skLVar =
   | SkVarinfo of Cil.varinfo
   (** Access to an array cell *)
   | SkArray of skLVar * skExpr
+  (** Records : usefule to represent the state *)
+  | SkTuple of VS.t
 
 and skExpr =
   | SkVar of skLVar
@@ -385,14 +387,18 @@ let rec cmpVar sklvar1 sklvar2 =
   match sklvar1, sklvar2 with
   | SkVarinfo vi, SkVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
   | SkArray (sklv1, _), SkArray (sklv2, _) ->
-     cmpVar sklv1 sklv2
+    cmpVar sklv1 sklv2
+  | SkVarinfo _, SkTuple _ -> -1
+  | SkTuple _ , _ -> 1
   | SkArray _ , _ -> 1
   | _ , SkArray _ -> -1
+
 
 let rec vi_of sklv =
   match sklv with
   | SkVarinfo vi' -> Some vi'
   | SkArray (sklv', _) -> vi_of sklv'
+  | SkTuple _ -> None
 
 let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
 
@@ -927,6 +933,11 @@ and type_of_var v =
                   "Unexpected type %a for variable in array access."
                   pp_typ t ; Format.flush_str_formatter ())
     end
+  | SkTuple vs ->
+    let tl =
+      VS.fold (fun vi tl -> tl@[symb_type_of_ciltyp vi.Cil.vtype]) vs []
+    in
+    Tuple tl
 
 
 

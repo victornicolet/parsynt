@@ -369,6 +369,8 @@ module SketchTypes : sig
     | SkVarinfo of Cil.varinfo
     (** Access to an array cell *)
     | SkArray of skLVar * skExpr
+    | SkTuple of VS.t
+
 
   and skExpr =
     | SkVar of skLVar

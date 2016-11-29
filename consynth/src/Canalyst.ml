@@ -133,7 +133,15 @@ let func2sketch funcreps =
             Sketch.Body.convert_const expect_type cilc)
           reach_consts
       in
-      let loop_body, sigu = Sketch.Body.build var_set state_vars func figu in
+      let sketch_obj =
+        new Sketch.Body.sketch_builder var_set state_vars func figu
+      in
+      sketch_obj#build;
+      let loop_body, sigu =
+        match sketch_obj#get_sketch with
+        | Some (a,b) -> a,b
+        | None -> failwith "Failed in sketch building."
+      in
 
       IH.clear SketchJoin.auxiliary_variables;
 

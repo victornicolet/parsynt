@@ -74,7 +74,9 @@ let test () =
        let stv = getStateVars cl in
        CilTools.ppbk stmt;
        let func, figu = C2F.cil2func stv stmt igu in
-       let sketch, sigu = Sketch.Body.build allvars stv func figu in
+       let so = new Sketch.Body.sketch_builder allvars stv func figu in
+       so#build;
+       let sketch, sigu = check_option so#get_sketch in
        let fname = cl.host_function.vname in
        if wf_test_case fname func then
          (printf "%s%s :\t passed.%s@."
