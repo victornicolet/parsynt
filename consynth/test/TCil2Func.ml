@@ -61,7 +61,7 @@ let test () =
   let loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") default;
   C2F.init loops;
-  C2F.debug := true;
+(*C2F.debug := true;*)
   IM.fold
     (fun k cl ->
        let igu =
@@ -72,11 +72,13 @@ let test () =
        in
        let allvars = getAllVars cl in
        let stmt = mkBlock(cl.new_body) in
+       let _, w = cl.rwset in
        let stv = getStateVars cl in
        CilTools.ppbk stmt;
        let func, figu = C2F.cil2func stv stmt igu in
-       let printer = new C2F.cil2func_printer allvars stv in
-       let so = new Sketch.Body.sketch_builder allvars stv func figu in
+       let printer = new C2F.cil2func_printer (VS.union allvars w) stv in
+       let so = new Sketch.Body.sketch_builder allvars
+         stv func figu in
        so#build;
        let sketch, sigu = check_option so#get_sketch in
        let fname = cl.host_function.vname in
@@ -87,6 +89,7 @@ let test () =
          begin
          (printf "%s[test for loop %i in %s failed]%s@."
             (color "red") cl.sid fname default;);
+         printf "All variables :%a@." VSOps.pvs (VS.union allvars w);
          printf "State variables : %a@." VSOps.pvs stv
          end;
        printer#printlet func;

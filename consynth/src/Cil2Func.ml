@@ -31,14 +31,14 @@ type letin =
   | State of (expr IM.t)
   | Let of varinfo * expr * letin * int * location
   | LetRec of forIGU * letin * letin * location
-  | LetCond of exp * letin * letin * letin * location
+  | LetCond of expr * letin * letin * letin * location
 
 and expr =
   | Var of varinfo
   | Array of varinfo * (expr list)
   | Container of exp * substitutions
   | FunApp of exp * (expr list)
-  | FQuestion of exp * expr * expr
+  | FQuestion of expr * expr * expr
   | FRec of forIGU * expr
   (** Types for translated expressions *)
   | FBinop of symb_binop * expr * expr
@@ -98,9 +98,9 @@ class cil2func_printer allvs stv =
 
       | LetCond (exp, letif, letelse, letcont, loc) ->
         fprintf ppf
-          "@[<v>@[<hv 2>%sif%s %s@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
+          "@[<v>@[<hv 2>%sif%s %a@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
           (color "red") default
-          (psprint80 Cil.dn_exp exp)
+          self#pp_expr exp
           (color "red") default
           (self#pp_letin ~wloc:wloc) letif
           (color "red") default
@@ -132,12 +132,18 @@ class cil2func_printer allvs stv =
           fprintf ppf "%s [%a]"
             (psprint80 Cil.dn_exp e)
             (ppifmap
-               (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i allvs).vname)
+               (fun fmt i ->
+                  try
+                    fprintf fmt "%s" (VSOps.find_by_id i allvs).vname
+                  with Not_found ->
+                    eprintf "Variable id %i not found.@." i;
+                    raise Not_found
+               )
                self#pp_expr) subs
 
       | FQuestion (c, a, b) ->
-        fprintf ppf "(%s ? %a : %a)"
-          (psprint80 Cil.dn_exp c) self#pp_expr a self#pp_expr b
+        fprintf ppf "(%a ? %a : %a)"
+           self#pp_expr c self#pp_expr a self#pp_expr b
 
       | FRec ((i, g, u), expr) ->
         fprintf ppf "%s(%s;%s;%s)%s { %a }"
@@ -287,7 +293,7 @@ let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
      VS.add vi in_subs
 
   | FQuestion (c, e, e') ->
-     let vc = VSOps.sove c in
+     let vc = used_vars_expr ~onlyNoOffset:onlyNoOffset c in
      let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
      let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
      VS.union ve (VS.union ve' vc)
@@ -317,7 +323,7 @@ let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
 
   | LetCond (c, let_if, let_else, cont, loc) ->
      VSOps.unions
-       [(VSOps.sove c);
+       [(used_vars_expr c);
         (used_vars_letin let_if);
         (used_vars_letin let_else);
         (used_vars_letin cont)]
@@ -332,7 +338,7 @@ let rec is_not_identity_substitution vid expr =
   | Container (e, subs) ->
      ((IM.fold
          (fun k v a -> (is_not_identity_substitution k v) || a)
-         subs false)
+         subs true)
       ||
         ((VS.max_elt (VSOps.sove e)).vid != vid))
   | _ -> true
@@ -349,8 +355,30 @@ let is_empty_state state =
 let remove_identity_subs substs =
   IM.filter is_not_identity_substitution substs
 
+let rec update_subs vse old_subs new_subs =
+  (** First apply the new subs in the old subs *)
+    let old_subs_updated =
+      IM.mapi
+        (fun k e ->
+           let used_in_e = used_vars_expr e in
+           VS.fold
+             (fun used_var expr ->
+                if IM.mem used_var.vid new_subs
+                then apply_subs expr new_subs else expr)
+             used_in_e e)
+        old_subs
+    in
+    (** Now add the new substitutions to the old map *)
+    IM.fold
+      (fun k e upd_subs ->
+         if IM.mem k new_subs && VSOps.has_vid k vse
+         then IM.add k (IM.find k new_subs) upd_subs
+         else upd_subs) new_subs old_subs_updated
 
-let rec apply_subs expr subs =
+
+
+
+and apply_subs expr subs =
   match expr with
   | Var vi ->
      (try IM.find vi.vid subs with Not_found -> expr)
@@ -365,34 +393,15 @@ let rec apply_subs expr subs =
      Array (vi_sub, List.map (fun x -> apply_subs x subs) el)
 
   | Container (e, subs') ->
-    (** First apply the new subs in the old subs *)
-    let old_subs_updated =
-      IM.mapi
-        (fun k e ->
-           let used_in_e = used_vars_expr e in
-           VS.fold
-             (fun used_var expr ->
-                if IM.mem used_var.vid subs then apply_subs expr subs else expr)
-             used_in_e e)
-        subs'
-    in
-    (** Now add the new substitutions to the old map *)
-    let updated_subs =
-      IM.fold
-        (fun k e upd_s ->
-           if IM.mem k subs
-           then IM.add k (IM.find k subs) upd_s
-           else upd_s) subs old_subs_updated
-    in
-    Container (e, updated_subs)
-
-
+    (** Update the previously existing substitutions *)
+    let vse = VSOps.sove e in
+    Container (e, update_subs vse subs' subs)
 
   | FunApp (ef, el) ->
      FunApp (ef, List.map (fun e -> apply_subs e subs) el)
 
   | FQuestion (e, e1, e2) ->
-     FQuestion (e, apply_subs e1 subs, apply_subs e2 subs)
+     FQuestion (apply_subs e subs, apply_subs e1 subs, apply_subs e2 subs)
 
   | FRec (igu, e) ->
      FRec (igu, apply_subs e subs)
@@ -482,9 +491,10 @@ and do_s vs let_form s =
     let_add let_form instr_fun
 
   | If (e, b1, b2, loc) ->
+    let ce = Container (e, IM.empty) in
     let block_then = do_b vs b1 in
     let block_else = do_b vs b2 in
-    let if_fun = LetCond (e, block_then, block_else, empty_state vs, loc) in
+    let if_fun = LetCond (ce, block_then, block_else, empty_state vs, loc) in
     let_add let_form if_fun
 
   | Loop (b, loc,_,_) ->
@@ -584,21 +594,22 @@ let rec  merge_cond vs c let_if let_else pre_substs =
      let new_subs =
        IM.merge
          (fun vid if_expr_o else_expr_o ->
-           let cur_var = Var (VSOps.find_by_id vid vs) in
-           match if_expr_o, else_expr_o with
-           | Some if_expr, Some else_expr ->
-              Some (FQuestion (c, if_expr, else_expr))
+            let cur_var = Var (VSOps.find_by_id vid vs) in
+            let mod_cond = apply_subs c pre_substs in
+            match if_expr_o, else_expr_o with
+            | Some if_expr, Some else_expr ->
+              Some (FQuestion (mod_cond, if_expr, else_expr))
 
-           | Some if_expr, None ->
+            | Some if_expr, None ->
               Some
                 (FQuestion
-                   (c, if_expr, cur_var))
+                   (mod_cond, if_expr, cur_var))
 
-           | None, Some else_expr->
+            | None, Some else_expr->
               Some
                 (FQuestion
-                   (c, cur_var, else_expr))
-           | None, None -> None)
+                   (mod_cond, cur_var, else_expr))
+            | None, None -> None)
          subs_if
          subs_else
      in
@@ -653,9 +664,9 @@ and red vs let_form substs =
      State final_state_exprs
 
   | Let (vi, expr, cont, id, _) ->
-     let nexpr = apply_subs expr substs in
-     let nsubs = IM.add vi.vid nexpr substs in
-     red vs cont nsubs
+    let nexpr = apply_subs expr substs in
+    let nsubs = IM.add vi.vid nexpr substs in
+    red vs cont nsubs
 
   | LetRec (igu, body, cont, loc) ->
      let redd_body = reduce vs body in
@@ -668,16 +679,20 @@ and red vs let_form substs =
        LetRec (igu, redd_body, reduce vs  cont, loc)
 
   | LetCond (e, bif, belse, cont, loc) ->
-     let red_if = reduce vs  bif in
-     let red_else = reduce vs belse in
-     let merged, nsubs, olde_o = merge_cond vs e red_if red_else substs in
-     if merged
-     then
-       match olde_o with
-       | Some olde -> let_add2 olde (red vs cont nsubs) vs
-       | None -> red vs cont nsubs
-     else
-       LetCond (e, red_if, red_else, reduce vs cont, loc)
+    let ce =  apply_subs e substs in
+    let red_if = reduce vs  bif in
+    let red_else = reduce vs belse in
+    let merged, nsubs, olde_o = merge_cond vs ce red_if red_else substs in
+    if merged
+    then
+      match olde_o with
+      | Some olde -> let_add2 olde (red vs cont nsubs) vs
+      | None -> red vs cont nsubs
+    else
+      LetCond (ce,
+               red vs bif substs,
+               red vs belse substs,
+               red vs cont substs, loc)
 
 and clean vs let_form =
   match let_form with
@@ -706,7 +721,7 @@ and reduce vs let_form =
 let merge_cond_subst c subs_if subs_else =
   let if_in_else, else_in_if, if_only, else_only =
     IMTools.disjoint_sets subs_if subs_else in
-  (* Join the expressions for varaibles in the intersection *)
+  (* Join the expressions for variables in the intersection *)
   if IM.cardinal if_only > 0|| IM.cardinal else_only > 0 then
     failwith "Error : merge condition for temporaries"
   else
@@ -717,7 +732,7 @@ let merge_cond_subst c subs_if subs_else =
        FQuestion (c, v, v')) if_in_else
 
 
-let update_subs vid n_expr subs =
+let add_sub vid n_expr subs =
   IM.add vid n_expr
     (IM.map
        (fun e -> apply_subs e (IM.singleton vid n_expr)) subs)
@@ -733,7 +748,7 @@ let eliminate_temporaries vs let_form =
           let new_cont, fsubs = elim_let_aux letcont subs in
           Let (vi, n_expr, new_cont , id, loc), fsubs
         else
-          let new_subs = update_subs vi.vid n_expr subs in
+          let new_subs = add_sub vi.vid n_expr subs in
           elim_let_aux letcont new_subs
       end
 
@@ -743,16 +758,17 @@ let eliminate_temporaries vs let_form =
       LetRec (figu, nlet1, nlet2, loc), subs
 
     | LetCond (c, lif, lelse, letcont, loc) ->
+      let c' = elim_expr vs subs c in
       let nlif, subs_if = elim_let_aux lif subs in
       let nlelse, subs_else = elim_let_aux lelse subs in
-      let merged_subs = merge_cond_subst c subs_if subs_else in
+      let merged_subs = merge_cond_subst c' subs_if subs_else in
       let nlcont, nsubs = elim_let_aux letcont merged_subs in
       let bv_if = bound_state_vars vs nlif in
       let bv_else = bound_state_vars vs nlelse in
       if VS.is_empty bv_if && VS.is_empty bv_else then
         nlcont, nsubs
       else
-        LetCond (c, nlif, nlelse, nlcont, loc), nsubs
+        LetCond (c', nlif, nlelse, nlcont, loc), nsubs
 
     | State sk ->
       State (IM.map (elim_expr vs subs) sk), subs

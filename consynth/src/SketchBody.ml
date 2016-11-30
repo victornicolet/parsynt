@@ -278,8 +278,8 @@ class sketch_builder
           let converted_substitutions = IM.map (convert cur_v) subs in
           convert_cils ~subs:converted_substitutions e
 
-        | FQuestion (ecil, e1, e2) ->
-          SkQuestion (convert_cils ~expect_ty:Boolean ecil,
+        | FQuestion (ec, e1, e2) ->
+          SkQuestion (convert cur_v ec,
                       (convert cur_v e1),
                       (convert cur_v e2))
 
@@ -452,12 +452,12 @@ class sketch_builder
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
             SkLetExpr [(SkTuple state_vars,
-                        SkCond (convert_cils c,
+                        SkCond (convert (SkTuple stv) c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
             SkLetIn ( [(SkTuple state_vars,
-                        SkCond (convert_cils c,
+                        SkCond (convert (SkTuple stv) c,
                                 convert_letin let_if,
                                 convert_letin let_else))],
                       convert_letin let_cont)
@@ -465,14 +465,13 @@ class sketch_builder
       in
 
       let index, (ilet, gexpr, ulet) = figu in
-      state_vars <- VS.union state_vars index;
+
       let iletin = convert_letin ilet in
       let uletin = convert_letin ulet in
       (** TODO implement records to manage index *)
       let gskexpr = convert (SkVarinfo (VS.max_elt index)) gexpr in
       sketch <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));
-      state_vars <- VS.diff state_vars index
 
     method get_sketch = sketch
   end
