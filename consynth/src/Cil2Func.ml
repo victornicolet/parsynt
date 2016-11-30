@@ -722,10 +722,17 @@ let merge_cond_subst c subs_if subs_else =
   let if_in_else, else_in_if, if_only, else_only =
     IMTools.disjoint_sets subs_if subs_else in
   (* Join the expressions for variables in the intersection *)
-  if IM.cardinal if_only > 0|| IM.cardinal else_only > 0 then
-    failwith "Error : merge condition for temporaries"
-  else
-    ();
+  let if_in_else, else_in_if =
+    if IM.cardinal if_only > 0|| IM.cardinal else_only > 0 then
+      (IM.fold
+        (fun vid e iie ->
+           iie) else_only if_in_else,
+      IM.fold
+        (fun vid e eii ->
+           eii) if_only else_in_if)
+    else
+      if_in_else, else_in_if
+  in
   IM.mapi
     (fun k v ->
        let v' = IM.find k else_in_if in

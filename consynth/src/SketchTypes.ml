@@ -88,7 +88,8 @@ and body_func =
 (** Interface types with Rosette/Racket *)
 
 and symbolic_type =
-  | Bottom | Num
+  | Bottom
+  | Num
   | Unit
   (** Base types : only booleans, integers and reals *)
   | Integer
@@ -586,6 +587,59 @@ let transform_expr
       SkLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_letin)
   in
   recurse_aux expre
+
+(** Transformation with extra boolean argument *)
+let transform_expr_flag
+    (top : bool)
+    (case : bool -> skExpr -> bool)
+    (case_handler : bool-> (bool -> skExpr -> skExpr) -> skExpr -> skExpr)
+    (const_handler: bool -> constants -> constants)
+    (var_handler : bool ->skLVar -> skLVar)
+    (expre : skExpr) : 'a =
+
+  let rec recurse_aux flag =
+    function
+    | e when case flag e ->
+      case_handler flag recurse_aux e
+
+    | SkVar v -> SkVar(var_handler flag v)
+    | SkConst c -> SkConst (const_handler flag c)
+
+    | SkBinop (op, e1, e2) ->
+      SkBinop (op, (recurse_aux flag e1), (recurse_aux flag e2))
+
+    | SkCastE (t, e) -> SkCastE (t, recurse_aux flag e)
+    | SkAlignofE e -> SkAlignofE (recurse_aux flag e)
+    | SkAddrof e -> SkAddrof (recurse_aux flag e)
+    | SkSizeofE e -> SkSizeofE (recurse_aux flag e)
+    | SkStartOf e -> SkStartOf (recurse_aux flag e)
+    | SkUnop (op, e) -> SkUnop (op, recurse_aux flag e)
+
+    | SkQuestion (c, e1, e2) ->
+      SkQuestion (recurse_aux flag c, recurse_aux flag e1, recurse_aux flag e2)
+
+    | SkApp (a, b, el) ->
+      SkApp (a, b, List.map (fun e -> recurse_aux flag e) el)
+
+    | SkFun letin -> SkFun (recurse_letin flag letin)
+    | SkRec (igu, letin) -> SkRec (igu, recurse_letin flag letin)
+
+    | SkCond (c, l1, l2) ->
+      SkCond (recurse_aux flag c, recurse_letin flag l1, recurse_letin flag l2)
+
+    | e -> e
+
+  and recurse_letin flag =
+    function
+    | SkLetExpr velist ->
+      SkLetExpr (List.map (fun (v, e) -> (v, recurse_aux flag e)) velist)
+
+    | SkLetIn (velist, letin) ->
+      let in_letin = recurse_letin flag letin in
+      SkLetIn (List.map (fun (v, e) ->
+          (v, (recurse_aux flag e))) velist, in_letin)
+  in
+  recurse_aux top expre
 
 (** An application of a function transformer : replace
     expression to_replace by expression by.

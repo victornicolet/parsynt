@@ -25,7 +25,6 @@ int drop_while_pos_int (int *a, int n) {
   _Bool first_pos = 1;
 
   for(int i = 0; i < n; i++) {
-    first_
     if ((a[i] != 0) && first_pos) {
       pos = i;
       first_pos = 0;

@@ -67,6 +67,9 @@ let rebuild_and_expressions (var, expr) =
       let e2' = rfunc e2 in
       begin
         match e1', e2' with
+        (* if (a) then b else false -> a && b *)
+        | e1bis,  SkConst (CBool false)->
+          SkBinop  (And, c, e1bis)
         (* if (a) then if (b) x : y else y -> if (a && b) then x else y *)
         | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
           SkQuestion (SkBinop (And, c, c'), e1bis, e1ter)
@@ -95,8 +98,6 @@ let rebuild_simple_or (var, expr) =
       begin
         match e1', e2' with
         (* if (a) then true else e --> a or e *)
-        | SkConst (CInt 1), e
-        | SkConst (CInt64 1L), e
         | SkConst (CBool true), e when type_of e = Boolean->
           SkBinop (Or, c, e)
         | _ , _ -> expr
@@ -130,27 +131,31 @@ let force_boolean_constants (v, e) =
       in SkConst new_c
     | _ -> cst
   in
-  let candidate e =
+  let candidate flag e =
     match e with
     | SkBinop (op, _, _) when (op = Or || op  = And) -> true
     | SkQuestion (_, e1, e2) when (type_of e1 = Boolean) ||
                                   (type_of e2 = Boolean) -> true
-    | _ -> false
+    | _ -> flag
   in
-  let force_bool rfunc e =
+  let force_bool flag rfunc e =
     match e with
     | SkBinop (op, e1, e2) when (op = Or || op  = And) ->
-      let e1' = rfunc e1 in let e2' = rfunc e2 in
+      let e1' = rfunc true e1 in let e2' = rfunc true e2 in
       SkBinop (op, cast_bool_cst e1', cast_bool_cst e2')
 
     | SkQuestion (c, e1, e2) when (type_of e1 = Boolean) ||
-                                  (type_of e2 = Boolean) ->
-      let e1' = rfunc e1 in let e2' = rfunc e2 in let c' = rfunc c in
+                                  (type_of e2 = Boolean) ||
+                                  flag ->
+      let e1' = rfunc true e1 in
+      let e2' = rfunc true e2 in
+      let c' = rfunc true c in
       SkQuestion (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
 
-    | _ -> failwith "Unexpected case in force_bool"
+    | _ -> rfunc false e
   in
-  (v, transform_expr candidate force_bool identity identity e)
+  let v_is_bool = type_of_var v = Boolean in
+  (v, transform_expr_flag v_is_bool candidate force_bool identity2 identity2 e)
 
 
 (**
@@ -162,7 +167,7 @@ let transform_boolean_if_expression =
     match e with
     | SkQuestion (SkConst (CBool true), _, _) -> true
     | SkQuestion (SkConst (CBool false), _, _) -> true
-    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) -> true
+    | SkQuestion (c, SkConst (CBool true), SkConst (CBool false)) -> true
     | SkBinop (Or, SkConst (CBool true), _)
     | SkBinop (Or,_, SkConst (CBool true)) -> true
     | SkBinop (Or, SkConst (CBool false), _)
