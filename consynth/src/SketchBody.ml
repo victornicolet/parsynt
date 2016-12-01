@@ -349,9 +349,16 @@ class sketch_builder
 
         | Cil.BinOp (op, e1, e2, t) ->
           let op', ex_ty = symb_binop_of_cil op in
-          SkBinop (op',
-                   convert_cils ~subs:subs ~expect_ty:ex_ty e1,
-                   convert_cils ~subs:subs ~expect_ty:ex_ty e2)
+          (* != --->  (! (= )) *)
+          if op' = Neq then
+            SkUnop(Not,
+                   SkBinop (Eq,
+                            convert_cils ~subs:subs ~expect_ty:ex_ty e1,
+                            convert_cils ~subs:subs ~expect_ty:ex_ty e2))
+          else
+            SkBinop (op',
+                     convert_cils ~subs:subs ~expect_ty:ex_ty e1,
+                     convert_cils ~subs:subs ~expect_ty:ex_ty e2)
 
         | Cil.Question (c, e1, e2, t) ->
           let c' = convert_cils ~expect_ty:Boolean c in

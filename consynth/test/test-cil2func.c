@@ -84,11 +84,11 @@ int drop_while_pos_int (int *a, int n) {
   _Bool first_pos = 1;
 
   for(int i = 0; i < n; i++) {
-    if ((a[i] != 0) && first_pos) {
-      pos = i;
-      first_pos = 0;
+    if ((a[i] != 0)) {
+      pos = first_pos ? i : pos;
+      first_pos = first_pos ? 0 : first_pos;
     }
   }
 
-  return first_pos ? pos : 0;
+  return pos;
 }
