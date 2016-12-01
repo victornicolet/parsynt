@@ -89,7 +89,7 @@ let cil2func loops =
        let r, w = cl.Cl.rwset in
        let vars = Cl.getAllVars cl in
        let stv = Cl.getStateVars cl in
-       let func, figu = Cil2Func.cil2func stv stmt (i,g,u) in
+       let func, figu = Cil2Func.cil2func vars stv stmt (i,g,u) in
        let reaching_consts = cl.Cl.constant_in in
        if !verbose then
          let printer = new Cil2Func.cil2func_printer vars stv in

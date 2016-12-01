@@ -75,7 +75,7 @@ let test () =
        let _, w = cl.rwset in
        let stv = getStateVars cl in
        CilTools.ppbk stmt;
-       let func, figu = C2F.cil2func stv stmt igu in
+       let func, figu = C2F.cil2func  (VS.union allvars w) stv stmt igu in
        let printer = new C2F.cil2func_printer (VS.union allvars w) stv in
        let so = new Sketch.Body.sketch_builder allvars
          stv func figu in

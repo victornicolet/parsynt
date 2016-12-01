@@ -718,25 +718,42 @@ and reduce vs let_form =
     the different let-forms *)
 
 
-let merge_cond_subst c subs_if subs_else =
+let merge_cond_subst allvs vs c subs_if subs_else =
+  (* if_in_else : substitutions in if when there is a substitution in else
+     else_in_if : sub in else when there exists a sub in if *)
   let if_in_else, else_in_if, if_only, else_only =
     IMTools.disjoint_sets subs_if subs_else in
   (* Join the expressions for variables in the intersection *)
+  let add_iden_sub vid subs =
+    try
+      IM.add vid (Var (VSOps.find_by_id vid allvs)) subs
+    with Not_found ->
+         (eprintf "Failed to build identity substitution in \
+                  branch for variable id %i@." vid;
+          raise Not_found)
+  in
   let if_in_else, else_in_if =
     if IM.cardinal if_only > 0|| IM.cardinal else_only > 0 then
+
       (IM.fold
-        (fun vid e iie ->
-           iie) else_only if_in_else,
+        (fun vid e iie -> add_iden_sub vid iie)
+        else_only if_in_else,
+
       IM.fold
-        (fun vid e eii ->
-           eii) if_only else_in_if)
+        (fun vid e eii -> add_iden_sub vid eii)
+        if_only else_in_if)
+
     else
       if_in_else, else_in_if
   in
+  let ifmap, elsemap =
+    IMTools.add_all if_in_else if_only,
+    IMTools.add_all else_in_if else_only
+  in
   IM.mapi
     (fun k v ->
-       let v' = IM.find k else_in_if in
-       FQuestion (c, v, v')) if_in_else
+       let v' = IM.find k elsemap in
+       FQuestion (c, v, v')) ifmap
 
 
 let add_sub vid n_expr subs =
@@ -745,7 +762,7 @@ let add_sub vid n_expr subs =
        (fun e -> apply_subs e (IM.singleton vid n_expr)) subs)
 
 
-let eliminate_temporaries vs let_form =
+let eliminate_temporaries allvs vs let_form =
   let rec elim_let_aux let_form subs =
     match let_form with
     | Let (vi, expr, letcont, id, loc) ->
@@ -768,7 +785,7 @@ let eliminate_temporaries vs let_form =
       let c' = elim_expr vs subs c in
       let nlif, subs_if = elim_let_aux lif subs in
       let nlelse, subs_else = elim_let_aux lelse subs in
-      let merged_subs = merge_cond_subst c' subs_if subs_else in
+      let merged_subs = merge_cond_subst allvs vs c' subs_if subs_else in
       let nlcont, nsubs = elim_let_aux letcont merged_subs in
       let bv_if = bound_state_vars vs nlif in
       let bv_else = bound_state_vars vs nlelse in
@@ -793,7 +810,7 @@ let eliminate_temporaries vs let_form =
     *)
 let init map_loops = loops := map_loops;;
 
-let cil2func statevs block (i,g,u) =
+let cil2func allvs statevs block (i,g,u) =
   (**
       We need the other loops in case of nested loops to avoid
       recomputing the for statement in the inner loops.
@@ -805,7 +822,9 @@ let cil2func statevs block (i,g,u) =
       if !debug then eprintf "-- Cil --> Functional --";
       let printer = new cil2func_printer statevs statevs in
       let let_expression_0 = (do_b statevs block) in
-      let let_expression = eliminate_temporaries statevs let_expression_0 in
+      let let_expression =
+        eliminate_temporaries allvs statevs let_expression_0
+      in
       let index = index_of_igu (i,g,u) in
       let init_f = do_il statevs [i] in
       let update_f = do_il statevs [u] in
