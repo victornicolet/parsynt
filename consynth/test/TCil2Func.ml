@@ -92,7 +92,6 @@ let test () =
          printf "All variables :%a@." VSOps.pvs (VS.union allvars w);
          printf "State variables : %a@." VSOps.pvs stv
          end;
-       printer#printlet func;
        printf "@.Sketch :@.";
        SPretty.printSklet sketch;
        printf "@.";

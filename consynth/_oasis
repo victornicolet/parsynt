@@ -29,7 +29,7 @@ Library consynth
   Path: src
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, core, rosetteInterface
+  BuildDepends: cil, cil.liveness, cil.zrapp, core, rosetteInterface
 
 Executable test_main
   Path: test
