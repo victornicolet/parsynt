@@ -59,6 +59,7 @@ let rec vi_of_var =
   function
   | SkVarinfo vi -> Some vi
   | SkArray (v, _) -> vi_of_var v
+  | SkTuple vs -> None
 
 (* Sketch type expression *)
 let sk_tail_state =

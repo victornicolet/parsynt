@@ -415,7 +415,11 @@ module VSOps = struct
   let pvs ppf (vs: VS.t) =
     if VS.cardinal vs > 0 then
       VS.iter
-        (fun vi -> Format.fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
+        (fun vi ->
+           if vi.vistmp then
+             Format.fprintf ppf "@[(%i : %s (tmp))@] @;" vi.vid vi.vname
+           else
+             Format.fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
         vs
     else
       Format.fprintf ppf "%s@;" "{empty}"

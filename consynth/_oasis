@@ -8,7 +8,7 @@ Synopsis: Concurrent programs synthesis.
 Authors: Victor Nicolet
 License: LGPL with OCaml linking exception
 
-Description: A library that synthesizes concurrent C programs from sequential specifications.
+Description: A library that synthesizes parallel C programs from sequential specifications.
 Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
@@ -29,14 +29,14 @@ Library consynth
   Path: src
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, cil.liveness, cil.zrapp, core, rosetteInterface
+  BuildDepends: cil, rosetteInterface, core, extlib
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth, rosetteInterface, getopt
+  BuildDepends: cil, getopt, rosetteInterface
 
 
 Executable examples

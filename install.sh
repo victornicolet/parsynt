@@ -140,7 +140,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "cil" "core" "sexplib" "extlib" "getopt")
+declare -a OCAML_PACKAGES=("oasis" "core" "sexplib" "extlib" "getopt")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -153,6 +153,12 @@ do
 		msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
 	fi
 done
+
+# Retrieve and install our modified version
+git clone https://github.com/victornicolet/faithfulCil.git
+cd faithfulCil
+opam pin add cil .
+cd ..
 
 sep
 echo "Creating Makefiles for Ocaml sources ..."

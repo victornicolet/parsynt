@@ -249,7 +249,7 @@ module Cloop = struct
   let getStateVars l =
     let _, w = l.rwset in
     let vars = getAllVars l in
-    VS.filter (fun v -> VS.mem v vars) w
+    VS.filter (fun v -> not v.vistmp && VS.mem v vars) w
 
   (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
