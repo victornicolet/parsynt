@@ -38,6 +38,22 @@ int test_nested_loops (int a[100][100], int n, int m) {
   return sum;
 }
 
+_Bool test_rebuild_and (int a[100], int n) {
+  _Bool t = 0;
+  for(int i = 0; i < n; i++) {
+    t = a[i] && t;
+  }
+  return t;
+}
+
+_Bool test_rebuild_or (int a[100], int n) {
+  _Bool t = 0;
+  for(int i = 0; i < n; i++) {
+    t = a[i] || t;
+  }
+  return t;
+}
+
 int test_balanced_bool (int *a, int n) {
   int wb;
   int diff, min;
