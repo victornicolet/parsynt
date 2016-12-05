@@ -155,10 +155,20 @@ do
 done
 
 # Retrieve and install our modified version
-git clone https://github.com/victornicolet/faithfulCil.git
+if [[ -d "faithfulCil" ]]; then
+    echo "Modified Cil implementation already downloaded."
+else
+    echo "Cloning Git repository for modified version of Cil ..."
+    git clone https://github.com/victornicolet/faithfulCil.git
+fi
+
 cd faithfulCil
+echo "Creating local cil package and installing it with opam .."
 opam pin add cil .
 cd ..
+sep
+msg_success "Installed all requirements."
+sep
 
 sep
 echo "Creating Makefiles for Ocaml sources ..."
