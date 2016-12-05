@@ -53,7 +53,7 @@ let apply_remove sklet =
     nested ifs.
 *)
 
-let rebuild_and_expressions (var, expr) =
+let rebuild_boolean_expressions (var, expr) =
   let to_rearrange expr =
     match expr with
     | SkQuestion (c, e1, e2) -> true
@@ -69,52 +69,31 @@ let rebuild_and_expressions (var, expr) =
         match e1', e2' with
         (* if (a) then b else false -> a && b *)
         | e1bis,  SkConst (CBool false)->
-          SkBinop  (And, c, e1bis)
+          rfunc (SkBinop  (And, c, e1bis))
+
+        | SkConst (CBool true), e when type_of e = Boolean->
+          rfunc (SkBinop (Or, c, e))
+
         (* if (a) then if (b) x : y else y -> if (a && b) then x else y *)
         | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
-          SkQuestion (SkBinop (And, c, c'), e1bis, e1ter)
-        | _ , _ -> expr
+          rfunc (SkQuestion (SkBinop (And, c, c'), e1bis, e1ter))
+        (** Distributivity / associativity *)
+        | SkBinop (Or, a, b1), b2 when b1 = b2 ->
+          SkBinop(Or, c, SkBinop(Or, a, b1))
+        | _ , _ -> SkQuestion(c, e1', e2')
       end
     | _ -> failwith "Unexpected case."
   in
   (var, transform_expr to_rearrange rearrange_aux ident ident expr)
 
-(**
-   Rebuild or expressions that have been replaced by nested ifs with
-   "true" branches.
-*)
-let rebuild_simple_or (var, expr) =
-  let to_rearrange expr =
-    match expr with
-    | SkQuestion (c, e1, e2) -> true
-    | _ -> false
-  in
-  let rearrange_aux rfunc expr =
-    match expr with
-    | SkQuestion (c, e1, e2) ->
-      let c = rfunc c in
-      let e1' = rfunc e1 in
-      let e2' = rfunc e2 in
-      begin
-        match e1', e2' with
-        (* if (a) then true else e --> a or e *)
-        | SkConst (CBool true), e when type_of e = Boolean->
-          SkBinop (Or, c, e)
-        | _ , _ -> expr
-      end
-    | _ -> failwith "Unexpected case."
-  in
-  (var, transform_expr to_rearrange rearrange_aux ident ident expr)
 
 (** Apply or- and and- rebuilding in expression tree *)
 let rec apply_rearrange sklet =
   match sklet with
   | SkLetExpr el ->
-    SkLetExpr (List.map ~f:rebuild_simple_or
-                 (List.map ~f:rebuild_and_expressions el))
+    SkLetExpr (List.map ~f:rebuild_boolean_expressions el)
   | SkLetIn (el, cont) ->
-    SkLetIn (List.map ~f:rebuild_simple_or
-               (List.map ~f:rebuild_and_expressions el),
+    SkLetIn (List.map ~f:rebuild_boolean_expressions el,
              apply_rearrange cont)
 
 

@@ -512,6 +512,8 @@ and do_s vs let_form s =
   | Block b ->
     let_add let_form (do_b vs b)
 
+  | Goto (stmt, l) ->
+    do_s vs let_form !stmt
   | _ ->
     eprintf "do_s : received unexpected Cil statement : @.@[<hov 4>%s@]@."
       (psprint80 Cil.d_stmt s);
