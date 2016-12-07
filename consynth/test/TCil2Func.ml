@@ -55,12 +55,14 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
      | SkLetExpr ([_, SkBinop(Plus, SkBinop(Plus, _, _), _)]) -> true
      | _ -> false)
 
+
   (** A loop with more local variables than state variables. *)
   | "test_detect_state" ->
     (match sketch with
      | SkLetExpr li ->
        (List.length li = 2)
      | _ -> false)
+
 
   (** Two nested loops. We only test the C -> Func part because we never
       ` translate nested loops into a sketch.
@@ -92,6 +94,7 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
 
 
   (** The balanced parenthesis example : test its well-formed *)
+
   | "test_balanced_bool" ->
     (match sketch with
      | SkLetIn ([_, SkQuestion(SkVar(SkArray(_, _)),
@@ -141,6 +144,7 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
                                  SkVar(_),
                                  SkQuestion(SkVar(_),_,_)))])-> true
      | _ -> false)
+
 
   | "test_atoi" ->
     (match sketch with
@@ -195,6 +199,7 @@ let test () =
        let sketch, sigu = check_option so#get_sketch in
        let fname = cl.host_function.vname in
        if wf_test_case fname func sketch then
+
          begin
            incr cnt_pass;
            (printf "%s%s :\t\t passed.%s@."
