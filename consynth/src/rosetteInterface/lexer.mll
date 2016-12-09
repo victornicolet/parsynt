@@ -44,7 +44,7 @@ rule token = parse
   | "%"            { MOD }
   | "~"            { NOT }
   | "&"            { AND }
-  | "|"            { OR }
+  | "||"            { OR }
   | "="            { EQ }
   | "!="           { NEQ }
   | "<"            { LT }

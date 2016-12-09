@@ -42,10 +42,12 @@ let extract_subscripts (loop_body : block) ((r, w) : VS.t * VS.t) =
     | If (c, b1, b2, _) ->
        (from_block b1 (from_block b2 (from_expr stmt false c)))
 
+    | Goto (stmt_ref, _) ->
+      from_stmt !stmt_ref
+
     | TryFinally _
     | TryExcept _
     | Return _
-    | Goto _
     | ComputedGoto _
     | Break _
     | Continue _ ->

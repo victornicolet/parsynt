@@ -71,6 +71,7 @@ let rebuild_boolean_expressions (var, expr) =
         | e1bis,  SkConst (CBool false)->
           rfunc (SkBinop  (And, c, e1bis))
 
+        (* if (a) then true else b -> a || b *)
         | SkConst (CBool true), e when type_of e = Boolean->
           rfunc (SkBinop (Or, c, e))
 
@@ -78,8 +79,10 @@ let rebuild_boolean_expressions (var, expr) =
         | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
           rfunc (SkQuestion (SkBinop (And, c, c'), e1bis, e1ter))
         (** Distributivity / associativity *)
+        (* if (a) then (b || c) else c -> (a && b) || c) *)
         | SkBinop (Or, a, b1), b2 when b1 = b2 ->
-          SkBinop(Or, c, SkBinop(Or, a, b1))
+          SkBinop(Or, SkBinop(And, a, c), b1)
+
         | _ , _ -> SkQuestion(c, e1', e2')
       end
     | _ -> failwith "Unexpected case."
