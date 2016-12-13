@@ -49,9 +49,9 @@ let compose xinfo f aux_vs aux_ef =
                   (fun index expr ->
                      (T.replace_expression
                         ~in_subscripts:true
-                        (T.mkVarExpr index)
-                        (T.mkVarExpr (T.left_index_vi index)) expr))
-                       xinfo.index_set aux.aexpr
+                        ~to_replace:(T.mkVarExpr index)
+                        ~by:(T.mkVarExpr (T.left_index_vi index)) ~ine:expr))
+                  xinfo.index_set aux.aexpr
               in
               head_assgn_list@[(T.SkVarinfo v, aux_expression)],
               tail_assgn_list
@@ -94,9 +94,9 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
          (* Replace auxiliary recursive call by state_expr *)
          let e_rep =
            replace_expression ~in_subscripts:false
-             (SkVar (SkVarinfo (VSOps.find_by_id aux_id aux_vs)))
-             (SkVar (SkVarinfo (VSOps.find_by_id i xinfo.state_set)))
-             func_expr
+             ~to_replace:(SkVar (SkVarinfo (VSOps.find_by_id aux_id aux_vs)))
+             ~by:(SkVar (SkVarinfo (VSOps.find_by_id i xinfo.state_set)))
+             ~ine:func_expr
          in
          e_rep @= e) exprs
   in
@@ -135,10 +135,11 @@ let reset_index_expressions xinfo aux =
          try
            (* Replace the index expressions by the index itself *)
            T.replace_expression ~in_subscripts:true
-             idx_expr
-             (T.SkVar
+             ~to_replace:idx_expr
+             ~by:(T.SkVar
                 (T.SkVarinfo
-                   (VSOps.find_by_id idx_id xinfo.index_set))) e
+                   (VSOps.find_by_id idx_id xinfo.index_set)))
+             ~ine:e
          with Not_found ->
            Format.eprintf "@.Index with id %i not found in %a.@."
              idx_id VSOps.pvs xinfo.index_set;
@@ -146,3 +147,15 @@ let reset_index_expressions xinfo aux =
       )
       xinfo.index_exprs
       aux
+
+let replace_available_vars xinfo xinfo_aux ce =
+   IM.fold
+      (fun vid e ce ->
+         let vi = VSOps.find_by_id vid xinfo.state_set in
+         replace_AC
+           (xinfo_aux.state_set, T.ES.empty)
+           ~to_replace:(T.SkVar (T.SkVarinfo vi))
+           ~by:(accumulated_subexpression vi e)
+           ~ine:ce)
+      xinfo_aux.state_exprs
+      ce

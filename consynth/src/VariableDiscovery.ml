@@ -12,7 +12,7 @@ open SketchTypes
 let debug = ref false
 let debug_dev = ref true
 
-let max_exec_no = ref 2
+let max_exec_no = ref 4
 
 let discovered_aux = IH.create 10
 
@@ -157,6 +157,28 @@ let create_symbol_map vs=
   VS.fold
     (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
 
+let add_new_aux aux_to_add (aux_vs, aux_exprs) =
+  let same_expr_and_func =
+    IM.filter
+      (fun varid aux ->
+         let func = replace_expression
+             ~in_subscripts:true
+             ~to_replace:(SkVar (SkVarinfo aux.avarinfo))
+             ~by:(SkVar (SkVarinfo aux_to_add.avarinfo))
+             ~ine:aux.afunc
+         in
+         aux.aexpr @= aux_to_add.aexpr && func @= aux_to_add.afunc)
+      aux_exprs
+  in
+  if IM.cardinal same_expr_and_func > 0 then (aux_vs, aux_exprs)
+  else
+    begin
+      printf "@.Adding new auxiliary : %s.@.Expression : %a.@.Function : %a@."
+        aux_to_add.avarinfo.vname
+        pp_skexpr aux_to_add.aexpr pp_skexpr aux_to_add.afunc;
+      (VS.add aux_to_add.avarinfo aux_vs,
+       IM.add aux_to_add.avarinfo.vid aux_to_add aux_exprs)
+    end
 
 let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
@@ -169,31 +191,23 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
       aux.aexpr (T.SkVar (T.SkVarinfo new_vi))
       current_expr
   in
-  let current_expr =
-    IM.fold
-      (fun vid e ce ->
-         let vi = VSOps.find_by_id vid xinfo.state_set in
-         replace_AC
-           (xinfo_aux.state_set, T.ES.empty)
-           (T.SkVar (T.SkVarinfo vi))
-           (accumulated_subexpression vi e)
-           ce)
-      xinfo_aux.state_exprs
-      current_expr
+  let cexpr =
+    (** Replace auxiliary recurrence variables by their expression *)
+    replace_available_vars xinfo xinfo_aux current_expr
   in
   (** Transform all a(i + ...) into a(i) if i + ... is the
       current index expression *)
   let new_f = reset_index_expressions xinfo replace_aux in
   let dependencies = used_in_skexpr new_f in
-  let updated_exprs = IM.add new_vi.vid
-      { avarinfo = new_vi; aexpr = current_expr;
-        afunc = new_f; depends = dependencies} new_aux_exprs in
-
+  let new_auxiliary =
+      { avarinfo = new_vi; aexpr = cexpr;
+        afunc = new_f; depends = dependencies}
+  in
   if !debug then
     printf "@.Updated %s, now has accumulator : %a and expression %a@."
-      new_vi.vname pp_skexpr new_f pp_skexpr current_expr;
+      new_vi.vname pp_skexpr new_f pp_skexpr cexpr;
 
-  (VS.add new_vi new_aux_vs, updated_exprs)
+  add_new_aux new_auxiliary (new_aux_vs, new_aux_exprs)
 
 (** Finding auxiliary variables given a map of state variables to expressions
     and the previous set of auxiliary variables.
@@ -269,7 +283,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
     T.rec_expr
       (fun a b -> a@b) []
       (fun e ->
-         IM.exists (fun vid aux -> aux.aexpr @= e) emap)
+         IM.exists
+           (fun vid aux -> aux.aexpr @= e) emap)
       (fun e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
       top_expr
@@ -300,6 +315,10 @@ let find_auxiliaries ?(not_last_iteration = true) i
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
       candidate_expr =
     (** Replace subexpressions by their auxliiary *)
+    if !debug then
+      printf "@.Candidate : %a@." pp_skexpr candidate_expr;
+    (** Replace subexpressions corresponding to state expressions
+        in the candidate expression *)
     let current_expr =
       if i > 0 then
         IM.fold
@@ -307,9 +326,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
              let vi = VSOps.find_by_id vid xinfo.state_set in
              replace_AC
                (xinfo_aux.state_set, T.ES.empty)
-               (accumulated_subexpression vi e)
-               (T.SkVar (T.SkVarinfo vi))
-               ce)
+               ~to_replace:(accumulated_subexpression vi e)
+               ~by:(T.SkVar (T.SkVarinfo vi))
+               ~ine:ce)
           xinfo_aux.state_exprs candidate_expr
       else
         candidate_expr
@@ -344,6 +363,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
           begin
             if List.length ef_list > 0
             then
+              begin
+              printf "@.Candidate increments some auxiliary.@.";
               (* A subexpression of the expression is an auxiliary variable *)
               let corresponding_functions =
                 match_increment aux_vs current_expr ef_list
@@ -355,9 +376,11 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   if !debug then
                     printf "@.Variable %s is incremented by %a@."
                       aux.avarinfo.vname pp_skexpr aux.afunc;
-
-                  (VS.add aux.avarinfo new_aux_vs,
-                   IM.add vid { aux with aexpr = current_expr } new_aux_exprs)
+                  let new_aux =
+                    { aux with
+                      aexpr =
+                        replace_available_vars xinfo xinfo_aux current_expr } in
+                  add_new_aux new_aux (new_aux_vs, new_aux_exprs)
 
 
                 else
@@ -369,6 +392,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                 else
                   (new_aux_vs, new_aux_exprs)
               end
+              end
             else
               (* Check that the auxliary is not jsut an update by replacing
                  the current index expression *)
@@ -379,30 +403,27 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   if !debug then
                     printf "Variable is incremented after index update %s: %a@."
                       aux.avarinfo.vname pp_skexpr current_expr_i;
-                  (VS.add aux.avarinfo new_aux_vs,
-                   IM.add aux.avarinfo.vid
-                     { aux with afunc = current_expr_i } new_aux_exprs)
+                  let new_aux = { aux with afunc = current_expr_i } in
+                  add_new_aux new_aux (new_aux_vs, new_aux_exprs)
+
 
                 | _ ->
                   (* We have to create a new variable *)
                   if not_last_iteration then
                     let typ = T.type_of current_expr in
-                    let new_aux = gen_fresh typ () in
-                    let updated_aux = VS.add new_aux new_aux_vs in
-                    let updated_exprs =
-                      IM.add
-                        new_aux.vid
-                        { avarinfo = new_aux;
+                    let new_aux_varinfo = gen_fresh typ () in
+                    let new_aux =
+                        { avarinfo = new_aux_varinfo;
                           aexpr = current_expr;
-                          afunc = T.SkVar (T.SkVarinfo new_aux);
-                          depends = VS.singleton new_aux }
-                        new_aux_exprs
+                          afunc = T.SkVar (T.SkVarinfo new_aux_varinfo);
+                          depends = VS.singleton new_aux_varinfo }
                     in
                     if !debug then
-                      printf "@.Adding new variable %s : %a@." new_aux.vname
+                      printf "@.Adding new variable %s : %a@."
+                        new_aux_varinfo.vname
                         pp_skexpr current_expr;
 
-                    (updated_aux, updated_exprs)
+                    add_new_aux new_aux (new_aux_vs, new_aux_exprs)
                   else
                     (new_aux_vs, new_aux_exprs)
               end

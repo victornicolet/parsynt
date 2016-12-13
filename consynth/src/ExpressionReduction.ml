@@ -19,6 +19,7 @@ let reduce_cost stv c_exprs expr =
     match expr with
     | SkBinop (_, _, _) -> true
     | SkQuestion (_, _,_) -> true
+    | SkUnop (_,_) -> true
     | _ -> false
   in
   (* Tranform expressions by looking at its leaves *)
@@ -78,7 +79,8 @@ let reduce_cost stv c_exprs expr =
             SkBinop (op2, x', y')
 
         | _, _ -> SkBinop (op2, x', y')
-      end (* End SkBinop (c, x, y) case *)
+      end
+    (* End SkBinop (c, x, y) case *)
 
     | SkQuestion (c, x, y)->
       let x' = rfunc x in let y' = rfunc y in
@@ -103,7 +105,28 @@ let reduce_cost stv c_exprs expr =
                 SkQuestion (c, x', y')
             end
         | _, _ -> SkQuestion (c, x', y')
-      end (* End SkQuestion (c, x, y) case *)
+      end
+    (* End SkQuestion (c, x, y) case *)
+    (* Distribute unary boolean not down, unary num neg down *)
+    | SkUnop (op, x) ->
+      let e' = rfunc x in
+      begin
+      match op, e' with
+      | Not, SkBinop (And, e1, e2) ->
+        SkBinop(Or, rfunc (SkUnop (Not, e1)), rfunc (SkUnop (Not, e2)))
+
+      | Not, SkBinop (Or, e1, e2) ->
+        SkBinop(And, rfunc (SkUnop (Not, e1)), rfunc (SkUnop (Not, e2)))
+
+      | Neg, SkBinop (Plus, e1, e2) ->
+        SkBinop(Plus, rfunc (SkUnop (Neg, e1)), rfunc (SkUnop (Neg, e2)))
+
+      | Neg, SkBinop (Minus, e1, e2) ->
+        SkBinop(Minus, rfunc e1, rfunc e2)
+
+      | _, _ -> SkUnop(op, e')
+      end
+      (* End SkUnop (op, e) case *)
     | _ -> failwith "Unexpected case in expression transformation"
 
   (* End transform expressions *)
@@ -138,10 +161,31 @@ let reduce_cost_specials stv c_exprs e=
   in
   transform_expr red_cases red_apply identity identity e
 
+let remove_double_negs stv c_exprs e=
+  let red_cases e =
+    match e with
+    | SkUnop _ -> true
+    | _ -> false
+  in
+  let red_apply_dbn rfunc e =
+    match e with
+    | SkUnop (op, e') ->
+      let e'' = rfunc e' in
+      begin
+        match op, e'' with
+        | Not, SkUnop (op2, e0) when op2 = Not -> rfunc e0
+        | Neg, SkUnop (op2, e0) when op2 = Neg -> rfunc e0
+        | _ , _ -> SkUnop(op, e'')
+      end
+    | _ -> failwith "Unexpected case in reduce_cost_specials"
+  in
+  transform_expr red_cases red_apply_dbn identity identity e
+
 let reduce_full ?(limit = 10) stv c_exprs expr =
   let rec aux_apply_ternary_rules limit e =
     let red_expr0 = reduce_cost stv c_exprs e in
-    let red_expr = reduce_cost_specials stv c_exprs red_expr0 in
+    let red_expr1 = reduce_cost_specials stv c_exprs red_expr0 in
+    let red_expr = remove_double_negs stv c_exprs red_expr1 in
     if red_expr @= e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr

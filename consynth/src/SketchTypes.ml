@@ -644,7 +644,8 @@ let transform_expr_flag
 (** An application of a function transformer : replace
     expression to_replace by expression by.
 *)
-let rec replace_expression ?(in_subscripts = false) tr b =
+let rec replace_expression ?(in_subscripts = false)
+    ~to_replace:tr ~by:b ~ine:exp=
   let case e = (e = tr) in
   let case_handler rfunc e = b in
   let const_handler c = c in
@@ -653,12 +654,13 @@ let rec replace_expression ?(in_subscripts = false) tr b =
       match v with
       | SkArray (v, e) ->
         SkArray (v,
-                 replace_expression ~in_subscripts:true tr b e)
+                 replace_expression ~in_subscripts:true ~to_replace:tr ~by:b
+                   ~ine:e)
       | _ -> v
     else
       v
   in
-  transform_expr case case_handler const_handler var_handler
+  transform_expr case case_handler const_handler var_handler exp
 
 let rec sk_uses vs expr =
   let join a b = a || b in

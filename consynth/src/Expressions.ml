@@ -574,13 +574,13 @@ let apply_special_rules stv cexprs e =
 
 let accumulated_subexpression vi e =
   match e with
-  | SkBinop (op, SkVar (SkVarinfo vi), acc) -> acc
-  | SkBinop (op, acc, SkVar (SkVarinfo vi)) -> acc
+  | SkBinop (op, SkVar (SkVarinfo vi'), acc) when vi = vi' -> acc
+  | SkBinop (op, acc, SkVar (SkVarinfo vi')) when vi = vi' -> acc
   | _ -> e
 
 
 (** Transformations taking AC in account *)
-let replace_AC (vs, cexprs) to_replace by_expr in_expr =
+let replace_AC (vs, cexprs) ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
   let flat_tr = flatten_AC to_replace in
   let flat_by = flatten_AC by_expr in
   let flat_in = flatten_AC in_expr in
