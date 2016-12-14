@@ -76,7 +76,7 @@ let test (ctx : context) =
              (Boolean.mk_sort ctx))
   in
   let itee =
-    mk_ite ctx c1 (mk_ite ctx c2 a b) (mk_ite ctx (mk_not ctx c1) b a)
+    mk_ite ctx c1 (mk_ite ctx c2 (mk_ite ctx c2 a b) b) (mk_ite ctx (mk_not ctx c1) b a)
   in
   print_endline (Expr.get_simplify_help ctx);
   printf "Initially : %s@." (Expr.to_string itee);
