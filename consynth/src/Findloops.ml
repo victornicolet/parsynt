@@ -200,7 +200,7 @@ module Cloop = struct
      be comnputed before in order to associate variable IDs with variable
      names.
   *)
-  let setRW l (uses, defs) ?(checkDefinedIn = false) =
+  let setRW ?(checkDefinedIn = false) l (uses, defs) =
     VS.iter
       (fun v ->
          let vi = try

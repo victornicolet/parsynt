@@ -6,4 +6,4 @@ S src
 S test
 S src/rosetteInterface
 S ./
-PKG cil core extlib getopt parser
+PKG cil core extlib getopt parser Z3

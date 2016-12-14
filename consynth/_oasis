@@ -29,14 +29,14 @@ Library consynth
   Path: src
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, core, extlib
+  BuildDepends: cil, rosetteInterface, core, extlib, Z3
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, rosetteInterface
+  BuildDepends: cil, getopt, rosetteInterface, Z3
 
 
 Executable examples
@@ -44,7 +44,7 @@ Executable examples
   MainIs: Examples.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth, rosetteInterface, getopt
+  BuildDepends: cil, consynth, rosetteInterface, getopt, Z3
 
 Executable test_scheme_parsing
   Path: test

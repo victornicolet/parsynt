@@ -66,6 +66,7 @@ let rec gen_var v =
         match v with
         | T.SkVarinfo _ -> scalar_default_offset
         | T.SkArray _ -> !exec_count
+        | T.SkTuple _ -> scalar_default_offset
       in
       add_to_genvars host_vi.vid offset vname (v, new_v);
       (offset, new_vi.vname, (v,new_v))
