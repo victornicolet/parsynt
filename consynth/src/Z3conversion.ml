@@ -38,7 +38,7 @@ let map_of_consts ctx vars =
 let rec of_expr ctx vars e =
   match e with
   | SkVar v -> of_var ctx vars v
-  | SkConst c -> of_const ctx vars c
+  | SkConst c -> of_const ctx c
   | SkBinop (op, e1, e2) ->
     let exprs = [of_expr ctx vars e1; of_expr ctx vars e2] in
     begin
@@ -47,27 +47,27 @@ let rec of_expr ctx vars e =
       | Plus -> mk_add ctx exprs
       | Minus -> mk_sub ctx exprs
       | Times -> mk_mul ctx exprs
-      | Div -> mk_div ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Expt -> mk_power ctx (List.nth exprs 0) (List.nth exprs 1)
+      | Div -> mk_div ctx (exprs >> 0) (exprs >> 1)
+      | Expt -> mk_power ctx (exprs >> 0) (exprs >> 1)
       (* Booleans *)
       | And -> mk_and ctx exprs
       | Or -> mk_or ctx exprs
       | Nand -> mk_not ctx (mk_and ctx exprs)
       | Nor -> mk_not ctx (mk_or ctx exprs)
-      | Xor -> mk_xor ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Implies -> mk_implies ctx (List.nth exprs 0) (List.nth exprs 1)
+      | Xor -> mk_xor ctx (exprs >> 0) (exprs >> 1)
+      | Implies -> mk_implies ctx (exprs >> 0) (exprs >> 1)
       (* Comparisons *)
-      | Lt -> mk_lt ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Le -> mk_le ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Gt -> mk_gt ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Ge -> mk_lt ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Eq -> mk_eq ctx (List.nth exprs 0) (List.nth exprs 1)
-      | Neq -> mk_not ctx (mk_eq ctx (List.nth exprs 0) (List.nth exprs 1))
+      | Lt -> mk_lt ctx (exprs >> 0) (exprs >> 1)
+      | Le -> mk_le ctx (exprs >> 0) (exprs >> 1)
+      | Gt -> mk_gt ctx (exprs >> 0) (exprs >> 1)
+      | Ge -> mk_lt ctx (exprs >> 0) (exprs >> 1)
+      | Eq -> mk_eq ctx (exprs >> 0) (exprs >> 1)
+      | Neq -> mk_not ctx (mk_eq ctx (exprs >> 0) (exprs >> 1))
       (* Max. min *)
-      | Max -> mk_ite ctx (mk_gt ctx (List.nth exprs 0) (List.nth exprs 1))
-                 (List.nth exprs 0) (List.nth exprs 1)
-      | Min -> mk_ite ctx (mk_gt ctx (List.nth exprs 0) (List.nth exprs 1))
-                 (List.nth exprs 1) (List.nth exprs 0)
+      | Max -> mk_ite ctx (mk_gt ctx (exprs >> 0) (exprs >> 1))
+                 (exprs >> 0) (exprs >> 1)
+      | Min -> mk_ite ctx (mk_gt ctx (exprs >> 0) (exprs >> 1))
+                 (exprs >> 1) (exprs >> 0)
 
       (* Quot, Rem, Mod, SHiftL, SHiftR *)
       | _ -> failwith "Unsupported binary operator"
@@ -111,3 +111,44 @@ and of_var ctx vars v =
 and of_const ctx c =
   match c with
   | CInt i -> Integer.mk_numeral_i ctx i
+  | CBool b -> if b then Boolean.mk_true ctx else Boolean.mk_false ctx
+  | CReal r -> FloatingPoint.mk_numeral_f ctx r (Real.mk_sort ctx)
+  | CChar c -> failwith "Char unsupported."
+  | CString s -> failwith "String unsupported."
+  | _ -> failwith "Constant type unsupported."
+
+
+(** Translate a Z3 model into an expression *)
+
+let rec from_expr vars e =
+  if Expr.is_const e then
+    from_const vars e
+  else
+    (if Expr.is_numeral e then
+       from_numeral e
+     else
+       from_fundecl vars e)
+
+and from_const vars e =
+
+and from_numeral e =
+
+and from_fundecl vars e =
+  let fundecl = Expr.get_func_decl e in
+  let args = Expr.get_args e in
+  match FuncDecl.get_arity fundecl with
+  | 0 -> failwith "Don't know any 0 ops"
+  | 1 -> SkUnop (get_unop fundecl,
+                 from_expr vars (args >> 0))
+  | 2 -> SkBinop (get_binop fundecl,
+                  from_expr vars (args >> 0),
+                  from_expr vars (args >> 1))
+  | 3 -> SkQuestion (from_expr vars (args >> 0),
+                     from_expr vars (args >> 1),
+                     from_expr vars (args >> 2))
+(** TODO : and is not a binary op, we have to rebuild the tree after.
+    I think the solution is already in the flat AC form of the reduction *)
+  | _ -> failwith "Too many args for op"
+and get_unop fundecl = Neg
+
+and get_binop fundecl = Plus

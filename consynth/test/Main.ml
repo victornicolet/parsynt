@@ -83,7 +83,33 @@ let test (ctx : context) =
   let itee_simpl =
     Expr.simplify itee (Some params)
   in
-  printf "Simplified : %s@." (Expr.to_string itee_simpl);;
+  printf "Simplified : %s@." (Expr.to_string itee_simpl);
+  (** Testing parsing back to some type *)
+  let expr_args = Expr.get_args itee_simpl in
+  let expr_fund = Expr.get_func_decl itee_simpl in
+  printf "Args : %a@."
+    (fun fmt li -> ppli fmt ~sep:", " (fun fmt e -> fprintf fmt "%s" (Expr.to_string e)) li)
+    expr_args;
+  printf "Func decl: %s@."
+    (FuncDecl.to_string expr_fund);
+  (if (FuncDecl.get_decl_kind expr_fund) = Z3enums.OP_ITE then
+     printf "Is ite, OK.@."
+   else
+     printf "Not ite, FAIL.@.");
+  let condition = expr_args >> 0 in
+  let ae = expr_args >> 1 in
+  let be = expr_args >> 2 in
+  printf "Is %s a const ? %b.@." (Expr.to_string condition) (Expr.is_const condition);
+  let cond_args = Expr.get_args condition in
+  printf "Operator : %i with args %s, %s@."
+    (FuncDecl.get_id (Expr.get_func_decl condition))
+    (Expr.to_string (cond_args >> 0))
+    (Expr.to_string (cond_args >> 1));
+  printf "Is %s a const ? %b.@." (Expr.to_string ae) (Expr.is_const ae);
+  printf "Is %s a const ? %b.@." (Expr.to_string be) (Expr.is_const be);;
+
+
+
 
 
 test (mk_context []);;

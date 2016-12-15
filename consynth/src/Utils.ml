@@ -67,6 +67,7 @@ let is_none = Core.Std.is_none
 let v2e (v : varinfo): Cil.exp = Lval (var v)
 
 let (|>) (a : 'a) (f: 'a -> 'b): 'b = f a
+let (>>) (a : 'a list) (b : int) = List.nth a b
 
 let map_2 (f : 'a -> 'b) ((a,b): ('a * 'a)) : ('b * 'b) = (f a, f b)
 
