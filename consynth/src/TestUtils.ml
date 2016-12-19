@@ -80,3 +80,19 @@ let _u op e1 = SkUnop (op, e1)
 let _Q c e1 e2 = SkQuestion (c, e1, e2)
 let _let el = SkLetExpr el
 let _letin el l = SkLetIn (el, l)
+
+class variableManager vi_list =
+  let smap =
+    (List.fold_left
+       (fun sm vi -> SM.add vi.vname vi sm)
+       SM.empty vi_list)
+  in
+  object (self)
+    val mutable vi_map = smap
+    val vs = VS.of_list vi_list
+    method add vi = vi_map <- (SM.add vi.vname vi vi_map)
+    method vi name = SM.find name vi_map
+    method var name = SkVarinfo (SM.find name vi_map)
+    method expr name = SkVar (SkVarinfo (SM.find name vi_map))
+    method get_vs = vs
+  end
