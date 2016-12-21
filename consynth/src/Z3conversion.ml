@@ -273,3 +273,16 @@ and get_binop fundecl =
   | OP_FPA_GT | OP_GT -> Some Gt
   | OP_XOR -> Some Xor
   | _ -> None
+
+
+(** Wrap translation functions and helpers in an object *)
+
+class z3Translator vars =
+  let z3v, varm = create_vars_map vars in
+  object (self)
+    val mutable initial_varset = vars
+    val mutable z3vars = z3v
+    val mutable skvars = varm
+    val mutable context = mk_context []
+    method expr_to_z3 e = of_expr context  e
+  end

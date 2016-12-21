@@ -14,7 +14,9 @@ module C2F = Cil2Func
 (* module TF2S = TFunc2Sketch *)
 (* module TGDef = TGenDefs *)
 (*module TSbx = TSymbExe *)
-(* module TScm = TestSchemeParsing *)
+module TScm = TestSchemeParsing;;
+
+TScm.main ();;
 (* module TDis = TDiscovery *)
 (* module TExpr = TExpressions *)
 
