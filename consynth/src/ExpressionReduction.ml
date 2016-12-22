@@ -12,9 +12,8 @@ open Expressions
     @return true if op2 is right distributive over op1
 *)
 
-
 (** Equality of expressions under commutativity *)
-let reduce_cost stv c_exprs expr =
+let reduce_cost ctx expr =
   let reduction_cases expr =
     match expr with
     | SkBinop (_, _, _) -> true
@@ -48,9 +47,9 @@ let reduce_cost stv c_exprs expr =
 
         (* Distributivity with operators *)
         | SkBinop (op1, a, b), c ->
-          let ca = cost stv c_exprs a in
-          let cb = cost stv c_exprs b in
-          let cc = cost stv c_exprs c in
+          let ca = cost ctx a in
+          let cb = cost ctx b in
+          let cc = cost ctx c in
           (* [(a + b) * c --> a*c + b*c] if no stv in c *)
           if is_right_distributive op1 op2 && ((max ca cb) >= cc)
           then
@@ -61,18 +60,18 @@ let reduce_cost stv c_exprs expr =
             SkBinop (op2, x', y')
         (* Distributivity with ternary expressions *)
         | SkQuestion (cond, a, b), c ->
-          let ca = cost stv c_exprs a in
-          let cb = cost stv c_exprs b in
-          let cc = cost stv c_exprs c in
+          let ca = cost ctx a in
+          let cb = cost ctx b in
+          let cc = cost ctx c in
           if is_associative op2 &&  (max ca cb) > cc then
             SkQuestion (cond, SkBinop (op2, a, c), SkBinop (op2, b, c))
           else
             SkBinop (op2, x', y')
 
         | c, SkQuestion (cond, a, b) ->
-          let ca = cost stv c_exprs a in
-          let cb = cost stv c_exprs b in
-          let cc = cost stv c_exprs c in
+          let ca = cost ctx a in
+          let cb = cost ctx b in
+          let cc = cost ctx c in
           if is_associative op2 && (max ca cb) > cc then
             SkQuestion (cond, SkBinop (op2, c, a), SkBinop (op2, c, b))
           else
@@ -89,10 +88,10 @@ let reduce_cost stv c_exprs expr =
         match x', y' with
         | SkBinop (op1, x1, x2), SkBinop (op2, y1, y2)
           when op1 = op2 && is_associative op1 ->
-          let cx1 = cost stv c_exprs x1 in
-          let cx2 = cost stv c_exprs x2 in
-          let cy1 = cost stv c_exprs y1 in
-          let cy2 = cost stv c_exprs y2 in
+          let cx1 = cost ctx x1 in
+          let cx2 = cost ctx x2 in
+          let cy1 = cost ctx y1 in
+          let cy2 = cost ctx y2 in
           if x1 = y1 && cx1 > (max cx2 cy2) then
             let cond = rfunc (SkQuestion (c, x2, y2)) in
             SkBinop (op1, x1, cond)
@@ -133,7 +132,7 @@ let reduce_cost stv c_exprs expr =
   in
   transform_expr reduction_cases reduce_transform identity identity expr
 
-let reduce_cost_specials stv c_exprs e=
+let reduce_cost_specials ctx c_exprs e=
   let red_cases e =
     match e with
     | SkQuestion _ -> true
@@ -147,9 +146,9 @@ let reduce_cost_specials stv c_exprs e=
       begin
         match x', y' with
         | SkQuestion (cond2, a, b), c ->
-          let ca = cost stv c_exprs a in
-          let cb = cost stv c_exprs b in
-          let cc = cost stv c_exprs c in
+          let ca = cost ctx a in
+          let cb = cost ctx b in
+          let cc = cost ctx c in
           if ca > (max cb cc) then
             SkQuestion (SkBinop (And, cond1, cond2), a,
                         SkQuestion (SkUnop (Not, cond2), c, b))
@@ -181,19 +180,19 @@ let remove_double_negs stv c_exprs e=
   in
   transform_expr red_cases red_apply_dbn identity identity e
 
-let reduce_full ?(limit = 10) stv c_exprs expr =
+let reduce_full ?(limit = 10) ctx c_exprs expr =
   let rec aux_apply_ternary_rules limit e =
-    let red_expr0 = reduce_cost stv c_exprs e in
-    let red_expr1 = reduce_cost_specials stv c_exprs red_expr0 in
-    let red_expr = remove_double_negs stv c_exprs red_expr1 in
+    let red_expr0 = reduce_cost ctx e in
+    let red_expr1 = reduce_cost_specials ctx c_exprs red_expr0 in
+    let red_expr = remove_double_negs ctx.state_vars c_exprs red_expr1 in
     if red_expr @= e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr
   in
   let rules_AC e =
     let flat_r = (flatten_AC e) in
-    let r1 = apply_special_rules stv c_exprs flat_r in
-    rebuild_tree_AC stv c_exprs r1
+    let r1 = apply_special_rules ctx flat_r in
+    rebuild_tree_AC ctx r1
   in
   let r0 = aux_apply_ternary_rules limit expr in
   let r2 = rules_AC r0 in

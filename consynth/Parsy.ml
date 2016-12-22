@@ -7,7 +7,7 @@ open Getopt
 module L = Local
 module C = Canalyst
 
-let debug_all = ref false
+
 let debug = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
@@ -18,7 +18,7 @@ let err_handler_sketch i =
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
-  ( 'g', "debug", (set debug_all true), None);
+  ( 'g', "debug", (set debug true), None);
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
@@ -36,16 +36,10 @@ let main () =
     end;
   L.debug := !debug;
   let filename = Array.get Sys.argv 1 in
-  if Array.length Sys.argv > 2 then
-    begin
-      match Array.get Sys.argv 2 with
-      | "--dump-sketch" ->
-        L.dump_sketch := true
-      | _ -> ()
-    end;
-
   if !debug = true then
     begin
+      SError.logfile := "log"^(string_of_float (Sys.time ()))^filename;
+      printf "Logging in %s" !SError.logfile;
       Cil2Func.debug := true;
       Sketch.debug := true;
       Sketch.Body.debug := true;

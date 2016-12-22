@@ -11,6 +11,6 @@ let main () =
   let fdefwl = Racket.parse_scm (function_def_with_let^function_def_with_let2) in
   Ast.pp_expr_list Format.std_formatter fdefwl;
 
-  let test_process_file name =
-    let ic = open_in name in
-    let parsed_exprs = Racket.parse_scm ic in
+  (* let test_process_file name = *)
+  (*   let ic = open_in name in *)
+  (*   let parsed_exprs = Racket.parse_scm ic in *)

@@ -6,6 +6,12 @@ open SketchTypes
 open TestUtils
 open Utils
 
+type context = {
+  state_vars : VS.t;
+  all_vars : VS.t;
+  costly_exprs : ES.t
+}
+
 let rec hash_str s =
   if String.length s > 0 then
     (int_of_char (String.get s 0)) +
@@ -200,7 +206,7 @@ type ecost =
     max_depth : int;
   }
 
-let expression_cost vs cexprs e =
+let expression_cost ctx e =
   let case0 = { occurrences = 0; max_depth = 0 } in
   let case1 = { occurrences = 1; max_depth = 1 } in
   let join_c c1 c2 =
@@ -208,12 +214,12 @@ let expression_cost vs cexprs e =
       max_depth = let mx =  max c1.max_depth c2.max_depth in
         if mx > 0 then mx + 1 else 0 }
   in
-  let special_case e = ES.mem e cexprs in
+  let special_case e = ES.mem e ctx.costly_exprs in
   let handle_spec e =  case1 in
   let case_var v =
     let vi_o = vi_of v in
     match vi_o with
-    | Some vi -> if VS.mem vi vs then case1 else case0
+    | Some vi -> if VS.mem vi ctx.state_vars then case1 else case0
     | _ -> case0
   in
   let case_const c = case0 in
@@ -225,8 +231,8 @@ let ccost (d1, o1) (d2, o2) =
 let compare_ecost ec1 ec2 =
   ccost (ec1.max_depth, ec1.occurrences) (ec2.max_depth, ec2.occurrences)
 
-let compare_cost vs cexprs e1 e2 =
-  compare_ecost (expression_cost vs cexprs e1) (expression_cost vs cexprs e2)
+let compare_cost ctx e1 e2 =
+  compare_ecost (expression_cost ctx e1) (expression_cost ctx e2)
 
 (** Compute the 'cost' of an expression with respect to a set of other
     c-expressions : the cost is the pair of the maximum depth of a
@@ -238,36 +244,36 @@ let compare_cost vs cexprs e1 e2 =
     c-expression in the expression abstract syntax tree and the second element
     is the number of occurrences of c-expressions.
 *)
-let rec depth_cost (vs : VS.t) (c_exprs : ES.t) expr =
-  let cost = expression_cost vs c_exprs expr in
+let rec depth_cost ctx expr =
+  let cost = expression_cost ctx expr in
   (cost.max_depth, cost.occurrences)
 
-and depth_c_func vs c_exprs func =
+and depth_c_func ctx func =
   match func with
   | SkLetIn (velist, l') ->
-    let dl', cl' = depth_c_func vs c_exprs l' in
+    let dl', cl' = depth_c_func ctx l' in
     let max_de, sum_c =
       (List.fold_left
          (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
          (0, 0)
-         (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist)) in
+         (List.map (fun (v, e) -> depth_cost ctx e) velist)) in
     ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
   | SkLetExpr velist ->
     (List.fold_left
        (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
        (0, 0)
-       (List.map (fun (v, e) -> depth_cost vs c_exprs e) velist))
+       (List.map (fun (v, e) -> depth_cost ctx e) velist))
 
 
-let cost stv c_exprs expr =
-  depth_cost stv c_exprs expr
+let cost ctx expr =
+  depth_cost ctx expr
 
 
 
 
 (* AC rules *)
 
-let rec rebuild_tree_AC vs cexprs =
+let rec rebuild_tree_AC ctx =
   let rebuild_case expr =
     match expr with
     | SkApp (t, Some f, el) ->
@@ -281,8 +287,7 @@ let rec rebuild_tree_AC vs cexprs =
         let op = op_from_name f.vname in
         let el' = List.map rfunc el in
         let el_ordered =
-
-             (List.sort (compare_cost vs cexprs) el')
+             (List.sort (compare_cost ctx) el')
         in
         match el_ordered with
         | hd :: tl ->
@@ -309,8 +314,8 @@ let extract_operand_lists el =
        | _ -> l1, l2)
     ([], []) el
 
-let __factorize__ stv cexprs top_op el =
-  let el = List.map (rebuild_tree_AC stv cexprs) el in
+let __factorize__ ctx top_op el =
+  let el = List.map (rebuild_tree_AC ctx) el in
   let el_binops, el_no_binops =
     List.partition (function | SkVar v -> true
                              | SkBinop (_, _, _) -> true
@@ -322,8 +327,8 @@ let __factorize__ stv cexprs top_op el =
       begin (** begin match list *)
         match hd with
         | SkBinop (op, e1, e2) ->
-          let ce1 = cost stv cexprs e1 in
-          let ce2 = cost stv cexprs e2 in
+          let ce1 = cost ctx e1 in
+          let ce2 = cost ctx e2 in
 
           if is_left_distributive top_op op && ce1 > ce2 then
             (** Look for similar expressions in the list *)
@@ -410,7 +415,7 @@ let __factorize__ stv cexprs top_op el =
   in
   List.map flatten_AC (best_factorization @(el_no_binops))
 
-let factorize stv cexprs =
+let factorize ctx =
   let case e =
     match e with
     | SkApp (_, Some opvar, _) ->
@@ -421,7 +426,7 @@ let factorize stv cexprs =
     match e with
     | SkApp (t, Some opvar, el) ->
       let op = op_from_name opvar.vname in
-      let fact_el = List.map rfunc (__factorize__ stv cexprs op el) in
+      let fact_el = List.map rfunc (__factorize__ ctx op el) in
       SkApp (t, Some opvar, fact_el)
 
     | _ -> failwith "factorize_all : bad case"
@@ -564,13 +569,13 @@ let transform_conj_comps e =
   transform_expr case transf identity identity e
 
 (** Put all the special rules here *)
-let apply_special_rules stv cexprs e =
+let apply_special_rules ctx e =
   let e' = transform_all_comparisons e in
   let e'' =
-    let t_e = factorize stv cexprs (transform_conj_comps e') in
-    if cost stv cexprs t_e < cost stv cexprs e' then t_e else e'
+    let t_e = factorize ctx (transform_conj_comps e') in
+    if cost ctx t_e < cost ctx e' then t_e else e'
   in
-  factorize stv cexprs e''
+  factorize ctx e''
 
 let accumulated_subexpression vi e =
   match e with
@@ -580,7 +585,7 @@ let accumulated_subexpression vi e =
 
 
 (** Transformations taking AC in account *)
-let replace_AC (vs, cexprs) ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
+let replace_AC ctx ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
   let flat_tr = flatten_AC to_replace in
   let flat_by = flatten_AC by_expr in
   let flat_in = flatten_AC in_expr in
@@ -614,7 +619,7 @@ let replace_AC (vs, cexprs) ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
               begin
                 if common_is_el' then
                   let raw_term = SkApp (t, Some opvar, remaining_terms@[flat_by]) in
-                  flatten_AC (rebuild_tree_AC vs cexprs raw_term)
+                  flatten_AC (rebuild_tree_AC ctx raw_term)
                 else
                   SkApp (t, Some opvar, List.map rfunc el)
               end (* END if common_is_el' *)
@@ -627,5 +632,4 @@ end
 | e when e @= flat_tr -> flat_by
        | _ -> failwith "Unexpected case in replace_AC"
 in
-rebuild_tree_AC vs cexprs
-  (transform_expr case handle_case identity identity flat_in)
+rebuild_tree_AC ctx (transform_expr case handle_case identity identity flat_in)

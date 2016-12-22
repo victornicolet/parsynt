@@ -43,3 +43,12 @@ exception Sketch_generation of string
 
 let fail_sketch_generation str =
   raise (Sketch_generation str)
+
+(** Logging for debugging purposes *)
+let logfile = ref "log"
+
+let elog msg =
+  let oc = open_out !logfile in
+  let foc = formatter_of_out_channel oc in
+  fprintf foc msg;
+  close_out oc
