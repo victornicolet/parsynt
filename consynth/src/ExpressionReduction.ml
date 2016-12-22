@@ -4,6 +4,15 @@ open Cil
 open SPretty
 open Format
 open Expressions
+open Z3conversion
+
+
+(** Simplify expressions beforehand using z3 *)
+let simplify ctx e =
+  let z3t = new z3Translator ctx.all_vars in
+  let z3e = simplify_z3 (z3t#expr_to_z3 e) in
+  z3t#z3_to_expr z3e
+
 
 (** op2 is right-distributive over op1 if :
     (a op1 b) op2 c = (a op2 c) op1 (b op2 c)
@@ -132,7 +141,7 @@ let reduce_cost ctx expr =
   in
   transform_expr reduction_cases reduce_transform identity identity expr
 
-let reduce_cost_specials ctx c_exprs e=
+let reduce_cost_specials ctx e=
   let red_cases e =
     match e with
     | SkQuestion _ -> true
@@ -160,7 +169,7 @@ let reduce_cost_specials ctx c_exprs e=
   in
   transform_expr red_cases red_apply identity identity e
 
-let remove_double_negs stv c_exprs e=
+let remove_double_negs ctx e=
   let red_cases e =
     match e with
     | SkUnop _ -> true
@@ -180,11 +189,11 @@ let remove_double_negs stv c_exprs e=
   in
   transform_expr red_cases red_apply_dbn identity identity e
 
-let reduce_full ?(limit = 10) ctx c_exprs expr =
+let reduce_full ?(limit = 10) ctx expr =
   let rec aux_apply_ternary_rules limit e =
     let red_expr0 = reduce_cost ctx e in
-    let red_expr1 = reduce_cost_specials ctx c_exprs red_expr0 in
-    let red_expr = remove_double_negs ctx.state_vars c_exprs red_expr1 in
+    let red_expr1 = reduce_cost_specials ctx red_expr0 in
+    let red_expr = remove_double_negs ctx.state_vars red_expr1 in
     if red_expr @= e || limit = 0
     then red_expr
     else aux_apply_ternary_rules (limit - 1) red_expr
@@ -194,7 +203,8 @@ let reduce_full ?(limit = 10) ctx c_exprs expr =
     let r1 = apply_special_rules ctx flat_r in
     rebuild_tree_AC ctx r1
   in
-  let r0 = aux_apply_ternary_rules limit expr in
+  let sexpr = simplify ctx expr in
+  let r0 = aux_apply_ternary_rules limit sexpr in
   let r2 = rules_AC r0 in
   r2
 

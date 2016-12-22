@@ -2,9 +2,9 @@ open Utils
 module T = SketchTypes
 
 type exec_info =
-  { state_set : VS.t;
+  {
+    context : T.context;
     state_exprs : T.skExpr IM.t;
-    index_set : VS.t;
     index_exprs : T.skExpr IM.t;
     inputs : T.ES.t
   }

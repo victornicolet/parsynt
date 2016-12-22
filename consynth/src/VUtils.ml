@@ -24,7 +24,7 @@ type auxiliary =
     of state variables and a function.
 *)
 let compose xinfo f aux_vs aux_ef =
-  let new_stv = VS.union xinfo.state_set aux_vs in
+  let new_stv = VS.union xinfo.context.state_vars aux_vs in
   let clean_f = remove_id_binding f in
   let new_func =
     let head_assgn, tail_assgn =
@@ -51,7 +51,7 @@ let compose xinfo f aux_vs aux_ef =
                         ~in_subscripts:true
                         ~to_replace:(T.mkVarExpr index)
                         ~by:(T.mkVarExpr (T.left_index_vi index)) ~ine:expr))
-                  xinfo.index_set aux.aexpr
+                  xinfo.context.state_vars aux.aexpr
               in
               head_assgn_list@[(T.SkVarinfo v, aux_expression)],
               tail_assgn_list
@@ -59,7 +59,7 @@ let compose xinfo f aux_vs aux_ef =
               let assgn =
                 [(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), aux.afunc]
               in
-              if VS.cardinal (VS.inter aux.depends xinfo.state_set) > 0
+              if VS.cardinal (VS.inter aux.depends xinfo.context.state_vars) > 0
               then
                 head_assgn_list, tail_assgn_list@assgn
               else
@@ -95,7 +95,8 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
          let e_rep =
            replace_expression ~in_subscripts:false
              ~to_replace:(SkVar (SkVarinfo (VSOps.find_by_id aux_id aux_vs)))
-             ~by:(SkVar (SkVarinfo (VSOps.find_by_id i xinfo.state_set)))
+             ~by:(SkVar (SkVarinfo
+                           (VSOps.find_by_id i xinfo.context.state_vars)))
              ~ine:func_expr
          in
          e_rep @= e) exprs
@@ -113,8 +114,8 @@ let remove_duplicate_auxiliaries xinfo (aux_vs, aux_ef) input_func =
   (VS.filter (fun vi -> IM.mem vi.C.vid new_aux_ef) aux_vs), new_aux_ef
 
 
-let reduction_with_warning stv expset expr =
-  let reduced_expression = reduce_full stv expset expr in
+let reduction_with_warning ctx expr =
+  let reduced_expression = reduce_full ctx expr in
   if (expr = reduced_expression) && !debug then
     begin
       Format.fprintf Format.std_formatter
@@ -122,8 +123,8 @@ let reduction_with_warning stv expset expr =
          reduction with state %a @; and expressions %a @."
         (PpHelper.color "red") PpHelper.default
         SPretty.pp_skexpr reduced_expression
-        VSOps.pvs stv
-        (fun fmt a -> SPretty.pp_expr_set fmt a) expset
+        VSOps.pvs ctx.state_vars
+        (fun fmt a -> SPretty.pp_expr_set fmt a) ctx.costly_exprs
     end
   else ();
   reduced_expression
@@ -138,11 +139,11 @@ let reset_index_expressions xinfo aux =
              ~to_replace:idx_expr
              ~by:(T.SkVar
                 (T.SkVarinfo
-                   (VSOps.find_by_id idx_id xinfo.index_set)))
+                   (VSOps.find_by_id idx_id xinfo.context.index_vars)))
              ~ine:e
          with Not_found ->
            Format.eprintf "@.Index with id %i not found in %a.@."
-             idx_id VSOps.pvs xinfo.index_set;
+             idx_id VSOps.pvs xinfo.context.index_vars;
            raise Not_found
       )
       xinfo.index_exprs
@@ -151,9 +152,9 @@ let reset_index_expressions xinfo aux =
 let replace_available_vars xinfo xinfo_aux ce =
    IM.fold
       (fun vid e ce ->
-         let vi = VSOps.find_by_id vid xinfo.state_set in
+         let vi = VSOps.find_by_id vid xinfo.context.state_vars in
          replace_AC
-           (xinfo_aux.state_set, T.ES.empty)
+           xinfo_aux.context
            ~to_replace:(T.SkVar (T.SkVarinfo vi))
            ~by:(accumulated_subexpression vi e)
            ~ine:ce)

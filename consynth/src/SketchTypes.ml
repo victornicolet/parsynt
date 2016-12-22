@@ -829,6 +829,31 @@ module ES = Set.Make (
   end)
 
 
+(** Context for expression analysis *)
+type context = {
+  state_vars : VS.t;
+  index_vars : VS.t;
+  all_vars : VS.t;
+  costly_exprs : ES.t
+}
+
+let mk_ctx vs stv = {
+  state_vars = stv;
+  index_vars = VS.empty;
+  all_vars = vs;
+  costly_exprs = ES.empty
+}
+
+let ctx_update_vsets ctx vs =
+  let new_allvs = VS.union ctx.all_vars vs in
+  { ctx with
+    state_vars = vs;
+    all_vars =  new_allvs }
+
+let ctx_add_cexp ctx cexp =
+ {ctx with costly_exprs = cexp}
+
+
 (** ------------------- 6 - INDEX VARIABLES MANAGEMENT -----------------------*)
 (** Create and manage variables for index boundaries *)
 

@@ -6,11 +6,8 @@ open SketchTypes
 open TestUtils
 open Utils
 
-type context = {
-  state_vars : VS.t;
-  all_vars : VS.t;
-  costly_exprs : ES.t
-}
+
+(** Hashtable string -> 'a *)
 
 let rec hash_str s =
   if String.length s > 0 then
@@ -24,6 +21,15 @@ module SH = Hashtbl.Make
       let equal s s' = s = s'
       let hash s = hash_str s
     end)
+
+(** List different types of operators:
+    - comparison operators
+    - associative operators
+    - commutative operators
+
+    And properties:
+    - left and right distributivity.
+*)
 
 let comparison_operators : symb_binop list = [Gt; Ge; Lt; Le]
 let associative_operators = [And; Or; Plus; Max; Min; Times]

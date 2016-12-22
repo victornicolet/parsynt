@@ -9,12 +9,10 @@ module ES = T.ES
 let debug = ref false
 
 type exec_info =
-  { state_set : VS.t;
+  { context : T.context;
     state_exprs : T.skExpr IM.t;
-    index_set : VS.t;
     index_exprs : T.skExpr IM.t;
-    inputs : T.ES.t
-  }
+    inputs : T.ES.t  }
 
 
 (** --------------------------------------------------------------------------*)
@@ -62,7 +60,7 @@ and exec_var exec_info v =
   | T.SkVarinfo vi ->
     begin
       (* Is the variable a state variable ?*)
-      if VSOps.has_vid vi.vid exec_info.state_set then
+      if VSOps.has_vid vi.vid exec_info.context.T.state_vars then
         try
           IM.find vi.vid exec_info.state_exprs, ES.empty
         with Not_found ->
@@ -77,7 +75,7 @@ and exec_var exec_info v =
       else
         begin
           (* Is the variable an index variable ? *)
-          if VSOps.has_vid vi.vid exec_info.index_set then
+          if VSOps.has_vid vi.vid exec_info.context.T.index_vars then
             try
               IM.find vi.vid exec_info.index_exprs, ES.empty
             with Not_found ->

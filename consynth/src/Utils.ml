@@ -82,7 +82,6 @@ let snd (a,b) = b
 
 let bool_of_int64 i = i = 1L
 
-
 let str_contains str sub = ExtLib.String.exists str sub;;
 
 (** Lists *)

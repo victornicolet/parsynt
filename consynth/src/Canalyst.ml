@@ -160,7 +160,14 @@ let func2sketch funcreps =
 
 let find_new_variables sketch_rep =
   let new_state, nlb =
-    discover sketch_rep.state_vars sketch_rep.loop_body sketch_rep.sketch_igu
+    let idx, (i,g,u) = sketch_rep.sketch_igu in
+    discover
+      {T.state_vars = sketch_rep.state_vars;
+       T.index_vars = idx;
+       T.all_vars = sketch_rep.var_set;
+       T.costly_exprs = T.ES.empty }
+      u
+      sketch_rep.loop_body
   in
   (** Apply some optimization to reduce the size of the function *)
   let nlb_opt = Sketch.Body.optims nlb in

@@ -223,7 +223,7 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
 let find_auxiliaries ?(not_last_iteration = true) i
     xinfo xinfo_aux expr
     (aux_var_set, aux_var_map) input_expressions =
-  let stv = xinfo.state_set in
+  let stv = xinfo.context.state_vars in
   let rec is_stv =
     function
     | T.SkUnop (_, T.SkVar v)
@@ -297,7 +297,11 @@ let find_auxiliaries ?(not_last_iteration = true) i
          (** Exec expr, replace index variables by their expression and
              other variables by their expression.
          *)
-         let fe', _ = exec_expr {xinfo with state_set = VS.empty} aux.afunc in
+         let fe', _ =
+           exec_expr {xinfo with
+                      context = (mk_ctx VS.empty VS.empty)}
+             aux.afunc
+         in
 
          (* Finish the work by replacing the auxiliary by its expression. *)
          let fe' =
@@ -323,9 +327,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
       if i > 0 then
         IM.fold
           (fun vid e ce ->
-             let vi = VSOps.find_by_id vid xinfo.state_set in
+             let vi = VSOps.find_by_id vid xinfo.context.state_vars in
              replace_AC
-               (xinfo_aux.state_set, T.ES.empty)
+               xinfo_aux.context
                ~to_replace:(accumulated_subexpression vi e)
                ~by:(T.SkVar (T.SkVarinfo vi))
                ~ine:ce)
@@ -334,7 +338,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
         candidate_expr
     in
     let current_expr =
-      reduce_full ~limit:10 xinfo_aux.state_set input_expressions current_expr
+      reduce_full ~limit:10
+        (ctx_add_cexp xinfo_aux.context input_expressions)
+        current_expr
     in
     (** If the expression is already "known", stop here *)
     match current_expr with
@@ -444,15 +450,14 @@ let find_auxiliaries ?(not_last_iteration = true) i
     @param varid the id of the variable we're analyzing.
     @return a pair of auxiliary variables and auxiliary functions.
 *)
-let discover_for_id stv (idx, update) input_func varid =
+let discover_for_id ctx idx_update input_func varid =
   GenVars.init ();
   init ();
   (*  max_exec_no := VS.cardinal stv + 1; *)
-  let init_idx_exprs = create_symbol_map idx in
-  let init_exprs = create_symbol_map stv in
-  let init_i = { state_set = stv ;
-                 state_exprs = init_exprs ;
-                 index_set = idx ;
+  let init_idx_exprs = create_symbol_map ctx.index_vars in
+  let init_exprs = create_symbol_map ctx.state_vars in
+  let init_i = { context = ctx;
+                 state_exprs = init_exprs;
                  index_exprs = init_idx_exprs ;
                  inputs = T.ES.empty
                }
@@ -472,22 +477,25 @@ let discover_for_id stv (idx, update) input_func varid =
       (** Reduce the depth of the state variables in the expression *)
       let new_exprs =
         IM.map
-          (reduction_with_warning xinfo.state_set T.ES.empty)
+          (reduction_with_warning xinfo.context)
           exprs_map
       in
       (** Compute the new expressions for the index *)
-      let xinfo_index = { state_set = xinfo.index_set ;
+      let xinfo_index = { context =
+                            { state_vars = xinfo.context.index_vars ;
+                              index_vars = VS.empty;
+                              all_vars = VS.empty;
+                              costly_exprs = ES.empty;};
                           state_exprs = xinfo.index_exprs ;
-                          index_set = VS.empty ;
                           index_exprs = IM.empty ;
                           inputs = T.ES.empty;
                         }
       in
       let new_idx_exprs =
-        let full_map, _ = exec_once ~silent:true xinfo_index update in
+        let full_map, _ = exec_once ~silent:true xinfo_index idx_update in
         VS.fold
           (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
-          xinfo.index_set IM.empty
+          xinfo.context.index_vars IM.empty
       in
       (** Find the new set of auxliaries by analyzing the expressions at the
           current expansion level *)
@@ -541,7 +549,7 @@ let discover_for_id stv (idx, update) input_func varid =
   if !debug then
     begin
       printf "@.DISCOVER for variable %s finished.@."
-        (VSOps.find_by_id varid stv).vname;
+        (VSOps.find_by_id varid ctx.state_vars).vname;
     end;
   printf "@.NEW VARIABLES :@.";
   VS.iter
@@ -568,20 +576,22 @@ let discover_for_id stv (idx, update) input_func varid =
 
 let timec = ref 0.0
 
-let discover stv input_func (idx, (i,g,u)) =
+let discover ctx u input_func =
   timec := Unix.gettimeofday ();
-  T.create_boundary_variables idx;
+  T.create_boundary_variables ctx.index_vars;
 
-  aux_init (VS.union stv idx);
+  aux_init (VS.union ctx.state_vars ctx.index_vars);
   (** Analyze the index and produce the update function for
       the index.
   *)
-  let ranked_stv = rank_by_use (uses stv input_func) in
+  let ranked_stv = rank_by_use (uses ctx.state_vars input_func) in
   let final_stv, final_func =
     List.fold_left
       (fun (new_stv, new_func)  (vid, _) ->
-         discover_for_id new_stv (idx, u) new_func vid)
-      (stv, input_func)
+         discover_for_id
+           (ctx_update_vsets ctx new_stv)
+             u new_func vid)
+      (ctx.state_vars, input_func)
       ranked_stv
   in
   timec := Unix.gettimeofday () -. !timec;

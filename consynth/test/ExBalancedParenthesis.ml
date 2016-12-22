@@ -20,7 +20,7 @@ let bal, count, i, a, n =
 let _S_ = _s [bal; count]
 let all_vs =  VS.union _S_ (_s [i; a; n])
 
-let sigu = VS.singleton i,
+let s, (ini, g, u) = VS.singleton i,
            (_let ([(var i, sk_zero)]),
             _b (evar i) Lt (evar n),
             _let [(var i, _b (evar i) Plus sk_one)])
@@ -37,7 +37,8 @@ let _f_ =
 VariableDiscovery.debug := true;;
 VariableDiscovery.debug_dev := true;;
 
-let new_S_, new_f_  = discover _S_ _f_ sigu
+let context = { state_vars = _S_; index_vars = (VS.singleton i); all_vars = all_vs; costly_exprs = ES.empty }
+let new_S_, new_f_  = discover context u _f_
 
 let new_f_ =
   SketchTypes.complete_final_state new_S_ (Sketch.Body.optims new_f_);;
@@ -57,7 +58,7 @@ let sketch_info =
     var_set = VS.union new_S_ all_vs;
     loop_body = new_f_;
     join_body = _join_;
-    sketch_igu = sigu;
+    sketch_igu = s, (ini, g, u);
     reaching_consts = reach_const;
   };;
 

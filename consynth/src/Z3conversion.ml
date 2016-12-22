@@ -284,5 +284,6 @@ class z3Translator vars =
     val mutable z3vars = z3v
     val mutable skvars = varm
     val mutable context = mk_context []
-    method expr_to_z3 e = of_expr context  e
+    method expr_to_z3 e = of_expr context z3vars e
+    method z3_to_expr ez = from_expr skvars ez
   end
