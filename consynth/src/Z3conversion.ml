@@ -12,6 +12,8 @@ open SketchTypes
 open SPretty
 open Utils
 
+exception Type_conv of string
+exception Conv_err of string
 
 let default_context = mk_context []
 
@@ -29,8 +31,12 @@ let rec sort_of_sty ctx =
   | Vector (t, _) -> Z3Array.mk_sort ctx
                        (sort_of_sty ctx Integer) (sort_of_sty ctx t)
   | _ as t->
-    eprintf "Type %a is unspported." pp_typ t;
-    failwith "Unsupported type in Z3 model building."
+    raise
+      (Type_conv
+         (fprintf str_formatter "Sketch type %a is unspported in Z3.@."
+            pp_typ t;
+         flush_str_formatter ()))
+
 
 let sty_of_sort =
   function
@@ -50,7 +56,18 @@ let create_vars_map ?(ctx = default_context) vars =
       (fun vi (vi_map, z3_vid_map) ->
          let varsymb = Symbol.mk_string ctx vi.vname in
          let sty = symb_type_of_ciltyp vi.vtype in
-         let z3var = (mk_const ctx varsymb (sort_of_sty ctx sty)) in
+         let z3sort =
+           try
+             sort_of_sty ctx sty
+           with Type_conv s ->
+             raise (Conv_err
+                       (fprintf str_formatter "Type conversion error :@;%s@." s;
+                        fprintf str_formatter
+                          "Was trying to convert type %a of variable %s.@."
+                          pp_typ sty vi.vname;
+                          flush_str_formatter ()))
+         in
+         let z3var = (mk_const ctx varsymb z3sort) in
          (IM.add vi.vid z3var vi_map,
           IM.add (get_const_vid z3var) vi z3_vid_map)
       ) vars (IM.empty, IM.empty)
