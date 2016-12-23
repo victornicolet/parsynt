@@ -298,7 +298,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
              other variables by their expression.
          *)
          let fe', _ =
-           exec_expr xinfo aux.afunc
+           exec_expr {xinfo with
+                      context = {xinfo.context with state_vars = VS.empty}}
+             aux.afunc
          in
 
          (* Finish the work by replacing the auxiliary by its expression. *)
