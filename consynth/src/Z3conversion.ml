@@ -8,6 +8,7 @@ open Z3.Expr
 open Cil
 open Expressions
 open Format
+open PpHelper
 open SketchTypes
 open SPretty
 open Utils
@@ -33,7 +34,7 @@ let rec sort_of_sty ctx =
   | _ as t->
     raise
       (Type_conv
-         (fprintf str_formatter "Sketch type %a is unspported in Z3.@."
+         (fprintf str_formatter "Sketch type %a is unspported in Z3."
             pp_typ t;
          flush_str_formatter ()))
 
@@ -56,21 +57,24 @@ let create_vars_map ?(ctx = default_context) vars =
       (fun vi (vi_map, z3_vid_map) ->
          let varsymb = Symbol.mk_string ctx vi.vname in
          let sty = symb_type_of_ciltyp vi.vtype in
-         let z3sort =
+         let z3sort_opt =
            try
-             sort_of_sty ctx sty
+             Some (sort_of_sty ctx sty)
            with Type_conv s ->
-             raise (Conv_err
-                       (fprintf str_formatter "Type conversion error :@;%s@." s;
-                        fprintf str_formatter
-                          "Was trying to convert type %a of variable %s.@."
-                          pp_typ sty vi.vname;
-                          flush_str_formatter ()))
+             (eprintf "%sType conversion error :%s@;%s@."
+                (color "b-red") default s;
+              eprintf "Was trying to convert type %s%a%s of variable %s%s%s.@."
+                (color "blue") pp_typ sty default
+                (color "yellow") vi.vname default;
+             None)
          in
-         let z3var = (mk_const ctx varsymb z3sort) in
-         (IM.add vi.vid z3var vi_map,
-          IM.add (get_const_vid z3var) vi z3_vid_map)
-      ) vars (IM.empty, IM.empty)
+         match z3sort_opt with
+         | Some z3sort ->
+           let z3var = (mk_const ctx varsymb z3sort) in
+           (IM.add vi.vid z3var vi_map,
+            IM.add (get_const_vid z3var) vi z3_vid_map)
+         | None -> (vi_map, z3_vid_map))
+      vars (IM.empty, IM.empty)
 
 
 

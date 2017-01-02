@@ -7,11 +7,26 @@ open Expressions
 open Z3conversion
 
 
+let verbose = ref true
+
 (** Simplify expressions beforehand using z3 *)
 let simplify ctx e =
+  (** Simplification of expressions might take some time,
+      manually check it doesn't for simple expressions.
+  *)
+  if !verbose then
+    printf "Simplify %a. .... @." cp_skexpr e;
+  (** Translate expressions to z3, simplifiy using the
+      simplify procedure in z3 and then translate back to
+      a sketch expression
+  *)
   let z3t = new z3Translator ctx.all_vars in
   let z3e = simplify_z3 (z3t#expr_to_z3 e) in
-  z3t#z3_to_expr z3e
+  let simplified_e = z3t#z3_to_expr z3e in
+  if !verbose then
+    printf "... yields %a.@."
+      cp_skexpr simplified_e;
+  simplified_e
 
 
 (** op2 is right-distributive over op1 if :

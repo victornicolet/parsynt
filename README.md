@@ -4,7 +4,8 @@ A ```install.sh``` script is in progress, so the part about requirements will be
 
 ## Requirements
 
-Most of the source files are written in [Racket 6.4](https://racket-lang.org/download/). You can install Rosette using Racket command line tools :
+## Racket
+We use Rosette as a backend solver for program synthesis, so you will need [Racket 6.4](https://racket-lang.org/download/). You can install Rosette using Racket command line tools :
 ```$ raco pkg install rosette```
 Or you can install it from source, [more information here](https://github.com/emina/rosette).
 
@@ -13,7 +14,9 @@ You will also need to install the project package in order to run the different 
 ``` $ raco pkg install ```\\
 
 ### OCaml
-C code analysis is partially done using the Cil library in Ocaml, so you will need to install Ocaml and some packages.
+Most of the functionaliaties are written in OCaml : input C code parsing, code transformations and sketch generation. You will need some libraries to compile the tool. \\
+We use a custom version of Cil that marks the temporary variables it introduces. You can download it [here](https://github.com/victornicolet/faithfulCil) and follow the installation instructions. Don't use opam to install cil!
+The installation script uses ocamlfind to look for packages and tries to install them with opam. If you don't wish to use opam, please install all the packages manually.
 - Project management : oasis. \\
   ``` opam install oasis ```
 - Cil ``` opam install cil ```

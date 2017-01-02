@@ -173,9 +173,10 @@ let add_new_aux aux_to_add (aux_vs, aux_exprs) =
   if IM.cardinal same_expr_and_func > 0 then (aux_vs, aux_exprs)
   else
     begin
-      printf "@.Adding new auxiliary : %s.@.Expression : %a.@.Function : %a@."
+      printf "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
+        (color "b-green") (color "black") default
         aux_to_add.avarinfo.vname
-        pp_skexpr aux_to_add.aexpr pp_skexpr aux_to_add.afunc;
+        cp_skexpr aux_to_add.aexpr cp_skexpr aux_to_add.afunc;
       (VS.add aux_to_add.avarinfo aux_vs,
        IM.add aux_to_add.avarinfo.vid aux_to_add aux_exprs)
     end
@@ -205,7 +206,7 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
   in
   if !debug then
     printf "@.Updated %s, now has accumulator : %a and expression %a@."
-      new_vi.vname pp_skexpr new_f pp_skexpr cexpr;
+      new_vi.vname cp_skexpr new_f cp_skexpr cexpr;
 
   add_new_aux new_auxiliary (new_aux_vs, new_aux_exprs)
 
@@ -313,14 +314,14 @@ let find_auxiliaries ?(not_last_iteration = true) i
             to the auxiliary yields the current matched expression *)
          if !debug_dev then
            printf "Increment %a == %a ? %B@."
-             pp_skexpr fe' pp_skexpr ne (fe' @= ne);
+             cp_skexpr fe' cp_skexpr ne (fe' @= ne);
          fe' @= ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)
       candidate_expr =
     (** Replace subexpressions by their auxliiary *)
     if !debug then
-      printf "@.Candidate : %a@." pp_skexpr candidate_expr;
+      printf "@.Candidate : %a@." cp_skexpr candidate_expr;
     (** Replace subexpressions corresponding to state expressions
         in the candidate expression *)
     let current_expr =
@@ -347,7 +348,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
     | T.SkVar (T.SkVarinfo vi) ->
       if !debug then
         printf "@.Elim %a, we have it in %s@."
-          pp_skexpr current_expr vi.vname;
+          cp_skexpr current_expr vi.vname;
       (** No change to the auxiliary variable set *)
       (new_aux_vs, new_aux_exprs)
 
@@ -370,7 +371,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
             if List.length ef_list > 0
             then
               begin
-              printf "@.Candidate increments some auxiliary.@.";
+                printf "@.%s%s Candidate increments some auxiliary.%s@."
+                (color "black") (color "b-green") default;
               (* A subexpression of the expression is an auxiliary variable *)
               let corresponding_functions =
                 match_increment aux_vs current_expr ef_list
@@ -381,7 +383,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   let vid, aux = List.nth corresponding_functions 0 in
                   if !debug then
                     printf "@.Variable %s is incremented by %a@."
-                      aux.avarinfo.vname pp_skexpr aux.afunc;
+                      aux.avarinfo.vname cp_skexpr aux.afunc;
                   let new_aux =
                     { aux with
                       aexpr =
@@ -408,7 +410,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                 | (vid, aux) :: _ ->
                   if !debug then
                     printf "Variable is incremented after index update %s: %a@."
-                      aux.avarinfo.vname pp_skexpr current_expr_i;
+                      aux.avarinfo.vname cp_skexpr current_expr_i;
                   let new_aux = { aux with afunc = current_expr_i } in
                   add_new_aux new_aux (new_aux_vs, new_aux_exprs)
 
@@ -427,7 +429,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                     if !debug then
                       printf "@.Adding new variable %s : %a@."
                         new_aux_varinfo.vname
-                        pp_skexpr current_expr;
+                        cp_skexpr current_expr;
 
                     add_new_aux new_aux (new_aux_vs, new_aux_exprs)
                   else
@@ -439,7 +441,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
   let candidate_exprs = candidates expr in
   if !debug then
     printf "Expression to create auxliaries :%a@."
-      pp_skexpr expr;
+      cp_skexpr expr;
   List.fold_left (update_aux (aux_var_set, aux_var_map))
     (VS.empty, IM.empty) candidate_exprs
 
@@ -454,6 +456,11 @@ let discover_for_id ctx idx_update input_func varid =
   GenVars.init ();
   init ();
   (*  max_exec_no := VS.cardinal stv + 1; *)
+  printf "@.%s%s---------------- UNFOLDINGS for %s ----------------%s@."
+    (color "black")
+    (color "b-blue")
+    (VSOps.find_by_id varid ctx.state_vars).vname
+    default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
   let init_exprs = create_symbol_map ctx.state_vars in
   let init_i = { context = ctx;
@@ -462,13 +469,14 @@ let discover_for_id ctx idx_update input_func varid =
                  inputs = T.ES.empty
                }
   in
-  (** Fixpoint stops when the set of auxiliary varaibles is stable,
+  (** Fixpoint stops when the set of auxiliary variables is stable,
       which means the set of auxiliary variables hasn't changed and
       the functions associated to these auxilary variables haven't
       changed.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
-    if !debug then Format.printf "@.---Unrolling %i---@."i else ();
+    printf "@.%s%s-------------------- UNFOLDING %i ----------------%s@."
+    (color "black") (color "b-blue") i default;
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
@@ -520,7 +528,6 @@ let discover_for_id ctx idx_update input_func varid =
     in
     (** WIP To avoid non-termination simply use a limit, can find better
         solution *)
-    printf "@.--------------------@.";
     if (i > !max_exec_no - 1) || (same_aux aux_var_map new_aux_exprs)
     then
       new_xinfo, (new_var_set, new_aux_exprs)
@@ -551,12 +558,12 @@ let discover_for_id ctx idx_update input_func varid =
       printf "@.DISCOVER for variable %s finished.@."
         (VSOps.find_by_id varid ctx.state_vars).vname;
     end;
-  printf "@.NEW VARIABLES :@.";
+  printf "@.%sNEW VARIABLES :%s@." (color "b") default;
   VS.iter
     (fun vi ->
        printf "@.(%i : %s) = (%a,@; %a)@." vi.C.vid vi.C.vname
-         pp_skexpr (IM.find vi.C.vid clean_aux_ef).aexpr
-         pp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
+         cp_skexpr (IM.find vi.C.vid clean_aux_ef).aexpr
+         cp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
     ) clean_aux;
 
   VUtils.compose init_i input_func clean_aux clean_aux_ef

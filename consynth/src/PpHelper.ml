@@ -11,8 +11,12 @@ let colormap =
   List.fold_left2
     (fun m k v -> SH.add k (colorPrefix^v) m)
     SH.empty
-    ["black"; "red"; "green"; "yellow"; "blue"]
-    ["[30m"; "[31m"; "[32m"; "[33m"; "[34m"]
+    ["black"; "red"; "green"; "yellow"; "blue"; "violet"; "cyan"; "white";
+     "i"; "u"; "b"; "grey";
+     "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan"; "b-white"]
+    ["[30m"; "[31m"; "[32m"; "[33m"; "[34m"; "[35m"; "[36m"; "[37m";
+     "[3m"; "[4m"; "[1m"; "[2m";
+     "[100m"; "[101m"; "[102m"; "[103m";"[104m"; "[105m"; "[106m"; "[107m"]
 
 let color cname =
   try

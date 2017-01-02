@@ -1,4 +1,5 @@
 open SketchTypes
+open PpHelper
 open Format
 open Utils
 
@@ -133,6 +134,8 @@ let ostring_of_baseSymbolicType =
   | _ -> None
 
 let rec pp_symb_type ppf t =
+  fprintf ppf "%s%a%s" (color "blue") pp_symb_type_aux t default
+and pp_symb_type_aux ppf t =
   match ostring_of_baseSymbolicType t with
   | Some s -> fprintf ppf "%s" s
   | None ->
@@ -227,7 +230,7 @@ let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
 and pp_sklet ppf =
   function
   | SkLetExpr el ->
-     fprintf ppf "@[(%s %a)@]"
+     fprintf ppf "@[<hov 2>(%s %a)@]"
        !state_struct_name
        (pp_print_list
           ~pp_sep:(fun ppf () -> fprintf ppf "@;")
@@ -235,11 +238,11 @@ and pp_sklet ppf =
             pp_skexpr e)) el
 
   | SkLetIn (el, l) ->
-     fprintf ppf "(let @[<hov 2>(%a)@]@.@[<hov 2> %a@])"
+     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
        (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
-              Format.fprintf ppf "@[[%a %a]@]"
+              Format.fprintf ppf "@[<hov 2>[%a %a]@]"
                 pp_sklvar v pp_skexpr e) ppf el)) el
        pp_sklet l
 
@@ -255,7 +258,9 @@ and pp_sklvar (ppf : Format.formatter) sklvar =
       if !print_imp_style then
         fprintf ppf "%a[%s]" pp_sklvar v offset_str
       else
-	fprintf ppf "(vector-ref %a %s)" pp_sklvar v offset_str
+	(fprintf ppf "(vector-ref %a %s)"
+    pp_sklvar v offset_str)
+
   | SkTuple vs ->
     fprintf ppf "(%a)" VSOps.pvs vs
 
@@ -294,14 +299,16 @@ let fp = Format.fprintf in
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
 
   | SkBinop (op, e1, e2) ->
-     fp ppf "(%s %a %a)"
-        (string_of_symb_binop op) pp_skexpr e1 pp_skexpr e2
+    fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
+      (string_of_symb_binop op)
+      pp_skexpr e1 pp_skexpr e2
 
   | SkUnop (op, e) ->
-     fp ppf "(%s %a)" (string_of_symb_unop op) pp_skexpr e
+    fp ppf "@[<hov 1>(%s %a)@]"
+       (string_of_symb_unop op) pp_skexpr e
 
   | SkCond (c, e1, e2) ->
-     fp ppf "(if @[%a@] @[%a@] @[%a@])"
+     fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
        pp_skexpr c pp_sklet e1 pp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
@@ -309,11 +316,11 @@ let fp = Format.fprintf in
       fp ppf "((@[%a@])? @[%a@]: @[%a@])"
         pp_skexpr c pp_skexpr e1 pp_skexpr e2
     else
-      fp ppf "(if @[%a@] @[%a@] @[%a@])"
+      fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
         pp_skexpr c pp_skexpr e1 pp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
-     fp ppf "(Loop %s %s %s %a)"
+     fp ppf "@[<hov 2>(Loop %s %s %s %a)@]"
        (Ct.psprint80 Cil.dn_instr i)
        (Ct.psprint80 Cil.dn_exp g)
        (Ct.psprint80 Cil.dn_instr u)
@@ -380,3 +387,170 @@ let pp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
 
 let pp_expr_list fmt el =
   PpHelper.ppli fmt ~sep:" " pp_skexpr el
+
+
+(**
+   -----------------------------------------------------------------------------
+    Pretty printing with colors and typesetting for better
+    readability.
+    ----------------------------------------------------------------------------
+*)
+
+let rec cp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
+  Format.fprintf  ppf "%s = begin @.@[%a@] end\n"
+    vi.Cil.vname
+    pp_sklet sklet
+
+and cp_sklet ppf =
+  function
+  | SkLetExpr el ->
+    fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
+      (color "red") default
+      (color "b")
+      !state_struct_name
+      default
+       (pp_print_list
+          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
+          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+              cp_skexpr e)) el
+       (color "red") default
+
+  | SkLetIn (el, l) ->
+    fprintf ppf "%s(%slet%s @[<hov 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
+      (* Opening parenthesis *)
+      (color "red")
+      (* Let keyword *)
+      (color "b")  default
+       (fun ppf el ->
+         (pp_print_list
+            (fun ppf (v, e) ->
+              Format.fprintf ppf "@[[%a %a]@]"
+                cp_sklvar v cp_skexpr e) ppf el)) el
+       cp_sklet l
+       (* Closing parenthesis *)
+       (color "red") default
+
+and cp_sklvar (ppf : Format.formatter) sklvar =
+  match sklvar with
+  | SkVarinfo v ->
+    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname default
+
+  | SkArray (v, offset) ->
+    let offset_str =
+      fprintf str_formatter "%a" pp_skexpr offset;
+      flush_str_formatter ()
+    in
+    fprintf ppf "%a[%s%s%s]" cp_sklvar v (color "i") offset_str default
+
+
+  | SkTuple vs ->
+    fprintf ppf "(%a)" VSOps.pvs vs
+
+and cp_skexpr (ppf : Format.formatter) skexpr =
+let fp = Format.fprintf in
+  match skexpr with
+  | SkVar v -> fp ppf "%a" cp_sklvar v
+
+  | SkConst c -> fp ppf "%s%a%s" (color "cyan") pp_constants c default
+
+  | SkFun l -> cp_sklet ppf l
+
+  | SkApp (t, vio, argl) ->
+     let funname =
+       match vio with
+       | Some vi -> vi.Cil.vname
+       | None -> "()"
+     in
+     fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname default
+       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
+
+  | SkHoleR t ->
+     fp ppf "%s%a%s"
+       (color "grey") wrap t default
+
+  | SkHoleL (v, t) ->
+     fp ppf "%s %a %s"
+       (color "grey") wrap t default
+
+  | SkAddrof e -> fp ppf "(AddrOf )"
+
+  | SkAddrofLabel addr -> fp ppf "(AddrOfLabel)"
+
+  | SkAlignof typ -> fp ppf "(AlignOf typ)"
+
+  | SkAlignofE e -> fp ppf "(AlignOfE %a)" cp_skexpr e
+
+  | SkBinop (op, e1, e2) ->
+    fp ppf "@[<hov 2>(%s%s%s@;%a@;%a)@]"
+      (color "b") (string_of_symb_binop op) default
+      cp_skexpr e1 cp_skexpr e2
+
+  | SkUnop (op, e) ->
+    fp ppf "@[<hov 1>(%s%s%s %a)@]"
+      (color "b") (string_of_symb_unop op) default cp_skexpr e
+
+  | SkCond (c, e1, e2) ->
+    fp ppf "@[<hov 1> (%sif%s@;%a@;%a@;%a)@]"
+      (color "b") default
+       cp_skexpr c cp_sklet e1 cp_sklet e2
+
+  | SkQuestion (c, e1, e2) ->
+    fp ppf "@[<hov 2>((%a)%s? %s%a%s %s%a)@]"
+      cp_skexpr c
+      (color "b") default
+      cp_skexpr e1
+      (color "b") default
+      cp_skexpr e2
+
+  | SkRec ((i, g, u), e) ->
+     fp ppf "(Loop %s %s %s %a)"
+       (Ct.psprint80 Cil.dn_instr i)
+       (Ct.psprint80 Cil.dn_exp g)
+       (Ct.psprint80 Cil.dn_instr u)
+       cp_sklet e
+
+  | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
+
+  | SkSizeofE e -> fp ppf "(SizeOf %a)" cp_skexpr e
+
+  | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
+
+  | SkCastE (t,e) ->
+     fp ppf "%a" cp_skexpr e
+
+  | SkStartOf l -> fp ppf "(StartOf %a)" cp_skexpr l
+
+
+(** Print statements **)
+let cprintSkstmt s = cp_skstmt std_formatter s
+let scprintSkstmt s =
+  cp_skstmt str_formatter s;
+  flush_str_formatter ()
+
+let ecprintSkstmt s = cp_skstmt err_formatter s
+
+(** Print let-forms *)
+let cprintSklet s = cp_sklet std_formatter s
+let scprintSklet s =
+  cp_sklet str_formatter s;
+  flush_str_formatter ()
+
+let ecprintSklet s = cp_sklet err_formatter s
+
+(** Print epxressions *)
+let cprintSkexpr s = cp_skexpr std_formatter s
+let scprintSkexpr s =
+  cp_skexpr str_formatter s;
+  flush_str_formatter ()
+
+let ecprintSkexpr s = cp_skexpr err_formatter s
+
+let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
+  let elt_list = ES.elements es in
+  if List.length elt_list = 0 then
+    fprintf fmt "[Empty]"
+  else
+    pp_print_list ~pp_sep:sep cp_skexpr fmt elt_list
+
+let cp_expr_list fmt el =
+  PpHelper.ppli fmt ~sep:" " cp_skexpr el

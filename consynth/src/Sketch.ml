@@ -327,7 +327,7 @@ let pp_symbolic_definitions_of fmt vars =
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
   let state_arg_name = "__s" in
   let field_names = VSOps.namelist state_vars in
-  Format.fprintf fmt "(lambda (%s i)@.@[<hov 2>(let@;(%a) %a)@])"
+  Format.fprintf fmt "@[<hov 2>(lambda (%s i)@;(let@;(%a)@;%a))@]"
     state_arg_name
     (pp_assignments state_struct_name state_arg_name)
     (ListTools.pair field_names field_names)
@@ -344,9 +344,8 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
 let pp_loop fmt (loop_body, state_vars) state_struct_name =
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
-    "(define (%s s %s %s)@; \
-     @[<hov 2>(Loop @[<hov 2>%s %s %d s@] @.\
-     @[<hov 2> %a@])@])@."
+    "@[<hov 2>(define (%s s %s %s)@;\
+     @[<hov 2>(Loop %s %s %d s@;%a)@])@]@.@."
     body_name
     !start_index_name
     !end_index_name
@@ -374,7 +373,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
   let field_names = VSOps.namelist state_vars in
   set_hole_vars left_state_vars right_state_vars;
   Format.fprintf fmt
-    "@[<hov 2>(let@.@[<hov 2> (%a@;%a)@]@;@[<hov 2>%a@])@]@."
+    "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
     (pp_assignments main_struct_name lstate_name)
     (ListTools.pair lvar_names field_names)
     (pp_assignments main_struct_name rstate_name)
@@ -392,7 +391,7 @@ let pp_join fmt (join_body, state_vars) =
   let lstate_name = main_struct_name^"L" in
   let rstate_name = main_struct_name^"R" in
   Format.fprintf fmt
-    "(define (%s %s %s)@.@[<hov 2>%a@])@."
+    "@[<hov 2>(define (%s %s %s)@;%a)@]@.@."
     join_name  lstate_name rstate_name
     pp_join_body (join_body, state_vars, lstate_name, rstate_name)
 
@@ -459,7 +458,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
 *)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
   Format.fprintf fmt
-    "@[<hov 2>(%s-eq?@. %a @.@[<hov 2>(%s@; %a@; %a)@])@]@."
+    "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
     main_struct_name
     pp_body_app (body_name, s0, i_st, i_end)
     join_name
@@ -475,9 +474,9 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
 *)
 let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
   Format.fprintf fmt
-    "@[<hov 2>#:forall (list %a)@]@." pp_string_list symbolic_variable_names;
+    "@[<hov 2>#:forall (list %a)@]" pp_string_list symbolic_variable_names;
   Format.fprintf fmt
-    "@[<hov 2>#:guarantee @[(assert @.@[<hov 2>(and@. %a)@])@]@]@."
+    "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
           pp_verification_condition fmt (s0, i_st, i_m, i_end)))
@@ -495,7 +494,7 @@ let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
 *)
 let pp_synth fmt s0 state_vars symb_var_names =
   Format.fprintf fmt
-    "@[(define odot@.@[<hov 2>(synthesize@.%a)@])@]@."
+    "@[<hov 2>(define odot (synthesize@;%a))@.@."
     pp_synth_body (s0, state_vars, symb_var_names)
 
 (** Main interface to print the sketch of the whole problem.
@@ -519,7 +518,9 @@ let pp_synth fmt s0 state_vars symb_var_names =
 let pp_rosette_sketch fmt
     (read, state, all_vars, loop_body, join_body,
      (idx, (i, g, u)), reach_consts) =
+  (** State variables *)
   let state_vars = VSOps.subset_of_list state all_vars in
+  (** Read variables : force read /\ state = empty *)
   let read_vars =
     VS.diff
       (remove_interpreted_symbols
@@ -537,6 +538,7 @@ let pp_rosette_sketch fmt
   pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
   pp_loop fmt (loop_body, state_vars) main_struct_name;
+  pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";

@@ -154,17 +154,21 @@ do
 	fi
 done
 
+sep
+echo "Installing modified version of Cil."
+sep
+
 # Retrieve and install our modified version
 if [[ -d "faithfulCil" ]]; then
     echo "Modified Cil implementation already downloaded."
 else
     echo "Cloning Git repository for modified version of Cil ..."
-    git clone https://github.com/victornicolet/faithfulCil.git
+    . "git clone https://github.com/victornicolet/faithfulCil.git"
 fi
 
 cd faithfulCil
 echo "Creating local cil package and installing it with opam .."
-opam pin add cil .
+opam pin add alt-cil .
 cd ..
 sep
 msg_success "Installed all requirements."
@@ -180,4 +184,3 @@ oasis setup -setup-update dynamic
 msg_success "Makefiles created, trying make in consynth"
 #cd ./consynth
 make $1
-make
