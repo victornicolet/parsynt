@@ -26,17 +26,23 @@ Library rosetteInterface
   Install : false
 
 Library consynth
-  Path: src
+  Path: src/consynth
   Modules: Consynth
   CompiledObject: best
   BuildDepends: cil, rosetteInterface, core, extlib, Z3
+
+Library codegen
+  Path: src/codegen
+  Modules: Tbb
+  CompiledObject: best
+  BuildDepends: consynth, cil, rosetteInterface, core, extlib, Z3
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, rosetteInterface, Z3
+  BuildDepends: cil, getopt, rosetteInterface, Z3, consynth
 
 
 Executable examples
