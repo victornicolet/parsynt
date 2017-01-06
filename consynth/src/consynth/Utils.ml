@@ -297,6 +297,9 @@ module CilTools = struct
   let gen_var_with_suffix vi suffix =
     {vi with vname = vi.vname^suffix}
 
+  let gen_var_with_prefix vi prefix =
+    {vi with vname = prefix^vi.vname}
+
 end
 (**
     Extract the variables used in statements/expressions/instructions/..
@@ -398,6 +401,13 @@ module VSOps = struct
     VS.fold
       (fun var new_vs ->
         VS.add (CilTools.gen_var_with_suffix var suffix) new_vs)
+      vs
+      VS.empty
+
+  let vs_with_prefix vs prefix =
+    VS.fold
+      (fun var new_vs ->
+        VS.add (CilTools.gen_var_with_prefix var prefix) new_vs)
       vs
       VS.empty
 

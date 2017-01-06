@@ -293,6 +293,7 @@ module Utils : sig
     val combine_expression_option :
       Cil.binop -> Cil.exp option -> Cil.exp option -> Cil.typ -> Cil.exp option
     val gen_var_with_suffix : Cil.varinfo -> string -> Cil.varinfo
+    val gen_var_with_prefix : Cil.varinfo -> string -> Cil.varinfo
   end
 
   module VSOps : sig
@@ -327,6 +328,7 @@ module Utils : sig
     val vs_of_inthash : VS.elt IH.t -> VS.t
     (* Append suffix to names in input variable set.*)
     val vs_with_suffix : VS.t -> string -> VS.t
+    val vs_with_prefix : VS.t -> string -> VS.t
     (* Pretty-printing functions *)
     val pp_var_names : Format.formatter -> VS.t -> unit
     val to_string : VS.t -> string

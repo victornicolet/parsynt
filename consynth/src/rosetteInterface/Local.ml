@@ -111,10 +111,10 @@ let fetch_solution filename =
   let parsed =
     try
       Parser.main Lexer.token (Lexing.from_string (Std.input_file filename))
-    with _ ->
+    with e ->
       (let err_code = Sys.command ("cat "^filename) in
        Format.printf "@.cat %s : %i@." filename err_code;
-        failwith "Error in parser")
+        raise e)
 
   in
   Sys.remove filename;

@@ -1,6 +1,7 @@
 open Format
 open Utils
 open Core.Std
+open Conf
 open SketchTypes
 open SPretty
 open PpHelper
@@ -124,16 +125,16 @@ let is_empty_symbDefs =
 
 (** Sketch -> Rosette sketch *)
 (** The name of the structure used to represent the state of the loop *)
-let main_struct_name = "$"
+let main_struct_name = get_conf_string "rosette_struct_name"
 (** Name of the join function in the Rosette sketch *)
-let join_name = "__join__"
+let join_name = get_conf_string "rosette_join_name"
 (** Name of the loop function in the Rosette sketch *)
-let body_name = "__loop_body__"
+let body_name = get_conf_string "rosette_loop_body_name"
 (** Name of the initial state for the loop in the Rosette sketch *)
-let ident_state_name = main_struct_name^"_ident"
-let init_state_name = main_struct_name^"_init"
+let ident_state_name = get_conf_string "rosette_identity_state_name"
+let init_state_name = get_conf_string "rosette_initial_state_name"
 (** Choose between a very restricted set of values for intials/identity values *)
-let base_init_value_choice = "(choose 0 1 #t #f)"
+let base_init_value_choice = get_conf_string "rosette_base_init_value_hole"
 
 (** Return the string of variable names from symbolic definitions. This names
     are the names used when printing the defintions of the symbolic variables
@@ -364,10 +365,10 @@ let pp_loop fmt (loop_body, state_vars) state_struct_name =
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
-  let left_state_vars = VSOps.vs_with_suffix state_vars
-      ("-"^main_struct_name^"L") in
-  let right_state_vars = VSOps.vs_with_suffix state_vars
-      ("-"^main_struct_name^"R") in
+  let left_state_vars = VSOps.vs_with_prefix state_vars
+      (Conf.get_conf_string "rosette_join_left_state_prefix") in
+  let right_state_vars = VSOps.vs_with_prefix state_vars
+      (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in

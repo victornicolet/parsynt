@@ -6,19 +6,6 @@ open SketchTypes
 open SPretty
 open Utils
 
-type problem =
-  {
-    pbname : string;
-    vars : VS.t;
-    lvars : VS.t;
-    svars : VS.t;
-    inits : skExpr IM.t;
-    body : sklet;
-    join : sklet;
-  }
-
-
-
 (** Class constructor argument *)
 type cpp_constr_arg =
   | FormalArg of varinfo
@@ -36,6 +23,19 @@ let pp_cpp_constr_arg fmt =
   | SpecialArg s ->
     fprintf fmt "%s" s
 
+type cpp_constr_initializer = varinfo * init_expr
+and init_expr =
+  | ConstExpr of exp
+  | ClassMember of varinfo * string
+  | LocalVar of varinfo
+
+let pp_initializer fmt (vi, init) =
+  fprintf fmt "%s(%s)"
+    vi.vname
+    (match init with
+     | ConstExpr  exp -> (CilTools.psprint80 dn_exp exp)
+     | ClassMember (vi', s) -> vi.vname^"."^s
+     | LocalVar vi' -> vi'.vname)
 
 (** Class constructor *)
 type cpp_class_constr =
@@ -45,34 +45,39 @@ type cpp_class_constr =
     cname : string;
     cargs : cpp_constr_arg list;
     cbody : stmt;
-    cinitializers : (varinfo * exp) list;
+    cinitializers : cpp_constr_initializer list;
   }
 
 let makeConstructor cn ct cid cargs cb cinit =
   { cid = cid; ctype = ct; cname = cn;
     cargs = cargs; cbody = cb; cinitializers = cinit;}
 
-let print_initializer_list fmt li =
-  ppli fmt ~sep:", "
-    (fun fmt (vi, e) ->
-    fprintf fmt "%s(%s)" vi.vname (CilTools.psprint80 dn_exp e))
-    li
-
 let pp_cpp_constructor fmt cpp_constructor =
   fprintf fmt "@[<hov 2>%s(%a)%a{@[hov 2>%s@]}@]"
     (* Constructor name *)
     cpp_constructor.cname
     (* Constructor arguments *)
-    (fun f li -> ppli f ~sep:", " pp_cpp_constr_arg li) cpp_constructor.cargs
+    (fun f li -> ppli f ~sep:", " pp_cpp_constr_arg li)
+    cpp_constructor.cargs
     (* Constructor initializers *)
-    (fun fmt li ->
-       if List.length li = 0 then fprintf fmt " "
-       else
-         fprintf fmt ": @[<hov 2>%a@]" print_initializer_list li)
+    (fun f li -> ppli f ~sep:", " pp_initializer li)
     cpp_constructor.cinitializers
     (* Constructor body *)
     (CilTools.psprint80 dn_stmt cpp_constructor.cbody)
 
+
+(** Simplified methods : we don't use directly Cil's fundecs *)
+type cpp_class_method =
+  {
+    mattributes : string list;
+    mtyp : typ;
+    mname : string;
+    mid : int;
+    mbody : stmt;
+    mlocals : VS.t;
+    mcpp : bool;
+    mprint : (formatter -> unit) option;
+  }
 
 (** Class type *)
 type cpp_class =
@@ -122,5 +127,66 @@ let pp_class fmt cls =
     pp_class_body cls
 
 (** Specific use of the C++ class for our problem **)
+type problem =
+  {
+    pbname : string;
+    vars : VS.t;
+    lvars : VS.t;
+    svars : VS.t;
+    inits : skExpr IM.t;
+    body : sklet;
+    join : sklet;
+  }
 
-let right_elt_name = ref "__right_t_"
+
+let class_name_appendix = Conf.get_conf_string "class_name_appendix"
+let class_member_appendix = Conf.get_conf_string "class_member_appendix"
+let iterator_type_name = Conf.get_conf_string "tbb_iterator_type_name"
+
+let pp_operator_body fmt pb ppbody =
+  (* Local versions of the class's variables *)
+  VS.iter
+    (fun vi ->
+       fprintf fmt "%s %s = my_%s;@;"
+         (CilTools.psprint80 dn_type vi.vtype) vi.vname vi.vname) pb.vars;
+
+  (* Bounds intialization *)
+  fprintf fmt
+    "if (b < 0 || r.begin() < b)\
+     b = r.begin();\
+     if (e < 0 || r.end() > e)\
+     e = r.end();";
+  (* Main loop *)
+  fprintf fmt
+    "for (%s i = r.begin(); i!= r.end(); ++i) {@;%a@;}"
+    iterator_type_name ppbody ();
+  (* Update class vars that need it *)
+  VS.iter
+    (fun vi ->
+       fprintf fmt "my_%s = %s;@;" vi.vname vi.vname) pb.svars
+
+
+let make_tbb_class pb =
+  let class_name = class_name_appendix^pb.pbname in
+  let tbb_class = makeEmptyClass class_name in
+  let tbb_cstr_copy =
+    makeConstructor
+      class_name
+      tbb_class.ctype
+      0
+      [] (* Args *)
+      (mkStmt (Instr []))
+      [] (* Intializers *)
+  in
+  let tbb_cstr_init =
+    makeConstructor
+      class_name
+      tbb_class.ctype
+      0
+      [] (* Args *)
+      (mkStmt (Instr []))
+      [] (* Intializers *)
+  in
+  tbb_class.private_vars <- pb.lvars;
+  tbb_class.public_vars <- pb.svars;
+  tbb_class.constructors <- [tbb_cstr_copy; tbb_cstr_init];

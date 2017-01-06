@@ -17,9 +17,17 @@ PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
 PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
+Library conf
+  Path: src/conf
+  BuildDepends: core
+  CompiledObject: best
+  Modules: Conf
+  BuildTools : ocamlbuild
+  Install : false
+
 Library rosetteInterface
   Path: src/rosetteInterface
-  BuildDepends: core, extlib
+  BuildDepends: core, extlib, conf
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
@@ -29,20 +37,20 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, core, extlib, Z3
+  BuildDepends: cil, rosetteInterface, core, extlib, Z3, conf
 
 Library codegen
   Path: src/codegen
   Modules: Tbb
   CompiledObject: best
-  BuildDepends: consynth, cil, rosetteInterface, core, extlib, Z3
+  BuildDepends: consynth, cil, rosetteInterface, core, extlib, Z3, conf
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, rosetteInterface, Z3, consynth
+  BuildDepends: cil, getopt, rosetteInterface, Z3, consynth, conf, codegen
 
 
 Executable examples

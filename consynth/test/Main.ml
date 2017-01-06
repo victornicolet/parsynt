@@ -54,13 +54,15 @@ let options = [
 (* open TMssReductions *)
 (* open TCil2Func *)
 
-open TZ3;;
+(******** open TZ3;; ********)
 
-test_sketch_translation ();;
+(******** test_sketch_translation ();; ********)
 
 let test_named_type =
   TNamed ({tname = "Class"; ttype = TVoid []; treferenced = true}, []);;
 
+
 let test_varinfo =
   makeVarinfo false "a" test_named_type in
-printf "%s& %s@." (CilTools.psprint80 dn_type test_named_type) test_varinfo.vname;
+printf "%s& %s@." (CilTools.psprint80 dn_type test_varinfo.vtype)
+  test_varinfo.vname;

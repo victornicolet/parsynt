@@ -27,7 +27,7 @@ let _ = List.iter (uncurry (Hashtbl.replace keyword_tbl)) keywords
 
 }
 
-let id = ['_' 'a'-'z' 'A'-'Z' '$'] ['-' '$' '_' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
+let id = ['_' 'a'-'z' 'A'-'Z' '$'] ['-' '$' '_' '.' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
 let nl = ['\n' '\r']
 let ws = ['\n' '\t' '\r' ' ']
 let int = ['0'-'9']+
