@@ -11,6 +11,7 @@ open Ast
    5 - Expression sets.
    6 - Index variables management.
    7 - Typing expressions.
+   8 - Structs for problem info.
 *)
 
 let use_unsafe_operations = ref false
@@ -846,8 +847,9 @@ let mk_ctx vs stv = {
 
 let ctx_update_vsets ctx vs =
   let new_allvs = VS.union ctx.all_vars vs in
+  let new_stvs = VS.union ctx.state_vars vs in
   { ctx with
-    state_vars = vs;
+    state_vars = new_stvs;
     all_vars =  new_allvs }
 
 let ctx_add_cexp ctx cexp =
@@ -857,21 +859,22 @@ let ctx_add_cexp ctx cexp =
 (** ------------------- 6 - INDEX VARIABLES MANAGEMENT -----------------------*)
 (** Create and manage variables for index boundaries *)
 
-let start_index_name = ref "_iL_"
-let end_index_name = ref "_iR_"
+let start_iname = Conf.get_conf_string "rosette_index_suffix_start"
+let end_iname = Conf.get_conf_string "rosette_index_suffix_end"
 
 let index_to_boundary : (Cil.varinfo * Cil.varinfo) IH.t = IH.create 10
 
-(** TODO different names for the different bounds but now we only
-    consider scalar indexes *)
+
 let create_boundary_variables index_set =
   VS.iter
     (fun index_vi ->
        let starti =
-         Cil.makeVarinfo false !start_index_name index_vi.Cil.vtype
+         Cil.makeVarinfo false (index_vi.Cil.vname^start_iname)
+           index_vi.Cil.vtype
        in
        let endi =
-         Cil.makeVarinfo false !end_index_name index_vi.Cil.vtype
+         Cil.makeVarinfo false (index_vi.Cil.vname^end_iname)
+           index_vi.Cil.vtype
        in
        IH.add index_to_boundary index_vi.Cil.vid (starti, endi))
     index_set
@@ -1043,3 +1046,35 @@ and type_of expr =
   | SkApp (t, _, _) | SkHoleL (_, t) | SkHoleR t -> t
 
   | _ -> failwith "Typing subfunctions not yet implemented"
+
+
+
+(* ------------------------ 7- STRUCT UTILS ----------------------------*)
+
+type sigu = VS.t * (sklet * skExpr * sklet)
+
+type sketch_rep =
+  {
+    id : int;
+    loop_name : string;
+    ro_vars_ids : int list;
+    scontext : context;
+    loop_body : sklet;
+    join_body : sklet;
+    join_solution : Ast.expr;
+    init_values : Ast.expr list option;
+    sketch_igu : sigu;
+    reaching_consts : skExpr IM.t
+  }
+
+let get_index_init sktch =
+  let idx, (i, g, u) = sktch.sketch_igu in i
+
+let get_index_update sktch =
+  let idx, (i, g, u) = sktch.sketch_igu in u
+
+let get_index_varset sktch =
+  let idx, (i, g, u) = sktch.sketch_igu in idx
+
+let get_index_guard sktch =
+  let idx, (i, g, u) = sktch.sketch_igu in g

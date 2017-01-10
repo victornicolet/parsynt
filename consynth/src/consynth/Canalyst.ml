@@ -3,6 +3,7 @@ open PpHelper
 open Format
 open Utils
 open SError
+open SketchTypes
 open SymbExe
 open VariableDiscovery
 
@@ -10,7 +11,6 @@ module E = Errormsg
 module C = Cil
 module Cl = Findloops.Cloop
 module A = AnalyzeLoops
-module T = SketchTypes
 
 let debug = ref false
 let verbose = ref false
@@ -70,7 +70,7 @@ type func_info =
     - init, guard and update of the enclosing loop
     - sketch of the join.
 *)
-type sigu = VS.t * (T.sklet * T.skExpr * T.sklet)
+type sigu = VS.t * (sklet * skExpr * sklet)
 
 let cil2func loops =
   Cil2Func.init loops;
@@ -93,10 +93,10 @@ let cil2func loops =
        let reaching_consts = cl.Cl.constant_in in
        if !verbose then
          let printer = new Cil2Func.cil2func_printer vars stv in
-           (printf "@.%s[test for loop %i in %s failed]%s@."
-              (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
-           printer#printlet func;
-           printf "@.";
+         (printf "@.%s[test for loop %i in %s failed]%s@."
+            (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
+         printer#printlet func;
+         printf "@.";
        else ();
        (loop_ident,
         VSOps.vids_of_vs r, stv, vars,
@@ -104,17 +104,8 @@ let cil2func loops =
         reaching_consts))
     sorted_lps
 
-type sketch_rep =
-  {
-    loop_name : string;
-    ro_vars_ids : int list;
-    state_vars : VS.t;
-    var_set : VS.t;
-    loop_body : T.sklet;
-    join_body : T.sklet;
-    sketch_igu : sigu;
-    reaching_consts : T.skExpr IM.t
-  }
+
+let no_sketches = ref 0;;
 
 let func2sketch funcreps =
   List.map
@@ -123,14 +114,14 @@ let func2sketch funcreps =
       let reach_consts =
         IM.mapi
           (fun vid cilc ->
-            let expect_type =
-              try
-                (T.symb_type_of_ciltyp
-                   ((VSOps.find_by_id vid var_set).Cil.vtype))
-              with Not_found ->
-                T.Bottom
-            in
-            Sketch.Body.convert_const expect_type cilc)
+             let expect_type =
+               try
+                 (T.symb_type_of_ciltyp
+                    ((VSOps.find_by_id vid var_set).Cil.vtype))
+               with Not_found ->
+                 T.Bottom
+             in
+             Sketch.Body.convert_const expect_type cilc)
           reach_consts
       in
       let sketch_obj =
@@ -142,62 +133,57 @@ let func2sketch funcreps =
         | Some (a,b) -> a,b
         | None -> failwith "Failed in sketch building."
       in
-
+      let index_set, _ = sigu in
       IH.clear SketchJoin.auxiliary_variables;
-
       let join_body = Sketch.Join.build state_vars loop_body in
+      incr no_sketches;
+      create_boundary_variables index_set;
       {
+        id = !no_sketches;
         loop_name = loop_ident;
         ro_vars_ids = ro_vars_ids;
-        state_vars = state_vars;
-        var_set =  var_set;
+        scontext =
+          { state_vars = state_vars;
+            index_vars = index_set;
+            all_vars = var_set;
+            costly_exprs = ES.empty;
+          };
         loop_body = loop_body;
         join_body = join_body;
+        join_solution = Ast.Id_e "unsat";
+        init_values = Some [];
         sketch_igu = sigu;
         reaching_consts = reach_consts;
       })
     funcreps
 
 let find_new_variables sketch_rep =
-  let new_state, nlb =
-    let idx, (i,g,u) = sketch_rep.sketch_igu in
-    discover
-      {T.state_vars = sketch_rep.state_vars;
-       T.index_vars = idx;
-       T.all_vars = sketch_rep.var_set;
-       T.costly_exprs = T.ES.empty }
-      u
-      sketch_rep.loop_body
-  in
+  let new_sketch = discover sketch_rep in
   (** Apply some optimization to reduce the size of the function *)
-  let nlb_opt = Sketch.Body.optims nlb in
+  let nlb_opt = Sketch.Body.optims new_sketch.loop_body in
   let new_loop_body =
-    SketchTypes.complete_final_state new_state nlb_opt
+    T.complete_final_state new_sketch.scontext.state_vars nlb_opt
   in
-
   IH.copy_into VariableDiscovery.discovered_aux
     SketchJoin.auxiliary_variables;
 
   let join_body =
-    SketchTypes.complete_final_state
-      new_state
-      (Sketch.Join.build new_state nlb_opt)
+    T.complete_final_state new_sketch.scontext.state_vars
+      (Sketch.Join.build new_sketch.scontext.state_vars nlb_opt)
   in
 
   {
-    sketch_rep with
-    state_vars = new_state;
-    var_set =  VS.union new_state sketch_rep.var_set;
+    new_sketch with
     loop_body = new_loop_body;
     join_body = join_body;
   }
 
-  let pp_sketch fmt sketch_rep =
+let pp_sketch fmt sketch_rep =
   IH.copy_into VariableDiscovery.discovered_aux Sketch.auxiliary_vars;
   Sketch.pp_rosette_sketch fmt
     (sketch_rep.ro_vars_ids,
-     VSOps.vids_of_vs sketch_rep.state_vars,
-     sketch_rep.var_set,
+     VSOps.vids_of_vs sketch_rep.scontext.state_vars,
+     sketch_rep.scontext.all_vars,
      sketch_rep.loop_body,
      sketch_rep.join_body,
      sketch_rep.sketch_igu,

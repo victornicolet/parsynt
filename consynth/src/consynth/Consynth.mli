@@ -10,25 +10,13 @@ module SketchJoin = SketchJoin
 (** Main interface for code analysis and sketch generation *)
 module Canalyst : sig
   open Cil
-  module T = SketchTypes
+  open SketchTypes
   type figu = Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
   type func_info =
     string * int list * Usedef.VS.t * Usedef.VS.t *
     Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
-  type sigu = Utils.VS.t * (T.sklet * T.skExpr * T.sklet)
-
-  type sketch_rep =
-    {
-      loop_name : string;
-      ro_vars_ids : int list;
-      state_vars : VS.t;
-      var_set : VS.t;
-      loop_body : T.sklet;
-      join_body : T.sklet;
-      sketch_igu : sigu;
-      reaching_consts : T.skExpr IM.t
-    }
+  type sigu = Utils.VS.t * (sklet * skExpr * sklet)
 
   val processFile: string -> Findloops.Cloop.t Utils.IM.t
 
@@ -545,4 +533,7 @@ val transform_expr :
   (skExpr -> bool) ->
   ((skExpr -> skExpr) -> skExpr -> skExpr) ->
   (constants -> constants) -> (skLVar -> skLVar) -> skExpr -> skExpr
+
+val scm_to_sk :
+  Cil.varinfo Utils.SM.t -> Ast.expr -> sklet option * skExpr option
 end

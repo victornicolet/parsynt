@@ -37,30 +37,37 @@ let _f_ =
 VariableDiscovery.debug := true;;
 VariableDiscovery.debug_dev := true;;
 
-let context = { state_vars = _S_; index_vars = (VS.singleton i); all_vars = all_vs; costly_exprs = ES.empty }
-let new_S_, new_f_  = discover context u _f_
-
-let new_f_ =
-  SketchTypes.complete_final_state new_S_ (Sketch.Body.optims new_f_);;
-
-IH.copy_into VariableDiscovery.discovered_aux
-  SketchJoin.auxiliary_variables;;
-
-let _join_ = Sketch.Join.build new_S_ new_f_
-
 let name = "balanced_parenthesis"
 
 let sketch_info =
   {
+    id = 0;
     loop_name = name;
     ro_vars_ids = [a.vid];
-    state_vars = new_S_;
-    var_set = VS.union new_S_ all_vs;
-    loop_body = new_f_;
-    join_body = _join_;
+    scontext = { state_vars = _S_; all_vars = VS.union _S_ all_vs; index_vars = s; costly_exprs = ES.empty};
+    loop_body = _f_;
+    join_body = SkLetExpr ([]);
+    join_solution = Ast.Id_e "unsat";
+    init_values = Some [];
     sketch_igu = s, (ini, g, u);
     reaching_consts = reach_const;
   };;
+
+let context = { state_vars = _S_; index_vars = (VS.singleton i); all_vars = all_vs; costly_exprs = ES.empty }
+let new_sketch  = discover sketch_info
+
+let new_f_ =
+  SketchTypes.complete_final_state new_sketch.scontext.state_vars
+    (Sketch.Body.optims new_sketch.loop_body);;
+
+IH.copy_into VariableDiscovery.discovered_aux
+  SketchJoin.auxiliary_variables;;
+
+let _join_ = Sketch.Join.build new_sketch.scontext.state_vars new_sketch.loop_body
+
+let sketch_info = { new_sketch with join_body = _join_ };;
+
+
 
 Local.dump_sketch := true;;
 

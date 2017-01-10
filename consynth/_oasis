@@ -41,7 +41,7 @@ Library consynth
 
 Library codegen
   Path: src/codegen
-  Modules: Tbb
+  Modules: Codegen
   CompiledObject: best
   BuildDepends: consynth, cil, rosetteInterface, core, extlib, Z3, conf
 
@@ -73,7 +73,7 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, str, getopt
+  BuildDepends: consynth, str, getopt, codegen
 
 Document consynth
  Title: Consynth Library Doc

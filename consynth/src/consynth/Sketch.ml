@@ -342,17 +342,28 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     @param state_struct_name The name of the struct used to represent
     the state of the loop (valuation of the state variables).
 *)
-let pp_loop fmt (loop_body, state_vars) state_struct_name =
+let pp_loop fmt index_set (loop_body, state_vars) state_struct_name =
+  let index_list = VSOps.varlist index_set in
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
-    "@[<hov 2>(define (%s s %s %s)@;\
-     @[<hov 2>(Loop %s %s %d s@;%a)@])@]@.@."
+    "@[<hov 2>(define (%s %s %a)@;\
+     @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
     body_name
-    !start_index_name
-    !end_index_name
-    !start_index_name
-    !end_index_name
-    !iterations_limit
+    (Conf.get_conf_string "rosette_state_param_name")
+    (pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+       (fun fmt vi ->
+          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
+          Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
+    index_list
+
+    (pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+       (fun fmt vi ->
+          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
+          Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
+    index_list
+    (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
+    (Conf.get_conf_string "rosette_state_param_name")
+
     pp_loop_body (loop_body, state_vars, state_struct_name)
 
 
@@ -538,7 +549,7 @@ let pp_rosette_sketch fmt
   pp_force_newline fmt ();
   pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
-  pp_loop fmt (loop_body, state_vars) main_struct_name;
+  pp_loop fmt idx (loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (join_body, state_vars);
   pp_force_newline fmt ();

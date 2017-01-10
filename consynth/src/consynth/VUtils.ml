@@ -24,12 +24,12 @@ type auxiliary =
     of state variables and a function.
 *)
 let compose xinfo f aux_vs aux_ef =
-  let new_stv = VS.union xinfo.context.state_vars aux_vs in
+  let new_ctx = ctx_update_vsets xinfo.context aux_vs in
   let clean_f = remove_id_binding f in
-  let new_func =
-    let head_assgn, tail_assgn =
+  let new_func, const_exprs =
+    let head_assgn, tail_assgn, const_exprs =
       (IM.fold
-         (fun aux_vid aux (head_assgn_list, tail_assgn_list) ->
+         (fun aux_vid aux (head_assgn_list, tail_assgn_list, const_exprs) ->
             (** Distinguish different cases :
                 - the function is not identity but an accumulator, we add the
                 function 'as is' in the loop body.
@@ -51,26 +51,83 @@ let compose xinfo f aux_vs aux_ef =
                         ~in_subscripts:true
                         ~to_replace:(T.mkVarExpr index)
                         ~by:(T.mkVarExpr (T.left_index_vi index)) ~ine:expr))
-                  xinfo.context.state_vars aux.aexpr
+                  xinfo.context.index_vars aux.aexpr
               in
-              head_assgn_list@[(T.SkVarinfo v, aux_expression)],
-              tail_assgn_list
-            | _ ->
-              let assgn =
-                [(T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)), aux.afunc]
-              in
-              if VS.cardinal (VS.inter aux.depends xinfo.context.state_vars) > 0
+              (** If the only the "start index" appears, or the aux variable's
+                  expression is only a function of the index/input variable, it
+                  can be removed from the loop *)
+              if
+                begin
+                  let used_vars = used_in_skexpr aux_expression in
+                  let not_read_vars =
+                    VS.diff used_vars
+                      (VS.diff xinfo.context.all_vars new_ctx.state_vars)
+                  in
+                  let not_read_not_index =
+                    VS.diff not_read_vars new_ctx.index_vars in
+                  (** No other variables than read-only or index *)
+                  VS.cardinal not_read_not_index = 0
+                end
               then
-                head_assgn_list, tail_assgn_list@assgn
+                head_assgn_list, tail_assgn_list,
+                const_exprs@[T.SkVarinfo v, aux_expression]
               else
-                head_assgn_list@assgn, tail_assgn_list )
+                head_assgn_list@[(T.SkVarinfo v, aux_expression)],
+                tail_assgn_list, const_exprs
+            | _ ->
+              (** If the function depends only on index and read variables, the
+                  final value of the auxiliary depends only on its
+                  "final expression"
+              *)
+              let v = (T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)) in
+               if
+                begin
+                  let used_vars = used_in_skexpr aux.afunc in
+                  let not_read_vars =
+                    VS.diff used_vars
+                      (VS.diff xinfo.context.all_vars xinfo.context.state_vars)
+                  in
+                  let not_read_not_index =
+                    VS.diff not_read_vars xinfo.context.index_vars in
+                  (** No other variables than read-only or index *)
+                  VS.cardinal not_read_not_index = 0
+                end
+               then
+                 (* The variable doesn't depend on any other state variable *)
+                 (let aux_function =
+                    VS.fold
+                      (fun index expr ->
+                         (T.replace_expression
+                            ~in_subscripts:true
+                            ~to_replace:(T.mkVarExpr index)
+                            ~by:(T.mkVarExpr (T.right_index_vi index))
+                            ~ine:expr))
+                      xinfo.context.index_vars aux.aexpr
+                  in
+                  head_assgn_list, tail_assgn_list,
+                  const_exprs@[v, aux_function])
+               else
+                 (let assgn =
+                    [v, aux.afunc]
+                  in
+                  let dependencies =
+                    VS.cardinal (VS.inter aux.depends xinfo.context.state_vars)
+                  in
+                  if dependencies > 0
+                  then
+                    (* The variable depends on other state variables *)
+                    head_assgn_list, tail_assgn_list@assgn, const_exprs
+                  else
+                    head_assgn_list@assgn, tail_assgn_list, const_exprs ))
 
-         aux_ef ([], []))
+         aux_ef ([], [], []))
     in
-    let f = complete_final_state new_stv (T.compose_tail tail_assgn clean_f) in
-    T.compose_head head_assgn f
+    let f = complete_final_state new_ctx.state_vars
+        (T.compose_tail tail_assgn clean_f)
+    in
+    (T.compose_head head_assgn f), const_exprs
   in
-  (new_stv, new_func)
+  (new_ctx, new_func, const_exprs)
 
 
 

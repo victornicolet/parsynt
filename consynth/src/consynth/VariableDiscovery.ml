@@ -452,7 +452,10 @@ let find_auxiliaries ?(not_last_iteration = true) i
     @param varid the id of the variable we're analyzing.
     @return a pair of auxiliary variables and auxiliary functions.
 *)
-let discover_for_id ctx idx_update input_func varid =
+let discover_for_id sketch varid =
+  let idx_update = get_index_update sketch in
+  let ctx = sketch.scontext in
+  let input_func = sketch.loop_body in
   GenVars.init ();
   init ();
   (*  max_exec_no := VS.cardinal stv + 1; *)
@@ -566,7 +569,11 @@ let discover_for_id ctx idx_update input_func varid =
          cp_skexpr (IM.find vi.C.vid clean_aux_ef).afunc
     ) clean_aux;
 
-  VUtils.compose init_i input_func clean_aux clean_aux_ef
+  let new_ctx, new_loop_body, new_constant_exprs =
+    VUtils.compose init_i input_func clean_aux clean_aux_ef
+  in
+  {sketch with scontext = new_ctx;
+               loop_body = new_loop_body }
 
 
 
@@ -583,24 +590,22 @@ let discover_for_id ctx idx_update input_func varid =
 
 let timec = ref 0.0
 
-let discover ctx u input_func =
+let discover (sketch : sketch_rep) =
   timec := Unix.gettimeofday ();
-  T.create_boundary_variables ctx.index_vars;
 
-  aux_init (VS.union ctx.state_vars ctx.index_vars);
+  aux_init (VS.union sketch.scontext.state_vars (get_index_varset sketch));
   (** Analyze the index and produce the update function for
       the index.
   *)
-  let ranked_stv = rank_by_use (uses ctx.state_vars input_func) in
-  let final_stv, final_func =
+  let ranked_stv =
+    rank_by_use (uses sketch.scontext.state_vars sketch.loop_body) in
+  let final_sketch =
     List.fold_left
-      (fun (new_stv, new_func)  (vid, _) ->
-         discover_for_id
-           (ctx_update_vsets ctx new_stv)
-             u new_func vid)
-      (ctx.state_vars, input_func)
+      (fun new_sketch  (vid, _) ->
+         discover_for_id new_sketch vid)
+      sketch
       ranked_stv
   in
   timec := Unix.gettimeofday () -. !timec;
   Format.printf "@.Variable discovery in %.3f s@." !timec;
-  final_stv, final_func
+  final_sketch

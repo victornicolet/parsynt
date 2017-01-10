@@ -135,7 +135,7 @@ type problem =
     svars : VS.t;
     inits : skExpr IM.t;
     body : sklet;
-    join : sklet;
+    join : Ast.expr;
   }
 
 
