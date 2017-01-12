@@ -264,6 +264,22 @@ module CilTools = struct
     | IBool -> true
     | _ -> false
 
+  type simple_types =
+    | BOOL
+    | INT
+    | FLOAT
+
+  let simple_type typename =
+    match typename with
+    | INT -> TInt (IInt, [])
+    | BOOL -> TInt (IBool, [])
+    | FLOAT -> TFloat (FFloat, [])
+
+  let simple_fun_type rettype_name args_typ_names =
+    TFun (simple_type rettype_name,
+          Some (List.map (fun s -> ("x", simple_type s, [])) args_typ_names),
+         false, [])
+
   let fun_ret_type tfunc =
     match tfunc with
     | TFun (ret_typ, _, _, _) -> Some ret_typ

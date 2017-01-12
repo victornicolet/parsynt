@@ -44,8 +44,8 @@ and skExpr =
   | SkQuestion of skExpr * skExpr * skExpr
   | SkHoleL of skLVar * symbolic_type
   | SkHoleR of symbolic_type
-(** Simple translation of Cil exp needed to nest
-    sub-expressions with state variables *)
+  (** Simple translation of Cil exp needed to nest
+      sub-expressions with state variables *)
   | SkSizeof of symbolic_type
   | SkSizeofE of skExpr
   | SkSizeofStr of string
@@ -79,9 +79,9 @@ and state = string list [@@deriving_sexp]
    applied to each state variable.
 *)
 and body_func =
-  | DefineBody of state * racket_with_holes
+    | DefineBody of state * racket_with_holes
   | DefineJoin of state * racket_with_holes
-      [@@deriving_sexp]
+[@@deriving_sexp]
 
 
 
@@ -89,7 +89,7 @@ and body_func =
 (** Interface types with Rosette/Racket *)
 
 and symbolic_type =
-  | Bottom
+    | Bottom
   | Num
   | Unit
   (** Base types : only booleans, integers and reals *)
@@ -120,58 +120,58 @@ and symbolic_type =
 *)
 
 and symb_unop =
-  | Not | Add1 | Sub1
-(**
-   From C++11 : 4 different ops.
-   value   round   floor   ceil    trunc
-   -----   -----   -----   ----    -----
-   2.3     2.0     2.0     3.0     2.0
-   3.8     4.0     3.0     4.0     3.0
-   5.5     6.0     5.0     6.0     5.0
-   -2.3    -2.0    -3.0    -2.0    -2.0
-   -3.8    -4.0    -4.0    -3.0    -3.0
-   -5.5    -6.0    -6.0    -5.0    -5.0
-*)
-  | Abs | Floor | Ceiling | Truncate | Round
-  | Neg
-  (** Misc*)
-  | Sgn
-  | UnsafeUnop of symb_unsafe_unop
+    | Not | Add1 | Sub1
+    (**
+       From C++11 : 4 different ops.
+       value   round   floor   ceil    trunc
+       -----   -----   -----   ----    -----
+       2.3     2.0     2.0     3.0     2.0
+       3.8     4.0     3.0     4.0     3.0
+       5.5     6.0     5.0     6.0     5.0
+       -2.3    -2.0    -3.0    -2.0    -2.0
+       -3.8    -4.0    -4.0    -3.0    -3.0
+       -5.5    -6.0    -6.0    -5.0    -5.0
+    *)
+    | Abs | Floor | Ceiling | Truncate | Round
+    | Neg
+    (** Misc*)
+    | Sgn
+    | UnsafeUnop of symb_unsafe_unop
 
 and symb_binop =
-  (** Booleans*)
-  | And | Nand | Or | Nor | Implies | Xor
-  (** Integers and reals *)
-  | Plus | Minus | Times | Div | Quot | Rem | Mod
-  (** Max and min *)
-  | Max | Min
-  (** Comparison *)
-  | Eq | Lt | Le | Gt | Ge | Neq
-  (** Shift*)
-  | ShiftL | ShiftR
-  | Expt
-  | UnsafeBinop of symb_unsafe_binop
+    (** Booleans*)
+    | And | Nand | Or | Nor | Implies | Xor
+    (** Integers and reals *)
+    | Plus | Minus | Times | Div | Quot | Rem | Mod
+    (** Max and min *)
+    | Max | Min
+    (** Comparison *)
+    | Eq | Lt | Le | Gt | Ge | Neq
+    (** Shift*)
+    | ShiftL | ShiftR
+    | Expt
+    | UnsafeBinop of symb_unsafe_binop
 
 (**
    Some racket function that are otherwise unsafe
    to use in Racket, but we might still need them.
 *)
 and symb_unsafe_unop =
-  (** Trigonometric + hyp. functions *)
-  | Sin | Cos | Tan | Sinh | Cosh | Tanh
-  (** Anti functions *)
-  | ASin | ACos | ATan | ASinh | ACosh | ATanh
-  (** Other functions *)
-  | Log | Log2 | Log10
-  | Exp | Sqrt
+    (** Trigonometric + hyp. functions *)
+    | Sin | Cos | Tan | Sinh | Cosh | Tanh
+    (** Anti functions *)
+    | ASin | ACos | ATan | ASinh | ACosh | ATanh
+    (** Other functions *)
+    | Log | Log2 | Log10
+    | Exp | Sqrt
 
 
 and symb_unsafe_binop =
-  | TODO
+    | TODO
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
-  | CNil
+    | CNil
   | CInt of int
   | CInt64 of int64
   | CReal of float
@@ -212,8 +212,8 @@ let symb_binop_of_cil =
   | Cil.Eq -> Eq, Num | Cil.Ne -> Neq, Num
   | Cil.Shiftlt -> ShiftL, Bitvector 0 | Cil.Shiftrt -> ShiftR, Bitvector 0
 
-  (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
-  (* inexact->exact, exact->inexact, quotient , sgn *)
+(* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
+(* inexact->exact, exact->inexact, quotient , sgn *)
 
 
 (** Identity function *)
@@ -299,22 +299,22 @@ let c_constant  ccst =
   | "M_1_PI" -> Some (CBinop (Div, (CReal 1.0), Pi))
   | "M_2_PI" -> Some (CBinop (Div, (CReal 2.0), Pi))
   | _ ->
-     if !use_unsafe_operations then
-       begin
-         match ccst with
-         | "M_SQRT2" -> Some Sqrt2
-         | "M_SQRT1_2" ->
-            Some (CBinop (Div, (CReal 1.0), Sqrt2))
-         | "M_2_SQRTPI" ->
-            Some (CBinop (Div, (CReal 2.0), SqrtPi))
-         | "M_LOG10E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln10))
-         | "M_LOG2E" ->
-            Some (CBinop (Div, (CReal 1.0), Ln2))
-         | _ -> None
-       end
-     else
-       None
+    if !use_unsafe_operations then
+      begin
+        match ccst with
+        | "M_SQRT2" -> Some Sqrt2
+        | "M_SQRT1_2" ->
+          Some (CBinop (Div, (CReal 1.0), Sqrt2))
+        | "M_2_SQRTPI" ->
+          Some (CBinop (Div, (CReal 2.0), SqrtPi))
+        | "M_LOG10E" ->
+          Some (CBinop (Div, (CReal 1.0), Ln10))
+        | "M_LOG2E" ->
+          Some (CBinop (Div, (CReal 1.0), Ln2))
+        | _ -> None
+      end
+    else
+      None
 
 (**
     A function name not appearing in the cases above
@@ -330,16 +330,16 @@ let uninterpeted fname =
     match symb_unop_of_fname fname with
     | Some _ -> false
     | None ->
-       begin
-         match symb_binop_of_fname fname with
-         | Some _ -> false
-         | None ->
-            begin
-              match c_constant fname with
-              | Some _ -> false
-              | None -> true
-            end
-       end
+      begin
+        match symb_binop_of_fname fname with
+        | Some _ -> false
+        | None ->
+          begin
+            match c_constant fname with
+            | Some _ -> false
+            | None -> true
+          end
+      end
   in
   let not_in_unsafe =
     if !use_unsafe_operations
@@ -351,7 +351,7 @@ let uninterpeted fname =
       end
     else true
   in
-      not_in_safe && not_in_unsafe
+  not_in_safe && not_in_unsafe
 
 
 let remove_interpreted_symbols (vars : VS.t) =
@@ -362,9 +362,9 @@ let remove_interpreted_symbols (vars : VS.t) =
 let is_exp_function ef =
   match ef with
   | Cil.Lval (Cil.Var vi, _) ->
-     let fname = vi.Cil.vname in
-     let ty = vi.Cil.vtype in
-     uninterpeted fname, Some vi, ty
+    let fname = vi.Cil.vname in
+    let ty = vi.Cil.vtype in
+    uninterpeted fname, Some vi, ty
 
   | _ -> false,  None , Cil.typeOf ef
 
@@ -409,36 +409,36 @@ let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
   match symb_unop_of_fname fname with
   | Some unop ->
-     SkUnop (unop, List.hd argl)
+    SkUnop (unop, List.hd argl)
   | None ->
-     match symb_binop_of_fname fname with
-     | Some binop ->
-        SkBinop (binop, List.hd argl, List.nth argl 2)
-     | None ->
-        SkApp (t, Some vi, argl)
+    match symb_binop_of_fname fname with
+    | Some binop ->
+      SkBinop (binop, List.hd argl, List.nth argl 2)
+    | None ->
+      SkApp (t, Some vi, argl)
 
 let rec symb_type_of_ciltyp =
   function
   | Cil.TInt (ik, _) ->
-     begin
-       match ik with
-       | Cil.IBool -> Boolean
-       | _ -> Integer
-     end
+    begin
+      match ik with
+      | Cil.IBool -> Boolean
+      | _ -> Integer
+    end
 
   | Cil.TFloat _ -> Real
 
   | Cil.TArray (t, _, _) ->
-     Vector (symb_type_of_ciltyp t, None)
+    Vector (symb_type_of_ciltyp t, None)
 
   | Cil.TFun (t, arglisto, _, _) ->
-     Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
+    Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
   | Cil.TComp (ci, _) -> Unit
   | Cil.TVoid _ -> Unit
   | Cil.TPtr (t, _) ->
-     Vector (symb_type_of_ciltyp t, None)
+    Vector (symb_type_of_ciltyp t, None)
   | Cil.TNamed (ti, _) ->
-     symb_type_of_ciltyp ti.Cil.ttype
+    symb_type_of_ciltyp ti.Cil.ttype
   | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
 
 and symb_type_of_args argslisto =
@@ -721,7 +721,7 @@ let complete_with_state stv el =
   velist
 
 let rec complete_final_state stv func =
-    match func with
+  match func with
   | SkLetExpr el -> SkLetExpr (complete_with_state stv el)
   | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
 
@@ -853,7 +853,7 @@ let ctx_update_vsets ctx vs =
     all_vars =  new_allvs }
 
 let ctx_add_cexp ctx cexp =
- {ctx with costly_exprs = cexp}
+  {ctx with costly_exprs = cexp}
 
 
 (** ------------------- 6 - INDEX VARIABLES MANAGEMENT -----------------------*)
@@ -1078,3 +1078,173 @@ let get_index_varset sktch =
 
 let get_index_guard sktch =
   let idx, (i, g, u) = sktch.sketch_igu in g
+
+
+(* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)
+open Cil
+open CilTools
+
+let deffile = { fileName = "skexpr_to_cil_translation";
+                globals = [];
+                globinit = None;
+                globinitcalled = false;}
+
+let defloc = { line = 0; file = "skexpr_to_cil_translation" ; byte = 0; }
+
+
+let conversion_error = failwith "Failed to convert SkExpr to Cil expression"
+
+let makeFunCall x f args = Call (Some (Var x, NoOffset), f, args, defloc)
+
+let expr_to_cil fd temps e =
+  let rec skexpr_to_exp e =
+    let syt = type_of e in
+    let t =
+      match ciltyp_of_symb_type (type_of e) with
+      | Some ot -> ot
+      | None ->
+        eprintf "Unknown type in expr to cil conversion :b %a" pp_typ syt;
+        failwith "Type error."
+    in
+    match e with
+    | SkVar v -> Lval (skvar_to_lval v)
+    | SkConst c -> constant c
+    | SkAddrof e ->
+      (match (skexpr_to_exp e) with
+      | Lval (lhost, loffset) -> AddrOf (lhost, loffset)
+      | _ -> conversion_error)
+    | SkSizeof t -> SizeOf (check_option (ciltyp_of_symb_type t))
+
+    (* Binary operations *)
+    | SkBinop (op, e1, e2) ->
+      begin
+        match op with
+        | Neq ->
+          UnOp (BNot, skexpr_to_exp (SkBinop (Eq, e1, e2)), t)
+        | _ ->
+          begin
+            match (cil_binop_of_symb_binop op) with
+            | Some bop, _ ->
+              BinOp (bop, skexpr_to_exp e1, skexpr_to_exp e2, t)
+            | None, Some func ->
+              let new_temp = makeTempVar fd t in
+              fd.slocals <- fd.slocals@[new_temp];
+              IH.add temps new_temp.vid
+                (makeFunCall
+                   new_temp func [skexpr_to_exp e1; skexpr_to_exp e2]);
+              (** Replace by the temp variable, once the corresponding function
+                  call to place before is "remembered" *)
+              Lval (Var new_temp, NoOffset)
+
+            | _, _ -> failwith "Unreachable match case"
+          end
+      end
+
+    | SkUnop (op, e1) ->
+      begin
+        match op with
+        | Add1->
+          skexpr_to_exp (SkBinop (Plus, e1, SkConst (CInt 1)))
+        | Sub1 ->
+          skexpr_to_exp (SkBinop (Minus, e1, SkConst (CInt 1)))
+        | _ ->
+          begin
+            match (cil_unop_of_symb_unop op) with
+            | Some uop, _ ->
+              UnOp (uop, skexpr_to_exp e1, t)
+            | None, Some func ->
+              let new_temp = makeTempVar fd t in
+              fd.slocals <- fd.slocals@[new_temp];
+              IH.add temps new_temp.vid
+                (makeFunCall new_temp func [skexpr_to_exp e1]);
+              Lval (Var new_temp, NoOffset)
+
+            | _, _ -> failwith "Unreachable match case."
+          end
+      end
+
+
+  and skvar_to_lval v =
+    match v with
+    | SkVarinfo v -> Var v , NoOffset
+    | SkArray (v, e) ->
+      let lh, offset = skvar_to_lval v in
+      lh , Index (skexpr_to_exp e, offset)
+
+    | SkTuple _ -> failwith "Tuple not yet implemented"
+
+
+  and cil_binop_of_symb_binop binop =
+    let maybe_binop =
+      match binop with
+      | And -> Some BAnd
+      | Or -> Some BOr
+      | Plus -> Some PlusA
+      | Minus -> Some MinusA
+      | Times -> Some Mult
+      | Div -> Some Div
+      | Eq -> Some Eq | Lt -> Some Lt | Le -> Some Le | Gt -> Some Gt
+      | Ge -> Some Ge
+      | ShiftL -> Some Shiftlt
+      | ShiftR -> Some Shiftrt
+      | _ -> None
+    in
+    match maybe_binop with
+    | Some binop -> Some binop, None
+    | None ->
+      None,
+      Some (Lval (Var (let funname =
+                         (match binop with
+                          | Min -> "MIN"
+                          | Max -> "MAX"
+                          | _ -> "" )
+                       in
+                       makeVarinfo false funname (TInt (IInt, []))), NoOffset))
+
+
+  and cil_unop_of_symb_unop op =
+    let maybe_op =
+      match op with
+      | Neg -> Some Neg
+      | Not -> Some BNot
+      | _ -> None
+    in
+    match maybe_op with
+    | Some op -> Some op, None
+    | None ->
+      None,
+      Some (Lval (Var (let fname, t =
+                         match op with
+                         | Floor -> "floor",
+                                    CilTools.simple_fun_type INT [FLOAT]
+                         | Round -> "round",
+                                    CilTools.simple_fun_type INT [FLOAT]
+                         | Truncate -> "truncate",
+                                       CilTools.simple_fun_type INT [FLOAT]
+                         | Abs -> "abs",
+                                  CilTools.simple_fun_type INT [INT]
+                         | Ceiling -> "ceil",
+                                      CilTools.simple_fun_type INT [FLOAT]
+                         | Sgn -> "signof",
+                                  CilTools.simple_fun_type FLOAT [FLOAT]
+                         | _ -> "", CilTools.simple_type BOOL
+                       in
+                       makeVarinfo false fname t),
+                  NoOffset))
+  and constant c =
+    match c with
+    | CInt i -> Const (CInt64 (Int64.of_int i, IInt, None))
+    | CBool t -> Const (if t then CInt64 (1L, IBool, None)
+                        else CInt64 (0L, IBool, None))
+    | CInt64 i -> Const (CInt64 (i, IInt, None))
+    | CChar c -> Const (CChr c)
+    | CString s -> Const (CStr s)
+    | CReal r -> Const (CReal (r, FFloat, None))
+    | CNil -> failwith "Cannot convert Nil constant to Cil.\
+                        There must be a mistake ..."
+    | CBox _ -> failwith "Not yet implemented (CBox)"
+    | CUnop (op, c) -> skexpr_to_exp (SkUnop (op, SkConst c))
+    | CBinop (op, c1, c2) -> skexpr_to_exp (SkBinop (op, SkConst c1, SkConst c2))
+    | _ -> failwith "Unsupported constants."
+  in
+  skexpr_to_exp e

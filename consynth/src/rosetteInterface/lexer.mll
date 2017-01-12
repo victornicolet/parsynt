@@ -43,7 +43,7 @@ rule token = parse
   | "/"            { DIV }
   | "%"            { MOD }
   | "~"            { NOT }
-  | "&"            { AND }
+  | "&&"            { AND }
   | "||"            { OR }
   | "="            { EQ }
   | "!="           { NEQ }

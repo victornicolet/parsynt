@@ -26,6 +26,15 @@ type auxiliary =
 let compose xinfo f aux_vs aux_ef =
   let new_ctx = ctx_update_vsets xinfo.context aux_vs in
   let clean_f = remove_id_binding f in
+  let replace_index_uses index_set =
+    VS.fold
+      (fun index expr ->
+         (T.replace_expression
+            ~in_subscripts:true
+            ~to_replace:(T.mkVarExpr index)
+            ~by:(T.mkVarExpr (index_set index))
+            ~ine:expr))
+  in
   let new_func, const_exprs =
     let head_assgn, tail_assgn, const_exprs =
       (IM.fold
@@ -45,13 +54,7 @@ let compose xinfo f aux_vs aux_ef =
             | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
               (* Replace index by "start index" variable *)
               let aux_expression =
-                VS.fold
-                  (fun index expr ->
-                     (T.replace_expression
-                        ~in_subscripts:true
-                        ~to_replace:(T.mkVarExpr index)
-                        ~by:(T.mkVarExpr (T.left_index_vi index)) ~ine:expr))
-                  xinfo.context.index_vars aux.aexpr
+                replace_index_uses T.left_index_vi xinfo.context.index_vars aux.aexpr
               in
               (** If the only the "start index" appears, or the aux variable's
                   expression is only a function of the index/input variable, it
@@ -69,7 +72,8 @@ let compose xinfo f aux_vs aux_ef =
                   VS.cardinal not_read_not_index = 0
                 end
               then
-                head_assgn_list, tail_assgn_list,
+                head_assgn_list@[(T.SkVarinfo v, aux_expression)],
+                tail_assgn_list,
                 const_exprs@[T.SkVarinfo v, aux_expression]
               else
                 head_assgn_list@[(T.SkVarinfo v, aux_expression)],
@@ -80,45 +84,40 @@ let compose xinfo f aux_vs aux_ef =
                   "final expression"
               *)
               let v = (T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)) in
-               if
-                begin
-                  let used_vars = used_in_skexpr aux.afunc in
-                  let not_read_vars =
-                    VS.diff used_vars
-                      (VS.diff xinfo.context.all_vars xinfo.context.state_vars)
-                  in
-                  let not_read_not_index =
-                    VS.diff not_read_vars xinfo.context.index_vars in
-                  (** No other variables than read-only or index *)
-                  VS.cardinal not_read_not_index = 0
-                end
+              let new_const_exprs =
+                const_exprs@
+                (if
+                  begin
+                    let used_vars = used_in_skexpr aux.afunc in
+                    let not_read_vars =
+                      VS.diff used_vars
+                        (VS.diff xinfo.context.all_vars xinfo.context.state_vars)
+                    in
+                    let not_read_not_index =
+                      VS.diff not_read_vars xinfo.context.index_vars in
+                    (** No other variables than read-only or index *)
+                    VS.cardinal not_read_not_index = 0
+                  end
+                 then
+                   (* The variable doesn't depend on any other state variable *)
+                   [v,
+                    replace_index_uses
+                      right_index_vi xinfo.context.index_vars aux.afunc]
+                 else
+                   [])
+              in
+              (let assgn =
+                 [v, aux.afunc]
+               in
+               let dependencies =
+                 VS.cardinal (VS.inter aux.depends xinfo.context.state_vars)
+               in
+               if dependencies > 0
                then
-                 (* The variable doesn't depend on any other state variable *)
-                 (let aux_function =
-                    VS.fold
-                      (fun index expr ->
-                         (T.replace_expression
-                            ~in_subscripts:true
-                            ~to_replace:(T.mkVarExpr index)
-                            ~by:(T.mkVarExpr (T.right_index_vi index))
-                            ~ine:expr))
-                      xinfo.context.index_vars aux.aexpr
-                  in
-                  head_assgn_list, tail_assgn_list,
-                  const_exprs@[v, aux_function])
-               else
-                 (let assgn =
-                    [v, aux.afunc]
-                  in
-                  let dependencies =
-                    VS.cardinal (VS.inter aux.depends xinfo.context.state_vars)
-                  in
-                  if dependencies > 0
-                  then
                     (* The variable depends on other state variables *)
-                    head_assgn_list, tail_assgn_list@assgn, const_exprs
-                  else
-                    head_assgn_list@assgn, tail_assgn_list, const_exprs ))
+                 head_assgn_list, tail_assgn_list@assgn, new_const_exprs
+               else
+                 head_assgn_list@assgn, tail_assgn_list, new_const_exprs))
 
          aux_ef ([], [], []))
     in

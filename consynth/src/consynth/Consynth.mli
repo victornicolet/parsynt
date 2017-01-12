@@ -268,6 +268,13 @@ module Utils : sig
     val ppbk : block -> unit
     val ppofs : offset -> unit
 
+    type simple_types =
+      | BOOL
+      | INT
+      | FLOAT
+    val simple_type : simple_types -> Cil.typ
+    val simple_fun_type : simple_types -> simple_types list -> Cil.typ
+
     val is_literal_zero : exp -> bool
     val add_stmt : Cil.block -> Cil.stmt list -> Cil.block
     val simplify_rds : ('a * 'b * 'c) option -> 'c option
