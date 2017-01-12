@@ -1097,7 +1097,12 @@ let conversion_error = failwith "Failed to convert SkExpr to Cil expression"
 let makeFunCall x f args = Call (Some (Var x, NoOffset), f, args, defloc)
 
 let expr_to_cil fd temps e =
-  let rec skexpr_to_exp e =
+  let rec lval_or_error e =
+  (match (skexpr_to_exp e) with
+   | Lval (lhost, loffset) -> (lhost, loffset)
+   | _ -> conversion_error)
+
+  and skexpr_to_exp e =
     let syt = type_of e in
     let t =
       match ciltyp_of_symb_type (type_of e) with
@@ -1109,11 +1114,41 @@ let expr_to_cil fd temps e =
     match e with
     | SkVar v -> Lval (skvar_to_lval v)
     | SkConst c -> constant c
-    | SkAddrof e ->
-      (match (skexpr_to_exp e) with
-      | Lval (lhost, loffset) -> AddrOf (lhost, loffset)
-      | _ -> conversion_error)
+    | SkAddrof e -> AddrOf (lval_or_error e)
+    | SkAddrofLabel sref -> AddrOfLabel sref
+    (* SizeOf operations *)
     | SkSizeof t -> SizeOf (check_option (ciltyp_of_symb_type t))
+    | SkSizeofE e -> SizeOfE (skexpr_to_exp e)
+    | SkSizeofStr s -> SizeOfStr s
+    (* Cast operations *)
+    | SkCastE (t, e) ->
+      let ct = check_option (ciltyp_of_symb_type t) in
+      CastE (ct, skexpr_to_exp e)
+    (* ALignment operations *)
+    | SkAlignof t -> AlignOf (check_option (ciltyp_of_symb_type t))
+    | SkAlignofE e -> AlignOfE (skexpr_to_exp e)
+    (* Start of *)
+    | SkStartOf e -> StartOf (lval_or_error e)
+
+    | SkQuestion (c, e1, e2) ->
+      Question (skexpr_to_exp c, skexpr_to_exp e1, skexpr_to_exp e2, t)
+
+    | SkApp (st, fo, args) ->
+      let new_temp = makeTempVar fd t in
+      fd.slocals <- fd.slocals@[new_temp];
+      (match fo with
+      | Some vi ->
+        IH.add temps new_temp.vid
+          (makeFunCall
+             new_temp
+             (Lval (Var vi, NoOffset))
+             (List.map skexpr_to_exp args));
+        Lval (Var new_temp, NoOffset)
+      (** Should not happen ! *)
+      | None ->
+        eprintf "Creating an empty temporary with no value.\
+          A function application with no function name was encoutered.";
+        Lval (Var new_temp, NoOffset))
 
     (* Binary operations *)
     | SkBinop (op, e1, e2) ->
@@ -1163,6 +1198,8 @@ let expr_to_cil fd temps e =
           end
       end
 
+    | SkHoleL _ | SkHoleR _ -> failwith "Holes cannot be converted"
+    | SkFun _ | SkCond _ | SkRec _ -> failwith "Control flow not supported"
 
   and skvar_to_lval v =
     match v with
