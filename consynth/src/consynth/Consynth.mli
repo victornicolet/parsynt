@@ -13,7 +13,7 @@ module Canalyst : sig
   open SketchTypes
   type figu = Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
   type func_info =
-    string * int list * Usedef.VS.t * Usedef.VS.t *
+    string * Cil.fundec * int list * Usedef.VS.t * Usedef.VS.t *
     Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
   type sigu = Utils.VS.t * (sklet * skExpr * sklet)
@@ -277,6 +277,7 @@ module Utils : sig
 
     val is_literal_zero : exp -> bool
     val add_stmt : Cil.block -> Cil.stmt list -> Cil.block
+    val add_instr : Cil.stmt -> Cil.instr list -> Cil.stmt
     val simplify_rds : ('a * 'b * 'c) option -> 'c option
     val neg_exp : exp -> exp
     val is_like_array : varinfo -> bool

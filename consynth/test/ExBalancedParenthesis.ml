@@ -43,6 +43,7 @@ let sketch_info =
   {
     id = 0;
     loop_name = name;
+    host_function = make_empty_fundec ();
     ro_vars_ids = [a.vid];
     scontext = { state_vars = _S_; all_vars = VS.union _S_ all_vs; index_vars = s; costly_exprs = ES.empty};
     loop_body = _f_;

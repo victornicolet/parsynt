@@ -155,9 +155,14 @@ let main () =
           (color "b") default
           SPretty.pp_sklet sketch.loop_body
           (color "b") default
-          Ast.pp_expr sketch.join_solution)
+          Ast.pp_expr sketch.join_solution;
+        let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
+        printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
+
+
+     )
   finally_solved);
-  (** TODO **)
+
 
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;

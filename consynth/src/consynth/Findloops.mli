@@ -32,6 +32,7 @@ module Cloop : sig
   val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t
   val string_of_cloop: t -> String.t
   val getAllVars : t -> VS.t
+  val getParentFundec : t -> Cil.fundec
   val getStateVars : t -> VS.t
 end
 

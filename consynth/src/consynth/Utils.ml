@@ -242,6 +242,16 @@ module CilTools = struct
   let add_stmt block stmt =
 	{ block with bstmts = block.bstmts @ stmt }
 
+  let add_instr stmt instr =
+    match stmt.skind with
+    | Instr il ->
+          {stmt with skind = Instr (il @ instr)}
+    | _ ->
+      eprintf "Instruction not added to non-instruction list statement.";
+      failwith "add_instr"
+
+
+
   let simplify_rds rdef =
     match rdef with
     | Some (_,_, setXhash) -> Some setXhash

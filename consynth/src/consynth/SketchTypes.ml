@@ -1056,6 +1056,7 @@ type sigu = VS.t * (sklet * skExpr * sklet)
 type sketch_rep =
   {
     id : int;
+    host_function : Cil.fundec;
     loop_name : string;
     ro_vars_ids : int list;
     scontext : context;
@@ -1092,15 +1093,15 @@ let deffile = { fileName = "skexpr_to_cil_translation";
 let defloc = { line = 0; file = "skexpr_to_cil_translation" ; byte = 0; }
 
 
-let conversion_error = failwith "Failed to convert SkExpr to Cil expression"
+let conversion_error () = failwith "Failed to convert SkExpr to Cil expression"
 
 let makeFunCall x f args = Call (Some (Var x, NoOffset), f, args, defloc)
 
 let expr_to_cil fd temps e =
   let rec lval_or_error e =
-  (match (skexpr_to_exp e) with
-   | Lval (lhost, loffset) -> (lhost, loffset)
-   | _ -> conversion_error)
+    (match (skexpr_to_exp e) with
+     | Lval (lhost, loffset) -> (lhost, loffset)
+     | _ -> conversion_error ())
 
   and skexpr_to_exp e =
     let syt = type_of e in
@@ -1137,18 +1138,18 @@ let expr_to_cil fd temps e =
       let new_temp = makeTempVar fd t in
       fd.slocals <- fd.slocals@[new_temp];
       (match fo with
-      | Some vi ->
-        IH.add temps new_temp.vid
-          (makeFunCall
-             new_temp
-             (Lval (Var vi, NoOffset))
-             (List.map skexpr_to_exp args));
-        Lval (Var new_temp, NoOffset)
-      (** Should not happen ! *)
-      | None ->
-        eprintf "Creating an empty temporary with no value.\
-          A function application with no function name was encoutered.";
-        Lval (Var new_temp, NoOffset))
+       | Some vi ->
+         temps :=
+           !temps@[(makeFunCall
+                      new_temp
+                      (Lval (Var vi, NoOffset))
+                      (List.map skexpr_to_exp args))];
+         Lval (Var new_temp, NoOffset)
+       (** Should not happen ! *)
+       | None ->
+         eprintf "Creating an empty temporary with no value.\
+                  A function application with no function name was encoutered.";
+         Lval (Var new_temp, NoOffset))
 
     (* Binary operations *)
     | SkBinop (op, e1, e2) ->
@@ -1164,9 +1165,9 @@ let expr_to_cil fd temps e =
             | None, Some func ->
               let new_temp = makeTempVar fd t in
               fd.slocals <- fd.slocals@[new_temp];
-              IH.add temps new_temp.vid
-                (makeFunCall
-                   new_temp func [skexpr_to_exp e1; skexpr_to_exp e2]);
+              temps :=
+                !temps@[(makeFunCall
+                           new_temp func [skexpr_to_exp e1; skexpr_to_exp e2])];
               (** Replace by the temp variable, once the corresponding function
                   call to place before is "remembered" *)
               Lval (Var new_temp, NoOffset)
@@ -1190,8 +1191,8 @@ let expr_to_cil fd temps e =
             | None, Some func ->
               let new_temp = makeTempVar fd t in
               fd.slocals <- fd.slocals@[new_temp];
-              IH.add temps new_temp.vid
-                (makeFunCall new_temp func [skexpr_to_exp e1]);
+              temps :=
+                !temps@[(makeFunCall new_temp func [skexpr_to_exp e1])];
               Lval (Var new_temp, NoOffset)
 
             | _, _ -> failwith "Unreachable match case."
@@ -1285,3 +1286,58 @@ let expr_to_cil fd temps e =
     | _ -> failwith "Unsupported constants."
   in
   skexpr_to_exp e
+
+let rec skvar_to_cil fd tmps v =
+  match v with
+  | SkVarinfo v -> Var v , NoOffset
+  | SkArray (v, e) ->
+    let lh, offset = skvar_to_cil fd tmps v in
+    lh , Index (expr_to_cil fd tmps e, offset)
+
+  | SkTuple _ -> failwith "Tuple not yet implemented"
+
+
+(** Let bindings to imperative code. *)
+let sort_nb_used_vars (v1, e1) (v2, e2) =
+  let used1 = used_in_skexpr e1 in
+  let used2 = used_in_skexpr e2 in
+  let vi1 = check_option (vi_of v1) in
+  let vi2 = check_option (vi_of v2) in
+  match VS.mem vi1 used2, VS.mem vi2 used1 with
+  | false, false ->
+    if VS.cardinal used1 > VS.cardinal used2 then 1 else -1
+  | true, false -> 1
+  | false, true -> -1
+  (* Case with a conflict ! Needs a temp variable. *)
+  | true, true -> 1
+
+
+let sklet_to_stmts fd sklet =
+  let add_assignments =
+    List.fold_left
+      (fun blk (v, e) ->
+         match e with
+         | SkVar v' when v' = v -> blk
+         | _ ->
+           let tmp_asgn = ref [] in
+           let new_e = expr_to_cil fd tmp_asgn e in
+           let lval_v = skvar_to_cil fd tmp_asgn v in
+           (add_instr
+              blk
+              ((!tmp_asgn)@[Set (lval_v, new_e, defloc)])))
+  in
+  let rec translate_let sklet instr_li_stmt =
+    match sklet with
+    | SkLetIn (asgn_li, letin) ->
+      let a_block =
+        add_assignments instr_li_stmt
+          (List.sort sort_nb_used_vars asgn_li)
+      in
+      translate_let letin a_block
+    | SkLetExpr a_list ->
+      add_assignments instr_li_stmt (List.sort sort_nb_used_vars a_list)
+  in
+  let empty_statement = { labels = []; sid = new_sid ();
+                          skind = Instr []; preds = []; succs = [] }
+  in
+  fd, translate_let sklet empty_statement

@@ -81,6 +81,18 @@ let _Q c e1 e2 = SkQuestion (c, e1, e2)
 let _let el = SkLetExpr el
 let _letin el l = SkLetIn (el, l)
 
+
+let make_empty_fundec () =
+  {
+    svar = make_int_varinfo "empty_function";
+    sformals = [];
+    slocals = [];
+    sbody = {bstmts = []; battrs = []};
+    smaxstmtid = None;
+    smaxid = 0;
+    sallstmts = [];
+  }
+
 class variableManager vi_list =
   let smap =
     (List.fold_left

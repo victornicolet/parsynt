@@ -59,7 +59,7 @@ let processFile fileName =
 type figu = VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
 type varset_info = int list * int list * VS.t
 type func_info =
-  string * int list * VS.t * VS.t *
+  string * Cil.fundec * int list * VS.t * VS.t *
   Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
 (** Sketch info type :
@@ -72,6 +72,24 @@ type func_info =
 *)
 type sigu = VS.t * (sklet * skExpr * sklet)
 
+(** Create unique identifiers for each loop - each problem we
+    have to solve *)
+let loop_idents_index = ref 0
+
+let loop_idents = ref []
+
+let rec new_loop_ident fun_name =
+  if List.mem fun_name !loop_idents then
+    (let new_ident = fun_name ^ "_" ^ (string_of_int !loop_idents_index) in
+     incr loop_idents_index;
+     new_loop_ident new_ident)
+  else
+    (loop_idents := fun_name::(!loop_idents);
+     fun_name)
+
+(** From cil loop bodies to intermediary function representation.
+        This step only translates the control-flow of the input C program,
+        the expressions will be translated later *)
 let cil2func loops =
   Cil2Func.init loops;
   let sorted_lps = A.transform_and_sort loops in
@@ -84,7 +102,7 @@ let cil2func loops =
          with Failure s ->
            skip_exn "Couldn't use index form in loop.";
        in
-       let loop_ident = cl.Cl.host_function.C.vname in
+       let loop_ident = new_loop_ident cl.Cl.host_function.C.vname in
        let stmt = C.mkBlock(cl.Cl.new_body) in
        let r, w = cl.Cl.rwset in
        let vars = Cl.getAllVars cl in
@@ -99,6 +117,7 @@ let cil2func loops =
          printf "@.";
        else ();
        (loop_ident,
+        Cl.getParentFundec cl,
         VSOps.vids_of_vs r, stv, vars,
         func, figu,
         reaching_consts))
@@ -109,7 +128,7 @@ let no_sketches = ref 0;;
 
 let func2sketch funcreps =
   List.map
-    (fun (loop_ident,
+    (fun (loop_ident, host_function,
           ro_vars_ids, state_vars, var_set, func, figu, reach_consts) ->
       let reach_consts =
         IM.mapi
@@ -140,6 +159,7 @@ let func2sketch funcreps =
       create_boundary_variables index_set;
       {
         id = !no_sketches;
+        host_function = host_function;
         loop_name = loop_ident;
         ro_vars_ids = ro_vars_ids;
         scontext =
