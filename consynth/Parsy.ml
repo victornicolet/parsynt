@@ -4,6 +4,7 @@ open PpHelper
 open Utils
 open Getopt
 open SketchTypes
+open Cil
 
 module L = Local
 module C = Canalyst
@@ -26,14 +27,43 @@ let options = [
   ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None)
 ]
 
-let solution_found lp_name parsed sketch solved =
+let solution_found lp_name parsed (sketch : sketch_rep) solved =
     printf "@.%sSOLUTION for %s %s:@.%a"
       (color "green") lp_name default Ast.pp_expr_list parsed;
     let sol_info = Codegen.get_solved_sketch_info parsed in
+    init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
+    let sk_sklet_sol, sk_skexpr_sol =
+      try
+        scm_to_sk sol_info.Codegen.join_body
+      with Failure s ->
+        (printf "Failure : %s@." s; None, None)
+    in
+    (match sk_skexpr_sol, sk_sklet_sol with
+    | Some skexpr, None ->
+      printf "Expression %a@." SPretty.pp_c_expr skexpr
+    | None, Some sklet ->
+      printf "Let expression@. %a@." SPretty.pp_c_sklet (sk_for_c sklet)
+    | _ ->
+      printf "Solution not translated@.");
     {sketch with
      join_solution = sol_info.Codegen.join_body;
      init_values = sol_info.Codegen.init_values} :: solved
 
+
+(** Generating a TBB implementation of the parallel solution discovered *)
+let tbb_test_filename (solution : sketch_rep) =
+  (Tbb.pbname_of_sketch solution)^".cpp"
+
+let output_tbb_test (solution : sketch_rep) =
+  let tbb_file_oc =  open_out (tbb_test_filename solution) in
+  let tbb_file_out_fmt = Format.make_formatter
+      (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
+  let tbb_class_summary = Tbb.make_tbb_class solution in
+  Tbb.fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
+  close_out tbb_file_oc
+
+let output_tbb_tests (solutions : sketch_rep list) =
+  List.iter output_tbb_test solutions
 
 
 let main () =
@@ -162,7 +192,7 @@ let main () =
 
      )
   finally_solved);
-
+  output_tbb_tests finally_solved;
 
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;

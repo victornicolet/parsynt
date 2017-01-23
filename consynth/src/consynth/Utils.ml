@@ -30,10 +30,18 @@ module IS = Set.Make (struct
     type t = int
     let compare = Pervasives.compare
   end)
-module SM = Map.Make (String)
 
+module SM = Map.Make (String)
 module VS = Usedef.VS
 module IM = Map.Make(struct type t = int let compare = compare end)
+
+module SH = Hashtbl.Make (struct
+    type t = String.t
+    type key = String.t
+    let equal s1 s2 = s1 = s2
+    let hash s = Hashtbl.hash s
+  end)
+
 
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
@@ -400,6 +408,17 @@ module VSOps = struct
       VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
     else
       raise Not_found
+
+  let find_by_name (name : string) (vs : VS.t) =
+    let matchings = VS.filter (fun vi -> vi.vname = name) vs in
+    match VS.cardinal matchings with
+    | 0 -> raise Not_found
+    | 1 -> VS.min_elt matchings
+    | _ -> raise
+             (Failure
+                (Format.fprintf str_formatter
+                   "More than one variable named %s" name;
+                 Format.flush_str_formatter ()))
 
   let subset_of_list (li : int list) (vs : VS.t) =
     VS.filter (fun vi -> List.mem vi.vid li) vs

@@ -309,6 +309,7 @@ module Utils : sig
     val has_vid : int -> VS.t -> bool
     val has_lval : Cil.lval -> VS.t -> bool
     val find_by_id : int -> VS.t -> VS.elt
+    val find_by_name : string -> VS.t -> VS.elt
     (* Take the subset of input set corresponding to the ids in the list*)
     val subset_of_list : int list -> VS.t -> VS.t
     (* Return the list of the variable ids *)
@@ -542,6 +543,8 @@ val transform_expr :
   ((skExpr -> skExpr) -> skExpr -> skExpr) ->
   (constants -> constants) -> (skLVar -> skLVar) -> skExpr -> skExpr
 
+val init_scm_translate : VS.t -> VS.t -> unit
 val scm_to_sk :
-  Cil.varinfo Utils.SM.t -> Ast.expr -> sklet option * skExpr option
+  Ast.expr -> sklet option * skExpr option
+val sk_for_c : sklet -> sklet
 end

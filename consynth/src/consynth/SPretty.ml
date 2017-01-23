@@ -554,3 +554,70 @@ let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
 
 let cp_expr_list fmt el =
   PpHelper.ppli fmt ~sep:" " cp_skexpr el
+
+
+
+(** C-style pretty printing. Useful for printing functional intermediary
+    language as a set of statements. Does more than just pretty printing,
+    also check for dependencies in the list of bindings and reorder them.
+*)
+
+
+
+let rec pp_c_expr fmt e =
+  match e with
+  | SkVar v -> pp_c_var fmt v
+  | SkConst c -> pp_skexpr fmt e
+
+  | SkUnop (op, e1) ->
+    fprintf fmt "@[%s %a]@" (string_of_symb_unop op) pp_c_expr e1
+
+  | SkBinop (op, e1, e2) ->
+    fprintf fmt "@[<hov 2>(%a %s %a)@]"
+      pp_c_expr e1 (string_of_symb_binop op) pp_c_expr e2
+
+  | SkQuestion (c, e1, e2) ->
+    fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]"
+      pp_c_expr c pp_c_expr e1 pp_c_expr e2
+
+  | SkApp (t, vo, args) ->
+    (match vo with
+     | Some vi ->
+       fprintf fmt "@[%s(%a)@]" vi.Cil.vname pp_c_expr_list args
+     | None ->
+       fprintf fmt "@[%a@]" pp_c_expr_list args)
+
+  | SkHoleL (v, t) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
+                        pp_c_var v pp_typ t
+  | SkHoleR t -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
+
+  | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_skexpr e
+
+and pp_c_var fmt v =
+  match v with
+  | SkVarinfo v -> fprintf fmt "%s" v.Cil.vname
+  | SkArray (v, offset) -> fprintf fmt "%a[%a]" pp_c_var v pp_c_expr offset
+  | SkTuple vs -> fprintf fmt "(<TUPLE>)"
+
+and pp_c_expr_list fmt el =
+  PpHelper.ppli fmt ~sep:" " pp_c_expr el
+
+let pp_c_assignment fmt (v, e) =
+  fprintf fmt "@[<hov 2> %a = %a;@]" pp_c_var v pp_c_expr e
+
+let pp_c_assignment_list =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt "@;")
+    pp_c_assignment
+
+let rec pp_c_sklet fmt sklet =
+  match sklet with
+  | SkLetExpr assgn_list ->
+    fprintf fmt "@[%a@]" pp_c_assignment_list assgn_list
+  | SkLetIn (assgn_list, sklet') ->
+    fprintf fmt "@[%a@;%a@]"
+      pp_c_assignment_list assgn_list pp_c_sklet sklet'
+
+
+let print_c_let = pp_c_sklet std_formatter
+let print_c_expr = pp_c_expr std_formatter

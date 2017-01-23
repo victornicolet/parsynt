@@ -384,6 +384,20 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> SkConst c
   | None -> SkVar (mkVar ~offsets:offsets vi)
 
+let rs_prefix = (Conf.get_conf_string "rosette_join_right_state_prefix")
+
+let is_right_state_varname s =
+  let varname_parts = Str.split (Str.regexp "\.") s in
+  let right_state_name = (Str.split (Str.regexp "\.") rs_prefix) >> 0 in
+    match List.length varname_parts with
+    | 2 -> varname_parts >> 1, (varname_parts >> 0) = right_state_name
+    | 1 -> varname_parts >> 0, false
+    | _ ->
+      failwith (fprintf str_formatter
+                  "Unexpected list length when splitting variable name %s \
+                   over '.'" s; flush_str_formatter ())
+
+
 
 let rec cmpVar sklvar1 sklvar2 =
   match sklvar1, sklvar2 with
@@ -742,6 +756,29 @@ let used_in_skexpr =
 (** Translate basic scheme to the Sketch expressions
     @param env a mapping from variable ids to varinfos.
 *)
+
+let errmsg_unexpected_sklet unex_let =
+    (fprintf str_formatter "Expected a translated expression,\
+                            received for tranlsation @; %a @."
+       Ast.pp_expr unex_let;
+     flush_str_formatter ())
+
+let errmsg_unexpected_expr ex_type unex_expr =
+  (fprintf str_formatter "Expected a %s ,\
+                            received for tranlsation @; %a @."
+     ex_type Ast.pp_expr unex_expr;
+     flush_str_formatter ())
+
+
+type join_translation_info = {
+  mutable initial_vars : VS.t;
+  mutable initial_state_vars : VS.t;
+  mutable used_vars : Cil.varinfo SH.t;
+  mutable used_state_vars : VS.t;
+  initial_state_right : Cil.varinfo IH.t;
+  initial_state_left: Cil.varinfo IH.t;
+}
+
 let get_binop_of_scm (op : Ast.op) =
   match op with
   | Plus -> Plus
@@ -766,22 +803,67 @@ let get_unop_of_scm  (op : Ast.op)=
 
 let co = check_option
 
-let rec scm_to_sk env scm =
+let join_info =
+  {
+    initial_vars = VS.empty;
+    initial_state_vars = VS.empty;
+    used_vars = SH.create 10;
+    used_state_vars = VS.empty;
+    initial_state_right = IH.create 10;
+    initial_state_left = IH.create 10;
+  }
+
+let init_scm_translate all_vs state_vs =
+  join_info.initial_vars <- all_vs;
+  join_info.initial_state_vars <- state_vs
+
+(** Find varinfo assiociated to a name, possibly prefixed
+    by the class instance representing the right-state input
+    in the join function.
+    Create adequate variables when not existing, and memorizes
+    which variable are in use.
+*)
+let scm_register s =
+  let pure_varname, is_class_member = is_right_state_varname s in
+  let varinfo =
+    try
+    SH.find join_info.used_vars pure_varname
+  with Not_found ->
+    begin
+      let newly_used_vi =
+        try
+          VSOps.find_by_name pure_varname join_info.initial_vars
+        with
+        | Not_found ->
+          Cil.makeVarinfo false pure_varname (Cil.TVoid [])
+      in
+      SH.add join_info.used_vars pure_varname newly_used_vi;
+    newly_used_vi
+    end
+  in
+  {varinfo with Cil.vname = s}
+
+
+
+
+let rec scm_to_sk scm =
   try
     match scm with
     | Int_e i -> None, Some (SkConst (CInt i))
     | Str_e s -> None, Some (SkConst (CString s))
     | Bool_e b -> None, Some (SkConst (CBool b))
-    | Id_e id -> None, Some (SkVar (SkVarinfo (SM.find id env)))
+    | Id_e id ->
+      (let vi = scm_register id in
+      None, Some (SkVar (SkVarinfo vi)))
     | Nil_e -> None, Some (SkConst (CNil))
 
     | Binop_e (op, e1, e2) ->
-      let _, e1' = scm_to_sk env e1 in
-      let _, e2' = scm_to_sk env e2 in
+      let _, e1' = scm_to_sk  e1 in
+      let _, e2' = scm_to_sk  e2 in
       None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
 
     | Unop_e (op, e) ->
-      let _, e' = scm_to_sk env e in
+      let _, e' = scm_to_sk  e in
       None, Some (SkUnop (get_unop_of_scm op, co e'))
 
     | Cons_e (x, y)-> failwith "Cons not supported"
@@ -790,17 +872,18 @@ let rec scm_to_sk env scm =
     | Letrec_e (bindings, e2) ->
       let bds = List.map
           (fun (ids, e) ->
-             let _, exp = scm_to_sk env e in
-             (SkVarinfo (SM.find ids env)), co exp)
+             let _, exp = scm_to_sk e in
+             let vi = scm_register ids in
+             (SkVarinfo vi), co exp)
           bindings
       in
-      let sk_let, _ = scm_to_sk env e2 in
+      let sk_let, _ = scm_to_sk  e2 in
       Some (SkLetIn (bds, co sk_let)), None
 
     | If_e (c, e1, e2) ->
-      let _, cond = scm_to_sk env c in
-      let le1, ex1 = scm_to_sk env e1 in
-      let le2, ex2 = scm_to_sk env e2 in
+      let _, cond = scm_to_sk  c in
+      let le1, ex1 = scm_to_sk  e1 in
+      let le2, ex2 = scm_to_sk  e2 in
       begin
         if is_some ex1 && is_some ex2 then
           None, Some (SkQuestion (co cond, co ex1, co ex2))
@@ -813,13 +896,70 @@ let rec scm_to_sk env scm =
           end
       end
     | Apply_e (e, arglist) ->
-      failwith "TODO"
+      (match e with
+       | Id_e s ->
+         (match s with
+          | "vector-ref" ->
+            (None, Some (SkVar (to_array_var arglist)))
+          | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
+            (Some (rosette_state_struct_to_sklet arglist), None)
+          | _ ->
+            (None, Some (to_fun_app e arglist)))
+       | _ ->
+      failwith "TODO")
+
 
     | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
       failwith "Not supported"
 
   with Not_found ->
     failwith "Variable name not found in current environment."
+
+(** Structure translation is parameterized by the current information
+    loaded in the join_info. The order had been created using the order in
+    the set of staate variables so we use the same order to re-build the
+    expressions.
+    Additionally we remove identity bindings.
+*)
+and rosette_state_struct_to_sklet scm_expr_list =
+  let stv_vars_list = VSOps.varlist join_info.initial_state_vars in
+  let sk_expr_list = to_expression_list scm_expr_list in
+  SkLetExpr (ListTools.pair (List.map (fun vi -> SkVarinfo vi) stv_vars_list)
+               sk_expr_list)
+
+and to_expression_list scm_expr_list =
+  List.map
+    (fun scm_expr ->
+       match scm_to_sk scm_expr with
+       | None, Some sk_expr -> sk_expr
+       | Some sklet, None->
+           raise (Failure (errmsg_unexpected_sklet scm_expr))
+       | _ ->
+         failwith "Unexpected case.") scm_expr_list
+
+and to_array_var scm_expr_list =
+  let array_varinfo =
+    match scm_expr_list >> 0 with
+    | Id_e varname -> scm_register varname
+    | e -> raise (Failure (errmsg_unexpected_expr "identifier" e))
+  in
+  let offset_list = to_expression_list (List.tl scm_expr_list) in
+  mkVar ~offsets:offset_list array_varinfo
+
+and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
+  let fun_vi =
+    match fun_expr with
+    | Id_e fun_name ->
+      scm_register fun_name
+    | _ -> raise (Failure (errmsg_unexpected_expr "identifier" fun_expr))
+  in
+  let args = to_expression_list scm_expr_list in
+  SkApp (Bottom, Some fun_vi, args)
+
+
+
+let translate_join i_all_vs i_st_vs = ();;
+
 
 (** ------------------------ 5 -  EXPRESSION SET ----------------------------*)
 
@@ -1082,8 +1222,137 @@ let get_index_guard sktch =
 
 
 (* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)
+
+(** Includes passes to transform the code into an appropriate form *)
+
+let rec pass_remove_special_ops =
+  let remove_in_exprs =
+    transform_expr
+      (fun e -> match e with SkBinop _ -> true
+                           | SkApp _ -> true
+                           | _ -> false)
+      (fun rfun e ->
+         match e with
+         | SkBinop (op, e1, e2) ->
+           let e1' = rfun e1 in let e2' = rfun e2 in
+           (match op with
+            | Max ->
+              SkQuestion (SkBinop(Gt, e1', e2'), e1', e2')
+
+            | Min ->
+              SkQuestion (SkBinop(Lt, e1', e2'), e1', e2')
+
+            | Nand ->
+              SkUnop (Not, SkBinop (And, e1', e2'))
+
+            | Neq ->
+              SkUnop (Not, SkBinop (Eq, e1, e2))
+
+            | _ -> SkBinop (op, e1', e2'))
+
+         | SkApp (st, vo, args) ->
+           let args' = List.map rfun args in
+           (if List.length args' = 2 then
+             (** Might be a binary operator ... *)
+             (let e1 = args' >> 0 in let e2 = args' >> 1 in
+              match vo with
+              | Some var ->
+                (match String.lowercase var.Cil.vname with
+                 | "max" ->
+                   SkQuestion (SkBinop(Gt, e1, e2), e1, e2)
+                 | "min" ->
+                   SkQuestion (SkBinop(Lt, e1, e2), e1, e2)
+                 | _ -> SkApp(st, vo, args'))
+              | None ->
+                SkApp(st, vo, args'))
+            else
+              SkApp(st, vo, args'))
+
+         | _ -> failwith "Bad rec case.") identity identity
+  in
+  function
+  | SkLetIn (ve_list , letin) ->
+    SkLetIn (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list,
+             pass_remove_special_ops letin)
+  | SkLetExpr ve_list ->
+    SkLetExpr (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list)
+
+let rec pass_sequentialize sklet =
+  let rec reorganize ve_list let_queue =
+    (** A variable should be only bound once in a binding group, therefore
+        we can identify a binding only by the variables it binds to.
+        This supports only scalar types ! n *)
+    let modified_vars, vid_to_expr, depends_graph_unpure =
+      List.fold_left
+        (fun (modified_set, expr_map, dep_graph) (v, e) ->
+           match e with
+           | SkVar v -> modified_set, expr_map, dep_graph (* Identity binding *)
+           | _ ->
+             let vi =
+               try check_option (vi_of v)
+               with Failure s ->  failwith "Non-scalar type unsupported"
+             in
+             let expr_depends = used_in_skexpr e in
+             (VS.add vi modified_set,
+              IM.add vi.Cil.vid e expr_map,
+              IM.add vi.Cil.vid expr_depends dep_graph))
+        (VS.empty, IM.empty, IM.empty) ve_list
+    in
+    (* let depends_graph = IM.map (fun deps -> VS.inter deps modified_vars) *)
+    (*     depends_graph_unpure *)
+    (* in *)
+    (** We need to implement here the algorithm described in :
+        http://gallium.inria.fr/~xleroy/publi/parallel-move.pdf *)
+    let statement_order = VSOps.vids_of_vs modified_vars in
+    List.fold_left
+      (fun let_bindings vid ->
+         SkLetIn ([SkVarinfo (VSOps.find_by_id vid modified_vars),
+                   IM.find vid vid_to_expr], let_bindings))
+           let_queue statement_order
+    (** Analyze dependencies to produce bindings ordered such that
+        the sequence of bindings yields to the same state as the functional
+        version where all expressions are evaluated in one step. *)
+
+  in
+
+  let rec sequentialize_parallel_moves =
+    function
+    | SkLetIn (ve_list, letin) ->
+      reorganize ve_list (pass_sequentialize letin)
+    | SkLetExpr ve_list ->
+      reorganize ve_list (SkLetExpr [])
+  in
+  let rec remove_empty_lets =
+    function
+    | SkLetIn (ve_list, letin) ->
+      (match remove_empty_lets letin with
+       | Some let_tail ->
+         (match ve_list with
+          | [] -> Some let_tail
+          | _ -> Some (SkLetIn (ve_list, let_tail)))
+       | None ->
+         (match ve_list with
+          | [] -> None
+          | _ -> Some (SkLetExpr ve_list)))
+
+    | SkLetExpr ve_list ->
+      (match ve_list with
+       | [] -> None
+       | _ -> Some (SkLetExpr ve_list))
+  in
+  match remove_empty_lets (sequentialize_parallel_moves sklet) with
+  | Some sklet -> sklet
+  | None -> SkLetExpr []
+
+
+let sk_for_c sklet =
+  pass_sequentialize (pass_remove_special_ops sklet)
+
+
+(* Actual CIL translation *)
 open Cil
 open CilTools
+
 
 let deffile = { fileName = "skexpr_to_cil_translation";
                 globals = [];
@@ -1278,11 +1547,16 @@ let expr_to_cil fd temps e =
     | CChar c -> Const (CChr c)
     | CString s -> Const (CStr s)
     | CReal r -> Const (CReal (r, FFloat, None))
+
     | CNil -> failwith "Cannot convert Nil constant to Cil.\
                         There must be a mistake ..."
     | CBox _ -> failwith "Not yet implemented (CBox)"
-    | CUnop (op, c) -> skexpr_to_exp (SkUnop (op, SkConst c))
-    | CBinop (op, c1, c2) -> skexpr_to_exp (SkBinop (op, SkConst c1, SkConst c2))
+    | CUnop (op, c) ->
+      skexpr_to_exp (SkUnop (op, SkConst c))
+
+    | CBinop (op, c1, c2) ->
+      skexpr_to_exp (SkBinop (op, SkConst c1, SkConst c2))
+
     | _ -> failwith "Unsupported constants."
   in
   skexpr_to_exp e

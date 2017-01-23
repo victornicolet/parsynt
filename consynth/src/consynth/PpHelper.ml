@@ -2,15 +2,13 @@ open Printf
 open Format
 open Utils
 
-module SH = Map.Make(String)
-
 
 let colorPrefix = "\x1b"
 
 let colormap =
   List.fold_left2
-    (fun m k v -> SH.add k (colorPrefix^v) m)
-    SH.empty
+    (fun m k v -> SM.add k (colorPrefix^v) m)
+    SM.empty
     ["black"; "red"; "green"; "yellow"; "blue"; "violet"; "cyan"; "white";
      "i"; "u"; "b"; "grey";
      "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan"; "b-white"]
@@ -20,7 +18,7 @@ let colormap =
 
 let color cname =
   try
-    SH.find cname colormap
+    SM.find cname colormap
   with Not_found -> colorPrefix^"[0m"
 
 let default = colorPrefix^"[0m"

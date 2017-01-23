@@ -16,6 +16,7 @@ examples/Basic
 # OCaml
 consynth/_build
 consynth/canalysis/_build
+consynth/*.cpp
 *.mldylib
 *.mlib
 *.mllib
