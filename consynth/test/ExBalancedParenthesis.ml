@@ -45,16 +45,16 @@ let sketch_info =
     loop_name = name;
     host_function = make_empty_fundec ();
     ro_vars_ids = [a.vid];
-    scontext = { state_vars = _S_; all_vars = VS.union _S_ all_vs; index_vars = s; costly_exprs = ES.empty};
+    scontext = { state_vars = _S_; all_vars = VS.union _S_ all_vs; index_vars = s; costly_exprs = ES.empty; used_vars = VS.union _S_ all_vs};
     loop_body = _f_;
     join_body = SkLetExpr ([]);
     join_solution = Ast.Id_e "unsat";
-    init_values = Some [];
+    init_values = IM.empty;
     sketch_igu = s, (ini, g, u);
     reaching_consts = reach_const;
   };;
 
-let context = { state_vars = _S_; index_vars = (VS.singleton i); all_vars = all_vs; costly_exprs = ES.empty }
+let context = { state_vars = _S_; index_vars = (VS.singleton i); all_vars = all_vs; costly_exprs = ES.empty; used_vars = VS.union _S_ all_vs }
 let new_sketch  = discover sketch_info
 
 let new_f_ =

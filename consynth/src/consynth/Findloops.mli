@@ -36,6 +36,7 @@ module Cloop : sig
   val getStateVars : t -> VS.t
 end
 
+val funcRetExprs : exp IH.t
 val processFile: Cil.file -> Cloop.t Utils.IM.t * int list
 val processedLoops: unit -> Cloop.t IH.t
 val clear : unit -> unit

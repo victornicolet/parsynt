@@ -45,13 +45,25 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
       printf "Let expression@. %a@." SPretty.pp_c_sklet (sk_for_c sklet)
     | _ ->
       printf "Solution not translated@.");
+    let remap_init_values maybe_expr_list =
+
+      match maybe_expr_list with
+      | Some expr_list ->
+        List.fold_left2
+          (fun map vid ast_expr ->
+            IM.add vid ast_expr map)
+          IM.empty
+          (VSOps.vids_of_vs sketch.scontext.state_vars) expr_list
+      | None -> IM.empty
+    in
     {sketch with
      join_solution = sol_info.Codegen.join_body;
-     init_values = sol_info.Codegen.init_values} :: solved
+     init_values = remap_init_values sol_info.Codegen.init_values} :: solved
 
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let tbb_test_filename (solution : sketch_rep) =
+  (Conf.get_conf_string "tbb_examples_folder")^
   (Tbb.pbname_of_sketch solution)^".cpp"
 
 let output_tbb_test (solution : sketch_rep) =

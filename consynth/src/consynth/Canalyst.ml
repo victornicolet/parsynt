@@ -105,7 +105,7 @@ let cil2func loops =
        let loop_ident = new_loop_ident cl.Cl.host_function.C.vname in
        let stmt = C.mkBlock(cl.Cl.new_body) in
        let r, w = cl.Cl.rwset in
-       let vars = Cl.getAllVars cl in
+       let vars = remove_reserved_vars (Cl.getAllVars cl) in
        let stv = Cl.getStateVars cl in
        let func, figu = Cil2Func.cil2func (VS.union vars w) stv stmt (i,g,u) in
        let reaching_consts = cl.Cl.constant_in in
@@ -157,6 +157,9 @@ let func2sketch funcreps =
       let join_body = Sketch.Join.build state_vars loop_body in
       incr no_sketches;
       create_boundary_variables index_set;
+      (** Clean the variables sets : keep only variables used in the
+          loop body *)
+      let bound_in_sklet, used_vars_set = used_in_sklet loop_body in
       {
         id = !no_sketches;
         host_function = host_function;
@@ -165,13 +168,14 @@ let func2sketch funcreps =
         scontext =
           { state_vars = state_vars;
             index_vars = index_set;
+            used_vars = used_vars_set;
             all_vars = var_set;
             costly_exprs = ES.empty;
           };
         loop_body = loop_body;
         join_body = join_body;
         join_solution = Ast.Id_e "unsat";
-        init_values = Some [];
+        init_values = IM.empty;
         sketch_igu = sigu;
         reaching_consts = reach_consts;
       })

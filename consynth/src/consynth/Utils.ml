@@ -334,6 +334,9 @@ module CilTools = struct
   let gen_var_with_prefix vi prefix =
     {vi with vname = prefix^vi.vname}
 
+  let change_var_typ vi new_typ =
+    { vi with vtype = new_typ }
+
 end
 (**
     Extract the variables used in statements/expressions/instructions/..

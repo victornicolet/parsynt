@@ -495,6 +495,7 @@ let discover_for_id sketch varid =
       let xinfo_index = { context =
                             { state_vars = xinfo.context.index_vars ;
                               index_vars = VS.empty;
+                              used_vars = VS.empty;
                               all_vars = VS.empty;
                               costly_exprs = ES.empty;};
                           state_exprs = xinfo.index_exprs ;

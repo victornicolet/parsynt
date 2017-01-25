@@ -7,7 +7,7 @@ open PpHelper
 open VariableAnalysis
 
 module E = Errormsg
-module Pf = Map.Make(String)
+module SM = Map.Make(String)
 module VS = Utils.VS
 module LF = Liveness.LiveFlow
 module Ct = CilTools
@@ -282,7 +282,8 @@ end
 (** Each loop is stored according to the statement id *)
 let fileName = ref ""
 let programLoops = IH.create 10
-let programFuncs = ref Pf.empty
+let programFuncs = ref SM.empty
+let funcRetExprs= IH.create 10
 
 let clearLoops () =
   IH.clear programLoops
@@ -298,19 +299,19 @@ let getFuncWithLoops () : Cil.fundec list =
     (fun k v l ->
        let f =
          try
-           Pf.find v.Cloop.host_function.vname !programFuncs
+           SM.find v.Cloop.host_function.vname !programFuncs
          with Not_found -> raise (Failure "x")
        in
        f::l)
     programLoops []
 
 let addGlobalFunc (fd : Cil.fundec) =
-  programFuncs := Pf.add fd.svar.vname fd !programFuncs
+  programFuncs := SM.add fd.svar.vname fd !programFuncs
 
 let getGlobalFuncVS () =
   VS.of_list
     (List.map (fun (a,b) -> b)
-       (Pf.bindings (Pf.map (fun fd -> fd.svar) !programFuncs)))
+       (SM.bindings (SM.map (fun fd -> fd.svar) !programFuncs)))
 
 
 
@@ -329,7 +330,6 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
     | Loop (b, loc, o1, o2) ->
       let cloop = (Cloop.create s topFunc f) in
       let igu, stmts = get_loop_IGU s in
-      (* let conds, stmts' = search_loop_exits s stmts in*)
       begin
         match igu with
         | Some figu ->
@@ -350,7 +350,13 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
         (Failure ("Switch statement unexpected. "^
                   "Maybe you forgot to compute the CFG ?"))
 
-    | _ -> SkipChildren
+    | Return (maybe_exp, _) ->
+      (match maybe_exp with
+      | Some exp -> IH.add funcRetExprs topFunc.vid exp
+      | None -> ());
+      SkipChildren
+
+    | _ -> DoChildren
 end ;;
 
 
@@ -631,4 +637,5 @@ let processedLoops () =
 let clear () =
   fileName := "";
   clearLoops ();
-  programFuncs := Pf.empty
+  IH.clear funcRetExprs;
+  programFuncs := SM.empty

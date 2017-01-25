@@ -418,6 +418,16 @@ let rec vi_of sklv =
 
 let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
 
+let is_reserved_name s = not (uninterpeted s)
+
+(** Remove interpreted symbols from a set of vars *)
+let remove_reserved_vars vs =
+  VS.filter
+    (fun vi ->
+       (if uninterpeted vi.Cil.vname then
+          (if !debug then printf "@.Removing %s." vi.Cil.vname; true)
+        else false)) vs
+
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
@@ -752,6 +762,27 @@ let used_in_skexpr =
   let const_handler c= VS.empty in
   rec_expr join init case case_h const_handler var_handler
 
+
+let rec used_in_sklet =
+  function
+  | SkLetIn (ve_list, letin) ->
+    let bs1, us1 = (used_in_sklet letin) in
+    let bs2, us2 = (used_in_assignments ve_list) in
+    (VS.union bs1 bs2, VS.union us1 us2)
+  | SkLetExpr ve_list ->
+    used_in_assignments ve_list
+
+and used_in_assignments ve_list =
+  List.fold_left
+    (fun (bind_set, use_set) (v, e) ->
+       (VS.union bind_set
+          (match vi_of v with
+           | Some vi -> VS.singleton vi
+           | None -> VS.empty),
+        VS.union use_set (used_in_skexpr e)))
+    (VS.empty, VS.empty) ve_list
+
+
 (** ------------------------ 4 - SCHEME <-> SKETCH -------------------------- *)
 (** Translate basic scheme to the Sketch expressions
     @param env a mapping from variable ids to varinfos.
@@ -974,6 +1005,7 @@ module ES = Set.Make (
 type context = {
   state_vars : VS.t;
   index_vars : VS.t;
+  used_vars : VS.t;
   all_vars : VS.t;
   costly_exprs : ES.t
 }
@@ -981,15 +1013,18 @@ type context = {
 let mk_ctx vs stv = {
   state_vars = stv;
   index_vars = VS.empty;
+  used_vars = VS.diff stv vs;
   all_vars = vs;
   costly_exprs = ES.empty
 }
 
 let ctx_update_vsets ctx vs =
   let new_allvs = VS.union ctx.all_vars vs in
+  let new_usedvs = VS.union ctx.used_vars vs in
   let new_stvs = VS.union ctx.state_vars vs in
   { ctx with
     state_vars = new_stvs;
+    used_vars = new_usedvs;
     all_vars =  new_allvs }
 
 let ctx_add_cexp ctx cexp =
@@ -1203,7 +1238,7 @@ type sketch_rep =
     loop_body : sklet;
     join_body : sklet;
     join_solution : Ast.expr;
-    init_values : Ast.expr list option;
+    init_values : Ast.expr IM.t;
     sketch_igu : sigu;
     reaching_consts : skExpr IM.t
   }
@@ -1252,16 +1287,22 @@ let rec pass_remove_special_ops =
 
          | SkApp (st, vo, args) ->
            let args' = List.map rfun args in
-           (if List.length args' = 2 then
+           (if List.length args' >= 1 then
              (** Might be a binary operator ... *)
-             (let e1 = args' >> 0 in let e2 = args' >> 1 in
+             (let e1 = args' >> 0 in
               match vo with
               | Some var ->
                 (match String.lowercase var.Cil.vname with
                  | "max" ->
+                   let e2 = args' >> 1 in
                    SkQuestion (SkBinop(Gt, e1, e2), e1, e2)
                  | "min" ->
+                   let e2 = args' >> 1 in
                    SkQuestion (SkBinop(Lt, e1, e2), e1, e2)
+                 | "add1" ->
+                   SkBinop (Plus, e1, SkConst (CInt 1))
+                 | "sub1" ->
+                   SkBinop (Minus, e1, SkConst (CInt 1))
                  | _ -> SkApp(st, vo, args'))
               | None ->
                 SkApp(st, vo, args'))
