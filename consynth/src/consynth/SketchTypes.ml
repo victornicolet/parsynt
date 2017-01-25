@@ -955,8 +955,17 @@ let rec scm_to_sk scm =
 and rosette_state_struct_to_sklet scm_expr_list =
   let stv_vars_list = VSOps.varlist join_info.initial_state_vars in
   let sk_expr_list = to_expression_list scm_expr_list in
-  SkLetExpr (ListTools.pair (List.map (fun vi -> SkVarinfo vi) stv_vars_list)
-               sk_expr_list)
+  try
+    SkLetExpr (ListTools.pair (List.map (fun vi -> SkVarinfo vi) stv_vars_list)
+                 sk_expr_list)
+  with Invalid_argument s ->
+    eprintf "FAILURE :@\n\
+             Failed to translate state in list of bindings, got %i state \
+             variables and state was %i long.@\n\
+             ---> Did you initialize the join_info before using scm_to_sk ?"
+      (VS.cardinal join_info.initial_state_vars)
+      (List.length sk_expr_list);
+    failwith "Failure in rosette_state_struct_to_sklet."
 
 and to_expression_list scm_expr_list =
   List.map
@@ -1237,7 +1246,7 @@ type sketch_rep =
     scontext : context;
     loop_body : sklet;
     join_body : sklet;
-    join_solution : Ast.expr;
+    join_solution : sklet;
     init_values : Ast.expr IM.t;
     sketch_igu : sigu;
     reaching_consts : skExpr IM.t

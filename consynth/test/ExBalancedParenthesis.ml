@@ -48,7 +48,7 @@ let sketch_info =
     scontext = { state_vars = _S_; all_vars = VS.union _S_ all_vs; index_vars = s; costly_exprs = ES.empty; used_vars = VS.union _S_ all_vs};
     loop_body = _f_;
     join_body = SkLetExpr ([]);
-    join_solution = Ast.Id_e "unsat";
+    join_solution = SkLetExpr ([]);
     init_values = IM.empty;
     sketch_igu = s, (ini, g, u);
     reaching_consts = reach_const;

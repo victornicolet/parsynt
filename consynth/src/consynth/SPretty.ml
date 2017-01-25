@@ -562,7 +562,8 @@ let cp_expr_list fmt el =
     also check for dependencies in the list of bindings and reorder them.
 *)
 
-
+let printing_for_join = ref false
+let cpp_class_members_set = ref VS.empty
 
 let rec pp_c_expr fmt e =
   match e with
@@ -595,7 +596,22 @@ let rec pp_c_expr fmt e =
 
 and pp_c_var fmt v =
   match v with
-  | SkVarinfo v -> fprintf fmt "%s" v.Cil.vname
+  | SkVarinfo v ->
+    let var_name =
+      if !printing_for_join then
+          if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
+            match is_right_state_varname v.Cil.vname with
+            | real_varname, true ->
+              (rs_prefix^"my_"^real_varname)
+            | _ , false ->
+              "my_"^v.Cil.vname
+          else
+            v.Cil.vname
+      else
+        v.Cil.vname
+    in
+    fprintf fmt "%s" var_name
+
   | SkArray (v, offset) -> fprintf fmt "%a[%a]" pp_c_var v pp_c_expr offset
   | SkTuple vs -> fprintf fmt "(<TUPLE>)"
 

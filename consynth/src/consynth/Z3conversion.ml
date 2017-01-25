@@ -295,7 +295,6 @@ and get_binop fundecl =
   | OP_XOR -> Some Xor
   | _ -> None
 
-
 (** Wrap translation functions and helpers in an object *)
 
 class z3Translator vars =
@@ -307,4 +306,15 @@ class z3Translator vars =
     val mutable context = mk_context []
     method expr_to_z3 e = of_expr context z3vars e
     method z3_to_expr ez = from_expr skvars ez
+    method simplify_expr e =
+      self#z3_to_expr (simplify_z3 ~ctx:context (self#expr_to_z3 e))
+    method simplify_let sklet =
+      let simpl_velist =
+        List.map (fun (v,e) -> (v, self#simplify_expr e))
+      in
+      match sklet with
+      | SkLetIn (ve_list, letin) ->
+        SkLetIn(simpl_velist ve_list, self#simplify_let letin)
+      | SkLetExpr (ve_list) ->
+        SkLetExpr(simpl_velist ve_list)
   end

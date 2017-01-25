@@ -174,7 +174,7 @@ let func2sketch funcreps =
           };
         loop_body = loop_body;
         join_body = join_body;
-        join_solution = Ast.Id_e "unsat";
+        join_solution = SkLetExpr ([]);
         init_values = IM.empty;
         sketch_igu = sigu;
         reaching_consts = reach_consts;

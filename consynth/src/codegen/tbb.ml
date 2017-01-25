@@ -78,7 +78,7 @@ let makeConstructor cn ct cid cargs cb cinit =
     cargs = cargs; cbody = cb; cinitializers = cinit;}
 
 let pp_cpp_constructor fmt cpp_constructor =
-  fprintf fmt "@[<hv 2>%s(%a):@;%a {@[<hov 2>%s@]}@]"
+  fprintf fmt "@[<hv 2>%s(%a):@;%a {@[<hov 2>%s@]}@]@\n"
     (* Constructor name *)
     cpp_constructor.cname
     (* Constructor arguments *)
@@ -218,6 +218,10 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
          (Ct.psprint80 dn_type vi.vtype) vi.vname vi.vname)
     (VS.union pb.scontext.used_vars pb.scontext.state_vars);
   fprintf fmt "@\n";
+  (* Index bounds must be prefixed by "my_" *)
+  let b, e = {b with vname = "my_"^b.vname},
+             {e with vname = "my_"^e.vname}
+  in
   (* Bounds intialization *)
   fprintf fmt
     "@[<v>\
@@ -347,28 +351,58 @@ let make_tbb_class pb =
         private_vars_args
         (mkStmt (Instr []))
         init_cstr_intializers
-    in
+  in
+  (** TBB uses a method operator() that implements the loop body *)
+  let tbb_operator =
     let operator_body_printer fmt ()  =
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
         (fun fmt () ->
            fprintf fmt "@[%a@]@;" pp_c_sklet (sk_for_c pb.loop_body))
     in
-    let tbb_operator =
-      {
-        mid = 0;
-        mtyp = TVoid [];
-        mname = "operator()";
-        mattributes = [];
-        margs = [];
-        mcpp = true;
-        mlocals = VS.empty;
-        mbody = (mkStmt (Instr []));
-        mprint = Some operator_body_printer;
-      }
+    let operator_arg =
+      (fprintf str_formatter "const blocked_range<%s>& r" iterator_type_name;
+       flush_str_formatter ())
     in
-    tbb_class.constructors <- [tbb_cstr_copy; tbb_cstr_init];
-    tbb_class.public_members <- [tbb_operator];
-    tbb_class
+    {
+      mid = 0;
+      mtyp = TVoid [];
+      mname = "operator()";
+      mattributes = [];
+      margs = [SpecialArg operator_arg];
+      mcpp = true;
+      mlocals = VS.empty;
+      mbody = (mkStmt (Instr []));
+      mprint = Some operator_body_printer;
+    }
+  in
+  (** Join operation : the join method joins the current instance with another
+      instance (the right state) *)
+  let tbb_join =
+    let join_body_printer fmt () =
+      printing_for_join := true;
+      cpp_class_members_set := tbb_class.public_vars;
+      fprintf fmt "%a" pp_c_sklet pb.join_solution;
+      printing_for_join := false
+    in
+    let join_arg =
+      (fprintf str_formatter "const blocked_range<%s>& r" iterator_type_name;
+       flush_str_formatter ())
+    in
+    {
+      mid = 1;
+      mtyp = TVoid [];
+      mname = "join";
+      mattributes = [];
+      margs = [SpecialArg join_arg];
+      mcpp = true;
+      mlocals = VS.empty;
+      mbody = (mkStmt (Instr []));
+      mprint = Some join_body_printer;
+    }
+  in
+  tbb_class.constructors <- [tbb_cstr_copy; tbb_cstr_init];
+  tbb_class.public_members <- [tbb_operator; tbb_join];
+  tbb_class
 
 let fprint_sep fmt = fprintf fmt "@.@."
 

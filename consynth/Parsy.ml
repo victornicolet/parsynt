@@ -6,9 +6,10 @@ open Getopt
 open SketchTypes
 open Cil
 
+
 module L = Local
 module C = Canalyst
-
+module Z3c = Z3conversion
 
 let debug = ref false
 let elapsed_time = ref 0.0
@@ -31,22 +32,33 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
     printf "@.%sSOLUTION for %s %s:@.%a"
       (color "green") lp_name default Ast.pp_expr_list parsed;
     let sol_info = Codegen.get_solved_sketch_info parsed in
-    init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
-    let sk_sklet_sol, sk_skexpr_sol =
-      try
-        scm_to_sk sol_info.Codegen.join_body
-      with Failure s ->
-        (printf "Failure : %s@." s; None, None)
-    in
-    (match sk_skexpr_sol, sk_sklet_sol with
-    | Some skexpr, None ->
-      printf "Expression %a@." SPretty.pp_c_expr skexpr
-    | None, Some sklet ->
-      printf "Let expression@. %a@." SPretty.pp_c_sklet (sk_for_c sklet)
-    | _ ->
-      printf "Solution not translated@.");
-    let remap_init_values maybe_expr_list =
+    (** Simplify the solution using Z3 *)
+    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in
+    let translated_join_body =
+      SketchTypes.init_scm_translate
+        sketch.scontext.all_vars sketch.scontext.state_vars;
+      match scm_to_sk sol_info.Codegen.join_body with
+      | Some sklet, _ ->
+        let c_style_solution = sk_for_c sklet in
+        (* (try (z3t#simplify_let c_style_solution) *)
+        (*  with Failure s -> *)
+        (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
+        (*     eprintf "MESSAGE: %s@\n" s; *)
+        (*     c_style_solution)) *)
+        c_style_solution
 
+      | None, Some expr ->
+        (eprintf "Failed in translation, we got an expression %a for the join."
+           SPretty.pp_skexpr expr;
+         failwith "Failed to translate the solution in a function in our\
+                  intermediate representation.")
+
+      | _ ->
+        failwith "Failed to translate the solution in our \
+                  intermediate representation."
+    in
+    init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
+    let remap_init_values maybe_expr_list =
       match maybe_expr_list with
       | Some expr_list ->
         List.fold_left2
@@ -57,7 +69,7 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
       | None -> IM.empty
     in
     {sketch with
-     join_solution = sol_info.Codegen.join_body;
+     join_solution = translated_join_body;
      init_values = remap_init_values sol_info.Codegen.init_values} :: solved
 
 
@@ -197,7 +209,7 @@ let main () =
           (color "b") default
           SPretty.pp_sklet sketch.loop_body
           (color "b") default
-          Ast.pp_expr sketch.join_solution;
+          SPretty.pp_sklet sketch.join_solution;
         let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
         printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
 
