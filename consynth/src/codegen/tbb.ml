@@ -78,7 +78,7 @@ let makeConstructor cn ct cid cargs cb cinit =
     cargs = cargs; cbody = cb; cinitializers = cinit;}
 
 let pp_cpp_constructor fmt cpp_constructor =
-  fprintf fmt "@[<hv 2>%s(%a)@;%a {@[<hov 2>%s@]}@]"
+  fprintf fmt "@[<hv 2>%s(%a):@;%a {@[<hov 2>%s@]}@]"
     (* Constructor name *)
     cpp_constructor.cname
     (* Constructor arguments *)
@@ -221,10 +221,13 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
   (* Bounds intialization *)
   fprintf fmt
     "@[<v>\
-     @[if (b < 0 || r.begin() < b)@]@\n\
-     @[b = r.begin();@;@]@\n\
-     @[if (e < 0 || r.end() > e)@]@\n\
-     @[e = r.end();@]@]@\n@\n";
+     @[if (%s < 0 || r.begin() < %s)@]@\n\
+     @[%s = r.begin();@;@]@\n\
+     @[if (%s < 0 || r.end() > %s)@]@\n\
+     @[%s = r.end();@]@]@\n@\n"
+    b.vname b.vname b.vname
+    e.vname e.vname e.vname
+  ;
   (* Main loop *)
   fprintf fmt
     "@[<hv 2>for (%s %s = r.begin(); %s!= r.end(); ++%s) {@;%a@;}@]@;"
@@ -256,17 +259,32 @@ let make_tbb_class pb =
     Ct.change_var_typ (left_index_vi index_var) index_type
   in
   let end_index_var =
-    Ct.change_var_typ (left_index_vi index_var) index_type
+    Ct.change_var_typ (right_index_vi index_var) index_type
   in
 
   tbb_class.private_vars <- private_vars_of_sketch pb;
-  tbb_class.public_vars <- pb.scontext.state_vars;
+  tbb_class.public_vars <-
+    VS.union pb.scontext.state_vars
+      (VSOps.of_varlist [begin_index_var; end_index_var]);
+  let bounds_initial_values =
+    IM.add begin_index_var.vid
+         (SkConst
+            (CInt64 (Int64.of_string
+                       (Conf.get_conf_string "tbb_begin_index_value"))))
+      (IM.add end_index_var.vid
+            (SkConst
+               (CInt64
+                  (Int64.of_string
+                     (Conf.get_conf_string "tbb_end_index_value")))) IM.empty)
+  in
   let public_vars_inits =
     let maybe_inits =
       List.map
         (fun vi ->
            try vi, Some (IM.find vi.vid pb.reaching_consts)
            with Not_found ->
+           try vi, Some (IM.find vi.vid bounds_initial_values) with
+           | Not_found ->
              (try
                 (match scm_to_sk (IM.find vi.vid pb.init_values) with
                  | _ , Some e -> vi, Some e

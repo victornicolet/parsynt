@@ -4,7 +4,7 @@
 
 using namespace tbb;
 
-typedef __iterator_type__ long;
+typedef long  __iterator_type__;
 
 class ParallelSecond_max1 {
 private:
@@ -13,20 +13,23 @@ private:
 public:
   int  my_m;
   int  my_m2;
+  __iterator_type__  my_i_begin_;
+  __iterator_type__  my_i_end_;
   
   ParallelSecond_max1(ParallelSecond_max1& x, split)
-    my_a(x.a), my_m(0), my_m2(0) {}
-  ParallelSecond_max1(int * a) my_a(a), my_m(0), my_m2(0) {}
+    my_a(x.a), my_m(0), my_m2(0), my_i_begin_(-1), my_i_end_(-1) {}
+  ParallelSecond_max1(int * a)
+    my_a(a), my_m(0), my_m2(0), my_i_begin_(-1), my_i_end_(-1) {}
   void  operator()()
     {
     int * a = my_a;
     int  m = my_m;
     int  m2 = my_m2;
     
-    if (b < 0 || r.begin() < b)
-    b = r.begin(); 
-    if (e < 0 || r.end() > e)
-    e = r.end();
+    if (i_begin_ < 0 || r.begin() < i_begin_)
+    i_begin_ = r.begin(); 
+    if (i_end_ < 0 || r.end() > i_end_)
+    i_end_ = r.end();
     
     for (__iterator_type__ i = r.begin(); i!= r.end(); ++i) {
        m2 = ((m2 > ((m < a[i]) ? m : a[i])) ? m2 : ((m < a[i]) ? m : a[i]));
