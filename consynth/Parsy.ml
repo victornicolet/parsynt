@@ -10,6 +10,7 @@ open Cil
 module L = Local
 module C = Canalyst
 module Z3c = Z3conversion
+module Pf = Proofs
 
 let debug = ref false
 let elapsed_time = ref 0.0
@@ -33,19 +34,18 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
       (color "green") lp_name default Ast.pp_expr_list parsed;
     let sol_info = Codegen.get_solved_sketch_info parsed in
     (** Simplify the solution using Z3 *)
-    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in
+    (* let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
     let translated_join_body =
       SketchTypes.init_scm_translate
         sketch.scontext.all_vars sketch.scontext.state_vars;
       match scm_to_sk sol_info.Codegen.join_body with
       | Some sklet, _ ->
-        let c_style_solution = sk_for_c sklet in
         (* (try (z3t#simplify_let c_style_solution) *)
         (*  with Failure s -> *)
         (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
         (*     eprintf "MESSAGE: %s@\n" s; *)
         (*     c_style_solution)) *)
-        c_style_solution
+        sklet
 
       | None, Some expr ->
         (eprintf "Failed in translation, we got an expression %a for the join."
@@ -70,7 +70,7 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
     in
     {sketch with
      join_solution = translated_join_body;
-     init_values = remap_init_values sol_info.Codegen.init_values} :: solved
+     init_values = remap_init_values sol_info.Codegen.init_values}::solved
 
 
 (** Generating a TBB implementation of the parallel solution discovered *)
@@ -89,6 +89,26 @@ let output_tbb_test (solution : sketch_rep) =
 let output_tbb_tests (solutions : sketch_rep list) =
   List.iter output_tbb_test solutions
 
+
+(** Generating Dafny proofs *)
+let dafny_proof_filename (sol : sketch_rep) =
+  (Conf.get_conf_string "dafny_examples_folder")^
+  (Pf.filename_of_solution sol)^".dfy"
+
+let output_dafny_proof (solution : sketch_rep) =
+  let dafny_file_oc = open_out (dafny_proof_filename solution) in
+  let dafny_file_out_fmt =
+    Format.make_formatter (output dafny_file_oc) (fun () -> flush dafny_file_oc)
+  in
+  Pf.gen_proof_vars solution;
+  Pf.pp_all_and_clear dafny_file_out_fmt;
+  fprintf dafny_file_out_fmt "@.";
+  close_out dafny_file_oc
+
+let output_dafny_proofs (sols : sketch_rep list) : unit =
+  List.iter output_dafny_proof sols
+
+(** --------------------------------------------------------------------------*)
 
 let main () =
   parse_cmdline options print_endline;
@@ -217,7 +237,7 @@ let main () =
      )
   finally_solved);
   output_tbb_tests finally_solved;
-
+  output_dafny_proofs finally_solved;
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

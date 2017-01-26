@@ -1,6 +1,6 @@
 #include <iostream>
 #include <tbb/tbb.h>
-#include "sum_array1.h.h"
+#include "sum_array1.h"
 
 using namespace tbb;
 
@@ -15,11 +15,13 @@ public:
   __iterator_type__  my_i_begin_;
   __iterator_type__  my_i_end_;
   
+  
   ParallelSum_array1(ParallelSum_array1& x, split):
     my_a(x.a), my_sum(0), my_i_begin_(-1), my_i_end_(-1) {}
   
   ParallelSum_array1(int * a):
     my_a(a), my_sum(0), my_i_begin_(-1), my_i_end_(-1) {}
+  
   
   void  operator()(const blocked_range<__iterator_type__>& r)
     {

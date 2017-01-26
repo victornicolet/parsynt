@@ -163,8 +163,8 @@ let pp_class fmt cls =
                  private:@;%a@]@;\
                  @[<v 2>\
                  public:@;\
-                 %a@;\
-                 %a@;\
+                 %a@\n@\n\
+                 %a@\n@\n\
                  %a@]@;"
       pp_members cls.private_vars
       pp_members cls.public_vars
@@ -285,15 +285,10 @@ let make_tbb_class pb =
     let maybe_inits =
       List.map
         (fun vi ->
-           try vi, Some (IM.find vi.vid pb.reaching_consts)
+           try vi, Some (get_init_value pb vi)
            with Not_found ->
-           try vi, Some (IM.find vi.vid bounds_initial_values) with
-           | Not_found ->
-             (try
-                (match scm_to_sk (IM.find vi.vid pb.init_values) with
-                 | _ , Some e -> vi, Some e
-                 | _ -> raise Not_found)
-              with Not_found -> vi, None))
+           try vi, Some (IM.find vi.vid bounds_initial_values)
+           with Not_found -> vi, None)
         (VSOps.varlist tbb_class.public_vars)
     in
     List.map
@@ -381,7 +376,7 @@ let make_tbb_class pb =
     let join_body_printer fmt () =
       printing_for_join := true;
       cpp_class_members_set := tbb_class.public_vars;
-      fprintf fmt "%a" pp_c_sklet pb.join_solution;
+      fprintf fmt "%a" pp_c_sklet (sk_for_c pb.join_solution);
       printing_for_join := false
     in
     let join_arg =
@@ -459,7 +454,7 @@ let fprint_implementations fmt pb tbb_class =
 
 
 let fprint_tbb_class fmt pb tbb_class =
-  fprint_test_prelude fmt ((pbname_of_sketch pb)^".h");
+  fprint_test_prelude fmt (pbname_of_sketch pb);
   pp_class fmt tbb_class;
   fprint_sep fmt;
   fprint_implementations fmt pb tbb_class

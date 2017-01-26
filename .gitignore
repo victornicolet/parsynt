@@ -17,6 +17,7 @@ examples/Basic
 consynth/_build
 consynth/canalysis/_build
 consynth/tbb_examples/*.cpp
+consynth/dafny_examples/*.dfy
 *.mldylib
 *.mlib
 *.mllib

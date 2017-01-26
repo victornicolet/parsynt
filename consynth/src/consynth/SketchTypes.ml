@@ -428,6 +428,11 @@ let remove_reserved_vars vs =
           (if !debug then printf "@.Removing %s." vi.Cil.vname; true)
         else false)) vs
 
+(** When an expression is supposed to be a constant *)
+let force_constant expr =
+  match expr with
+  | SkConst c -> c
+  | _ -> failwith "Force_constant failure."
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
@@ -1114,6 +1119,11 @@ let rec res_type t =
   | Function (t, t') -> t'
   | _ -> t
 
+let array_type t =
+  match t with
+  | Vector (t, _) -> t
+  | _ -> raise (Invalid_argument "Array type must be applied to array types.")
+
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
@@ -1263,6 +1273,13 @@ let get_index_varset sktch =
 
 let get_index_guard sktch =
   let idx, (i, g, u) = sktch.sketch_igu in g
+
+let get_init_value sktch vi =
+  try IM.find vi.Cil.vid sktch.reaching_consts
+  with Not_found ->
+    (match scm_to_sk (IM.find vi.Cil.vid sktch.init_values) with
+     | _ , Some e -> e  | _ -> raise Not_found)
+
 
 
 (* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)
