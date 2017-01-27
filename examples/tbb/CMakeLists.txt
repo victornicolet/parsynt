@@ -12,6 +12,6 @@ set(SOURCE_FILES
         Examples/ExampleUnit.h
         second_min.cpp
         main.cpp
-        )
+        Examples/unitary_examples/mts.cpp)
 
 add_executable(tbb_test ${SOURCE_FILES})

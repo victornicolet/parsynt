@@ -319,7 +319,8 @@ module CilTools = struct
   let rec is_of_int_type vitype =
     match vitype with
     | TInt _ -> not (is_of_bool_type vitype)
-    | f -> (match fun_ret_type f with Some x -> is_of_real_type x | None -> false)
+    | f -> (match fun_ret_type f with Some x -> is_of_real_type x
+                                    | None -> false)
 
   let combine_expression_option op e1 e2 t=
     match e1, e2 with

@@ -177,6 +177,33 @@ Examples/Stopwatch.cpp.s:
 	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/Stopwatch.cpp.s
 .PHONY : Examples/Stopwatch.cpp.s
 
+Examples/unitary_examples/mts.o: Examples/unitary_examples/mts.cpp.o
+
+.PHONY : Examples/unitary_examples/mts.o
+
+# target to build an object file
+Examples/unitary_examples/mts.cpp.o:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/unitary_examples/mts.cpp.o
+.PHONY : Examples/unitary_examples/mts.cpp.o
+
+Examples/unitary_examples/mts.i: Examples/unitary_examples/mts.cpp.i
+
+.PHONY : Examples/unitary_examples/mts.i
+
+# target to preprocess a source file
+Examples/unitary_examples/mts.cpp.i:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/unitary_examples/mts.cpp.i
+.PHONY : Examples/unitary_examples/mts.cpp.i
+
+Examples/unitary_examples/mts.s: Examples/unitary_examples/mts.cpp.s
+
+.PHONY : Examples/unitary_examples/mts.s
+
+# target to generate assembly for a file
+Examples/unitary_examples/mts.cpp.s:
+	$(MAKE) -f CMakeFiles/tbb_test.dir/build.make CMakeFiles/tbb_test.dir/Examples/unitary_examples/mts.cpp.s
+.PHONY : Examples/unitary_examples/mts.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -246,6 +273,9 @@ help:
 	@echo "... Examples/Stopwatch.o"
 	@echo "... Examples/Stopwatch.i"
 	@echo "... Examples/Stopwatch.s"
+	@echo "... Examples/unitary_examples/mts.o"
+	@echo "... Examples/unitary_examples/mts.i"
+	@echo "... Examples/unitary_examples/mts.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
