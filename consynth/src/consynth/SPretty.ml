@@ -13,7 +13,7 @@ let ch_l_bools = ref ""
 let ch_r_nums = ref ""
 let ch_r_bools = ref ""
 
-let current_expr_depth = ref 1
+let current_expr_depth = ref 2
 let state_struct_name = ref "__state"
 
 let state_vars = ref VS.empty
@@ -565,21 +565,27 @@ let cp_expr_list fmt el =
 let printing_for_join = ref false
 let cpp_class_members_set = ref VS.empty
 
-let rec pp_c_expr fmt e =
+let rec pp_c_expr ?(for_dafny = false) fmt e =
   match e with
   | SkVar v -> pp_c_var fmt v
   | SkConst c -> pp_skexpr fmt e
 
   | SkUnop (op, e1) ->
-    fprintf fmt "@[%s %a]@" (string_of_symb_unop op) pp_c_expr e1
+    fprintf fmt "@[%s %a]@" (string_of_symb_unop op)
+      (pp_c_expr ~for_dafny:for_dafny) e1
 
   | SkBinop (op, e1, e2) ->
     fprintf fmt "@[<hov 2>(%a %s %a)@]"
-      pp_c_expr e1 (string_of_symb_binop op) pp_c_expr e2
+      (pp_c_expr ~for_dafny:for_dafny) e1 (string_of_symb_binop op)
+      (pp_c_expr ~for_dafny:for_dafny) e2
 
   | SkQuestion (c, e1, e2) ->
-    fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]"
-      pp_c_expr c pp_c_expr e1 pp_c_expr e2
+    (if for_dafny then
+       fprintf fmt "@[<hov 2>if %a then@;%a else@;%a@]"
+    else
+      fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]")
+      (pp_c_expr ~for_dafny:for_dafny) c (pp_c_expr ~for_dafny:for_dafny) e1
+      (pp_c_expr ~for_dafny:for_dafny) e2
 
   | SkApp (t, vo, args) ->
     (match vo with
@@ -612,14 +618,15 @@ and pp_c_var fmt v =
     in
     fprintf fmt "%s" var_name
 
-  | SkArray (v, offset) -> fprintf fmt "%a[%a]" pp_c_var v pp_c_expr offset
+  | SkArray (v, offset) -> fprintf fmt "%a[%a]" pp_c_var v
+                             (pp_c_expr ~for_dafny:false) offset
   | SkTuple vs -> fprintf fmt "(<TUPLE>)"
 
 and pp_c_expr_list fmt el =
   PpHelper.ppli fmt ~sep:" " pp_c_expr el
 
 let pp_c_assignment fmt (v, e) =
-  fprintf fmt "@[<hov 2> %a = %a;@]" pp_c_var v pp_c_expr e
+  fprintf fmt "@[<hov 2> %a = %a;@]" pp_c_var v (pp_c_expr ~for_dafny:false) e
 
 let pp_c_assignment_list =
   pp_print_list

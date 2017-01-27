@@ -5,6 +5,42 @@ open SketchTypes
 open SPretty
 
 
+
+type type_simple
+type type_composed
+
+type _ dafny_basic_type =
+  | Int : type_simple dafny_basic_type
+  | Real: type_simple dafny_basic_type
+  | Bool: type_simple dafny_basic_type
+  | Bottom : type_simple dafny_basic_type
+  | Sequence: type_simple dafny_basic_type -> type_composed dafny_basic_type
+
+
+let rec string_of_dt : type a. a dafny_basic_type -> string =
+  function
+  | Sequence t -> (fprintf str_formatter
+                    "seq<%s>" (string_of_dt t);
+                   flush_str_formatter ())
+  | Int -> "int"
+  | Real -> "real"
+  | Bool -> "bool"
+  | Bottom -> "type_error"
+
+
+let pp_dfy_typ fmt t =
+  fprintf fmt "%s" (string_of_dt t)
+
+let rec dfy_type_of_symb_type : symbolic_type -> type_simple dafny_basic_type =
+  function
+  | Integer -> Int
+  | Num -> Real
+  | Real -> Real
+  | Boolean -> Bool
+  | _ -> Bottom
+
+let pp_converted_stype fmt stype =
+  pp_dfy_typ fmt (dfy_type_of_symb_type stype)
 (* Conf variables :
    - Suffix for the Join : dafny_join_suffix
    - Prefix for the homorphism : dafny_hom_prefix
@@ -69,16 +105,17 @@ let pp_dfy fmt (s, e, for_join) =
          | _ -> failwith "Cannot generate proofs for tuples")
       expr
   in
-  pp_c_expr fmt (replace_varnames e)
+  (pp_c_expr ~for_dafny:true) fmt (replace_varnames e)
 (** Print the function corresponding to one variable. *)
 
 let pp_function_body fmt (pfv, s) =
-  fprintf fmt "if %s == [] then %a else %a"
+  fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
+               else @;%a@;@]"
     s pp_constants pfv.empty_value pp_dfy (s, pfv.function_expr, false)
 
 let pp_function fmt (pfv, s) =
-  fprintf fmt "@[%s(%s: seq<%a>): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
-    pfv.name s pp_typ pfv.in_type pp_typ pfv.out_type
+  fprintf fmt "@[function %s(%s: seq<%a>): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
+    pfv.name s pp_converted_stype pfv.in_type pp_converted_stype pfv.out_type
     pp_function_body (pfv, s)
 
 
@@ -90,12 +127,12 @@ let pp_join fmt pfv =
   let pp_args fmt thread =
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt pfv -> fprintf fmt "%s%s : %a"
-          thread pfv.name pp_typ pfv.out_type)
+          thread pfv.name pp_converted_stype pfv.out_type)
       fmt
       pfv.join_depends
   in
   fprintf fmt "@[function %s%s(%a, %a): %a@]@\n@[<v 2>{@\n%a@]@\n}@\n@\n"
-    pfv.name join_suffix pp_args "left" pp_args "right" pp_typ pfv.out_type
+    pfv.name join_suffix pp_args "left" pp_args "right" pp_converted_stype pfv.out_type
     pp_dfy ("", pfv.join_expr, true)
 
 (** Print the lemma ensuring we have an homomorphism *)
@@ -117,26 +154,43 @@ let pp_func_of_concat fmt (pfv, s, t) =
 let pp_joined_res fmt (pfv, s, t) =
   let print_args fmt seqname =
     pp_print_list
-      ~pp_sep:(fun fmt () -> fprintf fmt ",@;")
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt pfv -> fprintf fmt "%s(%s)" pfv.name seqname)
       fmt
       pfv.join_depends
   in
   fprintf fmt "%s(%a, %a)"
-    (hom_prefix^pfv.name)
+    (pfv.name^join_suffix)
     print_args s print_args t
 
+let pp_depend_lemmas fmt (pfv, s, t) =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt "")
+    (fun fmt dep_pfv -> fprintf fmt "%s%s(%s, %s[..|%s| - 1]);@;"
+        hom_prefix dep_pfv.name s t t)
+    fmt
+    (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
 
 let pp_hom fmt pfv s t =
-  fprintf fmt "@[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
+  fprintf fmt "@\n\
+               @[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
                @[ensures %a == %a@]@\n\
                @[<v 2>{@\n\
-               if %s == [] @;{@;%a@} else {@;\
-               calc{@\n%a@\n=={%a}@\n%a;@\n}@;}@\n}@]@\n"
-    hom_prefix pfv.name s pp_typ pfv.in_type t pp_typ pfv.in_type
+               if %s == [] @;{@;%a@\n\
+               } else {@;\
+               calc{@\n%a;@\n\
+               @[<hv 2>=={@;%a%a@;}@]@\n%a;\
+               @\n} // End calc.\
+               @]@\n} // End else.\
+               @]@\n} // End lemma.\
+               @\n"
+    hom_prefix pfv.name s pp_converted_stype pfv.in_type t
+    pp_converted_stype pfv.in_type
     pp_func_of_concat (pfv, s, t) pp_joined_res (pfv, s, t)
     t pp_assertion_emptylist (s,t)
-    pp_func_of_concat (pfv, s, t) pp_assertion_concat (s,t)
+    pp_func_of_concat (pfv, s, t)
+    (* Use hommorphisms lemmas + default assertion *)
+    pp_depend_lemmas (pfv, s, t) pp_assertion_concat (s,t)
     pp_joined_res (pfv, s, t)
 
 
