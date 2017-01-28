@@ -28,6 +28,7 @@ std::list<string> examples_bool_to_int= {"lbk", "col"};
 std::list<string> examples_int_to_position = {"pop", "pot", "fs1", "len"};
 std::list<string> examples_int_to_bool = {"los","sor"};
 std::list<string> examples_bool_to_bool= {"bal", "s01"};
+std::list<string> examples_custom = {"ins"};
 
 bool mem (std::list<string> li, string el) {
     for (auto i = li.begin(), toofar = li.end(); i != toofar; ++i)
@@ -117,6 +118,14 @@ ExampleUnit<bool, bool>* ex_bb (string example_name, a_size pb_size) {
         return (new ExampleSeen01("s01", pb_size));
     }
 }
+
+ExampleInsertionSort* ex_special(string example_name, a_size pb_size) {
+    if(example_name == "ins") {
+        return (new ExampleInsertionSort("s01", pb_size));
+    } else {
+        return NULL;
+    }
+};
 
 void do_experiment(int exp_size, int exp_num_core) {
     /** Experiments :
@@ -284,15 +293,18 @@ void do_special(int exp_size, int exp_num_core) {
     if(exp_num_core > 0)
         init.initialize(exp_num_core, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    ExampleHamming ham("ham", pb_size);
-    ExampleMatchAB anbn("abn", pb_size, 500, 300);
+//    ExampleHamming ham("ham", pb_size);
+//    ExampleMatchAB anbn("abn", pb_size, 500, 300);
+    ExampleInsertionSort insertionSort("ins", pb_size);
 
     for(int i = 0; i < NUM_EXP_PER_CASE; i++) {
-        ham.init(a_1, a_2);
-        ham.serialize(exp_num_core, pb_size, experiments);
+//        ham.init(a_1, a_2);
+//        ham.serialize(exp_num_core, pb_size, experiments);
 
-        anbn.init(a_1);
-        anbn.serialize(exp_num_core, pb_size, experiments);
+//        anbn.init(a_1);
+//        anbn.serialize(exp_num_core, pb_size, experiments);
+        insertionSort.init(a_1);
+        insertionSort.serialize(exp_num_core, pb_size, experiments);
     }
 
     delete a_1;

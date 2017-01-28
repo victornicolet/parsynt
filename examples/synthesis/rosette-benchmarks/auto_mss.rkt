@@ -31,13 +31,13 @@
     (let ([raux_1 (+ aux_1 x.aux_1)])
       (let ([rmts (max (+ mts x.aux_1) x.mts)]
             [rmss (max
-                   (bExpr:num->num  mts mss aux_1 aux_3 1)
+                   (bExpr:num->num  mts mss aux_1 aux_3 2)
                    (bExpr:num->num  mts mss aux_1 aux_3
-                                    x.mts x.mss x.aux_1 x.aux_3 1))])
+                                    x.mts x.mss x.aux_1 x.aux_3 2))])
         ($ rmts rmss raux_1
            (max
-            (bExpr:num->num  mts mss aux_1 aux_3 x.mts x.mss x.aux_1 x.aux_3 1)
-            (bExpr:num->num  mts mss aux_1 aux_3 x.mts x.mss x.aux_1 x.aux_3 1)))))))
+            (bExpr:num->num  mts mss aux_1 aux_3 x.mts x.mss x.aux_1 x.aux_3 2)
+            (bExpr:num->num  mts mss aux_1 aux_3 x.mts x.mss x.aux_1 x.aux_3 2)))))))
 
 
 ;;Symbolic input state and synthesized id state

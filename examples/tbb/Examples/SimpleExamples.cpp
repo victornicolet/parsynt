@@ -3,6 +3,8 @@
 #include "ExampleUnit.h"
 #include "Examples.h"
 
+#define CHUNK_INFO 1000000
+
 using namespace tbb;
 
 typedef long a_size;
@@ -1444,3 +1446,73 @@ bool ExampleMatchAB::seq_apply() {
 
     return  bn;
 }
+
+class MinCorePos {
+    int* my_a;
+public:
+    int amin;
+    a_size min_pos;
+    a_size b, e;
+
+    MinCorePos(int a[]) : my_a(a), amin(INT32_MAX), min_pos(-1), b(-1), e(-1)  {}
+    MinCorePos(MinCorePos& x, split ) : my_a(x.my_a), amin(INT32_MAX), min_pos(-1), b(-1), e(-1) {}
+
+
+    void operator()( const blocked_range<a_size>& r )
+    {
+        int *a = my_a;
+        int tmp_amin = amin;
+        a_size _mp = min_pos;
+        a_size end = r.end();
+
+        if (b < 0 || r.begin() < b)
+            b = r.begin();
+        if (e < 0 || r.end() > e)
+            e = r.end();
+
+        for (a_size i = r.begin(); i!=end; ++i) {
+            if (tmp_amin < a[i]) {
+                tmp_amin = a[i];
+                _mp = i;
+            }
+        }
+
+        min_pos = _mp;
+        amin = tmp_amin;
+    }
+
+    void join(const MinCorePos& y) {
+        amin = (amin > y.amin) ? amin : y.amin;
+        min_pos = (amin > y.amin) ? min_pos : y.min_pos;
+        e = y.e;
+    }
+};
+
+
+void my_swap(int *a, a_size i, a_size j) {
+    int tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+}
+
+void ExampleInsertionSort::parallel_apply() {
+    for(a_size i = 0; i < n; i++) {
+        MinCorePos mc(a);
+        parallel_reduce(blocked_range<a_size>(i, n, CHUNK_INFO), mc);
+        my_swap(a, i, mc.min_pos);
+    }
+};
+
+void ExampleInsertionSort::seq_apply() {
+    for(a_size i = 0; i < n; i++) {
+        a_size min_pos = i ;
+        for(a_size j = i; j < n; j ++){
+            if(a[j] < a[i]) {
+                min_pos = j;
+            }
+        }
+        my_swap(a, i, min_pos);
+    }
+}
+
+

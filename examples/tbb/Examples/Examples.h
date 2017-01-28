@@ -308,4 +308,49 @@ public:
     }
 };
 
+class ExampleInsertionSort {
+    a_size n;
+    int *a = nullptr;
+public:
+    string name;
+
+    ExampleInsertionSort(string name, a_size n) : n(n), name(name) {}
+    void init(int *_a) {a = _a;};
+    void parallel_apply();
+    void seq_apply();
+    void full_seq_apply() {return seq_apply();};
+
+    void serialize(int num_cores, a_size pb_size, ofstream& of) {
+        if (num_cores == -1) {
+            StopWatch u;
+            u.start();
+            full_seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        }
+        else if (num_cores == 0) {
+            StopWatch u;
+            u.start();
+            seq_apply();
+            double elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << elapsed << "\n";
+        } else {
+            StopWatch u;
+            u.start();
+            parallel_apply();
+            double par_elapsed = u.stop();
+            of << name << "," << num_cores << "," << pb_size <<"," << par_elapsed << "\n";
+        }
+    }
+};
+
+
+//for i ← 1 to length(A)
+//j ← i
+//while j > 0 and A[j-1] > A[j]
+//swap A[j] and A[j-1]
+//j ← j - 1
+//end while
+//end for
+
 #endif //TBB_TESTS_EXAMPLES_H
