@@ -7,13 +7,8 @@ module Ct = Utils.CilTools
 module VS = Utils.VS
 
 let print_imp_style = ref false
-(** String representing holes *)
-let ch_l_nums = ref ""
-let ch_l_bools = ref ""
-let ch_r_nums = ref ""
-let ch_r_bools = ref ""
 
-let current_expr_depth = ref 2
+let current_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
 let state_vars = ref VS.empty
@@ -25,56 +20,31 @@ let state_vars = ref VS.empty
 *)
 let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 
-let set_hole_vars lvs rvs =
-  let left_hole_nums, left_hole_bools, right_hole_nums, right_hole_bools =
-    VS.filter (fun vi ->
-        Ct.is_of_real_type vi.Cil.vtype || Ct.is_of_int_type vi.Cil.vtype) lvs,
-    VS.filter (fun vi -> Ct.is_of_bool_type vi.Cil.vtype) lvs,
-    VS.filter (fun vi ->
-        Ct.is_of_real_type vi.Cil.vtype || Ct.is_of_int_type vi.Cil.vtype) rvs,
-    VS.filter (fun vi -> Ct.is_of_bool_type vi.Cil.vtype) rvs
-  in
-    ch_l_nums := VSOps.to_string left_hole_nums;
-    ch_l_bools := VSOps.to_string left_hole_bools;
-    ch_r_nums := VSOps.to_string right_hole_nums;
-    ch_r_bools := VSOps.to_string right_hole_bools
 
-let wrap ppf t =
-  let ced = !current_expr_depth in
+
+let hole_type_expr ppf t =
   let fpf =  fprintf ppf in
     (match t with
-      | Unit -> fpf "(bExpr:unit %s %d)"
-                  (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums])
-                  ced
+      | Unit -> fpf "bExpr:unit"
 
-      | Integer -> fpf "(bExpr:num->num %s %d)"
-                     (ref_concat [ch_l_nums; ch_r_nums]) ced
 
-      | Real -> fpf "(bExpr:num->num %s %d)"
-                  (ref_concat [ch_l_nums; ch_r_nums]) ced
+      | Integer | Real -> fpf "bExpr:num->num"
 
-      | Boolean -> fpf "(bExpr:boolean %s %d)"
-                     (ref_concat [ch_l_bools; ch_r_bools]) ced
+      | Boolean -> fpf "bExpr:boolean"
 
       | Function (a, b) ->
         begin
           match a, b with
-          | Integer, Boolean ->
-            fpf "(bExpr:num->bool %s %d)"
-              (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced
+          | Integer, Boolean -> fpf "bExpr:num->bool"
 
-          | Boolean, Boolean -> fpf "(bExpr:boolean %s %d)"
-                                  (ref_concat [ch_l_bools; ch_r_bools]) ced
+          | Boolean, Boolean -> fpf "bExpr:boolean"
 
-         | Integer, Integer -> fpf "(bExpr:num->num %s %d)"
-                                 (ref_concat [ch_l_nums; ch_r_nums]) ced
+         | Integer, Integer -> fpf "bExpr:num->num"
 
-         | _ ,_ -> fpf "(bExpr:num->num %s %d)"
-                     (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums])
-                     ced
+         | _ ,_ -> fpf "bExpr:num->num"
+
        end
-      | _ -> fpf "(bExpr:num->num %s %d)"
-               (ref_concat [ch_l_nums; ch_l_bools; ch_r_bools; ch_r_nums]) ced)
+      | _ -> fpf "bExpr:num->num")
 
 
 (** Pretty-printing operators *)
@@ -282,13 +252,36 @@ let fp = Format.fprintf in
      fp ppf "(%s %a)" funname
        (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_skexpr) argl
 
-  | SkHoleR t ->
-     fp ppf "%a"
-       wrap t
+  | SkHoleR (t, vs) ->
+     fp ppf "@[<hv 2>(%a %a %i)@]"
+       hole_type_expr t
 
-  | SkHoleL (v, t) ->
-     fp ppf "%a"
-       wrap t
+       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
+          (fun fmt vi -> fp fmt "%s%s"
+              (Conf.get_conf_string "rosette_join_right_state_prefix")
+              vi.Cil.vname))
+       (VSOps.varlist vs)
+
+       !current_expr_depth
+
+
+  | SkHoleL (t, v, vs) ->
+     fp ppf "@[<hv 2>(%a %a %a %i)@]"
+       hole_type_expr t
+
+       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
+          (fun fmt vi -> fp fmt "%s%s"
+              (Conf.get_conf_string "rosette_join_left_state_prefix")
+              vi.Cil.vname))
+       (VSOps.varlist vs)
+
+       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
+          (fun fmt vi -> fp fmt "%s%s"
+              (Conf.get_conf_string "rosette_join_right_state_prefix")
+              vi.Cil.vname))
+       (VSOps.varlist vs)
+
+       !current_expr_depth
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 
@@ -464,13 +457,13 @@ let fp = Format.fprintf in
      fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname default
        (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
 
-  | SkHoleR t ->
+  | SkHoleR (t, _) ->
      fp ppf "%s%a%s"
-       (color "grey") wrap t default
+       (color "grey") hole_type_expr t default
 
-  | SkHoleL (v, t) ->
+  | SkHoleL (t, v, _) ->
      fp ppf "%s %a %s"
-       (color "grey") wrap t default
+       (color "grey") hole_type_expr t default
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 
@@ -594,9 +587,9 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
-  | SkHoleL (v, t) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
+  | SkHoleL (t, v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
                         pp_c_var v pp_typ t
-  | SkHoleR t -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
+  | SkHoleR (t, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_skexpr e
 

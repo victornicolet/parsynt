@@ -42,8 +42,8 @@ and skExpr =
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL of skLVar * symbolic_type
-  | SkHoleR of symbolic_type
+  | SkHoleL of symbolic_type * skLVar * VS.t
+  | SkHoleR of symbolic_type * VS.t
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
   | SkSizeof of symbolic_type
@@ -1237,7 +1237,7 @@ and type_of expr =
 
   | SkQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
-  | SkApp (t, _, _) | SkHoleL (_, t) | SkHoleR t -> t
+  | SkApp (t, _, _) | SkHoleL (t, _,  _) | SkHoleR (t, _) -> t
 
   | _ -> failwith "Typing subfunctions not yet implemented"
 

@@ -42,7 +42,7 @@ public:
     }
   void  join(const blocked_range<__iterator_type__>& r)
     {
-     my_sum = ((x.my_sum + 1) + (my_sum - 1));
+     my_sum = ((1 + (my_sum - 1)) + x.my_sum);
     }
 };
 

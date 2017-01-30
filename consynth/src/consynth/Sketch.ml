@@ -383,7 +383,6 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
   let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
-  set_hole_vars left_state_vars right_state_vars;
   Format.fprintf fmt
     "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
     (pp_assignments main_struct_name lstate_name)
