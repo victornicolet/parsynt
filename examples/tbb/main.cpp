@@ -274,12 +274,10 @@ void do_special(int exp_size, int exp_num_core) {
     cout << "Initialization for problem size " << pb_size << " ... " << endl;
     /* Allocate array of integers and array of booleans */
     int *a_1 = new int[pb_size];
-    int *a_2 = new int[pb_size];
 
     cout << "Arrays allocated" << endl;
     for(a_size ix = 0; ix < pb_size; ix++){
         a_1[ix] = rand() % 2000 - 1000;
-        a_2[ix] = rand() % 2000 - 1000;
     }
     cout << "Initialization succeeded." << endl;
     ofstream experiments;
@@ -308,7 +306,6 @@ void do_special(int exp_size, int exp_num_core) {
     }
 
     delete a_1;
-    delete a_2;
 
     experiments.close();
 }

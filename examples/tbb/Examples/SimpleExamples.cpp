@@ -1497,7 +1497,9 @@ void my_swap(int *a, a_size i, a_size j) {
 
 void ExampleInsertionSort::parallel_apply() {
     for(a_size i = 0; i < n; i++) {
-        MinCorePos mc(a);
+        int * ar = a;
+        a_size min_pos;
+        MinCorePos mc(ar);
         parallel_reduce(blocked_range<a_size>(i, n, CHUNK_INFO), mc);
         my_swap(a, i, mc.min_pos);
     }
