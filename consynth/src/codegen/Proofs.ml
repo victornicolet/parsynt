@@ -85,7 +85,7 @@ let pp_dfy fmt (s, e, for_join) =
          | SkVarinfo vi ->
            let pfv = IH.find vi_to_proofVars vi.vid in
            if for_join then
-             let _, is_from_right_state = is_right_state_varname vi.vname in
+             let _, _, is_from_right_state = is_right_state_varname vi.vname in
              if is_from_right_state then
                SkVarinfo {vi with vname = "right"^pfv.name}
              else

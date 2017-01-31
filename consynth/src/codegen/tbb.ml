@@ -186,6 +186,8 @@ let class_name_appendix = Conf.get_conf_string "class_name_appendix"
 
 let iterator_type_name = Conf.get_conf_string "tbb_iterator_type_name"
 
+let iterator_name = Conf.get_conf_string "tbb_iterator_name"
+
 (** The iterator has type long *)
 let iterator_c_typ = TInt (ILong,[])
 
@@ -225,18 +227,19 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
   (* Bounds intialization *)
   fprintf fmt
     "@[<v>\
-     @[if (%s < 0 || r.begin() < %s)@]@\n\
+     @[if (%s < 0 || %s.begin() < %s)@]@\n\
      @[%s = r.begin();@;@]@\n\
-     @[if (%s < 0 || r.end() > %s)@]@\n\
+     @[if (%s < 0 || %s.end() > %s)@]@\n\
      @[%s = r.end();@]@]@\n@\n"
-    b.vname b.vname b.vname
-    e.vname e.vname e.vname
+    b.vname iterator_name b.vname b.vname
+    e.vname iterator_name e.vname e.vname
   ;
   (* Main loop *)
   fprintf fmt
-    "@[<hv 2>for (%s %s = r.begin(); %s!= r.end(); ++%s) {@;%a@;}@]@;"
-    iterator_type_name i.vname
-    i.vname i.vname
+    "@[<hv 2>for (%s %s = %s.begin(); %s!= %s.end(); ++%s) {@;%a@;}@]@;"
+    iterator_type_name i.vname iterator_name
+    i.vname iterator_name
+    i.vname
     ppbody ();
   (* Update class vars that need it *)
   VS.iter
@@ -355,7 +358,8 @@ let make_tbb_class pb =
            fprintf fmt "@[%a@]@;" pp_c_sklet (sk_for_c pb.loop_body))
     in
     let operator_arg =
-      (fprintf str_formatter "const blocked_range<%s>& r" iterator_type_name;
+      (fprintf str_formatter "const blocked_range<%s>& %s"
+         iterator_type_name iterator_name;
        flush_str_formatter ())
     in
     {
@@ -379,16 +383,14 @@ let make_tbb_class pb =
       fprintf fmt "%a" pp_c_sklet (sk_for_c pb.join_solution);
       printing_for_join := false
     in
-    let join_arg =
-      (fprintf str_formatter "const blocked_range<%s>& r" iterator_type_name;
-       flush_str_formatter ())
-    in
+    let join_from_name = (Conf.get_conf_string "tbb_right_state_name") in
+    let join_args = [SpecialArg (class_name^"& "^join_from_name)] in
     {
       mid = 1;
       mtyp = TVoid [];
       mname = "join";
       mattributes = [];
-      margs = [SpecialArg join_arg];
+      margs = join_args;
       mcpp = true;
       mlocals = VS.empty;
       mbody = (mkStmt (Instr []));

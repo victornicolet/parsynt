@@ -276,6 +276,12 @@ let unsafe_unops_of_fname =
 let unsafe_binops_of_fname =
   function
   | _ -> None
+
+
+let is_comparison_op =
+  function
+  | Eq | Gt | Lt | Le | Ge -> true
+  | _ -> false
 (**
     Mathematical constants defined in GNU-GCC math.h.
    + other custom constants defined in the decl_header.c
@@ -389,13 +395,13 @@ let rs_prefix = (Conf.get_conf_string "rosette_join_right_state_prefix")
 let is_right_state_varname s =
   let varname_parts = Str.split (Str.regexp "\.") s in
   let right_state_name = (Str.split (Str.regexp "\.") rs_prefix) >> 0 in
-    match List.length varname_parts with
-    | 2 -> varname_parts >> 1, (varname_parts >> 0) = right_state_name
-    | 1 -> varname_parts >> 0, false
-    | _ ->
-      failwith (fprintf str_formatter
-                  "Unexpected list length when splitting variable name %s \
-                   over '.'" s; flush_str_formatter ())
+  match List.length varname_parts with
+  | 2 -> varname_parts >> 1, true, (varname_parts >> 0) = right_state_name
+  | 1 -> varname_parts >> 0, false, false
+  | _ ->
+    failwith (fprintf str_formatter
+                "Unexpected list length when splitting variable name %s \
+                 over '.'" s; flush_str_formatter ())
 
 
 
@@ -618,6 +624,14 @@ let transform_expr
   in
   recurse_aux expre
 
+let rec transform_exprs (transformer : skExpr -> skExpr) =
+  function
+  | SkLetExpr ve_list ->
+    SkLetExpr (List.map (fun (v, e) -> (v, transformer e)) ve_list)
+  | SkLetIn (ve_list, letin) ->
+    SkLetIn ((List.map (fun (v, e) -> (v, transformer e)) ve_list),
+             transform_exprs transformer letin)
+
 (** Transformation with extra boolean argument *)
 let transform_expr_flag
     (top : bool)
@@ -794,16 +808,16 @@ and used_in_assignments ve_list =
 *)
 
 let errmsg_unexpected_sklet unex_let =
-    (fprintf str_formatter "Expected a translated expression,\
-                            received for tranlsation @; %a @."
-       Ast.pp_expr unex_let;
-     flush_str_formatter ())
+  (fprintf str_formatter "Expected a translated expression,\
+                          received for tranlsation @; %a @."
+     Ast.pp_expr unex_let;
+   flush_str_formatter ())
 
 let errmsg_unexpected_expr ex_type unex_expr =
   (fprintf str_formatter "Expected a %s ,\
-                            received for tranlsation @; %a @."
+                          received for tranlsation @; %a @."
      ex_type Ast.pp_expr unex_expr;
-     flush_str_formatter ())
+   flush_str_formatter ())
 
 
 type join_translation_info = {
@@ -860,22 +874,23 @@ let init_scm_translate all_vs state_vs =
     which variable are in use.
 *)
 let scm_register s =
-  let pure_varname, is_class_member = is_right_state_varname s in
+  let pure_varname, is_class_member, is_right_state_mem =
+    is_right_state_varname s in
   let varinfo =
     try
-    SH.find join_info.used_vars pure_varname
-  with Not_found ->
-    begin
-      let newly_used_vi =
-        try
-          VSOps.find_by_name pure_varname join_info.initial_vars
-        with
-        | Not_found ->
-          Cil.makeVarinfo false pure_varname (Cil.TVoid [])
-      in
-      SH.add join_info.used_vars pure_varname newly_used_vi;
-    newly_used_vi
-    end
+      SH.find join_info.used_vars pure_varname
+    with Not_found ->
+      begin
+        let newly_used_vi =
+          try
+            VSOps.find_by_name pure_varname join_info.initial_vars
+          with
+          | Not_found ->
+            Cil.makeVarinfo false pure_varname (Cil.TVoid [])
+        in
+        SH.add join_info.used_vars pure_varname newly_used_vi;
+        newly_used_vi
+      end
   in
   {varinfo with Cil.vname = s}
 
@@ -890,7 +905,7 @@ let rec scm_to_sk scm =
     | Bool_e b -> None, Some (SkConst (CBool b))
     | Id_e id ->
       (let vi = scm_register id in
-      None, Some (SkVar (SkVarinfo vi)))
+       None, Some (SkVar (SkVarinfo vi)))
     | Nil_e -> None, Some (SkConst (CNil))
 
     | Binop_e (op, e1, e2) ->
@@ -942,7 +957,7 @@ let rec scm_to_sk scm =
           | _ ->
             (None, Some (to_fun_app e arglist)))
        | _ ->
-      failwith "TODO")
+         failwith "TODO")
 
 
     | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
@@ -978,7 +993,7 @@ and to_expression_list scm_expr_list =
        match scm_to_sk scm_expr with
        | None, Some sk_expr -> sk_expr
        | Some sklet, None->
-           raise (Failure (errmsg_unexpected_sklet scm_expr))
+         raise (Failure (errmsg_unexpected_sklet scm_expr))
        | _ ->
          failwith "Unexpected case.") scm_expr_list
 
@@ -1242,7 +1257,16 @@ and type_of expr =
   | _ -> failwith "Typing subfunctions not yet implemented"
 
 
+let filter_by_type t =
+  VS.filter
+    (fun vi ->
+       let st = symb_type_of_ciltyp vi.Cil.vtype in
+       st = t)
 
+let rec input_type_or_type =
+  function
+  | Function (it, rt) -> input_type_or_type it
+  | t -> t
 (* ------------------------ 7- STRUCT UTILS ----------------------------*)
 
 type sigu = VS.t * (sklet * skExpr * sklet)
@@ -1314,24 +1338,24 @@ let rec pass_remove_special_ops =
          | SkApp (st, vo, args) ->
            let args' = List.map rfun args in
            (if List.length args' >= 1 then
-             (** Might be a binary operator ... *)
-             (let e1 = args' >> 0 in
-              match vo with
-              | Some var ->
-                (match String.lowercase var.Cil.vname with
-                 | "max" ->
-                   let e2 = args' >> 1 in
-                   SkQuestion (SkBinop(Gt, e1, e2), e1, e2)
-                 | "min" ->
-                   let e2 = args' >> 1 in
-                   SkQuestion (SkBinop(Lt, e1, e2), e1, e2)
-                 | "add1" ->
-                   SkBinop (Plus, e1, SkConst (CInt 1))
-                 | "sub1" ->
-                   SkBinop (Minus, e1, SkConst (CInt 1))
-                 | _ -> SkApp(st, vo, args'))
-              | None ->
-                SkApp(st, vo, args'))
+              (** Might be a binary operator ... *)
+              (let e1 = args' >> 0 in
+               match vo with
+               | Some var ->
+                 (match String.lowercase var.Cil.vname with
+                  | "max" ->
+                    let e2 = args' >> 1 in
+                    SkQuestion (SkBinop(Gt, e1, e2), e1, e2)
+                  | "min" ->
+                    let e2 = args' >> 1 in
+                    SkQuestion (SkBinop(Lt, e1, e2), e1, e2)
+                  | "add1" ->
+                    SkBinop (Plus, e1, SkConst (CInt 1))
+                  | "sub1" ->
+                    SkBinop (Minus, e1, SkConst (CInt 1))
+                  | _ -> SkApp(st, vo, args'))
+               | None ->
+                 SkApp(st, vo, args'))
             else
               SkApp(st, vo, args'))
 
@@ -1375,10 +1399,10 @@ let rec pass_sequentialize sklet =
       (fun let_bindings vid ->
          SkLetIn ([SkVarinfo (VSOps.find_by_id vid modified_vars),
                    IM.find vid vid_to_expr], let_bindings))
-           let_queue statement_order
-    (** Analyze dependencies to produce bindings ordered such that
-        the sequence of bindings yields to the same state as the functional
-        version where all expressions are evaluated in one step. *)
+      let_queue statement_order
+      (** Analyze dependencies to produce bindings ordered such that
+          the sequence of bindings yields to the same state as the functional
+          version where all expressions are evaluated in one step. *)
 
   in
 

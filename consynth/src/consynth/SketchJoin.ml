@@ -183,5 +183,36 @@ and merge_leaves max_depth (e,d) =
   else
     (e, d + 1)
 
+let set_types_and_varsets =
+  let adapt_vs_and_t vs t =
+    let nvs = filter_by_type (input_type_or_type t) vs in
+    if VS.cardinal nvs = 0 then
+      match t with
+      | Function (it, rt) ->
+        let nvs' = filter_by_type rt vs in
+        nvs', rt
+      | _ -> nvs, t
+    else
+      nvs, t
+  in
+  let aux_set =
+    transform_expr
+      (fun e -> is_a_hole e)
+      (fun rfun e ->
+         match e with
+         | SkHoleL (t, v, vs) ->
+           let nvs, nt = adapt_vs_and_t vs t in
+           SkHoleL (nt, v, nvs)
+
+         | SkHoleR (t, vs) ->
+           let nvs, nt = adapt_vs_and_t vs t in
+           SkHoleR (nt, nvs)
+
+         | _ -> rfun e)
+
+      identity identity
+  in
+  transform_exprs aux_set
+
 let build (state : VS.t) (sklet : sklet) =
-  make_join ~state:state ~skip:[] sklet
+  set_types_and_varsets (make_join ~state:state ~skip:[] sklet)

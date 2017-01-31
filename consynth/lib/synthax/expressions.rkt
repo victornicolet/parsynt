@@ -4,7 +4,8 @@
 
 (provide ScalarExpr LinearScalarExpr bExpr
          bExpr:num->num bExpr:num->bool bExpr:boolean
-         bExpr:ternary->num)
+         bExpr:ternary->num
+         BasicBinops:num->bool)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -97,13 +98,13 @@
 
 ;; Type-specific expressions
 (define-synthax BasicBinops:num->num
-  ([(BasicBinops:num->num) (choose + - min max)]))
+  ([(BasicBinops:num->num) (choose + -)]))
 
 (define-synthax BasicUnops:num->num
   ([(BasicUnops:num->num) (choose add1 sub1)]))
 
 (define-synthax BasicBinops:num->bool
-  ([(BasicBinops:bool->bool) (choose > >= < <= =)]))
+  ([(BasicBinops:num->bool) (choose > >= =)]))
 
 
 (define-synthax BasicBinops:bool->bool
@@ -126,7 +127,11 @@
            (bExpr:num->num x ... (sub1 depth)))))
 
 (define-synthax bExpr:num->bool
-  ([(bExpr:num->bool x ... d) ((BasicUnops:bool)
+  ([(bExpr:num->bool x ... d) (choose
+                               ((BasicUnops:bool)
+                               ((BasicBinops:num->bool)
+                                (bExpr:num->num x ... 1)
+                                (bExpr:num->num x ... 1)))
                                ((BasicBinops:num->bool)
                                 (bExpr:num->num x ... 1)
                                 (bExpr:num->num x ... 1)))]))

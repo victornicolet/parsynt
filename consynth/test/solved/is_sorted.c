@@ -1,7 +1,7 @@
 #include "decl_header.h"
 
 _Bool is_sorted (int *a, int n) {
-  _Bool is_sorted = false;
+  _Bool is_sorted = 1;
   int prev = 0;
 
   for (int i = 0; i < n; i ++) {

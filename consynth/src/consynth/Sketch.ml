@@ -134,7 +134,18 @@ let body_name = get_conf_string "rosette_loop_body_name"
 let ident_state_name = get_conf_string "rosette_identity_state_name"
 let init_state_name = get_conf_string "rosette_initial_state_name"
 (** Choose between a very restricted set of values for intials/identity values *)
-let base_init_value_choice = get_conf_string "rosette_base_init_value_hole"
+let base_init_value_choice reaching_consts vi =
+  (try
+    let e = IM.find vi.vid reaching_consts in
+    Format.fprintf str_formatter "(choose %s %a)"
+      (get_conf_string "rosette_base_init_values")
+      pp_skexpr e
+  with Not_found ->
+    Format.fprintf str_formatter "(choose %s)"
+      (get_conf_string "rosette_base_init_values"));
+  flush_str_formatter ()
+
+
 
 (** Return the string of variable names from symbolic definitions. This names
     are the names used when printing the defintions of the symbolic variables
@@ -383,13 +394,15 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
   let lvar_names = VSOps.namelist left_state_vars in
   let rvar_names = VSOps.namelist right_state_vars in
   let field_names = VSOps.namelist state_vars in
+  printing_sketch := true;
   Format.fprintf fmt
     "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
     (pp_assignments main_struct_name lstate_name)
     (ListTools.pair lvar_names field_names)
     (pp_assignments main_struct_name rstate_name)
     (ListTools.pair rvar_names field_names)
-    pp_sklet join_body
+    pp_sklet join_body;
+    printing_sketch := false
 
 
 (** Pretty print the join function using the body pretty printing function
@@ -422,7 +435,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-         Format.fprintf fmt "%s" base_init_value_choice)
+         Format.fprintf fmt "%s" (base_init_value_choice reach_consts vi))
   in
   (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
@@ -452,7 +465,8 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
               else
                 (if IH.mem auxiliary_vars vid
                  then
-                   Format.fprintf fmt "%s" base_init_value_choice
+                   Format.fprintf fmt "%s"
+                     (base_init_value_choice reach_consts vi)
                  else
                    Format.fprintf fmt "%s" vi.Cil.vname))))
          li)

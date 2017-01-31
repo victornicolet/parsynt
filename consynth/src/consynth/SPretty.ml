@@ -7,7 +7,7 @@ module Ct = Utils.CilTools
 module VS = Utils.VS
 
 let print_imp_style = ref false
-
+let printing_sketch = ref false
 let current_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
@@ -292,6 +292,12 @@ let fp = Format.fprintf in
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" pp_skexpr e
 
   | SkBinop (op, e1, e2) ->
+    if !printing_sketch && (is_comparison_op op)
+    then
+    fp ppf "@[<hov 1>((BasicBinops:num->bool)@;%a@;%a)@]"
+      pp_skexpr e1 pp_skexpr e2
+
+    else
     fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
       (string_of_symb_binop op)
       pp_skexpr e1 pp_skexpr e2
@@ -600,9 +606,11 @@ and pp_c_var fmt v =
       if !printing_for_join then
           if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
             match is_right_state_varname v.Cil.vname with
-            | real_varname, true ->
+            | real_varname, true, true ->
               (rs_prefix^"my_"^real_varname)
-            | _ , false ->
+            | real_varname, true, false ->
+              "my_"^real_varname
+            | _ , false, _ ->
               "my_"^v.Cil.vname
           else
             v.Cil.vname
