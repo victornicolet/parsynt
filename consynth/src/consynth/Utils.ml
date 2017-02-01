@@ -42,7 +42,6 @@ module SH = Hashtbl.Make (struct
     let hash s = Hashtbl.hash s
   end)
 
-
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
   let ihs = IH.create 10 in
@@ -490,6 +489,65 @@ module VSOps = struct
   let epvs vs = pvs Format.err_formatter vs
 
   let string_of_vs = spvs
+end
+
+type jcompletion = { cvi : varinfo; cleft : bool; cright : bool;}
+
+module CSet = Set.Make (struct
+    type t = jcompletion
+    let compare jcs0 jcs1  =
+      if jcs0.cvi.vid = jcs1.cvi.vid then
+        (match jcs0.cleft && jcs0.cright, jcs1.cleft && jcs1.cright with
+         | true, true -> 0
+         | true, false -> 1
+         | false, true -> -1
+         | false, false -> if jcs0.cleft then 1 else -1)
+      else Pervasives.compare jcs0.cvi.vid jcs1.cvi.vid
+  end)
+
+module CS = struct
+  include CSet
+  let of_vs vs =
+    VS.fold
+      (fun vi cset -> CSet.add {cvi = vi; cleft = false; cright = false} cset)
+      vs CSet.empty
+
+
+  let map f cs =
+    CSet.fold (fun jc cset -> CSet.add (f jc) cset)
+      cs CSet.empty
+
+  let complete_left cs =
+    CSet.fold (fun jc cset -> CSet.add {jc with cleft = true} cset)
+      cs CSet.empty
+
+  let complete_right cs =
+    CSet.fold (fun jc cset -> CSet.add {jc with cright = true} cset)
+      cs CSet.empty
+
+  let complete_all cs =
+    map (fun jc -> {jc with cleft = true; cright = true;}) cs
+
+  let to_jc_list cs =
+    CSet.fold (fun jc jclist -> jc::jclist)
+      cs []
+
+  let to_vs cs =
+    CSet.fold (fun jc vs -> VS.add jc.cvi vs) cs VS.empty
+
+  let pp_cs fmt cs =
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
+      (fun fmt jc ->
+         if jc.cleft then
+           fprintf fmt "%s%s"
+             (Conf.get_conf_string "rosette_join_left_state_prefix")
+             jc.cvi.vname;
+         if jc.cright then
+           fprintf fmt "%s%s%s"
+             (if jc.cleft then " " else "")
+             (Conf.get_conf_string "rosette_join_right_state_prefix")
+             jc.cvi.vname;)
+      fmt (to_jc_list cs)
 end
 
 module IHTools = struct

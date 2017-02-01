@@ -6,6 +6,8 @@ let debug = ref false
 
 let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
 
+let left_auxiliaries = ref VS.empty
+let right_auxiliaries = ref VS.empty
 
 (* Returns true is the expression is a hole. The second
    boolean in the pair is useful when we are trying to merge
@@ -25,8 +27,8 @@ let is_right_hole =
 
 let replace_hole_type t' =
   function
-  | SkHoleR (t, vs) -> SkHoleR(t', vs)
-  | SkHoleL (t, v, vs) -> SkHoleL(t', v, vs)
+  | SkHoleR (t, cs) -> SkHoleR(t', cs)
+  | SkHoleL (t, v, cs) -> SkHoleL(t', v, cs)
   | e -> e
 
 let type_of_hole =
@@ -36,9 +38,9 @@ let type_of_hole =
 
 let completion_vars_of_hole =
   function
-  | SkHoleR (_, vs) -> vs
-  | SkHoleL (_, _, vs) -> vs
-  | _ -> VS.empty
+  | SkHoleR (_, cs) -> cs
+  | SkHoleL (_, _, cs) -> cs
+  | _ -> CS.empty
 
 let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
   function
@@ -51,24 +53,25 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
         then SkVar sklv, 0
         else
           (if VS.mem vi state
-           then SkHoleL (t, sklv, state), 1
-           else SkHoleR (t, state), 1)
+           then SkHoleL (t, sklv, CS.complete_all (CS.of_vs state)), 1
+           else SkHoleR (t, CS.complete_right (CS.of_vs state)), 1)
       | SkArray (sklv, expr) ->
         (** Array : for now, cannot be a stv *)
         let t = type_of_var sklv in
         (match t with
-        | Vector (t, _) -> SkHoleR (t, state), 1
+        | Vector (t, _) -> SkHoleR (t, CS.complete_right (CS.of_vs state)), 1
         | _ -> failwith "Unexpected type in array")
       | SkTuple vs -> SkVar (SkTuple vs), 0
     end
 
   | SkConst c ->
+    let cs = CS.complete_right (CS.of_vs state) in
      begin
        match c with
-       | CInt _ | CInt64 _ -> SkHoleR (Integer, state), 1
-       | CReal _ -> SkHoleR (Real, state), 1
-       | CBool _ -> SkHoleR (Boolean, state), 1
-       | _ -> SkHoleR (Unit, state), 1
+       | CInt _ | CInt64 _ -> SkHoleR (Integer, cs), 1
+       | CReal _ -> SkHoleR (Real, cs), 1
+       | CBool _ -> SkHoleR (Boolean, cs), 1
+       | _ -> SkHoleR (Unit, cs), 1
      end
 
   | SkFun skl -> SkFun (make_join ~state:state ~skip:[] skl), 0
@@ -100,21 +103,23 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
 
   | _ as skexpr ->  skexpr, 0
 
+and make_assignment_list state skip =
+  List.map (fun (v, e) ->
+      match e with
+        | SkVar v when List.mem v skip -> (v, e)
+        | SkVar (SkVarinfo vi) when VS.mem vi !left_auxiliaries ->
+          (v, SkHoleL (type_of e, v, CS.complete_all (CS.of_vs state)))
+        | _ -> (v, fst (make_holes ~is_final:true state e)))
+
 and make_join ~(state : VS.t) ~(skip: skLVar list) =
   function
-  | SkLetExpr li ->
-    SkLetExpr (List.map (fun (v, e) ->
-        match e with
-        | SkVar v when List.mem v skip -> (v, e)
-        | _ -> (v, fst (make_holes ~is_final:true state e))) li)
+  | SkLetExpr ve_list ->
+    SkLetExpr (make_assignment_list state skip ve_list)
 
-  | SkLetIn (li, cont) ->
-    let to_skip = fst (ListTools.unpair li) in
+  | SkLetIn (ve_list, cont) ->
+    let to_skip = fst (ListTools.unpair ve_list) in
     SkLetIn (
-      List.map (fun (v, e) ->
-          match e with
-          | SkVar v when List.mem v skip -> (v, e)
-          | _ -> (v, fst (make_holes ~is_final:true state e))) li,
+      make_assignment_list state skip ve_list,
       make_join ~state:state ~skip:(skip@to_skip) cont)
 
 and merge_leaves max_depth (e,d) =
@@ -139,7 +144,7 @@ and merge_leaves max_depth (e,d) =
         let t2 = check_option (type_of_hole h2) in
         let rh_h1 = is_right_hole h1 in
         let rh_h2 = is_right_hole h2 in
-        let vars = VS.union (completion_vars_of_hole h1)
+        let vars = CS.union (completion_vars_of_hole h1)
             (completion_vars_of_hole h2)
         in
         (match (type_of_binop (res_type t1) (res_type t2) op) with
@@ -157,9 +162,9 @@ and merge_leaves max_depth (e,d) =
           List.fold_left
             (fun (is_h, vars) e ->
                (is_h && is_right_hole e,
-                VS.union vars (completion_vars_of_hole e)))
+                CS.union vars (completion_vars_of_hole e)))
 
-                 (true, VS.empty) el
+                 (true, CS.empty) el
         in
         if all_holes
         then
@@ -184,12 +189,12 @@ and merge_leaves max_depth (e,d) =
     (e, d + 1)
 
 let set_types_and_varsets =
-  let adapt_vs_and_t vs t =
-    let nvs = filter_by_type (input_type_or_type t) vs in
-    if VS.cardinal nvs = 0 then
+  let adapt_vs_and_t cs t =
+    let nvs = filter_cs_by_type (input_type_or_type t) cs in
+    if CS.cardinal nvs = 0 then
       match t with
       | Function (it, rt) ->
-        let nvs' = filter_by_type rt vs in
+        let nvs' = filter_cs_by_type rt cs in
         nvs', rt
       | _ -> nvs, t
     else

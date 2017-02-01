@@ -18,6 +18,12 @@ type auxiliary =
     depends : VS.t;
   }
 
+let add_left_auxiliary vi =
+  SketchJoin.left_auxiliaries:=
+    (VS.add vi !SketchJoin.left_auxiliaries)
+let add_right_auxiliary vi =
+  SketchJoin.right_auxiliaries:=
+    (VS.add vi !SketchJoin.right_auxiliaries)
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
@@ -54,6 +60,7 @@ let compose xinfo f aux_vs aux_ef =
             | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
               (* Replace index by "start index" variable *)
               let aux_expression =
+                add_left_auxiliary v;
                 replace_index_uses T.left_index_vi xinfo.context.index_vars aux.aexpr
               in
               (** If the only the "start index" appears, or the aux variable's
@@ -83,7 +90,8 @@ let compose xinfo f aux_vs aux_ef =
                   final value of the auxiliary depends only on its
                   "final expression"
               *)
-              let v = (T.SkVarinfo (VSOps.find_by_id aux_vid aux_vs)) in
+              let cur_vi = (VSOps.find_by_id aux_vid aux_vs) in
+              let v = (T.SkVarinfo cur_vi) in
               let new_const_exprs =
                 const_exprs@
                 (if
@@ -100,9 +108,10 @@ let compose xinfo f aux_vs aux_ef =
                   end
                  then
                    (* The variable doesn't depend on any other state variable *)
+                   (add_right_auxiliary cur_vi;
                    [v,
                     replace_index_uses
-                      right_index_vi xinfo.context.index_vars aux.afunc]
+                      right_index_vi xinfo.context.index_vars aux.afunc])
                  else
                    [])
               in

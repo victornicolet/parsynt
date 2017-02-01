@@ -2,7 +2,7 @@
 
 _Bool is_sorted (int *a, int n) {
   _Bool is_sorted = 1;
-  int prev = 0;
+  int prev = _min_int_;
 
   for (int i = 0; i < n; i ++) {
     is_sorted = is_sorted && (prev < a[i]);

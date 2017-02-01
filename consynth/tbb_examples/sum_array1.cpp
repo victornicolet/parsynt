@@ -23,27 +23,24 @@ public:
     my_a(a), my_sum(0), my_i_begin_(-1), my_i_end_(-1) {}
   
   
-  void  operator()(const blocked_range<__iterator_type__>& r)
+  void  operator()(const blocked_range<__iterator_type__>& _r_)
     {
     int * a = my_a;
     int  sum = my_sum;
     
-    if (my_i_begin_ < 0 || r.begin() < my_i_begin_)
+    if (my_i_begin_ < 0 || _r_.begin() < my_i_begin_)
     my_i_begin_ = r.begin(); 
-    if (my_i_end_ < 0 || r.end() > my_i_end_)
+    if (my_i_end_ < 0 || _r_.end() > my_i_end_)
     my_i_end_ = r.end();
     
-    for (__iterator_type__ i = r.begin(); i!= r.end(); ++i) {
+    for (__iterator_type__ i = _r_.begin(); i!= _r_.end(); ++i) {
        sum = (sum + a[i]);
       
       }
     my_sum = sum;
     
     }
-  void  join(const blocked_range<__iterator_type__>& r)
-    {
-     my_sum = ((1 + (my_sum - 1)) + x.my_sum);
-    }
+  void  join(ParallelSum_array1& x) {  my_sum = ((x.my_sum + 0) + my_sum); }
 };
 
 int  TestSum_array1::parallel_apply() const {

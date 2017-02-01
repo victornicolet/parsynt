@@ -252,36 +252,13 @@ let fp = Format.fprintf in
      fp ppf "(%s %a)" funname
        (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_skexpr) argl
 
-  | SkHoleR (t, vs) ->
+  | SkHoleR (t, cs) ->
      fp ppf "@[<hv 2>(%a %a %i)@]"
-       hole_type_expr t
+       hole_type_expr t CS.pp_cs cs !current_expr_depth
 
-       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
-          (fun fmt vi -> fp fmt "%s%s"
-              (Conf.get_conf_string "rosette_join_right_state_prefix")
-              vi.Cil.vname))
-       (VSOps.varlist vs)
-
-       !current_expr_depth
-
-
-  | SkHoleL (t, v, vs) ->
-     fp ppf "@[<hv 2>(%a %a %a %i)@]"
-       hole_type_expr t
-
-       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
-          (fun fmt vi -> fp fmt "%s%s"
-              (Conf.get_conf_string "rosette_join_left_state_prefix")
-              vi.Cil.vname))
-       (VSOps.varlist vs)
-
-       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
-          (fun fmt vi -> fp fmt "%s%s"
-              (Conf.get_conf_string "rosette_join_right_state_prefix")
-              vi.Cil.vname))
-       (VSOps.varlist vs)
-
-       !current_expr_depth
+  | SkHoleL (t, v, cs) ->
+     fp ppf "@[<hv 2>(%a %a %i)@]"
+       hole_type_expr t CS.pp_cs cs !current_expr_depth
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 

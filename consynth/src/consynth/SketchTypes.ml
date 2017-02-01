@@ -42,8 +42,8 @@ and skExpr =
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL of symbolic_type * skLVar * VS.t
-  | SkHoleR of symbolic_type * VS.t
+  | SkHoleL of symbolic_type * skLVar * CS.t
+  | SkHoleR of symbolic_type * CS.t
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
   | SkSizeof of symbolic_type
@@ -1257,11 +1257,19 @@ and type_of expr =
   | _ -> failwith "Typing subfunctions not yet implemented"
 
 
-let filter_by_type t =
+let filter_vs_by_type t =
   VS.filter
     (fun vi ->
        let st = symb_type_of_ciltyp vi.Cil.vtype in
        st = t)
+
+
+let filter_cs_by_type t =
+  CS.filter
+    (fun jc ->
+       let st = symb_type_of_ciltyp jc.cvi.Cil.vtype in
+       st = t)
+
 
 let rec input_type_or_type =
   function

@@ -499,7 +499,7 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
 *)
 let pp_synth_body fmt (s0, state_vars, symbolic_variable_names) =
   Format.fprintf fmt
-    "@[<hov 2>#:forall (list %a)@]" pp_string_list symbolic_variable_names;
+    "@[<hov 2>#:forall (list %a)@]@\n" pp_string_list symbolic_variable_names;
   Format.fprintf fmt
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (pp_print_list
