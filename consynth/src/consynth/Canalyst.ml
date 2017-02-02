@@ -37,7 +37,6 @@ let processFile fileName =
      like __max_integer__, true, false, ... *)
   let decl_header = parseOneFile ((Sys.getcwd ())^"/templates/decl_header.h") in
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
-
   Cfg.computeFileCFG cfile;
   (*  Deadcodeelim.dce cfile; *)
   Findloops.debug := !debug;
@@ -131,8 +130,8 @@ let func2sketch funcreps =
     (fun (loop_ident, host_function,
           ro_vars_ids, state_vars, var_set, func, figu, reach_consts) ->
       let reach_consts =
-        IM.mapi
-          (fun vid cilc ->
+        IM.fold
+          (fun vid cilc m ->
              let expect_type =
                try
                  (T.symb_type_of_ciltyp
@@ -140,8 +139,10 @@ let func2sketch funcreps =
                with Not_found ->
                  T.Bottom
              in
-             Sketch.Body.convert_const expect_type cilc)
-          reach_consts
+             match Sketch.Body.conv_init_expr expect_type cilc with
+             | Some e -> IM.add vid e m
+             | None -> m )
+          reach_consts IM.empty
       in
       let sketch_obj =
         new Sketch.Body.sketch_builder var_set state_vars func figu
@@ -195,7 +196,6 @@ let find_new_variables sketch_rep =
     T.complete_final_state new_sketch.scontext.state_vars
       (Sketch.Join.build new_sketch.scontext.state_vars nlb_opt)
   in
-
   {
     new_sketch with
     loop_body = new_loop_body;
@@ -204,11 +204,4 @@ let find_new_variables sketch_rep =
 
 let pp_sketch fmt sketch_rep =
   IH.copy_into VariableDiscovery.discovered_aux Sketch.auxiliary_vars;
-  Sketch.pp_rosette_sketch fmt
-    (sketch_rep.ro_vars_ids,
-     VSOps.vids_of_vs sketch_rep.scontext.state_vars,
-     sketch_rep.scontext.all_vars,
-     sketch_rep.loop_body,
-     sketch_rep.join_body,
-     sketch_rep.sketch_igu,
-     sketch_rep.reaching_consts)
+  Sketch.pp_rosette_sketch fmt sketch_rep

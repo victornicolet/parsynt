@@ -470,7 +470,22 @@ class sketch_builder
     method get_sketch = sketch
   end
 
+(** Defines the kind of constants we can accept a initialization
+    parameters.
+    Translates a Cil.exp into a SketchTypes.skExpr
+*)
 
+let conv_init_expr expected_type (cil_exp : Cil.exp) =
+  match cil_exp with
+  | Cil.Const c -> Some (convert_const expected_type c)
+  | Cil.Lval (h, o) ->
+    (match h with
+     | Cil.Var vi ->
+       (match c_constant vi.Cil.vname with
+        | Some skconst -> Some (SkConst skconst)
+        | None -> None)
+     | _ -> None)
+  | _ -> None
 
 
 (** Transform the converted sketch to a loop body and a join sketch *)

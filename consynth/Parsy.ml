@@ -125,6 +125,7 @@ let main () =
     begin
       SError.logfile := "log"^(string_of_float (Sys.time ()))^filename;
       printf "Logging in %s" !SError.logfile;
+      (** Set all the debug flags to true *)
       Cil2Func.debug := true;
       Sketch.debug := true;
       Sketch.Body.debug := true;
@@ -132,7 +133,7 @@ let main () =
       VariableDiscovery.debug := true;
     end
   else ();
-    (** Set all the debug flags to true *)
+
 
 
   elapsed_time := Unix.gettimeofday ();

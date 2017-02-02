@@ -235,21 +235,22 @@ let find_function_with_rosette all_vars fe e =
   let pp_expr_fe fmt () =
     fprintf fmt "(define fe @[%a@])@." pp_skexpr fe
   in
-  let pp_f_sketch fmt vars =
-    fprintf fmt "(define (f x) (bExpr %s x 2))" vars
+  let pp_f_sketch fmt () =
+    fprintf fmt "(define (f x) (bExpr %a x 2))"
+      Sketch.pp_defined_input all_vars
   in
-  let pp_synth_prob fmt s () =
+  let pp_synth_prob fmt () =
     fprintf fmt
-      "(define odot (synthesize #:forall (list %s) \
+      "(define odot (synthesize #:forall (list %a) \
        #:guarantee (assert (eq? fe (f e)))))@."
-      s
+      Sketch.pp_defined_input all_vars
   in
   let pp_all fmt () =
-    let defs_str = String.concat " " (pp_defs fmt ()) in
+    pp_defs fmt ();
     pp_expr_e fmt ();
     pp_expr_fe fmt ();
-    pp_f_sketch fmt defs_str;
-    pp_synth_prob fmt defs_str ()
+    pp_f_sketch fmt ();
+    pp_synth_prob fmt  ()
   in
   let solution = Local.compile_and_fetch pp_all () in
   Ast.pp_expr_list Format.std_formatter solution

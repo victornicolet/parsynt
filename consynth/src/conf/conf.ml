@@ -49,3 +49,21 @@ let get_conf_string key =
              There must be a missing setting in conf.csv !"
       key;
     raise Not_found
+
+
+type builtins =
+  | Min_Int
+  | Max_Int
+  | False
+  | True
+
+
+let builtin_var_names = ["__MIN_INT_", Min_Int ;
+                         "__MAX_INT_", Max_Int;
+                         "__FALSE_", False;
+                         "__TRUE_", True]
+
+
+let is_builtin_var s = List.mem_assoc s builtin_var_names
+
+let get_builtin s = List.assoc s builtin_var_names

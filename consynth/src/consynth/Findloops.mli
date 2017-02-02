@@ -22,7 +22,7 @@ module Cloop : sig
     mutable inner_loops : stmt list;
     mutable host_function : Cil.varinfo;
     mutable called_functions : Cil.varinfo list;
-    mutable constant_in : Cil.constant Utils.IM.t;
+    mutable constant_in : Cil.exp Utils.IM.t;
     mutable defined_in : defsMap;
     mutable used_out : Cil.varinfo list;
     mutable rwset : Utils.VS.t * Utils.VS.t;

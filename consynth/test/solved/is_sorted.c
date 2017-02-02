@@ -1,11 +1,11 @@
-#include "decl_header.h"
+static const int __MIN_INT_ = -9999;
 
 _Bool is_sorted (int *a, int n) {
-  _Bool is_sorted = 1;
-  int prev = _min_int_;
+  _Bool iss = 1;
+  int prev = __MIN_INT_;
 
   for (int i = 0; i < n; i ++) {
-    is_sorted = is_sorted && (prev < a[i]);
+    iss = iss && (prev < a[i]);
     prev = a[i];
   }
 
@@ -13,7 +13,7 @@ _Bool is_sorted (int *a, int n) {
 }
 
 /*
-  Auxiliary synthesis finds a finite prefix auxliary :
+  Auxiliary synthesis finds a finite prefix auxiliary :
 
   aux = a[iL]
 

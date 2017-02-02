@@ -21,6 +21,7 @@ type auxiliary =
 let add_left_auxiliary vi =
   SketchJoin.left_auxiliaries:=
     (VS.add vi !SketchJoin.left_auxiliaries)
+
 let add_right_auxiliary vi =
   SketchJoin.right_auxiliaries:=
     (VS.add vi !SketchJoin.right_auxiliaries)

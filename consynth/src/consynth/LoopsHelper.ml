@@ -259,7 +259,14 @@ let search_loop_exits loop_statement body =
 (** Reduction to constants *)
 let reduce_expr e =
   match e with
-  | Const c -> Some c
+  | Const c -> Some e
+  | Lval (h, o) ->
+    (match h with
+     | Cil.Var vi ->
+       (match Conf.is_builtin_var vi.Cil.vname with
+        | true -> Some e
+        | false -> None)
+     | _ -> None)
   | _ -> None
 
 let reduce_def_to_const vid stmt =

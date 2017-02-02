@@ -77,10 +77,11 @@ module Cloop = struct
     (** The set of function called in a loop body *)
     mutable called_functions : varinfo list;
     (**
-        If a variable is defined as a constant when entering the loop, this
+        If a variable is defined as a constant / single var
+       when entering the loop, this
         constant added to the mapping.
     *)
-    mutable constant_in : Cil.constant IM.t;
+    mutable constant_in : Cil.exp IM.t;
     (** Cil's reaching definitions information *)
     mutable defined_in : defsMap;
     (** The variables used after exiting the loop *)

@@ -23,6 +23,8 @@ let color cname =
 
 let default = colorPrefix^"[0m"
 
+let pp_force_newline fmt () = fprintf fmt "@."
+
 (** List printing *)
 
 let rec ppli

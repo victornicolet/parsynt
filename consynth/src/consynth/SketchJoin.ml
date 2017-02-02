@@ -15,7 +15,7 @@ let right_auxiliaries = ref VS.empty
    and we can have a right holes if and only if all holes merged
    are right holes. *)
 let is_a_hole =
- function
+  function
   | SkHoleL _ -> true
   | SkHoleR _ -> true
   | _ -> false
@@ -59,57 +59,62 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
         (** Array : for now, cannot be a stv *)
         let t = type_of_var sklv in
         (match t with
-        | Vector (t, _) -> SkHoleR (t, CS.complete_right (CS.of_vs state)), 1
-        | _ -> failwith "Unexpected type in array")
+         | Vector (t, _) -> SkHoleR (t, CS.complete_right (CS.of_vs state)), 1
+         | _ -> failwith "Unexpected type in array")
       | SkTuple vs -> SkVar (SkTuple vs), 0
     end
 
   | SkConst c ->
     let cs = CS.complete_right (CS.of_vs state) in
-     begin
-       match c with
-       | CInt _ | CInt64 _ -> SkHoleR (Integer, cs), 1
-       | CReal _ -> SkHoleR (Real, cs), 1
-       | CBool _ -> SkHoleR (Boolean, cs), 1
-       | _ -> SkHoleR (Unit, cs), 1
-     end
+    begin
+      match c with
+      | CInt _ | CInt64 _ -> SkHoleR (Integer, cs), 1
+      | CReal _ -> SkHoleR (Real, cs), 1
+      | CBool _ -> SkHoleR (Boolean, cs), 1
+      | _ -> SkHoleR (Unit, cs), 1
+    end
 
   | SkFun skl -> SkFun (make_join ~state:state ~skip:[] skl), 0
 
   | SkBinop (op, e1, e2) ->
-     let holes1, d1 = merge_leaves max_depth (make_holes state e1) in
-     let holes2, d2 = merge_leaves max_depth (make_holes state e2) in
-     SkBinop (op, holes1, holes2), max d1 d2
+    let holes1, d1 = merge_leaves max_depth (make_holes state e1) in
+    let holes2, d2 = merge_leaves max_depth (make_holes state e2) in
+    SkBinop (op, holes1, holes2), max d1 d2
 
   | SkUnop (op, e) ->
-     merge_leaves max_depth (make_holes state e)
+    merge_leaves max_depth (make_holes state e)
 
   | SkCond (c, li, le) ->
-     let ch, _ = make_holes state c in
-     SkCond (ch ,
-             make_join ~state:state ~skip:[] li,
-             make_join ~state:state ~skip:[] le), 0
+    let ch, _ = make_holes state c in
+    SkCond (ch ,
+            make_join ~state:state ~skip:[] li,
+            make_join ~state:state ~skip:[] le), 0
 
   | SkQuestion (c, ei, ee) ->
-     let h1, d1  = merge_leaves max_depth (make_holes state ei) in
-     let h2, d2 = merge_leaves max_depth (make_holes state ee) in
-     let hc, dc = merge_leaves max_depth (make_holes state c) in
-     SkQuestion (hc, h1, h2), max (max d1 d2) dc
+    let h1, d1  = merge_leaves max_depth (make_holes state ei) in
+    let h2, d2 = merge_leaves max_depth (make_holes state ee) in
+    let hc, dc = merge_leaves max_depth (make_holes state c) in
+    SkQuestion (hc, h1, h2), max (max d1 d2) dc
 
   | SkApp (t, vo, args) ->
-     let new_args, depths =
-       ListTools.unpair (List.map (make_holes state) args) in
-     SkApp (t, vo, new_args), ListTools.intlist_max depths
+    let new_args, depths =
+      ListTools.unpair (List.map (make_holes state) args) in
+    SkApp (t, vo, new_args), ListTools.intlist_max depths
 
   | _ as skexpr ->  skexpr, 0
 
 and make_assignment_list state skip =
   List.map (fun (v, e) ->
       match e with
-        | SkVar v when List.mem v skip -> (v, e)
-        | SkVar (SkVarinfo vi) when VS.mem vi !left_auxiliaries ->
+      | SkVar v when List.mem v skip -> (v, e)
+
+      | _ ->
+        let vi = check_option (vi_of v) in
+        if VS.mem vi !left_auxiliaries then
           (v, SkHoleL (type_of e, v, CS.complete_all (CS.of_vs state)))
-        | _ -> (v, fst (make_holes ~is_final:true state e)))
+        else
+          (v, fst (make_holes ~is_final:true state e)))
+
 
 and make_join ~(state : VS.t) ~(skip: skLVar list) =
   function
@@ -164,7 +169,7 @@ and merge_leaves max_depth (e,d) =
                (is_h && is_right_hole e,
                 CS.union vars (completion_vars_of_hole e)))
 
-                 (true, CS.empty) el
+            (true, CS.empty) el
         in
         if all_holes
         then

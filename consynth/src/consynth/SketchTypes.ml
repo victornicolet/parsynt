@@ -292,10 +292,14 @@ let is_comparison_op =
 *)
 let c_constant  ccst =
   match ccst with
-  | "true___0" -> Some (CBool true)
-  | "false___0" -> Some (CBool false)
-  | "_min_int" -> Some NInfnty
-  | "_max_int_" -> Some Infnty
+  | s when Conf.is_builtin_var s ->
+
+    (match Conf.get_builtin s with
+     | Conf.Max_Int -> Some Infnty
+     | Conf.Min_Int -> Some NInfnty
+     | Conf.True -> Some (CBool true)
+     | Conf.False -> Some (CBool false))
+
   | "M_E" -> Some E
   | "M_LN2" -> Some Ln2
   | "M_LN10" -> Some Ln10
