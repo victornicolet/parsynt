@@ -9,6 +9,11 @@ let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
 let left_auxiliaries = ref VS.empty
 let right_auxiliaries = ref VS.empty
 
+let init () =
+  IH.clear auxiliary_variables;
+  left_auxiliaries := VS.empty;
+  right_auxiliaries := VS.empty
+
 (* Returns true is the expression is a hole. The second
    boolean in the pair is useful when we are trying to merge
    holes. Any merge involving a left hole yields a left hole,

@@ -66,7 +66,19 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
             IM.add vid ast_expr map)
           IM.empty
           (VSOps.vids_of_vs sketch.scontext.state_vars) expr_list
-      | None -> IM.empty
+      | None ->
+        (** If auxliaries have been created, the sketch has been solved
+            without having to assign them a specific value. We can
+            just create placeholders according to their type. *)
+        IH.fold
+          (fun vid vi map ->
+             IM.add vid
+               (match symb_type_of_ciltyp vi.vtype with
+                | Integer -> Ast.Int_e 0
+                | Boolean -> Ast.Bool_e true
+                | Real -> Ast.Int_e 1
+                | _ -> Ast.Nil_e) map)
+          Sketch.Join.auxiliary_variables IM.empty
     in
     {sketch with
      join_solution = translated_join_body;

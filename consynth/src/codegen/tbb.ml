@@ -298,7 +298,10 @@ let make_tbb_class pb =
       (fun (vi, maybe_init) ->
          match maybe_init with
          | Some init_expr -> vi, ConstExpr init_expr
-         | None -> failwith "No intiallization found.")
+         | None ->
+           failwith (fprintf str_formatter
+                       "No initiallization found for %s." vi.vname;
+                    flush_str_formatter ()))
       maybe_inits
   in
   let tbb_cstr_copy =
