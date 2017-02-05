@@ -8,7 +8,7 @@ module VS = Utils.VS
 
 let print_imp_style = ref false
 let printing_sketch = ref false
-let current_expr_depth = ref 1
+let holes_expr_depth = ref 1
 let state_struct_name = ref "__state"
 
 let state_vars = ref VS.empty
@@ -254,11 +254,11 @@ let fp = Format.fprintf in
 
   | SkHoleR (t, cs) ->
      fp ppf "@[<hv 2>(%a %a %i)@]"
-       hole_type_expr t CS.pp_cs cs !current_expr_depth
+       hole_type_expr t CS.pp_cs cs !holes_expr_depth
 
   | SkHoleL (t, v, cs) ->
      fp ppf "@[<hv 2>(%a %a %i)@]"
-       hole_type_expr t CS.pp_cs cs !current_expr_depth
+       hole_type_expr t CS.pp_cs cs !holes_expr_depth
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 

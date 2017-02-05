@@ -170,7 +170,7 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
   IM.cardinal candidate_state_variables > 0
 
 let remove_duplicate_auxiliaries xinfo (aux_vs, aux_ef) input_func =
-  let exprs, inputs = exec_once ~silent:true xinfo input_func in
+  let exprs, inputs = unfold_once ~silent:true xinfo input_func in
   let new_aux_ef =
     IM.filter
       (fun vid aux ->

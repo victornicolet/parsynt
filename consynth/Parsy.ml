@@ -30,60 +30,90 @@ let options = [
 ]
 
 let solution_found lp_name parsed (sketch : sketch_rep) solved =
-    printf "@.%sSOLUTION for %s %s:@.%a"
-      (color "green") lp_name default Ast.pp_expr_list parsed;
-    let sol_info = Codegen.get_solved_sketch_info parsed in
-    (** Simplify the solution using Z3 *)
-    (* let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
-    let translated_join_body =
-      SketchTypes.init_scm_translate
-        sketch.scontext.all_vars sketch.scontext.state_vars;
-      match scm_to_sk sol_info.Codegen.join_body with
-      | Some sklet, _ ->
-        (* (try (z3t#simplify_let c_style_solution) *)
-        (*  with Failure s -> *)
-        (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
-        (*     eprintf "MESSAGE: %s@\n" s; *)
-        (*     c_style_solution)) *)
-        sklet
+  printf "@.%sSOLUTION for %s %s:@.%a"
+    (color "green") lp_name default Ast.pp_expr_list parsed;
+  let sol_info = Codegen.get_solved_sketch_info parsed in
+  (** Simplify the solution using Z3 *)
+  (* let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
+  let translated_join_body =
+    SketchTypes.init_scm_translate
+      sketch.scontext.all_vars sketch.scontext.state_vars;
+    match scm_to_sk sol_info.Codegen.join_body with
+    | Some sklet, _ ->
+      (* (try (z3t#simplify_let c_style_solution) *)
+      (*  with Failure s -> *)
+      (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
+      (*     eprintf "MESSAGE: %s@\n" s; *)
+      (*     c_style_solution)) *)
+      sklet
 
-      | None, Some expr ->
-        (eprintf "Failed in translation, we got an expression %a for the join."
-           SPretty.pp_skexpr expr;
-         failwith "Failed to translate the solution in a function in our\
-                  intermediate representation.")
+    | None, Some expr ->
+      (eprintf "Failed in translation, we got an expression %a for the join."
+         SPretty.pp_skexpr expr;
+       failwith "Failed to translate the solution in a function in our\
+                 intermediate representation.")
 
-      | _ ->
-        failwith "Failed to translate the solution in our \
-                  intermediate representation."
-    in
-    init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
-    let remap_init_values maybe_expr_list =
-      match maybe_expr_list with
-      | Some expr_list ->
-        List.fold_left2
-          (fun map vid ast_expr ->
-            IM.add vid ast_expr map)
-          IM.empty
-          (VSOps.vids_of_vs sketch.scontext.state_vars) expr_list
-      | None ->
-        (** If auxliaries have been created, the sketch has been solved
-            without having to assign them a specific value. We can
-            just create placeholders according to their type. *)
-        IH.fold
-          (fun vid vi map ->
-             IM.add vid
-               (match symb_type_of_ciltyp vi.vtype with
-                | Integer -> Ast.Int_e 0
-                | Boolean -> Ast.Bool_e true
-                | Real -> Ast.Int_e 1
-                | _ -> Ast.Nil_e) map)
-          Sketch.Join.auxiliary_variables IM.empty
-    in
-    {sketch with
-     join_solution = translated_join_body;
-     init_values = remap_init_values sol_info.Codegen.init_values}::solved
+    | _ ->
+      failwith "Failed to translate the solution in our \
+                intermediate representation."
+  in
+  init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
+  let remap_init_values maybe_expr_list =
+    match maybe_expr_list with
+    | Some expr_list ->
+      List.fold_left2
+        (fun map vid ast_expr ->
+           IM.add vid ast_expr map)
+        IM.empty
+        (VSOps.vids_of_vs sketch.scontext.state_vars) expr_list
+    | None ->
+      (** If auxliaries have been created, the sketch has been solved
+          without having to assign them a specific value. We can
+          just create placeholders according to their type. *)
+      IH.fold
+        (fun vid vi map ->
+           IM.add vid
+             (match symb_type_of_ciltyp vi.vtype with
+              | Integer -> Ast.Int_e 0
+              | Boolean -> Ast.Bool_e true
+              | Real -> Ast.Int_e 1
+              | _ -> Ast.Nil_e) map)
+        Sketch.Join.auxiliary_variables IM.empty
+  in
+  {sketch with
+   join_solution = translated_join_body;
+   init_values = remap_init_values sol_info.Codegen.init_values}::solved
 
+let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
+  SPretty.holes_expr_depth := expr_depth;
+  List.fold_left
+    (fun (solved, unsolved) sketch ->
+       let lp_name = sketch.loop_name in
+       try
+         printf "@.SOLVING sketch for %s.@." lp_name;
+         let parsed =
+           L.compile_and_fetch
+             ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+         in
+         if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+           (* We get an "unsat" answer : add loop to auxliary discovery *)
+           begin
+             printf
+               "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
+               (color "orange") default lp_name;
+             (solved, unsolved@[sketch])
+           end
+         else
+           (* A solution has been found *)
+           solution_found lp_name parsed sketch solved, unsolved
+       with Failure s ->
+         begin
+           printf "@.%sFAILED to find a solution for %s%s.@."
+             (color "red") lp_name default;
+           (solved, unsolved)
+         end)
+    ([], [])
+    sketch_list
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let tbb_test_filename (solution : sketch_rep) =
@@ -162,38 +192,9 @@ let main () =
   let solved, unsolved =
     if !skip_first_solve then ([], sketch_list)
     else
-      List.fold_left
-        (fun (solved, for_discovery) sketch ->
-           let lp_name = sketch.loop_name in
-           try
-             printf "@.SOLVING sketch for %s.@." lp_name;
-             let parsed =
-               L.compile_and_fetch
-                 ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-             in
-             if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
-               (* We get an "unsat" answer : add loop to auxliary discovery *)
-               begin
-                 printf
-                   "@.%sNO SOLUTION%s found for %s with user-defined variables."
-                   (color "orange") default lp_name;
-                 (solved, for_discovery@[sketch])
-               end
-             else
-               (* A solution has been found *)
-               solution_found lp_name parsed sketch solved, for_discovery
-           with Failure s ->
-             begin
-               printf "@.%sFAILED to find a solution for %s%s.@."
-                 (color "red") lp_name default;
-               (solved, for_discovery)
-             end)
-        ([], [])
-        sketch_list
+      solve sketch_list
   in
-
   (** Now discover auxiliary variables *)
-
   if List.length unsolved > 0 then
     printf "%sDONE%s@.@.Finding auxiliary variables ...@.@."
       (color "green") default;
@@ -205,33 +206,17 @@ let main () =
          Canalyst.find_new_variables sketch)
       unsolved
   in
-  let finally_solved =
-    List.fold_left
-      (fun new_solved sketch ->
-         let name = sketch.loop_name in
-         try
-           printf "@.SOLVING sketch for %s.@." name;
-           let parsed =
-             L.compile_and_fetch
-               ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-           in
-           if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
-             (* We get an "unsat" answer : add loop to auxliary discovery *)
-             (printf
-                "@.%sNO SOLUTION%s found for %s with discovered variables.@."
-                (color "orange") default name;
-              new_solved)
-           else
-             (* A solution has been found *)
-             solution_found name parsed sketch new_solved
-         with Failure s ->
-           (printf "@.%sFAILED to find a solution for %s%s.@."
-              (color "red") name default);
-           new_solved)
-      solved
-      with_auxiliaries
+  let solved_with_aux, unsolved_with_aux =
+    solve with_auxiliaries
   in
-
+  (** If some sketches are not solved yet, might be because expression depth
+      is too limited *)
+  let solved_depth_2, unsolved_with_aux =
+    if List.length unsolved_with_aux > 0 then
+      solve ~expr_depth:2 unsolved_with_aux
+    else [], unsolved_with_aux
+  in
+  let finally_solved = solved@solved_with_aux@solved_depth_2 in
   (** Handle all the solutions found *)
   (List.iter
      (fun sketch ->
@@ -248,7 +233,7 @@ let main () =
 
 
      )
-  finally_solved);
+     finally_solved);
   output_tbb_tests finally_solved;
   output_dafny_proofs finally_solved;
 

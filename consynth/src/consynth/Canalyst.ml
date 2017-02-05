@@ -189,7 +189,7 @@ let find_new_variables sketch_rep =
   let new_loop_body =
     T.complete_final_state new_sketch.scontext.state_vars nlb_opt
   in
-  IH.copy_into VariableDiscovery.discovered_aux
+  IH.copy_into VariableDiscovery.discovered_aux_alltime
     SketchJoin.auxiliary_variables;
 
   let join_body =
@@ -203,5 +203,5 @@ let find_new_variables sketch_rep =
   }
 
 let pp_sketch fmt sketch_rep =
-  IH.copy_into VariableDiscovery.discovered_aux Sketch.auxiliary_vars;
+  IH.copy_into VariableDiscovery.discovered_aux_alltime Sketch.auxiliary_vars;
   Sketch.pp_rosette_sketch fmt sketch_rep

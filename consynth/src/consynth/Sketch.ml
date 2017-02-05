@@ -329,10 +329,6 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     ident_state_name main_struct_name
     s0_sketch_printer (VSOps.varlist state_vars);
 
-  let st0_vars = VSOps.vs_with_suffix state_vars "0" in
-  pp_symbolic_definitions_of fmt
-    (VS.filter
-       (fun vi -> not (IM.mem vi.Cil.vid reach_consts)) st0_vars);
   (** Handle special constants such as Infnty and NInfnty to create the
       necessary assertions and symbolic variables *)
 
@@ -354,9 +350,15 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                    Format.fprintf fmt "%s"
                      (base_init_value_choice reach_consts vi)
                  else
-                   Format.fprintf fmt "%s" vi.Cil.vname))))
+                   begin
+                     F.eprintf
+                       "@.%sERROR : \
+                        Variable %s should be initialized or auxiliary.%s@."
+                       (color "red") vi.Cil.vname default;
+                     failwith "Unexpected variable."
+                   end))))
          li)
-    (VSOps.bindings st0_vars)
+    (VSOps.bindings state_vars)
 
 
 (** Pretty print one verification condition, the loop
@@ -392,13 +394,7 @@ let pp_synth_body fmt (s0, state_vars, defined_input_vars) =
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
           pp_verification_condition fmt (s0, i_st, i_m, i_end)))
-    [(0,2,4);
-     (0,3,9);
-     (0,7,9);
-     (* (0,4,9); *)
-     (* (0,5,7); *)
-     (* (3,6,9); *)
-     (2,7,9)]
+    Conf.verification_parameters
 
 
 (** Pretty-print a synthesis problem wrapped in a defintion for further

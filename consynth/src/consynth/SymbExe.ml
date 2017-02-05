@@ -17,7 +17,7 @@ type exec_info =
 
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for exec_once *)
-let rec exec new_exprs exec_info func =
+let rec unfold new_exprs exec_info func =
 
   let rec apply_let_exprs new_exprs let_list exec_info =
     List.fold_left
@@ -28,7 +28,7 @@ let rec exec new_exprs exec_info func =
     | T.SkTuple vs -> exec_info.state_exprs, read_exprs
     | T.SkVarinfo vi ->
       let vid = vi.vid in
-      let nexpr, n_rexprs = exec_expr exec_info expr in
+      let nexpr, n_rexprs = unfold_expr exec_info expr in
       if !debug then
         (Format.fprintf Format.std_formatter "Set of read exprs : %a@."
        (fun fmt a -> SPretty.pp_expr_set fmt a)
@@ -46,7 +46,7 @@ let rec exec new_exprs exec_info func =
     apply_let_exprs new_exprs let_list exec_info
   | T.SkLetIn (let_list, let_cont) ->
     let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
-    exec new_exprs
+    unfold new_exprs
       {exec_info with
           state_exprs = IMTools.update_all exec_info.state_exprs new_exprs;
           inputs = ES.union new_reads exec_info.inputs} let_cont
@@ -100,13 +100,13 @@ and exec_var exec_info v =
         | bad_v, _ ->
           exception_on_expression "Unexpected variable form in exec_var" bad_v
       in
-      let new_offset, new_reads = exec_expr exec_info offset_expr in
+      let new_offset, new_reads = unfold_expr exec_info offset_expr in
       T.SkVar (T.SkArray (new_v', new_offset)),
       ES.union (ES.singleton (T.SkVar (T.SkArray (new_v', new_offset))))
         new_reads
     end
 
-and exec_expr exec_info expr =
+and unfold_expr exec_info expr =
   match expr with
   (* Where all the work is done : when encountering an expression in
        the function*)
@@ -119,35 +119,35 @@ and exec_expr exec_info expr =
   | T.SkFun sklet -> expr, ES.empty (* TODO recursive *)
 
   | T.SkBinop (binop, e1, e2) ->
-    let e1', r1 = exec_expr exec_info e1 in
-    let e2', r2 = exec_expr exec_info e2 in
+    let e1', r1 = unfold_expr exec_info e1 in
+    let e2', r2 = unfold_expr exec_info e2 in
     T.SkBinop (binop, e1', e2'), ES.union r1 r2
 
   | T.SkQuestion (c, e1, e2) ->
-    let c', rc = exec_expr exec_info c in
-    let e1', r1 = exec_expr exec_info e1 in
-    let e2', r2 = exec_expr exec_info e2 in
+    let c', rc = unfold_expr exec_info c in
+    let e1', r1 = unfold_expr exec_info e1 in
+    let e2', r2 = unfold_expr exec_info e2 in
     T.SkQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
 
   | T.SkUnop (unop, expr') ->
-    let e, r = exec_expr exec_info expr' in
+    let e, r = unfold_expr exec_info expr' in
     T.SkUnop (unop, e), r
 
   | T.SkApp (sty, vi_o, elist) ->
-    let erlist = List.map  (exec_expr exec_info) elist in
+    let erlist = List.map  (unfold_expr exec_info) elist in
     let elist', rlist = ListTools.unpair erlist in
     T.SkApp (sty, vi_o, elist'),
     List.fold_left (fun r es -> ES.union r es) ES.empty rlist
 
   | T.SkAddrof expr' | T.SkStartOf expr'
   | T.SkAlignofE expr' | T.SkSizeofE expr' ->
-    exec_expr exec_info expr'
+    unfold_expr exec_info expr'
 
   | T.SkSizeof _ | T.SkSizeofStr _ | T.SkAlignof _ ->
     expr, ES.empty
 
   | T.SkCastE (sty, expr') ->
-    let e, r = exec_expr exec_info expr' in
+    let e, r = unfold_expr exec_info expr' in
     T.SkCastE (sty, e), r
 
   (* Special cases where we have irreducible conitionals and nested for
@@ -175,7 +175,7 @@ and exec_expr exec_info expr =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-let exec_once ?(silent = false) exec_info inp_func =
+let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
-  let em, es = exec IM.empty exec_info inp_func in
+  let em, es = unfold IM.empty exec_info inp_func in
   em,es

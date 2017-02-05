@@ -61,7 +61,7 @@ let new_f_ =
   SketchTypes.complete_final_state new_sketch.scontext.state_vars
     (Sketch.Body.optims new_sketch.loop_body);;
 
-IH.copy_into VariableDiscovery.discovered_aux
+IH.copy_into VariableDiscovery.discovered_aux_alltime
   SketchJoin.auxiliary_variables;;
 
 let _join_ = Sketch.Join.build new_sketch.scontext.state_vars new_sketch.loop_body

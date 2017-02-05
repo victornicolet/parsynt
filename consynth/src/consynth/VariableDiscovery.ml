@@ -14,11 +14,16 @@ let debug_dev = ref true
 
 let max_exec_no = ref 4
 
+let discovered_aux_alltime = IH.create 10
 let discovered_aux = IH.create 10
 
 let init () =
+  IHTools.add_all discovered_aux_alltime discovered_aux;
   IH.clear discovered_aux
 
+let clear () =
+  IH.clear discovered_aux;
+  IH.clear discovered_aux_alltime
 (**
    Entry point : check that the function is a candidate for
     function discovery.
@@ -299,7 +304,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
              other variables by their expression.
          *)
          let fe', _ =
-           exec_expr {xinfo with
+           unfold_expr {xinfo with
                       context = {xinfo.context with state_vars = VS.empty}}
              aux.afunc
          in
@@ -483,7 +488,7 @@ let discover_for_id sketch varid =
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
-        exec_once {xinfo with inputs = T.ES.empty} input_func
+        unfold_once {xinfo with inputs = T.ES.empty} input_func
       in
       (** Reduce the depth of the state variables in the expression *)
       let new_exprs =
@@ -504,7 +509,7 @@ let discover_for_id sketch varid =
                         }
       in
       let new_idx_exprs =
-        let full_map, _ = exec_once ~silent:true xinfo_index idx_update in
+        let full_map, _ = unfold_once ~silent:true xinfo_index idx_update in
         VS.fold
           (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
           xinfo.context.index_vars IM.empty
@@ -573,6 +578,7 @@ let discover_for_id sketch varid =
   let new_ctx, new_loop_body, new_constant_exprs =
     VUtils.compose init_i input_func clean_aux clean_aux_ef
   in
+  init ();
   {sketch with scontext = new_ctx;
                loop_body = new_loop_body }
 

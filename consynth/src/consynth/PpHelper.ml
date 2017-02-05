@@ -76,6 +76,13 @@ let loc_of_string loca =
   with Not_found -> None
 
 
+(** Hastable printing *)
+let pp_hash fmt print_elt htbl =
+  let pp_elts fmt () =
+    IH.iter (fun k elt -> fprintf fmt "(%i:%a)@;" k print_elt elt) htbl
+  in
+  fprintf fmt "@[<hv 2><HashTable:@;%a>@]" pp_elts ()
+
 (**TODO : replace characters that are setting color back to default in incoming
    string *)
 let printerr s =
