@@ -19,8 +19,15 @@ let use_unsafe_operations = ref false
 
 (** ------------------- 1 - EXPRESSIONS & FUNCTIONS---------------------------*)
 (** Internal type for building sketches *)
+type operator_type =
+  | Arith                       (* Arithmetic only *)
+  | Basic                       (* Airthmetic and min/max *)
+  | NonLinear                   (* Non-linear operators *)
+  | NotNum                        (* Not a numeral operator *)
 
-type sklet =
+type hole_type = symbolic_type * operator_type
+
+and sklet =
   | SkLetExpr of (skLVar * skExpr) list
   (**  (let ([var expr]) let)*)
   | SkLetIn of (skLVar * skExpr) list * sklet
@@ -42,8 +49,8 @@ and skExpr =
   | SkUnop of symb_unop * skExpr
   | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
   | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL of symbolic_type * skLVar * CS.t
-  | SkHoleR of symbolic_type * CS.t
+  | SkHoleL of hole_type * skLVar * CS.t
+  | SkHoleR of hole_type * CS.t
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
   | SkSizeof of symbolic_type
@@ -215,6 +222,26 @@ let symb_binop_of_cil =
 (* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
 (* inexact->exact, exact->inexact, quotient , sgn *)
 
+let optype_of_binop =
+  function
+  | Expt | Times | Div -> NonLinear
+  | Max | Min -> Basic
+  | Plus | Minus -> Arith
+  | _ -> NotNum
+
+let optype_of_unop =
+  function
+  | Truncate | Round | UnsafeUnop _
+  | Abs | Floor | Ceiling -> NonLinear
+  | Add1 | Sub1 | Neg -> Arith
+  | Sgn | Not -> NotNum
+
+let join_optypes opt1 opt2 =
+  match opt1, opt2 with
+  | NonLinear, _ | _, NonLinear -> NonLinear
+  | Basic, _ | _, Basic -> Basic
+  | Arith, _ | _, Arith -> Arith
+  | _, _ -> NotNum        (* Join *)
 
 (** Identity function *)
 let identity_sk =
@@ -238,7 +265,7 @@ let symb_unop_of_fname =
   | "rint" | "rintf" | "rintl" -> Some Round
   | _ -> None
 
-let symb_binop_of_fname =
+let symb_binop_of_fname : string -> symb_binop option =
   function
   | "modf" | "modff" | "modfl" -> None (** TODO *)
   | "fmod" | "fmodl" | "fmodf" -> Some Mod
@@ -530,14 +557,14 @@ let rec_expr
     (join : 'a -> 'a -> 'a)
     (init : 'a)
     (case : skExpr -> bool)
-    (case_handler : skExpr -> 'a)
+    (case_handler : (skExpr -> 'a) -> skExpr -> 'a)
     (const_handler: constants -> 'a)
     (var_handler : skLVar -> 'a)
     (expre : skExpr) : 'a =
 
   let rec recurse_aux =
     function
-    | e when case e -> case_handler e
+    | e when case e -> case_handler recurse_aux e
     | SkVar v -> var_handler v
     | SkConst c -> const_handler c
 
@@ -713,11 +740,32 @@ let rec replace_expression ?(in_subscripts = false)
 let rec sk_uses vs expr =
   let join a b = a || b in
   let case e = false in
-  let case_handler e = false in
+  let case_handler f e =  false in
   let const_handler c = false in
   let var_handler v =
     try VS.mem (check_option (vi_of v)) vs with Not_found -> false
   in rec_expr join false case case_handler const_handler var_handler expr
+
+let analyze_optype (e : skExpr) : operator_type =
+  let join = join_optypes in
+  rec_expr
+    join
+    NotNum                      (* Initialization *)
+    (fun e ->
+       match e with
+       | SkUnop (op, e) -> true
+       | SkBinop (op, e1, e2) -> true
+       | _ -> false)            (* Filter *)
+    (fun f e ->
+       match e with
+       | SkUnop (op, e) ->
+         join (optype_of_unop op) (f e)
+       | SkBinop (op, e1, e2) ->
+         join (join (optype_of_binop op) (f e1)) (f e2)
+       | _ -> NotNum)
+    (fun _ -> NotNum)
+    (fun _ -> NotNum)
+    e
 
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
@@ -777,7 +825,7 @@ let used_in_skexpr =
   let join = VS.union in
   let init = VS.empty in
   let case e = false in
-  let case_h e = VS.empty in
+  let case_h f e = VS.empty in
   let var_handler v =
     let vi = vi_of v in
     match vi with | Some vi -> VS.singleton vi | _ -> VS.empty
@@ -901,7 +949,7 @@ let scm_register s =
 
 
 
-let rec scm_to_sk scm =
+let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
   try
     match scm with
     | Int_e i -> None, Some (SkConst (CInt i))
@@ -1256,7 +1304,9 @@ and type_of expr =
 
   | SkQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
-  | SkApp (t, _, _) | SkHoleL (t, _,  _) | SkHoleR (t, _) -> t
+  | SkApp (t, _, _) -> t
+  | SkHoleL (ht, _,  _) | SkHoleR (ht, _) ->
+    (match ht with (t, ot) -> t)
 
   | _ -> failwith "Typing subfunctions not yet implemented"
 

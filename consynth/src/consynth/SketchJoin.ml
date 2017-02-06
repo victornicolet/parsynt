@@ -47,7 +47,9 @@ let completion_vars_of_hole =
   | SkHoleL (_, _, cs) -> cs
   | _ -> CS.empty
 
-let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
+let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t)
+    (optype : operator_type) =
+  let holt t = (t, optype) in
   function
   | SkVar sklv ->
     begin
@@ -58,13 +60,13 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
         then SkVar sklv, 0
         else
           (if VS.mem vi state
-           then SkHoleL (t, sklv, CS.complete_all (CS.of_vs state)), 1
-           else SkHoleR (t, CS.complete_right (CS.of_vs state)), 1)
+           then SkHoleL (holt t, sklv, CS.complete_all (CS.of_vs state)), 1
+           else SkHoleR (holt t, CS.complete_right (CS.of_vs state)), 1)
       | SkArray (sklv, expr) ->
         (** Array : for now, cannot be a stv *)
         let t = type_of_var sklv in
         (match t with
-         | Vector (t, _) -> SkHoleR (t, CS.complete_right (CS.of_vs state)), 1
+         | Vector (t, _) -> SkHoleR (holt t, CS.complete_right (CS.of_vs state)), 1
          | _ -> failwith "Unexpected type in array")
       | SkTuple vs -> SkVar (SkTuple vs), 0
     end
@@ -73,40 +75,51 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t) =
     let cs = CS.complete_right (CS.of_vs state) in
     begin
       match c with
-      | CInt _ | CInt64 _ -> SkHoleR (Integer, cs), 1
-      | CReal _ -> SkHoleR (Real, cs), 1
-      | CBool _ -> SkHoleR (Boolean, cs), 1
-      | _ -> SkHoleR (Unit, cs), 1
+      | CInt _ | CInt64 _ -> SkHoleR (holt Integer, cs), 1
+      | CReal _ -> SkHoleR (holt Real, cs), 1
+      | CBool _ -> SkHoleR (holt Boolean, cs), 1
+      | _ -> SkHoleR (holt Unit, cs), 1
     end
 
   | SkFun skl -> SkFun (make_join ~state:state ~skip:[] skl), 0
 
   | SkBinop (op, e1, e2) ->
-    let holes1, d1 = merge_leaves max_depth (make_holes state e1) in
-    let holes2, d2 = merge_leaves max_depth (make_holes state e2) in
+    let holes1, d1 = merge_leaves max_depth (make_holes state optype e1) in
+    let holes2, d2 = merge_leaves max_depth (make_holes state optype e2) in
     SkBinop (op, holes1, holes2), max d1 d2
 
   | SkUnop (op, e) ->
-    merge_leaves max_depth (make_holes state e)
+    merge_leaves max_depth (make_holes state optype e)
 
   | SkCond (c, li, le) ->
-    let ch, _ = make_holes state c in
+    let ch, _ = make_holes state optype c in
     SkCond (ch ,
             make_join ~state:state ~skip:[] li,
             make_join ~state:state ~skip:[] le), 0
 
   | SkQuestion (c, ei, ee) ->
-    let h1, d1  = merge_leaves max_depth (make_holes state ei) in
-    let h2, d2 = merge_leaves max_depth (make_holes state ee) in
-    let hc, dc = merge_leaves max_depth (make_holes state c) in
+    let h1, d1  = merge_leaves max_depth (make_holes state optype ei) in
+    let h2, d2 = merge_leaves max_depth (make_holes state optype ee) in
+    let hc, dc = merge_leaves max_depth (make_holes state optype c) in
     SkQuestion (hc, h1, h2), max (max d1 d2) dc
 
   | SkApp (t, vo, args) ->
     let new_args, depths =
-      ListTools.unpair (List.map (make_holes state) args) in
+      ListTools.unpair (List.map (make_holes state optype) args) in
     SkApp (t, vo, new_args), ListTools.intlist_max depths
 
   | _ as skexpr ->  skexpr, 0
+
+
+and make_hole_e
+    ?(max_depth = 2)
+    ?(is_final=false)
+    (state : VS.t) (e : skExpr) =
+  let optype = analyze_optype e in
+  make_holes
+    ~max_depth:max_depth
+    ~is_final:is_final
+    state optype e
 
 and make_assignment_list state skip =
   List.map (fun (v, e) ->
@@ -115,10 +128,12 @@ and make_assignment_list state skip =
 
       | _ ->
         let vi = check_option (vi_of v) in
-        if VS.mem vi !left_auxiliaries then
-          (v, SkHoleL (type_of e, v, CS.complete_all (CS.of_vs state)))
+        if VS.mem vi !left_auxiliaries ||
+           VS.mem vi !right_auxiliaries  then
+          (v, SkHoleL (((type_of e), Basic), v,
+                       CS.complete_all (CS.of_vs state)))
         else
-          (v, fst (make_holes ~is_final:true state e)))
+          (v, fst (make_hole_e ~is_final:true state e)))
 
 
 and make_join ~(state : VS.t) ~(skip: skLVar list) =
@@ -137,21 +152,21 @@ and merge_leaves max_depth (e,d) =
     begin
       match e with
       | SkUnop (op , h) when is_a_hole h ->
-        let ht = check_option (type_of_hole h) in
+        let ht, ot = check_option (type_of_hole h) in
         let op_type =
           (match type_of_unop ht op with
            | Some t -> t
            | None -> failwith "Type error in holes")
         in
         let ht_final =
-          if op_type = ht then op_type else Function(ht, op_type)
+          if op_type = ht then op_type else Function (ht, op_type)
         in
-        replace_hole_type ht_final h, d
+        replace_hole_type (ht_final, ot) h, d
 
 
       | SkBinop (op, h1, h2) when is_a_hole h1 && is_a_hole h2 ->
-        let t1 = check_option (type_of_hole h1) in
-        let t2 = check_option (type_of_hole h2) in
+        let t1, o1 = check_option (type_of_hole h1) in
+        let t2, o2 = check_option (type_of_hole h2) in
         let rh_h1 = is_right_hole h1 in
         let rh_h2 = is_right_hole h2 in
         let vars = CS.union (completion_vars_of_hole h1)
@@ -161,7 +176,7 @@ and merge_leaves max_depth (e,d) =
          | Some t ->
            if t1 = t2 && rh_h1 && rh_h2 then
              let ht_final = Function (t1, t) in
-             SkHoleR (ht_final, vars), d
+             SkHoleR ((ht_final, join_optypes o1 o2), vars), d
            else
              SkBinop(op, h1, h2), d + 1
 
@@ -178,7 +193,7 @@ and merge_leaves max_depth (e,d) =
         in
         if all_holes
         then
-          SkHoleR (t, vars), d
+          SkHoleR ((t, NotNum), vars), d
         else
           let el', _ = ListTools.unpair
               (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
@@ -187,7 +202,7 @@ and merge_leaves max_depth (e,d) =
       | SkQuestion (c, ei, ee) ->
         begin
           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-            SkQuestion (SkHoleR (Boolean, completion_vars_of_hole c),
+            SkQuestion (SkHoleR ((Boolean, NotNum), completion_vars_of_hole c),
                         ei, ee), d
           else
             e, 0
@@ -215,13 +230,13 @@ let set_types_and_varsets =
       (fun e -> is_a_hole e)
       (fun rfun e ->
          match e with
-         | SkHoleL (t, v, vs) ->
+         | SkHoleL ((t, o), v, vs) ->
            let nvs, nt = adapt_vs_and_t vs t in
-           SkHoleL (nt, v, nvs)
+           SkHoleL ((nt, o), v, nvs)
 
-         | SkHoleR (t, vs) ->
+         | SkHoleR ((t, o), vs) ->
            let nvs, nt = adapt_vs_and_t vs t in
-           SkHoleR (nt, nvs)
+           SkHoleR ((nt, o), nvs)
 
          | _ -> rfun e)
 

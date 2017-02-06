@@ -40,7 +40,7 @@ public:
     my_sum = sum;
     
     }
-  void  join(ParallelSum_array1& x) {  my_sum = ((x.my_sum + 0) + my_sum); }
+  void  join(ParallelSum_array1& x) {  my_sum = (my_sum + x.my_sum); }
 };
 
 int  TestSum_array1::parallel_apply() const {

@@ -136,7 +136,7 @@ let uses stv input_func =
         VS.union (* Join *)
         VS.empty (* Leaf *)
         (fun e -> false) (* No special cases *)
-        (fun e -> VS.empty) (* Never used*)
+        (fun f e -> VS.empty) (* Never used*)
         (fun c -> VS.empty) (* Handle constants *)
         (fun v ->
            VS.inter
@@ -253,7 +253,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
     (* Special rule for conditionals *)
     | _ ->  false
   in
-  let handle_candidate =
+  let handle_candidate f =
     function
     | T.SkBinop (_, e1, e2) ->
       begin
@@ -291,7 +291,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
       (fun e ->
          IM.exists
            (fun vid aux -> aux.aexpr @= e) emap)
-      (fun e -> find_ce e emap)
+      (fun f e -> find_ce e emap)
       (fun c -> []) (fun v -> [])
       top_expr
   in

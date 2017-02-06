@@ -558,7 +558,7 @@ let let_add2 old_let new_let vs =
     Otherwise we return the new substitutions and a state representing the old
     substitutions (this will need let-bindings)
 *)
-let merge_substs vs old_subs new_subs =
+let merge_substs vs old_subs new_subs : bool * expr IM.t * letin option =
   let used_in_new_subs =
     (IM.fold (fun k v b -> VS.union b (used_vars_expr v))
        new_subs VS.empty)

@@ -404,7 +404,7 @@ class sketch_builder
 
 
       (** TODO : add the current loop index *)
-      and convert_letin letin =
+      and convert_letin letin : sklet =
         match letin with
         | State subs  ->
           let state =

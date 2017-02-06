@@ -22,29 +22,34 @@ let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 
 
 
-let hole_type_expr ppf t =
-  let fpf =  fprintf ppf in
-    (match t with
-      | Unit -> fpf "bExpr:unit"
+let hole_type_expr fmt ((t, ot) : hole_type) =
+  let hole_num_optype optype =
+    match optype with
+    | NotNum -> "bExpr:num->num" (* By default. *)
+    | Basic -> "bExpr:num->num"
+    | Arith -> "bExprArith:num->num"
+    | NonLinear -> "bExprNL:num->num"
+  in
+  (match t with
+   | Unit -> fprintf fmt "bExpr:unit"
 
+   | Integer | Real -> fprintf fmt "%s" (hole_num_optype ot)
 
-      | Integer | Real -> fpf "bExpr:num->num"
+   | Boolean -> fprintf fmt "bExpr:boolean"
 
-      | Boolean -> fpf "bExpr:boolean"
+   | Function (a, b) ->
+     begin
+       match a, b with
+       | Integer, Boolean -> fprintf fmt "bExpr:num->bool"
 
-      | Function (a, b) ->
-        begin
-          match a, b with
-          | Integer, Boolean -> fpf "bExpr:num->bool"
+       | Boolean, Boolean -> fprintf fmt "bExpr:boolean"
 
-          | Boolean, Boolean -> fpf "bExpr:boolean"
+       | Integer, Integer -> fprintf fmt "bExpr:num->num"
 
-         | Integer, Integer -> fpf "bExpr:num->num"
+       | _ ,_ -> fprintf fmt "bExpr:num->num"
 
-         | _ ,_ -> fpf "bExpr:num->num"
-
-       end
-      | _ -> fpf "bExpr:num->num")
+     end
+   | _ -> fprintf fmt "bExpr:num->num")
 
 
 (** Pretty-printing operators *)
@@ -570,9 +575,9 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
-  | SkHoleL (t, v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
+  | SkHoleL ((t, _), v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
                         pp_c_var v pp_typ t
-  | SkHoleR (t, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
+  | SkHoleR ((t, _), _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_skexpr e
 

@@ -3,8 +3,15 @@
 (require rosette/lib/synthax racket/syntax)
 
 (provide ScalarExpr LinearScalarExpr bExpr
-         bExpr:num->num bExpr:num->bool bExpr:boolean
+         ;; Numeral to numeral expressions
+         bExprArith:num->num bExprNL:num->num bExpr:num->num
+         ;; Comparisons
+         bExpr:num->bool
+         ;; Boolean only expressions
+         bExpr:boolean
+         ;; If-then-else forms of numeral type
          bExpr:ternary->num
+         ;; Unused for now
          BasicBinops:num->bool)
 
 ;; Syntax for synthesizable expressions in holes
@@ -97,8 +104,18 @@
 
 
 ;; Type-specific expressions
+
+;; Numeral to numerals : complexity increasing from airthmetic-only,
+;; to expressions with min/max and then adding non-linear operators
+
+(define-synthax ArithBinops:num->num
+  ([(ArithBinops:num->num) (choose + -)]))
+
 (define-synthax BasicBinops:num->num
-  ([(BasicBinops:num->num) (choose + -)]))
+  ([(BasicBinops:num->num) (choose + - min max)]))
+
+(define-synthax NonLinearBinops:num->num
+  ([(NonLinearBinops:num->num) (choose * / + - min max)]))
 
 (define-synthax BasicUnops:num->num
   ([(BasicUnops:num->num) (choose add1 sub1)]))
@@ -114,6 +131,18 @@
 (define-synthax BasicUnops:bool
   ([(BasicUnops:bool) (choose ! identity)]))
 
+(define-synthax (bExprArith:num->num x ... depth)
+  #:base (Scalar x ...)
+  #:else (choose
+          (Scalar x ...)
+          ; Binary expression
+          ((ArithBinops:num->num)
+           (bExpr:num->num x ... (sub1 depth))
+           (bExpr:num->num x ... (sub1 depth)))
+          ; Unary expression
+          ((BasicUnops:num->num)
+           (bExpr:num->num x ... (sub1 depth)))))
+
 (define-synthax (bExpr:num->num x ... depth)
   #:base (Scalar x ...)
   #:else (choose
@@ -125,6 +154,19 @@
           ; Unary expression
           ((BasicUnops:num->num)
            (bExpr:num->num x ... (sub1 depth)))))
+
+(define-synthax (bExprNL:num->num x ... depth)
+  #:base (Scalar x ...)
+  #:else (choose
+          (Scalar x ...)
+          ; Binary expression
+          ((NonLinearBinops:num->num)
+           (bExpr:num->num x ... (sub1 depth))
+           (bExpr:num->num x ... (sub1 depth)))
+          ; Unary expression
+          ((BasicUnops:num->num)
+           (bExpr:num->num x ... (sub1 depth)))))
+
 
 (define-synthax bExpr:num->bool
   ([(bExpr:num->bool x ... d) (choose

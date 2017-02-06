@@ -221,7 +221,7 @@ let expression_cost ctx e =
         if mx > 0 then mx + 1 else 0 }
   in
   let special_case e = ES.mem e ctx.costly_exprs in
-  let handle_spec e =  case1 in
+  let handle_spec f e =  case1 in
   let case_var v =
     let vi_o = vi_of v in
     match vi_o with
