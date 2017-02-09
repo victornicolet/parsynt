@@ -114,7 +114,11 @@ let fetch_solution filename =
     with e ->
       (let err_code = Sys.command ("cat "^filename) in
        Format.printf "@.cat %s : %i@." filename err_code;
-        raise e)
+       match e with
+       | Parser.Error -> raise e
+       | Lexer.LexError s ->
+         eprintf "%s" s; raise e
+       | _ -> raise e)
 
   in
   Sys.remove filename;

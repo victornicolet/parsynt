@@ -1,5 +1,6 @@
 %{
 open Ast
+
 %}
 
 %token DEFINE
@@ -37,6 +38,7 @@ open Ast
 %token LOAD
 %token <string> ID
 %token <int> INT
+%token <float> FLOAT
 %token <string> STRING
 %token EOF
 
@@ -56,8 +58,8 @@ seq   : expr seq   { $1 :: $2 }
 idseq  : ID                { [$1] }
        | LPAREN ids RPAREN { $2 }
 
-ids    : ID ids { $1 :: $2 }
-       | ID     { [$1] }
+ids    : ID ids { $1; $1 :: $2 }
+       | ID     { $1; [$1] }
 
 bindgroup : LPAREN bindseq RPAREN { $2 }
 
@@ -67,6 +69,7 @@ bindseq : binding bindseq { $1 :: $2 }
 binding : LPAREN ID expr RPAREN { ($2, $3) }
 
 expr   : INT       { Int_e $1 }
+       | FLOAT 	   { Float_e $1 }
        | ID        { Id_e $1 }
        | STRING    { Str_e $1 }
        | TRUE      { Bool_e true }

@@ -4,15 +4,15 @@
 
 (provide ScalarExpr LinearScalarExpr bExpr
          ;; Numeral to numeral expressions
-         bExprArith:num->num bExprNL:num->num bExpr:num->num
+         NumExprArith NumExprNL NumExprBasic
          ;; Comparisons
-         bExpr:num->bool
+         BoolExprCompar
          ;; Boolean only expressions
-         bExpr:boolean
+         BoolExpr
          ;; If-then-else forms of numeral type
-         bExpr:ternary->num
+         NumIte
          ;; Unused for now
-         BasicBinops:num->bool)
+         ComparisonOps)
 
 ;; Syntax for synthesizable expressions in holes
 
@@ -108,92 +108,92 @@
 ;; Numeral to numerals : complexity increasing from airthmetic-only,
 ;; to expressions with min/max and then adding non-linear operators
 
-(define-synthax ArithBinops:num->num
-  ([(ArithBinops:num->num) (choose + -)]))
+(define-synthax ArithBinops
+  ([(ArithBinops 0) (choose + -)]))
 
-(define-synthax BasicBinops:num->num
-  ([(BasicBinops:num->num) (choose + - min max)]))
+(define-synthax BasicBinopsNum
+  ([(BasicBinopsNum 0) (choose + - min max)]))
 
-(define-synthax NonLinearBinops:num->num
-  ([(NonLinearBinops:num->num) (choose * / + - min max)]))
+(define-synthax NLBinopsNum
+  ([(NLBinopsNum 0) (choose * / + - min max)]))
 
-(define-synthax BasicUnops:num->num
-  ([(BasicUnops:num->num) (choose add1 sub1)]))
+(define-synthax BasicUnopsNum
+  ([(BasicUnopsNum 0) (choose add1 sub1)]))
 
-(define-synthax BasicBinops:num->bool
-  ([(BasicBinops:num->bool) (choose > >= =)]))
-
-
-(define-synthax BasicBinops:bool->bool
-  ([(BasicBinops:bool->bool) (choose && ||)]))
+(define-synthax ComparisonOps
+  ([(ComparisonOps 0) (choose > >= =)]))
 
 
-(define-synthax BasicUnops:bool
-  ([(BasicUnops:bool) (choose ! identity)]))
+(define-synthax BinopsBool
+  ([(BinopsBool 0) (choose && ||)]))
 
-(define-synthax (bExprArith:num->num x ... depth)
+
+(define-synthax BasicUnopsBool
+  ([(BasicUnopsBool 0) (choose ! identity)]))
+
+(define-synthax (NumExprArith x ... depth)
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)
           ; Binary expression
-          ((ArithBinops:num->num)
-           (bExpr:num->num x ... (sub1 depth))
-           (bExpr:num->num x ... (sub1 depth)))
+          ((ArithBinops 0)
+           (NumExprArith x ... (sub1 depth))
+           (NumExprArith x ... (sub1 depth)))
           ; Unary expression
-          ((BasicUnops:num->num)
-           (bExpr:num->num x ... (sub1 depth)))))
+          ((BasicUnopsNum 0)
+           (NumExprArith x ... (sub1 depth)))))
 
-(define-synthax (bExpr:num->num x ... depth)
+(define-synthax (NumExprBasic x ... depth)
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)
           ; Binary expression
-          ((BasicBinops:num->num)
-           (bExpr:num->num x ... (sub1 depth))
-           (bExpr:num->num x ... (sub1 depth)))
+          ((BasicBinopsNum 0)
+           (NumExprBasic x ... (sub1 depth))
+           (NumExprBasic x ... (sub1 depth)))
           ; Unary expression
-          ((BasicUnops:num->num)
-           (bExpr:num->num x ... (sub1 depth)))))
+          ((BasicUnopsNum 0)
+           (NumExprBasic x ... (sub1 depth)))))
 
-(define-synthax (bExprNL:num->num x ... depth)
+(define-synthax (NumExprNL x ... depth)
   #:base (Scalar x ...)
   #:else (choose
           (Scalar x ...)
           ; Binary expression
-          ((NonLinearBinops:num->num)
-           (bExpr:num->num x ... (sub1 depth))
-           (bExpr:num->num x ... (sub1 depth)))
+          ((NLBinopsNum 0)
+           (NumExprBasic x ... (sub1 depth))
+           (NumExprBasic x ... (sub1 depth)))
           ; Unary expression
-          ((BasicUnops:num->num)
-           (bExpr:num->num x ... (sub1 depth)))))
+          ((BasicUnopsNum 0)
+           (NumExprBasic x ... (sub1 depth)))))
 
 
-(define-synthax bExpr:num->bool
-  ([(bExpr:num->bool x ... d) (choose
-                               ((BasicUnops:bool)
-                               ((BasicBinops:num->bool)
-                                (bExpr:num->num x ... 1)
-                                (bExpr:num->num x ... 1)))
-                               ((BasicBinops:num->bool)
-                                (bExpr:num->num x ... 1)
-                                (bExpr:num->num x ... 1)))]))
+(define-synthax BoolExprCompar
+  ([(BoolExprCompar x ... d) (choose
+                               ((BasicUnopsBool 0)
+                               ((ComparisonOps 0)
+                                (NumExprBasic x ... 1)
+                                (NumExprBasic x ... 1)))
+                               ((ComparisonOps 0)
+                                (NumExprBasic x ... 1)
+                                (NumExprBasic x ... 1)))]))
 
-(define-synthax (bExpr:boolean x ... depth)
+(define-synthax (BoolExpr x ... depth)
   #:base (Scalar x ...)
   #:else (choose #t #f
           (Scalar x ...)
-          ((BasicUnops:bool)
-           (bExpr:boolean x ... (sub1 depth)))
-          ((BasicBinops:bool->bool)
-           (bExpr:boolean x ... (sub1 depth))
-           (bExpr:boolean x ... (sub1 depth)))))
+          ((BasicUnopsBool 0)
+           (BoolExpr x ... (sub1 depth)))
+          ((BinopsBool 0)
+           (BoolExpr x ... (sub1 depth))
+           (BoolExpr x ... (sub1 depth)))))
 
 
-(define-synthax bExpr:ternary->num
-  ([(bExpr:ternary->num (r ...) (b ...) d) (if
+(define-synthax NumIte
+  ([(NumIte (r ...) (b ...) d) (if
                                   (choose
                                    b ...
-                                   (bExpr:num->bool r ... d)
-                                   (bExpr:boolean b ... d))
-                                  (bExpr:num->num r ... d)
-                                  (bExpr:num->num r ... d))]))
+                                   (BoolExprCompar r ... d)
+                                   (BoolExpr b ... d))
+                                  (NumExprBasic r ... d)
+                                  (NumExprBasic r ... d))]))

@@ -667,4 +667,8 @@ module SMTools = struct
       SM.add key (update pval nval) map
     with Not_found ->
       SM.add key nval map
+
+  let from_bindings (b : (string * 'a) list) : 'a SM.t =
+    List.fold_left
+      (fun smap (k,v) -> SM.add k v smap) SM.empty b
 end

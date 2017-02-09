@@ -49,9 +49,9 @@ let gen_cell_vars vi =
   List.init !iterations_limit
     (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
 
-let rec pp_define_symbolic fmt =
+let rec pp_define_symbolic fmt def =
   let to_v l  = (List.map ~f:(fun vi -> vi.vname) l) in
-  function
+  match def with
   | DefInteger vil -> F.fprintf fmt "@[(define-symbolic %a integer?)@]@\n"
                         pp_string_list (to_v vil)
   | DefReal vil -> F.fprintf fmt "@[(define-symbolic %a real?)@]@\n"
@@ -178,7 +178,7 @@ let get_or_create fmt input_vars special_const_typ =
     IH.add special_const_table
       special_const_index vi; vi
 
-
+let clear_special_consts () = IH.clear special_const_table
 
 let handle_special_consts fmt input_vars reach_consts =
   IM.map
@@ -424,6 +424,7 @@ let pp_synth fmt s0 state_vars read_vars =
     will be set to this expression in the inital state of the loop.
 *)
 let pp_rosette_sketch fmt (sketch : sketch_rep) =
+  clear_special_consts ();
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
   (** Read variables : force read /\ state = empty *)
@@ -452,4 +453,4 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_force_newline fmt ();
-  pp_synth fmt st0 state_vars read_vars
+  pp_synth fmt st0 state_vars read_vars;

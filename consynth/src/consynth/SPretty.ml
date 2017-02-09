@@ -20,37 +20,38 @@ let state_vars = ref VS.empty
 *)
 let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 
-
-
 let hole_type_expr fmt ((t, ot) : hole_type) =
   let hole_num_optype optype =
     match optype with
-    | NotNum -> "bExpr:num->num" (* By default. *)
-    | Basic -> "bExpr:num->num"
-    | Arith -> "bExprArith:num->num"
-    | NonLinear -> "bExprNL:num->num"
+    | NotNum -> Conf.get_hole_type_name "basic_num"
+    | Basic -> Conf.get_hole_type_name "basic_num"
+    | Arith -> Conf.get_hole_type_name "arith"
+    | NonLinear -> Conf.get_hole_type_name "non_linear"
   in
+  fprintf fmt "%s"
   (match t with
-   | Unit -> fprintf fmt "bExpr:unit"
+   | Unit -> Conf.get_hole_type_name "scalar_expr"
 
-   | Integer | Real -> fprintf fmt "%s" (hole_num_optype ot)
+   | Integer | Real -> (hole_num_optype ot)
 
-   | Boolean -> fprintf fmt "bExpr:boolean"
+   | Boolean -> Conf.get_hole_type_name "boolean"
 
    | Function (a, b) ->
      begin
        match a, b with
-       | Integer, Boolean -> fprintf fmt "bExpr:num->bool"
+       | Integer, Boolean -> Conf.get_hole_type_name "comparison"
 
-       | Boolean, Boolean -> fprintf fmt "bExpr:boolean"
+       | Boolean, Boolean -> Conf.get_hole_type_name "boolean"
 
-       | Integer, Integer -> fprintf fmt "bExpr:num->num"
+       | Integer, Integer -> (hole_num_optype ot)
 
-       | _ ,_ -> fprintf fmt "bExpr:num->num"
+       | _ ,_ -> Conf.get_hole_type_name "scalar_expr"
 
      end
-   | _ -> fprintf fmt "bExpr:num->num")
+   | _ -> Conf.get_hole_type_name "scalar_expr")
 
+let string_of_opchoice s =
+  "(" ^ (Conf.get_operator_choice s) ^" 0)"
 
 (** Pretty-printing operators *)
 
@@ -276,9 +277,9 @@ let fp = Format.fprintf in
   | SkBinop (op, e1, e2) ->
     if !printing_sketch && (is_comparison_op op)
     then
-    fp ppf "@[<hov 1>((BasicBinops:num->bool)@;%a@;%a)@]"
-      pp_skexpr e1 pp_skexpr e2
-
+      fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
+        (string_of_opchoice "comparison")
+        pp_skexpr e1 pp_skexpr e2
     else
     fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
       (string_of_symb_binop op)

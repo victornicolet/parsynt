@@ -1,5 +1,13 @@
 open Format
 
+
+(**
+   1 - General settings.
+   2 - Builtin variables.
+   3 - Verification conditions settings.
+   4 - Synthesis parameters (grammar macros names, ...)
+*)
+
 let verbose = ref false
 
 module SH =
@@ -52,7 +60,7 @@ let get_conf_string key =
       key;
     raise Not_found
 
-(** Builtin variable, such as min integer, max integer ... *)
+(** 2 - Builtin variable, such as min integer, max integer ... *)
 type builtins =
   | Min_Int
   | Max_Int
@@ -71,7 +79,7 @@ let is_builtin_var s = List.mem_assoc s builtin_var_names
 let get_builtin s = List.assoc s builtin_var_names
 
 
-(** Parameters of the verification condition of the synthesis *)
+(** 3 - Parameters of the verification condition of the synthesis *)
 let verif_params_filename = "./src/conf/verification.params"
 
 let verification_parameters =
@@ -103,3 +111,45 @@ let verification_parameters =
     | End_of_file -> close_in ic; !list
   with
   | e -> raise e;;
+
+
+
+(** 4 - Grammar macros parameters *)
+module SM = Map.Make (String)
+
+let sm_from_bindings =
+  List.fold_left
+    (fun smap (k,v) -> SM.add k v smap) SM.empty
+
+let hole_types_names =
+  sm_from_bindings
+    ["arith","NumExprArith";
+     "non_linear","NumExprNL";
+     "basic_num", "NumExprBasic";
+     "boolean", "BoolExpr";
+     "comparison", "BoolExprCompar";
+     "num_ite", "NumIte";
+     "scalar_expr", "ScalarExpr"]
+
+let operator_choice =
+  sm_from_bindings
+    ["comparison", "ComparisonOps";
+     "scalar", "ScalarOps";
+     "basic_num","BasicBinopsNum";
+     "arith", "ArithBinops";
+     "non_linear", "NLBinopsNum";
+     "bool", "BinopsBool";
+     "unops_num", "BasicUnopsNum";]
+
+let get_hole_type_name s = try SM.find s hole_types_names
+  with Not_found -> "ScalarExpr"
+
+let get_operator_choice s = try SM.find s operator_choice
+  with Not_found -> "ScalarOps"
+
+let is_hole_type s = SM.exists (fun k v -> v = s) hole_types_names
+let is_op_choice s = SM.exists (fun k v -> v = s) operator_choice
+
+let get_kw_list () =
+  let kw_ht = SM.fold (fun k v l -> v::l) hole_types_names [] in
+  SM.fold (fun k v l -> v::l) operator_choice kw_ht

@@ -58,11 +58,13 @@ let options = [
 
 (******** test_sketch_translation ();; ********)
 
-let test_named_type =
-  TNamed ({tname = "Class"; ttype = TVoid []; treferenced = true}, []);;
+(* let test_named_type = *)
+(*   TNamed ({tname = "Class"; ttype = TVoid []; treferenced = true}, []);; *)
 
 
-let test_varinfo =
-  makeVarinfo false "a" test_named_type in
-printf "%s& %s@." (CilTools.psprint80 dn_type test_varinfo.vtype)
-  test_varinfo.vname;
+(* let test_varinfo = *)
+(*   makeVarinfo false "a" test_named_type in *)
+(* printf "%s& %s@." (CilTools.psprint80 dn_type test_varinfo.vtype) *)
+(*   test_varinfo.vname; *)
+
+open TestSchemeParsing
