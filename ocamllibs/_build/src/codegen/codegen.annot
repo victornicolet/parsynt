@@ -1,0 +1,1403 @@
+"src/codegen/codegen.ml" 12 184 188 "src/codegen/codegen.ml" 12 184 203
+type(
+  'a * Ast.expr -> bool
+)
+ident(
+  def is_struct_assgn "src/codegen/codegen.ml" 31 680 680 "src/codegen/codegen.ml" 1 0 -1
+)
+"src/codegen/codegen.ml" 12 184 205 "src/codegen/codegen.ml" 12 184 207
+type(
+  'a
+)
+ident(
+  def id "src/codegen/codegen.ml" 13 213 215 "src/codegen/codegen.ml" 29 664 678
+)
+"src/codegen/codegen.ml" 12 184 208 "src/codegen/codegen.ml" 12 184 209
+type(
+  Ast.expr
+)
+ident(
+  def e "src/codegen/codegen.ml" 13 213 215 "src/codegen/codegen.ml" 29 664 678
+)
+"src/codegen/codegen.ml" 12 184 204 "src/codegen/codegen.ml" 12 184 210
+type(
+  'a * Ast.expr
+)
+"src/codegen/codegen.ml" 13 213 221 "src/codegen/codegen.ml" 13 213 222
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 12 184 208 "src/codegen/codegen.ml" 12 184 209
+)
+"src/codegen/codegen.ml" 14 228 241 "src/codegen/codegen.ml" 14 228 242
+type(
+  Ast.expr
+)
+ident(
+  def f "src/codegen/codegen.ml" 15 251 255 "src/codegen/codegen.ml" 28 645 663
+)
+"src/codegen/codegen.ml" 14 228 244 "src/codegen/codegen.ml" 14 228 246
+type(
+  Ast.expr list
+)
+ident(
+  def el "src/codegen/codegen.ml" 15 251 255 "src/codegen/codegen.ml" 28 645 663
+)
+"src/codegen/codegen.ml" 14 228 232 "src/codegen/codegen.ml" 14 228 247
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 15 251 262 "src/codegen/codegen.ml" 15 251 263
+type(
+  Ast.expr
+)
+ident(
+  int_ref f "src/codegen/codegen.ml" 14 228 241 "src/codegen/codegen.ml" 14 228 242
+)
+"src/codegen/codegen.ml" 16 269 281 "src/codegen/codegen.ml" 16 269 294
+type(
+  Ast.id
+)
+ident(
+  def struct_mem_id "src/codegen/codegen.ml" 17 298 305 "src/codegen/codegen.ml" 18 338 389
+)
+"src/codegen/codegen.ml" 16 269 276 "src/codegen/codegen.ml" 16 269 294
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 17 298 305 "src/codegen/codegen.ml" 17 298 323
+type(
+  Ast.id -> string -> bool
+)
+ident(
+  ext_ref ExtString.String.starts_with
+)
+"src/codegen/codegen.ml" 17 298 324 "src/codegen/codegen.ml" 17 298 337
+type(
+  Ast.id
+)
+ident(
+  int_ref struct_mem_id "src/codegen/codegen.ml" 16 269 281 "src/codegen/codegen.ml" 16 269 294
+)
+"src/codegen/codegen.ml" 18 338 348 "src/codegen/codegen.ml" 18 338 366
+type(
+  string -> string
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 18 338 367 "src/codegen/codegen.ml" 18 338 388
+type(
+  string
+)
+"src/codegen/codegen.ml" 18 338 347 "src/codegen/codegen.ml" 18 338 389
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/codegen.ml" 17 298 305 "src/codegen/codegen.ml" 18 338 389
+call(
+  stack
+)
+type(
+  bool
+)
+"src/codegen/codegen.ml" 19 390 397 "src/codegen/codegen.ml" 19 390 398
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 19 390 402 "src/codegen/codegen.ml" 19 390 407
+type(
+  bool
+)
+"src/codegen/codegen.ml" 15 251 255 "src/codegen/codegen.ml" 19 390 408
+type(
+  bool
+)
+"src/codegen/codegen.ml" 20 409 413 "src/codegen/codegen.ml" 20 409 415
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/codegen/codegen.ml" 21 416 427 "src/codegen/codegen.ml" 21 416 429
+type(
+  Ast.expr list
+)
+ident(
+  int_ref el "src/codegen/codegen.ml" 14 228 244 "src/codegen/codegen.ml" 14 228 246
+)
+"src/codegen/codegen.ml" 22 435 443 "src/codegen/codegen.ml" 22 435 445
+type(
+  Ast.expr
+)
+ident(
+  def hd "src/codegen/codegen.ml" 23 450 457 "src/codegen/codegen.ml" 27 623 644
+)
+"src/codegen/codegen.ml" 22 435 442 "src/codegen/codegen.ml" 22 435 446
+type(
+  Ast.expr list
+)
+"src/codegen/codegen.ml" 23 450 464 "src/codegen/codegen.ml" 23 450 466
+type(
+  Ast.expr
+)
+ident(
+  int_ref hd "src/codegen/codegen.ml" 22 435 443 "src/codegen/codegen.ml" 22 435 445
+)
+"src/codegen/codegen.ml" 24 472 487 "src/codegen/codegen.ml" 24 472 489
+type(
+  Ast.id
+)
+ident(
+  def id "src/codegen/codegen.ml" 25 493 503 "src/codegen/codegen.ml" 26 559 622
+)
+"src/codegen/codegen.ml" 24 472 482 "src/codegen/codegen.ml" 24 472 489
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 25 493 504 "src/codegen/codegen.ml" 25 493 506
+type(
+  Ast.id
+)
+ident(
+  int_ref id "src/codegen/codegen.ml" 24 472 487 "src/codegen/codegen.ml" 24 472 489
+)
+"src/codegen/codegen.ml" 25 493 507 "src/codegen/codegen.ml" 25 493 508
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 25 493 510 "src/codegen/codegen.ml" 25 493 528
+type(
+  string -> string
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 25 493 529 "src/codegen/codegen.ml" 25 493 550
+type(
+  string
+)
+"src/codegen/codegen.ml" 25 493 509 "src/codegen/codegen.ml" 25 493 551
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/codegen.ml" 25 493 551 "src/codegen/codegen.ml" 25 493 552
+type(
+  string -> string -> Ast.id
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/codegen.ml" 25 493 552 "src/codegen/codegen.ml" 25 493 555
+type(
+  string
+)
+"src/codegen/codegen.ml" 25 493 509 "src/codegen/codegen.ml" 25 493 555
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 25 493 504 "src/codegen/codegen.ml" 25 493 555
+type(
+  bool
+)
+"src/codegen/codegen.ml" 25 493 556 "src/codegen/codegen.ml" 25 493 558
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( || )
+)
+"src/codegen/codegen.ml" 26 559 570 "src/codegen/codegen.ml" 26 559 572
+type(
+  Ast.id
+)
+ident(
+  int_ref id "src/codegen/codegen.ml" 24 472 487 "src/codegen/codegen.ml" 24 472 489
+)
+"src/codegen/codegen.ml" 26 559 573 "src/codegen/codegen.ml" 26 559 574
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 26 559 576 "src/codegen/codegen.ml" 26 559 594
+type(
+  string -> string
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 26 559 595 "src/codegen/codegen.ml" 26 559 616
+type(
+  string
+)
+"src/codegen/codegen.ml" 26 559 575 "src/codegen/codegen.ml" 26 559 617
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/codegen.ml" 26 559 617 "src/codegen/codegen.ml" 26 559 618
+type(
+  string -> string -> Ast.id
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/codegen.ml" 26 559 618 "src/codegen/codegen.ml" 26 559 621
+type(
+  string
+)
+"src/codegen/codegen.ml" 26 559 575 "src/codegen/codegen.ml" 26 559 621
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 26 559 570 "src/codegen/codegen.ml" 26 559 621
+type(
+  bool
+)
+"src/codegen/codegen.ml" 25 493 503 "src/codegen/codegen.ml" 26 559 622
+type(
+  bool
+)
+"src/codegen/codegen.ml" 27 623 633 "src/codegen/codegen.ml" 27 623 634
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 27 623 638 "src/codegen/codegen.ml" 27 623 643
+type(
+  bool
+)
+"src/codegen/codegen.ml" 23 450 457 "src/codegen/codegen.ml" 27 623 644
+type(
+  bool
+)
+"src/codegen/codegen.ml" 28 645 652 "src/codegen/codegen.ml" 28 645 653
+type(
+  Ast.expr list
+)
+"src/codegen/codegen.ml" 28 645 657 "src/codegen/codegen.ml" 28 645 662
+type(
+  bool
+)
+"src/codegen/codegen.ml" 21 416 420 "src/codegen/codegen.ml" 28 645 663
+type(
+  bool
+)
+"src/codegen/codegen.ml" 15 251 255 "src/codegen/codegen.ml" 28 645 663
+type(
+  bool
+)
+"src/codegen/codegen.ml" 29 664 668 "src/codegen/codegen.ml" 29 664 669
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 29 664 673 "src/codegen/codegen.ml" 29 664 678
+type(
+  bool
+)
+"src/codegen/codegen.ml" 13 213 215 "src/codegen/codegen.ml" 29 664 678
+type(
+  bool
+)
+"src/codegen/codegen.ml" 31 680 688 "src/codegen/codegen.ml" 31 680 706
+type(
+  Ast.expr -> Ast.expr
+)
+ident(
+  def rem_struct_assigns "src/codegen/codegen.ml" 31 680 680 "src/codegen/codegen.ml" 1 0 -1
+)
+"src/codegen/codegen.ml" 31 680 708 "src/codegen/codegen.ml" 31 680 709
+type(
+  Ast.expr
+)
+ident(
+  def e "src/codegen/codegen.ml" 32 724 726 "src/codegen/codegen.ml" 41 1007 1017
+)
+"src/codegen/codegen.ml" 32 724 732 "src/codegen/codegen.ml" 32 724 733
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 31 680 708 "src/codegen/codegen.ml" 31 680 709
+)
+"src/codegen/codegen.ml" 33 739 750 "src/codegen/codegen.ml" 33 739 760
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  def assgn_list "src/codegen/codegen.ml" 35 799 803 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 33 739 762 "src/codegen/codegen.ml" 33 739 764
+type(
+  Ast.expr
+)
+ident(
+  def e' "src/codegen/codegen.ml" 35 799 803 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 33 739 743 "src/codegen/codegen.ml" 33 739 765
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 34 766 780 "src/codegen/codegen.ml" 34 766 790
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  def assgn_list "src/codegen/codegen.ml" 35 799 803 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 34 766 792 "src/codegen/codegen.ml" 34 766 794
+type(
+  Ast.expr
+)
+ident(
+  def e' "src/codegen/codegen.ml" 35 799 803 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 34 766 770 "src/codegen/codegen.ml" 34 766 795
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 33 739 743 "src/codegen/codegen.ml" 34 766 795
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 35 799 807 "src/codegen/codegen.ml" 35 799 822
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  def filtered_assgns "src/codegen/codegen.ml" 38 896 900 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 36 825 831 "src/codegen/codegen.ml" 36 825 842
+type(
+  (Ast.id * Ast.expr -> bool) ->
+  (Ast.id * Ast.expr) list -> (Ast.id * Ast.expr) list
+)
+ident(
+  ext_ref List.filter
+)
+"src/codegen/codegen.ml" 36 825 848 "src/codegen/codegen.ml" 36 825 849
+type(
+  Ast.id * Ast.expr
+)
+ident(
+  def a "src/codegen/codegen.ml" 36 825 853 "src/codegen/codegen.ml" 36 825 876
+)
+"src/codegen/codegen.ml" 36 825 853 "src/codegen/codegen.ml" 36 825 856
+type(
+  bool -> bool
+)
+ident(
+  ext_ref Pervasives.not
+)
+"src/codegen/codegen.ml" 36 825 858 "src/codegen/codegen.ml" 36 825 873
+type(
+  Ast.id * Ast.expr -> bool
+)
+ident(
+  int_ref is_struct_assgn "src/codegen/codegen.ml" 12 184 188 "src/codegen/codegen.ml" 12 184 203
+)
+"src/codegen/codegen.ml" 36 825 874 "src/codegen/codegen.ml" 36 825 875
+type(
+  Ast.id * Ast.expr
+)
+ident(
+  int_ref a "src/codegen/codegen.ml" 36 825 848 "src/codegen/codegen.ml" 36 825 849
+)
+"src/codegen/codegen.ml" 36 825 857 "src/codegen/codegen.ml" 36 825 876
+call(
+  stack
+)
+type(
+  bool
+)
+"src/codegen/codegen.ml" 36 825 853 "src/codegen/codegen.ml" 36 825 876
+type(
+  bool
+)
+"src/codegen/codegen.ml" 36 825 843 "src/codegen/codegen.ml" 36 825 877
+type(
+  Ast.id * Ast.expr -> bool
+)
+"src/codegen/codegen.ml" 36 825 878 "src/codegen/codegen.ml" 36 825 888
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  int_ref assgn_list "src/codegen/codegen.ml" 33 739 750 "src/codegen/codegen.ml" 33 739 760
+)
+"src/codegen/codegen.ml" 36 825 831 "src/codegen/codegen.ml" 36 825 888
+call(
+  stack
+)
+type(
+  (Ast.id * Ast.expr) list
+)
+"src/codegen/codegen.ml" 38 896 904 "src/codegen/codegen.ml" 38 896 907
+type(
+  Ast.expr
+)
+ident(
+  def re' "src/codegen/codegen.ml" 39 935 939 "src/codegen/codegen.ml" 39 935 1005
+)
+"src/codegen/codegen.ml" 38 896 910 "src/codegen/codegen.ml" 38 896 928
+type(
+  Ast.expr -> Ast.expr
+)
+ident(
+  int_ref rem_struct_assigns "src/codegen/codegen.ml" 31 680 688 "src/codegen/codegen.ml" 31 680 706
+)
+"src/codegen/codegen.ml" 38 896 929 "src/codegen/codegen.ml" 38 896 931
+type(
+  Ast.expr
+)
+ident(
+  int_ref e' "src/codegen/codegen.ml" 33 739 762 "src/codegen/codegen.ml" 33 739 764
+)
+"src/codegen/codegen.ml" 38 896 910 "src/codegen/codegen.ml" 38 896 931
+call(
+  stack
+)
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 39 935 942 "src/codegen/codegen.ml" 39 935 957
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  int_ref filtered_assgns "src/codegen/codegen.ml" 35 799 807 "src/codegen/codegen.ml" 35 799 822
+)
+"src/codegen/codegen.ml" 39 935 958 "src/codegen/codegen.ml" 39 935 959
+type(
+  (Ast.id * Ast.expr) list -> (Ast.id * Ast.expr) list -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 39 935 960 "src/codegen/codegen.ml" 39 935 962
+type(
+  (Ast.id * Ast.expr) list
+)
+"src/codegen/codegen.ml" 39 935 942 "src/codegen/codegen.ml" 39 935 962
+type(
+  bool
+)
+"src/codegen/codegen.ml" 39 935 968 "src/codegen/codegen.ml" 39 935 971
+type(
+  Ast.expr
+)
+ident(
+  int_ref re' "src/codegen/codegen.ml" 38 896 904 "src/codegen/codegen.ml" 38 896 907
+)
+"src/codegen/codegen.ml" 39 935 984 "src/codegen/codegen.ml" 39 935 999
+type(
+  (Ast.id * Ast.expr) list
+)
+ident(
+  int_ref filtered_assgns "src/codegen/codegen.ml" 35 799 807 "src/codegen/codegen.ml" 35 799 822
+)
+"src/codegen/codegen.ml" 39 935 1001 "src/codegen/codegen.ml" 39 935 1004
+type(
+  Ast.expr
+)
+ident(
+  int_ref re' "src/codegen/codegen.ml" 38 896 904 "src/codegen/codegen.ml" 38 896 907
+)
+"src/codegen/codegen.ml" 39 935 977 "src/codegen/codegen.ml" 39 935 1005
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 39 935 939 "src/codegen/codegen.ml" 39 935 1005
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 38 896 900 "src/codegen/codegen.ml" 39 935 1005
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 35 799 803 "src/codegen/codegen.ml" 39 935 1005
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 41 1007 1011 "src/codegen/codegen.ml" 41 1007 1012
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 41 1007 1016 "src/codegen/codegen.ml" 41 1007 1017
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 31 680 708 "src/codegen/codegen.ml" 31 680 709
+)
+"src/codegen/codegen.ml" 32 724 726 "src/codegen/codegen.ml" 41 1007 1017
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 44 1072 1076 "src/codegen/codegen.ml" 44 1072 1094
+type(
+  Ast.expr -> bool
+)
+ident(
+  def identify_join_func "src/codegen/codegen.ml" 60 1745 1745 "src/codegen/codegen.ml" 1 0 -1
+)
+"src/codegen/codegen.ml" 44 1072 1095 "src/codegen/codegen.ml" 44 1072 1096
+type(
+  Ast.expr
+)
+ident(
+  def e "src/codegen/codegen.ml" 45 1099 1101 "src/codegen/codegen.ml" 52 1395 1409
+)
+"src/codegen/codegen.ml" 45 1099 1107 "src/codegen/codegen.ml" 45 1099 1108
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 44 1072 1095 "src/codegen/codegen.ml" 44 1072 1096
+)
+"src/codegen/codegen.ml" 46 1114 1125 "src/codegen/codegen.ml" 46 1114 1132
+type(
+  Ast.id list
+)
+ident(
+  def id_list "src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 50 1320 1393
+)
+"src/codegen/codegen.ml" 46 1114 1134 "src/codegen/codegen.ml" 46 1114 1138
+type(
+  Ast.expr
+)
+ident(
+  def body "src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 50 1320 1393
+)
+"src/codegen/codegen.ml" 46 1114 1118 "src/codegen/codegen.ml" 46 1114 1139
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 47 1143 1158
+type(
+  Ast.id list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/codegen/codegen.ml" 47 1143 1159 "src/codegen/codegen.ml" 47 1143 1166
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 46 1114 1125 "src/codegen/codegen.ml" 46 1114 1132
+)
+"src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 47 1143 1166
+call(
+  stack
+)
+type(
+  int
+)
+"src/codegen/codegen.ml" 47 1143 1167 "src/codegen/codegen.ml" 47 1143 1168
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 47 1143 1169 "src/codegen/codegen.ml" 47 1143 1170
+type(
+  int
+)
+"src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 47 1143 1170
+type(
+  bool
+)
+"src/codegen/codegen.ml" 47 1143 1171 "src/codegen/codegen.ml" 47 1143 1173
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/codegen/codegen.ml" 48 1174 1179 "src/codegen/codegen.ml" 48 1174 1187
+type(
+  Ast.id list -> int -> Ast.id
+)
+ident(
+  ext_ref List.nth
+)
+"src/codegen/codegen.ml" 48 1174 1188 "src/codegen/codegen.ml" 48 1174 1195
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 46 1114 1125 "src/codegen/codegen.ml" 46 1114 1132
+)
+"src/codegen/codegen.ml" 48 1174 1196 "src/codegen/codegen.ml" 48 1174 1197
+type(
+  int
+)
+"src/codegen/codegen.ml" 48 1174 1179 "src/codegen/codegen.ml" 48 1174 1197
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 48 1174 1198 "src/codegen/codegen.ml" 48 1174 1199
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 48 1174 1200 "src/codegen/codegen.ml" 48 1174 1218
+type(
+  string -> Ast.id
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 48 1174 1219 "src/codegen/codegen.ml" 48 1174 1238
+type(
+  string
+)
+"src/codegen/codegen.ml" 48 1174 1200 "src/codegen/codegen.ml" 48 1174 1238
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 48 1174 1178 "src/codegen/codegen.ml" 48 1174 1239
+type(
+  bool
+)
+"src/codegen/codegen.ml" 48 1174 1240 "src/codegen/codegen.ml" 48 1174 1242
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/codegen/codegen.ml" 49 1243 1248 "src/codegen/codegen.ml" 49 1243 1256
+type(
+  Ast.id list -> int -> Ast.id
+)
+ident(
+  ext_ref List.nth
+)
+"src/codegen/codegen.ml" 49 1243 1257 "src/codegen/codegen.ml" 49 1243 1264
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 46 1114 1125 "src/codegen/codegen.ml" 46 1114 1132
+)
+"src/codegen/codegen.ml" 49 1243 1265 "src/codegen/codegen.ml" 49 1243 1266
+type(
+  int
+)
+"src/codegen/codegen.ml" 49 1243 1248 "src/codegen/codegen.ml" 49 1243 1266
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 49 1243 1267 "src/codegen/codegen.ml" 49 1243 1268
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 49 1243 1270 "src/codegen/codegen.ml" 49 1243 1288
+type(
+  string -> string
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 49 1243 1289 "src/codegen/codegen.ml" 49 1243 1310
+type(
+  string
+)
+"src/codegen/codegen.ml" 49 1243 1269 "src/codegen/codegen.ml" 49 1243 1311
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/codegen.ml" 49 1243 1311 "src/codegen/codegen.ml" 49 1243 1312
+type(
+  string -> string -> Ast.id
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/codegen.ml" 49 1243 1312 "src/codegen/codegen.ml" 49 1243 1315
+type(
+  string
+)
+"src/codegen/codegen.ml" 49 1243 1269 "src/codegen/codegen.ml" 49 1243 1315
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 49 1243 1247 "src/codegen/codegen.ml" 49 1243 1316
+type(
+  bool
+)
+"src/codegen/codegen.ml" 49 1243 1317 "src/codegen/codegen.ml" 49 1243 1319
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/codegen/codegen.ml" 50 1320 1325 "src/codegen/codegen.ml" 50 1320 1333
+type(
+  Ast.id list -> int -> Ast.id
+)
+ident(
+  ext_ref List.nth
+)
+"src/codegen/codegen.ml" 50 1320 1334 "src/codegen/codegen.ml" 50 1320 1341
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 46 1114 1125 "src/codegen/codegen.ml" 46 1114 1132
+)
+"src/codegen/codegen.ml" 50 1320 1342 "src/codegen/codegen.ml" 50 1320 1343
+type(
+  int
+)
+"src/codegen/codegen.ml" 50 1320 1325 "src/codegen/codegen.ml" 50 1320 1343
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 50 1320 1344 "src/codegen/codegen.ml" 50 1320 1345
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 50 1320 1347 "src/codegen/codegen.ml" 50 1320 1365
+type(
+  string -> string
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 50 1320 1366 "src/codegen/codegen.ml" 50 1320 1387
+type(
+  string
+)
+"src/codegen/codegen.ml" 50 1320 1346 "src/codegen/codegen.ml" 50 1320 1388
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/codegen.ml" 50 1320 1388 "src/codegen/codegen.ml" 50 1320 1389
+type(
+  string -> string -> Ast.id
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/codegen.ml" 50 1320 1389 "src/codegen/codegen.ml" 50 1320 1392
+type(
+  string
+)
+"src/codegen/codegen.ml" 50 1320 1346 "src/codegen/codegen.ml" 50 1320 1392
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 50 1320 1324 "src/codegen/codegen.ml" 50 1320 1393
+type(
+  bool
+)
+"src/codegen/codegen.ml" 49 1243 1247 "src/codegen/codegen.ml" 50 1320 1393
+type(
+  bool
+)
+"src/codegen/codegen.ml" 48 1174 1178 "src/codegen/codegen.ml" 50 1320 1393
+type(
+  bool
+)
+"src/codegen/codegen.ml" 47 1143 1147 "src/codegen/codegen.ml" 50 1320 1393
+type(
+  bool
+)
+"src/codegen/codegen.ml" 52 1395 1399 "src/codegen/codegen.ml" 52 1395 1400
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 52 1395 1404 "src/codegen/codegen.ml" 52 1395 1409
+type(
+  bool
+)
+"src/codegen/codegen.ml" 45 1099 1101 "src/codegen/codegen.ml" 52 1395 1409
+type(
+  bool
+)
+"src/codegen/codegen.ml" 60 1745 1749 "src/codegen/codegen.ml" 60 1745 1764
+type(
+  Ast.expr -> Ast.expr list option
+)
+ident(
+  def get_values_init "src/codegen/codegen.ml" 76 2061 2061 "src/codegen/codegen.ml" 1 0 -1
+)
+"src/codegen/codegen.ml" 60 1745 1765 "src/codegen/codegen.ml" 60 1745 1766
+type(
+  Ast.expr
+)
+ident(
+  def e "src/codegen/codegen.ml" 61 1769 1771 "src/codegen/codegen.ml" 73 2045 2058
+)
+"src/codegen/codegen.ml" 61 1769 1777 "src/codegen/codegen.ml" 61 1769 1778
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 60 1745 1765 "src/codegen/codegen.ml" 60 1745 1766
+)
+"src/codegen/codegen.ml" 62 1784 1795 "src/codegen/codegen.ml" 62 1784 1802
+type(
+  Ast.id list
+)
+ident(
+  def id_list "src/codegen/codegen.ml" 63 1813 1817 "src/codegen/codegen.ml" 71 2030 2043
+)
+"src/codegen/codegen.ml" 62 1784 1804 "src/codegen/codegen.ml" 62 1784 1808
+type(
+  Ast.expr
+)
+ident(
+  def body "src/codegen/codegen.ml" 63 1813 1817 "src/codegen/codegen.ml" 71 2030 2043
+)
+"src/codegen/codegen.ml" 62 1784 1788 "src/codegen/codegen.ml" 62 1784 1809
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 63 1813 1820 "src/codegen/codegen.ml" 63 1813 1831
+type(
+  Ast.id list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/codegen/codegen.ml" 63 1813 1832 "src/codegen/codegen.ml" 63 1813 1839
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 62 1784 1795 "src/codegen/codegen.ml" 62 1784 1802
+)
+"src/codegen/codegen.ml" 63 1813 1820 "src/codegen/codegen.ml" 63 1813 1839
+call(
+  stack
+)
+type(
+  int
+)
+"src/codegen/codegen.ml" 63 1813 1840 "src/codegen/codegen.ml" 63 1813 1841
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 63 1813 1842 "src/codegen/codegen.ml" 63 1813 1843
+type(
+  int
+)
+"src/codegen/codegen.ml" 63 1813 1820 "src/codegen/codegen.ml" 63 1813 1843
+type(
+  bool
+)
+"src/codegen/codegen.ml" 63 1813 1844 "src/codegen/codegen.ml" 63 1813 1846
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/codegen/codegen.ml" 64 1847 1855 "src/codegen/codegen.ml" 64 1847 1862
+type(
+  Ast.id list -> Ast.id
+)
+ident(
+  ext_ref List.hd
+)
+"src/codegen/codegen.ml" 64 1847 1863 "src/codegen/codegen.ml" 64 1847 1870
+type(
+  Ast.id list
+)
+ident(
+  int_ref id_list "src/codegen/codegen.ml" 62 1784 1795 "src/codegen/codegen.ml" 62 1784 1802
+)
+"src/codegen/codegen.ml" 64 1847 1855 "src/codegen/codegen.ml" 64 1847 1870
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 64 1847 1871 "src/codegen/codegen.ml" 64 1847 1872
+type(
+  Ast.id -> Ast.id -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/codegen.ml" 64 1847 1873 "src/codegen/codegen.ml" 64 1847 1891
+type(
+  string -> Ast.id
+)
+ident(
+  ext_ref Cf.get_conf_string
+)
+"src/codegen/codegen.ml" 64 1847 1892 "src/codegen/codegen.ml" 64 1847 1920
+type(
+  string
+)
+"src/codegen/codegen.ml" 64 1847 1873 "src/codegen/codegen.ml" 64 1847 1920
+call(
+  stack
+)
+type(
+  Ast.id
+)
+"src/codegen/codegen.ml" 64 1847 1854 "src/codegen/codegen.ml" 64 1847 1921
+type(
+  bool
+)
+"src/codegen/codegen.ml" 63 1813 1820 "src/codegen/codegen.ml" 64 1847 1921
+type(
+  bool
+)
+"src/codegen/codegen.ml" 66 1931 1944 "src/codegen/codegen.ml" 66 1931 1948
+type(
+  Ast.expr
+)
+ident(
+  int_ref body "src/codegen/codegen.ml" 62 1784 1804 "src/codegen/codegen.ml" 62 1784 1808
+)
+"src/codegen/codegen.ml" 67 1954 1972 "src/codegen/codegen.ml" 67 1954 1973
+type(
+  Ast.expr
+)
+ident(
+  def f "src/codegen/codegen.ml" 68 1984 1993 "src/codegen/codegen.ml" 68 1984 2002
+)
+"src/codegen/codegen.ml" 67 1954 1975 "src/codegen/codegen.ml" 67 1954 1979
+type(
+  Ast.expr list
+)
+ident(
+  def args "src/codegen/codegen.ml" 68 1984 1993 "src/codegen/codegen.ml" 68 1984 2002
+)
+"src/codegen/codegen.ml" 67 1954 1963 "src/codegen/codegen.ml" 67 1954 1980
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 68 1984 1998 "src/codegen/codegen.ml" 68 1984 2002
+type(
+  Ast.expr list
+)
+ident(
+  int_ref args "src/codegen/codegen.ml" 67 1954 1975 "src/codegen/codegen.ml" 67 1954 1979
+)
+"src/codegen/codegen.ml" 68 1984 1993 "src/codegen/codegen.ml" 68 1984 2002
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 69 2003 2012 "src/codegen/codegen.ml" 69 2003 2013
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 69 2003 2017 "src/codegen/codegen.ml" 69 2003 2021
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 66 1931 1937 "src/codegen/codegen.ml" 70 2022 2029
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 71 2030 2039 "src/codegen/codegen.ml" 71 2030 2043
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 63 1813 1817 "src/codegen/codegen.ml" 71 2030 2043
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 73 2045 2049 "src/codegen/codegen.ml" 73 2045 2050
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 73 2045 2054 "src/codegen/codegen.ml" 73 2045 2058
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 61 1769 1771 "src/codegen/codegen.ml" 73 2045 2058
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 80 2155 2159 "src/codegen/codegen.ml" 80 2155 2181
+type(
+  Ast.expr list -> solved_sketch_info
+)
+ident(
+  def get_solved_sketch_info "src/codegen/codegen.ml" 101 2739 2813 "src/codegen/codegen.ml" 1 0 -1
+)
+"src/codegen/codegen.ml" 80 2155 2183 "src/codegen/codegen.ml" 80 2155 2185
+type(
+  Ast.expr list
+)
+ident(
+  def el "src/codegen/codegen.ml" 81 2205 2207 "src/codegen/codegen.ml" 101 2739 2813
+)
+"src/codegen/codegen.ml" 81 2205 2211 "src/codegen/codegen.ml" 81 2205 2220
+type(
+  Ast.expr
+)
+ident(
+  def join_body "src/codegen/codegen.ml" 91 2506 2508 "src/codegen/codegen.ml" 101 2739 2813
+)
+"src/codegen/codegen.ml" 83 2231 2244 "src/codegen/codegen.ml" 83 2231 2253
+type(
+  (Ast.expr -> bool) -> Ast.expr list -> Ast.expr
+)
+ident(
+  ext_ref List.find
+)
+"src/codegen/codegen.ml" 83 2231 2254 "src/codegen/codegen.ml" 83 2231 2272
+type(
+  Ast.expr -> bool
+)
+ident(
+  int_ref identify_join_func "src/codegen/codegen.ml" 44 1072 1076 "src/codegen/codegen.ml" 44 1072 1094
+)
+"src/codegen/codegen.ml" 83 2231 2273 "src/codegen/codegen.ml" 83 2231 2275
+type(
+  Ast.expr list
+)
+ident(
+  int_ref el "src/codegen/codegen.ml" 80 2155 2183 "src/codegen/codegen.ml" 80 2155 2185
+)
+"src/codegen/codegen.ml" 83 2231 2244 "src/codegen/codegen.ml" 83 2231 2275
+call(
+  stack
+)
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 84 2281 2296 "src/codegen/codegen.ml" 84 2281 2297
+type(
+  Ast.id list
+)
+"src/codegen/codegen.ml" 84 2281 2299 "src/codegen/codegen.ml" 84 2281 2304
+type(
+  Ast.expr
+)
+ident(
+  def jbody "src/codegen/codegen.ml" 84 2281 2309 "src/codegen/codegen.ml" 84 2281 2314
+)
+"src/codegen/codegen.ml" 84 2281 2289 "src/codegen/codegen.ml" 84 2281 2305
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 84 2281 2309 "src/codegen/codegen.ml" 84 2281 2314
+type(
+  Ast.expr
+)
+ident(
+  int_ref jbody "src/codegen/codegen.ml" 84 2281 2299 "src/codegen/codegen.ml" 84 2281 2304
+)
+"src/codegen/codegen.ml" 85 2315 2323 "src/codegen/codegen.ml" 85 2315 2324
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 85 2315 2328 "src/codegen/codegen.ml" 85 2315 2333
+type(
+  exn -> Ast.expr
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/codegen/codegen.ml" 85 2315 2334 "src/codegen/codegen.ml" 85 2315 2343
+type(
+  exn
+)
+"src/codegen/codegen.ml" 85 2315 2328 "src/codegen/codegen.ml" 85 2315 2343
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 83 2231 2237 "src/codegen/codegen.ml" 85 2315 2344
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 86 2345 2354 "src/codegen/codegen.ml" 86 2345 2363
+type(
+  exn
+)
+"src/codegen/codegen.ml" 87 2367 2374 "src/codegen/codegen.ml" 87 2367 2381
+type(
+  (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.eprintf
+)
+"src/codegen/codegen.ml" 87 2367 2382 "src/codegen/codegen.ml" 88 2425 2475
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/codegen.ml" 87 2367 2374 "src/codegen/codegen.ml" 88 2425 2475
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/codegen.ml" 89 2477 2484 "src/codegen/codegen.ml" 89 2477 2489
+type(
+  exn -> Ast.expr
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/codegen/codegen.ml" 89 2477 2490 "src/codegen/codegen.ml" 89 2477 2499
+type(
+  exn
+)
+"src/codegen/codegen.ml" 89 2477 2484 "src/codegen/codegen.ml" 89 2477 2499
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 87 2367 2373 "src/codegen/codegen.ml" 89 2477 2500
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 82 2223 2227 "src/codegen/codegen.ml" 89 2477 2500
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 91 2506 2512 "src/codegen/codegen.ml" 91 2506 2524
+type(
+  Ast.expr list option
+)
+ident(
+  def maybe_init_v "src/codegen/codegen.ml" 101 2739 2741 "src/codegen/codegen.ml" 101 2739 2813
+)
+"src/codegen/codegen.ml" 93 2535 2541 "src/codegen/codegen.ml" 93 2535 2555
+type(
+  (Ast.expr list option -> Ast.expr -> Ast.expr list option) ->
+  Ast.expr list option -> Ast.expr list -> Ast.expr list option
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/codegen/codegen.ml" 94 2556 2569 "src/codegen/codegen.ml" 94 2556 2573
+type(
+  Ast.expr list option
+)
+ident(
+  def accu "src/codegen/codegen.ml" 94 2556 2574 "src/codegen/codegen.ml" 97 2661 2686
+)
+"src/codegen/codegen.ml" 94 2556 2574 "src/codegen/codegen.ml" 94 2556 2575
+type(
+  Ast.expr
+)
+ident(
+  def e "src/codegen/codegen.ml" 95 2579 2590 "src/codegen/codegen.ml" 97 2661 2686
+)
+"src/codegen/codegen.ml" 95 2579 2596 "src/codegen/codegen.ml" 95 2579 2611
+type(
+  Ast.expr -> Ast.expr list option
+)
+ident(
+  int_ref get_values_init "src/codegen/codegen.ml" 60 1745 1749 "src/codegen/codegen.ml" 60 1745 1764
+)
+"src/codegen/codegen.ml" 95 2579 2612 "src/codegen/codegen.ml" 95 2579 2613
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 94 2556 2574 "src/codegen/codegen.ml" 94 2556 2575
+)
+"src/codegen/codegen.ml" 95 2579 2596 "src/codegen/codegen.ml" 95 2579 2613
+call(
+  stack
+)
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 96 2619 2637 "src/codegen/codegen.ml" 96 2619 2638
+type(
+  Ast.expr list
+)
+ident(
+  def e "src/codegen/codegen.ml" 96 2619 2642 "src/codegen/codegen.ml" 96 2619 2660
+)
+"src/codegen/codegen.ml" 96 2619 2632 "src/codegen/codegen.ml" 96 2619 2638
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 96 2619 2642 "src/codegen/codegen.ml" 96 2619 2647
+type(
+  exn -> Ast.expr list option
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/codegen/codegen.ml" 96 2619 2658 "src/codegen/codegen.ml" 96 2619 2659
+type(
+  Ast.expr list
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 96 2619 2637 "src/codegen/codegen.ml" 96 2619 2638
+)
+"src/codegen/codegen.ml" 96 2619 2648 "src/codegen/codegen.ml" 96 2619 2660
+type(
+  exn
+)
+"src/codegen/codegen.ml" 96 2619 2642 "src/codegen/codegen.ml" 96 2619 2660
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 97 2661 2674 "src/codegen/codegen.ml" 97 2661 2678
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 97 2661 2682 "src/codegen/codegen.ml" 97 2661 2686
+type(
+  Ast.expr list option
+)
+ident(
+  int_ref accu "src/codegen/codegen.ml" 94 2556 2569 "src/codegen/codegen.ml" 94 2556 2573
+)
+"src/codegen/codegen.ml" 95 2579 2590 "src/codegen/codegen.ml" 97 2661 2686
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 94 2556 2564 "src/codegen/codegen.ml" 97 2661 2687
+type(
+  Ast.expr list option -> Ast.expr -> Ast.expr list option
+)
+"src/codegen/codegen.ml" 98 2688 2696 "src/codegen/codegen.ml" 98 2688 2700
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 98 2688 2701 "src/codegen/codegen.ml" 98 2688 2703
+type(
+  Ast.expr list
+)
+ident(
+  int_ref el "src/codegen/codegen.ml" 80 2155 2183 "src/codegen/codegen.ml" 80 2155 2185
+)
+"src/codegen/codegen.ml" 93 2535 2541 "src/codegen/codegen.ml" 98 2688 2703
+call(
+  stack
+)
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 99 2704 2722 "src/codegen/codegen.ml" 99 2704 2723
+type(
+  Ast.expr list
+)
+ident(
+  def e "src/codegen/codegen.ml" 99 2704 2727 "src/codegen/codegen.ml" 99 2704 2733
+)
+"src/codegen/codegen.ml" 99 2704 2713 "src/codegen/codegen.ml" 99 2704 2723
+type(
+  exn
+)
+"src/codegen/codegen.ml" 99 2704 2732 "src/codegen/codegen.ml" 99 2704 2733
+type(
+  Ast.expr list
+)
+ident(
+  int_ref e "src/codegen/codegen.ml" 99 2704 2722 "src/codegen/codegen.ml" 99 2704 2723
+)
+"src/codegen/codegen.ml" 99 2704 2727 "src/codegen/codegen.ml" 99 2704 2733
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 92 2527 2531 "src/codegen/codegen.ml" 99 2704 2733
+type(
+  Ast.expr list option
+)
+"src/codegen/codegen.ml" 101 2739 2755 "src/codegen/codegen.ml" 101 2739 2773
+type(
+  Ast.expr -> Ast.expr
+)
+ident(
+  int_ref rem_struct_assigns "src/codegen/codegen.ml" 31 680 688 "src/codegen/codegen.ml" 31 680 706
+)
+"src/codegen/codegen.ml" 101 2739 2774 "src/codegen/codegen.ml" 101 2739 2783
+type(
+  Ast.expr
+)
+ident(
+  int_ref join_body "src/codegen/codegen.ml" 81 2205 2211 "src/codegen/codegen.ml" 81 2205 2220
+)
+"src/codegen/codegen.ml" 101 2739 2755 "src/codegen/codegen.ml" 101 2739 2783
+call(
+  stack
+)
+type(
+  Ast.expr
+)
+"src/codegen/codegen.ml" 101 2739 2799 "src/codegen/codegen.ml" 101 2739 2811
+type(
+  Ast.expr list option
+)
+ident(
+  int_ref maybe_init_v "src/codegen/codegen.ml" 91 2506 2512 "src/codegen/codegen.ml" 91 2506 2524
+)
+"src/codegen/codegen.ml" 101 2739 2741 "src/codegen/codegen.ml" 101 2739 2813
+type(
+  solved_sketch_info
+)
+"src/codegen/codegen.ml" 91 2506 2508 "src/codegen/codegen.ml" 101 2739 2813
+type(
+  solved_sketch_info
+)
+"src/codegen/codegen.ml" 81 2205 2207 "src/codegen/codegen.ml" 101 2739 2813
+type(
+  solved_sketch_info
+)

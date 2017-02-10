@@ -1,0 +1,3063 @@
+"src/consynth/AnalyzeLoops.ml" 24 579 583 "src/consynth/AnalyzeLoops.ml" 24 579 601
+type(
+  Cil.block ->
+  LoopsHelper.VS.t * LoopsHelper.VS.t ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  def extract_subscripts "src/consynth/AnalyzeLoops.ml" 131 3397 3397 "src/consynth/AnalyzeLoops.ml" 1 0 -1
+)
+"src/consynth/AnalyzeLoops.ml" 24 579 603 "src/consynth/AnalyzeLoops.ml" 24 579 612
+type(
+  Cil.block
+)
+ident(
+  def loop_body "src/consynth/AnalyzeLoops.ml" 24 579 622 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 24 579 624 "src/consynth/AnalyzeLoops.ml" 24 579 625
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  def r "src/consynth/AnalyzeLoops.ml" 25 647 649 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 24 579 627 "src/consynth/AnalyzeLoops.ml" 24 579 628
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  def w "src/consynth/AnalyzeLoops.ml" 25 647 649 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 24 579 623 "src/consynth/AnalyzeLoops.ml" 24 579 629
+type(
+  LoopsHelper.VS.t * LoopsHelper.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 653 "src/consynth/AnalyzeLoops.ml" 25 647 657
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  def vars "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 660 "src/consynth/AnalyzeLoops.ml" 25 647 668
+type(
+  LoopsHelper.VS.t -> LoopsHelper.VS.t -> LoopsHelper.VS.t
+)
+ident(
+  ext_ref LoopsHelper.VS.union
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 669 "src/consynth/AnalyzeLoops.ml" 25 647 670
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  int_ref r "src/consynth/AnalyzeLoops.ml" 24 579 624 "src/consynth/AnalyzeLoops.ml" 24 579 625
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 671 "src/consynth/AnalyzeLoops.ml" 25 647 672
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  int_ref w "src/consynth/AnalyzeLoops.ml" 24 579 627 "src/consynth/AnalyzeLoops.ml" 24 579 628
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 660 "src/consynth/AnalyzeLoops.ml" 25 647 672
+call(
+  stack
+)
+type(
+  LoopsHelper.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 26 676 686 "src/consynth/AnalyzeLoops.ml" 26 676 695
+type(
+  Cil.stmt -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def from_stmt "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 27 703 707 "src/consynth/AnalyzeLoops.ml" 55 1289 1330
+)
+"src/consynth/AnalyzeLoops.ml" 27 703 713 "src/consynth/AnalyzeLoops.ml" 27 703 717
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+)
+"src/consynth/AnalyzeLoops.ml" 27 703 713 "src/consynth/AnalyzeLoops.ml" 27 703 723
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 28 729 741 "src/consynth/AnalyzeLoops.ml" 28 729 743
+type(
+  Cil.instr list
+)
+ident(
+  def il "src/consynth/AnalyzeLoops.ml" 29 747 755 "src/consynth/AnalyzeLoops.ml" 33 852 864
+)
+"src/consynth/AnalyzeLoops.ml" 28 729 735 "src/consynth/AnalyzeLoops.ml" 28 729 743
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 29 747 755 "src/consynth/AnalyzeLoops.ml" 29 747 769
+type(
+  ((int * Cil.exp list * bool * Cil.stmt) list ->
+   Cil.instr -> (int * Cil.exp list * bool * Cil.stmt) list) ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.instr list -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/AnalyzeLoops.ml" 30 770 785 "src/consynth/AnalyzeLoops.ml" 30 770 788
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def acc "src/consynth/AnalyzeLoops.ml" 30 770 789 "src/consynth/AnalyzeLoops.ml" 31 798 837
+)
+"src/consynth/AnalyzeLoops.ml" 30 770 789 "src/consynth/AnalyzeLoops.ml" 30 770 794
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/AnalyzeLoops.ml" 31 798 810 "src/consynth/AnalyzeLoops.ml" 31 798 837
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 810 "src/consynth/AnalyzeLoops.ml" 31 798 813
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref acc "src/consynth/AnalyzeLoops.ml" 30 770 785 "src/consynth/AnalyzeLoops.ml" 30 770 788
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 813 "src/consynth/AnalyzeLoops.ml" 31 798 814
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 815 "src/consynth/AnalyzeLoops.ml" 31 798 825
+type(
+  Cil.stmt -> Cil.instr -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_instr "src/consynth/AnalyzeLoops.ml" 64 1465 1471 "src/consynth/AnalyzeLoops.ml" 64 1465 1481
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 826 "src/consynth/AnalyzeLoops.ml" 31 798 830
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 831 "src/consynth/AnalyzeLoops.ml" 31 798 836
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/AnalyzeLoops.ml" 30 770 789 "src/consynth/AnalyzeLoops.ml" 30 770 794
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 814 "src/consynth/AnalyzeLoops.ml" 31 798 837
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 31 798 810 "src/consynth/AnalyzeLoops.ml" 31 798 837
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 30 770 780 "src/consynth/AnalyzeLoops.ml" 31 798 838
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.instr -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 32 839 849 "src/consynth/AnalyzeLoops.ml" 32 839 851
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 33 852 862 "src/consynth/AnalyzeLoops.ml" 33 852 864
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/AnalyzeLoops.ml" 28 729 741 "src/consynth/AnalyzeLoops.ml" 28 729 743
+)
+"src/consynth/AnalyzeLoops.ml" 29 747 755 "src/consynth/AnalyzeLoops.ml" 33 852 864
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 35 866 878 "src/consynth/AnalyzeLoops.ml" 35 866 879
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/AnalyzeLoops.ml" 37 907 914 "src/consynth/AnalyzeLoops.ml" 37 907 929
+)
+"src/consynth/AnalyzeLoops.ml" 35 866 872 "src/consynth/AnalyzeLoops.ml" 35 866 879
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 36 880 892 "src/consynth/AnalyzeLoops.ml" 36 880 893
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/AnalyzeLoops.ml" 37 907 914 "src/consynth/AnalyzeLoops.ml" 37 907 929
+)
+"src/consynth/AnalyzeLoops.ml" 36 880 895 "src/consynth/AnalyzeLoops.ml" 36 880 896
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 36 880 898 "src/consynth/AnalyzeLoops.ml" 36 880 899
+type(
+  Cil.stmt option
+)
+"src/consynth/AnalyzeLoops.ml" 36 880 901 "src/consynth/AnalyzeLoops.ml" 36 880 902
+type(
+  Cil.stmt option
+)
+"src/consynth/AnalyzeLoops.ml" 36 880 886 "src/consynth/AnalyzeLoops.ml" 36 880 903
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 35 866 872 "src/consynth/AnalyzeLoops.ml" 36 880 903
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 37 907 914 "src/consynth/AnalyzeLoops.ml" 37 907 924
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_block "src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+)
+"src/consynth/AnalyzeLoops.ml" 37 907 925 "src/consynth/AnalyzeLoops.ml" 37 907 926
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/AnalyzeLoops.ml" 35 866 878 "src/consynth/AnalyzeLoops.ml" 35 866 879
+)
+"src/consynth/AnalyzeLoops.ml" 37 907 927 "src/consynth/AnalyzeLoops.ml" 37 907 929
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 37 907 914 "src/consynth/AnalyzeLoops.ml" 37 907 929
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 39 931 945 "src/consynth/AnalyzeLoops.ml" 39 931 946
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 40 960 967 "src/consynth/AnalyzeLoops.ml" 40 960 1007
+)
+"src/consynth/AnalyzeLoops.ml" 39 931 948 "src/consynth/AnalyzeLoops.ml" 39 931 949
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/AnalyzeLoops.ml" 40 960 967 "src/consynth/AnalyzeLoops.ml" 40 960 1007
+)
+"src/consynth/AnalyzeLoops.ml" 39 931 951 "src/consynth/AnalyzeLoops.ml" 39 931 952
+type(
+  Cil.stmt list
+)
+"src/consynth/AnalyzeLoops.ml" 39 931 954 "src/consynth/AnalyzeLoops.ml" 39 931 955
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 39 931 937 "src/consynth/AnalyzeLoops.ml" 39 931 956
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 968 "src/consynth/AnalyzeLoops.ml" 40 960 978
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_block "src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 979 "src/consynth/AnalyzeLoops.ml" 40 960 980
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/AnalyzeLoops.ml" 39 931 948 "src/consynth/AnalyzeLoops.ml" 39 931 949
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 983 "src/consynth/AnalyzeLoops.ml" 40 960 992
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 993 "src/consynth/AnalyzeLoops.ml" 40 960 997
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 998 "src/consynth/AnalyzeLoops.ml" 40 960 1003
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 1004 "src/consynth/AnalyzeLoops.ml" 40 960 1005
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/AnalyzeLoops.ml" 39 931 945 "src/consynth/AnalyzeLoops.ml" 39 931 946
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 982 "src/consynth/AnalyzeLoops.ml" 40 960 1006
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 40 960 967 "src/consynth/AnalyzeLoops.ml" 40 960 1007
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 42 1009 1019 "src/consynth/AnalyzeLoops.ml" 42 1009 1020
+type(
+  Cil.exp
+)
+ident(
+  def c "src/consynth/AnalyzeLoops.ml" 43 1036 1043 "src/consynth/AnalyzeLoops.ml" 43 1036 1099
+)
+"src/consynth/AnalyzeLoops.ml" 42 1009 1022 "src/consynth/AnalyzeLoops.ml" 42 1009 1024
+type(
+  Cil.block
+)
+ident(
+  def b1 "src/consynth/AnalyzeLoops.ml" 43 1036 1043 "src/consynth/AnalyzeLoops.ml" 43 1036 1099
+)
+"src/consynth/AnalyzeLoops.ml" 42 1009 1026 "src/consynth/AnalyzeLoops.ml" 42 1009 1028
+type(
+  Cil.block
+)
+ident(
+  def b2 "src/consynth/AnalyzeLoops.ml" 43 1036 1043 "src/consynth/AnalyzeLoops.ml" 43 1036 1099
+)
+"src/consynth/AnalyzeLoops.ml" 42 1009 1030 "src/consynth/AnalyzeLoops.ml" 42 1009 1031
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 42 1009 1015 "src/consynth/AnalyzeLoops.ml" 42 1009 1032
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1044 "src/consynth/AnalyzeLoops.ml" 43 1036 1054
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_block "src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1055 "src/consynth/AnalyzeLoops.ml" 43 1036 1057
+type(
+  Cil.block
+)
+ident(
+  int_ref b1 "src/consynth/AnalyzeLoops.ml" 42 1009 1022 "src/consynth/AnalyzeLoops.ml" 42 1009 1024
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1059 "src/consynth/AnalyzeLoops.ml" 43 1036 1069
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_block "src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1070 "src/consynth/AnalyzeLoops.ml" 43 1036 1072
+type(
+  Cil.block
+)
+ident(
+  int_ref b2 "src/consynth/AnalyzeLoops.ml" 42 1009 1026 "src/consynth/AnalyzeLoops.ml" 42 1009 1028
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1074 "src/consynth/AnalyzeLoops.ml" 43 1036 1083
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1084 "src/consynth/AnalyzeLoops.ml" 43 1036 1088
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1089 "src/consynth/AnalyzeLoops.ml" 43 1036 1094
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1095 "src/consynth/AnalyzeLoops.ml" 43 1036 1096
+type(
+  Cil.exp
+)
+ident(
+  int_ref c "src/consynth/AnalyzeLoops.ml" 42 1009 1019 "src/consynth/AnalyzeLoops.ml" 42 1009 1020
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1073 "src/consynth/AnalyzeLoops.ml" 43 1036 1097
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1058 "src/consynth/AnalyzeLoops.ml" 43 1036 1098
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 43 1036 1043 "src/consynth/AnalyzeLoops.ml" 43 1036 1099
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 45 1101 1113 "src/consynth/AnalyzeLoops.ml" 45 1101 1121
+type(
+  Cil.stmt ref
+)
+ident(
+  def stmt_ref "src/consynth/AnalyzeLoops.ml" 46 1129 1135 "src/consynth/AnalyzeLoops.ml" 46 1129 1154
+)
+"src/consynth/AnalyzeLoops.ml" 45 1101 1123 "src/consynth/AnalyzeLoops.ml" 45 1101 1124
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 45 1101 1107 "src/consynth/AnalyzeLoops.ml" 45 1101 1125
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 46 1129 1135 "src/consynth/AnalyzeLoops.ml" 46 1129 1144
+type(
+  Cil.stmt -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_stmt "src/consynth/AnalyzeLoops.ml" 26 676 686 "src/consynth/AnalyzeLoops.ml" 26 676 695
+)
+"src/consynth/AnalyzeLoops.ml" 46 1129 1145 "src/consynth/AnalyzeLoops.ml" 46 1129 1146
+type(
+  Cil.stmt ref -> Cil.stmt
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/AnalyzeLoops.ml" 46 1129 1146 "src/consynth/AnalyzeLoops.ml" 46 1129 1154
+type(
+  Cil.stmt ref
+)
+ident(
+  int_ref stmt_ref "src/consynth/AnalyzeLoops.ml" 45 1101 1113 "src/consynth/AnalyzeLoops.ml" 45 1101 1121
+)
+"src/consynth/AnalyzeLoops.ml" 46 1129 1145 "src/consynth/AnalyzeLoops.ml" 46 1129 1154
+type(
+  Cil.stmt
+)
+"src/consynth/AnalyzeLoops.ml" 46 1129 1135 "src/consynth/AnalyzeLoops.ml" 46 1129 1154
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1173 "src/consynth/AnalyzeLoops.ml" 48 1156 1174
+type(
+  Cil.location
+)
+type(
+  Cil.block
+)
+type(
+  Cil.block
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 48 1156 1174
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 49 1175 1191 "src/consynth/AnalyzeLoops.ml" 49 1175 1192
+type(
+  Cil.location
+)
+type(
+  Cil.block
+)
+type(
+  Cil.instr list * Cil.exp
+)
+type(
+  Cil.block
+)
+"src/consynth/AnalyzeLoops.ml" 49 1175 1181 "src/consynth/AnalyzeLoops.ml" 49 1175 1192
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 49 1175 1192
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 50 1193 1206 "src/consynth/AnalyzeLoops.ml" 50 1193 1207
+type(
+  Cil.location
+)
+type(
+  Cil.exp option
+)
+"src/consynth/AnalyzeLoops.ml" 50 1193 1199 "src/consynth/AnalyzeLoops.ml" 50 1193 1207
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 50 1193 1207
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 51 1208 1227 "src/consynth/AnalyzeLoops.ml" 51 1208 1228
+type(
+  Cil.location
+)
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 51 1208 1214 "src/consynth/AnalyzeLoops.ml" 51 1208 1228
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 51 1208 1228
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 52 1229 1241 "src/consynth/AnalyzeLoops.ml" 52 1229 1242
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 52 1229 1235 "src/consynth/AnalyzeLoops.ml" 52 1229 1242
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 52 1229 1242
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 53 1243 1258 "src/consynth/AnalyzeLoops.ml" 53 1243 1259
+type(
+  Cil.location
+)
+"src/consynth/AnalyzeLoops.ml" 53 1243 1249 "src/consynth/AnalyzeLoops.ml" 53 1243 1259
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 48 1156 1162 "src/consynth/AnalyzeLoops.ml" 53 1243 1259
+type(
+  Cil.stmtkind
+)
+"src/consynth/AnalyzeLoops.ml" 54 1263 1270 "src/consynth/AnalyzeLoops.ml" 54 1263 1282
+type(
+  Cil.stmt -> unit
+)
+ident(
+  ext_ref Utils.CilTools.pps
+)
+"src/consynth/AnalyzeLoops.ml" 54 1263 1283 "src/consynth/AnalyzeLoops.ml" 54 1263 1287
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 26 676 696 "src/consynth/AnalyzeLoops.ml" 26 676 700
+)
+"src/consynth/AnalyzeLoops.ml" 54 1263 1270 "src/consynth/AnalyzeLoops.ml" 54 1263 1287
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/AnalyzeLoops.ml" 55 1289 1296 "src/consynth/AnalyzeLoops.ml" 55 1289 1304
+type(
+  string -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/AnalyzeLoops.ml" 55 1289 1305 "src/consynth/AnalyzeLoops.ml" 55 1289 1329
+type(
+  string
+)
+"src/consynth/AnalyzeLoops.ml" 55 1289 1296 "src/consynth/AnalyzeLoops.ml" 55 1289 1329
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 54 1263 1269 "src/consynth/AnalyzeLoops.ml" 55 1289 1330
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 27 703 707 "src/consynth/AnalyzeLoops.ml" 55 1289 1330
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def from_block "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 57 1332 1349 "src/consynth/AnalyzeLoops.ml" 57 1332 1350
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/AnalyzeLoops.ml" 57 1332 1351 "src/consynth/AnalyzeLoops.ml" 62 1449 1463
+)
+"src/consynth/AnalyzeLoops.ml" 57 1332 1351 "src/consynth/AnalyzeLoops.ml" 57 1332 1359
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def acc_subs "src/consynth/AnalyzeLoops.ml" 58 1362 1366 "src/consynth/AnalyzeLoops.ml" 62 1449 1463
+)
+"src/consynth/AnalyzeLoops.ml" 58 1362 1366 "src/consynth/AnalyzeLoops.ml" 58 1362 1380
+type(
+  ((int * Cil.exp list * bool * Cil.stmt) list ->
+   Cil.stmt -> (int * Cil.exp list * bool * Cil.stmt) list) ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.stmt list -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/AnalyzeLoops.ml" 59 1381 1392 "src/consynth/AnalyzeLoops.ml" 59 1381 1395
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def acc "src/consynth/AnalyzeLoops.ml" 59 1381 1396 "src/consynth/AnalyzeLoops.ml" 60 1404 1432
+)
+"src/consynth/AnalyzeLoops.ml" 59 1381 1396 "src/consynth/AnalyzeLoops.ml" 59 1381 1400
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 60 1404 1412 "src/consynth/AnalyzeLoops.ml" 60 1404 1432
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1412 "src/consynth/AnalyzeLoops.ml" 60 1404 1415
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref acc "src/consynth/AnalyzeLoops.ml" 59 1381 1392 "src/consynth/AnalyzeLoops.ml" 59 1381 1395
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1415 "src/consynth/AnalyzeLoops.ml" 60 1404 1416
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1417 "src/consynth/AnalyzeLoops.ml" 60 1404 1426
+type(
+  Cil.stmt -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_stmt "src/consynth/AnalyzeLoops.ml" 26 676 686 "src/consynth/AnalyzeLoops.ml" 26 676 695
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1427 "src/consynth/AnalyzeLoops.ml" 60 1404 1431
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 59 1381 1396 "src/consynth/AnalyzeLoops.ml" 59 1381 1400
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1416 "src/consynth/AnalyzeLoops.ml" 60 1404 1432
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 60 1404 1412 "src/consynth/AnalyzeLoops.ml" 60 1404 1432
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 59 1381 1387 "src/consynth/AnalyzeLoops.ml" 60 1404 1433
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.stmt -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 61 1434 1440 "src/consynth/AnalyzeLoops.ml" 61 1434 1448
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref acc_subs "src/consynth/AnalyzeLoops.ml" 57 1332 1351 "src/consynth/AnalyzeLoops.ml" 57 1332 1359
+)
+"src/consynth/AnalyzeLoops.ml" 62 1449 1455 "src/consynth/AnalyzeLoops.ml" 62 1449 1456
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/AnalyzeLoops.ml" 57 1332 1349 "src/consynth/AnalyzeLoops.ml" 57 1332 1350
+)
+"src/consynth/AnalyzeLoops.ml" 62 1449 1455 "src/consynth/AnalyzeLoops.ml" 62 1449 1463
+type(
+  Cil.stmt list
+)
+"src/consynth/AnalyzeLoops.ml" 58 1362 1366 "src/consynth/AnalyzeLoops.ml" 62 1449 1463
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 64 1465 1471 "src/consynth/AnalyzeLoops.ml" 64 1465 1481
+type(
+  Cil.stmt -> Cil.instr -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def from_instr "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1487 "src/consynth/AnalyzeLoops.ml" 72 1813 1831
+)
+"src/consynth/AnalyzeLoops.ml" 64 1465 1487 "src/consynth/AnalyzeLoops.ml" 64 1465 1492
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/AnalyzeLoops.ml" 65 1495 1499 "src/consynth/AnalyzeLoops.ml" 72 1813 1831
+)
+"src/consynth/AnalyzeLoops.ml" 65 1495 1505 "src/consynth/AnalyzeLoops.ml" 65 1495 1510
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/AnalyzeLoops.ml" 64 1465 1487 "src/consynth/AnalyzeLoops.ml" 64 1465 1492
+)
+"src/consynth/AnalyzeLoops.ml" 66 1516 1527 "src/consynth/AnalyzeLoops.ml" 66 1516 1529
+type(
+  Cil.lval
+)
+ident(
+  def lv "src/consynth/AnalyzeLoops.ml" 67 1540 1547 "src/consynth/AnalyzeLoops.ml" 67 1540 1599
+)
+"src/consynth/AnalyzeLoops.ml" 66 1516 1531 "src/consynth/AnalyzeLoops.ml" 66 1516 1532
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 67 1540 1547 "src/consynth/AnalyzeLoops.ml" 67 1540 1599
+)
+"src/consynth/AnalyzeLoops.ml" 66 1516 1534 "src/consynth/AnalyzeLoops.ml" 66 1516 1535
+type(
+  Cil.location
+)
+ident(
+  def t "src/consynth/AnalyzeLoops.ml" 67 1540 1547 "src/consynth/AnalyzeLoops.ml" 67 1540 1599
+)
+"src/consynth/AnalyzeLoops.ml" 66 1516 1522 "src/consynth/AnalyzeLoops.ml" 66 1516 1536
+type(
+  Cil.instr
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1548 "src/consynth/AnalyzeLoops.ml" 67 1540 1560
+type(
+  Cil.stmt -> bool -> Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref ex_from_lval "src/consynth/AnalyzeLoops.ml" 93 2332 2338 "src/consynth/AnalyzeLoops.ml" 93 2332 2350
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1561 "src/consynth/AnalyzeLoops.ml" 67 1540 1565
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1566 "src/consynth/AnalyzeLoops.ml" 67 1540 1570
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1571 "src/consynth/AnalyzeLoops.ml" 67 1540 1573
+type(
+  Cil.lval
+)
+ident(
+  int_ref lv "src/consynth/AnalyzeLoops.ml" 66 1516 1527 "src/consynth/AnalyzeLoops.ml" 66 1516 1529
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1547 "src/consynth/AnalyzeLoops.ml" 67 1540 1574
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1574 "src/consynth/AnalyzeLoops.ml" 67 1540 1575
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1576 "src/consynth/AnalyzeLoops.ml" 67 1540 1585
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1586 "src/consynth/AnalyzeLoops.ml" 67 1540 1590
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1591 "src/consynth/AnalyzeLoops.ml" 67 1540 1596
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1597 "src/consynth/AnalyzeLoops.ml" 67 1540 1598
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/AnalyzeLoops.ml" 66 1516 1531 "src/consynth/AnalyzeLoops.ml" 66 1516 1532
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1575 "src/consynth/AnalyzeLoops.ml" 67 1540 1599
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 67 1540 1547 "src/consynth/AnalyzeLoops.ml" 67 1540 1599
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 68 1600 1612 "src/consynth/AnalyzeLoops.ml" 68 1600 1615
+type(
+  Cil.lval option
+)
+ident(
+  def lvo "src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+)
+"src/consynth/AnalyzeLoops.ml" 68 1600 1617 "src/consynth/AnalyzeLoops.ml" 68 1600 1619
+type(
+  Cil.exp
+)
+ident(
+  def ef "src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+)
+"src/consynth/AnalyzeLoops.ml" 68 1600 1621 "src/consynth/AnalyzeLoops.ml" 68 1600 1625
+type(
+  Cil.exp list
+)
+ident(
+  def args "src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+)
+"src/consynth/AnalyzeLoops.ml" 68 1600 1627 "src/consynth/AnalyzeLoops.ml" 68 1600 1628
+type(
+  Cil.location
+)
+ident(
+  def t "src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+)
+"src/consynth/AnalyzeLoops.ml" 68 1600 1606 "src/consynth/AnalyzeLoops.ml" 68 1600 1629
+type(
+  Cil.instr
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1641 "src/consynth/AnalyzeLoops.ml" 69 1633 1660
+type(
+  (Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list) ->
+  Cil.lval option ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Utils.maybe_apply_default
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1662 "src/consynth/AnalyzeLoops.ml" 69 1633 1674
+type(
+  Cil.stmt -> bool -> Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref ex_from_lval "src/consynth/AnalyzeLoops.ml" 93 2332 2338 "src/consynth/AnalyzeLoops.ml" 93 2332 2350
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1675 "src/consynth/AnalyzeLoops.ml" 69 1633 1679
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1680 "src/consynth/AnalyzeLoops.ml" 69 1633 1684
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1661 "src/consynth/AnalyzeLoops.ml" 69 1633 1685
+call(
+  stack
+)
+type(
+  Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1686 "src/consynth/AnalyzeLoops.ml" 69 1633 1689
+type(
+  Cil.lval option
+)
+ident(
+  int_ref lvo "src/consynth/AnalyzeLoops.ml" 68 1600 1612 "src/consynth/AnalyzeLoops.ml" 68 1600 1615
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1690 "src/consynth/AnalyzeLoops.ml" 69 1633 1692
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 69 1633 1693
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1693 "src/consynth/AnalyzeLoops.ml" 69 1633 1694
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1705 "src/consynth/AnalyzeLoops.ml" 70 1695 1714
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1715 "src/consynth/AnalyzeLoops.ml" 70 1695 1719
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1720 "src/consynth/AnalyzeLoops.ml" 70 1695 1725
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1726 "src/consynth/AnalyzeLoops.ml" 70 1695 1728
+type(
+  Cil.exp
+)
+ident(
+  int_ref ef "src/consynth/AnalyzeLoops.ml" 68 1600 1617 "src/consynth/AnalyzeLoops.ml" 68 1600 1619
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1704 "src/consynth/AnalyzeLoops.ml" 70 1695 1729
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1729 "src/consynth/AnalyzeLoops.ml" 70 1695 1730
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1739 "src/consynth/AnalyzeLoops.ml" 71 1731 1753
+type(
+  ((int * Cil.exp list * bool * Cil.stmt) list ->
+   Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list) ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.exp list -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1759 "src/consynth/AnalyzeLoops.ml" 71 1731 1762
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def acc "src/consynth/AnalyzeLoops.ml" 71 1731 1763 "src/consynth/AnalyzeLoops.ml" 71 1731 1802
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1763 "src/consynth/AnalyzeLoops.ml" 71 1731 1767
+type(
+  Cil.exp
+)
+ident(
+  def expr "src/consynth/AnalyzeLoops.ml" 71 1731 1771 "src/consynth/AnalyzeLoops.ml" 71 1731 1802
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1771 "src/consynth/AnalyzeLoops.ml" 71 1731 1774
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref acc "src/consynth/AnalyzeLoops.ml" 71 1731 1759 "src/consynth/AnalyzeLoops.ml" 71 1731 1762
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1774 "src/consynth/AnalyzeLoops.ml" 71 1731 1775
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1776 "src/consynth/AnalyzeLoops.ml" 71 1731 1785
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1786 "src/consynth/AnalyzeLoops.ml" 71 1731 1790
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 64 1465 1482 "src/consynth/AnalyzeLoops.ml" 64 1465 1486
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1791 "src/consynth/AnalyzeLoops.ml" 71 1731 1796
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1797 "src/consynth/AnalyzeLoops.ml" 71 1731 1801
+type(
+  Cil.exp
+)
+ident(
+  int_ref expr "src/consynth/AnalyzeLoops.ml" 71 1731 1763 "src/consynth/AnalyzeLoops.ml" 71 1731 1767
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1775 "src/consynth/AnalyzeLoops.ml" 71 1731 1802
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1771 "src/consynth/AnalyzeLoops.ml" 71 1731 1802
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1754 "src/consynth/AnalyzeLoops.ml" 71 1731 1803
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1804 "src/consynth/AnalyzeLoops.ml" 71 1731 1806
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1807 "src/consynth/AnalyzeLoops.ml" 71 1731 1811
+type(
+  Cil.exp list
+)
+ident(
+  int_ref args "src/consynth/AnalyzeLoops.ml" 68 1600 1621 "src/consynth/AnalyzeLoops.ml" 68 1600 1625
+)
+"src/consynth/AnalyzeLoops.ml" 71 1731 1738 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 70 1695 1704 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 69 1633 1640 "src/consynth/AnalyzeLoops.ml" 71 1731 1812
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 72 1813 1823 "src/consynth/AnalyzeLoops.ml" 72 1813 1824
+type(
+  Cil.location
+)
+type(
+  string list
+)
+type(
+  (string option * string * Cil.exp) list
+)
+type(
+  (string option * string * Cil.lval) list
+)
+type(
+  string list
+)
+type(
+  Cil.attributes
+)
+"src/consynth/AnalyzeLoops.ml" 72 1813 1819 "src/consynth/AnalyzeLoops.ml" 72 1813 1824
+type(
+  Cil.instr
+)
+"src/consynth/AnalyzeLoops.ml" 72 1813 1829 "src/consynth/AnalyzeLoops.ml" 72 1813 1831
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 65 1495 1499 "src/consynth/AnalyzeLoops.ml" 72 1813 1831
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def from_expr "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 91 2317 2330
+)
+"src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+type(
+  bool
+)
+ident(
+  def on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1868 "src/consynth/AnalyzeLoops.ml" 91 2317 2330
+)
+"src/consynth/AnalyzeLoops.ml" 75 1834 1868 "src/consynth/AnalyzeLoops.ml" 75 1834 1872
+type(
+  Cil.exp
+)
+ident(
+  def expr "src/consynth/AnalyzeLoops.ml" 76 1875 1879 "src/consynth/AnalyzeLoops.ml" 91 2317 2330
+)
+"src/consynth/AnalyzeLoops.ml" 76 1875 1885 "src/consynth/AnalyzeLoops.ml" 76 1875 1889
+type(
+  Cil.exp
+)
+ident(
+  int_ref expr "src/consynth/AnalyzeLoops.ml" 75 1834 1868 "src/consynth/AnalyzeLoops.ml" 75 1834 1872
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1906 "src/consynth/AnalyzeLoops.ml" 77 1895 1908
+type(
+  Cil.lval
+)
+ident(
+  def lv "src/consynth/AnalyzeLoops.ml" 77 1895 1912 "src/consynth/AnalyzeLoops.ml" 77 1895 1945
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1901 "src/consynth/AnalyzeLoops.ml" 77 1895 1908
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1912 "src/consynth/AnalyzeLoops.ml" 77 1895 1924
+type(
+  Cil.stmt -> bool -> Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref ex_from_lval "src/consynth/AnalyzeLoops.ml" 93 2332 2338 "src/consynth/AnalyzeLoops.ml" 93 2332 2350
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1925 "src/consynth/AnalyzeLoops.ml" 77 1895 1929
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1930 "src/consynth/AnalyzeLoops.ml" 77 1895 1942
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1943 "src/consynth/AnalyzeLoops.ml" 77 1895 1945
+type(
+  Cil.lval
+)
+ident(
+  int_ref lv "src/consynth/AnalyzeLoops.ml" 77 1895 1906 "src/consynth/AnalyzeLoops.ml" 77 1895 1908
+)
+"src/consynth/AnalyzeLoops.ml" 77 1895 1912 "src/consynth/AnalyzeLoops.ml" 77 1895 1945
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1960 "src/consynth/AnalyzeLoops.ml" 79 1947 1961
+type(
+  Cil.typ
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1963 "src/consynth/AnalyzeLoops.ml" 79 1947 1964
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1953 "src/consynth/AnalyzeLoops.ml" 79 1947 1965
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1976 "src/consynth/AnalyzeLoops.ml" 79 1947 1977
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1968 "src/consynth/AnalyzeLoops.ml" 79 1947 1977
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1953 "src/consynth/AnalyzeLoops.ml" 79 1947 1977
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1989 "src/consynth/AnalyzeLoops.ml" 79 1947 1990
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1980 "src/consynth/AnalyzeLoops.ml" 79 1947 1990
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1953 "src/consynth/AnalyzeLoops.ml" 79 1947 1990
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 80 1991 2003 "src/consynth/AnalyzeLoops.ml" 80 1991 2004
+type(
+  Cil.unop
+)
+"src/consynth/AnalyzeLoops.ml" 80 1991 2006 "src/consynth/AnalyzeLoops.ml" 80 1991 2007
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+)
+"src/consynth/AnalyzeLoops.ml" 80 1991 2009 "src/consynth/AnalyzeLoops.ml" 80 1991 2010
+type(
+  Cil.typ
+)
+"src/consynth/AnalyzeLoops.ml" 80 1991 1997 "src/consynth/AnalyzeLoops.ml" 80 1991 2011
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 79 1947 1953 "src/consynth/AnalyzeLoops.ml" 80 1991 2011
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2031
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 81 2015 2032 "src/consynth/AnalyzeLoops.ml" 81 2015 2036
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 81 2015 2037 "src/consynth/AnalyzeLoops.ml" 81 2015 2049
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 81 2015 2051 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/AnalyzeLoops.ml" 79 1947 1963 "src/consynth/AnalyzeLoops.ml" 79 1947 1964
+)
+"src/consynth/AnalyzeLoops.ml" 81 2015 2022 "src/consynth/AnalyzeLoops.ml" 81 2015 2052
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 83 2054 2067 "src/consynth/AnalyzeLoops.ml" 83 2054 2068
+type(
+  Cil.binop
+)
+"src/consynth/AnalyzeLoops.ml" 83 2054 2070 "src/consynth/AnalyzeLoops.ml" 83 2054 2072
+type(
+  Cil.exp
+)
+ident(
+  def e1 "src/consynth/AnalyzeLoops.ml" 84 2084 2091 "src/consynth/AnalyzeLoops.ml" 84 2084 2156
+)
+"src/consynth/AnalyzeLoops.ml" 83 2054 2074 "src/consynth/AnalyzeLoops.ml" 83 2054 2076
+type(
+  Cil.exp
+)
+ident(
+  def e2 "src/consynth/AnalyzeLoops.ml" 84 2084 2091 "src/consynth/AnalyzeLoops.ml" 84 2084 2156
+)
+"src/consynth/AnalyzeLoops.ml" 83 2054 2078 "src/consynth/AnalyzeLoops.ml" 83 2054 2079
+type(
+  Cil.typ
+)
+"src/consynth/AnalyzeLoops.ml" 83 2054 2060 "src/consynth/AnalyzeLoops.ml" 83 2054 2080
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2092 "src/consynth/AnalyzeLoops.ml" 84 2084 2101
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2102 "src/consynth/AnalyzeLoops.ml" 84 2084 2106
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2107 "src/consynth/AnalyzeLoops.ml" 84 2084 2119
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2120 "src/consynth/AnalyzeLoops.ml" 84 2084 2122
+type(
+  Cil.exp
+)
+ident(
+  int_ref e1 "src/consynth/AnalyzeLoops.ml" 83 2054 2070 "src/consynth/AnalyzeLoops.ml" 83 2054 2072
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2091 "src/consynth/AnalyzeLoops.ml" 84 2084 2123
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2123 "src/consynth/AnalyzeLoops.ml" 84 2084 2124
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2125 "src/consynth/AnalyzeLoops.ml" 84 2084 2134
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2135 "src/consynth/AnalyzeLoops.ml" 84 2084 2139
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2140 "src/consynth/AnalyzeLoops.ml" 84 2084 2152
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2153 "src/consynth/AnalyzeLoops.ml" 84 2084 2155
+type(
+  Cil.exp
+)
+ident(
+  int_ref e2 "src/consynth/AnalyzeLoops.ml" 83 2054 2074 "src/consynth/AnalyzeLoops.ml" 83 2054 2076
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2124 "src/consynth/AnalyzeLoops.ml" 84 2084 2156
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 84 2084 2091 "src/consynth/AnalyzeLoops.ml" 84 2084 2156
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 86 2158 2174 "src/consynth/AnalyzeLoops.ml" 86 2158 2175
+type(
+  Cil.exp
+)
+ident(
+  def c "src/consynth/AnalyzeLoops.ml" 87 2191 2198 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+)
+"src/consynth/AnalyzeLoops.ml" 86 2158 2177 "src/consynth/AnalyzeLoops.ml" 86 2158 2179
+type(
+  Cil.exp
+)
+ident(
+  def e1 "src/consynth/AnalyzeLoops.ml" 87 2191 2198 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+)
+"src/consynth/AnalyzeLoops.ml" 86 2158 2181 "src/consynth/AnalyzeLoops.ml" 86 2158 2183
+type(
+  Cil.exp
+)
+ident(
+  def e2 "src/consynth/AnalyzeLoops.ml" 87 2191 2198 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+)
+"src/consynth/AnalyzeLoops.ml" 86 2158 2185 "src/consynth/AnalyzeLoops.ml" 86 2158 2186
+type(
+  Cil.typ
+)
+"src/consynth/AnalyzeLoops.ml" 86 2158 2164 "src/consynth/AnalyzeLoops.ml" 86 2158 2187
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2199 "src/consynth/AnalyzeLoops.ml" 87 2191 2208
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2209 "src/consynth/AnalyzeLoops.ml" 87 2191 2213
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2214 "src/consynth/AnalyzeLoops.ml" 87 2191 2226
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2227 "src/consynth/AnalyzeLoops.ml" 87 2191 2229
+type(
+  Cil.exp
+)
+ident(
+  int_ref e1 "src/consynth/AnalyzeLoops.ml" 86 2158 2177 "src/consynth/AnalyzeLoops.ml" 86 2158 2179
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2198 "src/consynth/AnalyzeLoops.ml" 87 2191 2230
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2230 "src/consynth/AnalyzeLoops.ml" 87 2191 2231
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2242 "src/consynth/AnalyzeLoops.ml" 88 2232 2251
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2252 "src/consynth/AnalyzeLoops.ml" 88 2232 2256
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2257 "src/consynth/AnalyzeLoops.ml" 88 2232 2269
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2270 "src/consynth/AnalyzeLoops.ml" 88 2232 2272
+type(
+  Cil.exp
+)
+ident(
+  int_ref e2 "src/consynth/AnalyzeLoops.ml" 86 2158 2181 "src/consynth/AnalyzeLoops.ml" 86 2158 2183
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2241 "src/consynth/AnalyzeLoops.ml" 88 2232 2273
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2273 "src/consynth/AnalyzeLoops.ml" 88 2232 2274
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 89 2275 2285 "src/consynth/AnalyzeLoops.ml" 89 2275 2294
+type(
+  Cil.stmt -> bool -> Cil.exp -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_expr "src/consynth/AnalyzeLoops.ml" 75 1834 1840 "src/consynth/AnalyzeLoops.ml" 75 1834 1849
+)
+"src/consynth/AnalyzeLoops.ml" 89 2275 2295 "src/consynth/AnalyzeLoops.ml" 89 2275 2299
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 75 1834 1850 "src/consynth/AnalyzeLoops.ml" 75 1834 1854
+)
+"src/consynth/AnalyzeLoops.ml" 89 2275 2300 "src/consynth/AnalyzeLoops.ml" 89 2275 2312
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 75 1834 1855 "src/consynth/AnalyzeLoops.ml" 75 1834 1867
+)
+"src/consynth/AnalyzeLoops.ml" 89 2275 2313 "src/consynth/AnalyzeLoops.ml" 89 2275 2314
+type(
+  Cil.exp
+)
+ident(
+  int_ref c "src/consynth/AnalyzeLoops.ml" 86 2158 2174 "src/consynth/AnalyzeLoops.ml" 86 2158 2175
+)
+"src/consynth/AnalyzeLoops.ml" 89 2275 2284 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 88 2232 2241 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 87 2191 2198 "src/consynth/AnalyzeLoops.ml" 89 2275 2315
+call(
+  tail
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 91 2317 2323 "src/consynth/AnalyzeLoops.ml" 91 2317 2324
+type(
+  Cil.exp
+)
+"src/consynth/AnalyzeLoops.ml" 91 2317 2328 "src/consynth/AnalyzeLoops.ml" 91 2317 2330
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 76 1875 1879 "src/consynth/AnalyzeLoops.ml" 91 2317 2330
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2338 "src/consynth/AnalyzeLoops.ml" 93 2332 2350
+type(
+  Cil.stmt -> bool -> Cil.lval -> (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def ex_from_lval "src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2351 "src/consynth/AnalyzeLoops.ml" 93 2332 2355
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 93 2332 2356 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2356 "src/consynth/AnalyzeLoops.ml" 93 2332 2368
+type(
+  bool
+)
+ident(
+  def on_left_hand "src/consynth/AnalyzeLoops.ml" 93 2332 2369 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2370 "src/consynth/AnalyzeLoops.ml" 93 2332 2374
+type(
+  Cil.lhost
+)
+ident(
+  def host "src/consynth/AnalyzeLoops.ml" 94 2383 2390 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2376 "src/consynth/AnalyzeLoops.ml" 93 2332 2379
+type(
+  Cil.offset
+)
+ident(
+  def off "src/consynth/AnalyzeLoops.ml" 94 2383 2390 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 93 2332 2369 "src/consynth/AnalyzeLoops.ml" 93 2332 2380
+type(
+  Cil.lval
+)
+"src/consynth/AnalyzeLoops.ml" 94 2383 2394 "src/consynth/AnalyzeLoops.ml" 94 2383 2400
+type(
+  Cil.exp list
+)
+ident(
+  def offset "src/consynth/AnalyzeLoops.ml" 95 2425 2432 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 94 2383 2403 "src/consynth/AnalyzeLoops.ml" 94 2383 2417
+type(
+  Cil.offset -> Cil.exp list
+)
+ident(
+  ext_ref VariableAnalysis.analyze_offset
+)
+"src/consynth/AnalyzeLoops.ml" 94 2383 2418 "src/consynth/AnalyzeLoops.ml" 94 2383 2421
+type(
+  Cil.offset
+)
+ident(
+  int_ref off "src/consynth/AnalyzeLoops.ml" 93 2332 2376 "src/consynth/AnalyzeLoops.ml" 93 2332 2379
+)
+"src/consynth/AnalyzeLoops.ml" 94 2383 2403 "src/consynth/AnalyzeLoops.ml" 94 2383 2421
+call(
+  stack
+)
+type(
+  Cil.exp list
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2436 "src/consynth/AnalyzeLoops.ml" 95 2425 2445
+type(
+  Cil.varinfo option
+)
+ident(
+  def main_host "src/consynth/AnalyzeLoops.ml" 96 2478 2485 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2447 "src/consynth/AnalyzeLoops.ml" 95 2425 2454
+type(
+  Cil.exp list
+)
+ident(
+  def offsets "src/consynth/AnalyzeLoops.ml" 96 2478 2485 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2436 "src/consynth/AnalyzeLoops.ml" 95 2425 2454
+type(
+  Cil.varinfo option * Cil.exp list
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2457 "src/consynth/AnalyzeLoops.ml" 95 2425 2469
+type(
+  Cil.lhost -> Cil.varinfo option * Cil.exp list
+)
+ident(
+  ext_ref VariableAnalysis.analyze_host
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2470 "src/consynth/AnalyzeLoops.ml" 95 2425 2474
+type(
+  Cil.lhost
+)
+ident(
+  int_ref host "src/consynth/AnalyzeLoops.ml" 93 2332 2370 "src/consynth/AnalyzeLoops.ml" 93 2332 2374
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2457 "src/consynth/AnalyzeLoops.ml" 95 2425 2474
+call(
+  stack
+)
+type(
+  Cil.varinfo option * Cil.exp list
+)
+"src/consynth/AnalyzeLoops.ml" 96 2478 2491 "src/consynth/AnalyzeLoops.ml" 96 2478 2500
+type(
+  Cil.varinfo option
+)
+ident(
+  int_ref main_host "src/consynth/AnalyzeLoops.ml" 95 2425 2436 "src/consynth/AnalyzeLoops.ml" 95 2425 2445
+)
+"src/consynth/AnalyzeLoops.ml" 97 2506 2520 "src/consynth/AnalyzeLoops.ml" 97 2506 2527
+type(
+  Cil.varinfo
+)
+ident(
+  def vi_host "src/consynth/AnalyzeLoops.ml" 98 2531 2540 "src/consynth/AnalyzeLoops.ml" 101 2661 2678
+)
+"src/consynth/AnalyzeLoops.ml" 97 2506 2515 "src/consynth/AnalyzeLoops.ml" 97 2506 2527
+type(
+  Cil.varinfo option
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2544 "src/consynth/AnalyzeLoops.ml" 98 2531 2548
+type(
+  Cil.exp list
+)
+ident(
+  def offs "src/consynth/AnalyzeLoops.ml" 99 2569 2578 "src/consynth/AnalyzeLoops.ml" 101 2661 2678
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2551 "src/consynth/AnalyzeLoops.ml" 98 2531 2558
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offsets "src/consynth/AnalyzeLoops.ml" 95 2425 2447 "src/consynth/AnalyzeLoops.ml" 95 2425 2454
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2558 "src/consynth/AnalyzeLoops.ml" 98 2531 2559
+type(
+  Cil.exp list -> Cil.exp list -> Cil.exp list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2559 "src/consynth/AnalyzeLoops.ml" 98 2531 2565
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offset "src/consynth/AnalyzeLoops.ml" 94 2383 2394 "src/consynth/AnalyzeLoops.ml" 94 2383 2400
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2551 "src/consynth/AnalyzeLoops.ml" 98 2531 2565
+call(
+  stack
+)
+type(
+  Cil.exp list
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2582 "src/consynth/AnalyzeLoops.ml" 99 2569 2593
+type(
+  Cil.exp list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2594 "src/consynth/AnalyzeLoops.ml" 99 2569 2598
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offs "src/consynth/AnalyzeLoops.ml" 98 2531 2544 "src/consynth/AnalyzeLoops.ml" 98 2531 2548
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2582 "src/consynth/AnalyzeLoops.ml" 99 2569 2598
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2599 "src/consynth/AnalyzeLoops.ml" 99 2569 2600
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( > )
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2601 "src/consynth/AnalyzeLoops.ml" 99 2569 2602
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2582 "src/consynth/AnalyzeLoops.ml" 99 2569 2602
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2621 "src/consynth/AnalyzeLoops.ml" 100 2608 2628
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi_host "src/consynth/AnalyzeLoops.ml" 97 2506 2520 "src/consynth/AnalyzeLoops.ml" 97 2506 2527
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2621 "src/consynth/AnalyzeLoops.ml" 100 2608 2632
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2634 "src/consynth/AnalyzeLoops.ml" 100 2608 2638
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offs "src/consynth/AnalyzeLoops.ml" 98 2531 2544 "src/consynth/AnalyzeLoops.ml" 98 2531 2548
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2640 "src/consynth/AnalyzeLoops.ml" 100 2608 2652
+type(
+  bool
+)
+ident(
+  int_ref on_left_hand "src/consynth/AnalyzeLoops.ml" 93 2332 2356 "src/consynth/AnalyzeLoops.ml" 93 2332 2368
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2654 "src/consynth/AnalyzeLoops.ml" 100 2608 2658
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 93 2332 2351 "src/consynth/AnalyzeLoops.ml" 93 2332 2355
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2620 "src/consynth/AnalyzeLoops.ml" 100 2608 2659
+type(
+  int * Cil.exp list * bool * Cil.stmt
+)
+"src/consynth/AnalyzeLoops.ml" 100 2608 2619 "src/consynth/AnalyzeLoops.ml" 100 2608 2660
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 101 2661 2675 "src/consynth/AnalyzeLoops.ml" 101 2661 2677
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 99 2569 2578 "src/consynth/AnalyzeLoops.ml" 101 2661 2678
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 98 2531 2540 "src/consynth/AnalyzeLoops.ml" 101 2661 2678
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 102 2679 2688 "src/consynth/AnalyzeLoops.ml" 102 2679 2689
+type(
+  Cil.varinfo option
+)
+"src/consynth/AnalyzeLoops.ml" 102 2679 2693 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 96 2478 2485 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 95 2425 2432 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 94 2383 2390 "src/consynth/AnalyzeLoops.ml" 102 2679 2695
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2707 "src/consynth/AnalyzeLoops.ml" 104 2701 2716
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  def subs_list "src/consynth/AnalyzeLoops.ml" 105 2746 2748 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2719 "src/consynth/AnalyzeLoops.ml" 104 2701 2729
+type(
+  Cil.block ->
+  (int * Cil.exp list * bool * Cil.stmt) list ->
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref from_block "src/consynth/AnalyzeLoops.ml" 57 1332 1338 "src/consynth/AnalyzeLoops.ml" 57 1332 1348
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2730 "src/consynth/AnalyzeLoops.ml" 104 2701 2739
+type(
+  Cil.block
+)
+ident(
+  int_ref loop_body "src/consynth/AnalyzeLoops.ml" 24 579 603 "src/consynth/AnalyzeLoops.ml" 24 579 612
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2740 "src/consynth/AnalyzeLoops.ml" 104 2701 2742
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2719 "src/consynth/AnalyzeLoops.ml" 104 2701 2742
+call(
+  stack
+)
+type(
+  (int * Cil.exp list * bool * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 105 2746 2752 "src/consynth/AnalyzeLoops.ml" 105 2746 2760
+type(
+  ('a list * 'b list) IM.t
+)
+ident(
+  def init_map "src/consynth/AnalyzeLoops.ml" 108 2836 2838 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2767 "src/consynth/AnalyzeLoops.ml" 106 2763 2774
+type(
+  (LoopsHelper.VS.elt -> ('a list * 'b list) IM.t -> ('a list * 'b list) IM.t) ->
+  LoopsHelper.VS.t -> ('a list * 'b list) IM.t -> ('a list * 'b list) IM.t
+)
+ident(
+  ext_ref LoopsHelper.VS.fold
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2780 "src/consynth/AnalyzeLoops.ml" 106 2763 2782
+type(
+  LoopsHelper.VS.elt
+)
+ident(
+  def vi "src/consynth/AnalyzeLoops.ml" 106 2763 2783 "src/consynth/AnalyzeLoops.ml" 106 2763 2815
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2783 "src/consynth/AnalyzeLoops.ml" 106 2763 2786
+type(
+  ('a list * 'b list) IM.t
+)
+ident(
+  def map "src/consynth/AnalyzeLoops.ml" 106 2763 2790 "src/consynth/AnalyzeLoops.ml" 106 2763 2815
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2790 "src/consynth/AnalyzeLoops.ml" 106 2763 2796
+type(
+  IM.key ->
+  'a list * 'b list -> ('a list * 'b list) IM.t -> ('a list * 'b list) IM.t
+)
+ident(
+  ext_ref IM.add
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2797 "src/consynth/AnalyzeLoops.ml" 106 2763 2799
+type(
+  LoopsHelper.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/AnalyzeLoops.ml" 106 2763 2780 "src/consynth/AnalyzeLoops.ml" 106 2763 2782
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2797 "src/consynth/AnalyzeLoops.ml" 106 2763 2803
+type(
+  IM.key
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2805 "src/consynth/AnalyzeLoops.ml" 106 2763 2807
+type(
+  'a list
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2808 "src/consynth/AnalyzeLoops.ml" 106 2763 2810
+type(
+  'b list
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2804 "src/consynth/AnalyzeLoops.ml" 106 2763 2811
+type(
+  'a list * 'b list
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2812 "src/consynth/AnalyzeLoops.ml" 106 2763 2815
+type(
+  ('a list * 'b list) IM.t
+)
+ident(
+  int_ref map "src/consynth/AnalyzeLoops.ml" 106 2763 2783 "src/consynth/AnalyzeLoops.ml" 106 2763 2786
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2790 "src/consynth/AnalyzeLoops.ml" 106 2763 2815
+call(
+  tail
+)
+type(
+  ('a list * 'b list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2775 "src/consynth/AnalyzeLoops.ml" 106 2763 2816
+type(
+  LoopsHelper.VS.elt -> ('a list * 'b list) IM.t -> ('a list * 'b list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2817 "src/consynth/AnalyzeLoops.ml" 106 2763 2821
+type(
+  LoopsHelper.VS.t
+)
+ident(
+  int_ref vars "src/consynth/AnalyzeLoops.ml" 25 647 653 "src/consynth/AnalyzeLoops.ml" 25 647 657
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2822 "src/consynth/AnalyzeLoops.ml" 106 2763 2830
+type(
+  ('a list * 'b list) IM.t
+)
+ident(
+  ext_ref IM.empty
+)
+"src/consynth/AnalyzeLoops.ml" 106 2763 2767 "src/consynth/AnalyzeLoops.ml" 106 2763 2830
+call(
+  stack
+)
+type(
+  ('a list * 'b list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 108 2836 2842 "src/consynth/AnalyzeLoops.ml" 108 2836 2856
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  def aggregate_subs "src/consynth/AnalyzeLoops.ml" 123 3276 3278 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+)
+"src/consynth/AnalyzeLoops.ml" 109 2859 2863 "src/consynth/AnalyzeLoops.ml" 109 2859 2877
+type(
+  (((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t ->
+   IM.key * Cil.exp list * bool * Cil.stmt ->
+   ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t) ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t ->
+  (IM.key * Cil.exp list * bool * Cil.stmt) list ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2889 "src/consynth/AnalyzeLoops.ml" 110 2878 2893
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  def imap "src/consynth/AnalyzeLoops.ml" 110 2878 2894 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2895 "src/consynth/AnalyzeLoops.ml" 110 2878 2900
+type(
+  IM.key
+)
+ident(
+  def varid "src/consynth/AnalyzeLoops.ml" 111 2927 2935 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2902 "src/consynth/AnalyzeLoops.ml" 110 2878 2909
+type(
+  Cil.exp list
+)
+ident(
+  def offsets "src/consynth/AnalyzeLoops.ml" 111 2927 2935 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2911 "src/consynth/AnalyzeLoops.ml" 110 2878 2916
+type(
+  bool
+)
+ident(
+  def on_lh "src/consynth/AnalyzeLoops.ml" 111 2927 2935 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2918 "src/consynth/AnalyzeLoops.ml" 110 2878 2922
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/AnalyzeLoops.ml" 111 2927 2935 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2894 "src/consynth/AnalyzeLoops.ml" 110 2878 2923
+type(
+  IM.key * Cil.exp list * bool * Cil.stmt
+)
+"src/consynth/AnalyzeLoops.ml" 111 2927 2939 "src/consynth/AnalyzeLoops.ml" 111 2927 2948
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  def read_offs "src/consynth/AnalyzeLoops.ml" 114 3034 3042 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 111 2927 2950 "src/consynth/AnalyzeLoops.ml" 111 2927 2960
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  def write_offs "src/consynth/AnalyzeLoops.ml" 114 3034 3042 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 111 2927 2939 "src/consynth/AnalyzeLoops.ml" 111 2927 2960
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 2977 "src/consynth/AnalyzeLoops.ml" 112 2963 2984
+type(
+  IM.key ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t ->
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+ident(
+  ext_ref IM.find
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 2985 "src/consynth/AnalyzeLoops.ml" 112 2963 2990
+type(
+  IM.key
+)
+ident(
+  int_ref varid "src/consynth/AnalyzeLoops.ml" 110 2878 2895 "src/consynth/AnalyzeLoops.ml" 110 2878 2900
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 2991 "src/consynth/AnalyzeLoops.ml" 112 2963 2995
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  int_ref imap "src/consynth/AnalyzeLoops.ml" 110 2878 2889 "src/consynth/AnalyzeLoops.ml" 110 2878 2893
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 2977 "src/consynth/AnalyzeLoops.ml" 112 2963 2995
+call(
+  stack
+)
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 3001 "src/consynth/AnalyzeLoops.ml" 112 2963 3010
+type(
+  exn
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 3015 "src/consynth/AnalyzeLoops.ml" 112 2963 3017
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 3019 "src/consynth/AnalyzeLoops.ml" 112 2963 3021
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 3014 "src/consynth/AnalyzeLoops.ml" 112 2963 3022
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 112 2963 2973 "src/consynth/AnalyzeLoops.ml" 112 2963 3022
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 114 3034 3046 "src/consynth/AnalyzeLoops.ml" 114 3034 3057
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+ident(
+  def new_binding "src/consynth/AnalyzeLoops.ml" 118 3194 3202 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3073 "src/consynth/AnalyzeLoops.ml" 115 3060 3078
+type(
+  bool
+)
+ident(
+  int_ref on_lh "src/consynth/AnalyzeLoops.ml" 110 2878 2911 "src/consynth/AnalyzeLoops.ml" 110 2878 2916
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3085 "src/consynth/AnalyzeLoops.ml" 115 3060 3094
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  int_ref read_offs "src/consynth/AnalyzeLoops.ml" 111 2927 2939 "src/consynth/AnalyzeLoops.ml" 111 2927 2948
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3096 "src/consynth/AnalyzeLoops.ml" 115 3060 3106
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  int_ref write_offs "src/consynth/AnalyzeLoops.ml" 111 2927 2950 "src/consynth/AnalyzeLoops.ml" 111 2927 2960
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3106 "src/consynth/AnalyzeLoops.ml" 115 3060 3107
+type(
+  (Cil.exp list * Cil.stmt) list ->
+  (Cil.exp list * Cil.stmt) list -> (Cil.exp list * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3109 "src/consynth/AnalyzeLoops.ml" 115 3060 3116
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offsets "src/consynth/AnalyzeLoops.ml" 110 2878 2902 "src/consynth/AnalyzeLoops.ml" 110 2878 2909
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3118 "src/consynth/AnalyzeLoops.ml" 115 3060 3122
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 110 2878 2918 "src/consynth/AnalyzeLoops.ml" 110 2878 2922
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3108 "src/consynth/AnalyzeLoops.ml" 115 3060 3123
+type(
+  Cil.exp list * Cil.stmt
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3107 "src/consynth/AnalyzeLoops.ml" 115 3060 3124
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3096 "src/consynth/AnalyzeLoops.ml" 115 3060 3124
+call(
+  stack
+)
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3084 "src/consynth/AnalyzeLoops.ml" 115 3060 3125
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3142 "src/consynth/AnalyzeLoops.ml" 116 3126 3151
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  int_ref read_offs "src/consynth/AnalyzeLoops.ml" 111 2927 2939 "src/consynth/AnalyzeLoops.ml" 111 2927 2948
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3151 "src/consynth/AnalyzeLoops.ml" 116 3126 3152
+type(
+  (Cil.exp list * Cil.stmt) list ->
+  (Cil.exp list * Cil.stmt) list -> (Cil.exp list * Cil.stmt) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3154 "src/consynth/AnalyzeLoops.ml" 116 3126 3161
+type(
+  Cil.exp list
+)
+ident(
+  int_ref offsets "src/consynth/AnalyzeLoops.ml" 110 2878 2902 "src/consynth/AnalyzeLoops.ml" 110 2878 2909
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3163 "src/consynth/AnalyzeLoops.ml" 116 3126 3167
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/AnalyzeLoops.ml" 110 2878 2918 "src/consynth/AnalyzeLoops.ml" 110 2878 2922
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3153 "src/consynth/AnalyzeLoops.ml" 116 3126 3168
+type(
+  Cil.exp list * Cil.stmt
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3152 "src/consynth/AnalyzeLoops.ml" 116 3126 3169
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3142 "src/consynth/AnalyzeLoops.ml" 116 3126 3169
+call(
+  stack
+)
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3171 "src/consynth/AnalyzeLoops.ml" 116 3126 3181
+type(
+  (Cil.exp list * Cil.stmt) list
+)
+ident(
+  int_ref write_offs "src/consynth/AnalyzeLoops.ml" 111 2927 2950 "src/consynth/AnalyzeLoops.ml" 111 2927 2960
+)
+"src/consynth/AnalyzeLoops.ml" 116 3126 3141 "src/consynth/AnalyzeLoops.ml" 116 3126 3182
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 115 3060 3070 "src/consynth/AnalyzeLoops.ml" 116 3126 3182
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+"src/consynth/AnalyzeLoops.ml" 118 3194 3202 "src/consynth/AnalyzeLoops.ml" 118 3194 3208
+type(
+  IM.key ->
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  ext_ref IM.add
+)
+"src/consynth/AnalyzeLoops.ml" 118 3194 3209 "src/consynth/AnalyzeLoops.ml" 118 3194 3214
+type(
+  IM.key
+)
+ident(
+  int_ref varid "src/consynth/AnalyzeLoops.ml" 110 2878 2895 "src/consynth/AnalyzeLoops.ml" 110 2878 2900
+)
+"src/consynth/AnalyzeLoops.ml" 118 3194 3215 "src/consynth/AnalyzeLoops.ml" 118 3194 3226
+type(
+  (Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list
+)
+ident(
+  int_ref new_binding "src/consynth/AnalyzeLoops.ml" 114 3034 3046 "src/consynth/AnalyzeLoops.ml" 114 3034 3057
+)
+"src/consynth/AnalyzeLoops.ml" 118 3194 3227 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  int_ref imap "src/consynth/AnalyzeLoops.ml" 110 2878 2889 "src/consynth/AnalyzeLoops.ml" 110 2878 2893
+)
+"src/consynth/AnalyzeLoops.ml" 118 3194 3202 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+call(
+  tail
+)
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 114 3034 3042 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 111 2927 2935 "src/consynth/AnalyzeLoops.ml" 118 3194 3231
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 110 2878 2884 "src/consynth/AnalyzeLoops.ml" 119 3232 3239
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t ->
+  IM.key * Cil.exp list * bool * Cil.stmt ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 120 3240 3246 "src/consynth/AnalyzeLoops.ml" 120 3240 3254
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  int_ref init_map "src/consynth/AnalyzeLoops.ml" 105 2746 2752 "src/consynth/AnalyzeLoops.ml" 105 2746 2760
+)
+"src/consynth/AnalyzeLoops.ml" 121 3255 3261 "src/consynth/AnalyzeLoops.ml" 121 3255 3270
+type(
+  (IM.key * Cil.exp list * bool * Cil.stmt) list
+)
+ident(
+  int_ref subs_list "src/consynth/AnalyzeLoops.ml" 104 2701 2707 "src/consynth/AnalyzeLoops.ml" 104 2701 2716
+)
+"src/consynth/AnalyzeLoops.ml" 109 2859 2863 "src/consynth/AnalyzeLoops.ml" 121 3255 3270
+call(
+  stack
+)
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 123 3276 3278 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  int_ref aggregate_subs "src/consynth/AnalyzeLoops.ml" 108 2836 2842 "src/consynth/AnalyzeLoops.ml" 108 2836 2856
+)
+"src/consynth/AnalyzeLoops.ml" 108 2836 2838 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 105 2746 2748 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 104 2701 2703 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 26 676 678 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 25 647 649 "src/consynth/AnalyzeLoops.ml" 123 3276 3292
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 131 3397 3401 "src/consynth/AnalyzeLoops.ml" 131 3397 3407
+type(
+  int -> Findloops.Cloop.t -> bool
+)
+ident(
+  def accept "src/consynth/AnalyzeLoops.ml" 142 3830 3830 "src/consynth/AnalyzeLoops.ml" 1 0 -1
+)
+"src/consynth/AnalyzeLoops.ml" 131 3397 3409 "src/consynth/AnalyzeLoops.ml" 131 3397 3412
+type(
+  int
+)
+ident(
+  def lid "src/consynth/AnalyzeLoops.ml" 131 3397 3420 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+)
+"src/consynth/AnalyzeLoops.ml" 131 3397 3421 "src/consynth/AnalyzeLoops.ml" 131 3397 3425
+type(
+  Findloops.Cloop.t
+)
+ident(
+  def loop "src/consynth/AnalyzeLoops.ml" 132 3440 3442 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3446 "src/consynth/AnalyzeLoops.ml" 132 3440 3447
+type(
+  Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3449 "src/consynth/AnalyzeLoops.ml" 132 3440 3454
+type(
+  Utils.VS.t
+)
+ident(
+  def state "src/consynth/AnalyzeLoops.ml" 134 3530 3532 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3446 "src/consynth/AnalyzeLoops.ml" 132 3440 3454
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3457 "src/consynth/AnalyzeLoops.ml" 132 3440 3461
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 131 3397 3421 "src/consynth/AnalyzeLoops.ml" 131 3397 3425
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3457 "src/consynth/AnalyzeLoops.ml" 132 3440 3467
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3533 "src/consynth/AnalyzeLoops.ml" 134 3530 3536
+type(
+  bool -> bool
+)
+ident(
+  ext_ref Pervasives.not
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3537 "src/consynth/AnalyzeLoops.ml" 134 3530 3541
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 131 3397 3421 "src/consynth/AnalyzeLoops.ml" 131 3397 3425
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3537 "src/consynth/AnalyzeLoops.ml" 134 3530 3552
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3532 "src/consynth/AnalyzeLoops.ml" 134 3530 3553
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3554 "src/consynth/AnalyzeLoops.ml" 134 3530 3556
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3635 "src/consynth/AnalyzeLoops.ml" 136 3630 3638
+type(
+  bool -> bool
+)
+ident(
+  ext_ref Pervasives.not
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3640 "src/consynth/AnalyzeLoops.ml" 136 3630 3651
+type(
+  LoopsHelper.VS.t -> bool
+)
+ident(
+  ext_ref LoopsHelper.VS.is_empty
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3652 "src/consynth/AnalyzeLoops.ml" 136 3630 3657
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state "src/consynth/AnalyzeLoops.ml" 132 3440 3449 "src/consynth/AnalyzeLoops.ml" 132 3440 3454
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3639 "src/consynth/AnalyzeLoops.ml" 136 3630 3658
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3634 "src/consynth/AnalyzeLoops.ml" 136 3630 3659
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3660 "src/consynth/AnalyzeLoops.ml" 136 3630 3662
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3735 "src/consynth/AnalyzeLoops.ml" 138 3726 3744
+type(
+  Cil.block
+)
+ident(
+  def loop_body "src/consynth/AnalyzeLoops.ml" 139 3773 3778 "src/consynth/AnalyzeLoops.ml" 139 3773 3826
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3747 "src/consynth/AnalyzeLoops.ml" 138 3726 3754
+type(
+  Cil.stmt list -> Cil.block
+)
+ident(
+  ext_ref Cil.mkBlock
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3755 "src/consynth/AnalyzeLoops.ml" 138 3726 3759
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 131 3397 3421 "src/consynth/AnalyzeLoops.ml" 131 3397 3425
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3754 "src/consynth/AnalyzeLoops.ml" 138 3726 3769
+type(
+  Cil.stmt list
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3747 "src/consynth/AnalyzeLoops.ml" 138 3726 3769
+call(
+  stack
+)
+type(
+  Cil.block
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3778 "src/consynth/AnalyzeLoops.ml" 139 3773 3789
+type(
+  LoopsHelper.VS.t -> bool
+)
+ident(
+  ext_ref LoopsHelper.VS.is_empty
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3791 "src/consynth/AnalyzeLoops.ml" 139 3773 3799
+type(
+  LoopsHelper.VS.t -> LoopsHelper.VS.t -> LoopsHelper.VS.t
+)
+ident(
+  ext_ref LoopsHelper.VS.inter
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3801 "src/consynth/AnalyzeLoops.ml" 139 3773 3808
+type(
+  Cil.block -> Utils.VS.t
+)
+ident(
+  ext_ref VariableAnalysis.aliased
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3809 "src/consynth/AnalyzeLoops.ml" 139 3773 3818
+type(
+  Cil.block
+)
+ident(
+  int_ref loop_body "src/consynth/AnalyzeLoops.ml" 138 3726 3735 "src/consynth/AnalyzeLoops.ml" 138 3726 3744
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3800 "src/consynth/AnalyzeLoops.ml" 139 3773 3819
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3820 "src/consynth/AnalyzeLoops.ml" 139 3773 3825
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state "src/consynth/AnalyzeLoops.ml" 132 3440 3449 "src/consynth/AnalyzeLoops.ml" 132 3440 3454
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3790 "src/consynth/AnalyzeLoops.ml" 139 3773 3826
+call(
+  stack
+)
+type(
+  LoopsHelper.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 139 3773 3778 "src/consynth/AnalyzeLoops.ml" 139 3773 3826
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 138 3726 3730 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 136 3630 3634 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 134 3530 3532 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 132 3440 3442 "src/consynth/AnalyzeLoops.ml" 139 3773 3827
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 142 3830 3834 "src/consynth/AnalyzeLoops.ml" 142 3830 3843
+type(
+  'a * Findloops.Cloop.t -> Findloops.Cloop.t
+)
+ident(
+  def transform "src/consynth/AnalyzeLoops.ml" 152 4093 4093 "src/consynth/AnalyzeLoops.ml" 1 0 -1
+)
+"src/consynth/AnalyzeLoops.ml" 142 3830 3845 "src/consynth/AnalyzeLoops.ml" 142 3830 3848
+type(
+  'a
+)
+ident(
+  def lid "src/consynth/AnalyzeLoops.ml" 143 3858 3860 "src/consynth/AnalyzeLoops.ml" 145 3942 3948
+)
+"src/consynth/AnalyzeLoops.ml" 142 3830 3850 "src/consynth/AnalyzeLoops.ml" 142 3830 3854
+type(
+  Findloops.Cloop.t
+)
+ident(
+  def loop "src/consynth/AnalyzeLoops.ml" 143 3858 3860 "src/consynth/AnalyzeLoops.ml" 145 3942 3948
+)
+"src/consynth/AnalyzeLoops.ml" 142 3830 3844 "src/consynth/AnalyzeLoops.ml" 142 3830 3855
+type(
+  'a * Findloops.Cloop.t
+)
+"src/consynth/AnalyzeLoops.ml" 143 3858 3864 "src/consynth/AnalyzeLoops.ml" 143 3858 3878
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  def subscripts_map "src/consynth/AnalyzeLoops.ml" 145 3942 3944 "src/consynth/AnalyzeLoops.ml" 145 3942 3948
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3885 "src/consynth/AnalyzeLoops.ml" 144 3881 3903
+type(
+  Cil.block ->
+  LoopsHelper.VS.t * LoopsHelper.VS.t ->
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+ident(
+  int_ref extract_subscripts "src/consynth/AnalyzeLoops.ml" 24 579 583 "src/consynth/AnalyzeLoops.ml" 24 579 601
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3905 "src/consynth/AnalyzeLoops.ml" 144 3881 3912
+type(
+  Cil.stmt list -> Cil.block
+)
+ident(
+  ext_ref Cil.mkBlock
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3913 "src/consynth/AnalyzeLoops.ml" 144 3881 3917
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 142 3830 3850 "src/consynth/AnalyzeLoops.ml" 142 3830 3854
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3913 "src/consynth/AnalyzeLoops.ml" 144 3881 3926
+type(
+  Cil.stmt list
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3904 "src/consynth/AnalyzeLoops.ml" 144 3881 3927
+call(
+  stack
+)
+type(
+  Cil.block
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3928 "src/consynth/AnalyzeLoops.ml" 144 3881 3932
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 142 3830 3850 "src/consynth/AnalyzeLoops.ml" 142 3830 3854
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3928 "src/consynth/AnalyzeLoops.ml" 144 3881 3938
+type(
+  LoopsHelper.VS.t * LoopsHelper.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 144 3881 3885 "src/consynth/AnalyzeLoops.ml" 144 3881 3938
+call(
+  stack
+)
+type(
+  ((Cil.exp list * Cil.stmt) list * (Cil.exp list * Cil.stmt) list) IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 145 3942 3944 "src/consynth/AnalyzeLoops.ml" 145 3942 3948
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop "src/consynth/AnalyzeLoops.ml" 142 3830 3850 "src/consynth/AnalyzeLoops.ml" 142 3830 3854
+)
+"src/consynth/AnalyzeLoops.ml" 143 3858 3860 "src/consynth/AnalyzeLoops.ml" 145 3942 3948
+type(
+  Findloops.Cloop.t
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4097 "src/consynth/AnalyzeLoops.ml" 152 4093 4107
+type(
+  int * Findloops.Cloop.t -> int * Findloops.Cloop.t -> int
+)
+ident(
+  def compare_cl "src/consynth/AnalyzeLoops.ml" 169 4467 4467 "src/consynth/AnalyzeLoops.ml" 1 0 -1
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4110 "src/consynth/AnalyzeLoops.ml" 152 4093 4114
+type(
+  int
+)
+ident(
+  def lid1 "src/consynth/AnalyzeLoops.ml" 152 4093 4140 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4116 "src/consynth/AnalyzeLoops.ml" 152 4093 4121
+type(
+  Findloops.Cloop.t
+)
+ident(
+  def loop1 "src/consynth/AnalyzeLoops.ml" 152 4093 4140 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4109 "src/consynth/AnalyzeLoops.ml" 152 4093 4122
+type(
+  int * Findloops.Cloop.t
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4141 "src/consynth/AnalyzeLoops.ml" 152 4093 4145
+type(
+  int
+)
+ident(
+  def lid2 "src/consynth/AnalyzeLoops.ml" 153 4156 4158 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4147 "src/consynth/AnalyzeLoops.ml" 152 4093 4152
+type(
+  Findloops.Cloop.t
+)
+ident(
+  def loop2 "src/consynth/AnalyzeLoops.ml" 153 4156 4158 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+)
+"src/consynth/AnalyzeLoops.ml" 152 4093 4140 "src/consynth/AnalyzeLoops.ml" 152 4093 4153
+type(
+  int * Findloops.Cloop.t
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4161 "src/consynth/AnalyzeLoops.ml" 153 4156 4169
+type(
+  int -> int list -> bool
+)
+ident(
+  ext_ref List.mem
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4170 "src/consynth/AnalyzeLoops.ml" 153 4156 4175
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop1 "src/consynth/AnalyzeLoops.ml" 152 4093 4116 "src/consynth/AnalyzeLoops.ml" 152 4093 4121
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4170 "src/consynth/AnalyzeLoops.ml" 153 4156 4179
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4180 "src/consynth/AnalyzeLoops.ml" 153 4156 4185
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop2 "src/consynth/AnalyzeLoops.ml" 152 4093 4147 "src/consynth/AnalyzeLoops.ml" 152 4093 4152
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4180 "src/consynth/AnalyzeLoops.ml" 153 4156 4198
+type(
+  int list
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4161 "src/consynth/AnalyzeLoops.ml" 153 4156 4198
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 154 4199 4206 "src/consynth/AnalyzeLoops.ml" 154 4199 4208
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4235 "src/consynth/AnalyzeLoops.ml" 157 4226 4243
+type(
+  int -> int list -> bool
+)
+ident(
+  ext_ref List.mem
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4244 "src/consynth/AnalyzeLoops.ml" 157 4226 4249
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop2 "src/consynth/AnalyzeLoops.ml" 152 4093 4147 "src/consynth/AnalyzeLoops.ml" 152 4093 4152
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4244 "src/consynth/AnalyzeLoops.ml" 157 4226 4253
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4254 "src/consynth/AnalyzeLoops.ml" 157 4226 4259
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop1 "src/consynth/AnalyzeLoops.ml" 152 4093 4116 "src/consynth/AnalyzeLoops.ml" 152 4093 4121
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4254 "src/consynth/AnalyzeLoops.ml" 157 4226 4272
+type(
+  int list
+)
+"src/consynth/AnalyzeLoops.ml" 157 4226 4235 "src/consynth/AnalyzeLoops.ml" 157 4226 4272
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 158 4273 4284 "src/consynth/AnalyzeLoops.ml" 158 4273 4285
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4325 "src/consynth/AnalyzeLoops.ml" 161 4311 4336
+type(
+  LoopsHelper.VS.t -> int
+)
+ident(
+  ext_ref LoopsHelper.VS.cardinal
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4338 "src/consynth/AnalyzeLoops.ml" 161 4311 4343
+type(
+  Findloops.Cloop.t -> Utils.VS.t
+)
+ident(
+  ext_ref Findloops.Cloop.state
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4344 "src/consynth/AnalyzeLoops.ml" 161 4311 4349
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop1 "src/consynth/AnalyzeLoops.ml" 152 4093 4116 "src/consynth/AnalyzeLoops.ml" 152 4093 4121
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4337 "src/consynth/AnalyzeLoops.ml" 161 4311 4350
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4324 "src/consynth/AnalyzeLoops.ml" 161 4311 4351
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4352 "src/consynth/AnalyzeLoops.ml" 161 4311 4354
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( <= )
+)
+"src/consynth/AnalyzeLoops.ml" 162 4355 4368 "src/consynth/AnalyzeLoops.ml" 162 4355 4379
+type(
+  LoopsHelper.VS.t -> int
+)
+ident(
+  ext_ref LoopsHelper.VS.cardinal
+)
+"src/consynth/AnalyzeLoops.ml" 162 4355 4381 "src/consynth/AnalyzeLoops.ml" 162 4355 4386
+type(
+  Findloops.Cloop.t -> Utils.VS.t
+)
+ident(
+  ext_ref Findloops.Cloop.state
+)
+"src/consynth/AnalyzeLoops.ml" 162 4355 4387 "src/consynth/AnalyzeLoops.ml" 162 4355 4392
+type(
+  Findloops.Cloop.t
+)
+ident(
+  int_ref loop2 "src/consynth/AnalyzeLoops.ml" 152 4093 4147 "src/consynth/AnalyzeLoops.ml" 152 4093 4152
+)
+"src/consynth/AnalyzeLoops.ml" 162 4355 4380 "src/consynth/AnalyzeLoops.ml" 162 4355 4393
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/AnalyzeLoops.ml" 162 4355 4367 "src/consynth/AnalyzeLoops.ml" 162 4355 4394
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 161 4311 4324 "src/consynth/AnalyzeLoops.ml" 162 4355 4394
+type(
+  bool
+)
+"src/consynth/AnalyzeLoops.ml" 163 4395 4410 "src/consynth/AnalyzeLoops.ml" 163 4395 4411
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 164 4412 4427 "src/consynth/AnalyzeLoops.ml" 164 4412 4434
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.compare
+)
+"src/consynth/AnalyzeLoops.ml" 164 4412 4435 "src/consynth/AnalyzeLoops.ml" 164 4412 4439
+type(
+  int
+)
+ident(
+  int_ref lid1 "src/consynth/AnalyzeLoops.ml" 152 4093 4110 "src/consynth/AnalyzeLoops.ml" 152 4093 4114
+)
+"src/consynth/AnalyzeLoops.ml" 164 4412 4440 "src/consynth/AnalyzeLoops.ml" 164 4412 4444
+type(
+  int
+)
+ident(
+  int_ref lid2 "src/consynth/AnalyzeLoops.ml" 152 4093 4141 "src/consynth/AnalyzeLoops.ml" 152 4093 4145
+)
+"src/consynth/AnalyzeLoops.ml" 164 4412 4427 "src/consynth/AnalyzeLoops.ml" 164 4412 4444
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 160 4297 4305 "src/consynth/AnalyzeLoops.ml" 165 4445 4456
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 156 4216 4220 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 153 4156 4158 "src/consynth/AnalyzeLoops.ml" 166 4457 4464
+type(
+  int
+)
+"src/consynth/AnalyzeLoops.ml" 169 4467 4471 "src/consynth/AnalyzeLoops.ml" 169 4467 4489
+type(
+  Findloops.Cloop.t IM.t -> Findloops.Cloop.t list
+)
+ident(
+  def transform_and_sort "src/consynth/AnalyzeLoops.ml" 172 4565 4614 "src/consynth/AnalyzeLoops.ml" 1 0 -1
+)
+"src/consynth/AnalyzeLoops.ml" 169 4467 4491 "src/consynth/AnalyzeLoops.ml" 169 4467 4499
+type(
+  Findloops.Cloop.t IM.t
+)
+ident(
+  def loop_map "src/consynth/AnalyzeLoops.ml" 170 4518 4520 "src/consynth/AnalyzeLoops.ml" 172 4565 4614
+)
+"src/consynth/AnalyzeLoops.ml" 170 4518 4520 "src/consynth/AnalyzeLoops.ml" 170 4518 4528
+type(
+  (IM.key * Findloops.Cloop.t -> Findloops.Cloop.t) ->
+  (IM.key * Findloops.Cloop.t) list -> Findloops.Cloop.t list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/AnalyzeLoops.ml" 170 4518 4529 "src/consynth/AnalyzeLoops.ml" 170 4518 4538
+type(
+  IM.key * Findloops.Cloop.t -> Findloops.Cloop.t
+)
+ident(
+  int_ref transform "src/consynth/AnalyzeLoops.ml" 142 3830 3834 "src/consynth/AnalyzeLoops.ml" 142 3830 3843
+)
+"src/consynth/AnalyzeLoops.ml" 171 4539 4544 "src/consynth/AnalyzeLoops.ml" 171 4539 4553
+type(
+  (IM.key * Findloops.Cloop.t -> IM.key * Findloops.Cloop.t -> int) ->
+  (IM.key * Findloops.Cloop.t) list -> (IM.key * Findloops.Cloop.t) list
+)
+ident(
+  ext_ref List.sort
+)
+"src/consynth/AnalyzeLoops.ml" 171 4539 4554 "src/consynth/AnalyzeLoops.ml" 171 4539 4564
+type(
+  IM.key * Findloops.Cloop.t -> IM.key * Findloops.Cloop.t -> int
+)
+ident(
+  int_ref compare_cl "src/consynth/AnalyzeLoops.ml" 152 4093 4097 "src/consynth/AnalyzeLoops.ml" 152 4093 4107
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4573 "src/consynth/AnalyzeLoops.ml" 172 4565 4584
+type(
+  Findloops.Cloop.t IM.t -> (IM.key * Findloops.Cloop.t) list
+)
+ident(
+  ext_ref IM.bindings
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4586 "src/consynth/AnalyzeLoops.ml" 172 4565 4595
+type(
+  (IM.key -> Findloops.Cloop.t -> bool) ->
+  Findloops.Cloop.t IM.t -> Findloops.Cloop.t IM.t
+)
+ident(
+  ext_ref IM.filter
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4596 "src/consynth/AnalyzeLoops.ml" 172 4565 4602
+type(
+  IM.key -> Findloops.Cloop.t -> bool
+)
+ident(
+  int_ref accept "src/consynth/AnalyzeLoops.ml" 131 3397 3401 "src/consynth/AnalyzeLoops.ml" 131 3397 3407
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4603 "src/consynth/AnalyzeLoops.ml" 172 4565 4611
+type(
+  Findloops.Cloop.t IM.t
+)
+ident(
+  int_ref loop_map "src/consynth/AnalyzeLoops.ml" 169 4467 4491 "src/consynth/AnalyzeLoops.ml" 169 4467 4499
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4585 "src/consynth/AnalyzeLoops.ml" 172 4565 4612
+call(
+  stack
+)
+type(
+  Findloops.Cloop.t IM.t
+)
+"src/consynth/AnalyzeLoops.ml" 172 4565 4572 "src/consynth/AnalyzeLoops.ml" 172 4565 4613
+call(
+  stack
+)
+type(
+  (IM.key * Findloops.Cloop.t) list
+)
+"src/consynth/AnalyzeLoops.ml" 171 4539 4543 "src/consynth/AnalyzeLoops.ml" 172 4565 4614
+call(
+  stack
+)
+type(
+  (IM.key * Findloops.Cloop.t) list
+)
+"src/consynth/AnalyzeLoops.ml" 170 4518 4520 "src/consynth/AnalyzeLoops.ml" 172 4565 4614
+call(
+  tail
+)
+type(
+  Findloops.Cloop.t list
+)

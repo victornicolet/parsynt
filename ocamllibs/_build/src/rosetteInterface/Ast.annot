@@ -1,0 +1,2255 @@
+"src/rosetteInterface/Ast.ml" 26 199 203 "src/rosetteInterface/Ast.ml" 26 199 208
+type(
+  Format.formatter -> op -> unit
+)
+ident(
+  def pp_op "src/rosetteInterface/Ast.ml" 48 598 598 "src/rosetteInterface/Ast.ml" 1 0 -1
+)
+"src/rosetteInterface/Ast.ml" 26 199 209 "src/rosetteInterface/Ast.ml" 26 199 212
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 26 199 213 "src/rosetteInterface/Ast.ml" 46 574 596
+)
+"src/rosetteInterface/Ast.ml" 26 199 213 "src/rosetteInterface/Ast.ml" 26 199 215
+type(
+  op
+)
+ident(
+  def op "src/rosetteInterface/Ast.ml" 27 218 220 "src/rosetteInterface/Ast.ml" 46 574 596
+)
+"src/rosetteInterface/Ast.ml" 27 218 220 "src/rosetteInterface/Ast.ml" 27 218 227
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 27 218 228 "src/rosetteInterface/Ast.ml" 27 218 231
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 26 199 209 "src/rosetteInterface/Ast.ml" 26 199 212
+)
+"src/rosetteInterface/Ast.ml" 27 218 232 "src/rosetteInterface/Ast.ml" 27 218 236
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 28 237 248 "src/rosetteInterface/Ast.ml" 28 237 250
+type(
+  op
+)
+ident(
+  int_ref op "src/rosetteInterface/Ast.ml" 26 199 213 "src/rosetteInterface/Ast.ml" 26 199 215
+)
+"src/rosetteInterface/Ast.ml" 29 256 263 "src/rosetteInterface/Ast.ml" 29 256 267
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 29 256 271 "src/rosetteInterface/Ast.ml" 29 256 274
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 30 275 282 "src/rosetteInterface/Ast.ml" 30 275 287
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 30 275 291 "src/rosetteInterface/Ast.ml" 30 275 294
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 31 295 302 "src/rosetteInterface/Ast.ml" 31 295 305
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 31 295 309 "src/rosetteInterface/Ast.ml" 31 295 312
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 32 313 320 "src/rosetteInterface/Ast.ml" 32 313 323
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 32 313 327 "src/rosetteInterface/Ast.ml" 32 313 330
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 33 331 338 "src/rosetteInterface/Ast.ml" 33 331 341
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 33 331 345 "src/rosetteInterface/Ast.ml" 33 331 350
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 34 351 358 "src/rosetteInterface/Ast.ml" 34 351 360
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 34 351 364 "src/rosetteInterface/Ast.ml" 34 351 367
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 35 368 375 "src/rosetteInterface/Ast.ml" 35 368 378
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 35 368 382 "src/rosetteInterface/Ast.ml" 35 368 386
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 36 387 394 "src/rosetteInterface/Ast.ml" 36 387 396
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 36 387 400 "src/rosetteInterface/Ast.ml" 36 387 403
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 37 404 411 "src/rosetteInterface/Ast.ml" 37 404 414
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 37 404 418 "src/rosetteInterface/Ast.ml" 37 404 422
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 38 423 430 "src/rosetteInterface/Ast.ml" 38 423 432
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 38 423 436 "src/rosetteInterface/Ast.ml" 38 423 439
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 39 440 447 "src/rosetteInterface/Ast.ml" 39 440 450
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 39 440 454 "src/rosetteInterface/Ast.ml" 39 440 458
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 40 459 466 "src/rosetteInterface/Ast.ml" 40 459 469
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 40 459 473 "src/rosetteInterface/Ast.ml" 40 459 476
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 41 477 484 "src/rosetteInterface/Ast.ml" 41 477 486
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 41 477 490 "src/rosetteInterface/Ast.ml" 41 477 493
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 42 494 501 "src/rosetteInterface/Ast.ml" 42 494 504
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 42 494 508 "src/rosetteInterface/Ast.ml" 42 494 511
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 43 512 519 "src/rosetteInterface/Ast.ml" 43 512 522
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 43 512 526 "src/rosetteInterface/Ast.ml" 43 512 531
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 44 532 539 "src/rosetteInterface/Ast.ml" 44 532 542
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 44 532 546 "src/rosetteInterface/Ast.ml" 44 532 551
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 45 552 559 "src/rosetteInterface/Ast.ml" 45 552 563
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 45 552 567 "src/rosetteInterface/Ast.ml" 45 552 573
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 46 574 581 "src/rosetteInterface/Ast.ml" 46 574 585
+type(
+  op
+)
+"src/rosetteInterface/Ast.ml" 46 574 589 "src/rosetteInterface/Ast.ml" 46 574 595
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 28 237 241 "src/rosetteInterface/Ast.ml" 46 574 596
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 27 218 220 "src/rosetteInterface/Ast.ml" 46 574 596
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def sep_space "src/rosetteInterface/Ast.ml" 70 1105 1105 "src/rosetteInterface/Ast.ml" 1 0 -1
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1079 "src/rosetteInterface/Ast.ml" 68 1065 1082
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 68 1065 1083 "src/rosetteInterface/Ast.ml" 68 1065 1103
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1083 "src/rosetteInterface/Ast.ml" 68 1065 1085
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1088 "src/rosetteInterface/Ast.ml" 68 1065 1095
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1096 "src/rosetteInterface/Ast.ml" 68 1065 1099
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 68 1065 1079 "src/rosetteInterface/Ast.ml" 68 1065 1082
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1100 "src/rosetteInterface/Ast.ml" 68 1065 1103
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 68 1065 1088 "src/rosetteInterface/Ast.ml" 68 1065 1103
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  def pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1105 "src/rosetteInterface/Ast.ml" 1 0 -1
+)
+"src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 70 1105 1125 "src/rosetteInterface/Ast.ml" 129 3008 3043
+)
+"src/rosetteInterface/Ast.ml" 70 1105 1125 "src/rosetteInterface/Ast.ml" 70 1105 1126
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 71 1129 1131 "src/rosetteInterface/Ast.ml" 129 3008 3043
+)
+"src/rosetteInterface/Ast.ml" 71 1129 1139 "src/rosetteInterface/Ast.ml" 71 1129 1146
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  def pp_cons "src/rosetteInterface/Ast.ml" 71 1129 1131 "src/rosetteInterface/Ast.ml" 129 3008 3043
+)
+"src/rosetteInterface/Ast.ml" 71 1129 1147 "src/rosetteInterface/Ast.ml" 71 1129 1150
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 71 1129 1151 "src/rosetteInterface/Ast.ml" 77 1338 1382
+)
+"src/rosetteInterface/Ast.ml" 71 1129 1151 "src/rosetteInterface/Ast.ml" 71 1129 1152
+type(
+  expr
+)
+ident(
+  def x "src/rosetteInterface/Ast.ml" 72 1155 1159 "src/rosetteInterface/Ast.ml" 77 1338 1382
+)
+"src/rosetteInterface/Ast.ml" 72 1155 1159 "src/rosetteInterface/Ast.ml" 72 1155 1166
+type(
+  Format.formatter ->
+  ((Format.formatter -> expr -> unit) -> expr -> unit, Format.formatter,
+   unit)
+  format -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 72 1155 1167 "src/rosetteInterface/Ast.ml" 72 1155 1170
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 71 1129 1147 "src/rosetteInterface/Ast.ml" 71 1129 1150
+)
+"src/rosetteInterface/Ast.ml" 72 1155 1171 "src/rosetteInterface/Ast.ml" 72 1155 1175
+type(
+  ((Format.formatter -> expr -> unit) -> expr -> unit, Format.formatter,
+   unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 73 1176 1187 "src/rosetteInterface/Ast.ml" 73 1176 1191
+type(
+  Format.formatter
+)
+ident(
+  def fmt' "src/rosetteInterface/Ast.ml" 73 1176 1192 "src/rosetteInterface/Ast.ml" 77 1338 1379
+)
+"src/rosetteInterface/Ast.ml" 73 1176 1192 "src/rosetteInterface/Ast.ml" 73 1176 1194
+type(
+  expr
+)
+ident(
+  def ex "src/rosetteInterface/Ast.ml" 74 1198 1207 "src/rosetteInterface/Ast.ml" 77 1338 1379
+)
+"src/rosetteInterface/Ast.ml" 74 1198 1214 "src/rosetteInterface/Ast.ml" 74 1198 1216
+type(
+  expr
+)
+ident(
+  int_ref ex "src/rosetteInterface/Ast.ml" 73 1176 1192 "src/rosetteInterface/Ast.ml" 73 1176 1194
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1234 "src/rosetteInterface/Ast.ml" 75 1222 1239
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1243 "src/rosetteInterface/Ast.ml" 75 1222 1250
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1251 "src/rosetteInterface/Ast.ml" 75 1222 1255
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt' "src/rosetteInterface/Ast.ml" 73 1176 1187 "src/rosetteInterface/Ast.ml" 73 1176 1191
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1256 "src/rosetteInterface/Ast.ml" 75 1222 1260
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1261 "src/rosetteInterface/Ast.ml" 75 1222 1265
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 75 1222 1243 "src/rosetteInterface/Ast.ml" 75 1222 1265
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1286 "src/rosetteInterface/Ast.ml" 76 1266 1287
+type(
+  expr
+)
+ident(
+  def x "src/rosetteInterface/Ast.ml" 76 1266 1295 "src/rosetteInterface/Ast.ml" 76 1266 1337
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1289 "src/rosetteInterface/Ast.ml" 76 1266 1290
+type(
+  expr
+)
+ident(
+  def y "src/rosetteInterface/Ast.ml" 76 1266 1295 "src/rosetteInterface/Ast.ml" 76 1266 1337
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1278 "src/rosetteInterface/Ast.ml" 76 1266 1291
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1295 "src/rosetteInterface/Ast.ml" 76 1266 1302
+type(
+  Format.formatter ->
+  ((Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> expr -> unit) ->
+  expr -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1303 "src/rosetteInterface/Ast.ml" 76 1266 1307
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt' "src/rosetteInterface/Ast.ml" 73 1176 1187 "src/rosetteInterface/Ast.ml" 73 1176 1191
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1308 "src/rosetteInterface/Ast.ml" 76 1266 1317
+type(
+  ((Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1318 "src/rosetteInterface/Ast.ml" 76 1266 1325
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1326 "src/rosetteInterface/Ast.ml" 76 1266 1327
+type(
+  expr
+)
+ident(
+  int_ref x "src/rosetteInterface/Ast.ml" 76 1266 1286 "src/rosetteInterface/Ast.ml" 76 1266 1287
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1328 "src/rosetteInterface/Ast.ml" 76 1266 1335
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1336 "src/rosetteInterface/Ast.ml" 76 1266 1337
+type(
+  expr
+)
+ident(
+  int_ref y "src/rosetteInterface/Ast.ml" 76 1266 1289 "src/rosetteInterface/Ast.ml" 76 1266 1290
+)
+"src/rosetteInterface/Ast.ml" 76 1266 1295 "src/rosetteInterface/Ast.ml" 76 1266 1337
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1350 "src/rosetteInterface/Ast.ml" 77 1338 1351
+type(
+  expr
+)
+ident(
+  def y "src/rosetteInterface/Ast.ml" 77 1338 1356 "src/rosetteInterface/Ast.ml" 77 1338 1378
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1356 "src/rosetteInterface/Ast.ml" 77 1338 1363
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1364 "src/rosetteInterface/Ast.ml" 77 1338 1368
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt' "src/rosetteInterface/Ast.ml" 73 1176 1187 "src/rosetteInterface/Ast.ml" 73 1176 1191
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1369 "src/rosetteInterface/Ast.ml" 77 1338 1373
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1374 "src/rosetteInterface/Ast.ml" 77 1338 1378
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1356 "src/rosetteInterface/Ast.ml" 77 1338 1378
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 74 1198 1207 "src/rosetteInterface/Ast.ml" 77 1338 1379
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 73 1176 1182 "src/rosetteInterface/Ast.ml" 77 1338 1380
+type(
+  Format.formatter -> expr -> unit
+)
+"src/rosetteInterface/Ast.ml" 77 1338 1381 "src/rosetteInterface/Ast.ml" 77 1338 1382
+type(
+  expr
+)
+ident(
+  int_ref x "src/rosetteInterface/Ast.ml" 71 1129 1151 "src/rosetteInterface/Ast.ml" 71 1129 1152
+)
+"src/rosetteInterface/Ast.ml" 72 1155 1159 "src/rosetteInterface/Ast.ml" 77 1338 1382
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 79 1388 1396 "src/rosetteInterface/Ast.ml" 79 1388 1397
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 70 1105 1125 "src/rosetteInterface/Ast.ml" 70 1105 1126
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1413 "src/rosetteInterface/Ast.ml" 80 1403 1414
+type(
+  int
+)
+ident(
+  def n "src/rosetteInterface/Ast.ml" 80 1403 1418 "src/rosetteInterface/Ast.ml" 80 1403 1436
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1407 "src/rosetteInterface/Ast.ml" 80 1403 1414
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1418 "src/rosetteInterface/Ast.ml" 80 1403 1430
+type(
+  Format.formatter -> int -> unit
+)
+ident(
+  ext_ref Format.pp_print_int
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1431 "src/rosetteInterface/Ast.ml" 80 1403 1434
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1435 "src/rosetteInterface/Ast.ml" 80 1403 1436
+type(
+  int
+)
+ident(
+  int_ref n "src/rosetteInterface/Ast.ml" 80 1403 1413 "src/rosetteInterface/Ast.ml" 80 1403 1414
+)
+"src/rosetteInterface/Ast.ml" 80 1403 1418 "src/rosetteInterface/Ast.ml" 80 1403 1436
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1449 "src/rosetteInterface/Ast.ml" 81 1437 1450
+type(
+  float
+)
+ident(
+  def f "src/rosetteInterface/Ast.ml" 81 1437 1454 "src/rosetteInterface/Ast.ml" 81 1437 1474
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1441 "src/rosetteInterface/Ast.ml" 81 1437 1450
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1454 "src/rosetteInterface/Ast.ml" 81 1437 1468
+type(
+  Format.formatter -> float -> unit
+)
+ident(
+  ext_ref Format.pp_print_float
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1469 "src/rosetteInterface/Ast.ml" 81 1437 1472
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1473 "src/rosetteInterface/Ast.ml" 81 1437 1474
+type(
+  float
+)
+ident(
+  int_ref f "src/rosetteInterface/Ast.ml" 81 1437 1449 "src/rosetteInterface/Ast.ml" 81 1437 1450
+)
+"src/rosetteInterface/Ast.ml" 81 1437 1454 "src/rosetteInterface/Ast.ml" 81 1437 1474
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1485 "src/rosetteInterface/Ast.ml" 82 1475 1486
+type(
+  string
+)
+ident(
+  def s "src/rosetteInterface/Ast.ml" 82 1475 1490 "src/rosetteInterface/Ast.ml" 82 1475 1512
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1479 "src/rosetteInterface/Ast.ml" 82 1475 1486
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1490 "src/rosetteInterface/Ast.ml" 82 1475 1497
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1498 "src/rosetteInterface/Ast.ml" 82 1475 1501
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1502 "src/rosetteInterface/Ast.ml" 82 1475 1510
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1511 "src/rosetteInterface/Ast.ml" 82 1475 1512
+type(
+  string
+)
+ident(
+  int_ref s "src/rosetteInterface/Ast.ml" 82 1475 1485 "src/rosetteInterface/Ast.ml" 82 1475 1486
+)
+"src/rosetteInterface/Ast.ml" 82 1475 1490 "src/rosetteInterface/Ast.ml" 82 1475 1512
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1524 "src/rosetteInterface/Ast.ml" 83 1513 1525
+type(
+  bool
+)
+ident(
+  def b "src/rosetteInterface/Ast.ml" 83 1513 1529 "src/rosetteInterface/Ast.ml" 83 1513 1548
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1517 "src/rosetteInterface/Ast.ml" 83 1513 1525
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1529 "src/rosetteInterface/Ast.ml" 83 1513 1542
+type(
+  Format.formatter -> bool -> unit
+)
+ident(
+  ext_ref Format.pp_print_bool
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1543 "src/rosetteInterface/Ast.ml" 83 1513 1546
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1547 "src/rosetteInterface/Ast.ml" 83 1513 1548
+type(
+  bool
+)
+ident(
+  int_ref b "src/rosetteInterface/Ast.ml" 83 1513 1524 "src/rosetteInterface/Ast.ml" 83 1513 1525
+)
+"src/rosetteInterface/Ast.ml" 83 1513 1529 "src/rosetteInterface/Ast.ml" 83 1513 1548
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1558 "src/rosetteInterface/Ast.ml" 84 1549 1559
+type(
+  id
+)
+ident(
+  def x "src/rosetteInterface/Ast.ml" 84 1549 1563 "src/rosetteInterface/Ast.ml" 84 1549 1584
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1553 "src/rosetteInterface/Ast.ml" 84 1549 1559
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1563 "src/rosetteInterface/Ast.ml" 84 1549 1578
+type(
+  Format.formatter -> id -> unit
+)
+ident(
+  ext_ref Format.pp_print_string
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1579 "src/rosetteInterface/Ast.ml" 84 1549 1582
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1583 "src/rosetteInterface/Ast.ml" 84 1549 1584
+type(
+  id
+)
+ident(
+  int_ref x "src/rosetteInterface/Ast.ml" 84 1549 1558 "src/rosetteInterface/Ast.ml" 84 1549 1559
+)
+"src/rosetteInterface/Ast.ml" 84 1549 1563 "src/rosetteInterface/Ast.ml" 84 1549 1584
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 85 1585 1589 "src/rosetteInterface/Ast.ml" 85 1585 1594
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 85 1585 1598 "src/rosetteInterface/Ast.ml" 85 1585 1613
+type(
+  Format.formatter -> string -> unit
+)
+ident(
+  ext_ref Format.pp_print_string
+)
+"src/rosetteInterface/Ast.ml" 85 1585 1614 "src/rosetteInterface/Ast.ml" 85 1585 1617
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 85 1585 1618 "src/rosetteInterface/Ast.ml" 85 1585 1622
+type(
+  string
+)
+"src/rosetteInterface/Ast.ml" 85 1585 1598 "src/rosetteInterface/Ast.ml" 85 1585 1622
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1634 "src/rosetteInterface/Ast.ml" 86 1623 1635
+type(
+  expr
+)
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1627 "src/rosetteInterface/Ast.ml" 86 1623 1635
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1639 "src/rosetteInterface/Ast.ml" 86 1623 1646
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_cons "src/rosetteInterface/Ast.ml" 71 1129 1139 "src/rosetteInterface/Ast.ml" 71 1129 1146
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1647 "src/rosetteInterface/Ast.ml" 86 1623 1650
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1651 "src/rosetteInterface/Ast.ml" 86 1623 1652
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 70 1105 1125 "src/rosetteInterface/Ast.ml" 70 1105 1126
+)
+"src/rosetteInterface/Ast.ml" 86 1623 1639 "src/rosetteInterface/Ast.ml" 86 1623 1652
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 87 1653 1664 "src/rosetteInterface/Ast.ml" 87 1653 1672
+type(
+  (id * expr) list
+)
+ident(
+  def bindings "src/rosetteInterface/Ast.ml" 88 1681 1685 "src/rosetteInterface/Ast.ml" 92 1855 1871
+)
+"src/rosetteInterface/Ast.ml" 87 1653 1674 "src/rosetteInterface/Ast.ml" 87 1653 1676
+type(
+  expr
+)
+ident(
+  def e2 "src/rosetteInterface/Ast.ml" 88 1681 1685 "src/rosetteInterface/Ast.ml" 92 1855 1871
+)
+"src/rosetteInterface/Ast.ml" 87 1653 1657 "src/rosetteInterface/Ast.ml" 87 1653 1677
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 88 1681 1685 "src/rosetteInterface/Ast.ml" 88 1681 1692
+type(
+  Format.formatter ->
+  ((Format.formatter -> (id * expr) list -> unit) ->
+   (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> (id * expr) list -> unit) ->
+  (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 88 1681 1693 "src/rosetteInterface/Ast.ml" 88 1681 1696
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 88 1681 1697 "src/rosetteInterface/Ast.ml" 88 1681 1712
+type(
+  ((Format.formatter -> (id * expr) list -> unit) ->
+   (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1724 "src/rosetteInterface/Ast.ml" 89 1713 1727
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 89 1713 1728 "src/rosetteInterface/Ast.ml" 91 1829 1844
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1728 "src/rosetteInterface/Ast.ml" 89 1713 1729
+type(
+  (id * expr) list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 89 1713 1733 "src/rosetteInterface/Ast.ml" 91 1829 1844
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1733 "src/rosetteInterface/Ast.ml" 89 1713 1746
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> id * expr -> unit) ->
+  Format.formatter -> (id * expr) list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1755 "src/rosetteInterface/Ast.ml" 89 1713 1764
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1780 "src/rosetteInterface/Ast.ml" 90 1765 1783
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 90 1765 1784 "src/rosetteInterface/Ast.ml" 90 1765 1827
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1785 "src/rosetteInterface/Ast.ml" 90 1765 1786
+type(
+  id
+)
+ident(
+  def i "src/rosetteInterface/Ast.ml" 90 1765 1794 "src/rosetteInterface/Ast.ml" 90 1765 1827
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1788 "src/rosetteInterface/Ast.ml" 90 1765 1789
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 90 1765 1794 "src/rosetteInterface/Ast.ml" 90 1765 1827
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1784 "src/rosetteInterface/Ast.ml" 90 1765 1790
+type(
+  id * expr
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1794 "src/rosetteInterface/Ast.ml" 90 1765 1801
+type(
+  Format.formatter ->
+  (id -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format -> id -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1802 "src/rosetteInterface/Ast.ml" 90 1765 1805
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 90 1765 1780 "src/rosetteInterface/Ast.ml" 90 1765 1783
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1806 "src/rosetteInterface/Ast.ml" 90 1765 1815
+type(
+  (id -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1816 "src/rosetteInterface/Ast.ml" 90 1765 1817
+type(
+  id
+)
+ident(
+  int_ref i "src/rosetteInterface/Ast.ml" 90 1765 1785 "src/rosetteInterface/Ast.ml" 90 1765 1786
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1818 "src/rosetteInterface/Ast.ml" 90 1765 1825
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1826 "src/rosetteInterface/Ast.ml" 90 1765 1827
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 90 1765 1788 "src/rosetteInterface/Ast.ml" 90 1765 1789
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1794 "src/rosetteInterface/Ast.ml" 90 1765 1827
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 90 1765 1775 "src/rosetteInterface/Ast.ml" 90 1765 1828
+type(
+  Format.formatter -> id * expr -> unit
+)
+"src/rosetteInterface/Ast.ml" 91 1829 1839 "src/rosetteInterface/Ast.ml" 91 1829 1842
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 89 1713 1724 "src/rosetteInterface/Ast.ml" 89 1713 1727
+)
+"src/rosetteInterface/Ast.ml" 91 1829 1843 "src/rosetteInterface/Ast.ml" 91 1829 1844
+type(
+  (id * expr) list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 89 1713 1728 "src/rosetteInterface/Ast.ml" 89 1713 1729
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1733 "src/rosetteInterface/Ast.ml" 91 1829 1844
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 89 1713 1719 "src/rosetteInterface/Ast.ml" 91 1829 1845
+type(
+  Format.formatter -> (id * expr) list -> unit
+)
+"src/rosetteInterface/Ast.ml" 91 1829 1846 "src/rosetteInterface/Ast.ml" 91 1829 1854
+type(
+  (id * expr) list
+)
+ident(
+  int_ref bindings "src/rosetteInterface/Ast.ml" 87 1653 1664 "src/rosetteInterface/Ast.ml" 87 1653 1672
+)
+"src/rosetteInterface/Ast.ml" 92 1855 1861 "src/rosetteInterface/Ast.ml" 92 1855 1868
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 92 1855 1869 "src/rosetteInterface/Ast.ml" 92 1855 1871
+type(
+  expr
+)
+ident(
+  int_ref e2 "src/rosetteInterface/Ast.ml" 87 1653 1674 "src/rosetteInterface/Ast.ml" 87 1653 1676
+)
+"src/rosetteInterface/Ast.ml" 88 1681 1685 "src/rosetteInterface/Ast.ml" 92 1855 1871
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 94 1873 1887 "src/rosetteInterface/Ast.ml" 94 1873 1895
+type(
+  (id * expr) list
+)
+ident(
+  def bindings "src/rosetteInterface/Ast.ml" 95 1904 1908 "src/rosetteInterface/Ast.ml" 99 2081 2097
+)
+"src/rosetteInterface/Ast.ml" 94 1873 1897 "src/rosetteInterface/Ast.ml" 94 1873 1899
+type(
+  expr
+)
+ident(
+  def e2 "src/rosetteInterface/Ast.ml" 95 1904 1908 "src/rosetteInterface/Ast.ml" 99 2081 2097
+)
+"src/rosetteInterface/Ast.ml" 94 1873 1877 "src/rosetteInterface/Ast.ml" 94 1873 1900
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 95 1904 1908 "src/rosetteInterface/Ast.ml" 95 1904 1915
+type(
+  Format.formatter ->
+  ((Format.formatter -> (id * expr) list -> unit) ->
+   (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> (id * expr) list -> unit) ->
+  (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 95 1904 1916 "src/rosetteInterface/Ast.ml" 95 1904 1919
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 95 1904 1920 "src/rosetteInterface/Ast.ml" 95 1904 1938
+type(
+  ((Format.formatter -> (id * expr) list -> unit) ->
+   (id * expr) list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1950 "src/rosetteInterface/Ast.ml" 96 1939 1953
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 96 1939 1954 "src/rosetteInterface/Ast.ml" 98 2055 2070
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1954 "src/rosetteInterface/Ast.ml" 96 1939 1955
+type(
+  (id * expr) list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 96 1939 1959 "src/rosetteInterface/Ast.ml" 98 2055 2070
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1959 "src/rosetteInterface/Ast.ml" 96 1939 1972
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> id * expr -> unit) ->
+  Format.formatter -> (id * expr) list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1981 "src/rosetteInterface/Ast.ml" 96 1939 1990
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2006 "src/rosetteInterface/Ast.ml" 97 1991 2009
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 97 1991 2010 "src/rosetteInterface/Ast.ml" 97 1991 2053
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2011 "src/rosetteInterface/Ast.ml" 97 1991 2012
+type(
+  id
+)
+ident(
+  def i "src/rosetteInterface/Ast.ml" 97 1991 2020 "src/rosetteInterface/Ast.ml" 97 1991 2053
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2014 "src/rosetteInterface/Ast.ml" 97 1991 2015
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 97 1991 2020 "src/rosetteInterface/Ast.ml" 97 1991 2053
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2010 "src/rosetteInterface/Ast.ml" 97 1991 2016
+type(
+  id * expr
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2020 "src/rosetteInterface/Ast.ml" 97 1991 2027
+type(
+  Format.formatter ->
+  (id -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format -> id -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2028 "src/rosetteInterface/Ast.ml" 97 1991 2031
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 97 1991 2006 "src/rosetteInterface/Ast.ml" 97 1991 2009
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2032 "src/rosetteInterface/Ast.ml" 97 1991 2041
+type(
+  (id -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2042 "src/rosetteInterface/Ast.ml" 97 1991 2043
+type(
+  id
+)
+ident(
+  int_ref i "src/rosetteInterface/Ast.ml" 97 1991 2011 "src/rosetteInterface/Ast.ml" 97 1991 2012
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2044 "src/rosetteInterface/Ast.ml" 97 1991 2051
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2052 "src/rosetteInterface/Ast.ml" 97 1991 2053
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 97 1991 2014 "src/rosetteInterface/Ast.ml" 97 1991 2015
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2020 "src/rosetteInterface/Ast.ml" 97 1991 2053
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 97 1991 2001 "src/rosetteInterface/Ast.ml" 97 1991 2054
+type(
+  Format.formatter -> id * expr -> unit
+)
+"src/rosetteInterface/Ast.ml" 98 2055 2065 "src/rosetteInterface/Ast.ml" 98 2055 2068
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 96 1939 1950 "src/rosetteInterface/Ast.ml" 96 1939 1953
+)
+"src/rosetteInterface/Ast.ml" 98 2055 2069 "src/rosetteInterface/Ast.ml" 98 2055 2070
+type(
+  (id * expr) list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 96 1939 1954 "src/rosetteInterface/Ast.ml" 96 1939 1955
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1959 "src/rosetteInterface/Ast.ml" 98 2055 2070
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 96 1939 1945 "src/rosetteInterface/Ast.ml" 98 2055 2071
+type(
+  Format.formatter -> (id * expr) list -> unit
+)
+"src/rosetteInterface/Ast.ml" 98 2055 2072 "src/rosetteInterface/Ast.ml" 98 2055 2080
+type(
+  (id * expr) list
+)
+ident(
+  int_ref bindings "src/rosetteInterface/Ast.ml" 94 1873 1887 "src/rosetteInterface/Ast.ml" 94 1873 1895
+)
+"src/rosetteInterface/Ast.ml" 99 2081 2087 "src/rosetteInterface/Ast.ml" 99 2081 2094
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 99 2081 2095 "src/rosetteInterface/Ast.ml" 99 2081 2097
+type(
+  expr
+)
+ident(
+  int_ref e2 "src/rosetteInterface/Ast.ml" 94 1873 1897 "src/rosetteInterface/Ast.ml" 94 1873 1899
+)
+"src/rosetteInterface/Ast.ml" 95 1904 1908 "src/rosetteInterface/Ast.ml" 99 2081 2097
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 101 2099 2109 "src/rosetteInterface/Ast.ml" 101 2099 2111
+type(
+  expr
+)
+ident(
+  def e0 "src/rosetteInterface/Ast.ml" 102 2124 2128 "src/rosetteInterface/Ast.ml" 102 2124 2188
+)
+"src/rosetteInterface/Ast.ml" 101 2099 2113 "src/rosetteInterface/Ast.ml" 101 2099 2115
+type(
+  expr
+)
+ident(
+  def e1 "src/rosetteInterface/Ast.ml" 102 2124 2128 "src/rosetteInterface/Ast.ml" 102 2124 2188
+)
+"src/rosetteInterface/Ast.ml" 101 2099 2117 "src/rosetteInterface/Ast.ml" 101 2099 2119
+type(
+  expr
+)
+ident(
+  def e2 "src/rosetteInterface/Ast.ml" 102 2124 2128 "src/rosetteInterface/Ast.ml" 102 2124 2188
+)
+"src/rosetteInterface/Ast.ml" 101 2099 2103 "src/rosetteInterface/Ast.ml" 101 2099 2120
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2128 "src/rosetteInterface/Ast.ml" 102 2124 2135
+type(
+  Format.formatter ->
+  ((Format.formatter -> expr -> unit) ->
+   expr ->
+   (Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> expr -> unit) ->
+  expr ->
+  (Format.formatter -> expr -> unit) ->
+  expr -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2136 "src/rosetteInterface/Ast.ml" 102 2124 2139
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2140 "src/rosetteInterface/Ast.ml" 102 2124 2155
+type(
+  ((Format.formatter -> expr -> unit) ->
+   expr ->
+   (Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2156 "src/rosetteInterface/Ast.ml" 102 2124 2163
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2164 "src/rosetteInterface/Ast.ml" 102 2124 2166
+type(
+  expr
+)
+ident(
+  int_ref e0 "src/rosetteInterface/Ast.ml" 101 2099 2109 "src/rosetteInterface/Ast.ml" 101 2099 2111
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2167 "src/rosetteInterface/Ast.ml" 102 2124 2174
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2175 "src/rosetteInterface/Ast.ml" 102 2124 2177
+type(
+  expr
+)
+ident(
+  int_ref e1 "src/rosetteInterface/Ast.ml" 101 2099 2113 "src/rosetteInterface/Ast.ml" 101 2099 2115
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2178 "src/rosetteInterface/Ast.ml" 102 2124 2185
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2186 "src/rosetteInterface/Ast.ml" 102 2124 2188
+type(
+  expr
+)
+ident(
+  int_ref e2 "src/rosetteInterface/Ast.ml" 101 2099 2117 "src/rosetteInterface/Ast.ml" 101 2099 2119
+)
+"src/rosetteInterface/Ast.ml" 102 2124 2128 "src/rosetteInterface/Ast.ml" 102 2124 2188
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 104 2190 2203 "src/rosetteInterface/Ast.ml" 104 2190 2205
+type(
+  expr
+)
+ident(
+  def e1 "src/rosetteInterface/Ast.ml" 105 2214 2218 "src/rosetteInterface/Ast.ml" 108 2312 2340
+)
+"src/rosetteInterface/Ast.ml" 104 2190 2207 "src/rosetteInterface/Ast.ml" 104 2190 2209
+type(
+  expr list
+)
+ident(
+  def e2 "src/rosetteInterface/Ast.ml" 105 2214 2218 "src/rosetteInterface/Ast.ml" 108 2312 2340
+)
+"src/rosetteInterface/Ast.ml" 104 2190 2194 "src/rosetteInterface/Ast.ml" 104 2190 2210
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2218 "src/rosetteInterface/Ast.ml" 105 2214 2225
+type(
+  Format.formatter ->
+  ((Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr list -> unit) -> expr list -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> expr -> unit) ->
+  expr -> (Format.formatter -> expr list -> unit) -> expr list -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2226 "src/rosetteInterface/Ast.ml" 105 2214 2229
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2230 "src/rosetteInterface/Ast.ml" 105 2214 2239
+type(
+  ((Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr list -> unit) -> expr list -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2240 "src/rosetteInterface/Ast.ml" 105 2214 2247
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2248 "src/rosetteInterface/Ast.ml" 105 2214 2250
+type(
+  expr
+)
+ident(
+  int_ref e1 "src/rosetteInterface/Ast.ml" 104 2190 2203 "src/rosetteInterface/Ast.ml" 104 2190 2205
+)
+"src/rosetteInterface/Ast.ml" 106 2251 2262 "src/rosetteInterface/Ast.ml" 106 2251 2265
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 106 2251 2266 "src/rosetteInterface/Ast.ml" 108 2312 2336
+)
+"src/rosetteInterface/Ast.ml" 106 2251 2266 "src/rosetteInterface/Ast.ml" 106 2251 2267
+type(
+  expr list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 107 2271 2280 "src/rosetteInterface/Ast.ml" 108 2312 2336
+)
+"src/rosetteInterface/Ast.ml" 107 2271 2280 "src/rosetteInterface/Ast.ml" 107 2271 2293
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> expr -> unit) -> Format.formatter -> expr list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 107 2271 2302 "src/rosetteInterface/Ast.ml" 107 2271 2311
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 108 2312 2323 "src/rosetteInterface/Ast.ml" 108 2312 2330
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 108 2312 2331 "src/rosetteInterface/Ast.ml" 108 2312 2334
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 106 2251 2262 "src/rosetteInterface/Ast.ml" 106 2251 2265
+)
+"src/rosetteInterface/Ast.ml" 108 2312 2335 "src/rosetteInterface/Ast.ml" 108 2312 2336
+type(
+  expr list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 106 2251 2266 "src/rosetteInterface/Ast.ml" 106 2251 2267
+)
+"src/rosetteInterface/Ast.ml" 107 2271 2280 "src/rosetteInterface/Ast.ml" 108 2312 2336
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 106 2251 2257 "src/rosetteInterface/Ast.ml" 108 2312 2337
+type(
+  Format.formatter -> expr list -> unit
+)
+"src/rosetteInterface/Ast.ml" 108 2312 2338 "src/rosetteInterface/Ast.ml" 108 2312 2340
+type(
+  expr list
+)
+ident(
+  int_ref e2 "src/rosetteInterface/Ast.ml" 104 2190 2207 "src/rosetteInterface/Ast.ml" 104 2190 2209
+)
+"src/rosetteInterface/Ast.ml" 105 2214 2218 "src/rosetteInterface/Ast.ml" 108 2312 2340
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 109 2341 2352 "src/rosetteInterface/Ast.ml" 109 2341 2354
+type(
+  id list
+)
+ident(
+  def xs "src/rosetteInterface/Ast.ml" 110 2362 2366 "src/rosetteInterface/Ast.ml" 112 2475 2490
+)
+"src/rosetteInterface/Ast.ml" 109 2341 2356 "src/rosetteInterface/Ast.ml" 109 2341 2357
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 110 2362 2366 "src/rosetteInterface/Ast.ml" 112 2475 2490
+)
+"src/rosetteInterface/Ast.ml" 109 2341 2345 "src/rosetteInterface/Ast.ml" 109 2341 2358
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 110 2362 2366 "src/rosetteInterface/Ast.ml" 110 2362 2373
+type(
+  Format.formatter ->
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> id list -> unit) ->
+  id list -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 110 2362 2374 "src/rosetteInterface/Ast.ml" 110 2362 2377
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 110 2362 2378 "src/rosetteInterface/Ast.ml" 110 2362 2396
+type(
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2408 "src/rosetteInterface/Ast.ml" 111 2397 2411
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 111 2397 2412 "src/rosetteInterface/Ast.ml" 111 2397 2470
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2412 "src/rosetteInterface/Ast.ml" 111 2397 2413
+type(
+  id list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 111 2397 2417 "src/rosetteInterface/Ast.ml" 111 2397 2470
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2417 "src/rosetteInterface/Ast.ml" 111 2397 2430
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> id -> unit) -> Format.formatter -> id list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2439 "src/rosetteInterface/Ast.ml" 111 2397 2448
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2449 "src/rosetteInterface/Ast.ml" 111 2397 2464
+type(
+  Format.formatter -> id -> unit
+)
+ident(
+  ext_ref Format.pp_print_string
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2465 "src/rosetteInterface/Ast.ml" 111 2397 2468
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 111 2397 2408 "src/rosetteInterface/Ast.ml" 111 2397 2411
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2469 "src/rosetteInterface/Ast.ml" 111 2397 2470
+type(
+  id list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 111 2397 2412 "src/rosetteInterface/Ast.ml" 111 2397 2413
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2417 "src/rosetteInterface/Ast.ml" 111 2397 2470
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2403 "src/rosetteInterface/Ast.ml" 111 2397 2471
+type(
+  Format.formatter -> id list -> unit
+)
+"src/rosetteInterface/Ast.ml" 111 2397 2472 "src/rosetteInterface/Ast.ml" 111 2397 2474
+type(
+  id list
+)
+ident(
+  int_ref xs "src/rosetteInterface/Ast.ml" 109 2341 2352 "src/rosetteInterface/Ast.ml" 109 2341 2354
+)
+"src/rosetteInterface/Ast.ml" 112 2475 2481 "src/rosetteInterface/Ast.ml" 112 2475 2488
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 112 2475 2489 "src/rosetteInterface/Ast.ml" 112 2475 2490
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 109 2341 2356 "src/rosetteInterface/Ast.ml" 109 2341 2357
+)
+"src/rosetteInterface/Ast.ml" 110 2362 2366 "src/rosetteInterface/Ast.ml" 112 2475 2490
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 114 2492 2503 "src/rosetteInterface/Ast.ml" 114 2492 2505
+type(
+  id list
+)
+ident(
+  def xs "src/rosetteInterface/Ast.ml" 115 2513 2517 "src/rosetteInterface/Ast.ml" 117 2626 2641
+)
+"src/rosetteInterface/Ast.ml" 114 2492 2507 "src/rosetteInterface/Ast.ml" 114 2492 2508
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 115 2513 2517 "src/rosetteInterface/Ast.ml" 117 2626 2641
+)
+"src/rosetteInterface/Ast.ml" 114 2492 2496 "src/rosetteInterface/Ast.ml" 114 2492 2509
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 115 2513 2517 "src/rosetteInterface/Ast.ml" 115 2513 2524
+type(
+  Format.formatter ->
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> id list -> unit) ->
+  id list -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 115 2513 2525 "src/rosetteInterface/Ast.ml" 115 2513 2528
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 115 2513 2529 "src/rosetteInterface/Ast.ml" 115 2513 2547
+type(
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2559 "src/rosetteInterface/Ast.ml" 116 2548 2562
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 116 2548 2563 "src/rosetteInterface/Ast.ml" 116 2548 2621
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2563 "src/rosetteInterface/Ast.ml" 116 2548 2564
+type(
+  id list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 116 2548 2568 "src/rosetteInterface/Ast.ml" 116 2548 2621
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2568 "src/rosetteInterface/Ast.ml" 116 2548 2581
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> id -> unit) -> Format.formatter -> id list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2590 "src/rosetteInterface/Ast.ml" 116 2548 2599
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2600 "src/rosetteInterface/Ast.ml" 116 2548 2615
+type(
+  Format.formatter -> id -> unit
+)
+ident(
+  ext_ref Format.pp_print_string
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2616 "src/rosetteInterface/Ast.ml" 116 2548 2619
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 116 2548 2559 "src/rosetteInterface/Ast.ml" 116 2548 2562
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2620 "src/rosetteInterface/Ast.ml" 116 2548 2621
+type(
+  id list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 116 2548 2563 "src/rosetteInterface/Ast.ml" 116 2548 2564
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2568 "src/rosetteInterface/Ast.ml" 116 2548 2621
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2554 "src/rosetteInterface/Ast.ml" 116 2548 2622
+type(
+  Format.formatter -> id list -> unit
+)
+"src/rosetteInterface/Ast.ml" 116 2548 2623 "src/rosetteInterface/Ast.ml" 116 2548 2625
+type(
+  id list
+)
+ident(
+  int_ref xs "src/rosetteInterface/Ast.ml" 114 2492 2503 "src/rosetteInterface/Ast.ml" 114 2492 2505
+)
+"src/rosetteInterface/Ast.ml" 117 2626 2632 "src/rosetteInterface/Ast.ml" 117 2626 2639
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 117 2626 2640 "src/rosetteInterface/Ast.ml" 117 2626 2641
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 114 2492 2507 "src/rosetteInterface/Ast.ml" 114 2492 2508
+)
+"src/rosetteInterface/Ast.ml" 115 2513 2517 "src/rosetteInterface/Ast.ml" 117 2626 2641
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 119 2643 2657 "src/rosetteInterface/Ast.ml" 119 2643 2659
+type(
+  id list
+)
+ident(
+  def xs "src/rosetteInterface/Ast.ml" 120 2667 2671 "src/rosetteInterface/Ast.ml" 122 2780 2795
+)
+"src/rosetteInterface/Ast.ml" 119 2643 2661 "src/rosetteInterface/Ast.ml" 119 2643 2662
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 120 2667 2671 "src/rosetteInterface/Ast.ml" 122 2780 2795
+)
+"src/rosetteInterface/Ast.ml" 119 2643 2647 "src/rosetteInterface/Ast.ml" 119 2643 2663
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 120 2667 2671 "src/rosetteInterface/Ast.ml" 120 2667 2678
+type(
+  Format.formatter ->
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> id list -> unit) ->
+  id list -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 120 2667 2679 "src/rosetteInterface/Ast.ml" 120 2667 2682
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 120 2667 2683 "src/rosetteInterface/Ast.ml" 120 2667 2701
+type(
+  ((Format.formatter -> id list -> unit) ->
+   id list -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2713 "src/rosetteInterface/Ast.ml" 121 2702 2716
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 121 2702 2717 "src/rosetteInterface/Ast.ml" 121 2702 2775
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2717 "src/rosetteInterface/Ast.ml" 121 2702 2718
+type(
+  id list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 121 2702 2722 "src/rosetteInterface/Ast.ml" 121 2702 2775
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2722 "src/rosetteInterface/Ast.ml" 121 2702 2735
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> id -> unit) -> Format.formatter -> id list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2744 "src/rosetteInterface/Ast.ml" 121 2702 2753
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref sep_space "src/rosetteInterface/Ast.ml" 68 1065 1069 "src/rosetteInterface/Ast.ml" 68 1065 1078
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2754 "src/rosetteInterface/Ast.ml" 121 2702 2769
+type(
+  Format.formatter -> id -> unit
+)
+ident(
+  ext_ref Format.pp_print_string
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2770 "src/rosetteInterface/Ast.ml" 121 2702 2773
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 121 2702 2713 "src/rosetteInterface/Ast.ml" 121 2702 2716
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2774 "src/rosetteInterface/Ast.ml" 121 2702 2775
+type(
+  id list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 121 2702 2717 "src/rosetteInterface/Ast.ml" 121 2702 2718
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2722 "src/rosetteInterface/Ast.ml" 121 2702 2775
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2708 "src/rosetteInterface/Ast.ml" 121 2702 2776
+type(
+  Format.formatter -> id list -> unit
+)
+"src/rosetteInterface/Ast.ml" 121 2702 2777 "src/rosetteInterface/Ast.ml" 121 2702 2779
+type(
+  id list
+)
+ident(
+  int_ref xs "src/rosetteInterface/Ast.ml" 119 2643 2657 "src/rosetteInterface/Ast.ml" 119 2643 2659
+)
+"src/rosetteInterface/Ast.ml" 122 2780 2786 "src/rosetteInterface/Ast.ml" 122 2780 2793
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 122 2780 2794 "src/rosetteInterface/Ast.ml" 122 2780 2795
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 119 2643 2661 "src/rosetteInterface/Ast.ml" 119 2643 2662
+)
+"src/rosetteInterface/Ast.ml" 120 2667 2671 "src/rosetteInterface/Ast.ml" 122 2780 2795
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 124 2797 2810 "src/rosetteInterface/Ast.ml" 124 2797 2812
+type(
+  op
+)
+ident(
+  def op "src/rosetteInterface/Ast.ml" 125 2825 2829 "src/rosetteInterface/Ast.ml" 125 2825 2884
+)
+"src/rosetteInterface/Ast.ml" 124 2797 2814 "src/rosetteInterface/Ast.ml" 124 2797 2816
+type(
+  expr
+)
+ident(
+  def e1 "src/rosetteInterface/Ast.ml" 125 2825 2829 "src/rosetteInterface/Ast.ml" 125 2825 2884
+)
+"src/rosetteInterface/Ast.ml" 124 2797 2818 "src/rosetteInterface/Ast.ml" 124 2797 2820
+type(
+  expr
+)
+ident(
+  def e2 "src/rosetteInterface/Ast.ml" 125 2825 2829 "src/rosetteInterface/Ast.ml" 125 2825 2884
+)
+"src/rosetteInterface/Ast.ml" 124 2797 2801 "src/rosetteInterface/Ast.ml" 124 2797 2821
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2829 "src/rosetteInterface/Ast.ml" 125 2825 2836
+type(
+  Format.formatter ->
+  ((Format.formatter -> op -> unit) ->
+   op ->
+   (Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> op -> unit) ->
+  op ->
+  (Format.formatter -> expr -> unit) ->
+  expr -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2837 "src/rosetteInterface/Ast.ml" 125 2825 2840
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2841 "src/rosetteInterface/Ast.ml" 125 2825 2853
+type(
+  ((Format.formatter -> op -> unit) ->
+   op ->
+   (Format.formatter -> expr -> unit) ->
+   expr -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2854 "src/rosetteInterface/Ast.ml" 125 2825 2859
+type(
+  Format.formatter -> op -> unit
+)
+ident(
+  int_ref pp_op "src/rosetteInterface/Ast.ml" 26 199 203 "src/rosetteInterface/Ast.ml" 26 199 208
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2860 "src/rosetteInterface/Ast.ml" 125 2825 2862
+type(
+  op
+)
+ident(
+  int_ref op "src/rosetteInterface/Ast.ml" 124 2797 2810 "src/rosetteInterface/Ast.ml" 124 2797 2812
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2863 "src/rosetteInterface/Ast.ml" 125 2825 2870
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2871 "src/rosetteInterface/Ast.ml" 125 2825 2873
+type(
+  expr
+)
+ident(
+  int_ref e1 "src/rosetteInterface/Ast.ml" 124 2797 2814 "src/rosetteInterface/Ast.ml" 124 2797 2816
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2874 "src/rosetteInterface/Ast.ml" 125 2825 2881
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2882 "src/rosetteInterface/Ast.ml" 125 2825 2884
+type(
+  expr
+)
+ident(
+  int_ref e2 "src/rosetteInterface/Ast.ml" 124 2797 2818 "src/rosetteInterface/Ast.ml" 124 2797 2820
+)
+"src/rosetteInterface/Ast.ml" 125 2825 2829 "src/rosetteInterface/Ast.ml" 125 2825 2884
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 126 2885 2897 "src/rosetteInterface/Ast.ml" 126 2885 2899
+type(
+  op
+)
+ident(
+  def op "src/rosetteInterface/Ast.ml" 127 2907 2911 "src/rosetteInterface/Ast.ml" 127 2907 2951
+)
+"src/rosetteInterface/Ast.ml" 126 2885 2901 "src/rosetteInterface/Ast.ml" 126 2885 2902
+type(
+  expr
+)
+ident(
+  def e "src/rosetteInterface/Ast.ml" 127 2907 2911 "src/rosetteInterface/Ast.ml" 127 2907 2951
+)
+"src/rosetteInterface/Ast.ml" 126 2885 2889 "src/rosetteInterface/Ast.ml" 126 2885 2903
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2911 "src/rosetteInterface/Ast.ml" 127 2907 2918
+type(
+  Format.formatter ->
+  ((Format.formatter -> op -> unit) ->
+   op -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> op -> unit) ->
+  op -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2919 "src/rosetteInterface/Ast.ml" 127 2907 2922
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2923 "src/rosetteInterface/Ast.ml" 127 2907 2932
+type(
+  ((Format.formatter -> op -> unit) ->
+   op -> (Format.formatter -> expr -> unit) -> expr -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2933 "src/rosetteInterface/Ast.ml" 127 2907 2938
+type(
+  Format.formatter -> op -> unit
+)
+ident(
+  int_ref pp_op "src/rosetteInterface/Ast.ml" 26 199 203 "src/rosetteInterface/Ast.ml" 26 199 208
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2939 "src/rosetteInterface/Ast.ml" 127 2907 2941
+type(
+  op
+)
+ident(
+  int_ref op "src/rosetteInterface/Ast.ml" 126 2885 2897 "src/rosetteInterface/Ast.ml" 126 2885 2899
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2942 "src/rosetteInterface/Ast.ml" 127 2907 2949
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2950 "src/rosetteInterface/Ast.ml" 127 2907 2951
+type(
+  expr
+)
+ident(
+  int_ref e "src/rosetteInterface/Ast.ml" 126 2885 2901 "src/rosetteInterface/Ast.ml" 126 2885 2902
+)
+"src/rosetteInterface/Ast.ml" 127 2907 2911 "src/rosetteInterface/Ast.ml" 127 2907 2951
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2967 "src/rosetteInterface/Ast.ml" 128 2952 2969
+ident(
+  def ex "src/rosetteInterface/Ast.ml" 128 2952 2974 "src/rosetteInterface/Ast.ml" 128 2952 3007
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2966 "src/rosetteInterface/Ast.ml" 128 2952 2970
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2956 "src/rosetteInterface/Ast.ml" 128 2952 2970
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2974 "src/rosetteInterface/Ast.ml" 128 2952 2981
+type(
+  Format.formatter ->
+  ((Format.formatter -> expr -> unit) -> expr -> unit, Format.formatter,
+   unit)
+  format -> (Format.formatter -> expr -> unit) -> expr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2982 "src/rosetteInterface/Ast.ml" 128 2952 2985
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2986 "src/rosetteInterface/Ast.ml" 128 2952 2996
+type(
+  ((Format.formatter -> expr -> unit) -> expr -> unit, Format.formatter,
+   unit)
+  format
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2997 "src/rosetteInterface/Ast.ml" 128 2952 3004
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 128 2952 3005 "src/rosetteInterface/Ast.ml" 128 2952 3007
+type(
+  expr
+)
+ident(
+  int_ref ex "src/rosetteInterface/Ast.ml" 128 2952 2966 "src/rosetteInterface/Ast.ml" 128 2952 2970
+)
+"src/rosetteInterface/Ast.ml" 128 2952 2974 "src/rosetteInterface/Ast.ml" 128 2952 3007
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3022 "src/rosetteInterface/Ast.ml" 129 3008 3024
+ident(
+  def ex "src/rosetteInterface/Ast.ml" 129 3008 3029 "src/rosetteInterface/Ast.ml" 129 3008 3043
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3021 "src/rosetteInterface/Ast.ml" 129 3008 3025
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3012 "src/rosetteInterface/Ast.ml" 129 3008 3025
+type(
+  expr
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3029 "src/rosetteInterface/Ast.ml" 129 3008 3036
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3037 "src/rosetteInterface/Ast.ml" 129 3008 3040
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 70 1105 1121 "src/rosetteInterface/Ast.ml" 70 1105 1124
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3041 "src/rosetteInterface/Ast.ml" 129 3008 3043
+type(
+  expr
+)
+ident(
+  int_ref ex "src/rosetteInterface/Ast.ml" 129 3008 3021 "src/rosetteInterface/Ast.ml" 129 3008 3025
+)
+"src/rosetteInterface/Ast.ml" 129 3008 3029 "src/rosetteInterface/Ast.ml" 129 3008 3043
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 79 1388 1390 "src/rosetteInterface/Ast.ml" 129 3008 3043
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 71 1129 1131 "src/rosetteInterface/Ast.ml" 129 3008 3043
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 131 3045 3049 "src/rosetteInterface/Ast.ml" 131 3045 3061
+type(
+  Format.formatter -> expr list -> unit
+)
+ident(
+  def pp_expr_list "src/rosetteInterface/Ast.ml" 136 3154 3180 "src/rosetteInterface/Ast.ml" 1 0 -1
+)
+"src/rosetteInterface/Ast.ml" 131 3045 3062 "src/rosetteInterface/Ast.ml" 131 3045 3065
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 131 3045 3066 "src/rosetteInterface/Ast.ml" 136 3154 3180
+)
+"src/rosetteInterface/Ast.ml" 131 3045 3066 "src/rosetteInterface/Ast.ml" 131 3045 3067
+type(
+  expr list
+)
+ident(
+  def l "src/rosetteInterface/Ast.ml" 132 3070 3072 "src/rosetteInterface/Ast.ml" 136 3154 3180
+)
+"src/rosetteInterface/Ast.ml" 132 3070 3072 "src/rosetteInterface/Ast.ml" 132 3070 3085
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> expr -> unit) -> Format.formatter -> expr list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3103 "src/rosetteInterface/Ast.ml" 133 3086 3106
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/rosetteInterface/Ast.ml" 133 3086 3107 "src/rosetteInterface/Ast.ml" 133 3086 3129
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3107 "src/rosetteInterface/Ast.ml" 133 3086 3109
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3113 "src/rosetteInterface/Ast.ml" 133 3086 3120
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3121 "src/rosetteInterface/Ast.ml" 133 3086 3124
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 133 3086 3103 "src/rosetteInterface/Ast.ml" 133 3086 3106
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3125 "src/rosetteInterface/Ast.ml" 133 3086 3129
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3113 "src/rosetteInterface/Ast.ml" 133 3086 3129
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 133 3086 3098 "src/rosetteInterface/Ast.ml" 133 3086 3130
+type(
+  Format.formatter -> unit -> unit
+)
+"src/rosetteInterface/Ast.ml" 134 3131 3135 "src/rosetteInterface/Ast.ml" 134 3131 3142
+type(
+  Format.formatter -> expr -> unit
+)
+ident(
+  int_ref pp_expr "src/rosetteInterface/Ast.ml" 70 1105 1113 "src/rosetteInterface/Ast.ml" 70 1105 1120
+)
+"src/rosetteInterface/Ast.ml" 135 3143 3147 "src/rosetteInterface/Ast.ml" 135 3143 3150
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 131 3045 3062 "src/rosetteInterface/Ast.ml" 131 3045 3065
+)
+"src/rosetteInterface/Ast.ml" 135 3143 3151 "src/rosetteInterface/Ast.ml" 135 3143 3152
+type(
+  expr list
+)
+ident(
+  int_ref l "src/rosetteInterface/Ast.ml" 131 3045 3066 "src/rosetteInterface/Ast.ml" 131 3045 3067
+)
+"src/rosetteInterface/Ast.ml" 132 3070 3072 "src/rosetteInterface/Ast.ml" 135 3143 3152
+call(
+  stack
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 136 3154 3156 "src/rosetteInterface/Ast.ml" 136 3154 3172
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  ext_ref Format.pp_print_newline
+)
+"src/rosetteInterface/Ast.ml" 136 3154 3173 "src/rosetteInterface/Ast.ml" 136 3154 3176
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/rosetteInterface/Ast.ml" 131 3045 3062 "src/rosetteInterface/Ast.ml" 131 3045 3065
+)
+"src/rosetteInterface/Ast.ml" 136 3154 3177 "src/rosetteInterface/Ast.ml" 136 3154 3179
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 136 3154 3156 "src/rosetteInterface/Ast.ml" 136 3154 3180
+call(
+  tail
+)
+type(
+  unit
+)
+"src/rosetteInterface/Ast.ml" 132 3070 3072 "src/rosetteInterface/Ast.ml" 136 3154 3180
+type(
+  unit
+)

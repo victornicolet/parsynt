@@ -1,0 +1,1780 @@
+"test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 146
+type(
+  Cil.varinfo
+)
+ident(
+  def bal "test/ExBalancedParenthesis.ml" 20 298 298 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+type(
+  Cil.varinfo
+)
+ident(
+  def count "test/ExBalancedParenthesis.ml" 20 298 298 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+type(
+  Cil.varinfo
+)
+ident(
+  def i "test/ExBalancedParenthesis.ml" 20 298 298 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 12 139 158 "test/ExBalancedParenthesis.ml" 12 139 159
+type(
+  Cil.varinfo
+)
+ident(
+  def a "test/ExBalancedParenthesis.ml" 20 298 298 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 12 139 161 "test/ExBalancedParenthesis.ml" 12 139 162
+type(
+  Cil.varinfo
+)
+ident(
+  def n "test/ExBalancedParenthesis.ml" 20 298 298 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 162
+type(
+  Cil.varinfo * Cil.varinfo * Cil.varinfo * Cil.varinfo * Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 13 165 167 "test/ExBalancedParenthesis.ml" 13 165 184
+type(
+  ?init:Cil.exp -> string -> Cil.varinfo
+)
+ident(
+  ext_ref TestUtils.make_bool_varinfo
+)
+"test/ExBalancedParenthesis.ml" 13 165 185 "test/ExBalancedParenthesis.ml" 13 165 190
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 13 165 167 "test/ExBalancedParenthesis.ml" 13 165 190
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 14 192 194 "test/ExBalancedParenthesis.ml" 14 192 210
+type(
+  ?init:Cil.exp -> string -> Cil.varinfo
+)
+ident(
+  ext_ref TestUtils.make_int_varinfo
+)
+"test/ExBalancedParenthesis.ml" 14 192 211 "test/ExBalancedParenthesis.ml" 14 192 216
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 14 192 194 "test/ExBalancedParenthesis.ml" 14 192 216
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 15 218 220 "test/ExBalancedParenthesis.ml" 15 218 236
+type(
+  ?init:Cil.exp -> string -> Cil.varinfo
+)
+ident(
+  ext_ref TestUtils.make_int_varinfo
+)
+"test/ExBalancedParenthesis.ml" 15 218 237 "test/ExBalancedParenthesis.ml" 15 218 240
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 15 218 220 "test/ExBalancedParenthesis.ml" 15 218 240
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 16 242 244 "test/ExBalancedParenthesis.ml" 16 242 267
+type(
+  string -> Cil.varinfo
+)
+ident(
+  ext_ref TestUtils.make_bool_array_varinfo
+)
+"test/ExBalancedParenthesis.ml" 16 242 268 "test/ExBalancedParenthesis.ml" 16 242 271
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 16 242 244 "test/ExBalancedParenthesis.ml" 16 242 271
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 17 273 275 "test/ExBalancedParenthesis.ml" 17 273 291
+type(
+  ?init:Cil.exp -> string -> Cil.varinfo
+)
+ident(
+  ext_ref TestUtils.make_int_varinfo
+)
+"test/ExBalancedParenthesis.ml" 17 273 292 "test/ExBalancedParenthesis.ml" 17 273 295
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 17 273 275 "test/ExBalancedParenthesis.ml" 17 273 295
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 13 165 167 "test/ExBalancedParenthesis.ml" 17 273 295
+type(
+  Cil.varinfo * Cil.varinfo * Cil.varinfo * Cil.varinfo * Cil.varinfo
+)
+"test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+type(
+  Utils.VS.t
+)
+ident(
+  def _S_ "test/ExBalancedParenthesis.ml" 21 324 324 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 20 298 308 "test/ExBalancedParenthesis.ml" 20 298 310
+type(
+  Utils.VS.elt list -> Utils.VS.t
+)
+ident(
+  ext_ref TestUtils._s
+)
+"test/ExBalancedParenthesis.ml" 20 298 312 "test/ExBalancedParenthesis.ml" 20 298 315
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref bal "test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 146
+)
+"test/ExBalancedParenthesis.ml" 20 298 317 "test/ExBalancedParenthesis.ml" 20 298 322
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref count "test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+)
+"test/ExBalancedParenthesis.ml" 20 298 311 "test/ExBalancedParenthesis.ml" 20 298 323
+type(
+  Utils.VS.elt list
+)
+"test/ExBalancedParenthesis.ml" 20 298 308 "test/ExBalancedParenthesis.ml" 20 298 323
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 21 324 328 "test/ExBalancedParenthesis.ml" 21 324 334
+type(
+  Utils.VS.t
+)
+ident(
+  def all_vs "test/ExBalancedParenthesis.ml" 23 367 367 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 21 324 338 "test/ExBalancedParenthesis.ml" 21 324 346
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"test/ExBalancedParenthesis.ml" 21 324 347 "test/ExBalancedParenthesis.ml" 21 324 350
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 21 324 352 "test/ExBalancedParenthesis.ml" 21 324 354
+type(
+  Utils.VS.elt list -> Utils.VS.t
+)
+ident(
+  ext_ref TestUtils._s
+)
+"test/ExBalancedParenthesis.ml" 21 324 356 "test/ExBalancedParenthesis.ml" 21 324 357
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 21 324 359 "test/ExBalancedParenthesis.ml" 21 324 360
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref a "test/ExBalancedParenthesis.ml" 12 139 158 "test/ExBalancedParenthesis.ml" 12 139 159
+)
+"test/ExBalancedParenthesis.ml" 21 324 362 "test/ExBalancedParenthesis.ml" 21 324 363
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref n "test/ExBalancedParenthesis.ml" 12 139 161 "test/ExBalancedParenthesis.ml" 12 139 162
+)
+"test/ExBalancedParenthesis.ml" 21 324 355 "test/ExBalancedParenthesis.ml" 21 324 364
+type(
+  Utils.VS.elt list
+)
+"test/ExBalancedParenthesis.ml" 21 324 351 "test/ExBalancedParenthesis.ml" 21 324 365
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 21 324 338 "test/ExBalancedParenthesis.ml" 21 324 365
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 23 367 371 "test/ExBalancedParenthesis.ml" 23 367 372
+type(
+  Utils.VS.t
+)
+ident(
+  def s "test/ExBalancedParenthesis.ml" 28 534 534 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 23 367 375 "test/ExBalancedParenthesis.ml" 23 367 378
+type(
+  SketchTypes.sklet
+)
+ident(
+  def ini "test/ExBalancedParenthesis.ml" 28 534 534 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 23 367 380 "test/ExBalancedParenthesis.ml" 23 367 381
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def g "test/ExBalancedParenthesis.ml" 28 534 534 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 23 367 383 "test/ExBalancedParenthesis.ml" 23 367 384
+type(
+  SketchTypes.sklet
+)
+ident(
+  def u "test/ExBalancedParenthesis.ml" 28 534 534 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 23 367 374 "test/ExBalancedParenthesis.ml" 23 367 385
+type(
+  SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 23 367 371 "test/ExBalancedParenthesis.ml" 23 367 385
+type(
+  Utils.VS.t * (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+"test/ExBalancedParenthesis.ml" 23 367 388 "test/ExBalancedParenthesis.ml" 23 367 400
+type(
+  Utils.VS.elt -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.singleton
+)
+"test/ExBalancedParenthesis.ml" 23 367 401 "test/ExBalancedParenthesis.ml" 23 367 402
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 23 367 388 "test/ExBalancedParenthesis.ml" 23 367 402
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 24 404 416 "test/ExBalancedParenthesis.ml" 24 404 420
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list -> SketchTypes.sklet
+)
+ident(
+  ext_ref TestUtils._let
+)
+"test/ExBalancedParenthesis.ml" 24 404 424 "test/ExBalancedParenthesis.ml" 24 404 427
+type(
+  Cil.varinfo -> SketchTypes.skLVar
+)
+ident(
+  ext_ref TestUtils.var
+)
+"test/ExBalancedParenthesis.ml" 24 404 428 "test/ExBalancedParenthesis.ml" 24 404 429
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 24 404 424 "test/ExBalancedParenthesis.ml" 24 404 429
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar
+)
+"test/ExBalancedParenthesis.ml" 24 404 431 "test/ExBalancedParenthesis.ml" 24 404 438
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_zero
+)
+"test/ExBalancedParenthesis.ml" 24 404 423 "test/ExBalancedParenthesis.ml" 24 404 439
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 24 404 421 "test/ExBalancedParenthesis.ml" 24 404 441
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 24 404 416 "test/ExBalancedParenthesis.ml" 24 404 441
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 25 443 455 "test/ExBalancedParenthesis.ml" 25 443 457
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.symb_binop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._b
+)
+"test/ExBalancedParenthesis.ml" 25 443 459 "test/ExBalancedParenthesis.ml" 25 443 463
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 25 443 464 "test/ExBalancedParenthesis.ml" 25 443 465
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 25 443 458 "test/ExBalancedParenthesis.ml" 25 443 466
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 25 443 467 "test/ExBalancedParenthesis.ml" 25 443 469
+type(
+  SketchTypes.symb_binop
+)
+"test/ExBalancedParenthesis.ml" 25 443 471 "test/ExBalancedParenthesis.ml" 25 443 475
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 25 443 476 "test/ExBalancedParenthesis.ml" 25 443 477
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref n "test/ExBalancedParenthesis.ml" 12 139 161 "test/ExBalancedParenthesis.ml" 12 139 162
+)
+"test/ExBalancedParenthesis.ml" 25 443 470 "test/ExBalancedParenthesis.ml" 25 443 478
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 25 443 455 "test/ExBalancedParenthesis.ml" 25 443 478
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 26 480 492 "test/ExBalancedParenthesis.ml" 26 480 496
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list -> SketchTypes.sklet
+)
+ident(
+  ext_ref TestUtils._let
+)
+"test/ExBalancedParenthesis.ml" 26 480 499 "test/ExBalancedParenthesis.ml" 26 480 502
+type(
+  Cil.varinfo -> SketchTypes.skLVar
+)
+ident(
+  ext_ref TestUtils.var
+)
+"test/ExBalancedParenthesis.ml" 26 480 503 "test/ExBalancedParenthesis.ml" 26 480 504
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 26 480 499 "test/ExBalancedParenthesis.ml" 26 480 504
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar
+)
+"test/ExBalancedParenthesis.ml" 26 480 506 "test/ExBalancedParenthesis.ml" 26 480 508
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.symb_binop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._b
+)
+"test/ExBalancedParenthesis.ml" 26 480 510 "test/ExBalancedParenthesis.ml" 26 480 514
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 26 480 515 "test/ExBalancedParenthesis.ml" 26 480 516
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 26 480 509 "test/ExBalancedParenthesis.ml" 26 480 517
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 26 480 518 "test/ExBalancedParenthesis.ml" 26 480 522
+type(
+  SketchTypes.symb_binop
+)
+"test/ExBalancedParenthesis.ml" 26 480 523 "test/ExBalancedParenthesis.ml" 26 480 529
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_one
+)
+"test/ExBalancedParenthesis.ml" 26 480 506 "test/ExBalancedParenthesis.ml" 26 480 529
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 26 480 498 "test/ExBalancedParenthesis.ml" 26 480 530
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 26 480 497 "test/ExBalancedParenthesis.ml" 26 480 531
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 26 480 492 "test/ExBalancedParenthesis.ml" 26 480 531
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 24 404 415 "test/ExBalancedParenthesis.ml" 26 480 532
+type(
+  SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 23 367 388 "test/ExBalancedParenthesis.ml" 26 480 532
+type(
+  Utils.VS.t * (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+"test/ExBalancedParenthesis.ml" 28 534 538 "test/ExBalancedParenthesis.ml" 28 534 549
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reach_const "test/ExBalancedParenthesis.ml" 31 614 614 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 29 552 554 "test/ExBalancedParenthesis.ml" 29 552 560
+type(
+  Utils.IM.key ->
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.add
+)
+"test/ExBalancedParenthesis.ml" 29 552 561 "test/ExBalancedParenthesis.ml" 29 552 566
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref count "test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+)
+"test/ExBalancedParenthesis.ml" 29 552 561 "test/ExBalancedParenthesis.ml" 29 552 570
+type(
+  Utils.IM.key
+)
+"test/ExBalancedParenthesis.ml" 29 552 571 "test/ExBalancedParenthesis.ml" 29 552 578
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_zero
+)
+"test/ExBalancedParenthesis.ml" 29 552 580 "test/ExBalancedParenthesis.ml" 29 552 586
+type(
+  Utils.IM.key ->
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.add
+)
+"test/ExBalancedParenthesis.ml" 29 552 587 "test/ExBalancedParenthesis.ml" 29 552 590
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref bal "test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 146
+)
+"test/ExBalancedParenthesis.ml" 29 552 587 "test/ExBalancedParenthesis.ml" 29 552 594
+type(
+  Utils.IM.key
+)
+"test/ExBalancedParenthesis.ml" 29 552 595 "test/ExBalancedParenthesis.ml" 29 552 602
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_true
+)
+"test/ExBalancedParenthesis.ml" 29 552 603 "test/ExBalancedParenthesis.ml" 29 552 611
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.empty
+)
+"test/ExBalancedParenthesis.ml" 29 552 579 "test/ExBalancedParenthesis.ml" 29 552 612
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"test/ExBalancedParenthesis.ml" 29 552 554 "test/ExBalancedParenthesis.ml" 29 552 612
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"test/ExBalancedParenthesis.ml" 31 614 618 "test/ExBalancedParenthesis.ml" 31 614 621
+type(
+  SketchTypes.sklet
+)
+ident(
+  def _f_ "test/ExBalancedParenthesis.ml" 37 796 796 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 32 624 626 "test/ExBalancedParenthesis.ml" 32 624 632
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref TestUtils._letin
+)
+"test/ExBalancedParenthesis.ml" 33 633 639 "test/ExBalancedParenthesis.ml" 33 633 642
+type(
+  Cil.varinfo -> SketchTypes.skLVar
+)
+ident(
+  ext_ref TestUtils.var
+)
+"test/ExBalancedParenthesis.ml" 33 633 643 "test/ExBalancedParenthesis.ml" 33 633 648
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref count "test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+)
+"test/ExBalancedParenthesis.ml" 33 633 639 "test/ExBalancedParenthesis.ml" 33 633 648
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar
+)
+"test/ExBalancedParenthesis.ml" 34 650 656 "test/ExBalancedParenthesis.ml" 34 650 658
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.symb_binop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._b
+)
+"test/ExBalancedParenthesis.ml" 34 650 660 "test/ExBalancedParenthesis.ml" 34 650 664
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 34 650 665 "test/ExBalancedParenthesis.ml" 34 650 670
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref count "test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+)
+"test/ExBalancedParenthesis.ml" 34 650 659 "test/ExBalancedParenthesis.ml" 34 650 671
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 34 650 672 "test/ExBalancedParenthesis.ml" 34 650 676
+type(
+  SketchTypes.symb_binop
+)
+"test/ExBalancedParenthesis.ml" 34 650 678 "test/ExBalancedParenthesis.ml" 34 650 680
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._Q
+)
+"test/ExBalancedParenthesis.ml" 34 650 682 "test/ExBalancedParenthesis.ml" 34 650 683
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref a "test/ExBalancedParenthesis.ml" 12 139 158 "test/ExBalancedParenthesis.ml" 12 139 159
+)
+"test/ExBalancedParenthesis.ml" 34 650 684 "test/ExBalancedParenthesis.ml" 34 650 685
+type(
+  Cil.varinfo -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.( $ )
+)
+"test/ExBalancedParenthesis.ml" 34 650 687 "test/ExBalancedParenthesis.ml" 34 650 691
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 34 650 692 "test/ExBalancedParenthesis.ml" 34 650 693
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 34 650 686 "test/ExBalancedParenthesis.ml" 34 650 694
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 34 650 681 "test/ExBalancedParenthesis.ml" 34 650 695
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 34 650 696 "test/ExBalancedParenthesis.ml" 34 650 702
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_one
+)
+"test/ExBalancedParenthesis.ml" 34 650 704 "test/ExBalancedParenthesis.ml" 34 650 706
+type(
+  SketchTypes.symb_unop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._u
+)
+"test/ExBalancedParenthesis.ml" 34 650 707 "test/ExBalancedParenthesis.ml" 34 650 710
+type(
+  SketchTypes.symb_unop
+)
+"test/ExBalancedParenthesis.ml" 34 650 711 "test/ExBalancedParenthesis.ml" 34 650 717
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_one
+)
+"test/ExBalancedParenthesis.ml" 34 650 703 "test/ExBalancedParenthesis.ml" 34 650 718
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 34 650 677 "test/ExBalancedParenthesis.ml" 34 650 719
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 34 650 656 "test/ExBalancedParenthesis.ml" 34 650 719
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 33 633 638 "test/ExBalancedParenthesis.ml" 34 650 720
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 33 633 637 "test/ExBalancedParenthesis.ml" 34 650 721
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 35 722 727 "test/ExBalancedParenthesis.ml" 35 722 731
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list -> SketchTypes.sklet
+)
+ident(
+  ext_ref TestUtils._let
+)
+"test/ExBalancedParenthesis.ml" 35 722 734 "test/ExBalancedParenthesis.ml" 35 722 737
+type(
+  Cil.varinfo -> SketchTypes.skLVar
+)
+ident(
+  ext_ref TestUtils.var
+)
+"test/ExBalancedParenthesis.ml" 35 722 738 "test/ExBalancedParenthesis.ml" 35 722 741
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref bal "test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 146
+)
+"test/ExBalancedParenthesis.ml" 35 722 734 "test/ExBalancedParenthesis.ml" 35 722 741
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar
+)
+"test/ExBalancedParenthesis.ml" 35 722 743 "test/ExBalancedParenthesis.ml" 35 722 745
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.symb_binop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._b
+)
+"test/ExBalancedParenthesis.ml" 35 722 747 "test/ExBalancedParenthesis.ml" 35 722 751
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 35 722 752 "test/ExBalancedParenthesis.ml" 35 722 755
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref bal "test/ExBalancedParenthesis.ml" 12 139 143 "test/ExBalancedParenthesis.ml" 12 139 146
+)
+"test/ExBalancedParenthesis.ml" 35 722 746 "test/ExBalancedParenthesis.ml" 35 722 756
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 35 722 757 "test/ExBalancedParenthesis.ml" 35 722 760
+type(
+  SketchTypes.symb_binop
+)
+"test/ExBalancedParenthesis.ml" 35 722 762 "test/ExBalancedParenthesis.ml" 35 722 764
+type(
+  SketchTypes.skExpr ->
+  SketchTypes.symb_binop -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils._b
+)
+"test/ExBalancedParenthesis.ml" 35 722 766 "test/ExBalancedParenthesis.ml" 35 722 770
+type(
+  Cil.varinfo -> SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.evar
+)
+"test/ExBalancedParenthesis.ml" 35 722 771 "test/ExBalancedParenthesis.ml" 35 722 776
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref count "test/ExBalancedParenthesis.ml" 12 139 148 "test/ExBalancedParenthesis.ml" 12 139 153
+)
+"test/ExBalancedParenthesis.ml" 35 722 765 "test/ExBalancedParenthesis.ml" 35 722 777
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 35 722 778 "test/ExBalancedParenthesis.ml" 35 722 780
+type(
+  SketchTypes.symb_binop
+)
+"test/ExBalancedParenthesis.ml" 35 722 781 "test/ExBalancedParenthesis.ml" 35 722 788
+type(
+  SketchTypes.skExpr
+)
+ident(
+  ext_ref TestUtils.sk_zero
+)
+"test/ExBalancedParenthesis.ml" 35 722 761 "test/ExBalancedParenthesis.ml" 35 722 789
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 35 722 743 "test/ExBalancedParenthesis.ml" 35 722 789
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 35 722 733 "test/ExBalancedParenthesis.ml" 35 722 790
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"test/ExBalancedParenthesis.ml" 35 722 732 "test/ExBalancedParenthesis.ml" 35 722 791
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 35 722 726 "test/ExBalancedParenthesis.ml" 35 722 792
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 32 624 626 "test/ExBalancedParenthesis.ml" 35 722 792
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 37 796 796 "test/ExBalancedParenthesis.ml" 37 796 819
+type(
+  bool ref
+)
+ident(
+  ext_ref VariableDiscovery.debug
+)
+"test/ExBalancedParenthesis.ml" 37 796 820 "test/ExBalancedParenthesis.ml" 37 796 822
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"test/ExBalancedParenthesis.ml" 37 796 823 "test/ExBalancedParenthesis.ml" 37 796 827
+type(
+  bool
+)
+"test/ExBalancedParenthesis.ml" 37 796 796 "test/ExBalancedParenthesis.ml" 37 796 827
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 38 830 830 "test/ExBalancedParenthesis.ml" 38 830 857
+type(
+  bool ref
+)
+ident(
+  ext_ref VariableDiscovery.debug_dev
+)
+"test/ExBalancedParenthesis.ml" 38 830 858 "test/ExBalancedParenthesis.ml" 38 830 860
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"test/ExBalancedParenthesis.ml" 38 830 861 "test/ExBalancedParenthesis.ml" 38 830 865
+type(
+  bool
+)
+"test/ExBalancedParenthesis.ml" 38 830 830 "test/ExBalancedParenthesis.ml" 38 830 865
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+type(
+  string
+)
+ident(
+  def name "test/ExBalancedParenthesis.ml" 42 904 904 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 40 869 880 "test/ExBalancedParenthesis.ml" 40 869 902
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 42 904 908 "test/ExBalancedParenthesis.ml" 42 904 919
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch_info "test/ExBalancedParenthesis.ml" 57 1363 1363 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 44 926 935 "test/ExBalancedParenthesis.ml" 44 926 936
+type(
+  int
+)
+"test/ExBalancedParenthesis.ml" 45 938 954 "test/ExBalancedParenthesis.ml" 45 938 958
+type(
+  string
+)
+ident(
+  int_ref name "test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+)
+"test/ExBalancedParenthesis.ml" 46 960 980 "test/ExBalancedParenthesis.ml" 46 960 997
+type(
+  unit -> Cil.fundec
+)
+ident(
+  ext_ref TestUtils.make_empty_fundec
+)
+"test/ExBalancedParenthesis.ml" 46 960 998 "test/ExBalancedParenthesis.ml" 46 960 1000
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 46 960 980 "test/ExBalancedParenthesis.ml" 46 960 1000
+call(
+  stack
+)
+type(
+  Cil.fundec
+)
+"test/ExBalancedParenthesis.ml" 47 1002 1021 "test/ExBalancedParenthesis.ml" 47 1002 1022
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref a "test/ExBalancedParenthesis.ml" 12 139 158 "test/ExBalancedParenthesis.ml" 12 139 159
+)
+"test/ExBalancedParenthesis.ml" 47 1002 1021 "test/ExBalancedParenthesis.ml" 47 1002 1026
+type(
+  int
+)
+"test/ExBalancedParenthesis.ml" 47 1002 1020 "test/ExBalancedParenthesis.ml" 47 1002 1027
+type(
+  int list
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1059 "test/ExBalancedParenthesis.ml" 48 1029 1062
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1075 "test/ExBalancedParenthesis.ml" 48 1029 1083
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1084 "test/ExBalancedParenthesis.ml" 48 1029 1087
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1088 "test/ExBalancedParenthesis.ml" 48 1029 1094
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref all_vs "test/ExBalancedParenthesis.ml" 21 324 328 "test/ExBalancedParenthesis.ml" 21 324 334
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1075 "test/ExBalancedParenthesis.ml" 48 1029 1094
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1109 "test/ExBalancedParenthesis.ml" 48 1029 1110
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref s "test/ExBalancedParenthesis.ml" 23 367 371 "test/ExBalancedParenthesis.ml" 23 367 372
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1127 "test/ExBalancedParenthesis.ml" 48 1029 1135
+type(
+  SketchTypes.ES.t
+)
+ident(
+  ext_ref SketchTypes.ES.empty
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1149 "test/ExBalancedParenthesis.ml" 48 1029 1157
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1158 "test/ExBalancedParenthesis.ml" 48 1029 1161
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1162 "test/ExBalancedParenthesis.ml" 48 1029 1168
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref all_vs "test/ExBalancedParenthesis.ml" 21 324 328 "test/ExBalancedParenthesis.ml" 21 324 334
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1149 "test/ExBalancedParenthesis.ml" 48 1029 1168
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 48 1029 1044 "test/ExBalancedParenthesis.ml" 48 1029 1169
+type(
+  SketchTypes.context
+)
+"test/ExBalancedParenthesis.ml" 49 1171 1187 "test/ExBalancedParenthesis.ml" 49 1171 1190
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref _f_ "test/ExBalancedParenthesis.ml" 31 614 618 "test/ExBalancedParenthesis.ml" 31 614 621
+)
+"test/ExBalancedParenthesis.ml" 50 1192 1218 "test/ExBalancedParenthesis.ml" 50 1192 1222
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 50 1192 1208 "test/ExBalancedParenthesis.ml" 50 1192 1222
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 51 1224 1254 "test/ExBalancedParenthesis.ml" 51 1224 1258
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"test/ExBalancedParenthesis.ml" 51 1224 1244 "test/ExBalancedParenthesis.ml" 51 1224 1258
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 52 1260 1278 "test/ExBalancedParenthesis.ml" 52 1260 1286
+type(
+  Ast.expr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.empty
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1305 "test/ExBalancedParenthesis.ml" 53 1288 1306
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref s "test/ExBalancedParenthesis.ml" 23 367 371 "test/ExBalancedParenthesis.ml" 23 367 372
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1309 "test/ExBalancedParenthesis.ml" 53 1288 1312
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref ini "test/ExBalancedParenthesis.ml" 23 367 375 "test/ExBalancedParenthesis.ml" 23 367 378
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1314 "test/ExBalancedParenthesis.ml" 53 1288 1315
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref g "test/ExBalancedParenthesis.ml" 23 367 380 "test/ExBalancedParenthesis.ml" 23 367 381
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1317 "test/ExBalancedParenthesis.ml" 53 1288 1318
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref u "test/ExBalancedParenthesis.ml" 23 367 383 "test/ExBalancedParenthesis.ml" 23 367 384
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1308 "test/ExBalancedParenthesis.ml" 53 1288 1319
+type(
+  SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 53 1288 1305 "test/ExBalancedParenthesis.ml" 53 1288 1319
+type(
+  SketchTypes.sigu
+)
+"test/ExBalancedParenthesis.ml" 54 1321 1343 "test/ExBalancedParenthesis.ml" 54 1321 1354
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_const "test/ExBalancedParenthesis.ml" 28 534 538 "test/ExBalancedParenthesis.ml" 28 534 549
+)
+"test/ExBalancedParenthesis.ml" 43 922 924 "test/ExBalancedParenthesis.ml" 55 1356 1359
+type(
+  SketchTypes.sketch_rep
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1367 "test/ExBalancedParenthesis.ml" 57 1363 1374
+type(
+  SketchTypes.context
+)
+ident(
+  def context "test/ExBalancedParenthesis.ml" 58 1506 1506 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1392 "test/ExBalancedParenthesis.ml" 57 1363 1395
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1411 "test/ExBalancedParenthesis.ml" 57 1363 1423
+type(
+  Utils.VS.elt -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.singleton
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1424 "test/ExBalancedParenthesis.ml" 57 1363 1425
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref i "test/ExBalancedParenthesis.ml" 12 139 155 "test/ExBalancedParenthesis.ml" 12 139 156
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1410 "test/ExBalancedParenthesis.ml" 57 1363 1426
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1439 "test/ExBalancedParenthesis.ml" 57 1363 1445
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref all_vs "test/ExBalancedParenthesis.ml" 21 324 328 "test/ExBalancedParenthesis.ml" 21 324 334
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1462 "test/ExBalancedParenthesis.ml" 57 1363 1470
+type(
+  SketchTypes.ES.t
+)
+ident(
+  ext_ref SketchTypes.ES.empty
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1484 "test/ExBalancedParenthesis.ml" 57 1363 1492
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1493 "test/ExBalancedParenthesis.ml" 57 1363 1496
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref _S_ "test/ExBalancedParenthesis.ml" 20 298 302 "test/ExBalancedParenthesis.ml" 20 298 305
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1497 "test/ExBalancedParenthesis.ml" 57 1363 1503
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref all_vs "test/ExBalancedParenthesis.ml" 21 324 328 "test/ExBalancedParenthesis.ml" 21 324 334
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1484 "test/ExBalancedParenthesis.ml" 57 1363 1503
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 57 1363 1377 "test/ExBalancedParenthesis.ml" 57 1363 1505
+type(
+  SketchTypes.context
+)
+"test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def new_sketch "test/ExBalancedParenthesis.ml" 60 1546 1546 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 58 1506 1524 "test/ExBalancedParenthesis.ml" 58 1506 1532
+type(
+  SketchTypes.sketch_rep -> SketchTypes.sketch_rep
+)
+ident(
+  ext_ref VariableDiscovery.discover
+)
+"test/ExBalancedParenthesis.ml" 58 1506 1533 "test/ExBalancedParenthesis.ml" 58 1506 1544
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch_info "test/ExBalancedParenthesis.ml" 42 904 908 "test/ExBalancedParenthesis.ml" 42 904 919
+)
+"test/ExBalancedParenthesis.ml" 58 1506 1524 "test/ExBalancedParenthesis.ml" 58 1506 1544
+call(
+  stack
+)
+type(
+  SketchTypes.sketch_rep
+)
+"test/ExBalancedParenthesis.ml" 60 1546 1550 "test/ExBalancedParenthesis.ml" 60 1546 1556
+type(
+  SketchTypes.sklet
+)
+ident(
+  def new_f_ "test/ExBalancedParenthesis.ml" 64 1674 1674 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 61 1559 1561 "test/ExBalancedParenthesis.ml" 61 1559 1593
+type(
+  Utils.VS.t -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.complete_final_state
+)
+"test/ExBalancedParenthesis.ml" 61 1559 1594 "test/ExBalancedParenthesis.ml" 61 1559 1604
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+)
+"test/ExBalancedParenthesis.ml" 61 1559 1594 "test/ExBalancedParenthesis.ml" 61 1559 1613
+type(
+  SketchTypes.context
+)
+"test/ExBalancedParenthesis.ml" 61 1559 1594 "test/ExBalancedParenthesis.ml" 61 1559 1624
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 62 1625 1630 "test/ExBalancedParenthesis.ml" 62 1625 1648
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref Sketch.Body.optims
+)
+"test/ExBalancedParenthesis.ml" 62 1625 1649 "test/ExBalancedParenthesis.ml" 62 1625 1659
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+)
+"test/ExBalancedParenthesis.ml" 62 1625 1649 "test/ExBalancedParenthesis.ml" 62 1625 1669
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 62 1625 1629 "test/ExBalancedParenthesis.ml" 62 1625 1670
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 61 1559 1561 "test/ExBalancedParenthesis.ml" 62 1625 1670
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 64 1674 1674 "test/ExBalancedParenthesis.ml" 64 1674 1686
+type(
+  Cil.varinfo Utils.IntHashTbl.t -> Cil.varinfo Utils.IntHashTbl.t -> unit
+)
+ident(
+  ext_ref Utils.IH.copy_into
+)
+"test/ExBalancedParenthesis.ml" 64 1674 1687 "test/ExBalancedParenthesis.ml" 64 1674 1727
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref VariableDiscovery.discovered_aux_alltime
+)
+"test/ExBalancedParenthesis.ml" 65 1728 1730 "test/ExBalancedParenthesis.ml" 65 1728 1760
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref SketchJoin.auxiliary_variables
+)
+"test/ExBalancedParenthesis.ml" 64 1674 1674 "test/ExBalancedParenthesis.ml" 65 1728 1760
+call(
+  stack
+)
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1768 "test/ExBalancedParenthesis.ml" 67 1764 1774
+type(
+  SketchTypes.sklet
+)
+ident(
+  def _join_ "test/ExBalancedParenthesis.ml" 69 1848 1848 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1777 "test/ExBalancedParenthesis.ml" 67 1764 1794
+type(
+  Utils.VS.t -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref Sketch.Join.build
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1795 "test/ExBalancedParenthesis.ml" 67 1764 1805
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1795 "test/ExBalancedParenthesis.ml" 67 1764 1814
+type(
+  SketchTypes.context
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1795 "test/ExBalancedParenthesis.ml" 67 1764 1825
+type(
+  Utils.VS.t
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1826 "test/ExBalancedParenthesis.ml" 67 1764 1836
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1826 "test/ExBalancedParenthesis.ml" 67 1764 1846
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 67 1764 1777 "test/ExBalancedParenthesis.ml" 67 1764 1846
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"test/ExBalancedParenthesis.ml" 69 1848 1852 "test/ExBalancedParenthesis.ml" 69 1848 1863
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch_info "test/ExBalancedParenthesis.ml" 73 1910 1910 "test/ExBalancedParenthesis.ml" 1 0 -1
+)
+"test/ExBalancedParenthesis.ml" 69 1848 1868 "test/ExBalancedParenthesis.ml" 69 1848 1878
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "test/ExBalancedParenthesis.ml" 58 1506 1510 "test/ExBalancedParenthesis.ml" 58 1506 1520
+)
+"test/ExBalancedParenthesis.ml" 69 1848 1896 "test/ExBalancedParenthesis.ml" 69 1848 1902
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref _join_ "test/ExBalancedParenthesis.ml" 67 1764 1768 "test/ExBalancedParenthesis.ml" 67 1764 1774
+)
+"test/ExBalancedParenthesis.ml" 69 1848 1866 "test/ExBalancedParenthesis.ml" 69 1848 1904
+type(
+  SketchTypes.sketch_rep
+)
+"test/ExBalancedParenthesis.ml" 73 1910 1910 "test/ExBalancedParenthesis.ml" 73 1910 1927
+type(
+  bool ref
+)
+ident(
+  ext_ref Local.dump_sketch
+)
+"test/ExBalancedParenthesis.ml" 73 1910 1928 "test/ExBalancedParenthesis.ml" 73 1910 1930
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"test/ExBalancedParenthesis.ml" 73 1910 1931 "test/ExBalancedParenthesis.ml" 73 1910 1935
+type(
+  bool
+)
+"test/ExBalancedParenthesis.ml" 73 1910 1910 "test/ExBalancedParenthesis.ml" 73 1910 1935
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 76 1943 1945 "test/ExBalancedParenthesis.ml" 76 1943 1951
+type(
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"test/ExBalancedParenthesis.ml" 76 1943 1952 "test/ExBalancedParenthesis.ml" 76 1943 1980
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"test/ExBalancedParenthesis.ml" 76 1943 1981 "test/ExBalancedParenthesis.ml" 76 1943 1985
+type(
+  string
+)
+ident(
+  int_ref name "test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+)
+"test/ExBalancedParenthesis.ml" 76 1943 1945 "test/ExBalancedParenthesis.ml" 76 1943 1985
+call(
+  stack
+)
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 77 1987 1993 "test/ExBalancedParenthesis.ml" 77 1987 1999
+type(
+  Ast.expr list
+)
+ident(
+  def parsed "test/ExBalancedParenthesis.ml" 80 2051 2053 "test/ExBalancedParenthesis.ml" 88 2384 2443
+)
+"test/ExBalancedParenthesis.ml" 78 2002 2006 "test/ExBalancedParenthesis.ml" 78 2002 2023
+type(
+  ?print_err_msg:(int -> unit) ->
+  (Sketch.F.formatter -> SketchTypes.sketch_rep -> unit) ->
+  SketchTypes.sketch_rep -> Ast.expr list
+)
+ident(
+  ext_ref Local.compile_and_fetch
+)
+"test/ExBalancedParenthesis.ml" 78 2002 2024 "test/ExBalancedParenthesis.ml" 78 2002 2033
+type(
+  Sketch.F.formatter -> SketchTypes.sketch_rep -> unit
+)
+ident(
+  ext_ref Canalyst.pp_sketch
+)
+"test/ExBalancedParenthesis.ml" 78 2002 2034 "test/ExBalancedParenthesis.ml" 78 2002 2045
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch_info "test/ExBalancedParenthesis.ml" 69 1848 1852 "test/ExBalancedParenthesis.ml" 69 1848 1863
+)
+"test/ExBalancedParenthesis.ml" 78 2002 2006 "test/ExBalancedParenthesis.ml" 78 2002 2045
+call(
+  stack
+)
+type(
+  Ast.expr list
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2056 "test/ExBalancedParenthesis.ml" 80 2051 2067
+type(
+  (Ast.expr -> bool) -> Ast.expr list -> bool
+)
+ident(
+  ext_ref List.exists
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2073 "test/ExBalancedParenthesis.ml" 80 2051 2074
+type(
+  Ast.expr
+)
+ident(
+  def e "test/ExBalancedParenthesis.ml" 80 2051 2078 "test/ExBalancedParenthesis.ml" 80 2051 2101
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2089 "test/ExBalancedParenthesis.ml" 80 2051 2096
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2078 "test/ExBalancedParenthesis.ml" 80 2051 2097
+type(
+  Ast.expr
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2098 "test/ExBalancedParenthesis.ml" 80 2051 2099
+type(
+  Ast.expr -> Ast.expr -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2100 "test/ExBalancedParenthesis.ml" 80 2051 2101
+type(
+  Ast.expr
+)
+ident(
+  int_ref e "test/ExBalancedParenthesis.ml" 80 2051 2073 "test/ExBalancedParenthesis.ml" 80 2051 2074
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2078 "test/ExBalancedParenthesis.ml" 80 2051 2101
+type(
+  bool
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2068 "test/ExBalancedParenthesis.ml" 80 2051 2102
+type(
+  Ast.expr -> bool
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2103 "test/ExBalancedParenthesis.ml" 80 2051 2109
+type(
+  Ast.expr list
+)
+ident(
+  int_ref parsed "test/ExBalancedParenthesis.ml" 77 1987 1993 "test/ExBalancedParenthesis.ml" 77 1987 1999
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2056 "test/ExBalancedParenthesis.ml" 80 2051 2109
+call(
+  stack
+)
+type(
+  bool
+)
+"test/ExBalancedParenthesis.ml" 82 2183 2187 "test/ExBalancedParenthesis.ml" 82 2183 2193
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"test/ExBalancedParenthesis.ml" 83 2194 2200 "test/ExBalancedParenthesis.ml" 83 2194 2263
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"test/ExBalancedParenthesis.ml" 84 2264 2271 "test/ExBalancedParenthesis.ml" 84 2264 2276
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"test/ExBalancedParenthesis.ml" 84 2264 2277 "test/ExBalancedParenthesis.ml" 84 2264 2285
+type(
+  Utils.SM.key
+)
+"test/ExBalancedParenthesis.ml" 84 2264 2270 "test/ExBalancedParenthesis.ml" 84 2264 2286
+call(
+  stack
+)
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 84 2264 2287 "test/ExBalancedParenthesis.ml" 84 2264 2294
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"test/ExBalancedParenthesis.ml" 84 2264 2295 "test/ExBalancedParenthesis.ml" 84 2264 2299
+type(
+  string
+)
+ident(
+  int_ref name "test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+)
+"test/ExBalancedParenthesis.ml" 82 2183 2187 "test/ExBalancedParenthesis.ml" 84 2264 2299
+call(
+  stack
+)
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 87 2343 2347 "test/ExBalancedParenthesis.ml" 87 2343 2353
+type(
+  (string ->
+   string ->
+   string ->
+   (Format.formatter -> Ast.expr list -> unit) -> Ast.expr list -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  string ->
+  (Format.formatter -> Ast.expr list -> unit) -> Ast.expr list -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"test/ExBalancedParenthesis.ml" 87 2343 2354 "test/ExBalancedParenthesis.ml" 87 2343 2383
+type(
+  (string ->
+   string ->
+   string ->
+   (Format.formatter -> Ast.expr list -> unit) -> Ast.expr list -> unit,
+   Format.formatter, unit)
+  format
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2391 "test/ExBalancedParenthesis.ml" 88 2384 2396
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2397 "test/ExBalancedParenthesis.ml" 88 2384 2404
+type(
+  Utils.SM.key
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2390 "test/ExBalancedParenthesis.ml" 88 2384 2405
+call(
+  stack
+)
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2406 "test/ExBalancedParenthesis.ml" 88 2384 2410
+type(
+  string
+)
+ident(
+  int_ref name "test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2411 "test/ExBalancedParenthesis.ml" 88 2384 2418
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2419 "test/ExBalancedParenthesis.ml" 88 2384 2435
+type(
+  Format.formatter -> Ast.expr list -> unit
+)
+ident(
+  ext_ref Ast.pp_expr_list
+)
+"test/ExBalancedParenthesis.ml" 88 2384 2436 "test/ExBalancedParenthesis.ml" 88 2384 2442
+type(
+  Ast.expr list
+)
+ident(
+  int_ref parsed "test/ExBalancedParenthesis.ml" 77 1987 1993 "test/ExBalancedParenthesis.ml" 77 1987 1999
+)
+"test/ExBalancedParenthesis.ml" 87 2343 2347 "test/ExBalancedParenthesis.ml" 88 2384 2442
+call(
+  stack
+)
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 80 2051 2053 "test/ExBalancedParenthesis.ml" 88 2384 2443
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 77 1987 1989 "test/ExBalancedParenthesis.ml" 88 2384 2443
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 76 1943 1945 "test/ExBalancedParenthesis.ml" 88 2384 2443
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 90 2445 2458 "test/ExBalancedParenthesis.ml" 90 2445 2459
+type(
+  string
+)
+ident(
+  def s "test/ExBalancedParenthesis.ml" 91 2463 2465 "test/ExBalancedParenthesis.ml" 92 2516 2546
+)
+"test/ExBalancedParenthesis.ml" 90 2445 2450 "test/ExBalancedParenthesis.ml" 90 2445 2459
+type(
+  exn
+)
+"test/ExBalancedParenthesis.ml" 91 2463 2465 "test/ExBalancedParenthesis.ml" 91 2463 2471
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"test/ExBalancedParenthesis.ml" 91 2463 2472 "test/ExBalancedParenthesis.ml" 91 2463 2515
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"test/ExBalancedParenthesis.ml" 92 2516 2521 "test/ExBalancedParenthesis.ml" 92 2516 2526
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"test/ExBalancedParenthesis.ml" 92 2516 2527 "test/ExBalancedParenthesis.ml" 92 2516 2532
+type(
+  Utils.SM.key
+)
+"test/ExBalancedParenthesis.ml" 92 2516 2520 "test/ExBalancedParenthesis.ml" 92 2516 2533
+call(
+  stack
+)
+type(
+  string
+)
+"test/ExBalancedParenthesis.ml" 92 2516 2534 "test/ExBalancedParenthesis.ml" 92 2516 2538
+type(
+  string
+)
+ident(
+  int_ref name "test/ExBalancedParenthesis.ml" 40 869 873 "test/ExBalancedParenthesis.ml" 40 869 877
+)
+"test/ExBalancedParenthesis.ml" 92 2516 2539 "test/ExBalancedParenthesis.ml" 92 2516 2546
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"test/ExBalancedParenthesis.ml" 91 2463 2465 "test/ExBalancedParenthesis.ml" 92 2516 2546
+call(
+  stack
+)
+type(
+  unit
+)
+"test/ExBalancedParenthesis.ml" 75 1939 1939 "test/ExBalancedParenthesis.ml" 92 2516 2546
+type(
+  unit
+)

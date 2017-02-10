@@ -1,0 +1,1743 @@
+"src/rosetteInterface/lexer.mll" 8 93 97 "src/rosetteInterface/lexer.mll" 8 93 105
+type(
+  (string * Parser.token) list
+)
+ident(
+  def keywords "src/rosetteInterface/lexer.mll" 27 420 420 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.mll" 10 114 119 "src/rosetteInterface/lexer.mll" 10 114 127
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 10 114 129 "src/rosetteInterface/lexer.mll" 10 114 135
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 10 114 119 "src/rosetteInterface/lexer.mll" 10 114 135
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 11 137 142 "src/rosetteInterface/lexer.mll" 11 137 147
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 11 137 149 "src/rosetteInterface/lexer.mll" 11 137 152
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 11 137 142 "src/rosetteInterface/lexer.mll" 11 137 152
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 12 154 159 "src/rosetteInterface/lexer.mll" 12 154 163
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 12 154 165 "src/rosetteInterface/lexer.mll" 12 154 167
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 12 154 159 "src/rosetteInterface/lexer.mll" 12 154 167
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 13 169 174 "src/rosetteInterface/lexer.mll" 13 169 182
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 13 169 184 "src/rosetteInterface/lexer.mll" 13 169 190
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 13 169 174 "src/rosetteInterface/lexer.mll" 13 169 190
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 14 192 197 "src/rosetteInterface/lexer.mll" 14 192 203
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 14 192 205 "src/rosetteInterface/lexer.mll" 14 192 209
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 14 192 197 "src/rosetteInterface/lexer.mll" 14 192 209
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 15 211 216 "src/rosetteInterface/lexer.mll" 15 211 222
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 15 211 224 "src/rosetteInterface/lexer.mll" 15 211 228
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 15 211 216 "src/rosetteInterface/lexer.mll" 15 211 228
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 16 230 235 "src/rosetteInterface/lexer.mll" 16 230 240
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 16 230 242 "src/rosetteInterface/lexer.mll" 16 230 245
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 16 230 235 "src/rosetteInterface/lexer.mll" 16 230 245
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 17 247 252 "src/rosetteInterface/lexer.mll" 17 247 257
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 17 247 259 "src/rosetteInterface/lexer.mll" 17 247 262
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 17 247 252 "src/rosetteInterface/lexer.mll" 17 247 262
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 18 264 269 "src/rosetteInterface/lexer.mll" 18 264 274
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 18 264 276 "src/rosetteInterface/lexer.mll" 18 264 279
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 18 264 269 "src/rosetteInterface/lexer.mll" 18 264 279
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 19 281 286 "src/rosetteInterface/lexer.mll" 19 281 292
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 19 281 294 "src/rosetteInterface/lexer.mll" 19 281 298
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 19 281 286 "src/rosetteInterface/lexer.mll" 19 281 298
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 20 300 305 "src/rosetteInterface/lexer.mll" 20 300 311
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 20 300 313 "src/rosetteInterface/lexer.mll" 20 300 317
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 20 300 305 "src/rosetteInterface/lexer.mll" 20 300 317
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 21 319 324 "src/rosetteInterface/lexer.mll" 21 319 332
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 21 319 334 "src/rosetteInterface/lexer.mll" 21 319 340
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 21 319 324 "src/rosetteInterface/lexer.mll" 21 319 340
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 22 342 347 "src/rosetteInterface/lexer.mll" 22 342 358
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 22 342 360 "src/rosetteInterface/lexer.mll" 22 342 369
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 22 342 347 "src/rosetteInterface/lexer.mll" 22 342 369
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 23 371 376 "src/rosetteInterface/lexer.mll" 23 371 383
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 23 371 385 "src/rosetteInterface/lexer.mll" 23 371 390
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 23 371 376 "src/rosetteInterface/lexer.mll" 23 371 390
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 24 392 397 "src/rosetteInterface/lexer.mll" 24 392 404
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 24 392 406 "src/rosetteInterface/lexer.mll" 24 392 411
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 24 392 397 "src/rosetteInterface/lexer.mll" 24 392 411
+type(
+  string * Parser.token
+)
+"src/rosetteInterface/lexer.mll" 9 108 112 "src/rosetteInterface/lexer.mll" 25 413 418
+type(
+  (string * Parser.token) list
+)
+"src/rosetteInterface/lexer.mll" 27 420 424 "src/rosetteInterface/lexer.mll" 27 420 435
+type(
+  (string, Parser.token) Hashtbl.t
+)
+ident(
+  def keyword_tbl "src/rosetteInterface/lexer.mll" 28 457 457 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.mll" 27 420 438 "src/rosetteInterface/lexer.mll" 27 420 452
+type(
+  ?random:bool -> int -> (string, Parser.token) Hashtbl.t
+)
+ident(
+  ext_ref Hashtbl.create
+)
+"src/rosetteInterface/lexer.mll" 27 420 453 "src/rosetteInterface/lexer.mll" 27 420 456
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 27 420 438 "src/rosetteInterface/lexer.mll" 27 420 456
+call(
+  stack
+)
+type(
+  (string, Parser.token) Hashtbl.t
+)
+"src/rosetteInterface/lexer.mll" 28 457 461 "src/rosetteInterface/lexer.mll" 28 457 468
+type(
+  ('a -> 'b -> 'c) -> 'a * 'b -> 'c
+)
+ident(
+  def uncurry "src/rosetteInterface/lexer.mll" 29 486 486 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.mll" 28 457 469 "src/rosetteInterface/lexer.mll" 28 457 470
+type(
+  'a -> 'b -> 'c
+)
+ident(
+  def f "src/rosetteInterface/lexer.mll" 28 457 471 "src/rosetteInterface/lexer.mll" 28 457 485
+)
+"src/rosetteInterface/lexer.mll" 28 457 472 "src/rosetteInterface/lexer.mll" 28 457 473
+type(
+  'a
+)
+ident(
+  def a "src/rosetteInterface/lexer.mll" 28 457 480 "src/rosetteInterface/lexer.mll" 28 457 485
+)
+"src/rosetteInterface/lexer.mll" 28 457 475 "src/rosetteInterface/lexer.mll" 28 457 476
+type(
+  'b
+)
+ident(
+  def b "src/rosetteInterface/lexer.mll" 28 457 480 "src/rosetteInterface/lexer.mll" 28 457 485
+)
+"src/rosetteInterface/lexer.mll" 28 457 471 "src/rosetteInterface/lexer.mll" 28 457 477
+type(
+  'a * 'b
+)
+"src/rosetteInterface/lexer.mll" 28 457 480 "src/rosetteInterface/lexer.mll" 28 457 481
+type(
+  'a -> 'b -> 'c
+)
+ident(
+  int_ref f "src/rosetteInterface/lexer.mll" 28 457 469 "src/rosetteInterface/lexer.mll" 28 457 470
+)
+"src/rosetteInterface/lexer.mll" 28 457 482 "src/rosetteInterface/lexer.mll" 28 457 483
+type(
+  'a
+)
+ident(
+  int_ref a "src/rosetteInterface/lexer.mll" 28 457 472 "src/rosetteInterface/lexer.mll" 28 457 473
+)
+"src/rosetteInterface/lexer.mll" 28 457 484 "src/rosetteInterface/lexer.mll" 28 457 485
+type(
+  'b
+)
+ident(
+  int_ref b "src/rosetteInterface/lexer.mll" 28 457 475 "src/rosetteInterface/lexer.mll" 28 457 476
+)
+"src/rosetteInterface/lexer.mll" 28 457 480 "src/rosetteInterface/lexer.mll" 28 457 485
+call(
+  tail
+)
+type(
+  'c
+)
+"src/rosetteInterface/lexer.mll" 29 486 494 "src/rosetteInterface/lexer.mll" 29 486 503
+type(
+  (string * Parser.token -> unit) -> (string * Parser.token) list -> unit
+)
+ident(
+  ext_ref List.iter
+)
+"src/rosetteInterface/lexer.mll" 29 486 505 "src/rosetteInterface/lexer.mll" 29 486 512
+type(
+  (string -> Parser.token -> unit) -> string * Parser.token -> unit
+)
+ident(
+  int_ref uncurry "src/rosetteInterface/lexer.mll" 28 457 461 "src/rosetteInterface/lexer.mll" 28 457 468
+)
+"src/rosetteInterface/lexer.mll" 29 486 514 "src/rosetteInterface/lexer.mll" 29 486 529
+type(
+  (string, Parser.token) Hashtbl.t -> string -> Parser.token -> unit
+)
+ident(
+  ext_ref Hashtbl.replace
+)
+"src/rosetteInterface/lexer.mll" 29 486 530 "src/rosetteInterface/lexer.mll" 29 486 541
+type(
+  (string, Parser.token) Hashtbl.t
+)
+ident(
+  int_ref keyword_tbl "src/rosetteInterface/lexer.mll" 27 420 424 "src/rosetteInterface/lexer.mll" 27 420 435
+)
+"src/rosetteInterface/lexer.mll" 29 486 513 "src/rosetteInterface/lexer.mll" 29 486 542
+call(
+  stack
+)
+type(
+  string -> Parser.token -> unit
+)
+"src/rosetteInterface/lexer.mll" 29 486 504 "src/rosetteInterface/lexer.mll" 29 486 543
+call(
+  stack
+)
+type(
+  string * Parser.token -> unit
+)
+"src/rosetteInterface/lexer.mll" 29 486 544 "src/rosetteInterface/lexer.mll" 29 486 552
+type(
+  (string * Parser.token) list
+)
+ident(
+  int_ref keywords "src/rosetteInterface/lexer.mll" 8 93 97 "src/rosetteInterface/lexer.mll" 8 93 105
+)
+"src/rosetteInterface/lexer.mll" 29 486 494 "src/rosetteInterface/lexer.mll" 29 486 552
+call(
+  stack
+)
+type(
+  unit
+)
+"src/rosetteInterface/lexer.ml" 33 591 595 "src/rosetteInterface/lexer.ml" 33 591 613
+type(
+  Lexing.lex_tables
+)
+ident(
+  def __ocaml_lex_tables "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 35 639 642 "src/rosetteInterface/lexer.ml" 41 1059 1072
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 43 1098 1101 "src/rosetteInterface/lexer.ml" 49 1518 1531
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 51 1557 1560 "src/rosetteInterface/lexer.ml" 57 1977 1990
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 59 2014 2017 "src/rosetteInterface/lexer.ml" 145 8034 8063
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 147 8087 8090 "src/rosetteInterface/lexer.ml" 233 14107 14136
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 235 14164 14167 "src/rosetteInterface/lexer.ml" 235 14164 14169
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 237 14200 14203 "src/rosetteInterface/lexer.ml" 237 14200 14205
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 239 14236 14239 "src/rosetteInterface/lexer.ml" 239 14236 14241
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 241 14270 14273 "src/rosetteInterface/lexer.ml" 241 14270 14275
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 243 14304 14307 "src/rosetteInterface/lexer.ml" 243 14304 14309
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 245 14332 14335 "src/rosetteInterface/lexer.ml" 245 14332 14337
+type(
+  string
+)
+"src/rosetteInterface/lexer.ml" 33 591 616 "src/rosetteInterface/lexer.ml" 246 14339 14340
+type(
+  Lexing.lex_tables
+)
+"src/rosetteInterface/lexer.ml" 248 14342 14350 "src/rosetteInterface/lexer.ml" 248 14342 14355
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  def token "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 248 14342 14356 "src/rosetteInterface/lexer.ml" 248 14342 14362
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 249 14365 14369 "src/rosetteInterface/lexer.ml" 249 14365 14399
+)
+"src/rosetteInterface/lexer.ml" 249 14365 14369 "src/rosetteInterface/lexer.ml" 249 14365 14390
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  int_ref __ocaml_lex_token_rec "src/rosetteInterface/lexer.ml" 250 14400 14404 "src/rosetteInterface/lexer.ml" 250 14400 14425
+)
+"src/rosetteInterface/lexer.ml" 249 14365 14391 "src/rosetteInterface/lexer.ml" 249 14365 14397
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 248 14342 14356 "src/rosetteInterface/lexer.ml" 248 14342 14362
+)
+"src/rosetteInterface/lexer.ml" 249 14365 14398 "src/rosetteInterface/lexer.ml" 249 14365 14399
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 249 14365 14369 "src/rosetteInterface/lexer.ml" 249 14365 14399
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 250 14400 14404 "src/rosetteInterface/lexer.ml" 250 14400 14425
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  def __ocaml_lex_token_rec "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14433 "src/rosetteInterface/lexer.ml" 398 18303 18355
+)
+"src/rosetteInterface/lexer.ml" 250 14400 14433 "src/rosetteInterface/lexer.ml" 250 14400 14450
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 251 14453 14455 "src/rosetteInterface/lexer.ml" 398 18303 18355
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14461 "src/rosetteInterface/lexer.ml" 251 14453 14474
+type(
+  Lexing.lex_tables -> int -> Lexing.lexbuf -> int
+)
+ident(
+  ext_ref Lexing.engine
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14475 "src/rosetteInterface/lexer.ml" 251 14453 14493
+type(
+  Lexing.lex_tables
+)
+ident(
+  int_ref __ocaml_lex_tables "src/rosetteInterface/lexer.ml" 33 591 595 "src/rosetteInterface/lexer.ml" 33 591 613
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14494 "src/rosetteInterface/lexer.ml" 251 14453 14511
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 250 14400 14433 "src/rosetteInterface/lexer.ml" 250 14400 14450
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14512 "src/rosetteInterface/lexer.ml" 251 14453 14518
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14461 "src/rosetteInterface/lexer.ml" 251 14453 14518
+call(
+  stack
+)
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 252 14524 14532 "src/rosetteInterface/lexer.ml" 252 14524 14533
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 42 14579 14589 "src/rosetteInterface/lexer.mll" 42 14579 14591
+type(
+  string
+)
+ident(
+  def id "src/rosetteInterface/lexer.mll" 42 14753 14768 "src/rosetteInterface/lexer.mll" 42 14753 14827
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14632 "src/rosetteInterface/lexer.ml" 257 14630 14649
+type(
+  Lexing.lexbuf -> int -> int -> string
+)
+ident(
+  ext_ref Lexing.sub_lexeme
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14650 "src/rosetteInterface/lexer.ml" 257 14630 14656
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14657 "src/rosetteInterface/lexer.ml" 257 14630 14663
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14657 "src/rosetteInterface/lexer.ml" 257 14630 14684
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14685 "src/rosetteInterface/lexer.ml" 257 14630 14691
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14685 "src/rosetteInterface/lexer.ml" 257 14630 14711
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 257 14630 14632 "src/rosetteInterface/lexer.ml" 257 14630 14711
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14774 "src/rosetteInterface/lexer.mll" 42 14753 14786
+type(
+  (string, Parser.token) Hashtbl.t -> string -> Parser.token
+)
+ident(
+  ext_ref Hashtbl.find
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14787 "src/rosetteInterface/lexer.mll" 42 14753 14798
+type(
+  (string, Parser.token) Hashtbl.t
+)
+ident(
+  int_ref keyword_tbl "src/rosetteInterface/lexer.mll" 27 420 424 "src/rosetteInterface/lexer.mll" 27 420 435
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14799 "src/rosetteInterface/lexer.mll" 42 14753 14801
+type(
+  string
+)
+ident(
+  int_ref id "src/rosetteInterface/lexer.mll" 42 14579 14589 "src/rosetteInterface/lexer.mll" 42 14579 14591
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14774 "src/rosetteInterface/lexer.mll" 42 14753 14801
+call(
+  stack
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14807 "src/rosetteInterface/lexer.mll" 42 14753 14816
+type(
+  exn
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14823 "src/rosetteInterface/lexer.mll" 42 14753 14825
+type(
+  string
+)
+ident(
+  int_ref id "src/rosetteInterface/lexer.mll" 42 14579 14589 "src/rosetteInterface/lexer.mll" 42 14579 14591
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14820 "src/rosetteInterface/lexer.mll" 42 14753 14825
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.mll" 42 14753 14768 "src/rosetteInterface/lexer.mll" 42 14753 14827
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 253 14537 14537 "src/rosetteInterface/lexer.mll" 42 14753 14827
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 262 14867 14871 "src/rosetteInterface/lexer.ml" 262 14867 14872
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 43 14914 14933 "src/rosetteInterface/lexer.mll" 43 14914 14943
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 267 14983 14987 "src/rosetteInterface/lexer.ml" 267 14983 14988
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 44 15030 15049 "src/rosetteInterface/lexer.mll" 44 15030 15059
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 272 15099 15103 "src/rosetteInterface/lexer.ml" 272 15099 15104
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 45 15146 15165 "src/rosetteInterface/lexer.mll" 45 15146 15173
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 277 15213 15217 "src/rosetteInterface/lexer.ml" 277 15213 15218
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15289 "src/rosetteInterface/lexer.mll" 46 15260 15302
+type(
+  string -> string list -> string
+)
+ident(
+  ext_ref String.concat
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15303 "src/rosetteInterface/lexer.mll" 46 15260 15305
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15307 "src/rosetteInterface/lexer.mll" 46 15260 15313
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15314 "src/rosetteInterface/lexer.mll" 46 15260 15320
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15306 "src/rosetteInterface/lexer.mll" 46 15260 15321
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15288 "src/rosetteInterface/lexer.mll" 46 15260 15322
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 46 15260 15279 "src/rosetteInterface/lexer.mll" 46 15260 15324
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 282 15364 15368 "src/rosetteInterface/lexer.ml" 282 15364 15369
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 47 15411 15430 "src/rosetteInterface/lexer.mll" 47 15411 15439
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 287 15479 15483 "src/rosetteInterface/lexer.ml" 287 15479 15484
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 48 15526 15545 "src/rosetteInterface/lexer.mll" 48 15526 15552
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 292 15592 15596 "src/rosetteInterface/lexer.ml" 292 15592 15597
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 49 15639 15658 "src/rosetteInterface/lexer.mll" 49 15639 15665
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 297 15705 15709 "src/rosetteInterface/lexer.ml" 297 15705 15710
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 50 15752 15771 "src/rosetteInterface/lexer.mll" 50 15752 15778
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 302 15818 15822 "src/rosetteInterface/lexer.ml" 302 15818 15823
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 51 15865 15884 "src/rosetteInterface/lexer.mll" 51 15865 15891
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 307 15931 15935 "src/rosetteInterface/lexer.ml" 307 15931 15937
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 52 15979 15999 "src/rosetteInterface/lexer.mll" 52 15979 16006
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 312 16046 16050 "src/rosetteInterface/lexer.ml" 312 16046 16052
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 53 16094 16114 "src/rosetteInterface/lexer.mll" 53 16094 16120
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 317 16160 16164 "src/rosetteInterface/lexer.ml" 317 16160 16166
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 54 16208 16227 "src/rosetteInterface/lexer.mll" 54 16208 16233
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 322 16273 16277 "src/rosetteInterface/lexer.ml" 322 16273 16279
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 55 16321 16340 "src/rosetteInterface/lexer.mll" 55 16321 16347
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 327 16387 16391 "src/rosetteInterface/lexer.ml" 327 16387 16393
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 56 16435 16454 "src/rosetteInterface/lexer.mll" 56 16435 16460
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 332 16500 16504 "src/rosetteInterface/lexer.ml" 332 16500 16506
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 57 16548 16567 "src/rosetteInterface/lexer.mll" 57 16548 16574
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 337 16614 16618 "src/rosetteInterface/lexer.ml" 337 16614 16620
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 58 16662 16681 "src/rosetteInterface/lexer.mll" 58 16662 16687
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 342 16727 16731 "src/rosetteInterface/lexer.ml" 342 16727 16733
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 59 16775 16794 "src/rosetteInterface/lexer.mll" 59 16775 16801
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 347 16841 16845 "src/rosetteInterface/lexer.ml" 347 16841 16847
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 60 16889 16908 "src/rosetteInterface/lexer.mll" 60 16889 16916
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 352 16956 16960 "src/rosetteInterface/lexer.ml" 352 16956 16962
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 61 17004 17023 "src/rosetteInterface/lexer.mll" 61 17004 17032
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 357 17072 17076 "src/rosetteInterface/lexer.ml" 357 17072 17078
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 62 17124 17135 "src/rosetteInterface/lexer.mll" 62 17124 17138
+type(
+  string
+)
+ident(
+  def int "src/rosetteInterface/lexer.mll" 62 17300 17319 "src/rosetteInterface/lexer.mll" 62 17300 17346
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17179 "src/rosetteInterface/lexer.ml" 362 17177 17196
+type(
+  Lexing.lexbuf -> int -> int -> string
+)
+ident(
+  ext_ref Lexing.sub_lexeme
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17197 "src/rosetteInterface/lexer.ml" 362 17177 17203
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17204 "src/rosetteInterface/lexer.ml" 362 17177 17210
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17204 "src/rosetteInterface/lexer.ml" 362 17177 17231
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17232 "src/rosetteInterface/lexer.ml" 362 17177 17238
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17232 "src/rosetteInterface/lexer.ml" 362 17177 17258
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 362 17177 17179 "src/rosetteInterface/lexer.ml" 362 17177 17258
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 62 17300 17326 "src/rosetteInterface/lexer.mll" 62 17300 17339
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/rosetteInterface/lexer.mll" 62 17300 17340 "src/rosetteInterface/lexer.mll" 62 17300 17343
+type(
+  string
+)
+ident(
+  int_ref int "src/rosetteInterface/lexer.mll" 62 17124 17135 "src/rosetteInterface/lexer.mll" 62 17124 17138
+)
+"src/rosetteInterface/lexer.mll" 62 17300 17325 "src/rosetteInterface/lexer.mll" 62 17300 17344
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 62 17300 17319 "src/rosetteInterface/lexer.mll" 62 17300 17346
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 358 17082 17082 "src/rosetteInterface/lexer.mll" 62 17300 17346
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 367 17386 17390 "src/rosetteInterface/lexer.ml" 367 17386 17392
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 63 17438 17451 "src/rosetteInterface/lexer.mll" 63 17438 17456
+type(
+  string
+)
+ident(
+  def float "src/rosetteInterface/lexer.mll" 63 17618 17637 "src/rosetteInterface/lexer.mll" 63 17618 17669
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17497 "src/rosetteInterface/lexer.ml" 372 17495 17514
+type(
+  Lexing.lexbuf -> int -> int -> string
+)
+ident(
+  ext_ref Lexing.sub_lexeme
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17515 "src/rosetteInterface/lexer.ml" 372 17495 17521
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17522 "src/rosetteInterface/lexer.ml" 372 17495 17528
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17522 "src/rosetteInterface/lexer.ml" 372 17495 17549
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17550 "src/rosetteInterface/lexer.ml" 372 17495 17556
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17550 "src/rosetteInterface/lexer.ml" 372 17495 17576
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 372 17495 17497 "src/rosetteInterface/lexer.ml" 372 17495 17576
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 63 17618 17646 "src/rosetteInterface/lexer.mll" 63 17618 17661
+type(
+  string -> float
+)
+ident(
+  ext_ref Pervasives.float_of_string
+)
+"src/rosetteInterface/lexer.mll" 63 17618 17662 "src/rosetteInterface/lexer.mll" 63 17618 17667
+type(
+  string
+)
+ident(
+  int_ref float "src/rosetteInterface/lexer.mll" 63 17438 17451 "src/rosetteInterface/lexer.mll" 63 17438 17456
+)
+"src/rosetteInterface/lexer.mll" 63 17618 17645 "src/rosetteInterface/lexer.mll" 63 17618 17668
+type(
+  float
+)
+"src/rosetteInterface/lexer.mll" 63 17618 17637 "src/rosetteInterface/lexer.mll" 63 17618 17669
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 368 17396 17396 "src/rosetteInterface/lexer.mll" 63 17618 17669
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 377 17709 17713 "src/rosetteInterface/lexer.ml" 377 17709 17715
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 64 17757 17778 "src/rosetteInterface/lexer.mll" 64 17757 17783
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  int_ref token "src/rosetteInterface/lexer.ml" 248 14342 14350 "src/rosetteInterface/lexer.ml" 248 14342 14355
+)
+"src/rosetteInterface/lexer.mll" 64 17757 17784 "src/rosetteInterface/lexer.mll" 64 17757 17790
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.mll" 64 17757 17776 "src/rosetteInterface/lexer.mll" 64 17757 17792
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 382 17832 17836 "src/rosetteInterface/lexer.ml" 382 17832 17838
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 65 17880 17901 "src/rosetteInterface/lexer.mll" 65 17880 17908
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  int_ref comment "src/rosetteInterface/lexer.ml" 442 19614 19618 "src/rosetteInterface/lexer.ml" 442 19614 19625
+)
+"src/rosetteInterface/lexer.mll" 65 17880 17909 "src/rosetteInterface/lexer.mll" 65 17880 17915
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.mll" 65 17880 17899 "src/rosetteInterface/lexer.mll" 65 17880 17917
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 387 17957 17961 "src/rosetteInterface/lexer.ml" 387 17957 17963
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 66 18005 18024 "src/rosetteInterface/lexer.mll" 66 18005 18031
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 392 18071 18075 "src/rosetteInterface/lexer.ml" 392 18071 18077
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18140 "src/rosetteInterface/lexer.mll" 67 18119 18145
+type(
+  exn -> Parser.token
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18157 "src/rosetteInterface/lexer.mll" 67 18119 18176
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18176 "src/rosetteInterface/lexer.mll" 67 18119 18177
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18178 "src/rosetteInterface/lexer.mll" 67 18119 18191
+type(
+  Lexing.lexbuf -> string
+)
+ident(
+  ext_ref Lexing.lexeme
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18192 "src/rosetteInterface/lexer.mll" 67 18119 18198
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18177 "src/rosetteInterface/lexer.mll" 67 18119 18199
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18156 "src/rosetteInterface/lexer.mll" 67 18119 18200
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18146 "src/rosetteInterface/lexer.mll" 67 18119 18201
+type(
+  exn
+)
+"src/rosetteInterface/lexer.mll" 67 18119 18138 "src/rosetteInterface/lexer.mll" 67 18119 18203
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18247 "src/rosetteInterface/lexer.ml" 397 18243 18264
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 397 18243 18268 "src/rosetteInterface/lexer.ml" 398 18303 18355
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18268 "src/rosetteInterface/lexer.ml" 397 18243 18274
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18268 "src/rosetteInterface/lexer.ml" 397 18243 18293
+type(
+  Lexing.lexbuf -> unit
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18294 "src/rosetteInterface/lexer.ml" 397 18243 18300
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18268 "src/rosetteInterface/lexer.ml" 397 18243 18300
+call(
+  stack
+)
+type(
+  unit
+)
+"src/rosetteInterface/lexer.ml" 398 18303 18309 "src/rosetteInterface/lexer.ml" 398 18303 18330
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  int_ref __ocaml_lex_token_rec "src/rosetteInterface/lexer.ml" 250 14400 14404 "src/rosetteInterface/lexer.ml" 250 14400 14425
+)
+"src/rosetteInterface/lexer.ml" 398 18303 18331 "src/rosetteInterface/lexer.ml" 398 18303 18337
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 250 14400 14426 "src/rosetteInterface/lexer.ml" 250 14400 14432
+)
+"src/rosetteInterface/lexer.ml" 398 18303 18338 "src/rosetteInterface/lexer.ml" 398 18303 18355
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 397 18243 18247 "src/rosetteInterface/lexer.ml" 397 18243 18264
+)
+"src/rosetteInterface/lexer.ml" 398 18303 18309 "src/rosetteInterface/lexer.ml" 398 18303 18355
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 397 18243 18268 "src/rosetteInterface/lexer.ml" 398 18303 18355
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 251 14453 14455 "src/rosetteInterface/lexer.ml" 398 18303 18355
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  def string "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 400 18357 18368 "src/rosetteInterface/lexer.ml" 400 18357 18374
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 401 18377 18381 "src/rosetteInterface/lexer.ml" 401 18377 18413
+)
+"src/rosetteInterface/lexer.ml" 401 18377 18381 "src/rosetteInterface/lexer.ml" 401 18377 18403
+type(
+  Lexing.lexbuf -> int -> string list
+)
+ident(
+  int_ref __ocaml_lex_string_rec "src/rosetteInterface/lexer.ml" 402 18414 18418 "src/rosetteInterface/lexer.ml" 402 18414 18440
+)
+"src/rosetteInterface/lexer.ml" 401 18377 18404 "src/rosetteInterface/lexer.ml" 401 18377 18410
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 400 18357 18368 "src/rosetteInterface/lexer.ml" 400 18357 18374
+)
+"src/rosetteInterface/lexer.ml" 401 18377 18411 "src/rosetteInterface/lexer.ml" 401 18377 18413
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 401 18377 18381 "src/rosetteInterface/lexer.ml" 401 18377 18413
+call(
+  tail
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 402 18414 18418 "src/rosetteInterface/lexer.ml" 402 18414 18440
+type(
+  Lexing.lexbuf -> int -> string list
+)
+ident(
+  def __ocaml_lex_string_rec "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18448 "src/rosetteInterface/lexer.ml" 440 19559 19612
+)
+"src/rosetteInterface/lexer.ml" 402 18414 18448 "src/rosetteInterface/lexer.ml" 402 18414 18465
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 403 18468 18470 "src/rosetteInterface/lexer.ml" 440 19559 19612
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18476 "src/rosetteInterface/lexer.ml" 403 18468 18489
+type(
+  Lexing.lex_tables -> int -> Lexing.lexbuf -> int
+)
+ident(
+  ext_ref Lexing.engine
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18490 "src/rosetteInterface/lexer.ml" 403 18468 18508
+type(
+  Lexing.lex_tables
+)
+ident(
+  int_ref __ocaml_lex_tables "src/rosetteInterface/lexer.ml" 33 591 595 "src/rosetteInterface/lexer.ml" 33 591 613
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18509 "src/rosetteInterface/lexer.ml" 403 18468 18526
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 402 18414 18448 "src/rosetteInterface/lexer.ml" 402 18414 18465
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18527 "src/rosetteInterface/lexer.ml" 403 18468 18533
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18476 "src/rosetteInterface/lexer.ml" 403 18468 18533
+call(
+  stack
+)
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 404 18539 18547 "src/rosetteInterface/lexer.ml" 404 18539 18548
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 70 18590 18613 "src/rosetteInterface/lexer.mll" 70 18590 18617
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 70 18590 18622 "src/rosetteInterface/lexer.mll" 70 18590 18628
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 70 18590 18629 "src/rosetteInterface/lexer.mll" 70 18590 18635
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.mll" 70 18590 18621 "src/rosetteInterface/lexer.mll" 70 18590 18636
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 70 18590 18611 "src/rosetteInterface/lexer.mll" 70 18590 18638
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 409 18678 18682 "src/rosetteInterface/lexer.ml" 409 18678 18683
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 71 18725 18748 "src/rosetteInterface/lexer.mll" 71 18725 18752
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 71 18725 18757 "src/rosetteInterface/lexer.mll" 71 18725 18763
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 71 18725 18764 "src/rosetteInterface/lexer.mll" 71 18725 18770
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.mll" 71 18725 18756 "src/rosetteInterface/lexer.mll" 71 18725 18771
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 71 18725 18746 "src/rosetteInterface/lexer.mll" 71 18725 18773
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 414 18813 18817 "src/rosetteInterface/lexer.ml" 414 18813 18818
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 72 18860 18883 "src/rosetteInterface/lexer.mll" 72 18860 18887
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 72 18860 18892 "src/rosetteInterface/lexer.mll" 72 18860 18898
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 72 18860 18899 "src/rosetteInterface/lexer.mll" 72 18860 18905
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.mll" 72 18860 18891 "src/rosetteInterface/lexer.mll" 72 18860 18906
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 72 18860 18881 "src/rosetteInterface/lexer.mll" 72 18860 18908
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 419 18948 18952 "src/rosetteInterface/lexer.ml" 419 18948 18953
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 73 18995 19018 "src/rosetteInterface/lexer.mll" 73 18995 19022
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 73 18995 19027 "src/rosetteInterface/lexer.mll" 73 18995 19033
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 73 18995 19034 "src/rosetteInterface/lexer.mll" 73 18995 19040
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.mll" 73 18995 19026 "src/rosetteInterface/lexer.mll" 73 18995 19041
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 73 18995 19016 "src/rosetteInterface/lexer.mll" 73 18995 19043
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 424 19083 19087 "src/rosetteInterface/lexer.ml" 424 19083 19088
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 74 19130 19151 "src/rosetteInterface/lexer.mll" 74 19130 19157
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 429 19197 19201 "src/rosetteInterface/lexer.ml" 429 19197 19202
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 75 19248 19257 "src/rosetteInterface/lexer.mll" 75 19248 19258
+type(
+  char
+)
+ident(
+  def c "src/rosetteInterface/lexer.mll" 75 19398 19419 "src/rosetteInterface/lexer.mll" 75 19398 19459
+)
+"src/rosetteInterface/lexer.ml" 434 19297 19299 "src/rosetteInterface/lexer.ml" 434 19297 19321
+type(
+  Lexing.lexbuf -> int -> char
+)
+ident(
+  ext_ref Lexing.sub_lexeme_char
+)
+"src/rosetteInterface/lexer.ml" 434 19297 19322 "src/rosetteInterface/lexer.ml" 434 19297 19328
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 434 19297 19329 "src/rosetteInterface/lexer.ml" 434 19297 19335
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 434 19297 19329 "src/rosetteInterface/lexer.ml" 434 19297 19356
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 434 19297 19299 "src/rosetteInterface/lexer.ml" 434 19297 19356
+call(
+  stack
+)
+type(
+  char
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19422 "src/rosetteInterface/lexer.mll" 75 19398 19433
+type(
+  int -> char -> string
+)
+ident(
+  ext_ref String.make
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19434 "src/rosetteInterface/lexer.mll" 75 19398 19435
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19436 "src/rosetteInterface/lexer.mll" 75 19398 19437
+type(
+  char
+)
+ident(
+  int_ref c "src/rosetteInterface/lexer.mll" 75 19248 19257 "src/rosetteInterface/lexer.mll" 75 19248 19258
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19421 "src/rosetteInterface/lexer.mll" 75 19398 19438
+call(
+  stack
+)
+type(
+  string
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19443 "src/rosetteInterface/lexer.mll" 75 19398 19449
+type(
+  Lexing.lexbuf -> string list
+)
+ident(
+  int_ref string "src/rosetteInterface/lexer.ml" 400 18357 18361 "src/rosetteInterface/lexer.ml" 400 18357 18367
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19450 "src/rosetteInterface/lexer.mll" 75 19398 19456
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19442 "src/rosetteInterface/lexer.mll" 75 19398 19457
+call(
+  stack
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.mll" 75 19398 19419 "src/rosetteInterface/lexer.mll" 75 19398 19459
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 430 19206 19206 "src/rosetteInterface/lexer.mll" 75 19398 19459
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19503 "src/rosetteInterface/lexer.ml" 439 19499 19520
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 439 19499 19524 "src/rosetteInterface/lexer.ml" 440 19559 19612
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19524 "src/rosetteInterface/lexer.ml" 439 19499 19530
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19524 "src/rosetteInterface/lexer.ml" 439 19499 19549
+type(
+  Lexing.lexbuf -> unit
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19550 "src/rosetteInterface/lexer.ml" 439 19499 19556
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19524 "src/rosetteInterface/lexer.ml" 439 19499 19556
+call(
+  stack
+)
+type(
+  unit
+)
+"src/rosetteInterface/lexer.ml" 440 19559 19565 "src/rosetteInterface/lexer.ml" 440 19559 19587
+type(
+  Lexing.lexbuf -> int -> string list
+)
+ident(
+  int_ref __ocaml_lex_string_rec "src/rosetteInterface/lexer.ml" 402 18414 18418 "src/rosetteInterface/lexer.ml" 402 18414 18440
+)
+"src/rosetteInterface/lexer.ml" 440 19559 19588 "src/rosetteInterface/lexer.ml" 440 19559 19594
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 402 18414 18441 "src/rosetteInterface/lexer.ml" 402 18414 18447
+)
+"src/rosetteInterface/lexer.ml" 440 19559 19595 "src/rosetteInterface/lexer.ml" 440 19559 19612
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 439 19499 19503 "src/rosetteInterface/lexer.ml" 439 19499 19520
+)
+"src/rosetteInterface/lexer.ml" 440 19559 19565 "src/rosetteInterface/lexer.ml" 440 19559 19612
+call(
+  tail
+)
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 439 19499 19524 "src/rosetteInterface/lexer.ml" 440 19559 19612
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 403 18468 18470 "src/rosetteInterface/lexer.ml" 440 19559 19612
+type(
+  string list
+)
+"src/rosetteInterface/lexer.ml" 442 19614 19618 "src/rosetteInterface/lexer.ml" 442 19614 19625
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  def comment "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 442 19614 19626 "src/rosetteInterface/lexer.ml" 442 19614 19632
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 443 19635 19639 "src/rosetteInterface/lexer.ml" 443 19635 19672
+)
+"src/rosetteInterface/lexer.ml" 443 19635 19639 "src/rosetteInterface/lexer.ml" 443 19635 19662
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  int_ref __ocaml_lex_comment_rec "src/rosetteInterface/lexer.ml" 444 19673 19677 "src/rosetteInterface/lexer.ml" 444 19673 19700
+)
+"src/rosetteInterface/lexer.ml" 443 19635 19663 "src/rosetteInterface/lexer.ml" 443 19635 19669
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 442 19614 19626 "src/rosetteInterface/lexer.ml" 442 19614 19632
+)
+"src/rosetteInterface/lexer.ml" 443 19635 19670 "src/rosetteInterface/lexer.ml" 443 19635 19672
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 443 19635 19639 "src/rosetteInterface/lexer.ml" 443 19635 19672
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 444 19673 19677 "src/rosetteInterface/lexer.ml" 444 19673 19700
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  def __ocaml_lex_comment_rec "src/rosetteInterface/lexer.ml" 248 14342 14342 "src/rosetteInterface/lexer.ml" 1 0 -1
+)
+"src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+type(
+  Lexing.lexbuf
+)
+ident(
+  def lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19708 "src/rosetteInterface/lexer.ml" 462 20228 20282
+)
+"src/rosetteInterface/lexer.ml" 444 19673 19708 "src/rosetteInterface/lexer.ml" 444 19673 19725
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 445 19728 19730 "src/rosetteInterface/lexer.ml" 462 20228 20282
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19736 "src/rosetteInterface/lexer.ml" 445 19728 19749
+type(
+  Lexing.lex_tables -> int -> Lexing.lexbuf -> int
+)
+ident(
+  ext_ref Lexing.engine
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19750 "src/rosetteInterface/lexer.ml" 445 19728 19768
+type(
+  Lexing.lex_tables
+)
+ident(
+  int_ref __ocaml_lex_tables "src/rosetteInterface/lexer.ml" 33 591 595 "src/rosetteInterface/lexer.ml" 33 591 613
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19769 "src/rosetteInterface/lexer.ml" 445 19728 19786
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 444 19673 19708 "src/rosetteInterface/lexer.ml" 444 19673 19725
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19787 "src/rosetteInterface/lexer.ml" 445 19728 19793
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19736 "src/rosetteInterface/lexer.ml" 445 19728 19793
+call(
+  stack
+)
+type(
+  int
+)
+"src/rosetteInterface/lexer.ml" 446 19799 19807 "src/rosetteInterface/lexer.ml" 446 19799 19808
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 79 19850 19873 "src/rosetteInterface/lexer.mll" 79 19850 19878
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  int_ref token "src/rosetteInterface/lexer.ml" 248 14342 14350 "src/rosetteInterface/lexer.ml" 248 14342 14355
+)
+"src/rosetteInterface/lexer.mll" 79 19850 19879 "src/rosetteInterface/lexer.mll" 79 19850 19885
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.mll" 79 19850 19871 "src/rosetteInterface/lexer.mll" 79 19850 19887
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 451 19927 19931 "src/rosetteInterface/lexer.ml" 451 19927 19932
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 80 19974 19995 "src/rosetteInterface/lexer.mll" 80 19974 20002
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 456 20042 20046 "src/rosetteInterface/lexer.ml" 456 20042 20047
+type(
+  int
+)
+"src/rosetteInterface/lexer.mll" 81 20089 20112 "src/rosetteInterface/lexer.mll" 81 20089 20119
+type(
+  Lexing.lexbuf -> Parser.token
+)
+ident(
+  int_ref comment "src/rosetteInterface/lexer.ml" 442 19614 19618 "src/rosetteInterface/lexer.ml" 442 19614 19625
+)
+"src/rosetteInterface/lexer.mll" 81 20089 20120 "src/rosetteInterface/lexer.mll" 81 20089 20126
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.mll" 81 20089 20110 "src/rosetteInterface/lexer.mll" 81 20089 20128
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20172 "src/rosetteInterface/lexer.ml" 461 20168 20189
+type(
+  int
+)
+ident(
+  def __ocaml_lex_state "src/rosetteInterface/lexer.ml" 461 20168 20193 "src/rosetteInterface/lexer.ml" 462 20228 20282
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20193 "src/rosetteInterface/lexer.ml" 461 20168 20199
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20193 "src/rosetteInterface/lexer.ml" 461 20168 20218
+type(
+  Lexing.lexbuf -> unit
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20219 "src/rosetteInterface/lexer.ml" 461 20168 20225
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20193 "src/rosetteInterface/lexer.ml" 461 20168 20225
+call(
+  stack
+)
+type(
+  unit
+)
+"src/rosetteInterface/lexer.ml" 462 20228 20234 "src/rosetteInterface/lexer.ml" 462 20228 20257
+type(
+  Lexing.lexbuf -> int -> Parser.token
+)
+ident(
+  int_ref __ocaml_lex_comment_rec "src/rosetteInterface/lexer.ml" 444 19673 19677 "src/rosetteInterface/lexer.ml" 444 19673 19700
+)
+"src/rosetteInterface/lexer.ml" 462 20228 20258 "src/rosetteInterface/lexer.ml" 462 20228 20264
+type(
+  Lexing.lexbuf
+)
+ident(
+  int_ref lexbuf "src/rosetteInterface/lexer.ml" 444 19673 19701 "src/rosetteInterface/lexer.ml" 444 19673 19707
+)
+"src/rosetteInterface/lexer.ml" 462 20228 20265 "src/rosetteInterface/lexer.ml" 462 20228 20282
+type(
+  int
+)
+ident(
+  int_ref __ocaml_lex_state "src/rosetteInterface/lexer.ml" 461 20168 20172 "src/rosetteInterface/lexer.ml" 461 20168 20189
+)
+"src/rosetteInterface/lexer.ml" 462 20228 20234 "src/rosetteInterface/lexer.ml" 462 20228 20282
+call(
+  tail
+)
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 461 20168 20193 "src/rosetteInterface/lexer.ml" 462 20228 20282
+type(
+  Parser.token
+)
+"src/rosetteInterface/lexer.ml" 445 19728 19730 "src/rosetteInterface/lexer.ml" 462 20228 20282
+type(
+  Parser.token
+)

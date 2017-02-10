@@ -14,10 +14,9 @@ examples/Basic
 
 # Build / compilation directories
 # OCaml
-consynth/_build
-consynth/canalysis/_build
-consynth/tbb_examples/*.cpp
-consynth/dafny_examples/*.dfy
+_build
+tbb_examples/*.cpp
+dafny_examples/*.dfy
 alt-cil/
 *.mldylib
 *.mlib

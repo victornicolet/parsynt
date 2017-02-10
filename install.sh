@@ -75,12 +75,12 @@ do
 done
 
 # Install the collection in raco
-PKG_CONSYNTH='consynth'
+PKG_CONSYNTH='parsynth_racket'
 CONSYNTH_INSTL_SRC=$(raco_install_src $PKG_CONSYNTH)
 if [[ -z $CONSYNTH_INSTL_SRC ]]
 then
     echo "Installing local package consynth ..."
-    cd consynth;
+    cd parsynth_racket;
     # Errors printed come from the fact that the generator uses racket
     # skeletons for the sketches. Probably should think about a better
     # solution ...

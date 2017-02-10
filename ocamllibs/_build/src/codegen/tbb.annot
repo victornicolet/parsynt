@@ -1,0 +1,6519 @@
+"src/codegen/tbb.ml" 11 100 104 "src/codegen/tbb.ml" 11 100 125
+type(
+  string
+)
+ident(
+  def class_member_appendix "src/codegen/tbb.ml" 13 207 207 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 11 100 128 "src/codegen/tbb.ml" 11 100 148
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 11 100 149 "src/codegen/tbb.ml" 11 100 172
+type(
+  string
+)
+"src/codegen/tbb.ml" 11 100 128 "src/codegen/tbb.ml" 11 100 172
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 17 282 286 "src/codegen/tbb.ml" 17 282 296
+type(
+  Format.formatter -> cpp_include -> unit
+)
+ident(
+  def pp_include "src/codegen/tbb.ml" 22 444 444 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 17 282 297 "src/codegen/tbb.ml" 17 282 300
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 17 282 301 "src/codegen/tbb.ml" 20 388 442
+)
+"src/codegen/tbb.ml" 17 282 301 "src/codegen/tbb.ml" 17 282 307
+type(
+  cpp_include
+)
+ident(
+  def includ "src/codegen/tbb.ml" 18 310 312 "src/codegen/tbb.ml" 20 388 442
+)
+"src/codegen/tbb.ml" 18 310 318 "src/codegen/tbb.ml" 18 310 324
+type(
+  cpp_include
+)
+ident(
+  int_ref includ "src/codegen/tbb.ml" 17 282 301 "src/codegen/tbb.ml" 17 282 307
+)
+"src/codegen/tbb.ml" 19 330 347 "src/codegen/tbb.ml" 19 330 348
+type(
+  string
+)
+ident(
+  def s "src/codegen/tbb.ml" 19 330 352 "src/codegen/tbb.ml" 19 330 387
+)
+"src/codegen/tbb.ml" 19 330 334 "src/codegen/tbb.ml" 19 330 348
+type(
+  cpp_include
+)
+"src/codegen/tbb.ml" 19 330 352 "src/codegen/tbb.ml" 19 330 359
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 19 330 360 "src/codegen/tbb.ml" 19 330 363
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 17 282 297 "src/codegen/tbb.ml" 17 282 300
+)
+"src/codegen/tbb.ml" 19 330 364 "src/codegen/tbb.ml" 19 330 385
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 19 330 386 "src/codegen/tbb.ml" 19 330 387
+type(
+  string
+)
+ident(
+  int_ref s "src/codegen/tbb.ml" 19 330 347 "src/codegen/tbb.ml" 19 330 348
+)
+"src/codegen/tbb.ml" 19 330 352 "src/codegen/tbb.ml" 19 330 387
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 20 388 406 "src/codegen/tbb.ml" 20 388 407
+type(
+  string
+)
+ident(
+  def s "src/codegen/tbb.ml" 20 388 411 "src/codegen/tbb.ml" 20 388 442
+)
+"src/codegen/tbb.ml" 20 388 392 "src/codegen/tbb.ml" 20 388 407
+type(
+  cpp_include
+)
+"src/codegen/tbb.ml" 20 388 411 "src/codegen/tbb.ml" 20 388 418
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 20 388 419 "src/codegen/tbb.ml" 20 388 422
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 17 282 297 "src/codegen/tbb.ml" 17 282 300
+)
+"src/codegen/tbb.ml" 20 388 423 "src/codegen/tbb.ml" 20 388 440
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 20 388 441 "src/codegen/tbb.ml" 20 388 442
+type(
+  string
+)
+ident(
+  int_ref s "src/codegen/tbb.ml" 20 388 406 "src/codegen/tbb.ml" 20 388 407
+)
+"src/codegen/tbb.ml" 20 388 411 "src/codegen/tbb.ml" 20 388 442
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 18 310 312 "src/codegen/tbb.ml" 20 388 442
+type(
+  unit
+)
+"src/codegen/tbb.ml" 29 547 551 "src/codegen/tbb.ml" 29 547 568
+type(
+  Format.formatter -> cpp_constr_arg -> unit
+)
+ident(
+  def pp_cpp_constr_arg "src/codegen/tbb.ml" 40 816 816 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 29 547 569 "src/codegen/tbb.ml" 29 547 572
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 30 575 577 "src/codegen/tbb.ml" 38 792 814
+)
+"src/codegen/tbb.ml" 31 586 600 "src/codegen/tbb.ml" 31 586 602
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/codegen/tbb.ml" 32 606 610 "src/codegen/tbb.ml" 33 630 676
+)
+"src/codegen/tbb.ml" 31 586 590 "src/codegen/tbb.ml" 31 586 602
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 32 606 610 "src/codegen/tbb.ml" 32 606 617
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 32 606 618 "src/codegen/tbb.ml" 32 606 621
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 29 547 569 "src/codegen/tbb.ml" 29 547 572
+)
+"src/codegen/tbb.ml" 32 606 622 "src/codegen/tbb.ml" 32 606 629
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 33 630 637 "src/codegen/tbb.ml" 33 630 649
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 33 630 650 "src/codegen/tbb.ml" 33 630 657
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 33 630 658 "src/codegen/tbb.ml" 33 630 660
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 31 586 600 "src/codegen/tbb.ml" 31 586 602
+)
+"src/codegen/tbb.ml" 33 630 658 "src/codegen/tbb.ml" 33 630 666
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 33 630 636 "src/codegen/tbb.ml" 33 630 667
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 33 630 668 "src/codegen/tbb.ml" 33 630 670
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 31 586 600 "src/codegen/tbb.ml" 31 586 602
+)
+"src/codegen/tbb.ml" 33 630 668 "src/codegen/tbb.ml" 33 630 676
+type(
+  string
+)
+"src/codegen/tbb.ml" 32 606 610 "src/codegen/tbb.ml" 33 630 676
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 34 677 694 "src/codegen/tbb.ml" 34 677 696
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/codegen/tbb.ml" 35 700 704 "src/codegen/tbb.ml" 36 725 771
+)
+"src/codegen/tbb.ml" 34 677 681 "src/codegen/tbb.ml" 34 677 696
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 35 700 704 "src/codegen/tbb.ml" 35 700 711
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 35 700 712 "src/codegen/tbb.ml" 35 700 715
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 29 547 569 "src/codegen/tbb.ml" 29 547 572
+)
+"src/codegen/tbb.ml" 35 700 716 "src/codegen/tbb.ml" 35 700 724
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 36 725 732 "src/codegen/tbb.ml" 36 725 744
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 36 725 745 "src/codegen/tbb.ml" 36 725 752
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 36 725 753 "src/codegen/tbb.ml" 36 725 755
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 34 677 694 "src/codegen/tbb.ml" 34 677 696
+)
+"src/codegen/tbb.ml" 36 725 753 "src/codegen/tbb.ml" 36 725 761
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 36 725 731 "src/codegen/tbb.ml" 36 725 762
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 36 725 763 "src/codegen/tbb.ml" 36 725 765
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 34 677 694 "src/codegen/tbb.ml" 34 677 696
+)
+"src/codegen/tbb.ml" 36 725 763 "src/codegen/tbb.ml" 36 725 771
+type(
+  string
+)
+"src/codegen/tbb.ml" 35 700 704 "src/codegen/tbb.ml" 36 725 771
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 37 772 787 "src/codegen/tbb.ml" 37 772 788
+type(
+  string
+)
+ident(
+  def s "src/codegen/tbb.ml" 38 792 796 "src/codegen/tbb.ml" 38 792 814
+)
+"src/codegen/tbb.ml" 37 772 776 "src/codegen/tbb.ml" 37 772 788
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 38 792 796 "src/codegen/tbb.ml" 38 792 803
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 38 792 804 "src/codegen/tbb.ml" 38 792 807
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 29 547 569 "src/codegen/tbb.ml" 29 547 572
+)
+"src/codegen/tbb.ml" 38 792 808 "src/codegen/tbb.ml" 38 792 812
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 38 792 813 "src/codegen/tbb.ml" 38 792 814
+type(
+  string
+)
+ident(
+  int_ref s "src/codegen/tbb.ml" 37 772 787 "src/codegen/tbb.ml" 37 772 788
+)
+"src/codegen/tbb.ml" 38 792 796 "src/codegen/tbb.ml" 38 792 814
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 30 575 577 "src/codegen/tbb.ml" 38 792 814
+type(
+  cpp_constr_arg -> unit
+)
+"src/codegen/tbb.ml" 40 816 820 "src/codegen/tbb.ml" 40 816 840
+type(
+  Format.formatter -> cpp_constr_arg -> unit
+)
+ident(
+  def pp_constr_arg_in_app "src/codegen/tbb.ml" 48 972 972 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 40 816 841 "src/codegen/tbb.ml" 40 816 844
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 41 847 849 "src/codegen/tbb.ml" 46 948 970
+)
+"src/codegen/tbb.ml" 42 858 872 "src/codegen/tbb.ml" 42 858 874
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/codegen/tbb.ml" 44 898 902 "src/codegen/tbb.ml" 44 898 927
+)
+"src/codegen/tbb.ml" 42 858 862 "src/codegen/tbb.ml" 42 858 874
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 43 875 892 "src/codegen/tbb.ml" 43 875 894
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/codegen/tbb.ml" 44 898 902 "src/codegen/tbb.ml" 44 898 927
+)
+"src/codegen/tbb.ml" 43 875 879 "src/codegen/tbb.ml" 43 875 894
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 42 858 862 "src/codegen/tbb.ml" 43 875 894
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 44 898 902 "src/codegen/tbb.ml" 44 898 909
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 44 898 910 "src/codegen/tbb.ml" 44 898 913
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 40 816 841 "src/codegen/tbb.ml" 40 816 844
+)
+"src/codegen/tbb.ml" 44 898 914 "src/codegen/tbb.ml" 44 898 918
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 44 898 919 "src/codegen/tbb.ml" 44 898 921
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 42 858 872 "src/codegen/tbb.ml" 42 858 874
+)
+"src/codegen/tbb.ml" 44 898 919 "src/codegen/tbb.ml" 44 898 927
+type(
+  string
+)
+"src/codegen/tbb.ml" 44 898 902 "src/codegen/tbb.ml" 44 898 927
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 45 928 943 "src/codegen/tbb.ml" 45 928 944
+type(
+  string
+)
+ident(
+  def s "src/codegen/tbb.ml" 46 948 952 "src/codegen/tbb.ml" 46 948 970
+)
+"src/codegen/tbb.ml" 45 928 932 "src/codegen/tbb.ml" 45 928 944
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 46 948 952 "src/codegen/tbb.ml" 46 948 959
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 46 948 960 "src/codegen/tbb.ml" 46 948 963
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 40 816 841 "src/codegen/tbb.ml" 40 816 844
+)
+"src/codegen/tbb.ml" 46 948 964 "src/codegen/tbb.ml" 46 948 968
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 46 948 969 "src/codegen/tbb.ml" 46 948 970
+type(
+  string
+)
+ident(
+  int_ref s "src/codegen/tbb.ml" 45 928 943 "src/codegen/tbb.ml" 45 928 944
+)
+"src/codegen/tbb.ml" 46 948 952 "src/codegen/tbb.ml" 46 948 970
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 41 847 849 "src/codegen/tbb.ml" 46 948 970
+type(
+  cpp_constr_arg -> unit
+)
+"src/codegen/tbb.ml" 55 1124 1128 "src/codegen/tbb.ml" 55 1124 1142
+type(
+  Format.formatter -> Cil.varinfo * init_expr -> unit
+)
+ident(
+  def pp_initializer "src/codegen/tbb.ml" 66 1467 1467 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 55 1124 1143 "src/codegen/tbb.ml" 55 1124 1146
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 55 1124 1147 "src/codegen/tbb.ml" 63 1407 1440
+)
+"src/codegen/tbb.ml" 55 1124 1148 "src/codegen/tbb.ml" 55 1124 1150
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/codegen/tbb.ml" 56 1160 1162 "src/codegen/tbb.ml" 63 1407 1440
+)
+"src/codegen/tbb.ml" 55 1124 1152 "src/codegen/tbb.ml" 55 1124 1156
+type(
+  init_expr
+)
+ident(
+  def init "src/codegen/tbb.ml" 56 1160 1162 "src/codegen/tbb.ml" 63 1407 1440
+)
+"src/codegen/tbb.ml" 55 1124 1147 "src/codegen/tbb.ml" 55 1124 1157
+type(
+  Cil.varinfo * init_expr
+)
+"src/codegen/tbb.ml" 56 1160 1162 "src/codegen/tbb.ml" 56 1160 1169
+type(
+  Format.formatter ->
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 56 1160 1170 "src/codegen/tbb.ml" 56 1160 1173
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 55 1124 1143 "src/codegen/tbb.ml" 55 1124 1146
+)
+"src/codegen/tbb.ml" 56 1160 1174 "src/codegen/tbb.ml" 56 1160 1184
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 57 1185 1189 "src/codegen/tbb.ml" 57 1185 1210
+type(
+  string
+)
+ident(
+  int_ref class_member_appendix "src/codegen/tbb.ml" 11 100 104 "src/codegen/tbb.ml" 11 100 125
+)
+"src/codegen/tbb.ml" 58 1211 1215 "src/codegen/tbb.ml" 58 1211 1217
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 55 1124 1148 "src/codegen/tbb.ml" 55 1124 1150
+)
+"src/codegen/tbb.ml" 58 1211 1215 "src/codegen/tbb.ml" 58 1211 1223
+type(
+  string
+)
+"src/codegen/tbb.ml" 59 1224 1235 "src/codegen/tbb.ml" 59 1224 1239
+type(
+  init_expr
+)
+ident(
+  int_ref init "src/codegen/tbb.ml" 55 1124 1152 "src/codegen/tbb.ml" 55 1124 1156
+)
+"src/codegen/tbb.ml" 60 1245 1262 "src/codegen/tbb.ml" 60 1245 1265
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def exp "src/codegen/tbb.ml" 60 1245 1269 "src/codegen/tbb.ml" 61 1312 1360
+)
+"src/codegen/tbb.ml" 60 1245 1252 "src/codegen/tbb.ml" 60 1245 1265
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 60 1245 1270 "src/codegen/tbb.ml" 60 1245 1277
+type(
+  Format.formatter ->
+  ((Format.formatter -> SketchTypes.skExpr -> unit) ->
+   SketchTypes.skExpr -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> SketchTypes.skExpr -> unit) ->
+  SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 60 1245 1278 "src/codegen/tbb.ml" 60 1245 1291
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.str_formatter
+)
+"src/codegen/tbb.ml" 60 1245 1292 "src/codegen/tbb.ml" 60 1245 1296
+type(
+  ((Format.formatter -> SketchTypes.skExpr -> unit) ->
+   SketchTypes.skExpr -> unit, Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 60 1245 1297 "src/codegen/tbb.ml" 60 1245 1306
+type(
+  Format.formatter -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref SPretty.pp_skexpr
+)
+"src/codegen/tbb.ml" 60 1245 1307 "src/codegen/tbb.ml" 60 1245 1310
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref exp "src/codegen/tbb.ml" 60 1245 1262 "src/codegen/tbb.ml" 60 1245 1265
+)
+"src/codegen/tbb.ml" 60 1245 1270 "src/codegen/tbb.ml" 60 1245 1310
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 61 1312 1337 "src/codegen/tbb.ml" 61 1312 1356
+type(
+  unit -> string
+)
+ident(
+  ext_ref Format.flush_str_formatter
+)
+"src/codegen/tbb.ml" 61 1312 1357 "src/codegen/tbb.ml" 61 1312 1359
+type(
+  unit
+)
+"src/codegen/tbb.ml" 61 1312 1337 "src/codegen/tbb.ml" 61 1312 1359
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 60 1245 1269 "src/codegen/tbb.ml" 61 1312 1360
+type(
+  string
+)
+"src/codegen/tbb.ml" 62 1361 1381 "src/codegen/tbb.ml" 62 1361 1384
+type(
+  Cil.varinfo
+)
+ident(
+  def vi' "src/codegen/tbb.ml" 62 1361 1392 "src/codegen/tbb.ml" 62 1361 1406
+)
+"src/codegen/tbb.ml" 62 1361 1386 "src/codegen/tbb.ml" 62 1361 1387
+type(
+  string
+)
+ident(
+  def s "src/codegen/tbb.ml" 62 1361 1392 "src/codegen/tbb.ml" 62 1361 1406
+)
+"src/codegen/tbb.ml" 62 1361 1368 "src/codegen/tbb.ml" 62 1361 1388
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 62 1361 1392 "src/codegen/tbb.ml" 62 1361 1393
+type(
+  string
+)
+ident(
+  int_ref s "src/codegen/tbb.ml" 62 1361 1386 "src/codegen/tbb.ml" 62 1361 1387
+)
+"src/codegen/tbb.ml" 62 1361 1393 "src/codegen/tbb.ml" 62 1361 1394
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 62 1361 1394 "src/codegen/tbb.ml" 62 1361 1397
+type(
+  string
+)
+"src/codegen/tbb.ml" 62 1361 1397 "src/codegen/tbb.ml" 62 1361 1398
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 62 1361 1398 "src/codegen/tbb.ml" 62 1361 1400
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 55 1124 1148 "src/codegen/tbb.ml" 55 1124 1150
+)
+"src/codegen/tbb.ml" 62 1361 1398 "src/codegen/tbb.ml" 62 1361 1406
+type(
+  string
+)
+"src/codegen/tbb.ml" 62 1361 1394 "src/codegen/tbb.ml" 62 1361 1406
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 62 1361 1392 "src/codegen/tbb.ml" 62 1361 1406
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 63 1407 1423 "src/codegen/tbb.ml" 63 1407 1426
+type(
+  Cil.varinfo
+)
+ident(
+  def vi' "src/codegen/tbb.ml" 63 1407 1430 "src/codegen/tbb.ml" 63 1407 1439
+)
+"src/codegen/tbb.ml" 63 1407 1414 "src/codegen/tbb.ml" 63 1407 1426
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 63 1407 1430 "src/codegen/tbb.ml" 63 1407 1433
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi' "src/codegen/tbb.ml" 63 1407 1423 "src/codegen/tbb.ml" 63 1407 1426
+)
+"src/codegen/tbb.ml" 63 1407 1430 "src/codegen/tbb.ml" 63 1407 1439
+type(
+  string
+)
+"src/codegen/tbb.ml" 59 1224 1228 "src/codegen/tbb.ml" 63 1407 1440
+type(
+  string
+)
+"src/codegen/tbb.ml" 56 1160 1162 "src/codegen/tbb.ml" 63 1407 1440
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 76 1652 1656 "src/codegen/tbb.ml" 76 1652 1671
+type(
+  string ->
+  Cil.typ ->
+  int ->
+  cpp_constr_arg list ->
+  Cil.stmt -> cpp_constr_initializer list -> cpp_class_constr
+)
+ident(
+  def makeConstructor "src/codegen/tbb.ml" 80 1794 1794 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 76 1652 1672 "src/codegen/tbb.ml" 76 1652 1674
+type(
+  string
+)
+ident(
+  def cn "src/codegen/tbb.ml" 76 1652 1675 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 76 1652 1675 "src/codegen/tbb.ml" 76 1652 1677
+type(
+  Cil.typ
+)
+ident(
+  def ct "src/codegen/tbb.ml" 76 1652 1678 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 76 1652 1678 "src/codegen/tbb.ml" 76 1652 1681
+type(
+  int
+)
+ident(
+  def cid "src/codegen/tbb.ml" 76 1652 1682 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 76 1652 1682 "src/codegen/tbb.ml" 76 1652 1687
+type(
+  cpp_constr_arg list
+)
+ident(
+  def cargs "src/codegen/tbb.ml" 76 1652 1688 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 76 1652 1688 "src/codegen/tbb.ml" 76 1652 1690
+type(
+  Cil.stmt
+)
+ident(
+  def cb "src/codegen/tbb.ml" 76 1652 1691 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 76 1652 1691 "src/codegen/tbb.ml" 76 1652 1696
+type(
+  cpp_constr_initializer list
+)
+ident(
+  def cinit "src/codegen/tbb.ml" 77 1699 1701 "src/codegen/tbb.ml" 78 1738 1792
+)
+"src/codegen/tbb.ml" 77 1699 1709 "src/codegen/tbb.ml" 77 1699 1712
+type(
+  int
+)
+ident(
+  int_ref cid "src/codegen/tbb.ml" 76 1652 1678 "src/codegen/tbb.ml" 76 1652 1681
+)
+"src/codegen/tbb.ml" 77 1699 1722 "src/codegen/tbb.ml" 77 1699 1724
+type(
+  Cil.typ
+)
+ident(
+  int_ref ct "src/codegen/tbb.ml" 76 1652 1675 "src/codegen/tbb.ml" 76 1652 1677
+)
+"src/codegen/tbb.ml" 77 1699 1734 "src/codegen/tbb.ml" 77 1699 1736
+type(
+  string
+)
+ident(
+  int_ref cn "src/codegen/tbb.ml" 76 1652 1672 "src/codegen/tbb.ml" 76 1652 1674
+)
+"src/codegen/tbb.ml" 78 1738 1750 "src/codegen/tbb.ml" 78 1738 1755
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref cargs "src/codegen/tbb.ml" 76 1652 1682 "src/codegen/tbb.ml" 76 1652 1687
+)
+"src/codegen/tbb.ml" 78 1738 1765 "src/codegen/tbb.ml" 78 1738 1767
+type(
+  Cil.stmt
+)
+ident(
+  int_ref cb "src/codegen/tbb.ml" 76 1652 1688 "src/codegen/tbb.ml" 76 1652 1690
+)
+"src/codegen/tbb.ml" 78 1738 1785 "src/codegen/tbb.ml" 78 1738 1790
+type(
+  cpp_constr_initializer list
+)
+ident(
+  int_ref cinit "src/codegen/tbb.ml" 76 1652 1691 "src/codegen/tbb.ml" 76 1652 1696
+)
+"src/codegen/tbb.ml" 77 1699 1701 "src/codegen/tbb.ml" 78 1738 1792
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 80 1794 1798 "src/codegen/tbb.ml" 80 1794 1816
+type(
+  Format.formatter -> cpp_class_constr -> unit
+)
+ident(
+  def pp_cpp_constructor "src/codegen/tbb.ml" 95 2327 2327 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 80 1794 1817 "src/codegen/tbb.ml" 80 1794 1820
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 91 2212 2260
+)
+"src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 80 1794 1836
+type(
+  cpp_class_constr
+)
+ident(
+  def cpp_constructor "src/codegen/tbb.ml" 81 1839 1841 "src/codegen/tbb.ml" 91 2212 2260
+)
+"src/codegen/tbb.ml" 81 1839 1841 "src/codegen/tbb.ml" 81 1839 1848
+type(
+  Format.formatter ->
+  (string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list ->
+   (Format.formatter -> cpp_constr_initializer list -> unit) ->
+   cpp_constr_initializer list -> string -> unit, Format.formatter, unit)
+  format ->
+  string ->
+  (Format.formatter -> cpp_constr_arg list -> unit) ->
+  cpp_constr_arg list ->
+  (Format.formatter -> cpp_constr_initializer list -> unit) ->
+  cpp_constr_initializer list -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 81 1839 1849 "src/codegen/tbb.ml" 81 1839 1852
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 80 1794 1817 "src/codegen/tbb.ml" 80 1794 1820
+)
+"src/codegen/tbb.ml" 81 1839 1853 "src/codegen/tbb.ml" 81 1839 1895
+type(
+  (string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list ->
+   (Format.formatter -> cpp_constr_initializer list -> unit) ->
+   cpp_constr_initializer list -> string -> unit, Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 83 1923 1927 "src/codegen/tbb.ml" 83 1923 1942
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref cpp_constructor "src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 80 1794 1836
+)
+"src/codegen/tbb.ml" 83 1923 1927 "src/codegen/tbb.ml" 83 1923 1948
+type(
+  string
+)
+"src/codegen/tbb.ml" 85 1981 1990 "src/codegen/tbb.ml" 85 1981 1991
+type(
+  Format.formatter
+)
+ident(
+  def f "src/codegen/tbb.ml" 85 1981 1992 "src/codegen/tbb.ml" 85 1981 2035
+)
+"src/codegen/tbb.ml" 85 1981 1992 "src/codegen/tbb.ml" 85 1981 1994
+type(
+  cpp_constr_arg list
+)
+ident(
+  def li "src/codegen/tbb.ml" 85 1981 1998 "src/codegen/tbb.ml" 85 1981 2035
+)
+"src/codegen/tbb.ml" 85 1981 1998 "src/codegen/tbb.ml" 85 1981 2002
+type(
+  Format.formatter ->
+  ?sep:string ->
+  (Format.formatter -> cpp_constr_arg -> unit) -> cpp_constr_arg list -> unit
+)
+ident(
+  ext_ref PpHelper.ppli
+)
+"src/codegen/tbb.ml" 85 1981 2003 "src/codegen/tbb.ml" 85 1981 2004
+type(
+  Format.formatter
+)
+ident(
+  int_ref f "src/codegen/tbb.ml" 85 1981 1990 "src/codegen/tbb.ml" 85 1981 1991
+)
+"src/codegen/tbb.ml" 85 1981 2010 "src/codegen/tbb.ml" 85 1981 2014
+type(
+  string
+)
+"src/codegen/tbb.ml" 85 1981 2015 "src/codegen/tbb.ml" 85 1981 2032
+type(
+  Format.formatter -> cpp_constr_arg -> unit
+)
+ident(
+  int_ref pp_cpp_constr_arg "src/codegen/tbb.ml" 29 547 551 "src/codegen/tbb.ml" 29 547 568
+)
+"src/codegen/tbb.ml" 85 1981 2033 "src/codegen/tbb.ml" 85 1981 2035
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref li "src/codegen/tbb.ml" 85 1981 1992 "src/codegen/tbb.ml" 85 1981 1994
+)
+"src/codegen/tbb.ml" 85 1981 1998 "src/codegen/tbb.ml" 85 1981 2035
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 85 1981 1985 "src/codegen/tbb.ml" 85 1981 2036
+type(
+  Format.formatter -> cpp_constr_arg list -> unit
+)
+"src/codegen/tbb.ml" 86 2037 2041 "src/codegen/tbb.ml" 86 2037 2056
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref cpp_constructor "src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 80 1794 1836
+)
+"src/codegen/tbb.ml" 86 2037 2041 "src/codegen/tbb.ml" 86 2037 2062
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 88 2098 2107 "src/codegen/tbb.ml" 88 2098 2108
+type(
+  Format.formatter
+)
+ident(
+  def f "src/codegen/tbb.ml" 88 2098 2109 "src/codegen/tbb.ml" 88 2098 2149
+)
+"src/codegen/tbb.ml" 88 2098 2109 "src/codegen/tbb.ml" 88 2098 2111
+type(
+  cpp_constr_initializer list
+)
+ident(
+  def li "src/codegen/tbb.ml" 88 2098 2115 "src/codegen/tbb.ml" 88 2098 2149
+)
+"src/codegen/tbb.ml" 88 2098 2115 "src/codegen/tbb.ml" 88 2098 2119
+type(
+  Format.formatter ->
+  ?sep:string ->
+  (Format.formatter -> cpp_constr_initializer -> unit) ->
+  cpp_constr_initializer list -> unit
+)
+ident(
+  ext_ref PpHelper.ppli
+)
+"src/codegen/tbb.ml" 88 2098 2120 "src/codegen/tbb.ml" 88 2098 2121
+type(
+  Format.formatter
+)
+ident(
+  int_ref f "src/codegen/tbb.ml" 88 2098 2107 "src/codegen/tbb.ml" 88 2098 2108
+)
+"src/codegen/tbb.ml" 88 2098 2127 "src/codegen/tbb.ml" 88 2098 2131
+type(
+  string
+)
+"src/codegen/tbb.ml" 88 2098 2132 "src/codegen/tbb.ml" 88 2098 2146
+type(
+  Format.formatter -> cpp_constr_initializer -> unit
+)
+ident(
+  int_ref pp_initializer "src/codegen/tbb.ml" 55 1124 1128 "src/codegen/tbb.ml" 55 1124 1142
+)
+"src/codegen/tbb.ml" 88 2098 2147 "src/codegen/tbb.ml" 88 2098 2149
+type(
+  cpp_constr_initializer list
+)
+ident(
+  int_ref li "src/codegen/tbb.ml" 88 2098 2109 "src/codegen/tbb.ml" 88 2098 2111
+)
+"src/codegen/tbb.ml" 88 2098 2115 "src/codegen/tbb.ml" 88 2098 2149
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 88 2098 2102 "src/codegen/tbb.ml" 88 2098 2150
+type(
+  Format.formatter -> cpp_constr_initializer list -> unit
+)
+"src/codegen/tbb.ml" 89 2151 2155 "src/codegen/tbb.ml" 89 2151 2170
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref cpp_constructor "src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 80 1794 1836
+)
+"src/codegen/tbb.ml" 89 2151 2155 "src/codegen/tbb.ml" 89 2151 2184
+type(
+  cpp_constr_initializer list
+)
+"src/codegen/tbb.ml" 91 2212 2217 "src/codegen/tbb.ml" 91 2212 2229
+type(
+  (unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 91 2212 2230 "src/codegen/tbb.ml" 91 2212 2237
+type(
+  unit -> Cil.stmt -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_stmt
+)
+"src/codegen/tbb.ml" 91 2212 2238 "src/codegen/tbb.ml" 91 2212 2253
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref cpp_constructor "src/codegen/tbb.ml" 80 1794 1821 "src/codegen/tbb.ml" 80 1794 1836
+)
+"src/codegen/tbb.ml" 91 2212 2238 "src/codegen/tbb.ml" 91 2212 2259
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 91 2212 2216 "src/codegen/tbb.ml" 91 2212 2260
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 81 1839 1841 "src/codegen/tbb.ml" 91 2212 2260
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 109 2580 2584 "src/codegen/tbb.ml" 109 2580 2593
+type(
+  Format.formatter -> cpp_class_method -> unit
+)
+ident(
+  def pp_method "src/codegen/tbb.ml" 131 3276 3276 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 109 2580 2594 "src/codegen/tbb.ml" 109 2580 2597
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 127 3249 3255
+)
+"src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+type(
+  cpp_class_method
+)
+ident(
+  def cmet "src/codegen/tbb.ml" 110 2605 2607 "src/codegen/tbb.ml" 127 3249 3255
+)
+"src/codegen/tbb.ml" 110 2605 2607 "src/codegen/tbb.ml" 110 2605 2614
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list -> (Format.formatter -> unit -> unit) -> unit -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  (Format.formatter -> cpp_constr_arg list -> unit) ->
+  cpp_constr_arg list -> (Format.formatter -> unit -> unit) -> unit -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 110 2605 2615 "src/codegen/tbb.ml" 110 2605 2618
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 109 2580 2594 "src/codegen/tbb.ml" 109 2580 2597
+)
+"src/codegen/tbb.ml" 110 2605 2619 "src/codegen/tbb.ml" 111 2641 2677
+type(
+  (string ->
+   string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list -> (Format.formatter -> unit -> unit) -> unit -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 113 2718 2723 "src/codegen/tbb.ml" 113 2718 2735
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 113 2718 2736 "src/codegen/tbb.ml" 113 2718 2743
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 113 2718 2744 "src/codegen/tbb.ml" 113 2718 2748
+type(
+  cpp_class_method
+)
+ident(
+  int_ref cmet "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+)
+"src/codegen/tbb.ml" 113 2718 2744 "src/codegen/tbb.ml" 113 2718 2753
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 113 2718 2722 "src/codegen/tbb.ml" 113 2718 2754
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 115 2788 2792 "src/codegen/tbb.ml" 115 2788 2796
+type(
+  cpp_class_method
+)
+ident(
+  int_ref cmet "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+)
+"src/codegen/tbb.ml" 115 2788 2792 "src/codegen/tbb.ml" 115 2788 2802
+type(
+  string
+)
+"src/codegen/tbb.ml" 117 2857 2862 "src/codegen/tbb.ml" 117 2857 2875
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> cpp_constr_arg -> unit) ->
+  Format.formatter -> cpp_constr_arg list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/codegen/tbb.ml" 118 2876 2896 "src/codegen/tbb.ml" 118 2876 2899
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 118 2876 2900 "src/codegen/tbb.ml" 118 2876 2923
+)
+"src/codegen/tbb.ml" 118 2876 2900 "src/codegen/tbb.ml" 118 2876 2902
+type(
+  unit
+)
+"src/codegen/tbb.ml" 118 2876 2907 "src/codegen/tbb.ml" 118 2876 2914
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 118 2876 2915 "src/codegen/tbb.ml" 118 2876 2918
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 118 2876 2896 "src/codegen/tbb.ml" 118 2876 2899
+)
+"src/codegen/tbb.ml" 118 2876 2919 "src/codegen/tbb.ml" 118 2876 2923
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 118 2876 2907 "src/codegen/tbb.ml" 118 2876 2923
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 118 2876 2891 "src/codegen/tbb.ml" 118 2876 2924
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 119 2925 2932 "src/codegen/tbb.ml" 119 2925 2949
+type(
+  Format.formatter -> cpp_constr_arg -> unit
+)
+ident(
+  int_ref pp_cpp_constr_arg "src/codegen/tbb.ml" 29 547 551 "src/codegen/tbb.ml" 29 547 568
+)
+"src/codegen/tbb.ml" 117 2857 2861 "src/codegen/tbb.ml" 119 2925 2950
+call(
+  stack
+)
+type(
+  Format.formatter -> cpp_constr_arg list -> unit
+)
+"src/codegen/tbb.ml" 119 2925 2951 "src/codegen/tbb.ml" 119 2925 2955
+type(
+  cpp_class_method
+)
+ident(
+  int_ref cmet "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+)
+"src/codegen/tbb.ml" 119 2925 2951 "src/codegen/tbb.ml" 119 2925 2961
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 122 3072 3081 "src/codegen/tbb.ml" 122 3072 3084
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 122 3072 3085 "src/codegen/tbb.ml" 126 3195 3247
+)
+"src/codegen/tbb.ml" 122 3072 3085 "src/codegen/tbb.ml" 122 3072 3087
+type(
+  unit
+)
+"src/codegen/tbb.ml" 123 3091 3104 "src/codegen/tbb.ml" 123 3091 3108
+type(
+  cpp_class_method
+)
+ident(
+  int_ref cmet "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+)
+"src/codegen/tbb.ml" 123 3091 3104 "src/codegen/tbb.ml" 123 3091 3115
+type(
+  (Format.formatter -> unit -> unit) option
+)
+"src/codegen/tbb.ml" 124 3121 3135 "src/codegen/tbb.ml" 124 3121 3142
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def printer "src/codegen/tbb.ml" 124 3121 3146 "src/codegen/tbb.ml" 124 3121 3160
+)
+"src/codegen/tbb.ml" 124 3121 3130 "src/codegen/tbb.ml" 124 3121 3142
+type(
+  (Format.formatter -> unit -> unit) option
+)
+"src/codegen/tbb.ml" 124 3121 3146 "src/codegen/tbb.ml" 124 3121 3153
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref printer "src/codegen/tbb.ml" 124 3121 3135 "src/codegen/tbb.ml" 124 3121 3142
+)
+"src/codegen/tbb.ml" 124 3121 3154 "src/codegen/tbb.ml" 124 3121 3157
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 122 3072 3081 "src/codegen/tbb.ml" 122 3072 3084
+)
+"src/codegen/tbb.ml" 124 3121 3158 "src/codegen/tbb.ml" 124 3121 3160
+type(
+  unit
+)
+"src/codegen/tbb.ml" 124 3121 3146 "src/codegen/tbb.ml" 124 3121 3160
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 125 3161 3170 "src/codegen/tbb.ml" 125 3161 3174
+type(
+  (Format.formatter -> unit -> unit) option
+)
+"src/codegen/tbb.ml" 125 3161 3178 "src/codegen/tbb.ml" 125 3161 3185
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 125 3161 3186 "src/codegen/tbb.ml" 125 3161 3189
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 122 3072 3081 "src/codegen/tbb.ml" 122 3072 3084
+)
+"src/codegen/tbb.ml" 125 3161 3190 "src/codegen/tbb.ml" 125 3161 3194
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 126 3195 3215 "src/codegen/tbb.ml" 126 3195 3227
+type(
+  (unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 126 3195 3228 "src/codegen/tbb.ml" 126 3195 3235
+type(
+  unit -> Cil.stmt -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_stmt
+)
+"src/codegen/tbb.ml" 126 3195 3236 "src/codegen/tbb.ml" 126 3195 3240
+type(
+  cpp_class_method
+)
+ident(
+  int_ref cmet "src/codegen/tbb.ml" 109 2580 2598 "src/codegen/tbb.ml" 109 2580 2602
+)
+"src/codegen/tbb.ml" 126 3195 3236 "src/codegen/tbb.ml" 126 3195 3246
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 126 3195 3214 "src/codegen/tbb.ml" 126 3195 3247
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 125 3161 3178 "src/codegen/tbb.ml" 126 3195 3247
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 123 3091 3098 "src/codegen/tbb.ml" 126 3195 3247
+type(
+  unit
+)
+"src/codegen/tbb.ml" 122 3072 3076 "src/codegen/tbb.ml" 126 3195 3248
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 127 3249 3253 "src/codegen/tbb.ml" 127 3249 3255
+type(
+  unit
+)
+"src/codegen/tbb.ml" 110 2605 2607 "src/codegen/tbb.ml" 127 3249 3255
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 141 3505 3509 "src/codegen/tbb.ml" 141 3505 3523
+type(
+  string -> cpp_class
+)
+ident(
+  def makeEmptyClass "src/codegen/tbb.ml" 154 3801 3801 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 141 3505 3524 "src/codegen/tbb.ml" 141 3505 3534
+type(
+  string
+)
+ident(
+  def class_name "src/codegen/tbb.ml" 142 3537 3539 "src/codegen/tbb.ml" 152 3796 3799
+)
+"src/codegen/tbb.ml" 142 3537 3543 "src/codegen/tbb.ml" 142 3537 3553
+type(
+  Cil.typ
+)
+ident(
+  def class_type "src/codegen/tbb.ml" 145 3639 3641 "src/codegen/tbb.ml" 152 3796 3799
+)
+"src/codegen/tbb.ml" 143 3556 3577 "src/codegen/tbb.ml" 143 3556 3589
+type(
+  string
+)
+"src/codegen/tbb.ml" 143 3556 3605 "src/codegen/tbb.ml" 143 3556 3607
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 143 3556 3599 "src/codegen/tbb.ml" 143 3556 3607
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 143 3556 3623 "src/codegen/tbb.ml" 143 3556 3627
+type(
+  bool
+)
+"src/codegen/tbb.ml" 143 3556 3568 "src/codegen/tbb.ml" 143 3556 3628
+type(
+  Cil.typeinfo
+)
+"src/codegen/tbb.ml" 143 3556 3630 "src/codegen/tbb.ml" 143 3556 3632
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 143 3556 3560 "src/codegen/tbb.ml" 143 3556 3633
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 146 3643 3655 "src/codegen/tbb.ml" 146 3643 3665
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 141 3505 3524 "src/codegen/tbb.ml" 141 3505 3534
+)
+"src/codegen/tbb.ml" 147 3667 3679 "src/codegen/tbb.ml" 147 3667 3689
+type(
+  Cil.typ
+)
+ident(
+  int_ref class_type "src/codegen/tbb.ml" 142 3537 3543 "src/codegen/tbb.ml" 142 3537 3553
+)
+"src/codegen/tbb.ml" 148 3691 3710 "src/codegen/tbb.ml" 148 3691 3718
+type(
+  Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.empty
+)
+"src/codegen/tbb.ml" 149 3720 3738 "src/codegen/tbb.ml" 149 3720 3746
+type(
+  Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.empty
+)
+"src/codegen/tbb.ml" 150 3748 3767 "src/codegen/tbb.ml" 150 3748 3769
+type(
+  cpp_class_constr list
+)
+"src/codegen/tbb.ml" 151 3771 3792 "src/codegen/tbb.ml" 151 3771 3794
+type(
+  cpp_class_method list
+)
+"src/codegen/tbb.ml" 145 3639 3641 "src/codegen/tbb.ml" 152 3796 3799
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 142 3537 3539 "src/codegen/tbb.ml" 152 3796 3799
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 154 3801 3805 "src/codegen/tbb.ml" 154 3801 3813
+type(
+  Format.formatter -> cpp_class -> unit
+)
+ident(
+  def pp_class "src/codegen/tbb.ml" 185 4665 4665 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 154 3801 3814 "src/codegen/tbb.ml" 154 3801 3817
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 154 3801 3818 "src/codegen/tbb.ml" 180 4586 4607
+)
+"src/codegen/tbb.ml" 154 3801 3818 "src/codegen/tbb.ml" 154 3801 3821
+type(
+  cpp_class
+)
+ident(
+  def cls "src/codegen/tbb.ml" 155 3824 3826 "src/codegen/tbb.ml" 180 4586 4607
+)
+"src/codegen/tbb.ml" 155 3824 3830 "src/codegen/tbb.ml" 155 3824 3840
+type(
+  Format.formatter -> Utils.VS.t -> unit
+)
+ident(
+  def pp_members "src/codegen/tbb.ml" 161 3979 3981 "src/codegen/tbb.ml" 180 4586 4607
+)
+"src/codegen/tbb.ml" 155 3824 3841 "src/codegen/tbb.ml" 155 3824 3844
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 155 3824 3845 "src/codegen/tbb.ml" 159 3965 3973
+)
+"src/codegen/tbb.ml" 155 3824 3845 "src/codegen/tbb.ml" 155 3824 3847
+type(
+  Utils.VS.t
+)
+ident(
+  def vs "src/codegen/tbb.ml" 156 3850 3854 "src/codegen/tbb.ml" 159 3965 3973
+)
+"src/codegen/tbb.ml" 156 3850 3854 "src/codegen/tbb.ml" 156 3850 3861
+type(
+  (Utils.VS.elt -> unit) -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VS.iter
+)
+"src/codegen/tbb.ml" 157 3862 3873 "src/codegen/tbb.ml" 157 3862 3875
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 157 3862 3879 "src/codegen/tbb.ml" 158 3909 3963
+)
+"src/codegen/tbb.ml" 157 3862 3879 "src/codegen/tbb.ml" 157 3862 3886
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 157 3862 3887 "src/codegen/tbb.ml" 157 3862 3890
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 155 3824 3841 "src/codegen/tbb.ml" 155 3824 3844
+)
+"src/codegen/tbb.ml" 157 3862 3891 "src/codegen/tbb.ml" 157 3862 3908
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 158 3909 3920 "src/codegen/tbb.ml" 158 3909 3932
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 158 3909 3933 "src/codegen/tbb.ml" 158 3909 3944
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 158 3909 3945 "src/codegen/tbb.ml" 158 3909 3947
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 157 3862 3873 "src/codegen/tbb.ml" 157 3862 3875
+)
+"src/codegen/tbb.ml" 158 3909 3945 "src/codegen/tbb.ml" 158 3909 3953
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 158 3909 3919 "src/codegen/tbb.ml" 158 3909 3954
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 158 3909 3955 "src/codegen/tbb.ml" 158 3909 3957
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 157 3862 3873 "src/codegen/tbb.ml" 157 3862 3875
+)
+"src/codegen/tbb.ml" 158 3909 3955 "src/codegen/tbb.ml" 158 3909 3963
+type(
+  string
+)
+"src/codegen/tbb.ml" 157 3862 3879 "src/codegen/tbb.ml" 158 3909 3963
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 157 3862 3868 "src/codegen/tbb.ml" 158 3909 3964
+type(
+  Utils.VS.elt -> unit
+)
+"src/codegen/tbb.ml" 159 3965 3971 "src/codegen/tbb.ml" 159 3965 3973
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref vs "src/codegen/tbb.ml" 155 3824 3845 "src/codegen/tbb.ml" 155 3824 3847
+)
+"src/codegen/tbb.ml" 156 3850 3854 "src/codegen/tbb.ml" 159 3965 3973
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 161 3979 3985 "src/codegen/tbb.ml" 161 3979 3998
+type(
+  Format.formatter -> cpp_class -> unit
+)
+ident(
+  def pp_class_body "src/codegen/tbb.ml" 178 4532 4534 "src/codegen/tbb.ml" 180 4586 4607
+)
+"src/codegen/tbb.ml" 161 3979 3999 "src/codegen/tbb.ml" 161 3979 4002
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 176 4502 4526
+)
+"src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 161 3979 4006
+type(
+  cpp_class
+)
+ident(
+  def cls "src/codegen/tbb.ml" 162 4009 4013 "src/codegen/tbb.ml" 176 4502 4526
+)
+"src/codegen/tbb.ml" 162 4009 4013 "src/codegen/tbb.ml" 162 4009 4020
+type(
+  Format.formatter ->
+  ((Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> cpp_class_constr list -> unit) ->
+   cpp_class_constr list ->
+   (Format.formatter -> cpp_class_method list -> unit) ->
+   cpp_class_method list -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> Utils.VS.t -> unit) ->
+  Utils.VS.t ->
+  (Format.formatter -> Utils.VS.t -> unit) ->
+  Utils.VS.t ->
+  (Format.formatter -> cpp_class_constr list -> unit) ->
+  cpp_class_constr list ->
+  (Format.formatter -> cpp_class_method list -> unit) ->
+  cpp_class_method list -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 162 4009 4021 "src/codegen/tbb.ml" 162 4009 4024
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 161 3979 3999 "src/codegen/tbb.ml" 161 3979 4002
+)
+"src/codegen/tbb.ml" 162 4009 4025 "src/codegen/tbb.ml" 168 4178 4202
+type(
+  ((Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> cpp_class_constr list -> unit) ->
+   cpp_class_constr list ->
+   (Format.formatter -> cpp_class_method list -> unit) ->
+   cpp_class_method list -> unit, Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 169 4203 4209 "src/codegen/tbb.ml" 169 4203 4219
+type(
+  Format.formatter -> Utils.VS.t -> unit
+)
+ident(
+  int_ref pp_members "src/codegen/tbb.ml" 155 3824 3830 "src/codegen/tbb.ml" 155 3824 3840
+)
+"src/codegen/tbb.ml" 169 4203 4220 "src/codegen/tbb.ml" 169 4203 4223
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 161 3979 4006
+)
+"src/codegen/tbb.ml" 169 4203 4220 "src/codegen/tbb.ml" 169 4203 4236
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 170 4237 4243 "src/codegen/tbb.ml" 170 4237 4253
+type(
+  Format.formatter -> Utils.VS.t -> unit
+)
+ident(
+  int_ref pp_members "src/codegen/tbb.ml" 155 3824 3830 "src/codegen/tbb.ml" 155 3824 3840
+)
+"src/codegen/tbb.ml" 170 4237 4254 "src/codegen/tbb.ml" 170 4237 4257
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 161 3979 4006
+)
+"src/codegen/tbb.ml" 170 4237 4254 "src/codegen/tbb.ml" 170 4237 4269
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 171 4270 4277 "src/codegen/tbb.ml" 171 4270 4290
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> cpp_class_constr -> unit) ->
+  Format.formatter -> cpp_class_constr list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/codegen/tbb.ml" 171 4270 4304 "src/codegen/tbb.ml" 171 4270 4307
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 171 4270 4308 "src/codegen/tbb.ml" 171 4270 4330
+)
+"src/codegen/tbb.ml" 171 4270 4308 "src/codegen/tbb.ml" 171 4270 4310
+type(
+  unit
+)
+"src/codegen/tbb.ml" 171 4270 4314 "src/codegen/tbb.ml" 171 4270 4321
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 171 4270 4322 "src/codegen/tbb.ml" 171 4270 4325
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 171 4270 4304 "src/codegen/tbb.ml" 171 4270 4307
+)
+"src/codegen/tbb.ml" 171 4270 4326 "src/codegen/tbb.ml" 171 4270 4330
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 171 4270 4314 "src/codegen/tbb.ml" 171 4270 4330
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 171 4270 4299 "src/codegen/tbb.ml" 171 4270 4331
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 172 4332 4341 "src/codegen/tbb.ml" 172 4332 4359
+type(
+  Format.formatter -> cpp_class_constr -> unit
+)
+ident(
+  int_ref pp_cpp_constructor "src/codegen/tbb.ml" 80 1794 1798 "src/codegen/tbb.ml" 80 1794 1816
+)
+"src/codegen/tbb.ml" 171 4270 4276 "src/codegen/tbb.ml" 172 4332 4360
+call(
+  stack
+)
+type(
+  Format.formatter -> cpp_class_constr list -> unit
+)
+"src/codegen/tbb.ml" 172 4332 4361 "src/codegen/tbb.ml" 172 4332 4364
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 161 3979 4006
+)
+"src/codegen/tbb.ml" 172 4332 4361 "src/codegen/tbb.ml" 172 4332 4377
+type(
+  cpp_class_constr list
+)
+"src/codegen/tbb.ml" 173 4378 4385 "src/codegen/tbb.ml" 173 4378 4398
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> cpp_class_method -> unit) ->
+  Format.formatter -> cpp_class_method list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/codegen/tbb.ml" 174 4399 4421 "src/codegen/tbb.ml" 174 4399 4424
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 174 4399 4425 "src/codegen/tbb.ml" 174 4399 4447
+)
+"src/codegen/tbb.ml" 174 4399 4425 "src/codegen/tbb.ml" 174 4399 4427
+type(
+  unit
+)
+"src/codegen/tbb.ml" 174 4399 4431 "src/codegen/tbb.ml" 174 4399 4438
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 174 4399 4439 "src/codegen/tbb.ml" 174 4399 4442
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 174 4399 4421 "src/codegen/tbb.ml" 174 4399 4424
+)
+"src/codegen/tbb.ml" 174 4399 4443 "src/codegen/tbb.ml" 174 4399 4447
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 174 4399 4431 "src/codegen/tbb.ml" 174 4399 4447
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 174 4399 4416 "src/codegen/tbb.ml" 174 4399 4448
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 175 4449 4463 "src/codegen/tbb.ml" 175 4449 4466
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 175 4449 4467 "src/codegen/tbb.ml" 175 4449 4499
+)
+"src/codegen/tbb.ml" 175 4449 4467 "src/codegen/tbb.ml" 175 4449 4474
+type(
+  cpp_class_method
+)
+ident(
+  def methode "src/codegen/tbb.ml" 175 4449 4478 "src/codegen/tbb.ml" 175 4449 4499
+)
+"src/codegen/tbb.ml" 175 4449 4478 "src/codegen/tbb.ml" 175 4449 4487
+type(
+  Format.formatter -> cpp_class_method -> unit
+)
+ident(
+  int_ref pp_method "src/codegen/tbb.ml" 109 2580 2584 "src/codegen/tbb.ml" 109 2580 2593
+)
+"src/codegen/tbb.ml" 175 4449 4488 "src/codegen/tbb.ml" 175 4449 4491
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 175 4449 4463 "src/codegen/tbb.ml" 175 4449 4466
+)
+"src/codegen/tbb.ml" 175 4449 4492 "src/codegen/tbb.ml" 175 4449 4499
+type(
+  cpp_class_method
+)
+ident(
+  int_ref methode "src/codegen/tbb.ml" 175 4449 4467 "src/codegen/tbb.ml" 175 4449 4474
+)
+"src/codegen/tbb.ml" 175 4449 4478 "src/codegen/tbb.ml" 175 4449 4499
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 175 4449 4458 "src/codegen/tbb.ml" 175 4449 4500
+type(
+  Format.formatter -> cpp_class_method -> unit
+)
+"src/codegen/tbb.ml" 173 4378 4384 "src/codegen/tbb.ml" 175 4449 4501
+call(
+  stack
+)
+type(
+  Format.formatter -> cpp_class_method list -> unit
+)
+"src/codegen/tbb.ml" 176 4502 4508 "src/codegen/tbb.ml" 176 4502 4511
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 161 3979 4003 "src/codegen/tbb.ml" 161 3979 4006
+)
+"src/codegen/tbb.ml" 176 4502 4508 "src/codegen/tbb.ml" 176 4502 4526
+type(
+  cpp_class_method list
+)
+"src/codegen/tbb.ml" 162 4009 4013 "src/codegen/tbb.ml" 176 4502 4526
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 178 4532 4534 "src/codegen/tbb.ml" 178 4532 4541
+type(
+  Format.formatter ->
+  (string -> (Format.formatter -> cpp_class -> unit) -> cpp_class -> unit,
+   Format.formatter, unit)
+  format ->
+  string -> (Format.formatter -> cpp_class -> unit) -> cpp_class -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 178 4532 4542 "src/codegen/tbb.ml" 178 4532 4545
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 154 3801 3814 "src/codegen/tbb.ml" 154 3801 3817
+)
+"src/codegen/tbb.ml" 178 4532 4546 "src/codegen/tbb.ml" 178 4532 4571
+type(
+  (string -> (Format.formatter -> cpp_class -> unit) -> cpp_class -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 179 4572 4576 "src/codegen/tbb.ml" 179 4572 4579
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 154 3801 3818 "src/codegen/tbb.ml" 154 3801 3821
+)
+"src/codegen/tbb.ml" 179 4572 4576 "src/codegen/tbb.ml" 179 4572 4585
+type(
+  string
+)
+"src/codegen/tbb.ml" 180 4586 4590 "src/codegen/tbb.ml" 180 4586 4603
+type(
+  Format.formatter -> cpp_class -> unit
+)
+ident(
+  int_ref pp_class_body "src/codegen/tbb.ml" 161 3979 3985 "src/codegen/tbb.ml" 161 3979 3998
+)
+"src/codegen/tbb.ml" 180 4586 4604 "src/codegen/tbb.ml" 180 4586 4607
+type(
+  cpp_class
+)
+ident(
+  int_ref cls "src/codegen/tbb.ml" 154 3801 3818 "src/codegen/tbb.ml" 154 3801 3821
+)
+"src/codegen/tbb.ml" 178 4532 4534 "src/codegen/tbb.ml" 180 4586 4607
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 161 3979 3981 "src/codegen/tbb.ml" 180 4586 4607
+type(
+  unit
+)
+"src/codegen/tbb.ml" 155 3824 3826 "src/codegen/tbb.ml" 180 4586 4607
+type(
+  unit
+)
+"src/codegen/tbb.ml" 185 4665 4669 "src/codegen/tbb.ml" 185 4665 4688
+type(
+  string
+)
+ident(
+  def class_name_appendix "src/codegen/tbb.ml" 187 4735 4735 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 185 4665 4691 "src/codegen/tbb.ml" 185 4665 4711
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 185 4665 4712 "src/codegen/tbb.ml" 185 4665 4733
+type(
+  string
+)
+"src/codegen/tbb.ml" 185 4665 4691 "src/codegen/tbb.ml" 185 4665 4733
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+type(
+  string
+)
+ident(
+  def iterator_type_name "src/codegen/tbb.ml" 189 4807 4807 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 187 4735 4760 "src/codegen/tbb.ml" 187 4735 4780
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 187 4735 4781 "src/codegen/tbb.ml" 187 4735 4805
+type(
+  string
+)
+"src/codegen/tbb.ml" 187 4735 4760 "src/codegen/tbb.ml" 187 4735 4805
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+type(
+  string
+)
+ident(
+  def iterator_name "src/codegen/tbb.ml" 192 4903 4903 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 189 4807 4827 "src/codegen/tbb.ml" 189 4807 4847
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 189 4807 4848 "src/codegen/tbb.ml" 189 4807 4867
+type(
+  string
+)
+"src/codegen/tbb.ml" 189 4807 4827 "src/codegen/tbb.ml" 189 4807 4867
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 192 4903 4907 "src/codegen/tbb.ml" 192 4903 4921
+type(
+  Cil.typ
+)
+ident(
+  def iterator_c_typ "src/codegen/tbb.ml" 196 5079 5079 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 192 4903 4930 "src/codegen/tbb.ml" 192 4903 4935
+type(
+  Cil.ikind
+)
+"src/codegen/tbb.ml" 192 4903 4936 "src/codegen/tbb.ml" 192 4903 4938
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 192 4903 4924 "src/codegen/tbb.ml" 192 4903 4939
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 196 5079 5083 "src/codegen/tbb.ml" 196 5079 5102
+type(
+  Format.formatter -> string -> unit
+)
+ident(
+  def fprint_test_prelude "src/codegen/tbb.ml" 208 5559 5559 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 196 5079 5103 "src/codegen/tbb.ml" 196 5079 5106
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 196 5079 5107 "src/codegen/tbb.ml" 204 5408 5468
+)
+"src/codegen/tbb.ml" 196 5079 5107 "src/codegen/tbb.ml" 196 5079 5125
+type(
+  string
+)
+ident(
+  def pb_header_filename "src/codegen/tbb.ml" 197 5128 5130 "src/codegen/tbb.ml" 204 5408 5468
+)
+"src/codegen/tbb.ml" 197 5128 5134 "src/codegen/tbb.ml" 197 5128 5142
+type(
+  cpp_include list
+)
+ident(
+  def includes "src/codegen/tbb.ml" 199 5253 5255 "src/codegen/tbb.ml" 204 5408 5468
+)
+"src/codegen/tbb.ml" 197 5128 5160 "src/codegen/tbb.ml" 197 5128 5170
+type(
+  string
+)
+"src/codegen/tbb.ml" 197 5128 5146 "src/codegen/tbb.ml" 197 5128 5170
+type(
+  cpp_include
+)
+"src/codegen/tbb.ml" 197 5128 5186 "src/codegen/tbb.ml" 197 5128 5197
+type(
+  string
+)
+"src/codegen/tbb.ml" 197 5128 5172 "src/codegen/tbb.ml" 197 5128 5197
+type(
+  cpp_include
+)
+"src/codegen/tbb.ml" 198 5199 5230 "src/codegen/tbb.ml" 198 5199 5248
+type(
+  string
+)
+ident(
+  int_ref pb_header_filename "src/codegen/tbb.ml" 196 5079 5107 "src/codegen/tbb.ml" 196 5079 5125
+)
+"src/codegen/tbb.ml" 198 5199 5217 "src/codegen/tbb.ml" 198 5199 5248
+type(
+  cpp_include
+)
+"src/codegen/tbb.ml" 197 5128 5145 "src/codegen/tbb.ml" 198 5199 5249
+type(
+  cpp_include list
+)
+"src/codegen/tbb.ml" 199 5253 5255 "src/codegen/tbb.ml" 199 5253 5268
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> cpp_include -> unit) ->
+  Format.formatter -> cpp_include list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/codegen/tbb.ml" 200 5269 5286 "src/codegen/tbb.ml" 200 5269 5289
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 200 5269 5290 "src/codegen/tbb.ml" 200 5269 5298
+)
+"src/codegen/tbb.ml" 200 5269 5290 "src/codegen/tbb.ml" 200 5269 5292
+type(
+  unit
+)
+"src/codegen/tbb.ml" 200 5269 5296 "src/codegen/tbb.ml" 200 5269 5298
+type(
+  unit
+)
+"src/codegen/tbb.ml" 200 5269 5281 "src/codegen/tbb.ml" 200 5269 5299
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 201 5300 5304 "src/codegen/tbb.ml" 201 5300 5314
+type(
+  Format.formatter -> cpp_include -> unit
+)
+ident(
+  int_ref pp_include "src/codegen/tbb.ml" 17 282 286 "src/codegen/tbb.ml" 17 282 296
+)
+"src/codegen/tbb.ml" 201 5300 5315 "src/codegen/tbb.ml" 201 5300 5318
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 196 5079 5103 "src/codegen/tbb.ml" 196 5079 5106
+)
+"src/codegen/tbb.ml" 201 5300 5319 "src/codegen/tbb.ml" 201 5300 5327
+type(
+  cpp_include list
+)
+ident(
+  int_ref includes "src/codegen/tbb.ml" 197 5128 5134 "src/codegen/tbb.ml" 197 5128 5142
+)
+"src/codegen/tbb.ml" 199 5253 5255 "src/codegen/tbb.ml" 201 5300 5327
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 202 5329 5331 "src/codegen/tbb.ml" 202 5329 5338
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 202 5329 5339 "src/codegen/tbb.ml" 202 5329 5342
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 196 5079 5103 "src/codegen/tbb.ml" 196 5079 5106
+)
+"src/codegen/tbb.ml" 202 5329 5343 "src/codegen/tbb.ml" 202 5329 5369
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 202 5329 5331 "src/codegen/tbb.ml" 202 5329 5369
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 203 5371 5373 "src/codegen/tbb.ml" 203 5371 5380
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 203 5371 5381 "src/codegen/tbb.ml" 203 5371 5384
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 196 5079 5103 "src/codegen/tbb.ml" 196 5079 5106
+)
+"src/codegen/tbb.ml" 203 5371 5385 "src/codegen/tbb.ml" 203 5371 5407
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 204 5408 5413 "src/codegen/tbb.ml" 204 5408 5425
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 204 5408 5426 "src/codegen/tbb.ml" 204 5408 5433
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 204 5408 5434 "src/codegen/tbb.ml" 204 5408 5448
+type(
+  Cil.typ
+)
+ident(
+  int_ref iterator_c_typ "src/codegen/tbb.ml" 192 4903 4907 "src/codegen/tbb.ml" 192 4903 4921
+)
+"src/codegen/tbb.ml" 204 5408 5412 "src/codegen/tbb.ml" 204 5408 5449
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 204 5408 5450 "src/codegen/tbb.ml" 204 5408 5468
+type(
+  string
+)
+ident(
+  int_ref iterator_type_name "src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+)
+"src/codegen/tbb.ml" 203 5371 5373 "src/codegen/tbb.ml" 204 5408 5468
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 202 5329 5331 "src/codegen/tbb.ml" 204 5408 5468
+type(
+  unit
+)
+"src/codegen/tbb.ml" 199 5253 5255 "src/codegen/tbb.ml" 204 5408 5468
+type(
+  unit
+)
+"src/codegen/tbb.ml" 197 5128 5130 "src/codegen/tbb.ml" 204 5408 5468
+type(
+  unit
+)
+"src/codegen/tbb.ml" 208 5559 5563 "src/codegen/tbb.ml" 208 5559 5579
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  def pbname_of_sketch "src/codegen/tbb.ml" 211 5660 5660 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 208 5559 5580 "src/codegen/tbb.ml" 208 5559 5588
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def solution "src/codegen/tbb.ml" 209 5591 5593 "src/codegen/tbb.ml" 209 5591 5658
+)
+"src/codegen/tbb.ml" 209 5591 5594 "src/codegen/tbb.ml" 209 5591 5602
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref solution "src/codegen/tbb.ml" 208 5559 5580 "src/codegen/tbb.ml" 208 5559 5588
+)
+"src/codegen/tbb.ml" 209 5591 5594 "src/codegen/tbb.ml" 209 5591 5616
+type(
+  Cil.fundec
+)
+"src/codegen/tbb.ml" 209 5591 5594 "src/codegen/tbb.ml" 209 5591 5621
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 209 5591 5594 "src/codegen/tbb.ml" 209 5591 5627
+type(
+  string
+)
+"src/codegen/tbb.ml" 209 5591 5628 "src/codegen/tbb.ml" 209 5591 5629
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 209 5591 5631 "src/codegen/tbb.ml" 209 5591 5644
+type(
+  int -> string
+)
+ident(
+  ext_ref Pervasives.string_of_int
+)
+"src/codegen/tbb.ml" 209 5591 5645 "src/codegen/tbb.ml" 209 5591 5653
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref solution "src/codegen/tbb.ml" 208 5559 5580 "src/codegen/tbb.ml" 208 5559 5588
+)
+"src/codegen/tbb.ml" 209 5591 5645 "src/codegen/tbb.ml" 209 5591 5656
+type(
+  int
+)
+"src/codegen/tbb.ml" 209 5591 5630 "src/codegen/tbb.ml" 209 5591 5657
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 209 5591 5593 "src/codegen/tbb.ml" 209 5591 5658
+call(
+  tail
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 211 5660 5664 "src/codegen/tbb.ml" 211 5660 5686
+type(
+  SketchTypes.sketch_rep -> Utils.VS.t
+)
+ident(
+  def private_vars_of_sketch "src/codegen/tbb.ml" 215 5801 5801 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 211 5660 5687 "src/codegen/tbb.ml" 211 5660 5693
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch "src/codegen/tbb.ml" 212 5696 5698 "src/codegen/tbb.ml" 213 5769 5799
+)
+"src/codegen/tbb.ml" 212 5696 5698 "src/codegen/tbb.ml" 212 5696 5705
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.diff
+)
+"src/codegen/tbb.ml" 212 5696 5707 "src/codegen/tbb.ml" 212 5696 5714
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.diff
+)
+"src/codegen/tbb.ml" 212 5696 5715 "src/codegen/tbb.ml" 212 5696 5721
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/codegen/tbb.ml" 211 5660 5687 "src/codegen/tbb.ml" 211 5660 5693
+)
+"src/codegen/tbb.ml" 212 5696 5715 "src/codegen/tbb.ml" 212 5696 5730
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 212 5696 5715 "src/codegen/tbb.ml" 212 5696 5740
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 212 5696 5741 "src/codegen/tbb.ml" 212 5696 5747
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/codegen/tbb.ml" 211 5660 5687 "src/codegen/tbb.ml" 211 5660 5693
+)
+"src/codegen/tbb.ml" 212 5696 5741 "src/codegen/tbb.ml" 212 5696 5756
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 212 5696 5741 "src/codegen/tbb.ml" 212 5696 5767
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 212 5696 5706 "src/codegen/tbb.ml" 212 5696 5768
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 213 5769 5773 "src/codegen/tbb.ml" 213 5769 5779
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/codegen/tbb.ml" 211 5660 5687 "src/codegen/tbb.ml" 211 5660 5693
+)
+"src/codegen/tbb.ml" 213 5769 5773 "src/codegen/tbb.ml" 213 5769 5788
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 213 5769 5773 "src/codegen/tbb.ml" 213 5769 5799
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 212 5696 5698 "src/codegen/tbb.ml" 213 5769 5799
+call(
+  tail
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 215 5801 5805 "src/codegen/tbb.ml" 215 5801 5821
+type(
+  Format.formatter ->
+  SketchTypes.sketch_rep ->
+  Cil.varinfo * Cil.varinfo * Cil.varinfo ->
+  (Format.formatter -> unit -> unit) -> unit
+)
+ident(
+  def pp_operator_body "src/codegen/tbb.ml" 251 6904 6904 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 215 5801 5826 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 215 5801 5827 "src/codegen/tbb.ml" 215 5801 5829
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def pb "src/codegen/tbb.ml" 215 5801 5844 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 215 5801 5845 "src/codegen/tbb.ml" 215 5801 5846
+type(
+  Cil.varinfo
+)
+ident(
+  def i "src/codegen/tbb.ml" 215 5801 5854 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 215 5801 5848 "src/codegen/tbb.ml" 215 5801 5849
+type(
+  Cil.varinfo
+)
+ident(
+  def b "src/codegen/tbb.ml" 215 5801 5854 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 215 5801 5851 "src/codegen/tbb.ml" 215 5801 5852
+type(
+  Cil.varinfo
+)
+ident(
+  def e "src/codegen/tbb.ml" 215 5801 5854 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 215 5801 5844 "src/codegen/tbb.ml" 215 5801 5853
+type(
+  Cil.varinfo * Cil.varinfo * Cil.varinfo
+)
+"src/codegen/tbb.ml" 215 5801 5854 "src/codegen/tbb.ml" 215 5801 5860
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def ppbody "src/codegen/tbb.ml" 217 5911 5913 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 217 5911 5913 "src/codegen/tbb.ml" 217 5911 5920
+type(
+  (Utils.VS.elt -> unit) -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VS.iter
+)
+"src/codegen/tbb.ml" 218 5921 5930 "src/codegen/tbb.ml" 218 5921 5932
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 219 5936 5943 "src/codegen/tbb.ml" 220 5975 6033
+)
+"src/codegen/tbb.ml" 219 5936 5943 "src/codegen/tbb.ml" 219 5936 5950
+type(
+  Format.formatter ->
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 219 5936 5951 "src/codegen/tbb.ml" 219 5936 5954
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+)
+"src/codegen/tbb.ml" 219 5936 5955 "src/codegen/tbb.ml" 219 5936 5974
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 220 5975 5985 "src/codegen/tbb.ml" 220 5975 5997
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 220 5975 5998 "src/codegen/tbb.ml" 220 5975 6005
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 220 5975 6006 "src/codegen/tbb.ml" 220 5975 6008
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 218 5921 5930 "src/codegen/tbb.ml" 218 5921 5932
+)
+"src/codegen/tbb.ml" 220 5975 6006 "src/codegen/tbb.ml" 220 5975 6014
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 220 5975 5984 "src/codegen/tbb.ml" 220 5975 6015
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 220 5975 6016 "src/codegen/tbb.ml" 220 5975 6018
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 218 5921 5930 "src/codegen/tbb.ml" 218 5921 5932
+)
+"src/codegen/tbb.ml" 220 5975 6016 "src/codegen/tbb.ml" 220 5975 6024
+type(
+  string
+)
+"src/codegen/tbb.ml" 220 5975 6025 "src/codegen/tbb.ml" 220 5975 6027
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 218 5921 5930 "src/codegen/tbb.ml" 218 5921 5932
+)
+"src/codegen/tbb.ml" 220 5975 6025 "src/codegen/tbb.ml" 220 5975 6033
+type(
+  string
+)
+"src/codegen/tbb.ml" 219 5936 5943 "src/codegen/tbb.ml" 220 5975 6033
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 218 5921 5925 "src/codegen/tbb.ml" 220 5975 6034
+type(
+  Utils.VS.elt -> unit
+)
+"src/codegen/tbb.ml" 221 6035 6040 "src/codegen/tbb.ml" 221 6035 6048
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"src/codegen/tbb.ml" 221 6035 6049 "src/codegen/tbb.ml" 221 6035 6051
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 215 5801 5827 "src/codegen/tbb.ml" 215 5801 5829
+)
+"src/codegen/tbb.ml" 221 6035 6049 "src/codegen/tbb.ml" 221 6035 6060
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 221 6035 6049 "src/codegen/tbb.ml" 221 6035 6070
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 221 6035 6071 "src/codegen/tbb.ml" 221 6035 6073
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 215 5801 5827 "src/codegen/tbb.ml" 215 5801 5829
+)
+"src/codegen/tbb.ml" 221 6035 6071 "src/codegen/tbb.ml" 221 6035 6082
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 221 6035 6071 "src/codegen/tbb.ml" 221 6035 6093
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 221 6035 6039 "src/codegen/tbb.ml" 221 6035 6094
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 217 5911 5913 "src/codegen/tbb.ml" 221 6035 6094
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 222 6096 6098 "src/codegen/tbb.ml" 222 6096 6105
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 222 6096 6106 "src/codegen/tbb.ml" 222 6096 6109
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+)
+"src/codegen/tbb.ml" 222 6096 6110 "src/codegen/tbb.ml" 222 6096 6115
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 222 6096 6098 "src/codegen/tbb.ml" 222 6096 6115
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 224 6164 6170 "src/codegen/tbb.ml" 224 6164 6171
+type(
+  Cil.varinfo
+)
+ident(
+  def b "src/codegen/tbb.ml" 228 6287 6289 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 224 6164 6173 "src/codegen/tbb.ml" 224 6164 6174
+type(
+  Cil.varinfo
+)
+ident(
+  def e "src/codegen/tbb.ml" 228 6287 6289 "src/codegen/tbb.ml" 248 6875 6901
+)
+"src/codegen/tbb.ml" 224 6164 6170 "src/codegen/tbb.ml" 224 6164 6174
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/codegen/tbb.ml" 224 6164 6178 "src/codegen/tbb.ml" 224 6164 6179
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref b "src/codegen/tbb.ml" 215 5801 5848 "src/codegen/tbb.ml" 215 5801 5849
+)
+"src/codegen/tbb.ml" 224 6164 6193 "src/codegen/tbb.ml" 224 6164 6198
+type(
+  string
+)
+"src/codegen/tbb.ml" 224 6164 6198 "src/codegen/tbb.ml" 224 6164 6199
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 224 6164 6199 "src/codegen/tbb.ml" 224 6164 6200
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref b "src/codegen/tbb.ml" 215 5801 5848 "src/codegen/tbb.ml" 215 5801 5849
+)
+"src/codegen/tbb.ml" 224 6164 6199 "src/codegen/tbb.ml" 224 6164 6206
+type(
+  string
+)
+"src/codegen/tbb.ml" 224 6164 6193 "src/codegen/tbb.ml" 224 6164 6206
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 224 6164 6177 "src/codegen/tbb.ml" 224 6164 6207
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 225 6209 6223 "src/codegen/tbb.ml" 225 6209 6224
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref e "src/codegen/tbb.ml" 215 5801 5851 "src/codegen/tbb.ml" 215 5801 5852
+)
+"src/codegen/tbb.ml" 225 6209 6238 "src/codegen/tbb.ml" 225 6209 6243
+type(
+  string
+)
+"src/codegen/tbb.ml" 225 6209 6243 "src/codegen/tbb.ml" 225 6209 6244
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 225 6209 6244 "src/codegen/tbb.ml" 225 6209 6245
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref e "src/codegen/tbb.ml" 215 5801 5851 "src/codegen/tbb.ml" 215 5801 5852
+)
+"src/codegen/tbb.ml" 225 6209 6244 "src/codegen/tbb.ml" 225 6209 6251
+type(
+  string
+)
+"src/codegen/tbb.ml" 225 6209 6238 "src/codegen/tbb.ml" 225 6209 6251
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 225 6209 6222 "src/codegen/tbb.ml" 225 6209 6252
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 224 6164 6177 "src/codegen/tbb.ml" 225 6209 6252
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/codegen/tbb.ml" 228 6287 6289 "src/codegen/tbb.ml" 228 6287 6296
+type(
+  Format.formatter ->
+  (string ->
+   string -> string -> string -> string -> string -> string -> string -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string -> string -> string -> string -> string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 228 6287 6297 "src/codegen/tbb.ml" 228 6287 6300
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+)
+"src/codegen/tbb.ml" 229 6301 6305 "src/codegen/tbb.ml" 233 6430 6461
+type(
+  (string ->
+   string -> string -> string -> string -> string -> string -> string -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 234 6462 6466 "src/codegen/tbb.ml" 234 6462 6467
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref b "src/codegen/tbb.ml" 224 6164 6170 "src/codegen/tbb.ml" 224 6164 6171
+)
+"src/codegen/tbb.ml" 234 6462 6466 "src/codegen/tbb.ml" 234 6462 6473
+type(
+  string
+)
+"src/codegen/tbb.ml" 234 6462 6474 "src/codegen/tbb.ml" 234 6462 6487
+type(
+  string
+)
+ident(
+  int_ref iterator_name "src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+)
+"src/codegen/tbb.ml" 234 6462 6488 "src/codegen/tbb.ml" 234 6462 6489
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref b "src/codegen/tbb.ml" 224 6164 6170 "src/codegen/tbb.ml" 224 6164 6171
+)
+"src/codegen/tbb.ml" 234 6462 6488 "src/codegen/tbb.ml" 234 6462 6495
+type(
+  string
+)
+"src/codegen/tbb.ml" 234 6462 6496 "src/codegen/tbb.ml" 234 6462 6497
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref b "src/codegen/tbb.ml" 224 6164 6170 "src/codegen/tbb.ml" 224 6164 6171
+)
+"src/codegen/tbb.ml" 234 6462 6496 "src/codegen/tbb.ml" 234 6462 6503
+type(
+  string
+)
+"src/codegen/tbb.ml" 235 6504 6508 "src/codegen/tbb.ml" 235 6504 6509
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref e "src/codegen/tbb.ml" 224 6164 6173 "src/codegen/tbb.ml" 224 6164 6174
+)
+"src/codegen/tbb.ml" 235 6504 6508 "src/codegen/tbb.ml" 235 6504 6515
+type(
+  string
+)
+"src/codegen/tbb.ml" 235 6504 6516 "src/codegen/tbb.ml" 235 6504 6529
+type(
+  string
+)
+ident(
+  int_ref iterator_name "src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+)
+"src/codegen/tbb.ml" 235 6504 6530 "src/codegen/tbb.ml" 235 6504 6531
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref e "src/codegen/tbb.ml" 224 6164 6173 "src/codegen/tbb.ml" 224 6164 6174
+)
+"src/codegen/tbb.ml" 235 6504 6530 "src/codegen/tbb.ml" 235 6504 6537
+type(
+  string
+)
+"src/codegen/tbb.ml" 235 6504 6538 "src/codegen/tbb.ml" 235 6504 6539
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref e "src/codegen/tbb.ml" 224 6164 6173 "src/codegen/tbb.ml" 224 6164 6174
+)
+"src/codegen/tbb.ml" 235 6504 6538 "src/codegen/tbb.ml" 235 6504 6545
+type(
+  string
+)
+"src/codegen/tbb.ml" 228 6287 6289 "src/codegen/tbb.ml" 235 6504 6545
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 238 6568 6570 "src/codegen/tbb.ml" 238 6568 6577
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   string ->
+   string ->
+   string -> string -> (Format.formatter -> unit -> unit) -> unit -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  string ->
+  string ->
+  string -> string -> (Format.formatter -> unit -> unit) -> unit -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 238 6568 6578 "src/codegen/tbb.ml" 238 6568 6581
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+)
+"src/codegen/tbb.ml" 239 6582 6586 "src/codegen/tbb.ml" 239 6582 6654
+type(
+  (string ->
+   string ->
+   string ->
+   string ->
+   string -> string -> (Format.formatter -> unit -> unit) -> unit -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 240 6655 6659 "src/codegen/tbb.ml" 240 6655 6677
+type(
+  string
+)
+ident(
+  int_ref iterator_type_name "src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+)
+"src/codegen/tbb.ml" 240 6655 6678 "src/codegen/tbb.ml" 240 6655 6679
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "src/codegen/tbb.ml" 215 5801 5845 "src/codegen/tbb.ml" 215 5801 5846
+)
+"src/codegen/tbb.ml" 240 6655 6678 "src/codegen/tbb.ml" 240 6655 6685
+type(
+  string
+)
+"src/codegen/tbb.ml" 240 6655 6686 "src/codegen/tbb.ml" 240 6655 6699
+type(
+  string
+)
+ident(
+  int_ref iterator_name "src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+)
+"src/codegen/tbb.ml" 241 6700 6704 "src/codegen/tbb.ml" 241 6700 6705
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "src/codegen/tbb.ml" 215 5801 5845 "src/codegen/tbb.ml" 215 5801 5846
+)
+"src/codegen/tbb.ml" 241 6700 6704 "src/codegen/tbb.ml" 241 6700 6711
+type(
+  string
+)
+"src/codegen/tbb.ml" 241 6700 6712 "src/codegen/tbb.ml" 241 6700 6725
+type(
+  string
+)
+ident(
+  int_ref iterator_name "src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+)
+"src/codegen/tbb.ml" 242 6726 6730 "src/codegen/tbb.ml" 242 6726 6731
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref i "src/codegen/tbb.ml" 215 5801 5845 "src/codegen/tbb.ml" 215 5801 5846
+)
+"src/codegen/tbb.ml" 242 6726 6730 "src/codegen/tbb.ml" 242 6726 6737
+type(
+  string
+)
+"src/codegen/tbb.ml" 243 6738 6742 "src/codegen/tbb.ml" 243 6738 6748
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref ppbody "src/codegen/tbb.ml" 215 5801 5854 "src/codegen/tbb.ml" 215 5801 5860
+)
+"src/codegen/tbb.ml" 243 6738 6749 "src/codegen/tbb.ml" 243 6738 6751
+type(
+  unit
+)
+"src/codegen/tbb.ml" 238 6568 6570 "src/codegen/tbb.ml" 243 6738 6751
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 245 6792 6794 "src/codegen/tbb.ml" 245 6792 6801
+type(
+  (Utils.VS.elt -> unit) -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VS.iter
+)
+"src/codegen/tbb.ml" 246 6802 6811 "src/codegen/tbb.ml" 246 6802 6813
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 247 6817 6824 "src/codegen/tbb.ml" 247 6817 6873
+)
+"src/codegen/tbb.ml" 247 6817 6824 "src/codegen/tbb.ml" 247 6817 6831
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 247 6817 6832 "src/codegen/tbb.ml" 247 6817 6835
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 215 5801 5822 "src/codegen/tbb.ml" 215 5801 5825
+)
+"src/codegen/tbb.ml" 247 6817 6836 "src/codegen/tbb.ml" 247 6817 6855
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 247 6817 6856 "src/codegen/tbb.ml" 247 6817 6858
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 246 6802 6811 "src/codegen/tbb.ml" 246 6802 6813
+)
+"src/codegen/tbb.ml" 247 6817 6856 "src/codegen/tbb.ml" 247 6817 6864
+type(
+  string
+)
+"src/codegen/tbb.ml" 247 6817 6865 "src/codegen/tbb.ml" 247 6817 6867
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 246 6802 6811 "src/codegen/tbb.ml" 246 6802 6813
+)
+"src/codegen/tbb.ml" 247 6817 6865 "src/codegen/tbb.ml" 247 6817 6873
+type(
+  string
+)
+"src/codegen/tbb.ml" 247 6817 6824 "src/codegen/tbb.ml" 247 6817 6873
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 246 6802 6806 "src/codegen/tbb.ml" 247 6817 6874
+type(
+  Utils.VS.elt -> unit
+)
+"src/codegen/tbb.ml" 248 6875 6879 "src/codegen/tbb.ml" 248 6875 6881
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 215 5801 5827 "src/codegen/tbb.ml" 215 5801 5829
+)
+"src/codegen/tbb.ml" 248 6875 6879 "src/codegen/tbb.ml" 248 6875 6890
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 248 6875 6879 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 245 6792 6794 "src/codegen/tbb.ml" 248 6875 6901
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 238 6568 6570 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  unit
+)
+"src/codegen/tbb.ml" 228 6287 6289 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  unit
+)
+"src/codegen/tbb.ml" 224 6164 6166 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  unit
+)
+"src/codegen/tbb.ml" 222 6096 6098 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  unit
+)
+"src/codegen/tbb.ml" 217 5911 5913 "src/codegen/tbb.ml" 248 6875 6901
+type(
+  unit
+)
+"src/codegen/tbb.ml" 251 6904 6908 "src/codegen/tbb.ml" 251 6904 6922
+type(
+  SketchTypes.sketch_rep -> cpp_class
+)
+ident(
+  def make_tbb_class "src/codegen/tbb.ml" 407 11635 11635 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def pb "src/codegen/tbb.ml" 252 6928 6930 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+type(
+  string
+)
+ident(
+  def class_name "src/codegen/tbb.ml" 255 7018 7020 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 253 6947 6951 "src/codegen/tbb.ml" 253 6947 6970
+type(
+  string
+)
+ident(
+  int_ref class_name_appendix "src/codegen/tbb.ml" 185 4665 4669 "src/codegen/tbb.ml" 185 4665 4688
+)
+"src/codegen/tbb.ml" 253 6947 6970 "src/codegen/tbb.ml" 253 6947 6971
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 253 6947 6972 "src/codegen/tbb.ml" 253 6947 6989
+type(
+  string -> string
+)
+ident(
+  ext_ref String.capitalize
+)
+"src/codegen/tbb.ml" 253 6947 6991 "src/codegen/tbb.ml" 253 6947 7007
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  int_ref pbname_of_sketch "src/codegen/tbb.ml" 208 5559 5563 "src/codegen/tbb.ml" 208 5559 5579
+)
+"src/codegen/tbb.ml" 253 6947 7008 "src/codegen/tbb.ml" 253 6947 7010
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 253 6947 6990 "src/codegen/tbb.ml" 253 6947 7011
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 253 6947 6971 "src/codegen/tbb.ml" 253 6947 7012
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 253 6947 6951 "src/codegen/tbb.ml" 253 6947 7012
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+type(
+  cpp_class
+)
+ident(
+  def tbb_class "src/codegen/tbb.ml" 256 7065 7067 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 255 7018 7036 "src/codegen/tbb.ml" 255 7018 7050
+type(
+  string -> cpp_class
+)
+ident(
+  int_ref makeEmptyClass "src/codegen/tbb.ml" 141 3505 3509 "src/codegen/tbb.ml" 141 3505 3523
+)
+"src/codegen/tbb.ml" 255 7018 7051 "src/codegen/tbb.ml" 255 7018 7061
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+)
+"src/codegen/tbb.ml" 255 7018 7036 "src/codegen/tbb.ml" 255 7018 7061
+call(
+  stack
+)
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 256 7065 7071 "src/codegen/tbb.ml" 256 7065 7081
+type(
+  Cil.typ
+)
+ident(
+  def index_type "src/codegen/tbb.ml" 262 7204 7206 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 258 7097 7113 "src/codegen/tbb.ml" 258 7097 7131
+type(
+  string
+)
+ident(
+  int_ref iterator_type_name "src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+)
+"src/codegen/tbb.ml" 259 7133 7149 "src/codegen/tbb.ml" 259 7133 7163
+type(
+  Cil.typ
+)
+ident(
+  int_ref iterator_c_typ "src/codegen/tbb.ml" 192 4903 4907 "src/codegen/tbb.ml" 192 4903 4921
+)
+"src/codegen/tbb.ml" 260 7165 7187 "src/codegen/tbb.ml" 260 7165 7192
+type(
+  bool
+)
+"src/codegen/tbb.ml" 258 7097 7103 "src/codegen/tbb.ml" 260 7165 7194
+type(
+  Cil.typeinfo
+)
+"src/codegen/tbb.ml" 260 7165 7195 "src/codegen/tbb.ml" 260 7165 7197
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 257 7084 7088 "src/codegen/tbb.ml" 260 7165 7198
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 262 7204 7210 "src/codegen/tbb.ml" 262 7204 7219
+type(
+  Cil.varinfo
+)
+ident(
+  def index_var "src/codegen/tbb.ml" 265 7296 7298 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 263 7222 7226 "src/codegen/tbb.ml" 263 7222 7243
+type(
+  Utils.VS.elt -> Cil.typ -> Cil.varinfo
+)
+ident(
+  ext_ref Ct.change_var_typ
+)
+"src/codegen/tbb.ml" 263 7222 7245 "src/codegen/tbb.ml" 263 7222 7255
+type(
+  Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VS.max_elt
+)
+"src/codegen/tbb.ml" 263 7222 7256 "src/codegen/tbb.ml" 263 7222 7258
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 263 7222 7256 "src/codegen/tbb.ml" 263 7222 7267
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 263 7222 7256 "src/codegen/tbb.ml" 263 7222 7278
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 263 7222 7244 "src/codegen/tbb.ml" 263 7222 7279
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/codegen/tbb.ml" 263 7222 7280 "src/codegen/tbb.ml" 263 7222 7290
+type(
+  Cil.typ
+)
+ident(
+  int_ref index_type "src/codegen/tbb.ml" 256 7065 7071 "src/codegen/tbb.ml" 256 7065 7081
+)
+"src/codegen/tbb.ml" 263 7222 7226 "src/codegen/tbb.ml" 263 7222 7290
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 265 7296 7302 "src/codegen/tbb.ml" 265 7296 7317
+type(
+  Cil.varinfo
+)
+ident(
+  def begin_index_var "src/codegen/tbb.ml" 268 7384 7386 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 266 7320 7324 "src/codegen/tbb.ml" 266 7320 7341
+type(
+  Cil.varinfo -> Cil.typ -> Cil.varinfo
+)
+ident(
+  ext_ref Ct.change_var_typ
+)
+"src/codegen/tbb.ml" 266 7320 7343 "src/codegen/tbb.ml" 266 7320 7356
+type(
+  Cil.varinfo -> Cil.varinfo
+)
+ident(
+  ext_ref SketchTypes.left_index_vi
+)
+"src/codegen/tbb.ml" 266 7320 7357 "src/codegen/tbb.ml" 266 7320 7366
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref index_var "src/codegen/tbb.ml" 262 7204 7210 "src/codegen/tbb.ml" 262 7204 7219
+)
+"src/codegen/tbb.ml" 266 7320 7342 "src/codegen/tbb.ml" 266 7320 7367
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 266 7320 7368 "src/codegen/tbb.ml" 266 7320 7378
+type(
+  Cil.typ
+)
+ident(
+  int_ref index_type "src/codegen/tbb.ml" 256 7065 7071 "src/codegen/tbb.ml" 256 7065 7081
+)
+"src/codegen/tbb.ml" 266 7320 7324 "src/codegen/tbb.ml" 266 7320 7378
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 268 7384 7390 "src/codegen/tbb.ml" 268 7384 7403
+type(
+  Cil.varinfo
+)
+ident(
+  def end_index_var "src/codegen/tbb.ml" 272 7472 7474 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 269 7406 7410 "src/codegen/tbb.ml" 269 7406 7427
+type(
+  Cil.varinfo -> Cil.typ -> Cil.varinfo
+)
+ident(
+  ext_ref Ct.change_var_typ
+)
+"src/codegen/tbb.ml" 269 7406 7429 "src/codegen/tbb.ml" 269 7406 7443
+type(
+  Cil.varinfo -> Cil.varinfo
+)
+ident(
+  ext_ref SketchTypes.right_index_vi
+)
+"src/codegen/tbb.ml" 269 7406 7444 "src/codegen/tbb.ml" 269 7406 7453
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref index_var "src/codegen/tbb.ml" 262 7204 7210 "src/codegen/tbb.ml" 262 7204 7219
+)
+"src/codegen/tbb.ml" 269 7406 7428 "src/codegen/tbb.ml" 269 7406 7454
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 269 7406 7455 "src/codegen/tbb.ml" 269 7406 7465
+type(
+  Cil.typ
+)
+ident(
+  int_ref index_type "src/codegen/tbb.ml" 256 7065 7071 "src/codegen/tbb.ml" 256 7065 7081
+)
+"src/codegen/tbb.ml" 269 7406 7410 "src/codegen/tbb.ml" 269 7406 7465
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 272 7472 7474 "src/codegen/tbb.ml" 272 7472 7483
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 272 7472 7500 "src/codegen/tbb.ml" 272 7472 7522
+type(
+  SketchTypes.sketch_rep -> Utils.VS.t
+)
+ident(
+  int_ref private_vars_of_sketch "src/codegen/tbb.ml" 211 5660 5664 "src/codegen/tbb.ml" 211 5660 5686
+)
+"src/codegen/tbb.ml" 272 7472 7523 "src/codegen/tbb.ml" 272 7472 7525
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 272 7472 7500 "src/codegen/tbb.ml" 272 7472 7525
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 272 7472 7474 "src/codegen/tbb.ml" 272 7472 7525
+type(
+  unit
+)
+"src/codegen/tbb.ml" 273 7527 7529 "src/codegen/tbb.ml" 273 7527 7538
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 274 7554 7558 "src/codegen/tbb.ml" 274 7554 7566
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"src/codegen/tbb.ml" 274 7554 7567 "src/codegen/tbb.ml" 274 7554 7569
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 274 7554 7567 "src/codegen/tbb.ml" 274 7554 7578
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 274 7554 7567 "src/codegen/tbb.ml" 274 7554 7589
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 275 7590 7597 "src/codegen/tbb.ml" 275 7590 7613
+type(
+  Utils.VS.elt list -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VSOps.of_varlist
+)
+"src/codegen/tbb.ml" 275 7590 7615 "src/codegen/tbb.ml" 275 7590 7630
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref begin_index_var "src/codegen/tbb.ml" 265 7296 7302 "src/codegen/tbb.ml" 265 7296 7317
+)
+"src/codegen/tbb.ml" 275 7590 7632 "src/codegen/tbb.ml" 275 7590 7645
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref end_index_var "src/codegen/tbb.ml" 268 7384 7390 "src/codegen/tbb.ml" 268 7384 7403
+)
+"src/codegen/tbb.ml" 275 7590 7614 "src/codegen/tbb.ml" 275 7590 7646
+type(
+  Utils.VS.elt list
+)
+"src/codegen/tbb.ml" 275 7590 7596 "src/codegen/tbb.ml" 275 7590 7647
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 274 7554 7558 "src/codegen/tbb.ml" 275 7590 7647
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 273 7527 7529 "src/codegen/tbb.ml" 275 7590 7647
+type(
+  unit
+)
+"src/codegen/tbb.ml" 276 7649 7655 "src/codegen/tbb.ml" 276 7649 7676
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def bounds_initial_values "src/codegen/tbb.ml" 287 8033 8035 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 277 7679 7683 "src/codegen/tbb.ml" 277 7679 7689
+type(
+  Utils.IM.key ->
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.add
+)
+"src/codegen/tbb.ml" 277 7679 7690 "src/codegen/tbb.ml" 277 7679 7705
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref begin_index_var "src/codegen/tbb.ml" 265 7296 7302 "src/codegen/tbb.ml" 265 7296 7317
+)
+"src/codegen/tbb.ml" 277 7679 7690 "src/codegen/tbb.ml" 277 7679 7709
+type(
+  Utils.IM.key
+)
+"src/codegen/tbb.ml" 279 7728 7749 "src/codegen/tbb.ml" 279 7728 7764
+type(
+  string -> int64
+)
+ident(
+  ext_ref Int64.of_string
+)
+"src/codegen/tbb.ml" 280 7765 7789 "src/codegen/tbb.ml" 280 7765 7809
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 280 7765 7810 "src/codegen/tbb.ml" 280 7765 7833
+type(
+  string
+)
+"src/codegen/tbb.ml" 280 7765 7788 "src/codegen/tbb.ml" 280 7765 7834
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 279 7728 7748 "src/codegen/tbb.ml" 280 7765 7835
+type(
+  int64
+)
+"src/codegen/tbb.ml" 279 7728 7740 "src/codegen/tbb.ml" 280 7765 7836
+type(
+  SketchTypes.constants
+)
+"src/codegen/tbb.ml" 278 7710 7719 "src/codegen/tbb.ml" 280 7765 7837
+type(
+  SketchTypes.skExpr
+)
+"src/codegen/tbb.ml" 281 7838 7845 "src/codegen/tbb.ml" 281 7838 7851
+type(
+  Utils.IM.key ->
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.add
+)
+"src/codegen/tbb.ml" 281 7838 7852 "src/codegen/tbb.ml" 281 7838 7865
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref end_index_var "src/codegen/tbb.ml" 268 7384 7390 "src/codegen/tbb.ml" 268 7384 7403
+)
+"src/codegen/tbb.ml" 281 7838 7852 "src/codegen/tbb.ml" 281 7838 7869
+type(
+  Utils.IM.key
+)
+"src/codegen/tbb.ml" 284 7914 7933 "src/codegen/tbb.ml" 284 7914 7948
+type(
+  string -> int64
+)
+ident(
+  ext_ref Int64.of_string
+)
+"src/codegen/tbb.ml" 285 7949 7971 "src/codegen/tbb.ml" 285 7949 7991
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 285 7949 7992 "src/codegen/tbb.ml" 285 7949 8013
+type(
+  string
+)
+"src/codegen/tbb.ml" 285 7949 7970 "src/codegen/tbb.ml" 285 7949 8014
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 284 7914 7932 "src/codegen/tbb.ml" 285 7949 8015
+type(
+  int64
+)
+"src/codegen/tbb.ml" 283 7891 7906 "src/codegen/tbb.ml" 285 7949 8016
+type(
+  SketchTypes.constants
+)
+"src/codegen/tbb.ml" 282 7870 7882 "src/codegen/tbb.ml" 285 7949 8017
+type(
+  SketchTypes.skExpr
+)
+"src/codegen/tbb.ml" 285 7949 8018 "src/codegen/tbb.ml" 285 7949 8026
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.empty
+)
+"src/codegen/tbb.ml" 281 7838 7844 "src/codegen/tbb.ml" 285 7949 8027
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/codegen/tbb.ml" 277 7679 7683 "src/codegen/tbb.ml" 285 7949 8027
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/codegen/tbb.ml" 287 8033 8039 "src/codegen/tbb.ml" 287 8033 8056
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  def public_vars_inits "src/codegen/tbb.ml" 307 8672 8674 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 288 8059 8067 "src/codegen/tbb.ml" 288 8059 8078
+type(
+  (Utils.VS.elt * SketchTypes.skExpr option) list
+)
+ident(
+  def maybe_inits "src/codegen/tbb.ml" 297 8346 8350 "src/codegen/tbb.ml" 305 8649 8666
+)
+"src/codegen/tbb.ml" 289 8081 8087 "src/codegen/tbb.ml" 289 8081 8095
+type(
+  (Utils.VS.elt -> Utils.VS.elt * SketchTypes.skExpr option) ->
+  Utils.VS.elt list -> (Utils.VS.elt * SketchTypes.skExpr option) list
+)
+ident(
+  ext_ref List.map
+)
+"src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 291 8115 8126 "src/codegen/tbb.ml" 294 8254 8291
+)
+"src/codegen/tbb.ml" 291 8115 8130 "src/codegen/tbb.ml" 291 8115 8132
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+)
+"src/codegen/tbb.ml" 291 8115 8140 "src/codegen/tbb.ml" 291 8115 8154
+type(
+  SketchTypes.sketch_rep -> Utils.VS.elt -> SketchTypes.skExpr
+)
+ident(
+  ext_ref SketchTypes.get_init_value
+)
+"src/codegen/tbb.ml" 291 8115 8155 "src/codegen/tbb.ml" 291 8115 8157
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 291 8115 8158 "src/codegen/tbb.ml" 291 8115 8160
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+)
+"src/codegen/tbb.ml" 291 8115 8139 "src/codegen/tbb.ml" 291 8115 8161
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/codegen/tbb.ml" 291 8115 8134 "src/codegen/tbb.ml" 291 8115 8161
+type(
+  SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 291 8115 8130 "src/codegen/tbb.ml" 291 8115 8161
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 292 8162 8178 "src/codegen/tbb.ml" 292 8162 8187
+type(
+  exn
+)
+"src/codegen/tbb.ml" 293 8191 8206 "src/codegen/tbb.ml" 293 8191 8208
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+)
+"src/codegen/tbb.ml" 293 8191 8216 "src/codegen/tbb.ml" 293 8191 8223
+type(
+  Utils.IM.key -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Utils.IM.find
+)
+"src/codegen/tbb.ml" 293 8191 8224 "src/codegen/tbb.ml" 293 8191 8226
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+)
+"src/codegen/tbb.ml" 293 8191 8224 "src/codegen/tbb.ml" 293 8191 8230
+type(
+  Utils.IM.key
+)
+"src/codegen/tbb.ml" 293 8191 8231 "src/codegen/tbb.ml" 293 8191 8252
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref bounds_initial_values "src/codegen/tbb.ml" 276 7649 7655 "src/codegen/tbb.ml" 276 7649 7676
+)
+"src/codegen/tbb.ml" 293 8191 8215 "src/codegen/tbb.ml" 293 8191 8253
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/codegen/tbb.ml" 293 8191 8210 "src/codegen/tbb.ml" 293 8191 8253
+type(
+  SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 293 8191 8206 "src/codegen/tbb.ml" 293 8191 8253
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 294 8254 8270 "src/codegen/tbb.ml" 294 8254 8279
+type(
+  exn
+)
+"src/codegen/tbb.ml" 294 8254 8283 "src/codegen/tbb.ml" 294 8254 8285
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 290 8096 8109 "src/codegen/tbb.ml" 290 8096 8111
+)
+"src/codegen/tbb.ml" 294 8254 8287 "src/codegen/tbb.ml" 294 8254 8291
+type(
+  SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 294 8254 8283 "src/codegen/tbb.ml" 294 8254 8291
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 293 8191 8202 "src/codegen/tbb.ml" 294 8254 8291
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 291 8115 8126 "src/codegen/tbb.ml" 294 8254 8291
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 290 8096 8104 "src/codegen/tbb.ml" 294 8254 8292
+type(
+  Utils.VS.elt -> Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 295 8293 8302 "src/codegen/tbb.ml" 295 8293 8315
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/codegen/tbb.ml" 295 8293 8316 "src/codegen/tbb.ml" 295 8293 8325
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 295 8293 8316 "src/codegen/tbb.ml" 295 8293 8337
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 295 8293 8301 "src/codegen/tbb.ml" 295 8293 8338
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/codegen/tbb.ml" 289 8081 8087 "src/codegen/tbb.ml" 295 8293 8338
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * SketchTypes.skExpr option) list
+)
+"src/codegen/tbb.ml" 297 8346 8350 "src/codegen/tbb.ml" 297 8346 8358
+type(
+  (Utils.VS.elt * SketchTypes.skExpr option -> Utils.VS.elt * init_expr) ->
+  (Utils.VS.elt * SketchTypes.skExpr option) list ->
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  ext_ref List.map
+)
+"src/codegen/tbb.ml" 298 8359 8371 "src/codegen/tbb.ml" 298 8359 8373
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 299 8390 8399 "src/codegen/tbb.ml" 304 8604 8647
+)
+"src/codegen/tbb.ml" 298 8359 8375 "src/codegen/tbb.ml" 298 8359 8385
+type(
+  SketchTypes.skExpr option
+)
+ident(
+  def maybe_init "src/codegen/tbb.ml" 299 8390 8399 "src/codegen/tbb.ml" 304 8604 8647
+)
+"src/codegen/tbb.ml" 298 8359 8370 "src/codegen/tbb.ml" 298 8359 8386
+type(
+  Utils.VS.elt * SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 299 8390 8405 "src/codegen/tbb.ml" 299 8390 8415
+type(
+  SketchTypes.skExpr option
+)
+ident(
+  int_ref maybe_init "src/codegen/tbb.ml" 298 8359 8375 "src/codegen/tbb.ml" 298 8359 8385
+)
+"src/codegen/tbb.ml" 300 8421 8437 "src/codegen/tbb.ml" 300 8421 8446
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def init_expr "src/codegen/tbb.ml" 300 8421 8450 "src/codegen/tbb.ml" 300 8421 8473
+)
+"src/codegen/tbb.ml" 300 8421 8432 "src/codegen/tbb.ml" 300 8421 8446
+type(
+  SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 300 8421 8450 "src/codegen/tbb.ml" 300 8421 8452
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 298 8359 8371 "src/codegen/tbb.ml" 298 8359 8373
+)
+"src/codegen/tbb.ml" 300 8421 8464 "src/codegen/tbb.ml" 300 8421 8473
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref init_expr "src/codegen/tbb.ml" 300 8421 8437 "src/codegen/tbb.ml" 300 8421 8446
+)
+"src/codegen/tbb.ml" 300 8421 8454 "src/codegen/tbb.ml" 300 8421 8473
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 300 8421 8450 "src/codegen/tbb.ml" 300 8421 8473
+type(
+  Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 301 8474 8485 "src/codegen/tbb.ml" 301 8474 8489
+type(
+  SketchTypes.skExpr option
+)
+"src/codegen/tbb.ml" 302 8493 8504 "src/codegen/tbb.ml" 302 8493 8512
+type(
+  string -> Utils.VS.elt * init_expr
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/codegen/tbb.ml" 302 8493 8514 "src/codegen/tbb.ml" 302 8493 8521
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 302 8493 8522 "src/codegen/tbb.ml" 302 8493 8535
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.str_formatter
+)
+"src/codegen/tbb.ml" 303 8536 8559 "src/codegen/tbb.ml" 303 8536 8593
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 303 8536 8594 "src/codegen/tbb.ml" 303 8536 8596
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 298 8359 8371 "src/codegen/tbb.ml" 298 8359 8373
+)
+"src/codegen/tbb.ml" 303 8536 8594 "src/codegen/tbb.ml" 303 8536 8602
+type(
+  string
+)
+"src/codegen/tbb.ml" 302 8493 8514 "src/codegen/tbb.ml" 303 8536 8602
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 304 8604 8624 "src/codegen/tbb.ml" 304 8604 8643
+type(
+  unit -> string
+)
+ident(
+  ext_ref Format.flush_str_formatter
+)
+"src/codegen/tbb.ml" 304 8604 8644 "src/codegen/tbb.ml" 304 8604 8646
+type(
+  unit
+)
+"src/codegen/tbb.ml" 304 8604 8624 "src/codegen/tbb.ml" 304 8604 8646
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 302 8493 8513 "src/codegen/tbb.ml" 304 8604 8647
+type(
+  string
+)
+"src/codegen/tbb.ml" 302 8493 8504 "src/codegen/tbb.ml" 304 8604 8647
+call(
+  tail
+)
+type(
+  Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 299 8390 8399 "src/codegen/tbb.ml" 304 8604 8647
+type(
+  Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 298 8359 8365 "src/codegen/tbb.ml" 304 8604 8648
+type(
+  Utils.VS.elt * SketchTypes.skExpr option -> Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 305 8649 8655 "src/codegen/tbb.ml" 305 8649 8666
+type(
+  (Utils.VS.elt * SketchTypes.skExpr option) list
+)
+ident(
+  int_ref maybe_inits "src/codegen/tbb.ml" 288 8059 8067 "src/codegen/tbb.ml" 288 8059 8078
+)
+"src/codegen/tbb.ml" 297 8346 8350 "src/codegen/tbb.ml" 305 8649 8666
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 288 8059 8063 "src/codegen/tbb.ml" 305 8649 8666
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 307 8672 8678 "src/codegen/tbb.ml" 307 8672 8691
+type(
+  cpp_class_constr
+)
+ident(
+  def tbb_cstr_copy "src/codegen/tbb.ml" 336 9466 9470 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 313 8872 8880 "src/codegen/tbb.ml" 313 8872 8894
+type(
+  string
+)
+ident(
+  def copy_from_name "src/codegen/tbb.ml" 316 8956 8960 "src/codegen/tbb.ml" 334 9432 9460
+)
+"src/codegen/tbb.ml" 314 8897 8904 "src/codegen/tbb.ml" 314 8897 8924
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 314 8897 8925 "src/codegen/tbb.ml" 314 8897 8947
+type(
+  string
+)
+"src/codegen/tbb.ml" 314 8897 8903 "src/codegen/tbb.ml" 314 8897 8948
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 316 8956 8964 "src/codegen/tbb.ml" 316 8956 8978
+type(
+  cpp_constr_arg list
+)
+ident(
+  def copy_cstr_args "src/codegen/tbb.ml" 321 9076 9080 "src/codegen/tbb.ml" 334 9432 9460
+)
+"src/codegen/tbb.ml" 318 8999 9009 "src/codegen/tbb.ml" 318 8999 9019
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+)
+"src/codegen/tbb.ml" 318 8999 9019 "src/codegen/tbb.ml" 318 8999 9020
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 318 8999 9020 "src/codegen/tbb.ml" 318 8999 9024
+type(
+  string
+)
+"src/codegen/tbb.ml" 318 8999 9024 "src/codegen/tbb.ml" 318 8999 9025
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 318 8999 9025 "src/codegen/tbb.ml" 318 8999 9039
+type(
+  string
+)
+ident(
+  int_ref copy_from_name "src/codegen/tbb.ml" 313 8872 8880 "src/codegen/tbb.ml" 313 8872 8894
+)
+"src/codegen/tbb.ml" 318 8999 9020 "src/codegen/tbb.ml" 318 8999 9039
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 318 8999 9008 "src/codegen/tbb.ml" 318 8999 9040
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 317 8981 8988 "src/codegen/tbb.ml" 318 8999 9040
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 319 9042 9060 "src/codegen/tbb.ml" 319 9042 9067
+type(
+  string
+)
+"src/codegen/tbb.ml" 319 9042 9049 "src/codegen/tbb.ml" 319 9042 9067
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 317 8981 8987 "src/codegen/tbb.ml" 319 9042 9068
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 321 9076 9084 "src/codegen/tbb.ml" 321 9076 9106
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  def copy_cstr_initializers "src/codegen/tbb.ml" 328 9318 9322 "src/codegen/tbb.ml" 334 9432 9460
+)
+"src/codegen/tbb.ml" 322 9109 9119 "src/codegen/tbb.ml" 322 9109 9137
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  def private_vars_inits "src/codegen/tbb.ml" 326 9266 9272 "src/codegen/tbb.ml" 326 9266 9310
+)
+"src/codegen/tbb.ml" 323 9140 9148 "src/codegen/tbb.ml" 323 9140 9156
+type(
+  (Utils.VS.elt -> Utils.VS.elt * init_expr) ->
+  Utils.VS.elt list -> (Utils.VS.elt * init_expr) list
+)
+ident(
+  ext_ref List.map
+)
+"src/codegen/tbb.ml" 323 9140 9162 "src/codegen/tbb.ml" 323 9140 9164
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 323 9140 9168 "src/codegen/tbb.ml" 323 9140 9206
+)
+"src/codegen/tbb.ml" 323 9140 9169 "src/codegen/tbb.ml" 323 9140 9171
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 323 9140 9162 "src/codegen/tbb.ml" 323 9140 9164
+)
+"src/codegen/tbb.ml" 323 9140 9186 "src/codegen/tbb.ml" 323 9140 9188
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 323 9140 9162 "src/codegen/tbb.ml" 323 9140 9164
+)
+"src/codegen/tbb.ml" 323 9140 9190 "src/codegen/tbb.ml" 323 9140 9204
+type(
+  string
+)
+ident(
+  int_ref copy_from_name "src/codegen/tbb.ml" 313 8872 8880 "src/codegen/tbb.ml" 313 8872 8894
+)
+"src/codegen/tbb.ml" 323 9140 9173 "src/codegen/tbb.ml" 323 9140 9205
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 323 9140 9168 "src/codegen/tbb.ml" 323 9140 9206
+type(
+  Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 323 9140 9157 "src/codegen/tbb.ml" 323 9140 9207
+type(
+  Utils.VS.elt -> Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 324 9208 9219 "src/codegen/tbb.ml" 324 9208 9232
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/codegen/tbb.ml" 324 9208 9233 "src/codegen/tbb.ml" 324 9208 9242
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 324 9208 9233 "src/codegen/tbb.ml" 324 9208 9255
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 324 9208 9218 "src/codegen/tbb.ml" 324 9208 9256
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/codegen/tbb.ml" 323 9140 9148 "src/codegen/tbb.ml" 324 9208 9256
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 326 9266 9272 "src/codegen/tbb.ml" 326 9266 9290
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  int_ref private_vars_inits "src/codegen/tbb.ml" 322 9109 9119 "src/codegen/tbb.ml" 322 9109 9137
+)
+"src/codegen/tbb.ml" 326 9266 9291 "src/codegen/tbb.ml" 326 9266 9292
+type(
+  (Utils.VS.elt * init_expr) list ->
+  (Utils.VS.elt * init_expr) list -> (Utils.VS.elt * init_expr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/codegen/tbb.ml" 326 9266 9293 "src/codegen/tbb.ml" 326 9266 9310
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  int_ref public_vars_inits "src/codegen/tbb.ml" 287 8033 8039 "src/codegen/tbb.ml" 287 8033 8056
+)
+"src/codegen/tbb.ml" 326 9266 9272 "src/codegen/tbb.ml" 326 9266 9310
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 322 9109 9115 "src/codegen/tbb.ml" 326 9266 9310
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 328 9318 9322 "src/codegen/tbb.ml" 328 9318 9337
+type(
+  string ->
+  Cil.typ ->
+  int ->
+  cpp_constr_arg list ->
+  Cil.stmt -> cpp_constr_initializer list -> cpp_class_constr
+)
+ident(
+  int_ref makeConstructor "src/codegen/tbb.ml" 76 1652 1656 "src/codegen/tbb.ml" 76 1652 1671
+)
+"src/codegen/tbb.ml" 329 9338 9344 "src/codegen/tbb.ml" 329 9338 9354
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+)
+"src/codegen/tbb.ml" 330 9355 9361 "src/codegen/tbb.ml" 330 9355 9370
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 330 9355 9361 "src/codegen/tbb.ml" 330 9355 9376
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 331 9377 9383 "src/codegen/tbb.ml" 331 9377 9384
+type(
+  int
+)
+"src/codegen/tbb.ml" 332 9385 9391 "src/codegen/tbb.ml" 332 9385 9405
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref copy_cstr_args "src/codegen/tbb.ml" 316 8956 8964 "src/codegen/tbb.ml" 316 8956 8978
+)
+"src/codegen/tbb.ml" 333 9406 9413 "src/codegen/tbb.ml" 333 9406 9419
+type(
+  Cil.stmtkind -> Cil.stmt
+)
+ident(
+  ext_ref Cil.mkStmt
+)
+"src/codegen/tbb.ml" 333 9406 9427 "src/codegen/tbb.ml" 333 9406 9429
+type(
+  Cil.instr list
+)
+"src/codegen/tbb.ml" 333 9406 9420 "src/codegen/tbb.ml" 333 9406 9430
+type(
+  Cil.stmtkind
+)
+"src/codegen/tbb.ml" 333 9406 9412 "src/codegen/tbb.ml" 333 9406 9431
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 334 9432 9438 "src/codegen/tbb.ml" 334 9432 9460
+type(
+  cpp_constr_initializer list
+)
+ident(
+  int_ref copy_cstr_initializers "src/codegen/tbb.ml" 321 9076 9084 "src/codegen/tbb.ml" 321 9076 9106
+)
+"src/codegen/tbb.ml" 328 9318 9322 "src/codegen/tbb.ml" 334 9432 9460
+call(
+  stack
+)
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 321 9076 9080 "src/codegen/tbb.ml" 334 9432 9460
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 316 8956 8960 "src/codegen/tbb.ml" 334 9432 9460
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 313 8872 8876 "src/codegen/tbb.ml" 334 9432 9460
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 336 9466 9474 "src/codegen/tbb.ml" 336 9466 9487
+type(
+  cpp_class_constr
+)
+ident(
+  def tbb_cstr_init "src/codegen/tbb.ml" 357 10092 10094 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 337 9490 9500 "src/codegen/tbb.ml" 337 9490 9517
+type(
+  cpp_constr_arg list
+)
+ident(
+  def private_vars_args "src/codegen/tbb.ml" 341 9626 9632 "src/codegen/tbb.ml" 354 9989 10018
+)
+"src/codegen/tbb.ml" 338 9520 9528 "src/codegen/tbb.ml" 338 9520 9535
+type(
+  (Utils.VS.elt -> cpp_constr_arg list -> cpp_constr_arg list) ->
+  Utils.VS.t -> cpp_constr_arg list -> cpp_constr_arg list
+)
+ident(
+  ext_ref Utils.VS.fold
+)
+"src/codegen/tbb.ml" 338 9520 9541 "src/codegen/tbb.ml" 338 9520 9543
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 338 9520 9544 "src/codegen/tbb.ml" 338 9520 9579
+)
+"src/codegen/tbb.ml" 338 9520 9544 "src/codegen/tbb.ml" 338 9520 9552
+type(
+  cpp_constr_arg list
+)
+ident(
+  def argslist "src/codegen/tbb.ml" 338 9520 9556 "src/codegen/tbb.ml" 338 9520 9579
+)
+"src/codegen/tbb.ml" 338 9520 9556 "src/codegen/tbb.ml" 338 9520 9564
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref argslist "src/codegen/tbb.ml" 338 9520 9544 "src/codegen/tbb.ml" 338 9520 9552
+)
+"src/codegen/tbb.ml" 338 9520 9564 "src/codegen/tbb.ml" 338 9520 9565
+type(
+  cpp_constr_arg list -> cpp_constr_arg list -> cpp_constr_arg list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/codegen/tbb.ml" 338 9520 9576 "src/codegen/tbb.ml" 338 9520 9578
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 338 9520 9541 "src/codegen/tbb.ml" 338 9520 9543
+)
+"src/codegen/tbb.ml" 338 9520 9566 "src/codegen/tbb.ml" 338 9520 9578
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 338 9520 9565 "src/codegen/tbb.ml" 338 9520 9579
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 338 9520 9556 "src/codegen/tbb.ml" 338 9520 9579
+call(
+  tail
+)
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 338 9520 9536 "src/codegen/tbb.ml" 338 9520 9580
+type(
+  Utils.VS.elt -> cpp_constr_arg list -> cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 339 9581 9591 "src/codegen/tbb.ml" 339 9581 9600
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 339 9581 9591 "src/codegen/tbb.ml" 339 9581 9613
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 339 9581 9614 "src/codegen/tbb.ml" 339 9581 9616
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 338 9520 9528 "src/codegen/tbb.ml" 339 9581 9616
+call(
+  stack
+)
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 341 9626 9636 "src/codegen/tbb.ml" 341 9626 9657
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  def init_cstr_intializers "src/codegen/tbb.ml" 348 9860 9866 "src/codegen/tbb.ml" 354 9989 10018
+)
+"src/codegen/tbb.ml" 342 9660 9672 "src/codegen/tbb.ml" 342 9660 9690
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  def private_vars_inits "src/codegen/tbb.ml" 346 9804 9812 "src/codegen/tbb.ml" 346 9804 9850
+)
+"src/codegen/tbb.ml" 343 9693 9703 "src/codegen/tbb.ml" 343 9693 9711
+type(
+  (Utils.VS.elt -> Utils.VS.elt * init_expr) ->
+  Utils.VS.elt list -> (Utils.VS.elt * init_expr) list
+)
+ident(
+  ext_ref List.map
+)
+"src/codegen/tbb.ml" 343 9693 9717 "src/codegen/tbb.ml" 343 9693 9719
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 343 9693 9723 "src/codegen/tbb.ml" 343 9693 9740
+)
+"src/codegen/tbb.ml" 343 9693 9724 "src/codegen/tbb.ml" 343 9693 9726
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 343 9693 9717 "src/codegen/tbb.ml" 343 9693 9719
+)
+"src/codegen/tbb.ml" 343 9693 9737 "src/codegen/tbb.ml" 343 9693 9739
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 343 9693 9717 "src/codegen/tbb.ml" 343 9693 9719
+)
+"src/codegen/tbb.ml" 343 9693 9728 "src/codegen/tbb.ml" 343 9693 9739
+type(
+  init_expr
+)
+"src/codegen/tbb.ml" 343 9693 9723 "src/codegen/tbb.ml" 343 9693 9740
+type(
+  Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 343 9693 9712 "src/codegen/tbb.ml" 343 9693 9741
+type(
+  Utils.VS.elt -> Utils.VS.elt * init_expr
+)
+"src/codegen/tbb.ml" 344 9742 9755 "src/codegen/tbb.ml" 344 9742 9768
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/codegen/tbb.ml" 344 9742 9769 "src/codegen/tbb.ml" 344 9742 9778
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 344 9742 9769 "src/codegen/tbb.ml" 344 9742 9791
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 344 9742 9754 "src/codegen/tbb.ml" 344 9742 9792
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/codegen/tbb.ml" 343 9693 9703 "src/codegen/tbb.ml" 344 9742 9792
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 346 9804 9812 "src/codegen/tbb.ml" 346 9804 9830
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  int_ref private_vars_inits "src/codegen/tbb.ml" 342 9660 9672 "src/codegen/tbb.ml" 342 9660 9690
+)
+"src/codegen/tbb.ml" 346 9804 9831 "src/codegen/tbb.ml" 346 9804 9832
+type(
+  (Utils.VS.elt * init_expr) list ->
+  (Utils.VS.elt * init_expr) list -> (Utils.VS.elt * init_expr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/codegen/tbb.ml" 346 9804 9833 "src/codegen/tbb.ml" 346 9804 9850
+type(
+  (Utils.VS.elt * init_expr) list
+)
+ident(
+  int_ref public_vars_inits "src/codegen/tbb.ml" 287 8033 8039 "src/codegen/tbb.ml" 287 8033 8056
+)
+"src/codegen/tbb.ml" 346 9804 9812 "src/codegen/tbb.ml" 346 9804 9850
+call(
+  stack
+)
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 342 9660 9668 "src/codegen/tbb.ml" 346 9804 9850
+type(
+  (Utils.VS.elt * init_expr) list
+)
+"src/codegen/tbb.ml" 348 9860 9866 "src/codegen/tbb.ml" 348 9860 9881
+type(
+  string ->
+  Cil.typ ->
+  int ->
+  cpp_constr_arg list ->
+  Cil.stmt -> cpp_constr_initializer list -> cpp_class_constr
+)
+ident(
+  int_ref makeConstructor "src/codegen/tbb.ml" 76 1652 1656 "src/codegen/tbb.ml" 76 1652 1671
+)
+"src/codegen/tbb.ml" 349 9882 9890 "src/codegen/tbb.ml" 349 9882 9900
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+)
+"src/codegen/tbb.ml" 350 9901 9909 "src/codegen/tbb.ml" 350 9901 9918
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 350 9901 9909 "src/codegen/tbb.ml" 350 9901 9924
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 351 9925 9933 "src/codegen/tbb.ml" 351 9925 9934
+type(
+  int
+)
+"src/codegen/tbb.ml" 352 9935 9943 "src/codegen/tbb.ml" 352 9935 9960
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref private_vars_args "src/codegen/tbb.ml" 337 9490 9500 "src/codegen/tbb.ml" 337 9490 9517
+)
+"src/codegen/tbb.ml" 353 9961 9970 "src/codegen/tbb.ml" 353 9961 9976
+type(
+  Cil.stmtkind -> Cil.stmt
+)
+ident(
+  ext_ref Cil.mkStmt
+)
+"src/codegen/tbb.ml" 353 9961 9984 "src/codegen/tbb.ml" 353 9961 9986
+type(
+  Cil.instr list
+)
+"src/codegen/tbb.ml" 353 9961 9977 "src/codegen/tbb.ml" 353 9961 9987
+type(
+  Cil.stmtkind
+)
+"src/codegen/tbb.ml" 353 9961 9969 "src/codegen/tbb.ml" 353 9961 9988
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 354 9989 9997 "src/codegen/tbb.ml" 354 9989 10018
+type(
+  cpp_constr_initializer list
+)
+ident(
+  int_ref init_cstr_intializers "src/codegen/tbb.ml" 341 9626 9636 "src/codegen/tbb.ml" 341 9626 9657
+)
+"src/codegen/tbb.ml" 348 9860 9866 "src/codegen/tbb.ml" 354 9989 10018
+call(
+  stack
+)
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 341 9626 9632 "src/codegen/tbb.ml" 354 9989 10018
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 337 9490 9496 "src/codegen/tbb.ml" 354 9989 10018
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 357 10092 10098 "src/codegen/tbb.ml" 357 10092 10110
+type(
+  cpp_class_method
+)
+ident(
+  def tbb_operator "src/codegen/tbb.ml" 382 10876 10878 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 358 10113 10121 "src/codegen/tbb.ml" 358 10113 10142
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def operator_body_printer "src/codegen/tbb.ml" 363 10327 10331 "src/codegen/tbb.ml" 378 10750 10755
+)
+"src/codegen/tbb.ml" 358 10113 10143 "src/codegen/tbb.ml" 358 10113 10146
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 358 10113 10147 "src/codegen/tbb.ml" 361 10250 10319
+)
+"src/codegen/tbb.ml" 358 10113 10147 "src/codegen/tbb.ml" 358 10113 10149
+type(
+  unit
+)
+"src/codegen/tbb.ml" 359 10153 10159 "src/codegen/tbb.ml" 359 10153 10175
+type(
+  Format.formatter ->
+  SketchTypes.sketch_rep ->
+  Cil.varinfo * Cil.varinfo * Cil.varinfo ->
+  (Format.formatter -> unit -> unit) -> unit
+)
+ident(
+  int_ref pp_operator_body "src/codegen/tbb.ml" 215 5801 5805 "src/codegen/tbb.ml" 215 5801 5821
+)
+"src/codegen/tbb.ml" 359 10153 10176 "src/codegen/tbb.ml" 359 10153 10179
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 358 10113 10143 "src/codegen/tbb.ml" 358 10113 10146
+)
+"src/codegen/tbb.ml" 359 10153 10180 "src/codegen/tbb.ml" 359 10153 10182
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 359 10153 10184 "src/codegen/tbb.ml" 359 10153 10193
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref index_var "src/codegen/tbb.ml" 262 7204 7210 "src/codegen/tbb.ml" 262 7204 7219
+)
+"src/codegen/tbb.ml" 359 10153 10195 "src/codegen/tbb.ml" 359 10153 10210
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref begin_index_var "src/codegen/tbb.ml" 265 7296 7302 "src/codegen/tbb.ml" 265 7296 7317
+)
+"src/codegen/tbb.ml" 359 10153 10212 "src/codegen/tbb.ml" 359 10153 10225
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref end_index_var "src/codegen/tbb.ml" 268 7384 7390 "src/codegen/tbb.ml" 268 7384 7403
+)
+"src/codegen/tbb.ml" 359 10153 10183 "src/codegen/tbb.ml" 359 10153 10226
+type(
+  Cil.varinfo * Cil.varinfo * Cil.varinfo
+)
+"src/codegen/tbb.ml" 360 10227 10240 "src/codegen/tbb.ml" 360 10227 10243
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 360 10227 10244 "src/codegen/tbb.ml" 361 10250 10318
+)
+"src/codegen/tbb.ml" 360 10227 10244 "src/codegen/tbb.ml" 360 10227 10246
+type(
+  unit
+)
+"src/codegen/tbb.ml" 361 10250 10261 "src/codegen/tbb.ml" 361 10250 10268
+type(
+  Format.formatter ->
+  ((Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> SketchTypes.sklet -> unit) ->
+  SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 361 10250 10269 "src/codegen/tbb.ml" 361 10250 10272
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 360 10227 10240 "src/codegen/tbb.ml" 360 10227 10243
+)
+"src/codegen/tbb.ml" 361 10250 10273 "src/codegen/tbb.ml" 361 10250 10283
+type(
+  ((Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 361 10250 10284 "src/codegen/tbb.ml" 361 10250 10294
+type(
+  Format.formatter -> SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref SPretty.pp_c_sklet
+)
+"src/codegen/tbb.ml" 361 10250 10296 "src/codegen/tbb.ml" 361 10250 10304
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.sk_for_c
+)
+"src/codegen/tbb.ml" 361 10250 10305 "src/codegen/tbb.ml" 361 10250 10307
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 361 10250 10305 "src/codegen/tbb.ml" 361 10250 10317
+type(
+  SketchTypes.sklet
+)
+"src/codegen/tbb.ml" 361 10250 10295 "src/codegen/tbb.ml" 361 10250 10318
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/codegen/tbb.ml" 361 10250 10261 "src/codegen/tbb.ml" 361 10250 10318
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 360 10227 10235 "src/codegen/tbb.ml" 361 10250 10319
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 359 10153 10159 "src/codegen/tbb.ml" 361 10250 10319
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 363 10327 10335 "src/codegen/tbb.ml" 363 10327 10347
+type(
+  string
+)
+ident(
+  def operator_arg "src/codegen/tbb.ml" 368 10490 10494 "src/codegen/tbb.ml" 378 10750 10755
+)
+"src/codegen/tbb.ml" 364 10350 10357 "src/codegen/tbb.ml" 364 10350 10364
+type(
+  Format.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 364 10350 10365 "src/codegen/tbb.ml" 364 10350 10378
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.str_formatter
+)
+"src/codegen/tbb.ml" 364 10350 10379 "src/codegen/tbb.ml" 364 10350 10408
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 365 10409 10418 "src/codegen/tbb.ml" 365 10409 10436
+type(
+  string
+)
+ident(
+  int_ref iterator_type_name "src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+)
+"src/codegen/tbb.ml" 365 10409 10437 "src/codegen/tbb.ml" 365 10409 10450
+type(
+  string
+)
+ident(
+  int_ref iterator_name "src/codegen/tbb.ml" 189 4807 4811 "src/codegen/tbb.ml" 189 4807 4824
+)
+"src/codegen/tbb.ml" 364 10350 10357 "src/codegen/tbb.ml" 365 10409 10450
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 366 10452 10459 "src/codegen/tbb.ml" 366 10452 10478
+type(
+  unit -> string
+)
+ident(
+  ext_ref Format.flush_str_formatter
+)
+"src/codegen/tbb.ml" 366 10452 10479 "src/codegen/tbb.ml" 366 10452 10481
+type(
+  unit
+)
+"src/codegen/tbb.ml" 366 10452 10459 "src/codegen/tbb.ml" 366 10452 10481
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 364 10350 10356 "src/codegen/tbb.ml" 366 10452 10482
+type(
+  string
+)
+"src/codegen/tbb.ml" 369 10496 10508 "src/codegen/tbb.ml" 369 10496 10509
+type(
+  int
+)
+"src/codegen/tbb.ml" 370 10511 10530 "src/codegen/tbb.ml" 370 10511 10532
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 370 10511 10524 "src/codegen/tbb.ml" 370 10511 10532
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 371 10534 10548 "src/codegen/tbb.ml" 371 10534 10560
+type(
+  string
+)
+"src/codegen/tbb.ml" 372 10562 10582 "src/codegen/tbb.ml" 372 10562 10584
+type(
+  string list
+)
+"src/codegen/tbb.ml" 373 10586 10612 "src/codegen/tbb.ml" 373 10586 10624
+type(
+  string
+)
+ident(
+  int_ref operator_arg "src/codegen/tbb.ml" 363 10327 10335 "src/codegen/tbb.ml" 363 10327 10347
+)
+"src/codegen/tbb.ml" 373 10586 10601 "src/codegen/tbb.ml" 373 10586 10624
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 373 10586 10600 "src/codegen/tbb.ml" 373 10586 10625
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 374 10627 10640 "src/codegen/tbb.ml" 374 10627 10644
+type(
+  bool
+)
+"src/codegen/tbb.ml" 375 10646 10662 "src/codegen/tbb.ml" 375 10646 10670
+type(
+  Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.empty
+)
+"src/codegen/tbb.ml" 376 10672 10687 "src/codegen/tbb.ml" 376 10672 10693
+type(
+  Cil.stmtkind -> Cil.stmt
+)
+ident(
+  ext_ref Cil.mkStmt
+)
+"src/codegen/tbb.ml" 376 10672 10701 "src/codegen/tbb.ml" 376 10672 10703
+type(
+  Cil.instr list
+)
+"src/codegen/tbb.ml" 376 10672 10694 "src/codegen/tbb.ml" 376 10672 10704
+type(
+  Cil.stmtkind
+)
+"src/codegen/tbb.ml" 376 10672 10686 "src/codegen/tbb.ml" 376 10672 10705
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 377 10707 10727 "src/codegen/tbb.ml" 377 10707 10748
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref operator_body_printer "src/codegen/tbb.ml" 358 10113 10121 "src/codegen/tbb.ml" 358 10113 10142
+)
+"src/codegen/tbb.ml" 377 10707 10722 "src/codegen/tbb.ml" 377 10707 10748
+type(
+  (Format.formatter -> unit -> unit) option
+)
+"src/codegen/tbb.ml" 368 10490 10494 "src/codegen/tbb.ml" 378 10750 10755
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 363 10327 10331 "src/codegen/tbb.ml" 378 10750 10755
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 358 10113 10117 "src/codegen/tbb.ml" 378 10750 10755
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 382 10876 10882 "src/codegen/tbb.ml" 382 10876 10890
+type(
+  cpp_class_method
+)
+ident(
+  def tbb_join "src/codegen/tbb.ml" 403 11506 11508 "src/codegen/tbb.ml" 405 11622 11633
+)
+"src/codegen/tbb.ml" 383 10893 10901 "src/codegen/tbb.ml" 383 10893 10918
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def join_body_printer "src/codegen/tbb.ml" 389 11118 11122 "src/codegen/tbb.ml" 401 11495 11500
+)
+"src/codegen/tbb.ml" 383 10893 10919 "src/codegen/tbb.ml" 383 10893 10922
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 383 10893 10923 "src/codegen/tbb.ml" 387 11078 11110
+)
+"src/codegen/tbb.ml" 383 10893 10923 "src/codegen/tbb.ml" 383 10893 10925
+type(
+  unit
+)
+"src/codegen/tbb.ml" 384 10928 10934 "src/codegen/tbb.ml" 384 10928 10951
+type(
+  bool ref
+)
+ident(
+  ext_ref SPretty.printing_for_join
+)
+"src/codegen/tbb.ml" 384 10928 10952 "src/codegen/tbb.ml" 384 10928 10954
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/codegen/tbb.ml" 384 10928 10955 "src/codegen/tbb.ml" 384 10928 10959
+type(
+  bool
+)
+"src/codegen/tbb.ml" 384 10928 10934 "src/codegen/tbb.ml" 384 10928 10959
+type(
+  unit
+)
+"src/codegen/tbb.ml" 385 10961 10967 "src/codegen/tbb.ml" 385 10961 10988
+type(
+  SPretty.VS.t ref
+)
+ident(
+  ext_ref SPretty.cpp_class_members_set
+)
+"src/codegen/tbb.ml" 385 10961 10989 "src/codegen/tbb.ml" 385 10961 10991
+type(
+  SPretty.VS.t ref -> SPretty.VS.t -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/codegen/tbb.ml" 385 10961 10992 "src/codegen/tbb.ml" 385 10961 11001
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 385 10961 10992 "src/codegen/tbb.ml" 385 10961 11013
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 385 10961 10967 "src/codegen/tbb.ml" 385 10961 11013
+type(
+  unit
+)
+"src/codegen/tbb.ml" 386 11015 11021 "src/codegen/tbb.ml" 386 11015 11028
+type(
+  Format.formatter ->
+  ((Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> SketchTypes.sklet -> unit) ->
+  SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 386 11015 11029 "src/codegen/tbb.ml" 386 11015 11032
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 383 10893 10919 "src/codegen/tbb.ml" 383 10893 10922
+)
+"src/codegen/tbb.ml" 386 11015 11033 "src/codegen/tbb.ml" 386 11015 11037
+type(
+  ((Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 386 11015 11038 "src/codegen/tbb.ml" 386 11015 11048
+type(
+  Format.formatter -> SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref SPretty.pp_c_sklet
+)
+"src/codegen/tbb.ml" 386 11015 11050 "src/codegen/tbb.ml" 386 11015 11058
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.sk_for_c
+)
+"src/codegen/tbb.ml" 386 11015 11059 "src/codegen/tbb.ml" 386 11015 11061
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 251 6904 6923 "src/codegen/tbb.ml" 251 6904 6925
+)
+"src/codegen/tbb.ml" 386 11015 11059 "src/codegen/tbb.ml" 386 11015 11075
+type(
+  SketchTypes.sklet
+)
+"src/codegen/tbb.ml" 386 11015 11049 "src/codegen/tbb.ml" 386 11015 11076
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/codegen/tbb.ml" 386 11015 11021 "src/codegen/tbb.ml" 386 11015 11076
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 387 11078 11084 "src/codegen/tbb.ml" 387 11078 11101
+type(
+  bool ref
+)
+ident(
+  ext_ref SPretty.printing_for_join
+)
+"src/codegen/tbb.ml" 387 11078 11102 "src/codegen/tbb.ml" 387 11078 11104
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/codegen/tbb.ml" 387 11078 11105 "src/codegen/tbb.ml" 387 11078 11110
+type(
+  bool
+)
+"src/codegen/tbb.ml" 387 11078 11084 "src/codegen/tbb.ml" 387 11078 11110
+type(
+  unit
+)
+"src/codegen/tbb.ml" 386 11015 11021 "src/codegen/tbb.ml" 387 11078 11110
+type(
+  unit
+)
+"src/codegen/tbb.ml" 385 10961 10967 "src/codegen/tbb.ml" 387 11078 11110
+type(
+  unit
+)
+"src/codegen/tbb.ml" 384 10928 10934 "src/codegen/tbb.ml" 387 11078 11110
+type(
+  unit
+)
+"src/codegen/tbb.ml" 389 11118 11126 "src/codegen/tbb.ml" 389 11118 11140
+type(
+  string
+)
+ident(
+  def join_from_name "src/codegen/tbb.ml" 390 11192 11196 "src/codegen/tbb.ml" 401 11495 11500
+)
+"src/codegen/tbb.ml" 389 11118 11144 "src/codegen/tbb.ml" 389 11118 11164
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 389 11118 11165 "src/codegen/tbb.ml" 389 11118 11187
+type(
+  string
+)
+"src/codegen/tbb.ml" 389 11118 11143 "src/codegen/tbb.ml" 389 11118 11188
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 390 11192 11200 "src/codegen/tbb.ml" 390 11192 11209
+type(
+  cpp_constr_arg list
+)
+ident(
+  def join_args "src/codegen/tbb.ml" 391 11261 11265 "src/codegen/tbb.ml" 401 11495 11500
+)
+"src/codegen/tbb.ml" 390 11192 11225 "src/codegen/tbb.ml" 390 11192 11235
+type(
+  string
+)
+ident(
+  int_ref class_name "src/codegen/tbb.ml" 252 6928 6934 "src/codegen/tbb.ml" 252 6928 6944
+)
+"src/codegen/tbb.ml" 390 11192 11235 "src/codegen/tbb.ml" 390 11192 11236
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 390 11192 11236 "src/codegen/tbb.ml" 390 11192 11240
+type(
+  string
+)
+"src/codegen/tbb.ml" 390 11192 11240 "src/codegen/tbb.ml" 390 11192 11241
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 390 11192 11241 "src/codegen/tbb.ml" 390 11192 11255
+type(
+  string
+)
+ident(
+  int_ref join_from_name "src/codegen/tbb.ml" 389 11118 11126 "src/codegen/tbb.ml" 389 11118 11140
+)
+"src/codegen/tbb.ml" 390 11192 11236 "src/codegen/tbb.ml" 390 11192 11255
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 390 11192 11224 "src/codegen/tbb.ml" 390 11192 11256
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 390 11192 11213 "src/codegen/tbb.ml" 390 11192 11256
+type(
+  cpp_constr_arg
+)
+"src/codegen/tbb.ml" 390 11192 11212 "src/codegen/tbb.ml" 390 11192 11257
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 392 11267 11279 "src/codegen/tbb.ml" 392 11267 11280
+type(
+  int
+)
+"src/codegen/tbb.ml" 393 11282 11301 "src/codegen/tbb.ml" 393 11282 11303
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 393 11282 11295 "src/codegen/tbb.ml" 393 11282 11303
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 394 11305 11319 "src/codegen/tbb.ml" 394 11305 11325
+type(
+  string
+)
+"src/codegen/tbb.ml" 395 11327 11347 "src/codegen/tbb.ml" 395 11327 11349
+type(
+  string list
+)
+"src/codegen/tbb.ml" 396 11351 11365 "src/codegen/tbb.ml" 396 11351 11374
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref join_args "src/codegen/tbb.ml" 390 11192 11200 "src/codegen/tbb.ml" 390 11192 11209
+)
+"src/codegen/tbb.ml" 397 11376 11389 "src/codegen/tbb.ml" 397 11376 11393
+type(
+  bool
+)
+"src/codegen/tbb.ml" 398 11395 11411 "src/codegen/tbb.ml" 398 11395 11419
+type(
+  Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.empty
+)
+"src/codegen/tbb.ml" 399 11421 11436 "src/codegen/tbb.ml" 399 11421 11442
+type(
+  Cil.stmtkind -> Cil.stmt
+)
+ident(
+  ext_ref Cil.mkStmt
+)
+"src/codegen/tbb.ml" 399 11421 11450 "src/codegen/tbb.ml" 399 11421 11452
+type(
+  Cil.instr list
+)
+"src/codegen/tbb.ml" 399 11421 11443 "src/codegen/tbb.ml" 399 11421 11453
+type(
+  Cil.stmtkind
+)
+"src/codegen/tbb.ml" 399 11421 11435 "src/codegen/tbb.ml" 399 11421 11454
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/codegen/tbb.ml" 400 11456 11476 "src/codegen/tbb.ml" 400 11456 11493
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref join_body_printer "src/codegen/tbb.ml" 383 10893 10901 "src/codegen/tbb.ml" 383 10893 10918
+)
+"src/codegen/tbb.ml" 400 11456 11471 "src/codegen/tbb.ml" 400 11456 11493
+type(
+  (Format.formatter -> unit -> unit) option
+)
+"src/codegen/tbb.ml" 391 11261 11265 "src/codegen/tbb.ml" 401 11495 11500
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 390 11192 11196 "src/codegen/tbb.ml" 401 11495 11500
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 389 11118 11122 "src/codegen/tbb.ml" 401 11495 11500
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 383 10893 10897 "src/codegen/tbb.ml" 401 11495 11500
+type(
+  cpp_class_method
+)
+"src/codegen/tbb.ml" 403 11506 11508 "src/codegen/tbb.ml" 403 11506 11517
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 403 11506 11535 "src/codegen/tbb.ml" 403 11506 11548
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref tbb_cstr_copy "src/codegen/tbb.ml" 307 8672 8678 "src/codegen/tbb.ml" 307 8672 8691
+)
+"src/codegen/tbb.ml" 403 11506 11550 "src/codegen/tbb.ml" 403 11506 11563
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref tbb_cstr_init "src/codegen/tbb.ml" 336 9466 9474 "src/codegen/tbb.ml" 336 9466 9487
+)
+"src/codegen/tbb.ml" 403 11506 11534 "src/codegen/tbb.ml" 403 11506 11564
+type(
+  cpp_class_constr list
+)
+"src/codegen/tbb.ml" 403 11506 11508 "src/codegen/tbb.ml" 403 11506 11564
+type(
+  unit
+)
+"src/codegen/tbb.ml" 404 11566 11568 "src/codegen/tbb.ml" 404 11566 11577
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 404 11566 11597 "src/codegen/tbb.ml" 404 11566 11609
+type(
+  cpp_class_method
+)
+ident(
+  int_ref tbb_operator "src/codegen/tbb.ml" 357 10092 10098 "src/codegen/tbb.ml" 357 10092 10110
+)
+"src/codegen/tbb.ml" 404 11566 11611 "src/codegen/tbb.ml" 404 11566 11619
+type(
+  cpp_class_method
+)
+ident(
+  int_ref tbb_join "src/codegen/tbb.ml" 382 10876 10882 "src/codegen/tbb.ml" 382 10876 10890
+)
+"src/codegen/tbb.ml" 404 11566 11596 "src/codegen/tbb.ml" 404 11566 11620
+type(
+  cpp_class_method list
+)
+"src/codegen/tbb.ml" 404 11566 11568 "src/codegen/tbb.ml" 404 11566 11620
+type(
+  unit
+)
+"src/codegen/tbb.ml" 405 11622 11624 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 255 7018 7024 "src/codegen/tbb.ml" 255 7018 7033
+)
+"src/codegen/tbb.ml" 404 11566 11568 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 403 11506 11508 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 382 10876 10878 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 357 10092 10094 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 336 9466 9470 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 307 8672 8674 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 287 8033 8035 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 276 7649 7651 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 273 7527 7529 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 272 7472 7474 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 268 7384 7386 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 265 7296 7298 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 262 7204 7206 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 256 7065 7067 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 255 7018 7020 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 252 6928 6930 "src/codegen/tbb.ml" 405 11622 11633
+type(
+  cpp_class
+)
+"src/codegen/tbb.ml" 407 11635 11639 "src/codegen/tbb.ml" 407 11635 11649
+type(
+  Format.formatter -> unit
+)
+ident(
+  def fprint_sep "src/codegen/tbb.ml" 409 11676 11676 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 407 11635 11650 "src/codegen/tbb.ml" 407 11635 11653
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 407 11635 11656 "src/codegen/tbb.ml" 407 11635 11674
+)
+"src/codegen/tbb.ml" 407 11635 11656 "src/codegen/tbb.ml" 407 11635 11663
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 407 11635 11664 "src/codegen/tbb.ml" 407 11635 11667
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 407 11635 11650 "src/codegen/tbb.ml" 407 11635 11653
+)
+"src/codegen/tbb.ml" 407 11635 11668 "src/codegen/tbb.ml" 407 11635 11674
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 407 11635 11656 "src/codegen/tbb.ml" 407 11635 11674
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 409 11676 11680 "src/codegen/tbb.ml" 409 11676 11698
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  def test_class_name_of "src/codegen/tbb.ml" 411 11754 11754 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 409 11676 11699 "src/codegen/tbb.ml" 409 11676 11701
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def pb "src/codegen/tbb.ml" 409 11676 11704 "src/codegen/tbb.ml" 409 11676 11752
+)
+"src/codegen/tbb.ml" 409 11676 11704 "src/codegen/tbb.ml" 409 11676 11710
+type(
+  string
+)
+"src/codegen/tbb.ml" 409 11676 11710 "src/codegen/tbb.ml" 409 11676 11711
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 409 11676 11712 "src/codegen/tbb.ml" 409 11676 11729
+type(
+  string -> string
+)
+ident(
+  ext_ref String.capitalize
+)
+"src/codegen/tbb.ml" 409 11676 11731 "src/codegen/tbb.ml" 409 11676 11747
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  int_ref pbname_of_sketch "src/codegen/tbb.ml" 208 5559 5563 "src/codegen/tbb.ml" 208 5559 5579
+)
+"src/codegen/tbb.ml" 409 11676 11748 "src/codegen/tbb.ml" 409 11676 11750
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 409 11676 11699 "src/codegen/tbb.ml" 409 11676 11701
+)
+"src/codegen/tbb.ml" 409 11676 11730 "src/codegen/tbb.ml" 409 11676 11751
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 409 11676 11711 "src/codegen/tbb.ml" 409 11676 11752
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 409 11676 11704 "src/codegen/tbb.ml" 409 11676 11752
+call(
+  tail
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 411 11754 11758 "src/codegen/tbb.ml" 411 11754 11780
+type(
+  Format.formatter -> SketchTypes.sketch_rep -> cpp_class -> unit
+)
+ident(
+  def fprint_implementations "src/codegen/tbb.ml" 461 13273 13273 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 411 11754 11781 "src/codegen/tbb.ml" 411 11754 11784
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def pb "src/codegen/tbb.ml" 411 11754 11788 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 411 11754 11788 "src/codegen/tbb.ml" 411 11754 11797
+type(
+  cpp_class
+)
+ident(
+  def tbb_class "src/codegen/tbb.ml" 412 11800 11802 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 412 11800 11806 "src/codegen/tbb.ml" 412 11800 11816
+type(
+  string
+)
+ident(
+  def test_cname "src/codegen/tbb.ml" 413 11844 11846 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 412 11800 11819 "src/codegen/tbb.ml" 412 11800 11837
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  int_ref test_class_name_of "src/codegen/tbb.ml" 409 11676 11680 "src/codegen/tbb.ml" 409 11676 11698
+)
+"src/codegen/tbb.ml" 412 11800 11838 "src/codegen/tbb.ml" 412 11800 11840
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+)
+"src/codegen/tbb.ml" 412 11800 11819 "src/codegen/tbb.ml" 412 11800 11840
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11850 "src/codegen/tbb.ml" 413 11844 11859
+type(
+  string
+)
+ident(
+  def class_var "src/codegen/tbb.ml" 415 11979 11981 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 413 11844 11862 "src/codegen/tbb.ml" 413 11844 11878
+type(
+  string -> string
+)
+ident(
+  ext_ref String.lowercase
+)
+"src/codegen/tbb.ml" 413 11844 11880 "src/codegen/tbb.ml" 413 11844 11885
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11885 "src/codegen/tbb.ml" 413 11844 11886
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 413 11844 11886 "src/codegen/tbb.ml" 413 11844 11888
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+)
+"src/codegen/tbb.ml" 413 11844 11886 "src/codegen/tbb.ml" 413 11844 11898
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11898 "src/codegen/tbb.ml" 413 11844 11899
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/codegen/tbb.ml" 413 11844 11899 "src/codegen/tbb.ml" 413 11844 11902
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11886 "src/codegen/tbb.ml" 413 11844 11902
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11879 "src/codegen/tbb.ml" 413 11844 11903
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 413 11844 11862 "src/codegen/tbb.ml" 413 11844 11903
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 415 11979 11985 "src/codegen/tbb.ml" 415 11979 11994
+type(
+  cpp_constr_arg list
+)
+ident(
+  def cstr_args "src/codegen/tbb.ml" 419 12081 12083 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 416 11997 12002 "src/codegen/tbb.ml" 416 11997 12011
+type(
+  (cpp_class_constr -> bool) -> cpp_class_constr list -> cpp_class_constr
+)
+ident(
+  ext_ref List.find
+)
+"src/codegen/tbb.ml" 416 11997 12017 "src/codegen/tbb.ml" 416 11997 12021
+type(
+  cpp_class_constr
+)
+ident(
+  def cstr "src/codegen/tbb.ml" 416 11997 12025 "src/codegen/tbb.ml" 416 11997 12037
+)
+"src/codegen/tbb.ml" 416 11997 12025 "src/codegen/tbb.ml" 416 11997 12029
+type(
+  cpp_class_constr
+)
+ident(
+  int_ref cstr "src/codegen/tbb.ml" 416 11997 12017 "src/codegen/tbb.ml" 416 11997 12021
+)
+"src/codegen/tbb.ml" 416 11997 12025 "src/codegen/tbb.ml" 416 11997 12033
+type(
+  int
+)
+"src/codegen/tbb.ml" 416 11997 12034 "src/codegen/tbb.ml" 416 11997 12035
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/codegen/tbb.ml" 416 11997 12036 "src/codegen/tbb.ml" 416 11997 12037
+type(
+  int
+)
+"src/codegen/tbb.ml" 416 11997 12025 "src/codegen/tbb.ml" 416 11997 12037
+type(
+  bool
+)
+"src/codegen/tbb.ml" 416 11997 12012 "src/codegen/tbb.ml" 416 11997 12038
+type(
+  cpp_class_constr -> bool
+)
+"src/codegen/tbb.ml" 417 12039 12046 "src/codegen/tbb.ml" 417 12039 12055
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 411 11754 11788 "src/codegen/tbb.ml" 411 11754 11797
+)
+"src/codegen/tbb.ml" 417 12039 12046 "src/codegen/tbb.ml" 417 12039 12068
+type(
+  cpp_class_constr list
+)
+"src/codegen/tbb.ml" 416 11997 12001 "src/codegen/tbb.ml" 417 12039 12069
+call(
+  stack
+)
+type(
+  cpp_class_constr
+)
+"src/codegen/tbb.ml" 416 11997 12001 "src/codegen/tbb.ml" 417 12039 12075
+type(
+  cpp_constr_arg list
+)
+"src/codegen/tbb.ml" 419 12081 12087 "src/codegen/tbb.ml" 419 12081 12098
+type(
+  string
+)
+ident(
+  def return_type "src/codegen/tbb.ml" 427 12276 12278 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 420 12101 12109 "src/codegen/tbb.ml" 420 12101 12116
+type(
+  Cil.typ
+)
+ident(
+  def ret_typ "src/codegen/tbb.ml" 425 12236 12240 "src/codegen/tbb.ml" 425 12236 12270
+)
+"src/codegen/tbb.ml" 421 12119 12131 "src/codegen/tbb.ml" 421 12119 12133
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+)
+"src/codegen/tbb.ml" 421 12119 12131 "src/codegen/tbb.ml" 421 12119 12147
+type(
+  Cil.fundec
+)
+"src/codegen/tbb.ml" 421 12119 12131 "src/codegen/tbb.ml" 421 12119 12152
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 421 12119 12131 "src/codegen/tbb.ml" 421 12119 12158
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 422 12164 12178 "src/codegen/tbb.ml" 422 12164 12185
+type(
+  Cil.typ
+)
+ident(
+  def ret_typ "src/codegen/tbb.ml" 422 12164 12199 "src/codegen/tbb.ml" 422 12164 12206
+)
+"src/codegen/tbb.ml" 422 12164 12187 "src/codegen/tbb.ml" 422 12164 12188
+type(
+  (string * Cil.typ * Cil.attributes) list option
+)
+"src/codegen/tbb.ml" 422 12164 12190 "src/codegen/tbb.ml" 422 12164 12191
+type(
+  bool
+)
+"src/codegen/tbb.ml" 422 12164 12193 "src/codegen/tbb.ml" 422 12164 12194
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 422 12164 12172 "src/codegen/tbb.ml" 422 12164 12195
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 422 12164 12199 "src/codegen/tbb.ml" 422 12164 12206
+type(
+  Cil.typ
+)
+ident(
+  int_ref ret_typ "src/codegen/tbb.ml" 422 12164 12178 "src/codegen/tbb.ml" 422 12164 12185
+)
+"src/codegen/tbb.ml" 423 12207 12215 "src/codegen/tbb.ml" 423 12207 12216
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 423 12207 12226 "src/codegen/tbb.ml" 423 12207 12228
+type(
+  Cil.attributes
+)
+"src/codegen/tbb.ml" 423 12207 12220 "src/codegen/tbb.ml" 423 12207 12228
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 421 12119 12125 "src/codegen/tbb.ml" 423 12207 12228
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 425 12236 12241 "src/codegen/tbb.ml" 425 12236 12253
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 425 12236 12254 "src/codegen/tbb.ml" 425 12236 12261
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 425 12236 12262 "src/codegen/tbb.ml" 425 12236 12269
+type(
+  Cil.typ
+)
+ident(
+  int_ref ret_typ "src/codegen/tbb.ml" 420 12101 12109 "src/codegen/tbb.ml" 420 12101 12116
+)
+"src/codegen/tbb.ml" 425 12236 12240 "src/codegen/tbb.ml" 425 12236 12270
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 420 12101 12105 "src/codegen/tbb.ml" 425 12236 12270
+type(
+  string
+)
+"src/codegen/tbb.ml" 427 12276 12282 "src/codegen/tbb.ml" 427 12276 12293
+type(
+  string
+)
+ident(
+  def class_field "src/codegen/tbb.ml" 432 12452 12454 "src/codegen/tbb.ml" 456 13259 13268
+)
+"src/codegen/tbb.ml" 429 12304 12311 "src/codegen/tbb.ml" 429 12304 12323
+type(
+  (unit -> Cil.exp -> Pretty.doc) -> Cil.exp -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 429 12304 12324 "src/codegen/tbb.ml" 429 12304 12330
+type(
+  unit -> Cil.exp -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_exp
+)
+"src/codegen/tbb.ml" 429 12304 12332 "src/codegen/tbb.ml" 429 12304 12339
+type(
+  Cil.exp Utils.IH.t -> Utils.IH.key -> Cil.exp
+)
+ident(
+  ext_ref Utils.IH.find
+)
+"src/codegen/tbb.ml" 429 12304 12340 "src/codegen/tbb.ml" 429 12304 12362
+type(
+  Cil.exp Utils.IH.t
+)
+ident(
+  ext_ref Findloops.funcRetExprs
+)
+"src/codegen/tbb.ml" 429 12304 12363 "src/codegen/tbb.ml" 429 12304 12365
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+)
+"src/codegen/tbb.ml" 429 12304 12363 "src/codegen/tbb.ml" 429 12304 12379
+type(
+  Cil.fundec
+)
+"src/codegen/tbb.ml" 429 12304 12363 "src/codegen/tbb.ml" 429 12304 12384
+type(
+  Cil.varinfo
+)
+"src/codegen/tbb.ml" 429 12304 12363 "src/codegen/tbb.ml" 429 12304 12388
+type(
+  Utils.IH.key
+)
+"src/codegen/tbb.ml" 429 12304 12331 "src/codegen/tbb.ml" 429 12304 12389
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/codegen/tbb.ml" 429 12304 12310 "src/codegen/tbb.ml" 429 12304 12390
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 430 12391 12400 "src/codegen/tbb.ml" 430 12391 12409
+type(
+  exn
+)
+"src/codegen/tbb.ml" 430 12391 12413 "src/codegen/tbb.ml" 430 12391 12446
+type(
+  string
+)
+"src/codegen/tbb.ml" 428 12296 12300 "src/codegen/tbb.ml" 430 12391 12446
+type(
+  string
+)
+"src/codegen/tbb.ml" 432 12452 12454 "src/codegen/tbb.ml" 432 12452 12461
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   string ->
+   string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list ->
+   string -> string -> string -> string -> string -> unit, Format.formatter,
+   unit)
+  format ->
+  string ->
+  string ->
+  string ->
+  string ->
+  (Format.formatter -> cpp_constr_arg list -> unit) ->
+  cpp_constr_arg list ->
+  string -> string -> string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 432 12452 12462 "src/codegen/tbb.ml" 432 12452 12465
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 411 11754 11781 "src/codegen/tbb.ml" 411 11754 11784
+)
+"src/codegen/tbb.ml" 433 12466 12470 "src/codegen/tbb.ml" 436 12589 12619
+type(
+  (string ->
+   string ->
+   string ->
+   string ->
+   (Format.formatter -> cpp_constr_arg list -> unit) ->
+   cpp_constr_arg list ->
+   string -> string -> string -> string -> string -> unit, Format.formatter,
+   unit)
+  format
+)
+"src/codegen/tbb.ml" 437 12620 12626 "src/codegen/tbb.ml" 437 12620 12637
+type(
+  string
+)
+ident(
+  int_ref return_type "src/codegen/tbb.ml" 419 12081 12087 "src/codegen/tbb.ml" 419 12081 12098
+)
+"src/codegen/tbb.ml" 437 12620 12638 "src/codegen/tbb.ml" 437 12620 12648
+type(
+  string
+)
+ident(
+  int_ref test_cname "src/codegen/tbb.ml" 412 11800 11806 "src/codegen/tbb.ml" 412 11800 11816
+)
+"src/codegen/tbb.ml" 438 12649 12655 "src/codegen/tbb.ml" 438 12649 12664
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 411 11754 11788 "src/codegen/tbb.ml" 411 11754 11797
+)
+"src/codegen/tbb.ml" 438 12649 12655 "src/codegen/tbb.ml" 438 12649 12670
+type(
+  string
+)
+"src/codegen/tbb.ml" 438 12649 12671 "src/codegen/tbb.ml" 438 12649 12680
+type(
+  string
+)
+ident(
+  int_ref class_var "src/codegen/tbb.ml" 413 11844 11850 "src/codegen/tbb.ml" 413 11844 11859
+)
+"src/codegen/tbb.ml" 439 12681 12688 "src/codegen/tbb.ml" 439 12681 12701
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> cpp_constr_arg -> unit) ->
+  Format.formatter -> cpp_constr_arg list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/codegen/tbb.ml" 439 12681 12715 "src/codegen/tbb.ml" 439 12681 12718
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 439 12681 12719 "src/codegen/tbb.ml" 439 12681 12741
+)
+"src/codegen/tbb.ml" 439 12681 12719 "src/codegen/tbb.ml" 439 12681 12721
+type(
+  unit
+)
+"src/codegen/tbb.ml" 439 12681 12725 "src/codegen/tbb.ml" 439 12681 12732
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 439 12681 12733 "src/codegen/tbb.ml" 439 12681 12736
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 439 12681 12715 "src/codegen/tbb.ml" 439 12681 12718
+)
+"src/codegen/tbb.ml" 439 12681 12737 "src/codegen/tbb.ml" 439 12681 12741
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 439 12681 12725 "src/codegen/tbb.ml" 439 12681 12741
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 439 12681 12710 "src/codegen/tbb.ml" 439 12681 12742
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 440 12743 12752 "src/codegen/tbb.ml" 440 12743 12772
+type(
+  Format.formatter -> cpp_constr_arg -> unit
+)
+ident(
+  int_ref pp_constr_arg_in_app "src/codegen/tbb.ml" 40 816 820 "src/codegen/tbb.ml" 40 816 840
+)
+"src/codegen/tbb.ml" 439 12681 12687 "src/codegen/tbb.ml" 440 12743 12773
+call(
+  stack
+)
+type(
+  Format.formatter -> cpp_constr_arg list -> unit
+)
+"src/codegen/tbb.ml" 440 12743 12774 "src/codegen/tbb.ml" 440 12743 12783
+type(
+  cpp_constr_arg list
+)
+ident(
+  int_ref cstr_args "src/codegen/tbb.ml" 415 11979 11985 "src/codegen/tbb.ml" 415 11979 11994
+)
+"src/codegen/tbb.ml" 441 12784 12790 "src/codegen/tbb.ml" 441 12784 12808
+type(
+  string
+)
+ident(
+  int_ref iterator_type_name "src/codegen/tbb.ml" 187 4735 4739 "src/codegen/tbb.ml" 187 4735 4757
+)
+"src/codegen/tbb.ml" 442 12809 12816 "src/codegen/tbb.ml" 442 12809 12836
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/codegen/tbb.ml" 442 12809 12837 "src/codegen/tbb.ml" 442 12809 12853
+type(
+  string
+)
+"src/codegen/tbb.ml" 442 12809 12815 "src/codegen/tbb.ml" 442 12809 12854
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 443 12855 12861 "src/codegen/tbb.ml" 443 12855 12870
+type(
+  string
+)
+ident(
+  int_ref class_var "src/codegen/tbb.ml" 413 11844 11850 "src/codegen/tbb.ml" 413 11844 11859
+)
+"src/codegen/tbb.ml" 443 12855 12871 "src/codegen/tbb.ml" 443 12855 12880
+type(
+  string
+)
+ident(
+  int_ref class_var "src/codegen/tbb.ml" 413 11844 11850 "src/codegen/tbb.ml" 413 11844 11859
+)
+"src/codegen/tbb.ml" 443 12855 12881 "src/codegen/tbb.ml" 443 12855 12892
+type(
+  string
+)
+ident(
+  int_ref class_field "src/codegen/tbb.ml" 427 12276 12282 "src/codegen/tbb.ml" 427 12276 12293
+)
+"src/codegen/tbb.ml" 432 12452 12454 "src/codegen/tbb.ml" 443 12855 12892
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 444 12894 12896 "src/codegen/tbb.ml" 444 12894 12903
+type(
+  Format.formatter ->
+  (string ->
+   string -> (Format.formatter -> unit -> unit) -> unit -> string -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string -> (Format.formatter -> unit -> unit) -> unit -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 444 12894 12904 "src/codegen/tbb.ml" 444 12894 12907
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 411 11754 11781 "src/codegen/tbb.ml" 411 11754 11784
+)
+"src/codegen/tbb.ml" 445 12908 12912 "src/codegen/tbb.ml" 448 13006 13034
+type(
+  (string ->
+   string -> (Format.formatter -> unit -> unit) -> unit -> string -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/codegen/tbb.ml" 449 13035 13039 "src/codegen/tbb.ml" 449 13035 13050
+type(
+  string
+)
+ident(
+  int_ref return_type "src/codegen/tbb.ml" 419 12081 12087 "src/codegen/tbb.ml" 419 12081 12098
+)
+"src/codegen/tbb.ml" 449 13035 13051 "src/codegen/tbb.ml" 449 13035 13061
+type(
+  string
+)
+ident(
+  int_ref test_cname "src/codegen/tbb.ml" 412 11800 11806 "src/codegen/tbb.ml" 412 11800 11816
+)
+"src/codegen/tbb.ml" 450 13062 13071 "src/codegen/tbb.ml" 450 13062 13074
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 450 13062 13075 "src/codegen/tbb.ml" 455 13225 13254
+)
+"src/codegen/tbb.ml" 450 13062 13075 "src/codegen/tbb.ml" 450 13062 13077
+type(
+  unit
+)
+"src/codegen/tbb.ml" 451 13081 13088 "src/codegen/tbb.ml" 451 13081 13095
+type(
+  (Utils.VS.elt -> unit) -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VS.iter
+)
+"src/codegen/tbb.ml" 452 13096 13110 "src/codegen/tbb.ml" 452 13096 13112
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/codegen/tbb.ml" 453 13116 13128 "src/codegen/tbb.ml" 454 13160 13223
+)
+"src/codegen/tbb.ml" 453 13116 13128 "src/codegen/tbb.ml" 453 13116 13135
+type(
+  Format.formatter ->
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/codegen/tbb.ml" 453 13116 13136 "src/codegen/tbb.ml" 453 13116 13139
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 450 13062 13071 "src/codegen/tbb.ml" 450 13062 13074
+)
+"src/codegen/tbb.ml" 453 13116 13140 "src/codegen/tbb.ml" 453 13116 13159
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"src/codegen/tbb.ml" 454 13160 13175 "src/codegen/tbb.ml" 454 13160 13187
+type(
+  (unit -> Cil.typ -> Pretty.doc) -> Cil.typ -> string
+)
+ident(
+  ext_ref Ct.psprint80
+)
+"src/codegen/tbb.ml" 454 13160 13188 "src/codegen/tbb.ml" 454 13160 13195
+type(
+  unit -> Cil.typ -> Pretty.doc
+)
+ident(
+  ext_ref Cil.dn_type
+)
+"src/codegen/tbb.ml" 454 13160 13196 "src/codegen/tbb.ml" 454 13160 13198
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 452 13096 13110 "src/codegen/tbb.ml" 452 13096 13112
+)
+"src/codegen/tbb.ml" 454 13160 13196 "src/codegen/tbb.ml" 454 13160 13204
+type(
+  Cil.typ
+)
+"src/codegen/tbb.ml" 454 13160 13174 "src/codegen/tbb.ml" 454 13160 13205
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 454 13160 13206 "src/codegen/tbb.ml" 454 13160 13208
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 452 13096 13110 "src/codegen/tbb.ml" 452 13096 13112
+)
+"src/codegen/tbb.ml" 454 13160 13206 "src/codegen/tbb.ml" 454 13160 13214
+type(
+  string
+)
+"src/codegen/tbb.ml" 454 13160 13215 "src/codegen/tbb.ml" 454 13160 13217
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/codegen/tbb.ml" 452 13096 13110 "src/codegen/tbb.ml" 452 13096 13112
+)
+"src/codegen/tbb.ml" 454 13160 13215 "src/codegen/tbb.ml" 454 13160 13223
+type(
+  string
+)
+"src/codegen/tbb.ml" 453 13116 13128 "src/codegen/tbb.ml" 454 13160 13223
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 452 13096 13105 "src/codegen/tbb.ml" 454 13160 13224
+type(
+  Utils.VS.elt -> unit
+)
+"src/codegen/tbb.ml" 455 13225 13234 "src/codegen/tbb.ml" 455 13225 13236
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 411 11754 11785 "src/codegen/tbb.ml" 411 11754 11787
+)
+"src/codegen/tbb.ml" 455 13225 13234 "src/codegen/tbb.ml" 455 13225 13245
+type(
+  SketchTypes.context
+)
+"src/codegen/tbb.ml" 455 13225 13234 "src/codegen/tbb.ml" 455 13225 13254
+type(
+  Utils.VS.t
+)
+"src/codegen/tbb.ml" 451 13081 13088 "src/codegen/tbb.ml" 455 13225 13254
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 450 13062 13066 "src/codegen/tbb.ml" 455 13225 13255
+type(
+  Format.formatter -> unit -> unit
+)
+"src/codegen/tbb.ml" 455 13225 13256 "src/codegen/tbb.ml" 455 13225 13258
+type(
+  unit
+)
+"src/codegen/tbb.ml" 456 13259 13263 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  string
+)
+"src/codegen/tbb.ml" 444 12894 12896 "src/codegen/tbb.ml" 456 13259 13268
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 432 12452 12454 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 427 12276 12278 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 419 12081 12083 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 415 11979 11981 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 413 11844 11846 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 412 11800 11802 "src/codegen/tbb.ml" 456 13259 13268
+type(
+  unit
+)
+"src/codegen/tbb.ml" 461 13273 13277 "src/codegen/tbb.ml" 461 13273 13293
+type(
+  Format.formatter -> SketchTypes.sketch_rep -> cpp_class -> unit
+)
+ident(
+  def fprint_tbb_class "src/codegen/tbb.ml" 465 13406 13447 "src/codegen/tbb.ml" 1 0 -1
+)
+"src/codegen/tbb.ml" 461 13273 13294 "src/codegen/tbb.ml" 461 13273 13297
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/codegen/tbb.ml" 461 13273 13298 "src/codegen/tbb.ml" 465 13406 13447
+)
+"src/codegen/tbb.ml" 461 13273 13298 "src/codegen/tbb.ml" 461 13273 13300
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def pb "src/codegen/tbb.ml" 461 13273 13301 "src/codegen/tbb.ml" 465 13406 13447
+)
+"src/codegen/tbb.ml" 461 13273 13301 "src/codegen/tbb.ml" 461 13273 13310
+type(
+  cpp_class
+)
+ident(
+  def tbb_class "src/codegen/tbb.ml" 462 13313 13315 "src/codegen/tbb.ml" 465 13406 13447
+)
+"src/codegen/tbb.ml" 462 13313 13315 "src/codegen/tbb.ml" 462 13313 13334
+type(
+  Format.formatter -> string -> unit
+)
+ident(
+  int_ref fprint_test_prelude "src/codegen/tbb.ml" 196 5079 5083 "src/codegen/tbb.ml" 196 5079 5102
+)
+"src/codegen/tbb.ml" 462 13313 13335 "src/codegen/tbb.ml" 462 13313 13338
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 461 13273 13294 "src/codegen/tbb.ml" 461 13273 13297
+)
+"src/codegen/tbb.ml" 462 13313 13340 "src/codegen/tbb.ml" 462 13313 13356
+type(
+  SketchTypes.sketch_rep -> string
+)
+ident(
+  int_ref pbname_of_sketch "src/codegen/tbb.ml" 208 5559 5563 "src/codegen/tbb.ml" 208 5559 5579
+)
+"src/codegen/tbb.ml" 462 13313 13357 "src/codegen/tbb.ml" 462 13313 13359
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 461 13273 13298 "src/codegen/tbb.ml" 461 13273 13300
+)
+"src/codegen/tbb.ml" 462 13313 13339 "src/codegen/tbb.ml" 462 13313 13360
+call(
+  stack
+)
+type(
+  string
+)
+"src/codegen/tbb.ml" 462 13313 13315 "src/codegen/tbb.ml" 462 13313 13360
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 463 13362 13364 "src/codegen/tbb.ml" 463 13362 13372
+type(
+  Format.formatter -> cpp_class -> unit
+)
+ident(
+  int_ref pp_class "src/codegen/tbb.ml" 154 3801 3805 "src/codegen/tbb.ml" 154 3801 3813
+)
+"src/codegen/tbb.ml" 463 13362 13373 "src/codegen/tbb.ml" 463 13362 13376
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 461 13273 13294 "src/codegen/tbb.ml" 461 13273 13297
+)
+"src/codegen/tbb.ml" 463 13362 13377 "src/codegen/tbb.ml" 463 13362 13386
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 461 13273 13301 "src/codegen/tbb.ml" 461 13273 13310
+)
+"src/codegen/tbb.ml" 463 13362 13364 "src/codegen/tbb.ml" 463 13362 13386
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 464 13388 13390 "src/codegen/tbb.ml" 464 13388 13400
+type(
+  Format.formatter -> unit
+)
+ident(
+  int_ref fprint_sep "src/codegen/tbb.ml" 407 11635 11639 "src/codegen/tbb.ml" 407 11635 11649
+)
+"src/codegen/tbb.ml" 464 13388 13401 "src/codegen/tbb.ml" 464 13388 13404
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 461 13273 13294 "src/codegen/tbb.ml" 461 13273 13297
+)
+"src/codegen/tbb.ml" 464 13388 13390 "src/codegen/tbb.ml" 464 13388 13404
+call(
+  stack
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 465 13406 13408 "src/codegen/tbb.ml" 465 13406 13430
+type(
+  Format.formatter -> SketchTypes.sketch_rep -> cpp_class -> unit
+)
+ident(
+  int_ref fprint_implementations "src/codegen/tbb.ml" 411 11754 11758 "src/codegen/tbb.ml" 411 11754 11780
+)
+"src/codegen/tbb.ml" 465 13406 13431 "src/codegen/tbb.ml" 465 13406 13434
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/codegen/tbb.ml" 461 13273 13294 "src/codegen/tbb.ml" 461 13273 13297
+)
+"src/codegen/tbb.ml" 465 13406 13435 "src/codegen/tbb.ml" 465 13406 13437
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref pb "src/codegen/tbb.ml" 461 13273 13298 "src/codegen/tbb.ml" 461 13273 13300
+)
+"src/codegen/tbb.ml" 465 13406 13438 "src/codegen/tbb.ml" 465 13406 13447
+type(
+  cpp_class
+)
+ident(
+  int_ref tbb_class "src/codegen/tbb.ml" 461 13273 13301 "src/codegen/tbb.ml" 461 13273 13310
+)
+"src/codegen/tbb.ml" 465 13406 13408 "src/codegen/tbb.ml" 465 13406 13447
+call(
+  tail
+)
+type(
+  unit
+)
+"src/codegen/tbb.ml" 464 13388 13390 "src/codegen/tbb.ml" 465 13406 13447
+type(
+  unit
+)
+"src/codegen/tbb.ml" 463 13362 13364 "src/codegen/tbb.ml" 465 13406 13447
+type(
+  unit
+)
+"src/codegen/tbb.ml" 462 13313 13315 "src/codegen/tbb.ml" 465 13406 13447
+type(
+  unit
+)

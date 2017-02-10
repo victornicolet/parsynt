@@ -1,0 +1,2442 @@
+"src/conf/conf.ml" 11 170 174 "src/conf/conf.ml" 11 170 181
+type(
+  bool ref
+)
+ident(
+  def verbose "src/conf/conf.ml" 13 195 195 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 11 170 184 "src/conf/conf.ml" 11 170 187
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/conf/conf.ml" 11 170 188 "src/conf/conf.ml" 11 170 193
+type(
+  bool
+)
+"src/conf/conf.ml" 11 170 184 "src/conf/conf.ml" 11 170 193
+type(
+  bool ref
+)
+"src/conf/conf.ml" 16 252 260 "src/conf/conf.ml" 16 252 265
+type(
+  'a -> 'a -> bool
+)
+ident(
+  def equal "src/conf/conf.ml" 17 280 284 "src/conf/conf.ml" 18 312 317
+)
+"src/conf/conf.ml" 16 252 266 "src/conf/conf.ml" 16 252 268
+type(
+  'a
+)
+ident(
+  def s1 "src/conf/conf.ml" 16 252 269 "src/conf/conf.ml" 16 252 279
+)
+"src/conf/conf.ml" 16 252 269 "src/conf/conf.ml" 16 252 271
+type(
+  'a
+)
+ident(
+  def s2 "src/conf/conf.ml" 16 252 274 "src/conf/conf.ml" 16 252 279
+)
+"src/conf/conf.ml" 16 252 274 "src/conf/conf.ml" 16 252 276
+type(
+  'a
+)
+ident(
+  int_ref s1 "src/conf/conf.ml" 16 252 266 "src/conf/conf.ml" 16 252 268
+)
+"src/conf/conf.ml" 16 252 276 "src/conf/conf.ml" 16 252 277
+type(
+  'a -> 'a -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/conf/conf.ml" 16 252 277 "src/conf/conf.ml" 16 252 279
+type(
+  'a
+)
+ident(
+  int_ref s2 "src/conf/conf.ml" 16 252 269 "src/conf/conf.ml" 16 252 271
+)
+"src/conf/conf.ml" 16 252 274 "src/conf/conf.ml" 16 252 279
+type(
+  bool
+)
+"src/conf/conf.ml" 17 280 288 "src/conf/conf.ml" 17 280 292
+type(
+  'b -> int
+)
+ident(
+  def hash "src/conf/conf.ml" 17 280 311 "src/conf/conf.ml" 18 312 317
+)
+"src/conf/conf.ml" 17 280 293 "src/conf/conf.ml" 17 280 294
+type(
+  'b
+)
+ident(
+  def s "src/conf/conf.ml" 17 280 297 "src/conf/conf.ml" 17 280 311
+)
+"src/conf/conf.ml" 17 280 297 "src/conf/conf.ml" 17 280 309
+type(
+  'b -> int
+)
+ident(
+  ext_ref Hashtbl.hash
+)
+"src/conf/conf.ml" 17 280 310 "src/conf/conf.ml" 17 280 311
+type(
+  'b
+)
+ident(
+  int_ref s "src/conf/conf.ml" 17 280 293 "src/conf/conf.ml" 17 280 294
+)
+"src/conf/conf.ml" 17 280 297 "src/conf/conf.ml" 17 280 311
+call(
+  tail
+)
+type(
+  int
+)
+"src/conf/conf.ml" 14 207 209 "src/conf/conf.ml" 18 312 318
+call(
+  stack
+)
+"src/conf/conf.ml" 20 320 324 "src/conf/conf.ml" 20 320 328
+type(
+  'a list -> int -> 'a
+)
+ident(
+  def >> "src/conf/conf.ml" 22 349 349 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 20 320 329 "src/conf/conf.ml" 20 320 330
+type(
+  'a list
+)
+ident(
+  def l "src/conf/conf.ml" 20 320 331 "src/conf/conf.ml" 20 320 347
+)
+"src/conf/conf.ml" 20 320 331 "src/conf/conf.ml" 20 320 332
+type(
+  int
+)
+ident(
+  def n "src/conf/conf.ml" 20 320 335 "src/conf/conf.ml" 20 320 347
+)
+"src/conf/conf.ml" 20 320 335 "src/conf/conf.ml" 20 320 343
+type(
+  'a list -> int -> 'a
+)
+ident(
+  ext_ref List.nth
+)
+"src/conf/conf.ml" 20 320 344 "src/conf/conf.ml" 20 320 345
+type(
+  'a list
+)
+ident(
+  int_ref l "src/conf/conf.ml" 20 320 329 "src/conf/conf.ml" 20 320 330
+)
+"src/conf/conf.ml" 20 320 346 "src/conf/conf.ml" 20 320 347
+type(
+  int
+)
+ident(
+  int_ref n "src/conf/conf.ml" 20 320 331 "src/conf/conf.ml" 20 320 332
+)
+"src/conf/conf.ml" 20 320 335 "src/conf/conf.ml" 20 320 347
+call(
+  tail
+)
+type(
+  'a
+)
+"src/conf/conf.ml" 22 349 353 "src/conf/conf.ml" 22 349 359
+type(
+  string -> string -> string list SH.t
+)
+ident(
+  def import "src/conf/conf.ml" 50 1194 1194 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 22 349 360 "src/conf/conf.ml" 22 349 369
+type(
+  string
+)
+ident(
+  def file_name "src/conf/conf.ml" 22 349 370 "src/conf/conf.ml" 47 1173 1189
+)
+"src/conf/conf.ml" 22 349 370 "src/conf/conf.ml" 22 349 379
+type(
+  string
+)
+ident(
+  def separator "src/conf/conf.ml" 23 382 384 "src/conf/conf.ml" 47 1173 1189
+)
+"src/conf/conf.ml" 23 382 388 "src/conf/conf.ml" 23 382 401
+type(
+  Str.regexp
+)
+ident(
+  def reg_separator "src/conf/conf.ml" 24 428 430 "src/conf/conf.ml" 47 1173 1189
+)
+"src/conf/conf.ml" 23 382 404 "src/conf/conf.ml" 23 382 414
+type(
+  string -> Str.regexp
+)
+ident(
+  ext_ref Str.regexp
+)
+"src/conf/conf.ml" 23 382 415 "src/conf/conf.ml" 23 382 424
+type(
+  string
+)
+ident(
+  int_ref separator "src/conf/conf.ml" 22 349 370 "src/conf/conf.ml" 22 349 379
+)
+"src/conf/conf.ml" 23 382 404 "src/conf/conf.ml" 23 382 424
+call(
+  stack
+)
+type(
+  Str.regexp
+)
+"src/conf/conf.ml" 24 428 434 "src/conf/conf.ml" 24 428 443
+type(
+  string list SH.t
+)
+ident(
+  def conf_file "src/conf/conf.ml" 25 462 464 "src/conf/conf.ml" 47 1173 1189
+)
+"src/conf/conf.ml" 24 428 446 "src/conf/conf.ml" 24 428 455
+type(
+  int -> string list SH.t
+)
+ident(
+  ext_ref SH.create
+)
+"src/conf/conf.ml" 24 428 456 "src/conf/conf.ml" 24 428 458
+type(
+  int
+)
+"src/conf/conf.ml" 24 428 446 "src/conf/conf.ml" 24 428 458
+call(
+  stack
+)
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 26 468 476 "src/conf/conf.ml" 26 468 478
+type(
+  in_channel
+)
+ident(
+  def ic "src/conf/conf.ml" 28 549 553 "src/conf/conf.ml" 45 1122 1165
+)
+"src/conf/conf.ml" 26 468 481 "src/conf/conf.ml" 26 468 488
+type(
+  string -> in_channel
+)
+ident(
+  ext_ref Pervasives.open_in
+)
+"src/conf/conf.ml" 26 468 489 "src/conf/conf.ml" 26 468 498
+type(
+  string
+)
+ident(
+  int_ref file_name "src/conf/conf.ml" 22 349 360 "src/conf/conf.ml" 22 349 369
+)
+"src/conf/conf.ml" 26 468 481 "src/conf/conf.ml" 26 468 498
+call(
+  stack
+)
+type(
+  in_channel
+)
+"src/conf/conf.ml" 28 549 557 "src/conf/conf.ml" 28 549 558
+type(
+  string
+)
+"src/conf/conf.ml" 28 549 561 "src/conf/conf.ml" 28 549 571
+type(
+  in_channel -> string
+)
+ident(
+  ext_ref Pervasives.input_line
+)
+"src/conf/conf.ml" 28 549 572 "src/conf/conf.ml" 28 549 574
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 26 468 476 "src/conf/conf.ml" 26 468 478
+)
+"src/conf/conf.ml" 28 549 561 "src/conf/conf.ml" 28 549 574
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 30 586 598 "src/conf/conf.ml" 30 586 603
+type(
+  bool
+)
+"src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+type(
+  string list
+)
+ident(
+  def line_list "src/conf/conf.ml" 34 725 733 "src/conf/conf.ml" 41 1033 1084
+)
+"src/conf/conf.ml" 32 657 681 "src/conf/conf.ml" 32 657 690
+type(
+  Str.regexp -> string -> string list
+)
+ident(
+  ext_ref Str.split
+)
+"src/conf/conf.ml" 32 657 691 "src/conf/conf.ml" 32 657 704
+type(
+  Str.regexp
+)
+ident(
+  int_ref reg_separator "src/conf/conf.ml" 23 382 388 "src/conf/conf.ml" 23 382 401
+)
+"src/conf/conf.ml" 32 657 706 "src/conf/conf.ml" 32 657 716
+type(
+  in_channel -> string
+)
+ident(
+  ext_ref Pervasives.input_line
+)
+"src/conf/conf.ml" 32 657 717 "src/conf/conf.ml" 32 657 719
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 26 468 476 "src/conf/conf.ml" 26 468 478
+)
+"src/conf/conf.ml" 32 657 705 "src/conf/conf.ml" 32 657 720
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 32 657 681 "src/conf/conf.ml" 32 657 720
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 34 725 736 "src/conf/conf.ml" 34 725 737
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/conf/conf.ml" 34 725 737 "src/conf/conf.ml" 34 725 744
+type(
+  bool ref
+)
+ident(
+  int_ref verbose "src/conf/conf.ml" 11 170 174 "src/conf/conf.ml" 11 170 181
+)
+"src/conf/conf.ml" 34 725 736 "src/conf/conf.ml" 34 725 744
+type(
+  bool
+)
+"src/conf/conf.ml" 35 750 760 "src/conf/conf.ml" 35 750 766
+type(
+  (string -> (Format.formatter -> string list -> unit) -> string list -> unit,
+   Format.formatter, unit)
+  format ->
+  string -> (Format.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"src/conf/conf.ml" 35 750 767 "src/conf/conf.ml" 35 750 785
+type(
+  (string -> (Format.formatter -> string list -> unit) -> string list -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/conf/conf.ml" 35 750 787 "src/conf/conf.ml" 35 750 794
+type(
+  string list -> string
+)
+ident(
+  ext_ref List.hd
+)
+"src/conf/conf.ml" 35 750 795 "src/conf/conf.ml" 35 750 804
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 35 750 786 "src/conf/conf.ml" 35 750 805
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 36 806 819 "src/conf/conf.ml" 36 806 832
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> string -> unit) ->
+  Format.formatter -> string list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/conf/conf.ml" 36 806 838 "src/conf/conf.ml" 36 806 841
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/conf/conf.ml" 36 806 842 "src/conf/conf.ml" 36 806 865
+)
+"src/conf/conf.ml" 36 806 842 "src/conf/conf.ml" 36 806 843
+type(
+  string
+)
+ident(
+  def a "src/conf/conf.ml" 36 806 847 "src/conf/conf.ml" 36 806 865
+)
+"src/conf/conf.ml" 36 806 847 "src/conf/conf.ml" 36 806 854
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/conf/conf.ml" 36 806 855 "src/conf/conf.ml" 36 806 858
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/conf/conf.ml" 36 806 838 "src/conf/conf.ml" 36 806 841
+)
+"src/conf/conf.ml" 36 806 859 "src/conf/conf.ml" 36 806 863
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/conf/conf.ml" 36 806 864 "src/conf/conf.ml" 36 806 865
+type(
+  string
+)
+ident(
+  int_ref a "src/conf/conf.ml" 36 806 842 "src/conf/conf.ml" 36 806 843
+)
+"src/conf/conf.ml" 36 806 847 "src/conf/conf.ml" 36 806 865
+call(
+  tail
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 36 806 833 "src/conf/conf.ml" 36 806 866
+type(
+  Format.formatter -> string -> unit
+)
+"src/conf/conf.ml" 36 806 818 "src/conf/conf.ml" 36 806 867
+call(
+  stack
+)
+type(
+  Format.formatter -> string list -> unit
+)
+"src/conf/conf.ml" 37 868 881 "src/conf/conf.ml" 37 868 888
+type(
+  string list -> string list
+)
+ident(
+  ext_ref List.tl
+)
+"src/conf/conf.ml" 37 868 889 "src/conf/conf.ml" 37 868 898
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 37 868 880 "src/conf/conf.ml" 37 868 899
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 35 750 760 "src/conf/conf.ml" 37 868 899
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 34 725 733 "src/conf/conf.ml" 37 868 899
+type(
+  unit
+)
+"src/conf/conf.ml" 38 901 912 "src/conf/conf.ml" 38 901 923
+type(
+  string list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/conf/conf.ml" 38 901 925 "src/conf/conf.ml" 38 901 932
+type(
+  string list -> string list
+)
+ident(
+  ext_ref List.tl
+)
+"src/conf/conf.ml" 38 901 933 "src/conf/conf.ml" 38 901 942
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 38 901 924 "src/conf/conf.ml" 38 901 943
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 38 901 912 "src/conf/conf.ml" 38 901 943
+call(
+  stack
+)
+type(
+  int
+)
+"src/conf/conf.ml" 38 901 944 "src/conf/conf.ml" 38 901 945
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( > )
+)
+"src/conf/conf.ml" 38 901 946 "src/conf/conf.ml" 38 901 947
+type(
+  int
+)
+"src/conf/conf.ml" 38 901 912 "src/conf/conf.ml" 38 901 947
+type(
+  bool
+)
+"src/conf/conf.ml" 39 953 963 "src/conf/conf.ml" 39 953 969
+type(
+  string list SH.t -> SH.key -> string list -> unit
+)
+ident(
+  ext_ref SH.add
+)
+"src/conf/conf.ml" 39 953 970 "src/conf/conf.ml" 39 953 979
+type(
+  string list SH.t
+)
+ident(
+  int_ref conf_file "src/conf/conf.ml" 24 428 434 "src/conf/conf.ml" 24 428 443
+)
+"src/conf/conf.ml" 39 953 981 "src/conf/conf.ml" 39 953 988
+type(
+  SH.key list -> SH.key
+)
+ident(
+  ext_ref List.hd
+)
+"src/conf/conf.ml" 39 953 989 "src/conf/conf.ml" 39 953 998
+type(
+  SH.key list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 39 953 980 "src/conf/conf.ml" 39 953 999
+call(
+  stack
+)
+type(
+  SH.key
+)
+"src/conf/conf.ml" 39 953 1001 "src/conf/conf.ml" 39 953 1008
+type(
+  string list -> string list
+)
+ident(
+  ext_ref List.tl
+)
+"src/conf/conf.ml" 39 953 1009 "src/conf/conf.ml" 39 953 1018
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 39 953 1000 "src/conf/conf.ml" 39 953 1019
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 39 953 963 "src/conf/conf.ml" 39 953 1019
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 41 1033 1043 "src/conf/conf.ml" 41 1033 1049
+type(
+  string list SH.t -> SH.key -> string list -> unit
+)
+ident(
+  ext_ref SH.add
+)
+"src/conf/conf.ml" 41 1033 1050 "src/conf/conf.ml" 41 1033 1059
+type(
+  string list SH.t
+)
+ident(
+  int_ref conf_file "src/conf/conf.ml" 24 428 434 "src/conf/conf.ml" 24 428 443
+)
+"src/conf/conf.ml" 41 1033 1061 "src/conf/conf.ml" 41 1033 1068
+type(
+  SH.key list -> SH.key
+)
+ident(
+  ext_ref List.hd
+)
+"src/conf/conf.ml" 41 1033 1069 "src/conf/conf.ml" 41 1033 1078
+type(
+  SH.key list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 32 657 669 "src/conf/conf.ml" 32 657 678
+)
+"src/conf/conf.ml" 41 1033 1060 "src/conf/conf.ml" 41 1033 1079
+call(
+  stack
+)
+type(
+  SH.key
+)
+"src/conf/conf.ml" 41 1033 1081 "src/conf/conf.ml" 41 1033 1083
+type(
+  string
+)
+"src/conf/conf.ml" 41 1033 1080 "src/conf/conf.ml" 41 1033 1084
+type(
+  string list
+)
+"src/conf/conf.ml" 41 1033 1043 "src/conf/conf.ml" 41 1033 1084
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 38 901 909 "src/conf/conf.ml" 41 1033 1084
+type(
+  unit
+)
+"src/conf/conf.ml" 34 725 733 "src/conf/conf.ml" 41 1033 1084
+type(
+  unit
+)
+"src/conf/conf.ml" 32 657 665 "src/conf/conf.ml" 41 1033 1084
+type(
+  unit
+)
+"src/conf/conf.ml" 30 586 592 "src/conf/conf.ml" 42 1085 1095
+type(
+  unit
+)
+"src/conf/conf.ml" 43 1097 1103 "src/conf/conf.ml" 43 1097 1112
+type(
+  string list SH.t
+)
+ident(
+  int_ref conf_file "src/conf/conf.ml" 24 428 434 "src/conf/conf.ml" 24 428 443
+)
+"src/conf/conf.ml" 30 586 592 "src/conf/conf.ml" 43 1097 1112
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 45 1122 1128 "src/conf/conf.ml" 45 1122 1139
+type(
+  exn
+)
+"src/conf/conf.ml" 45 1122 1143 "src/conf/conf.ml" 45 1122 1151
+type(
+  in_channel -> unit
+)
+ident(
+  ext_ref Pervasives.close_in
+)
+"src/conf/conf.ml" 45 1122 1152 "src/conf/conf.ml" 45 1122 1154
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 26 468 476 "src/conf/conf.ml" 26 468 478
+)
+"src/conf/conf.ml" 45 1122 1143 "src/conf/conf.ml" 45 1122 1154
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 45 1122 1156 "src/conf/conf.ml" 45 1122 1165
+type(
+  string list SH.t
+)
+ident(
+  int_ref conf_file "src/conf/conf.ml" 24 428 434 "src/conf/conf.ml" 24 428 443
+)
+"src/conf/conf.ml" 45 1122 1143 "src/conf/conf.ml" 45 1122 1165
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 29 578 582 "src/conf/conf.ml" 45 1122 1165
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 28 549 553 "src/conf/conf.ml" 45 1122 1165
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 26 468 472 "src/conf/conf.ml" 45 1122 1165
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 47 1173 1177 "src/conf/conf.ml" 47 1173 1178
+type(
+  exn
+)
+ident(
+  def e "src/conf/conf.ml" 47 1173 1182 "src/conf/conf.ml" 47 1173 1189
+)
+"src/conf/conf.ml" 47 1173 1182 "src/conf/conf.ml" 47 1173 1187
+type(
+  exn -> string list SH.t
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/conf/conf.ml" 47 1173 1188 "src/conf/conf.ml" 47 1173 1189
+type(
+  exn
+)
+ident(
+  int_ref e "src/conf/conf.ml" 47 1173 1177 "src/conf/conf.ml" 47 1173 1178
+)
+"src/conf/conf.ml" 47 1173 1182 "src/conf/conf.ml" 47 1173 1189
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 25 462 464 "src/conf/conf.ml" 47 1173 1189
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 24 428 430 "src/conf/conf.ml" 47 1173 1189
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 23 382 384 "src/conf/conf.ml" 47 1173 1189
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 50 1194 1198 "src/conf/conf.ml" 50 1194 1212
+type(
+  string list SH.t
+)
+ident(
+  def main_conf_file "src/conf/conf.ml" 53 1239 1239 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 50 1194 1215 "src/conf/conf.ml" 50 1194 1221
+type(
+  string -> string -> string list SH.t
+)
+ident(
+  int_ref import "src/conf/conf.ml" 22 349 353 "src/conf/conf.ml" 22 349 359
+)
+"src/conf/conf.ml" 50 1194 1222 "src/conf/conf.ml" 50 1194 1232
+type(
+  string
+)
+"src/conf/conf.ml" 50 1194 1233 "src/conf/conf.ml" 50 1194 1236
+type(
+  string
+)
+"src/conf/conf.ml" 50 1194 1215 "src/conf/conf.ml" 50 1194 1236
+call(
+  stack
+)
+type(
+  string list SH.t
+)
+"src/conf/conf.ml" 53 1239 1243 "src/conf/conf.ml" 53 1239 1258
+type(
+  SH.key -> string
+)
+ident(
+  def get_conf_string "src/conf/conf.ml" 64 1538 1538 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 53 1239 1259 "src/conf/conf.ml" 53 1239 1262
+type(
+  SH.key
+)
+ident(
+  def key "src/conf/conf.ml" 54 1265 1267 "src/conf/conf.ml" 61 1451 1470
+)
+"src/conf/conf.ml" 55 1271 1275 "src/conf/conf.ml" 55 1271 1282
+type(
+  string list -> string
+)
+ident(
+  ext_ref List.hd
+)
+"src/conf/conf.ml" 55 1271 1284 "src/conf/conf.ml" 55 1271 1291
+type(
+  string list SH.t -> SH.key -> string list
+)
+ident(
+  ext_ref SH.find
+)
+"src/conf/conf.ml" 55 1271 1292 "src/conf/conf.ml" 55 1271 1306
+type(
+  string list SH.t
+)
+ident(
+  int_ref main_conf_file "src/conf/conf.ml" 50 1194 1198 "src/conf/conf.ml" 50 1194 1212
+)
+"src/conf/conf.ml" 55 1271 1307 "src/conf/conf.ml" 55 1271 1310
+type(
+  SH.key
+)
+ident(
+  int_ref key "src/conf/conf.ml" 53 1239 1259 "src/conf/conf.ml" 53 1239 1262
+)
+"src/conf/conf.ml" 55 1271 1283 "src/conf/conf.ml" 55 1271 1311
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 55 1271 1275 "src/conf/conf.ml" 55 1271 1311
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 57 1319 1323 "src/conf/conf.ml" 57 1319 1332
+type(
+  exn
+)
+"src/conf/conf.ml" 58 1336 1340 "src/conf/conf.ml" 58 1336 1347
+type(
+  (SH.key -> unit, Format.formatter, unit) format -> SH.key -> unit
+)
+ident(
+  ext_ref Format.eprintf
+)
+"src/conf/conf.ml" 58 1336 1348 "src/conf/conf.ml" 59 1380 1439
+type(
+  (SH.key -> unit, Format.formatter, unit) format
+)
+"src/conf/conf.ml" 60 1440 1446 "src/conf/conf.ml" 60 1440 1449
+type(
+  SH.key
+)
+ident(
+  int_ref key "src/conf/conf.ml" 53 1239 1259 "src/conf/conf.ml" 53 1239 1262
+)
+"src/conf/conf.ml" 58 1336 1340 "src/conf/conf.ml" 60 1440 1449
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 61 1451 1455 "src/conf/conf.ml" 61 1451 1460
+type(
+  exn -> string
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/conf/conf.ml" 61 1451 1461 "src/conf/conf.ml" 61 1451 1470
+type(
+  exn
+)
+"src/conf/conf.ml" 61 1451 1455 "src/conf/conf.ml" 61 1451 1470
+type(
+  string
+)
+"src/conf/conf.ml" 58 1336 1340 "src/conf/conf.ml" 61 1451 1470
+type(
+  string
+)
+"src/conf/conf.ml" 54 1265 1267 "src/conf/conf.ml" 61 1451 1470
+type(
+  string
+)
+"src/conf/conf.ml" 71 1599 1603 "src/conf/conf.ml" 71 1599 1620
+type(
+  (string * builtins) list
+)
+ident(
+  def builtin_var_names "src/conf/conf.ml" 77 1784 1784 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 71 1599 1624 "src/conf/conf.ml" 71 1599 1636
+type(
+  string
+)
+"src/conf/conf.ml" 71 1599 1638 "src/conf/conf.ml" 71 1599 1645
+type(
+  builtins
+)
+"src/conf/conf.ml" 71 1599 1624 "src/conf/conf.ml" 71 1599 1645
+type(
+  string * builtins
+)
+"src/conf/conf.ml" 72 1648 1673 "src/conf/conf.ml" 72 1648 1685
+type(
+  string
+)
+"src/conf/conf.ml" 72 1648 1687 "src/conf/conf.ml" 72 1648 1694
+type(
+  builtins
+)
+"src/conf/conf.ml" 72 1648 1673 "src/conf/conf.ml" 72 1648 1694
+type(
+  string * builtins
+)
+"src/conf/conf.ml" 73 1696 1721 "src/conf/conf.ml" 73 1696 1731
+type(
+  string
+)
+"src/conf/conf.ml" 73 1696 1733 "src/conf/conf.ml" 73 1696 1738
+type(
+  builtins
+)
+"src/conf/conf.ml" 73 1696 1721 "src/conf/conf.ml" 73 1696 1738
+type(
+  string * builtins
+)
+"src/conf/conf.ml" 74 1740 1765 "src/conf/conf.ml" 74 1740 1774
+type(
+  string
+)
+"src/conf/conf.ml" 74 1740 1776 "src/conf/conf.ml" 74 1740 1780
+type(
+  builtins
+)
+"src/conf/conf.ml" 74 1740 1765 "src/conf/conf.ml" 74 1740 1780
+type(
+  string * builtins
+)
+"src/conf/conf.ml" 71 1599 1623 "src/conf/conf.ml" 74 1740 1781
+type(
+  (string * builtins) list
+)
+"src/conf/conf.ml" 77 1784 1788 "src/conf/conf.ml" 77 1784 1802
+type(
+  string -> bool
+)
+ident(
+  def is_builtin_var "src/conf/conf.ml" 79 1843 1843 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 77 1784 1803 "src/conf/conf.ml" 77 1784 1804
+type(
+  string
+)
+ident(
+  def s "src/conf/conf.ml" 77 1784 1807 "src/conf/conf.ml" 77 1784 1841
+)
+"src/conf/conf.ml" 77 1784 1807 "src/conf/conf.ml" 77 1784 1821
+type(
+  string -> (string * builtins) list -> bool
+)
+ident(
+  ext_ref List.mem_assoc
+)
+"src/conf/conf.ml" 77 1784 1822 "src/conf/conf.ml" 77 1784 1823
+type(
+  string
+)
+ident(
+  int_ref s "src/conf/conf.ml" 77 1784 1803 "src/conf/conf.ml" 77 1784 1804
+)
+"src/conf/conf.ml" 77 1784 1824 "src/conf/conf.ml" 77 1784 1841
+type(
+  (string * builtins) list
+)
+ident(
+  int_ref builtin_var_names "src/conf/conf.ml" 71 1599 1603 "src/conf/conf.ml" 71 1599 1620
+)
+"src/conf/conf.ml" 77 1784 1807 "src/conf/conf.ml" 77 1784 1841
+call(
+  tail
+)
+type(
+  bool
+)
+"src/conf/conf.ml" 79 1843 1847 "src/conf/conf.ml" 79 1843 1858
+type(
+  string -> builtins
+)
+ident(
+  def get_builtin "src/conf/conf.ml" 83 1965 1965 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 79 1843 1859 "src/conf/conf.ml" 79 1843 1860
+type(
+  string
+)
+ident(
+  def s "src/conf/conf.ml" 79 1843 1863 "src/conf/conf.ml" 79 1843 1893
+)
+"src/conf/conf.ml" 79 1843 1863 "src/conf/conf.ml" 79 1843 1873
+type(
+  string -> (string * builtins) list -> builtins
+)
+ident(
+  ext_ref List.assoc
+)
+"src/conf/conf.ml" 79 1843 1874 "src/conf/conf.ml" 79 1843 1875
+type(
+  string
+)
+ident(
+  int_ref s "src/conf/conf.ml" 79 1843 1859 "src/conf/conf.ml" 79 1843 1860
+)
+"src/conf/conf.ml" 79 1843 1876 "src/conf/conf.ml" 79 1843 1893
+type(
+  (string * builtins) list
+)
+ident(
+  int_ref builtin_var_names "src/conf/conf.ml" 71 1599 1603 "src/conf/conf.ml" 71 1599 1620
+)
+"src/conf/conf.ml" 79 1843 1863 "src/conf/conf.ml" 79 1843 1893
+call(
+  tail
+)
+type(
+  builtins
+)
+"src/conf/conf.ml" 83 1965 1969 "src/conf/conf.ml" 83 1965 1990
+type(
+  string
+)
+ident(
+  def verif_params_filename "src/conf/conf.ml" 85 2027 2027 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 83 1965 1993 "src/conf/conf.ml" 83 1965 2025
+type(
+  string
+)
+"src/conf/conf.ml" 85 2027 2031 "src/conf/conf.ml" 85 2027 2054
+type(
+  (int * int * int) list
+)
+ident(
+  def verification_parameters "src/conf/conf.ml" 118 3007 3007 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 86 2057 2063 "src/conf/conf.ml" 86 2057 2076
+type(
+  Str.regexp
+)
+ident(
+  def reg_separator "src/conf/conf.ml" 87 2097 2099 "src/conf/conf.ml" 113 2948 2964
+)
+"src/conf/conf.ml" 86 2057 2079 "src/conf/conf.ml" 86 2057 2089
+type(
+  string -> Str.regexp
+)
+ident(
+  ext_ref Str.regexp
+)
+"src/conf/conf.ml" 86 2057 2090 "src/conf/conf.ml" 86 2057 2093
+type(
+  string
+)
+"src/conf/conf.ml" 86 2057 2079 "src/conf/conf.ml" 86 2057 2093
+call(
+  stack
+)
+type(
+  Str.regexp
+)
+"src/conf/conf.ml" 87 2097 2103 "src/conf/conf.ml" 87 2097 2107
+type(
+  (int * int * int) list ref
+)
+ident(
+  def list "src/conf/conf.ml" 88 2120 2122 "src/conf/conf.ml" 113 2948 2964
+)
+"src/conf/conf.ml" 87 2097 2110 "src/conf/conf.ml" 87 2097 2113
+type(
+  (int * int * int) list -> (int * int * int) list ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/conf/conf.ml" 87 2097 2114 "src/conf/conf.ml" 87 2097 2116
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 87 2097 2110 "src/conf/conf.ml" 87 2097 2116
+type(
+  (int * int * int) list ref
+)
+"src/conf/conf.ml" 89 2126 2134 "src/conf/conf.ml" 89 2126 2136
+type(
+  in_channel
+)
+ident(
+  def ic "src/conf/conf.ml" 91 2219 2223 "src/conf/conf.ml" 111 2901 2940
+)
+"src/conf/conf.ml" 89 2126 2139 "src/conf/conf.ml" 89 2126 2146
+type(
+  string -> in_channel
+)
+ident(
+  ext_ref Pervasives.open_in
+)
+"src/conf/conf.ml" 89 2126 2147 "src/conf/conf.ml" 89 2126 2168
+type(
+  string
+)
+ident(
+  int_ref verif_params_filename "src/conf/conf.ml" 83 1965 1969 "src/conf/conf.ml" 83 1965 1990
+)
+"src/conf/conf.ml" 89 2126 2139 "src/conf/conf.ml" 89 2126 2168
+call(
+  stack
+)
+type(
+  in_channel
+)
+"src/conf/conf.ml" 91 2219 2227 "src/conf/conf.ml" 91 2219 2228
+type(
+  string
+)
+"src/conf/conf.ml" 91 2219 2231 "src/conf/conf.ml" 91 2219 2241
+type(
+  in_channel -> string
+)
+ident(
+  ext_ref Pervasives.input_line
+)
+"src/conf/conf.ml" 91 2219 2242 "src/conf/conf.ml" 91 2219 2244
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 89 2126 2134 "src/conf/conf.ml" 89 2126 2136
+)
+"src/conf/conf.ml" 91 2219 2231 "src/conf/conf.ml" 91 2219 2244
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 93 2256 2268 "src/conf/conf.ml" 93 2256 2273
+type(
+  bool
+)
+"src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+type(
+  string list
+)
+ident(
+  def line_list "src/conf/conf.ml" 96 2394 2402 "src/conf/conf.ml" 107 2852 2867
+)
+"src/conf/conf.ml" 95 2327 2351 "src/conf/conf.ml" 95 2327 2360
+type(
+  Str.regexp -> string -> string list
+)
+ident(
+  ext_ref Str.split
+)
+"src/conf/conf.ml" 95 2327 2361 "src/conf/conf.ml" 95 2327 2374
+type(
+  Str.regexp
+)
+ident(
+  int_ref reg_separator "src/conf/conf.ml" 86 2057 2063 "src/conf/conf.ml" 86 2057 2076
+)
+"src/conf/conf.ml" 95 2327 2376 "src/conf/conf.ml" 95 2327 2386
+type(
+  in_channel -> string
+)
+ident(
+  ext_ref Pervasives.input_line
+)
+"src/conf/conf.ml" 95 2327 2387 "src/conf/conf.ml" 95 2327 2389
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 89 2126 2134 "src/conf/conf.ml" 89 2126 2136
+)
+"src/conf/conf.ml" 95 2327 2375 "src/conf/conf.ml" 95 2327 2390
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 95 2327 2351 "src/conf/conf.ml" 95 2327 2390
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 96 2394 2405 "src/conf/conf.ml" 96 2394 2416
+type(
+  string list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/conf/conf.ml" 96 2394 2417 "src/conf/conf.ml" 96 2394 2426
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+)
+"src/conf/conf.ml" 96 2394 2405 "src/conf/conf.ml" 96 2394 2426
+call(
+  stack
+)
+type(
+  int
+)
+"src/conf/conf.ml" 96 2394 2427 "src/conf/conf.ml" 96 2394 2429
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( >= )
+)
+"src/conf/conf.ml" 96 2394 2430 "src/conf/conf.ml" 96 2394 2431
+type(
+  int
+)
+"src/conf/conf.ml" 96 2394 2405 "src/conf/conf.ml" 96 2394 2431
+type(
+  bool
+)
+"src/conf/conf.ml" 98 2453 2469 "src/conf/conf.ml" 98 2453 2470
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/conf/conf.ml" 98 2453 2470 "src/conf/conf.ml" 98 2453 2477
+type(
+  bool ref
+)
+ident(
+  int_ref verbose "src/conf/conf.ml" 11 170 174 "src/conf/conf.ml" 11 170 181
+)
+"src/conf/conf.ml" 98 2453 2469 "src/conf/conf.ml" 98 2453 2477
+type(
+  bool
+)
+"src/conf/conf.ml" 99 2483 2498 "src/conf/conf.ml" 99 2483 2504
+type(
+  ((Format.formatter -> string list -> unit) -> string list -> unit,
+   Format.formatter, unit)
+  format -> (Format.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"src/conf/conf.ml" 99 2483 2505 "src/conf/conf.ml" 99 2483 2511
+type(
+  ((Format.formatter -> string list -> unit) -> string list -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/conf/conf.ml" 100 2512 2530 "src/conf/conf.ml" 100 2512 2543
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> string -> unit) ->
+  Format.formatter -> string list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/conf/conf.ml" 101 2544 2577 "src/conf/conf.ml" 101 2544 2580
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/conf/conf.ml" 101 2544 2581 "src/conf/conf.ml" 101 2544 2602
+)
+"src/conf/conf.ml" 101 2544 2581 "src/conf/conf.ml" 101 2544 2583
+type(
+  unit
+)
+"src/conf/conf.ml" 101 2544 2587 "src/conf/conf.ml" 101 2544 2594
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/conf/conf.ml" 101 2544 2595 "src/conf/conf.ml" 101 2544 2598
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/conf/conf.ml" 101 2544 2577 "src/conf/conf.ml" 101 2544 2580
+)
+"src/conf/conf.ml" 101 2544 2599 "src/conf/conf.ml" 101 2544 2602
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/conf/conf.ml" 101 2544 2587 "src/conf/conf.ml" 101 2544 2602
+call(
+  tail
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 101 2544 2572 "src/conf/conf.ml" 101 2544 2603
+type(
+  Format.formatter -> unit -> unit
+)
+"src/conf/conf.ml" 102 2604 2629 "src/conf/conf.ml" 102 2604 2632
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/conf/conf.ml" 102 2604 2633 "src/conf/conf.ml" 102 2604 2656
+)
+"src/conf/conf.ml" 102 2604 2633 "src/conf/conf.ml" 102 2604 2634
+type(
+  string
+)
+ident(
+  def a "src/conf/conf.ml" 102 2604 2638 "src/conf/conf.ml" 102 2604 2656
+)
+"src/conf/conf.ml" 102 2604 2638 "src/conf/conf.ml" 102 2604 2645
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/conf/conf.ml" 102 2604 2646 "src/conf/conf.ml" 102 2604 2649
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/conf/conf.ml" 102 2604 2629 "src/conf/conf.ml" 102 2604 2632
+)
+"src/conf/conf.ml" 102 2604 2650 "src/conf/conf.ml" 102 2604 2654
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/conf/conf.ml" 102 2604 2655 "src/conf/conf.ml" 102 2604 2656
+type(
+  string
+)
+ident(
+  int_ref a "src/conf/conf.ml" 102 2604 2633 "src/conf/conf.ml" 102 2604 2634
+)
+"src/conf/conf.ml" 102 2604 2638 "src/conf/conf.ml" 102 2604 2656
+call(
+  tail
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 102 2604 2624 "src/conf/conf.ml" 102 2604 2657
+type(
+  Format.formatter -> string -> unit
+)
+"src/conf/conf.ml" 100 2512 2529 "src/conf/conf.ml" 102 2604 2658
+call(
+  stack
+)
+type(
+  Format.formatter -> string list -> unit
+)
+"src/conf/conf.ml" 102 2604 2659 "src/conf/conf.ml" 102 2604 2668
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+)
+"src/conf/conf.ml" 99 2483 2498 "src/conf/conf.ml" 102 2604 2668
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 98 2453 2465 "src/conf/conf.ml" 102 2604 2669
+type(
+  unit
+)
+"src/conf/conf.ml" 103 2671 2683 "src/conf/conf.ml" 103 2671 2687
+type(
+  (int * int * int) list ref
+)
+ident(
+  int_ref list "src/conf/conf.ml" 87 2097 2103 "src/conf/conf.ml" 87 2097 2107
+)
+"src/conf/conf.ml" 103 2671 2688 "src/conf/conf.ml" 103 2671 2690
+type(
+  (int * int * int) list ref -> (int * int * int) list -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/conf/conf.ml" 103 2671 2692 "src/conf/conf.ml" 103 2671 2705
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/conf/conf.ml" 103 2671 2707 "src/conf/conf.ml" 103 2671 2716
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+)
+"src/conf/conf.ml" 103 2671 2717 "src/conf/conf.ml" 103 2671 2719
+type(
+  string list -> int -> string
+)
+ident(
+  int_ref >> "src/conf/conf.ml" 20 320 324 "src/conf/conf.ml" 20 320 328
+)
+"src/conf/conf.ml" 103 2671 2720 "src/conf/conf.ml" 103 2671 2721
+type(
+  int
+)
+"src/conf/conf.ml" 103 2671 2706 "src/conf/conf.ml" 103 2671 2722
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 103 2671 2692 "src/conf/conf.ml" 103 2671 2722
+type(
+  int
+)
+"src/conf/conf.ml" 104 2724 2745 "src/conf/conf.ml" 104 2724 2758
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/conf/conf.ml" 104 2724 2760 "src/conf/conf.ml" 104 2724 2769
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+)
+"src/conf/conf.ml" 104 2724 2770 "src/conf/conf.ml" 104 2724 2772
+type(
+  string list -> int -> string
+)
+ident(
+  int_ref >> "src/conf/conf.ml" 20 320 324 "src/conf/conf.ml" 20 320 328
+)
+"src/conf/conf.ml" 104 2724 2773 "src/conf/conf.ml" 104 2724 2774
+type(
+  int
+)
+"src/conf/conf.ml" 104 2724 2759 "src/conf/conf.ml" 104 2724 2775
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 104 2724 2745 "src/conf/conf.ml" 104 2724 2775
+type(
+  int
+)
+"src/conf/conf.ml" 105 2777 2798 "src/conf/conf.ml" 105 2777 2811
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/conf/conf.ml" 105 2777 2813 "src/conf/conf.ml" 105 2777 2822
+type(
+  string list
+)
+ident(
+  int_ref line_list "src/conf/conf.ml" 95 2327 2339 "src/conf/conf.ml" 95 2327 2348
+)
+"src/conf/conf.ml" 105 2777 2823 "src/conf/conf.ml" 105 2777 2825
+type(
+  string list -> int -> string
+)
+ident(
+  int_ref >> "src/conf/conf.ml" 20 320 324 "src/conf/conf.ml" 20 320 328
+)
+"src/conf/conf.ml" 105 2777 2826 "src/conf/conf.ml" 105 2777 2827
+type(
+  int
+)
+"src/conf/conf.ml" 105 2777 2812 "src/conf/conf.ml" 105 2777 2828
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 105 2777 2798 "src/conf/conf.ml" 105 2777 2828
+type(
+  int
+)
+"src/conf/conf.ml" 103 2671 2691 "src/conf/conf.ml" 105 2777 2829
+type(
+  int * int * int
+)
+"src/conf/conf.ml" 105 2777 2832 "src/conf/conf.ml" 105 2777 2833
+type(
+  (int * int * int) list ref -> (int * int * int) list
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/conf/conf.ml" 105 2777 2833 "src/conf/conf.ml" 105 2777 2837
+type(
+  (int * int * int) list ref
+)
+ident(
+  int_ref list "src/conf/conf.ml" 87 2097 2103 "src/conf/conf.ml" 87 2097 2107
+)
+"src/conf/conf.ml" 105 2777 2832 "src/conf/conf.ml" 105 2777 2837
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 103 2671 2691 "src/conf/conf.ml" 105 2777 2837
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 103 2671 2683 "src/conf/conf.ml" 105 2777 2837
+type(
+  unit
+)
+"src/conf/conf.ml" 97 2437 2447 "src/conf/conf.ml" 106 2838 2851
+type(
+  unit
+)
+"src/conf/conf.ml" 107 2852 2865 "src/conf/conf.ml" 107 2852 2867
+type(
+  unit
+)
+"src/conf/conf.ml" 96 2394 2402 "src/conf/conf.ml" 107 2852 2867
+type(
+  unit
+)
+"src/conf/conf.ml" 95 2327 2335 "src/conf/conf.ml" 107 2852 2867
+type(
+  unit
+)
+"src/conf/conf.ml" 93 2256 2262 "src/conf/conf.ml" 108 2868 2878
+type(
+  unit
+)
+"src/conf/conf.ml" 109 2880 2886 "src/conf/conf.ml" 109 2880 2887
+type(
+  (int * int * int) list ref -> (int * int * int) list
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/conf/conf.ml" 109 2880 2887 "src/conf/conf.ml" 109 2880 2891
+type(
+  (int * int * int) list ref
+)
+ident(
+  int_ref list "src/conf/conf.ml" 87 2097 2103 "src/conf/conf.ml" 87 2097 2107
+)
+"src/conf/conf.ml" 109 2880 2886 "src/conf/conf.ml" 109 2880 2891
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 93 2256 2262 "src/conf/conf.ml" 109 2880 2891
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 111 2901 2907 "src/conf/conf.ml" 111 2901 2918
+type(
+  exn
+)
+"src/conf/conf.ml" 111 2901 2922 "src/conf/conf.ml" 111 2901 2930
+type(
+  in_channel -> unit
+)
+ident(
+  ext_ref Pervasives.close_in
+)
+"src/conf/conf.ml" 111 2901 2931 "src/conf/conf.ml" 111 2901 2933
+type(
+  in_channel
+)
+ident(
+  int_ref ic "src/conf/conf.ml" 89 2126 2134 "src/conf/conf.ml" 89 2126 2136
+)
+"src/conf/conf.ml" 111 2901 2922 "src/conf/conf.ml" 111 2901 2933
+call(
+  stack
+)
+type(
+  unit
+)
+"src/conf/conf.ml" 111 2901 2935 "src/conf/conf.ml" 111 2901 2936
+type(
+  (int * int * int) list ref -> (int * int * int) list
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/conf/conf.ml" 111 2901 2936 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list ref
+)
+ident(
+  int_ref list "src/conf/conf.ml" 87 2097 2103 "src/conf/conf.ml" 87 2097 2107
+)
+"src/conf/conf.ml" 111 2901 2935 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 111 2901 2922 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 92 2248 2252 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 91 2219 2223 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 89 2126 2130 "src/conf/conf.ml" 111 2901 2940
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 113 2948 2952 "src/conf/conf.ml" 113 2948 2953
+type(
+  exn
+)
+ident(
+  def e "src/conf/conf.ml" 113 2948 2957 "src/conf/conf.ml" 113 2948 2964
+)
+"src/conf/conf.ml" 113 2948 2957 "src/conf/conf.ml" 113 2948 2962
+type(
+  exn -> (int * int * int) list
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/conf/conf.ml" 113 2948 2963 "src/conf/conf.ml" 113 2948 2964
+type(
+  exn
+)
+ident(
+  int_ref e "src/conf/conf.ml" 113 2948 2952 "src/conf/conf.ml" 113 2948 2953
+)
+"src/conf/conf.ml" 113 2948 2957 "src/conf/conf.ml" 113 2948 2964
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 88 2120 2122 "src/conf/conf.ml" 113 2948 2964
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 87 2097 2099 "src/conf/conf.ml" 113 2948 2964
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 86 2057 2059 "src/conf/conf.ml" 113 2948 2964
+type(
+  (int * int * int) list
+)
+"src/conf/conf.ml" 118 3007 3019 "src/conf/conf.ml" 118 3007 3036
+call(
+  stack
+)
+"src/conf/conf.ml" 120 3038 3042 "src/conf/conf.ml" 120 3038 3058
+type(
+  (SM.key * string) list -> string SM.t
+)
+ident(
+  def sm_from_bindings "src/conf/conf.ml" 124 3128 3128 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 121 3061 3063 "src/conf/conf.ml" 121 3061 3077
+type(
+  (string SM.t -> SM.key * string -> string SM.t) ->
+  string SM.t -> (SM.key * string) list -> string SM.t
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/conf/conf.ml" 122 3078 3087 "src/conf/conf.ml" 122 3078 3091
+type(
+  string SM.t
+)
+ident(
+  def smap "src/conf/conf.ml" 122 3078 3092 "src/conf/conf.ml" 122 3078 3116
+)
+"src/conf/conf.ml" 122 3078 3093 "src/conf/conf.ml" 122 3078 3094
+type(
+  SM.key
+)
+ident(
+  def k "src/conf/conf.ml" 122 3078 3101 "src/conf/conf.ml" 122 3078 3116
+)
+"src/conf/conf.ml" 122 3078 3095 "src/conf/conf.ml" 122 3078 3096
+type(
+  string
+)
+ident(
+  def v "src/conf/conf.ml" 122 3078 3101 "src/conf/conf.ml" 122 3078 3116
+)
+"src/conf/conf.ml" 122 3078 3092 "src/conf/conf.ml" 122 3078 3097
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 122 3078 3101 "src/conf/conf.ml" 122 3078 3107
+type(
+  SM.key -> string -> string SM.t -> string SM.t
+)
+ident(
+  ext_ref SM.add
+)
+"src/conf/conf.ml" 122 3078 3108 "src/conf/conf.ml" 122 3078 3109
+type(
+  SM.key
+)
+ident(
+  int_ref k "src/conf/conf.ml" 122 3078 3093 "src/conf/conf.ml" 122 3078 3094
+)
+"src/conf/conf.ml" 122 3078 3110 "src/conf/conf.ml" 122 3078 3111
+type(
+  string
+)
+ident(
+  int_ref v "src/conf/conf.ml" 122 3078 3095 "src/conf/conf.ml" 122 3078 3096
+)
+"src/conf/conf.ml" 122 3078 3112 "src/conf/conf.ml" 122 3078 3116
+type(
+  string SM.t
+)
+ident(
+  int_ref smap "src/conf/conf.ml" 122 3078 3087 "src/conf/conf.ml" 122 3078 3091
+)
+"src/conf/conf.ml" 122 3078 3101 "src/conf/conf.ml" 122 3078 3116
+call(
+  tail
+)
+type(
+  string SM.t
+)
+"src/conf/conf.ml" 122 3078 3082 "src/conf/conf.ml" 122 3078 3117
+type(
+  string SM.t -> SM.key * string -> string SM.t
+)
+"src/conf/conf.ml" 122 3078 3118 "src/conf/conf.ml" 122 3078 3126
+type(
+  string SM.t
+)
+ident(
+  ext_ref SM.empty
+)
+"src/conf/conf.ml" 121 3061 3063 "src/conf/conf.ml" 122 3078 3126
+call(
+  stack
+)
+type(
+  (SM.key * string) list -> string SM.t
+)
+"src/conf/conf.ml" 124 3128 3132 "src/conf/conf.ml" 124 3128 3148
+type(
+  string SM.t
+)
+ident(
+  def hole_types_names "src/conf/conf.ml" 134 3390 3390 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 125 3151 3153 "src/conf/conf.ml" 125 3151 3169
+type(
+  (SM.key * string) list -> string SM.t
+)
+ident(
+  int_ref sm_from_bindings "src/conf/conf.ml" 120 3038 3042 "src/conf/conf.ml" 120 3038 3058
+)
+"src/conf/conf.ml" 126 3170 3175 "src/conf/conf.ml" 126 3170 3182
+type(
+  SM.key
+)
+"src/conf/conf.ml" 126 3170 3183 "src/conf/conf.ml" 126 3170 3197
+type(
+  string
+)
+"src/conf/conf.ml" 126 3170 3175 "src/conf/conf.ml" 126 3170 3197
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 127 3199 3204 "src/conf/conf.ml" 127 3199 3216
+type(
+  SM.key
+)
+"src/conf/conf.ml" 127 3199 3217 "src/conf/conf.ml" 127 3199 3228
+type(
+  string
+)
+"src/conf/conf.ml" 127 3199 3204 "src/conf/conf.ml" 127 3199 3228
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 128 3230 3235 "src/conf/conf.ml" 128 3230 3246
+type(
+  SM.key
+)
+"src/conf/conf.ml" 128 3230 3248 "src/conf/conf.ml" 128 3230 3262
+type(
+  string
+)
+"src/conf/conf.ml" 128 3230 3235 "src/conf/conf.ml" 128 3230 3262
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 129 3264 3269 "src/conf/conf.ml" 129 3264 3278
+type(
+  SM.key
+)
+"src/conf/conf.ml" 129 3264 3280 "src/conf/conf.ml" 129 3264 3290
+type(
+  string
+)
+"src/conf/conf.ml" 129 3264 3269 "src/conf/conf.ml" 129 3264 3290
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 130 3292 3297 "src/conf/conf.ml" 130 3292 3309
+type(
+  SM.key
+)
+"src/conf/conf.ml" 130 3292 3311 "src/conf/conf.ml" 130 3292 3327
+type(
+  string
+)
+"src/conf/conf.ml" 130 3292 3297 "src/conf/conf.ml" 130 3292 3327
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 131 3329 3334 "src/conf/conf.ml" 131 3329 3343
+type(
+  SM.key
+)
+"src/conf/conf.ml" 131 3329 3345 "src/conf/conf.ml" 131 3329 3353
+type(
+  string
+)
+"src/conf/conf.ml" 131 3329 3334 "src/conf/conf.ml" 131 3329 3353
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 132 3355 3360 "src/conf/conf.ml" 132 3355 3373
+type(
+  SM.key
+)
+"src/conf/conf.ml" 132 3355 3375 "src/conf/conf.ml" 132 3355 3387
+type(
+  string
+)
+"src/conf/conf.ml" 132 3355 3360 "src/conf/conf.ml" 132 3355 3387
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 126 3170 3174 "src/conf/conf.ml" 132 3355 3388
+type(
+  (SM.key * string) list
+)
+"src/conf/conf.ml" 125 3151 3153 "src/conf/conf.ml" 132 3355 3388
+call(
+  stack
+)
+type(
+  string SM.t
+)
+"src/conf/conf.ml" 134 3390 3394 "src/conf/conf.ml" 134 3390 3409
+type(
+  string SM.t
+)
+ident(
+  def operator_choice "src/conf/conf.ml" 144 3657 3657 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 135 3412 3414 "src/conf/conf.ml" 135 3412 3430
+type(
+  (SM.key * string) list -> string SM.t
+)
+ident(
+  int_ref sm_from_bindings "src/conf/conf.ml" 120 3038 3042 "src/conf/conf.ml" 120 3038 3058
+)
+"src/conf/conf.ml" 136 3431 3436 "src/conf/conf.ml" 136 3431 3448
+type(
+  SM.key
+)
+"src/conf/conf.ml" 136 3431 3450 "src/conf/conf.ml" 136 3431 3465
+type(
+  string
+)
+"src/conf/conf.ml" 136 3431 3436 "src/conf/conf.ml" 136 3431 3465
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 137 3467 3472 "src/conf/conf.ml" 137 3467 3480
+type(
+  SM.key
+)
+"src/conf/conf.ml" 137 3467 3482 "src/conf/conf.ml" 137 3467 3493
+type(
+  string
+)
+"src/conf/conf.ml" 137 3467 3472 "src/conf/conf.ml" 137 3467 3493
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 138 3495 3500 "src/conf/conf.ml" 138 3495 3511
+type(
+  SM.key
+)
+"src/conf/conf.ml" 138 3495 3512 "src/conf/conf.ml" 138 3495 3528
+type(
+  string
+)
+"src/conf/conf.ml" 138 3495 3500 "src/conf/conf.ml" 138 3495 3528
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 139 3530 3535 "src/conf/conf.ml" 139 3530 3542
+type(
+  SM.key
+)
+"src/conf/conf.ml" 139 3530 3544 "src/conf/conf.ml" 139 3530 3557
+type(
+  string
+)
+"src/conf/conf.ml" 139 3530 3535 "src/conf/conf.ml" 139 3530 3557
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 140 3559 3564 "src/conf/conf.ml" 140 3559 3576
+type(
+  SM.key
+)
+"src/conf/conf.ml" 140 3559 3578 "src/conf/conf.ml" 140 3559 3591
+type(
+  string
+)
+"src/conf/conf.ml" 140 3559 3564 "src/conf/conf.ml" 140 3559 3591
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 141 3593 3598 "src/conf/conf.ml" 141 3593 3604
+type(
+  SM.key
+)
+"src/conf/conf.ml" 141 3593 3606 "src/conf/conf.ml" 141 3593 3618
+type(
+  string
+)
+"src/conf/conf.ml" 141 3593 3598 "src/conf/conf.ml" 141 3593 3618
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 142 3620 3625 "src/conf/conf.ml" 142 3620 3636
+type(
+  SM.key
+)
+"src/conf/conf.ml" 142 3620 3638 "src/conf/conf.ml" 142 3620 3653
+type(
+  string
+)
+"src/conf/conf.ml" 142 3620 3625 "src/conf/conf.ml" 142 3620 3653
+type(
+  SM.key * string
+)
+"src/conf/conf.ml" 136 3431 3435 "src/conf/conf.ml" 142 3620 3655
+type(
+  (SM.key * string) list
+)
+"src/conf/conf.ml" 135 3412 3414 "src/conf/conf.ml" 142 3620 3655
+call(
+  stack
+)
+type(
+  string SM.t
+)
+"src/conf/conf.ml" 144 3657 3661 "src/conf/conf.ml" 144 3657 3679
+type(
+  SM.key -> string
+)
+ident(
+  def get_hole_type_name "src/conf/conf.ml" 147 3749 3749 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 144 3657 3680 "src/conf/conf.ml" 144 3657 3681
+type(
+  SM.key
+)
+ident(
+  def s "src/conf/conf.ml" 144 3657 3684 "src/conf/conf.ml" 145 3715 3747
+)
+"src/conf/conf.ml" 144 3657 3688 "src/conf/conf.ml" 144 3657 3695
+type(
+  SM.key -> string SM.t -> string
+)
+ident(
+  ext_ref SM.find
+)
+"src/conf/conf.ml" 144 3657 3696 "src/conf/conf.ml" 144 3657 3697
+type(
+  SM.key
+)
+ident(
+  int_ref s "src/conf/conf.ml" 144 3657 3680 "src/conf/conf.ml" 144 3657 3681
+)
+"src/conf/conf.ml" 144 3657 3698 "src/conf/conf.ml" 144 3657 3714
+type(
+  string SM.t
+)
+ident(
+  int_ref hole_types_names "src/conf/conf.ml" 124 3128 3132 "src/conf/conf.ml" 124 3128 3148
+)
+"src/conf/conf.ml" 144 3657 3688 "src/conf/conf.ml" 144 3657 3714
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 145 3715 3722 "src/conf/conf.ml" 145 3715 3731
+type(
+  exn
+)
+"src/conf/conf.ml" 145 3715 3735 "src/conf/conf.ml" 145 3715 3747
+type(
+  string
+)
+"src/conf/conf.ml" 144 3657 3684 "src/conf/conf.ml" 145 3715 3747
+type(
+  string
+)
+"src/conf/conf.ml" 147 3749 3753 "src/conf/conf.ml" 147 3749 3772
+type(
+  SM.key -> string
+)
+ident(
+  def get_operator_choice "src/conf/conf.ml" 150 3840 3840 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 147 3749 3773 "src/conf/conf.ml" 147 3749 3774
+type(
+  SM.key
+)
+ident(
+  def s "src/conf/conf.ml" 147 3749 3777 "src/conf/conf.ml" 148 3807 3838
+)
+"src/conf/conf.ml" 147 3749 3781 "src/conf/conf.ml" 147 3749 3788
+type(
+  SM.key -> string SM.t -> string
+)
+ident(
+  ext_ref SM.find
+)
+"src/conf/conf.ml" 147 3749 3789 "src/conf/conf.ml" 147 3749 3790
+type(
+  SM.key
+)
+ident(
+  int_ref s "src/conf/conf.ml" 147 3749 3773 "src/conf/conf.ml" 147 3749 3774
+)
+"src/conf/conf.ml" 147 3749 3791 "src/conf/conf.ml" 147 3749 3806
+type(
+  string SM.t
+)
+ident(
+  int_ref operator_choice "src/conf/conf.ml" 134 3390 3394 "src/conf/conf.ml" 134 3390 3409
+)
+"src/conf/conf.ml" 147 3749 3781 "src/conf/conf.ml" 147 3749 3806
+call(
+  stack
+)
+type(
+  string
+)
+"src/conf/conf.ml" 148 3807 3814 "src/conf/conf.ml" 148 3807 3823
+type(
+  exn
+)
+"src/conf/conf.ml" 148 3807 3827 "src/conf/conf.ml" 148 3807 3838
+type(
+  string
+)
+"src/conf/conf.ml" 147 3749 3777 "src/conf/conf.ml" 148 3807 3838
+type(
+  string
+)
+"src/conf/conf.ml" 150 3840 3844 "src/conf/conf.ml" 150 3840 3856
+type(
+  string -> bool
+)
+ident(
+  def is_hole_type "src/conf/conf.ml" 151 3907 3907 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 150 3840 3857 "src/conf/conf.ml" 150 3840 3858
+type(
+  string
+)
+ident(
+  def s "src/conf/conf.ml" 150 3840 3861 "src/conf/conf.ml" 150 3840 3906
+)
+"src/conf/conf.ml" 150 3840 3861 "src/conf/conf.ml" 150 3840 3870
+type(
+  (SM.key -> string -> bool) -> string SM.t -> bool
+)
+ident(
+  ext_ref SM.exists
+)
+"src/conf/conf.ml" 150 3840 3876 "src/conf/conf.ml" 150 3840 3877
+type(
+  SM.key
+)
+ident(
+  def k "src/conf/conf.ml" 150 3840 3878 "src/conf/conf.ml" 150 3840 3888
+)
+"src/conf/conf.ml" 150 3840 3878 "src/conf/conf.ml" 150 3840 3879
+type(
+  string
+)
+ident(
+  def v "src/conf/conf.ml" 150 3840 3883 "src/conf/conf.ml" 150 3840 3888
+)
+"src/conf/conf.ml" 150 3840 3883 "src/conf/conf.ml" 150 3840 3884
+type(
+  string
+)
+ident(
+  int_ref v "src/conf/conf.ml" 150 3840 3878 "src/conf/conf.ml" 150 3840 3879
+)
+"src/conf/conf.ml" 150 3840 3885 "src/conf/conf.ml" 150 3840 3886
+type(
+  string -> string -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/conf/conf.ml" 150 3840 3887 "src/conf/conf.ml" 150 3840 3888
+type(
+  string
+)
+ident(
+  int_ref s "src/conf/conf.ml" 150 3840 3857 "src/conf/conf.ml" 150 3840 3858
+)
+"src/conf/conf.ml" 150 3840 3883 "src/conf/conf.ml" 150 3840 3888
+type(
+  bool
+)
+"src/conf/conf.ml" 150 3840 3871 "src/conf/conf.ml" 150 3840 3889
+type(
+  SM.key -> string -> bool
+)
+"src/conf/conf.ml" 150 3840 3890 "src/conf/conf.ml" 150 3840 3906
+type(
+  string SM.t
+)
+ident(
+  int_ref hole_types_names "src/conf/conf.ml" 124 3128 3132 "src/conf/conf.ml" 124 3128 3148
+)
+"src/conf/conf.ml" 150 3840 3861 "src/conf/conf.ml" 150 3840 3906
+call(
+  tail
+)
+type(
+  bool
+)
+"src/conf/conf.ml" 151 3907 3911 "src/conf/conf.ml" 151 3907 3923
+type(
+  string -> bool
+)
+ident(
+  def is_op_choice "src/conf/conf.ml" 153 3974 3974 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 151 3907 3924 "src/conf/conf.ml" 151 3907 3925
+type(
+  string
+)
+ident(
+  def s "src/conf/conf.ml" 151 3907 3928 "src/conf/conf.ml" 151 3907 3972
+)
+"src/conf/conf.ml" 151 3907 3928 "src/conf/conf.ml" 151 3907 3937
+type(
+  (SM.key -> string -> bool) -> string SM.t -> bool
+)
+ident(
+  ext_ref SM.exists
+)
+"src/conf/conf.ml" 151 3907 3943 "src/conf/conf.ml" 151 3907 3944
+type(
+  SM.key
+)
+ident(
+  def k "src/conf/conf.ml" 151 3907 3945 "src/conf/conf.ml" 151 3907 3955
+)
+"src/conf/conf.ml" 151 3907 3945 "src/conf/conf.ml" 151 3907 3946
+type(
+  string
+)
+ident(
+  def v "src/conf/conf.ml" 151 3907 3950 "src/conf/conf.ml" 151 3907 3955
+)
+"src/conf/conf.ml" 151 3907 3950 "src/conf/conf.ml" 151 3907 3951
+type(
+  string
+)
+ident(
+  int_ref v "src/conf/conf.ml" 151 3907 3945 "src/conf/conf.ml" 151 3907 3946
+)
+"src/conf/conf.ml" 151 3907 3952 "src/conf/conf.ml" 151 3907 3953
+type(
+  string -> string -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/conf/conf.ml" 151 3907 3954 "src/conf/conf.ml" 151 3907 3955
+type(
+  string
+)
+ident(
+  int_ref s "src/conf/conf.ml" 151 3907 3924 "src/conf/conf.ml" 151 3907 3925
+)
+"src/conf/conf.ml" 151 3907 3950 "src/conf/conf.ml" 151 3907 3955
+type(
+  bool
+)
+"src/conf/conf.ml" 151 3907 3938 "src/conf/conf.ml" 151 3907 3956
+type(
+  SM.key -> string -> bool
+)
+"src/conf/conf.ml" 151 3907 3957 "src/conf/conf.ml" 151 3907 3972
+type(
+  string SM.t
+)
+ident(
+  int_ref operator_choice "src/conf/conf.ml" 134 3390 3394 "src/conf/conf.ml" 134 3390 3409
+)
+"src/conf/conf.ml" 151 3907 3928 "src/conf/conf.ml" 151 3907 3972
+call(
+  tail
+)
+type(
+  bool
+)
+"src/conf/conf.ml" 153 3974 3978 "src/conf/conf.ml" 153 3974 3989
+type(
+  unit -> string list
+)
+ident(
+  def get_kw_list "src/conf/conf.ml" 155 4060 4111 "src/conf/conf.ml" 1 0 -1
+)
+"src/conf/conf.ml" 153 3974 3990 "src/conf/conf.ml" 153 3974 3992
+type(
+  unit
+)
+"src/conf/conf.ml" 154 3995 4001 "src/conf/conf.ml" 154 3995 4006
+type(
+  string list
+)
+ident(
+  def kw_ht "src/conf/conf.ml" 155 4060 4062 "src/conf/conf.ml" 155 4060 4111
+)
+"src/conf/conf.ml" 154 3995 4009 "src/conf/conf.ml" 154 3995 4016
+type(
+  (SM.key -> string -> string list -> string list) ->
+  string SM.t -> string list -> string list
+)
+ident(
+  ext_ref SM.fold
+)
+"src/conf/conf.ml" 154 3995 4022 "src/conf/conf.ml" 154 3995 4023
+type(
+  SM.key
+)
+ident(
+  def k "src/conf/conf.ml" 154 3995 4024 "src/conf/conf.ml" 154 3995 4035
+)
+"src/conf/conf.ml" 154 3995 4024 "src/conf/conf.ml" 154 3995 4025
+type(
+  string
+)
+ident(
+  def v "src/conf/conf.ml" 154 3995 4026 "src/conf/conf.ml" 154 3995 4035
+)
+"src/conf/conf.ml" 154 3995 4026 "src/conf/conf.ml" 154 3995 4027
+type(
+  string list
+)
+ident(
+  def l "src/conf/conf.ml" 154 3995 4031 "src/conf/conf.ml" 154 3995 4035
+)
+"src/conf/conf.ml" 154 3995 4031 "src/conf/conf.ml" 154 3995 4032
+type(
+  string
+)
+ident(
+  int_ref v "src/conf/conf.ml" 154 3995 4024 "src/conf/conf.ml" 154 3995 4025
+)
+"src/conf/conf.ml" 154 3995 4034 "src/conf/conf.ml" 154 3995 4035
+type(
+  string list
+)
+ident(
+  int_ref l "src/conf/conf.ml" 154 3995 4026 "src/conf/conf.ml" 154 3995 4027
+)
+"src/conf/conf.ml" 154 3995 4031 "src/conf/conf.ml" 154 3995 4035
+type(
+  string list
+)
+"src/conf/conf.ml" 154 3995 4017 "src/conf/conf.ml" 154 3995 4036
+type(
+  SM.key -> string -> string list -> string list
+)
+"src/conf/conf.ml" 154 3995 4037 "src/conf/conf.ml" 154 3995 4053
+type(
+  string SM.t
+)
+ident(
+  int_ref hole_types_names "src/conf/conf.ml" 124 3128 3132 "src/conf/conf.ml" 124 3128 3148
+)
+"src/conf/conf.ml" 154 3995 4054 "src/conf/conf.ml" 154 3995 4056
+type(
+  string list
+)
+"src/conf/conf.ml" 154 3995 4009 "src/conf/conf.ml" 154 3995 4056
+call(
+  stack
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 155 4060 4062 "src/conf/conf.ml" 155 4060 4069
+type(
+  (SM.key -> string -> string list -> string list) ->
+  string SM.t -> string list -> string list
+)
+ident(
+  ext_ref SM.fold
+)
+"src/conf/conf.ml" 155 4060 4075 "src/conf/conf.ml" 155 4060 4076
+type(
+  SM.key
+)
+ident(
+  def k "src/conf/conf.ml" 155 4060 4077 "src/conf/conf.ml" 155 4060 4088
+)
+"src/conf/conf.ml" 155 4060 4077 "src/conf/conf.ml" 155 4060 4078
+type(
+  string
+)
+ident(
+  def v "src/conf/conf.ml" 155 4060 4079 "src/conf/conf.ml" 155 4060 4088
+)
+"src/conf/conf.ml" 155 4060 4079 "src/conf/conf.ml" 155 4060 4080
+type(
+  string list
+)
+ident(
+  def l "src/conf/conf.ml" 155 4060 4084 "src/conf/conf.ml" 155 4060 4088
+)
+"src/conf/conf.ml" 155 4060 4084 "src/conf/conf.ml" 155 4060 4085
+type(
+  string
+)
+ident(
+  int_ref v "src/conf/conf.ml" 155 4060 4077 "src/conf/conf.ml" 155 4060 4078
+)
+"src/conf/conf.ml" 155 4060 4087 "src/conf/conf.ml" 155 4060 4088
+type(
+  string list
+)
+ident(
+  int_ref l "src/conf/conf.ml" 155 4060 4079 "src/conf/conf.ml" 155 4060 4080
+)
+"src/conf/conf.ml" 155 4060 4084 "src/conf/conf.ml" 155 4060 4088
+type(
+  string list
+)
+"src/conf/conf.ml" 155 4060 4070 "src/conf/conf.ml" 155 4060 4089
+type(
+  SM.key -> string -> string list -> string list
+)
+"src/conf/conf.ml" 155 4060 4090 "src/conf/conf.ml" 155 4060 4105
+type(
+  string SM.t
+)
+ident(
+  int_ref operator_choice "src/conf/conf.ml" 134 3390 3394 "src/conf/conf.ml" 134 3390 3409
+)
+"src/conf/conf.ml" 155 4060 4106 "src/conf/conf.ml" 155 4060 4111
+type(
+  string list
+)
+ident(
+  int_ref kw_ht "src/conf/conf.ml" 154 3995 4001 "src/conf/conf.ml" 154 3995 4006
+)
+"src/conf/conf.ml" 155 4060 4062 "src/conf/conf.ml" 155 4060 4111
+call(
+  tail
+)
+type(
+  string list
+)
+"src/conf/conf.ml" 154 3995 3997 "src/conf/conf.ml" 155 4060 4111
+type(
+  string list
+)

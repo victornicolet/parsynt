@@ -1,0 +1,704 @@
+"src/consynth/SError.ml" 6 44 48 "src/consynth/SError.ml" 6 44 60
+type(
+  bool ref
+)
+ident(
+  def debug_global "src/consynth/SError.ml" 7 72 72 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 6 44 63 "src/consynth/SError.ml" 6 44 66
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/SError.ml" 6 44 67 "src/consynth/SError.ml" 6 44 71
+type(
+  bool
+)
+"src/consynth/SError.ml" 6 44 63 "src/consynth/SError.ml" 6 44 71
+type(
+  bool ref
+)
+"src/consynth/SError.ml" 7 72 76 "src/consynth/SError.ml" 7 72 92
+type(
+  unit -> unit
+)
+ident(
+  def set_debug_global "src/consynth/SError.ml" 8 119 119 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 7 72 93 "src/consynth/SError.ml" 7 72 95
+type(
+  unit
+)
+"src/consynth/SError.ml" 7 72 98 "src/consynth/SError.ml" 7 72 110
+type(
+  bool ref
+)
+ident(
+  int_ref debug_global "src/consynth/SError.ml" 6 44 48 "src/consynth/SError.ml" 6 44 60
+)
+"src/consynth/SError.ml" 7 72 111 "src/consynth/SError.ml" 7 72 113
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/SError.ml" 7 72 114 "src/consynth/SError.ml" 7 72 118
+type(
+  bool
+)
+"src/consynth/SError.ml" 7 72 98 "src/consynth/SError.ml" 7 72 118
+type(
+  unit
+)
+"src/consynth/SError.ml" 8 119 123 "src/consynth/SError.ml" 8 119 141
+type(
+  unit -> unit
+)
+ident(
+  def unset_debug_global "src/consynth/SError.ml" 10 170 170 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 8 119 142 "src/consynth/SError.ml" 8 119 144
+type(
+  unit
+)
+"src/consynth/SError.ml" 8 119 147 "src/consynth/SError.ml" 8 119 159
+type(
+  bool ref
+)
+ident(
+  int_ref debug_global "src/consynth/SError.ml" 6 44 48 "src/consynth/SError.ml" 6 44 60
+)
+"src/consynth/SError.ml" 8 119 160 "src/consynth/SError.ml" 8 119 162
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/SError.ml" 8 119 163 "src/consynth/SError.ml" 8 119 168
+type(
+  bool
+)
+"src/consynth/SError.ml" 8 119 147 "src/consynth/SError.ml" 8 119 168
+type(
+  unit
+)
+"src/consynth/SError.ml" 12 213 217 "src/consynth/SError.ml" 12 213 225
+type(
+  string -> string -> (Format.formatter -> 'a -> unit) -> 'a -> 'b
+)
+ident(
+  def raise_on "src/consynth/SError.ml" 22 447 447 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 12 213 226 "src/consynth/SError.ml" 12 213 237
+type(
+  string
+)
+ident(
+  def except_name "src/consynth/SError.ml" 12 213 238 "src/consynth/SError.ml" 19 399 444
+)
+"src/consynth/SError.ml" 12 213 238 "src/consynth/SError.ml" 12 213 241
+type(
+  string
+)
+ident(
+  def msg "src/consynth/SError.ml" 12 213 242 "src/consynth/SError.ml" 19 399 444
+)
+"src/consynth/SError.ml" 12 213 242 "src/consynth/SError.ml" 12 213 248
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  def pp_obj "src/consynth/SError.ml" 12 213 249 "src/consynth/SError.ml" 19 399 444
+)
+"src/consynth/SError.ml" 12 213 249 "src/consynth/SError.ml" 12 213 252
+type(
+  'a
+)
+ident(
+  def obj "src/consynth/SError.ml" 13 255 257 "src/consynth/SError.ml" 19 399 444
+)
+"src/consynth/SError.ml" 13 255 261 "src/consynth/SError.ml" 13 255 272
+type(
+  string
+)
+ident(
+  def str_message "src/consynth/SError.ml" 18 391 393 "src/consynth/SError.ml" 19 399 444
+)
+"src/consynth/SError.ml" 14 275 279 "src/consynth/SError.ml" 14 275 286
+type(
+  Format.formatter ->
+  (string -> string -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format ->
+  string -> string -> (Format.formatter -> 'a -> unit) -> 'a -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/SError.ml" 14 275 287 "src/consynth/SError.ml" 14 275 300
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.str_formatter
+)
+"src/consynth/SError.ml" 15 301 307 "src/consynth/SError.ml" 15 301 330
+type(
+  (string -> string -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/SError.ml" 15 301 331 "src/consynth/SError.ml" 15 301 334
+type(
+  string
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 12 213 238 "src/consynth/SError.ml" 12 213 241
+)
+"src/consynth/SError.ml" 15 301 335 "src/consynth/SError.ml" 15 301 346
+type(
+  string
+)
+ident(
+  int_ref except_name "src/consynth/SError.ml" 12 213 226 "src/consynth/SError.ml" 12 213 237
+)
+"src/consynth/SError.ml" 15 301 347 "src/consynth/SError.ml" 15 301 353
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  int_ref pp_obj "src/consynth/SError.ml" 12 213 242 "src/consynth/SError.ml" 12 213 248
+)
+"src/consynth/SError.ml" 15 301 354 "src/consynth/SError.ml" 15 301 357
+type(
+  'a
+)
+ident(
+  int_ref obj "src/consynth/SError.ml" 12 213 249 "src/consynth/SError.ml" 12 213 252
+)
+"src/consynth/SError.ml" 14 275 279 "src/consynth/SError.ml" 15 301 357
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/SError.ml" 16 359 363 "src/consynth/SError.ml" 16 359 382
+type(
+  unit -> string
+)
+ident(
+  ext_ref Format.flush_str_formatter
+)
+"src/consynth/SError.ml" 16 359 383 "src/consynth/SError.ml" 16 359 385
+type(
+  unit
+)
+"src/consynth/SError.ml" 16 359 363 "src/consynth/SError.ml" 16 359 385
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/SError.ml" 14 275 279 "src/consynth/SError.ml" 16 359 385
+type(
+  string
+)
+"src/consynth/SError.ml" 18 391 393 "src/consynth/SError.ml" 18 391 398
+type(
+  exn -> 'b
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/SError.ml" 19 399 418 "src/consynth/SError.ml" 19 399 429
+type(
+  string
+)
+ident(
+  int_ref except_name "src/consynth/SError.ml" 12 213 226 "src/consynth/SError.ml" 12 213 237
+)
+"src/consynth/SError.ml" 19 399 431 "src/consynth/SError.ml" 19 399 442
+type(
+  string
+)
+ident(
+  int_ref str_message "src/consynth/SError.ml" 13 255 261 "src/consynth/SError.ml" 13 255 272
+)
+"src/consynth/SError.ml" 19 399 403 "src/consynth/SError.ml" 19 399 444
+type(
+  exn
+)
+"src/consynth/SError.ml" 18 391 393 "src/consynth/SError.ml" 19 399 444
+type(
+  'b
+)
+"src/consynth/SError.ml" 13 255 257 "src/consynth/SError.ml" 19 399 444
+type(
+  'b
+)
+"src/consynth/SError.ml" 22 447 451 "src/consynth/SError.ml" 22 447 472
+type(
+  string -> SketchTypes.skLVar -> 'a
+)
+ident(
+  def exception_on_variable "src/consynth/SError.ml" 25 524 524 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 22 447 473 "src/consynth/SError.ml" 22 447 476
+type(
+  string
+)
+ident(
+  def msg "src/consynth/SError.ml" 22 447 477 "src/consynth/SError.ml" 23 483 522
+)
+"src/consynth/SError.ml" 22 447 477 "src/consynth/SError.ml" 22 447 480
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def var "src/consynth/SError.ml" 23 483 485 "src/consynth/SError.ml" 23 483 522
+)
+"src/consynth/SError.ml" 23 483 485 "src/consynth/SError.ml" 23 483 493
+type(
+  string ->
+  string ->
+  (Format.formatter -> SketchTypes.skLVar -> unit) ->
+  SketchTypes.skLVar -> 'a
+)
+ident(
+  int_ref raise_on "src/consynth/SError.ml" 12 213 217 "src/consynth/SError.ml" 12 213 225
+)
+"src/consynth/SError.ml" 23 483 494 "src/consynth/SError.ml" 23 483 504
+type(
+  string
+)
+"src/consynth/SError.ml" 23 483 505 "src/consynth/SError.ml" 23 483 508
+type(
+  string
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 22 447 473 "src/consynth/SError.ml" 22 447 476
+)
+"src/consynth/SError.ml" 23 483 509 "src/consynth/SError.ml" 23 483 518
+type(
+  Format.formatter -> SketchTypes.skLVar -> unit
+)
+ident(
+  ext_ref SPretty.pp_sklvar
+)
+"src/consynth/SError.ml" 23 483 519 "src/consynth/SError.ml" 23 483 522
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref var "src/consynth/SError.ml" 22 447 477 "src/consynth/SError.ml" 22 447 480
+)
+"src/consynth/SError.ml" 23 483 485 "src/consynth/SError.ml" 23 483 522
+call(
+  tail
+)
+type(
+  'a
+)
+"src/consynth/SError.ml" 25 524 528 "src/consynth/SError.ml" 25 524 551
+type(
+  string -> SketchTypes.skExpr -> 'a
+)
+ident(
+  def exception_on_expression "src/consynth/SError.ml" 28 607 607 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 25 524 552 "src/consynth/SError.ml" 25 524 555
+type(
+  string
+)
+ident(
+  def msg "src/consynth/SError.ml" 25 524 556 "src/consynth/SError.ml" 26 563 605
+)
+"src/consynth/SError.ml" 25 524 556 "src/consynth/SError.ml" 25 524 560
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def expr "src/consynth/SError.ml" 26 563 565 "src/consynth/SError.ml" 26 563 605
+)
+"src/consynth/SError.ml" 26 563 565 "src/consynth/SError.ml" 26 563 573
+type(
+  string ->
+  string ->
+  (Format.formatter -> SketchTypes.skExpr -> unit) ->
+  SketchTypes.skExpr -> 'a
+)
+ident(
+  int_ref raise_on "src/consynth/SError.ml" 12 213 217 "src/consynth/SError.ml" 12 213 225
+)
+"src/consynth/SError.ml" 26 563 574 "src/consynth/SError.ml" 26 563 586
+type(
+  string
+)
+"src/consynth/SError.ml" 26 563 587 "src/consynth/SError.ml" 26 563 590
+type(
+  string
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 25 524 552 "src/consynth/SError.ml" 25 524 555
+)
+"src/consynth/SError.ml" 26 563 591 "src/consynth/SError.ml" 26 563 600
+type(
+  Format.formatter -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref SPretty.pp_skexpr
+)
+"src/consynth/SError.ml" 26 563 601 "src/consynth/SError.ml" 26 563 605
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref expr "src/consynth/SError.ml" 25 524 556 "src/consynth/SError.ml" 25 524 560
+)
+"src/consynth/SError.ml" 26 563 565 "src/consynth/SError.ml" 26 563 605
+call(
+  tail
+)
+type(
+  'a
+)
+"src/consynth/SError.ml" 28 607 611 "src/consynth/SError.ml" 28 607 632
+type(
+  string -> SketchTypes.sklet -> 'a
+)
+ident(
+  def exception_on_function "src/consynth/SError.ml" 32 689 689 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 28 607 633 "src/consynth/SError.ml" 28 607 636
+type(
+  string
+)
+ident(
+  def msg "src/consynth/SError.ml" 28 607 637 "src/consynth/SError.ml" 29 646 686
+)
+"src/consynth/SError.ml" 28 607 637 "src/consynth/SError.ml" 28 607 642
+type(
+  SketchTypes.sklet
+)
+ident(
+  def sklet "src/consynth/SError.ml" 29 646 648 "src/consynth/SError.ml" 29 646 686
+)
+"src/consynth/SError.ml" 29 646 648 "src/consynth/SError.ml" 29 646 656
+type(
+  string ->
+  string ->
+  (Format.formatter -> SketchTypes.sklet -> unit) -> SketchTypes.sklet -> 'a
+)
+ident(
+  int_ref raise_on "src/consynth/SError.ml" 12 213 217 "src/consynth/SError.ml" 12 213 225
+)
+"src/consynth/SError.ml" 29 646 657 "src/consynth/SError.ml" 29 646 667
+type(
+  string
+)
+"src/consynth/SError.ml" 29 646 668 "src/consynth/SError.ml" 29 646 671
+type(
+  string
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 28 607 633 "src/consynth/SError.ml" 28 607 636
+)
+"src/consynth/SError.ml" 29 646 672 "src/consynth/SError.ml" 29 646 680
+type(
+  Format.formatter -> SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref SPretty.pp_sklet
+)
+"src/consynth/SError.ml" 29 646 681 "src/consynth/SError.ml" 29 646 686
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref sklet "src/consynth/SError.ml" 28 607 637 "src/consynth/SError.ml" 28 607 642
+)
+"src/consynth/SError.ml" 29 646 648 "src/consynth/SError.ml" 29 646 686
+call(
+  tail
+)
+type(
+  'a
+)
+"src/consynth/SError.ml" 34 720 724 "src/consynth/SError.ml" 34 720 732
+type(
+  string -> 'a
+)
+ident(
+  def skip_exn "src/consynth/SError.ml" 37 764 764 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 34 720 733 "src/consynth/SError.ml" 34 720 736
+type(
+  string
+)
+ident(
+  def msg "src/consynth/SError.ml" 35 739 741 "src/consynth/SError.ml" 35 739 762
+)
+"src/consynth/SError.ml" 35 739 741 "src/consynth/SError.ml" 35 739 746
+type(
+  exn -> 'a
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/SError.ml" 35 739 758 "src/consynth/SError.ml" 35 739 761
+type(
+  string
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 34 720 733 "src/consynth/SError.ml" 34 720 736
+)
+"src/consynth/SError.ml" 35 739 747 "src/consynth/SError.ml" 35 739 762
+type(
+  exn
+)
+"src/consynth/SError.ml" 35 739 741 "src/consynth/SError.ml" 35 739 762
+type(
+  'a
+)
+"src/consynth/SError.ml" 39 807 811 "src/consynth/SError.ml" 39 807 837
+type(
+  string -> 'a
+)
+ident(
+  def fail_functional_conversion "src/consynth/SError.ml" 42 881 881 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 39 807 838 "src/consynth/SError.ml" 39 807 841
+type(
+  string
+)
+ident(
+  def str "src/consynth/SError.ml" 40 844 846 "src/consynth/SError.ml" 40 844 879
+)
+"src/consynth/SError.ml" 40 844 846 "src/consynth/SError.ml" 40 844 851
+type(
+  exn -> 'a
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/SError.ml" 40 844 875 "src/consynth/SError.ml" 40 844 878
+type(
+  string
+)
+ident(
+  int_ref str "src/consynth/SError.ml" 39 807 838 "src/consynth/SError.ml" 39 807 841
+)
+"src/consynth/SError.ml" 40 844 852 "src/consynth/SError.ml" 40 844 879
+type(
+  exn
+)
+"src/consynth/SError.ml" 40 844 846 "src/consynth/SError.ml" 40 844 879
+type(
+  'a
+)
+"src/consynth/SError.ml" 44 920 924 "src/consynth/SError.ml" 44 920 946
+type(
+  string -> 'a
+)
+ident(
+  def fail_sketch_generation "src/consynth/SError.ml" 48 1024 1024 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 44 920 947 "src/consynth/SError.ml" 44 920 950
+type(
+  string
+)
+ident(
+  def str "src/consynth/SError.ml" 45 953 955 "src/consynth/SError.ml" 45 953 984
+)
+"src/consynth/SError.ml" 45 953 955 "src/consynth/SError.ml" 45 953 960
+type(
+  exn -> 'a
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/SError.ml" 45 953 980 "src/consynth/SError.ml" 45 953 983
+type(
+  string
+)
+ident(
+  int_ref str "src/consynth/SError.ml" 44 920 947 "src/consynth/SError.ml" 44 920 950
+)
+"src/consynth/SError.ml" 45 953 961 "src/consynth/SError.ml" 45 953 984
+type(
+  exn
+)
+"src/consynth/SError.ml" 45 953 955 "src/consynth/SError.ml" 45 953 984
+type(
+  'a
+)
+"src/consynth/SError.ml" 48 1024 1028 "src/consynth/SError.ml" 48 1024 1035
+type(
+  string ref
+)
+ident(
+  def logfile "src/consynth/SError.ml" 50 1049 1049 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 48 1024 1038 "src/consynth/SError.ml" 48 1024 1041
+type(
+  string -> string ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/SError.ml" 48 1024 1042 "src/consynth/SError.ml" 48 1024 1047
+type(
+  string
+)
+"src/consynth/SError.ml" 48 1024 1038 "src/consynth/SError.ml" 48 1024 1047
+type(
+  string ref
+)
+"src/consynth/SError.ml" 50 1049 1053 "src/consynth/SError.ml" 50 1049 1057
+type(
+  ('a, Format.formatter, unit) format -> unit
+)
+ident(
+  def elog "src/consynth/SError.ml" 54 1158 1172 "src/consynth/SError.ml" 1 0 -1
+)
+"src/consynth/SError.ml" 50 1049 1058 "src/consynth/SError.ml" 50 1049 1061
+type(
+  ('a, Format.formatter, unit) format
+)
+ident(
+  def msg "src/consynth/SError.ml" 51 1064 1066 "src/consynth/SError.ml" 54 1158 1172
+)
+"src/consynth/SError.ml" 51 1064 1070 "src/consynth/SError.ml" 51 1064 1072
+type(
+  out_channel
+)
+ident(
+  def oc "src/consynth/SError.ml" 52 1096 1098 "src/consynth/SError.ml" 54 1158 1172
+)
+"src/consynth/SError.ml" 51 1064 1075 "src/consynth/SError.ml" 51 1064 1083
+type(
+  string -> out_channel
+)
+ident(
+  ext_ref Pervasives.open_out
+)
+"src/consynth/SError.ml" 51 1064 1084 "src/consynth/SError.ml" 51 1064 1085
+type(
+  string ref -> string
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/SError.ml" 51 1064 1085 "src/consynth/SError.ml" 51 1064 1092
+type(
+  string ref
+)
+ident(
+  int_ref logfile "src/consynth/SError.ml" 48 1024 1028 "src/consynth/SError.ml" 48 1024 1035
+)
+"src/consynth/SError.ml" 51 1064 1084 "src/consynth/SError.ml" 51 1064 1092
+type(
+  string
+)
+"src/consynth/SError.ml" 51 1064 1075 "src/consynth/SError.ml" 51 1064 1092
+call(
+  stack
+)
+type(
+  out_channel
+)
+"src/consynth/SError.ml" 52 1096 1102 "src/consynth/SError.ml" 52 1096 1105
+type(
+  Format.formatter
+)
+ident(
+  def foc "src/consynth/SError.ml" 53 1139 1141 "src/consynth/SError.ml" 54 1158 1172
+)
+"src/consynth/SError.ml" 52 1096 1108 "src/consynth/SError.ml" 52 1096 1132
+type(
+  out_channel -> Format.formatter
+)
+ident(
+  ext_ref Format.formatter_of_out_channel
+)
+"src/consynth/SError.ml" 52 1096 1133 "src/consynth/SError.ml" 52 1096 1135
+type(
+  out_channel
+)
+ident(
+  int_ref oc "src/consynth/SError.ml" 51 1064 1070 "src/consynth/SError.ml" 51 1064 1072
+)
+"src/consynth/SError.ml" 52 1096 1108 "src/consynth/SError.ml" 52 1096 1135
+call(
+  stack
+)
+type(
+  Format.formatter
+)
+"src/consynth/SError.ml" 53 1139 1141 "src/consynth/SError.ml" 53 1139 1148
+type(
+  Format.formatter -> ('a, Format.formatter, unit) format -> 'a
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/SError.ml" 53 1139 1149 "src/consynth/SError.ml" 53 1139 1152
+type(
+  Format.formatter
+)
+ident(
+  int_ref foc "src/consynth/SError.ml" 52 1096 1102 "src/consynth/SError.ml" 52 1096 1105
+)
+"src/consynth/SError.ml" 53 1139 1153 "src/consynth/SError.ml" 53 1139 1156
+type(
+  ('a, Format.formatter, unit) format
+)
+ident(
+  int_ref msg "src/consynth/SError.ml" 50 1049 1058 "src/consynth/SError.ml" 50 1049 1061
+)
+"src/consynth/SError.ml" 53 1139 1141 "src/consynth/SError.ml" 53 1139 1156
+call(
+  stack
+)
+type(
+  'a
+)
+"src/consynth/SError.ml" 54 1158 1160 "src/consynth/SError.ml" 54 1158 1169
+type(
+  out_channel -> unit
+)
+ident(
+  ext_ref Pervasives.close_out
+)
+"src/consynth/SError.ml" 54 1158 1170 "src/consynth/SError.ml" 54 1158 1172
+type(
+  out_channel
+)
+ident(
+  int_ref oc "src/consynth/SError.ml" 51 1064 1070 "src/consynth/SError.ml" 51 1064 1072
+)
+"src/consynth/SError.ml" 54 1158 1160 "src/consynth/SError.ml" 54 1158 1172
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/SError.ml" 53 1139 1141 "src/consynth/SError.ml" 54 1158 1172
+type(
+  unit
+)
+"src/consynth/SError.ml" 52 1096 1098 "src/consynth/SError.ml" 54 1158 1172
+type(
+  unit
+)
+"src/consynth/SError.ml" 51 1064 1066 "src/consynth/SError.ml" 54 1158 1172
+type(
+  unit
+)

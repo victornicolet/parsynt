@@ -1,0 +1,84 @@
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Name: ConSynth
+Version: 0.1
+Synopsis: Parallel program synthesis.
+Authors: Victor Nicolet
+License: LGPL with OCaml linking exception
+
+Description: A library that synthesizes parallel C programs from sequential specifications.
+Homepage: https://github.com/victornicolet/consynth
+
+AlphaFeatures: ocamlbuild_more_args
+XOCamlbuildExtraArgs: "-tag thread -use-menhir"
+PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
+PreUninstallCommand: $ocamlfind remove ppx_getenv
+PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
+
+Library conf
+  Path: src/conf
+  CompiledObject: best
+  Modules: Conf
+  BuildTools : ocamlbuild
+  Install : false
+
+Library rosetteInterface
+  Path: src/rosetteInterface
+  BuildDepends: conf, extlib
+  CompiledObject: best
+  Modules: Local
+  BuildTools : ocamlbuild
+  Install : false
+
+Library consynth
+  Path: src/consynth
+  Modules: Consynth
+  CompiledObject: best
+  BuildDepends: cil, rosetteInterface, extlib, Z3, conf
+
+Library codegen
+  Path: src/codegen
+  Modules: Codegen
+  CompiledObject: best
+  BuildDepends: consynth, cil, rosetteInterface, extlib, Z3, conf
+
+Executable test_main
+  Path: test
+  MainIs: Main.ml
+  CompiledObject: best
+  Install: false
+  BuildDepends: cil, getopt, rosetteInterface, Z3, consynth, conf, codegen
+
+
+Executable examples
+  Path: test
+  MainIs: Examples.ml
+  CompiledObject: best
+  Install: false
+  BuildDepends: cil, consynth, rosetteInterface, getopt, Z3
+
+Executable test_scheme_parsing
+  Path: test
+  MainIs : TestSchemeParsing.ml
+  Compiledobject: best
+  Install : false
+  BuildDepends: cil, consynth, rosetteInterface
+
+Executable Parsy
+  Path: ./
+  MainIs: Parsy.ml
+  CompiledObject: best
+  Install: false
+  Build: true
+  BuildDepends: consynth, getopt, codegen
+
+Document consynth
+ Title: Consynth Library Doc
+ Authors: Victor Nicolet
+ Type: ocamlbuild (0.4)
+ BuildTools: ocamldoc
+ XOcamlBuildLibraries : consynth
+ XOCamlbuildPath: src
+ XOCamlbuildExtraArgs: "-docflags '-html -all-params -colorize-code -short-functors -charset utf-8' -tag thread"

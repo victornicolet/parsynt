@@ -1,0 +1,1591 @@
+"src/consynth/PpHelper.ml" 6 37 41 "src/consynth/PpHelper.ml" 6 37 52
+type(
+  string
+)
+ident(
+  def colorPrefix "src/consynth/PpHelper.ml" 8 63 63 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 6 37 55 "src/consynth/PpHelper.ml" 6 37 61
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 8 63 67 "src/consynth/PpHelper.ml" 8 63 75
+type(
+  string Utils.SM.t
+)
+ident(
+  def colormap "src/consynth/PpHelper.ml" 19 526 526 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 9 78 80 "src/consynth/PpHelper.ml" 9 78 95
+type(
+  (string Utils.SM.t -> Utils.SM.key -> string -> string Utils.SM.t) ->
+  string Utils.SM.t -> Utils.SM.key list -> string list -> string Utils.SM.t
+)
+ident(
+  ext_ref List.fold_left2
+)
+"src/consynth/PpHelper.ml" 10 96 105 "src/consynth/PpHelper.ml" 10 96 106
+type(
+  string Utils.SM.t
+)
+ident(
+  def m "src/consynth/PpHelper.ml" 10 96 107 "src/consynth/PpHelper.ml" 10 96 140
+)
+"src/consynth/PpHelper.ml" 10 96 107 "src/consynth/PpHelper.ml" 10 96 108
+type(
+  Utils.SM.key
+)
+ident(
+  def k "src/consynth/PpHelper.ml" 10 96 109 "src/consynth/PpHelper.ml" 10 96 140
+)
+"src/consynth/PpHelper.ml" 10 96 109 "src/consynth/PpHelper.ml" 10 96 110
+type(
+  string
+)
+ident(
+  def v "src/consynth/PpHelper.ml" 10 96 114 "src/consynth/PpHelper.ml" 10 96 140
+)
+"src/consynth/PpHelper.ml" 10 96 114 "src/consynth/PpHelper.ml" 10 96 120
+type(
+  Utils.SM.key -> string -> string Utils.SM.t -> string Utils.SM.t
+)
+ident(
+  ext_ref Utils.SM.add
+)
+"src/consynth/PpHelper.ml" 10 96 121 "src/consynth/PpHelper.ml" 10 96 122
+type(
+  Utils.SM.key
+)
+ident(
+  int_ref k "src/consynth/PpHelper.ml" 10 96 107 "src/consynth/PpHelper.ml" 10 96 108
+)
+"src/consynth/PpHelper.ml" 10 96 124 "src/consynth/PpHelper.ml" 10 96 135
+type(
+  string
+)
+ident(
+  int_ref colorPrefix "src/consynth/PpHelper.ml" 6 37 41 "src/consynth/PpHelper.ml" 6 37 52
+)
+"src/consynth/PpHelper.ml" 10 96 135 "src/consynth/PpHelper.ml" 10 96 136
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/PpHelper.ml" 10 96 136 "src/consynth/PpHelper.ml" 10 96 137
+type(
+  string
+)
+ident(
+  int_ref v "src/consynth/PpHelper.ml" 10 96 109 "src/consynth/PpHelper.ml" 10 96 110
+)
+"src/consynth/PpHelper.ml" 10 96 123 "src/consynth/PpHelper.ml" 10 96 138
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 10 96 139 "src/consynth/PpHelper.ml" 10 96 140
+type(
+  string Utils.SM.t
+)
+ident(
+  int_ref m "src/consynth/PpHelper.ml" 10 96 105 "src/consynth/PpHelper.ml" 10 96 106
+)
+"src/consynth/PpHelper.ml" 10 96 114 "src/consynth/PpHelper.ml" 10 96 140
+call(
+  tail
+)
+type(
+  string Utils.SM.t
+)
+"src/consynth/PpHelper.ml" 10 96 100 "src/consynth/PpHelper.ml" 10 96 141
+type(
+  string Utils.SM.t -> Utils.SM.key -> string -> string Utils.SM.t
+)
+"src/consynth/PpHelper.ml" 11 142 146 "src/consynth/PpHelper.ml" 11 142 154
+type(
+  string Utils.SM.t
+)
+ident(
+  ext_ref Utils.SM.empty
+)
+"src/consynth/PpHelper.ml" 12 155 160 "src/consynth/PpHelper.ml" 12 155 167
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 169 "src/consynth/PpHelper.ml" 12 155 174
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 176 "src/consynth/PpHelper.ml" 12 155 183
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 185 "src/consynth/PpHelper.ml" 12 155 193
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 195 "src/consynth/PpHelper.ml" 12 155 201
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 203 "src/consynth/PpHelper.ml" 12 155 211
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 213 "src/consynth/PpHelper.ml" 12 155 219
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 221 "src/consynth/PpHelper.ml" 12 155 228
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 13 230 235 "src/consynth/PpHelper.ml" 13 230 238
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 13 230 240 "src/consynth/PpHelper.ml" 13 230 243
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 13 230 245 "src/consynth/PpHelper.ml" 13 230 248
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 13 230 250 "src/consynth/PpHelper.ml" 13 230 256
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 263 "src/consynth/PpHelper.ml" 14 258 271
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 273 "src/consynth/PpHelper.ml" 14 258 280
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 282 "src/consynth/PpHelper.ml" 14 258 291
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 293 "src/consynth/PpHelper.ml" 14 258 303
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 304 "src/consynth/PpHelper.ml" 14 258 312
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 314 "src/consynth/PpHelper.ml" 14 258 324
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 326 "src/consynth/PpHelper.ml" 14 258 334
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 14 258 336 "src/consynth/PpHelper.ml" 14 258 345
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 12 155 159 "src/consynth/PpHelper.ml" 14 258 346
+type(
+  Utils.SM.key list
+)
+"src/consynth/PpHelper.ml" 15 347 352 "src/consynth/PpHelper.ml" 15 347 358
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 360 "src/consynth/PpHelper.ml" 15 347 366
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 368 "src/consynth/PpHelper.ml" 15 347 374
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 376 "src/consynth/PpHelper.ml" 15 347 382
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 384 "src/consynth/PpHelper.ml" 15 347 390
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 392 "src/consynth/PpHelper.ml" 15 347 398
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 400 "src/consynth/PpHelper.ml" 15 347 406
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 408 "src/consynth/PpHelper.ml" 15 347 414
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 16 416 421 "src/consynth/PpHelper.ml" 16 416 426
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 16 416 428 "src/consynth/PpHelper.ml" 16 416 433
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 16 416 435 "src/consynth/PpHelper.ml" 16 416 440
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 16 416 442 "src/consynth/PpHelper.ml" 16 416 447
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 454 "src/consynth/PpHelper.ml" 17 449 461
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 463 "src/consynth/PpHelper.ml" 17 449 470
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 472 "src/consynth/PpHelper.ml" 17 449 479
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 481 "src/consynth/PpHelper.ml" 17 449 488
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 489 "src/consynth/PpHelper.ml" 17 449 496
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 498 "src/consynth/PpHelper.ml" 17 449 505
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 507 "src/consynth/PpHelper.ml" 17 449 514
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 17 449 516 "src/consynth/PpHelper.ml" 17 449 523
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 15 347 351 "src/consynth/PpHelper.ml" 17 449 524
+type(
+  string list
+)
+"src/consynth/PpHelper.ml" 9 78 80 "src/consynth/PpHelper.ml" 17 449 524
+call(
+  stack
+)
+type(
+  string Utils.SM.t
+)
+"src/consynth/PpHelper.ml" 19 526 530 "src/consynth/PpHelper.ml" 19 526 535
+type(
+  Utils.SM.key -> string
+)
+ident(
+  def color "src/consynth/PpHelper.ml" 24 616 616 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 19 526 536 "src/consynth/PpHelper.ml" 19 526 541
+type(
+  Utils.SM.key
+)
+ident(
+  def cname "src/consynth/PpHelper.ml" 20 544 546 "src/consynth/PpHelper.ml" 22 577 614
+)
+"src/consynth/PpHelper.ml" 21 550 554 "src/consynth/PpHelper.ml" 21 550 561
+type(
+  Utils.SM.key -> string Utils.SM.t -> string
+)
+ident(
+  ext_ref Utils.SM.find
+)
+"src/consynth/PpHelper.ml" 21 550 562 "src/consynth/PpHelper.ml" 21 550 567
+type(
+  Utils.SM.key
+)
+ident(
+  int_ref cname "src/consynth/PpHelper.ml" 19 526 536 "src/consynth/PpHelper.ml" 19 526 541
+)
+"src/consynth/PpHelper.ml" 21 550 568 "src/consynth/PpHelper.ml" 21 550 576
+type(
+  string Utils.SM.t
+)
+ident(
+  int_ref colormap "src/consynth/PpHelper.ml" 8 63 67 "src/consynth/PpHelper.ml" 8 63 75
+)
+"src/consynth/PpHelper.ml" 21 550 554 "src/consynth/PpHelper.ml" 21 550 576
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 22 577 584 "src/consynth/PpHelper.ml" 22 577 593
+type(
+  exn
+)
+"src/consynth/PpHelper.ml" 22 577 597 "src/consynth/PpHelper.ml" 22 577 608
+type(
+  string
+)
+ident(
+  int_ref colorPrefix "src/consynth/PpHelper.ml" 6 37 41 "src/consynth/PpHelper.ml" 6 37 52
+)
+"src/consynth/PpHelper.ml" 22 577 608 "src/consynth/PpHelper.ml" 22 577 609
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/PpHelper.ml" 22 577 609 "src/consynth/PpHelper.ml" 22 577 614
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 22 577 597 "src/consynth/PpHelper.ml" 22 577 614
+call(
+  tail
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 20 544 546 "src/consynth/PpHelper.ml" 22 577 614
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 24 616 620 "src/consynth/PpHelper.ml" 24 616 627
+type(
+  string
+)
+ident(
+  def default "src/consynth/PpHelper.ml" 26 649 649 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 24 616 630 "src/consynth/PpHelper.ml" 24 616 641
+type(
+  string
+)
+ident(
+  int_ref colorPrefix "src/consynth/PpHelper.ml" 6 37 41 "src/consynth/PpHelper.ml" 6 37 52
+)
+"src/consynth/PpHelper.ml" 24 616 641 "src/consynth/PpHelper.ml" 24 616 642
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/PpHelper.ml" 24 616 642 "src/consynth/PpHelper.ml" 24 616 647
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 24 616 630 "src/consynth/PpHelper.ml" 24 616 647
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 26 649 653 "src/consynth/PpHelper.ml" 26 649 669
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def pp_force_newline "src/consynth/PpHelper.ml" 30 719 719 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 26 649 670 "src/consynth/PpHelper.ml" 26 649 673
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 26 649 674 "src/consynth/PpHelper.ml" 26 649 695
+)
+"src/consynth/PpHelper.ml" 26 649 674 "src/consynth/PpHelper.ml" 26 649 676
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 26 649 679 "src/consynth/PpHelper.ml" 26 649 686
+type(
+  Format.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 26 649 687 "src/consynth/PpHelper.ml" 26 649 690
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 26 649 670 "src/consynth/PpHelper.ml" 26 649 673
+)
+"src/consynth/PpHelper.ml" 26 649 691 "src/consynth/PpHelper.ml" 26 649 695
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/consynth/PpHelper.ml" 26 649 679 "src/consynth/PpHelper.ml" 26 649 695
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 30 719 727 "src/consynth/PpHelper.ml" 30 719 731
+type(
+  Format.formatter ->
+  ?sep:string -> (Format.formatter -> 'a -> unit) -> 'a list -> unit
+)
+ident(
+  def ppli "src/consynth/PpHelper.ml" 30 719 719 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 31 732 737 "src/consynth/PpHelper.ml" 31 732 740
+type(
+  Format.formatter
+)
+ident(
+  def ppf "src/consynth/PpHelper.ml" 32 754 758 "src/consynth/PpHelper.ml" 34 828 897
+)
+"src/consynth/PpHelper.ml" 32 754 760 "src/consynth/PpHelper.ml" 32 754 763
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 32 754 766 "src/consynth/PpHelper.ml" 32 754 769
+type(
+  string
+)
+type(
+  string
+)
+ident(
+  int_ref *sth* "src/consynth/PpHelper.ml" 32 754 766 "src/consynth/PpHelper.ml" 32 754 769
+)
+type(
+  string option
+)
+type(
+  string option
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 33 771 776 "src/consynth/PpHelper.ml" 33 771 780
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  def pfun "src/consynth/PpHelper.ml" 33 771 808 "src/consynth/PpHelper.ml" 34 828 897
+)
+"src/consynth/PpHelper.ml" 34 828 830 "src/consynth/PpHelper.ml" 34 828 843
+type(
+  ?pp_sep:(Format.formatter -> unit -> unit) ->
+  (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a list -> unit
+)
+ident(
+  ext_ref Format.pp_print_list
+)
+"src/consynth/PpHelper.ml" 34 828 857 "src/consynth/PpHelper.ml" 34 828 860
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 34 828 861 "src/consynth/PpHelper.ml" 34 828 887
+)
+"src/consynth/PpHelper.ml" 34 828 861 "src/consynth/PpHelper.ml" 34 828 863
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 34 828 867 "src/consynth/PpHelper.ml" 34 828 874
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 34 828 875 "src/consynth/PpHelper.ml" 34 828 878
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 34 828 857 "src/consynth/PpHelper.ml" 34 828 860
+)
+"src/consynth/PpHelper.ml" 34 828 879 "src/consynth/PpHelper.ml" 34 828 883
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/consynth/PpHelper.ml" 34 828 884 "src/consynth/PpHelper.ml" 34 828 887
+type(
+  string
+)
+ident(
+  int_ref sep "src/consynth/PpHelper.ml" 32 754 760 "src/consynth/PpHelper.ml" 32 754 763
+)
+"src/consynth/PpHelper.ml" 34 828 867 "src/consynth/PpHelper.ml" 34 828 887
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 34 828 852 "src/consynth/PpHelper.ml" 34 828 888
+type(
+  Format.formatter -> unit -> unit
+)
+"src/consynth/PpHelper.ml" 34 828 889 "src/consynth/PpHelper.ml" 34 828 893
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  int_ref pfun "src/consynth/PpHelper.ml" 33 771 776 "src/consynth/PpHelper.ml" 33 771 780
+)
+"src/consynth/PpHelper.ml" 34 828 894 "src/consynth/PpHelper.ml" 34 828 897
+type(
+  Format.formatter
+)
+ident(
+  int_ref ppf "src/consynth/PpHelper.ml" 31 732 737 "src/consynth/PpHelper.ml" 31 732 740
+)
+"src/consynth/PpHelper.ml" 34 828 830 "src/consynth/PpHelper.ml" 34 828 897
+call(
+  tail
+)
+type(
+  'a list -> unit
+)
+type(
+  'a list -> unit
+)
+"src/consynth/PpHelper.ml" 36 899 903 "src/consynth/PpHelper.ml" 36 899 914
+type(
+  Format.formatter -> int list -> unit
+)
+ident(
+  def pp_int_list "src/consynth/PpHelper.ml" 41 984 984 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 36 899 915 "src/consynth/PpHelper.ml" 36 899 918
+type(
+  Format.formatter
+)
+ident(
+  def ppf "src/consynth/PpHelper.ml" 37 921 923 "src/consynth/PpHelper.ml" 39 945 982
+)
+"src/consynth/PpHelper.ml" 37 921 923 "src/consynth/PpHelper.ml" 37 921 927
+type(
+  Format.formatter ->
+  ?sep:string -> (Format.formatter -> int -> unit) -> int list -> unit
+)
+ident(
+  int_ref ppli "src/consynth/PpHelper.ml" 30 719 727 "src/consynth/PpHelper.ml" 30 719 731
+)
+"src/consynth/PpHelper.ml" 37 921 928 "src/consynth/PpHelper.ml" 37 921 931
+type(
+  Format.formatter
+)
+ident(
+  int_ref ppf "src/consynth/PpHelper.ml" 36 899 915 "src/consynth/PpHelper.ml" 36 899 918
+)
+"src/consynth/PpHelper.ml" 38 932 941 "src/consynth/PpHelper.ml" 38 932 944
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 39 945 954 "src/consynth/PpHelper.ml" 39 945 957
+type(
+  Format.formatter
+)
+ident(
+  def ppf "src/consynth/PpHelper.ml" 39 945 958 "src/consynth/PpHelper.ml" 39 945 981
+)
+"src/consynth/PpHelper.ml" 39 945 958 "src/consynth/PpHelper.ml" 39 945 959
+type(
+  int
+)
+ident(
+  def i "src/consynth/PpHelper.ml" 39 945 963 "src/consynth/PpHelper.ml" 39 945 981
+)
+"src/consynth/PpHelper.ml" 39 945 963 "src/consynth/PpHelper.ml" 39 945 970
+type(
+  Format.formatter ->
+  (int -> unit, Format.formatter, unit) format -> int -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 39 945 971 "src/consynth/PpHelper.ml" 39 945 974
+type(
+  Format.formatter
+)
+ident(
+  int_ref ppf "src/consynth/PpHelper.ml" 39 945 954 "src/consynth/PpHelper.ml" 39 945 957
+)
+"src/consynth/PpHelper.ml" 39 945 975 "src/consynth/PpHelper.ml" 39 945 979
+type(
+  (int -> unit, Format.formatter, unit) format
+)
+"src/consynth/PpHelper.ml" 39 945 980 "src/consynth/PpHelper.ml" 39 945 981
+type(
+  int
+)
+ident(
+  int_ref i "src/consynth/PpHelper.ml" 39 945 958 "src/consynth/PpHelper.ml" 39 945 959
+)
+"src/consynth/PpHelper.ml" 39 945 963 "src/consynth/PpHelper.ml" 39 945 981
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 39 945 949 "src/consynth/PpHelper.ml" 39 945 982
+type(
+  Format.formatter -> int -> unit
+)
+"src/consynth/PpHelper.ml" 37 921 923 "src/consynth/PpHelper.ml" 39 945 982
+call(
+  tail
+)
+type(
+  int list -> unit
+)
+"src/consynth/PpHelper.ml" 41 984 988 "src/consynth/PpHelper.ml" 41 984 1002
+type(
+  int list -> unit
+)
+ident(
+  def print_int_list "src/consynth/PpHelper.ml" 43 1032 1032 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 41 984 1005 "src/consynth/PpHelper.ml" 41 984 1016
+type(
+  Format.formatter -> int list -> unit
+)
+ident(
+  int_ref pp_int_list "src/consynth/PpHelper.ml" 36 899 903 "src/consynth/PpHelper.ml" 36 899 914
+)
+"src/consynth/PpHelper.ml" 41 984 1017 "src/consynth/PpHelper.ml" 41 984 1030
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.std_formatter
+)
+"src/consynth/PpHelper.ml" 41 984 1005 "src/consynth/PpHelper.ml" 41 984 1030
+call(
+  stack
+)
+type(
+  int list -> unit
+)
+"src/consynth/PpHelper.ml" 43 1032 1036 "src/consynth/PpHelper.ml" 43 1032 1050
+type(
+  Format.formatter -> string list -> unit
+)
+ident(
+  def pp_string_list "src/consynth/PpHelper.ml" 47 1132 1132 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 43 1032 1051 "src/consynth/PpHelper.ml" 43 1032 1054
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 44 1057 1059 "src/consynth/PpHelper.ml" 44 1057 1110
+)
+"src/consynth/PpHelper.ml" 44 1057 1059 "src/consynth/PpHelper.ml" 44 1057 1063
+type(
+  Format.formatter ->
+  ?sep:string -> (Format.formatter -> string -> unit) -> string list -> unit
+)
+ident(
+  int_ref ppli "src/consynth/PpHelper.ml" 30 719 727 "src/consynth/PpHelper.ml" 30 719 731
+)
+"src/consynth/PpHelper.ml" 44 1057 1064 "src/consynth/PpHelper.ml" 44 1057 1067
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 43 1032 1051 "src/consynth/PpHelper.ml" 43 1032 1054
+)
+"src/consynth/PpHelper.ml" 44 1057 1073 "src/consynth/PpHelper.ml" 44 1057 1076
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 44 1057 1082 "src/consynth/PpHelper.ml" 44 1057 1085
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 44 1057 1086 "src/consynth/PpHelper.ml" 44 1057 1109
+)
+"src/consynth/PpHelper.ml" 44 1057 1086 "src/consynth/PpHelper.ml" 44 1057 1087
+type(
+  string
+)
+ident(
+  def s "src/consynth/PpHelper.ml" 44 1057 1091 "src/consynth/PpHelper.ml" 44 1057 1109
+)
+"src/consynth/PpHelper.ml" 44 1057 1091 "src/consynth/PpHelper.ml" 44 1057 1098
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 44 1057 1099 "src/consynth/PpHelper.ml" 44 1057 1102
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 44 1057 1082 "src/consynth/PpHelper.ml" 44 1057 1085
+)
+"src/consynth/PpHelper.ml" 44 1057 1103 "src/consynth/PpHelper.ml" 44 1057 1107
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/consynth/PpHelper.ml" 44 1057 1108 "src/consynth/PpHelper.ml" 44 1057 1109
+type(
+  string
+)
+ident(
+  int_ref s "src/consynth/PpHelper.ml" 44 1057 1086 "src/consynth/PpHelper.ml" 44 1057 1087
+)
+"src/consynth/PpHelper.ml" 44 1057 1091 "src/consynth/PpHelper.ml" 44 1057 1109
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 44 1057 1077 "src/consynth/PpHelper.ml" 44 1057 1110
+type(
+  Format.formatter -> string -> unit
+)
+"src/consynth/PpHelper.ml" 44 1057 1059 "src/consynth/PpHelper.ml" 44 1057 1110
+call(
+  tail
+)
+type(
+  string list -> unit
+)
+"src/consynth/PpHelper.ml" 47 1132 1136 "src/consynth/PpHelper.ml" 47 1132 1142
+type(
+  (Format.formatter -> 'a -> unit) ->
+  Format.formatter -> 'a Utils.IM.t -> unit
+)
+ident(
+  def ppimap "src/consynth/PpHelper.ml" 54 1302 1302 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 48 1143 1148 "src/consynth/PpHelper.ml" 48 1143 1152
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  def pelt "src/consynth/PpHelper.ml" 49 1180 1184 "src/consynth/PpHelper.ml" 52 1248 1300
+)
+"src/consynth/PpHelper.ml" 49 1180 1185 "src/consynth/PpHelper.ml" 49 1180 1188
+type(
+  Format.formatter
+)
+ident(
+  def ppf "src/consynth/PpHelper.ml" 49 1180 1202 "src/consynth/PpHelper.ml" 52 1248 1300
+)
+"src/consynth/PpHelper.ml" 50 1222 1224 "src/consynth/PpHelper.ml" 50 1222 1231
+type(
+  (Utils.IM.key -> 'a -> unit) -> 'a Utils.IM.t -> unit
+)
+ident(
+  ext_ref Utils.IM.iter
+)
+"src/consynth/PpHelper.ml" 51 1232 1241 "src/consynth/PpHelper.ml" 51 1232 1242
+type(
+  Utils.IM.key
+)
+ident(
+  def i "src/consynth/PpHelper.ml" 51 1232 1243 "src/consynth/PpHelper.ml" 52 1248 1299
+)
+"src/consynth/PpHelper.ml" 51 1232 1243 "src/consynth/PpHelper.ml" 51 1232 1244
+type(
+  'a
+)
+ident(
+  def a "src/consynth/PpHelper.ml" 52 1248 1254 "src/consynth/PpHelper.ml" 52 1248 1299
+)
+"src/consynth/PpHelper.ml" 52 1248 1254 "src/consynth/PpHelper.ml" 52 1248 1261
+type(
+  Format.formatter ->
+  (Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format -> Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 52 1248 1262 "src/consynth/PpHelper.ml" 52 1248 1265
+type(
+  Format.formatter
+)
+ident(
+  int_ref ppf "src/consynth/PpHelper.ml" 49 1180 1185 "src/consynth/PpHelper.ml" 49 1180 1188
+)
+"src/consynth/PpHelper.ml" 52 1248 1266 "src/consynth/PpHelper.ml" 52 1248 1290
+type(
+  (Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/PpHelper.ml" 52 1248 1291 "src/consynth/PpHelper.ml" 52 1248 1292
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref i "src/consynth/PpHelper.ml" 51 1232 1241 "src/consynth/PpHelper.ml" 51 1232 1242
+)
+"src/consynth/PpHelper.ml" 52 1248 1293 "src/consynth/PpHelper.ml" 52 1248 1297
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  int_ref pelt "src/consynth/PpHelper.ml" 48 1143 1148 "src/consynth/PpHelper.ml" 48 1143 1152
+)
+"src/consynth/PpHelper.ml" 52 1248 1298 "src/consynth/PpHelper.ml" 52 1248 1299
+type(
+  'a
+)
+ident(
+  int_ref a "src/consynth/PpHelper.ml" 51 1232 1243 "src/consynth/PpHelper.ml" 51 1232 1244
+)
+"src/consynth/PpHelper.ml" 52 1248 1254 "src/consynth/PpHelper.ml" 52 1248 1299
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 51 1232 1236 "src/consynth/PpHelper.ml" 52 1248 1300
+type(
+  Utils.IM.key -> 'a -> unit
+)
+"src/consynth/PpHelper.ml" 50 1222 1224 "src/consynth/PpHelper.ml" 52 1248 1300
+call(
+  tail
+)
+type(
+  'a Utils.IM.t -> unit
+)
+type(
+  'a Utils.IM.t -> unit
+)
+"src/consynth/PpHelper.ml" 54 1302 1306 "src/consynth/PpHelper.ml" 54 1302 1313
+type(
+  (Format.formatter -> int -> unit) ->
+  (Format.formatter -> 'a -> unit) ->
+  Format.formatter -> 'a Utils.IM.t -> unit
+)
+ident(
+  def ppifmap "src/consynth/PpHelper.ml" 63 1513 1513 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 55 1314 1319 "src/consynth/PpHelper.ml" 55 1314 1321
+type(
+  Format.formatter -> int -> unit
+)
+ident(
+  def pi "src/consynth/PpHelper.ml" 56 1350 1354 "src/consynth/PpHelper.ml" 60 1455 1510
+)
+"src/consynth/PpHelper.ml" 56 1350 1355 "src/consynth/PpHelper.ml" 56 1350 1359
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  def pelt "src/consynth/PpHelper.ml" 57 1387 1391 "src/consynth/PpHelper.ml" 60 1455 1510
+)
+"src/consynth/PpHelper.ml" 57 1387 1392 "src/consynth/PpHelper.ml" 57 1387 1395
+type(
+  Format.formatter
+)
+ident(
+  def ppf "src/consynth/PpHelper.ml" 57 1387 1409 "src/consynth/PpHelper.ml" 60 1455 1510
+)
+"src/consynth/PpHelper.ml" 58 1429 1431 "src/consynth/PpHelper.ml" 58 1429 1438
+type(
+  (Utils.IM.key -> 'a -> unit) -> 'a Utils.IM.t -> unit
+)
+ident(
+  ext_ref Utils.IM.iter
+)
+"src/consynth/PpHelper.ml" 59 1439 1448 "src/consynth/PpHelper.ml" 59 1439 1449
+type(
+  Utils.IM.key
+)
+ident(
+  def i "src/consynth/PpHelper.ml" 59 1439 1450 "src/consynth/PpHelper.ml" 60 1455 1509
+)
+"src/consynth/PpHelper.ml" 59 1439 1450 "src/consynth/PpHelper.ml" 59 1439 1451
+type(
+  'a
+)
+ident(
+  def a "src/consynth/PpHelper.ml" 60 1455 1461 "src/consynth/PpHelper.ml" 60 1455 1509
+)
+"src/consynth/PpHelper.ml" 60 1455 1461 "src/consynth/PpHelper.ml" 60 1455 1468
+type(
+  Format.formatter ->
+  ((Format.formatter -> Utils.IM.key -> unit) ->
+   Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format ->
+  (Format.formatter -> Utils.IM.key -> unit) ->
+  Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 60 1455 1469 "src/consynth/PpHelper.ml" 60 1455 1472
+type(
+  Format.formatter
+)
+ident(
+  int_ref ppf "src/consynth/PpHelper.ml" 57 1387 1392 "src/consynth/PpHelper.ml" 57 1387 1395
+)
+"src/consynth/PpHelper.ml" 60 1455 1473 "src/consynth/PpHelper.ml" 60 1455 1497
+type(
+  ((Format.formatter -> Utils.IM.key -> unit) ->
+   Utils.IM.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/PpHelper.ml" 60 1455 1498 "src/consynth/PpHelper.ml" 60 1455 1500
+type(
+  Format.formatter -> Utils.IM.key -> unit
+)
+ident(
+  int_ref pi "src/consynth/PpHelper.ml" 55 1314 1319 "src/consynth/PpHelper.ml" 55 1314 1321
+)
+"src/consynth/PpHelper.ml" 60 1455 1501 "src/consynth/PpHelper.ml" 60 1455 1502
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref i "src/consynth/PpHelper.ml" 59 1439 1448 "src/consynth/PpHelper.ml" 59 1439 1449
+)
+"src/consynth/PpHelper.ml" 60 1455 1503 "src/consynth/PpHelper.ml" 60 1455 1507
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  int_ref pelt "src/consynth/PpHelper.ml" 56 1350 1355 "src/consynth/PpHelper.ml" 56 1350 1359
+)
+"src/consynth/PpHelper.ml" 60 1455 1508 "src/consynth/PpHelper.ml" 60 1455 1509
+type(
+  'a
+)
+ident(
+  int_ref a "src/consynth/PpHelper.ml" 59 1439 1450 "src/consynth/PpHelper.ml" 59 1439 1451
+)
+"src/consynth/PpHelper.ml" 60 1455 1461 "src/consynth/PpHelper.ml" 60 1455 1509
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 59 1439 1443 "src/consynth/PpHelper.ml" 60 1455 1510
+type(
+  Utils.IM.key -> 'a -> unit
+)
+"src/consynth/PpHelper.ml" 58 1429 1431 "src/consynth/PpHelper.ml" 60 1455 1510
+call(
+  tail
+)
+type(
+  'a Utils.IM.t -> unit
+)
+type(
+  'a Utils.IM.t -> unit
+)
+"src/consynth/PpHelper.ml" 63 1513 1517 "src/consynth/PpHelper.ml" 63 1513 1530
+type(
+  Cil.location -> string
+)
+ident(
+  def string_of_loc "src/consynth/PpHelper.ml" 66 1631 1631 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 63 1513 1532 "src/consynth/PpHelper.ml" 63 1513 1535
+type(
+  Cil.location
+)
+ident(
+  def loc "src/consynth/PpHelper.ml" 64 1554 1555 "src/consynth/PpHelper.ml" 64 1554 1629
+)
+"src/consynth/PpHelper.ml" 64 1554 1555 "src/consynth/PpHelper.ml" 64 1554 1562
+type(
+  (int -> string -> int -> string, unit, string) format ->
+  int -> string -> int -> string
+)
+ident(
+  ext_ref Format.sprintf
+)
+"src/consynth/PpHelper.ml" 64 1554 1563 "src/consynth/PpHelper.ml" 64 1554 1590
+type(
+  (int -> string -> int -> string, unit, string) format
+)
+"src/consynth/PpHelper.ml" 64 1554 1591 "src/consynth/PpHelper.ml" 64 1554 1594
+type(
+  Cil.location
+)
+ident(
+  int_ref loc "src/consynth/PpHelper.ml" 63 1513 1532 "src/consynth/PpHelper.ml" 63 1513 1535
+)
+"src/consynth/PpHelper.ml" 64 1554 1591 "src/consynth/PpHelper.ml" 64 1554 1603
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 64 1554 1604 "src/consynth/PpHelper.ml" 64 1554 1607
+type(
+  Cil.location
+)
+ident(
+  int_ref loc "src/consynth/PpHelper.ml" 63 1513 1532 "src/consynth/PpHelper.ml" 63 1513 1535
+)
+"src/consynth/PpHelper.ml" 64 1554 1604 "src/consynth/PpHelper.ml" 64 1554 1616
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 64 1554 1617 "src/consynth/PpHelper.ml" 64 1554 1620
+type(
+  Cil.location
+)
+ident(
+  int_ref loc "src/consynth/PpHelper.ml" 63 1513 1532 "src/consynth/PpHelper.ml" 63 1513 1535
+)
+"src/consynth/PpHelper.ml" 64 1554 1617 "src/consynth/PpHelper.ml" 64 1554 1629
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 64 1554 1555 "src/consynth/PpHelper.ml" 64 1554 1629
+call(
+  tail
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 66 1631 1635 "src/consynth/PpHelper.ml" 66 1631 1648
+type(
+  string -> Cil.location option
+)
+ident(
+  def loc_of_string "src/consynth/PpHelper.ml" 80 2095 2095 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 66 1631 1649 "src/consynth/PpHelper.ml" 66 1631 1653
+type(
+  string
+)
+ident(
+  def loca "src/consynth/PpHelper.ml" 67 1656 1658 "src/consynth/PpHelper.ml" 76 2043 2067
+)
+"src/consynth/PpHelper.ml" 67 1656 1662 "src/consynth/PpHelper.ml" 67 1656 1668
+type(
+  Str.regexp
+)
+ident(
+  def regexp "src/consynth/PpHelper.ml" 70 1760 1762 "src/consynth/PpHelper.ml" 76 2043 2067
+)
+"src/consynth/PpHelper.ml" 68 1671 1675 "src/consynth/PpHelper.ml" 68 1671 1685
+type(
+  string -> Str.regexp
+)
+ident(
+  ext_ref Str.regexp
+)
+"src/consynth/PpHelper.ml" 68 1671 1686 "src/consynth/PpHelper.ml" 68 1671 1754
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 68 1671 1675 "src/consynth/PpHelper.ml" 68 1671 1754
+call(
+  stack
+)
+type(
+  Str.regexp
+)
+"src/consynth/PpHelper.ml" 71 1766 1770 "src/consynth/PpHelper.ml" 71 1766 1776
+type(
+  int -> unit
+)
+ident(
+  ext_ref Pervasives.ignore
+)
+"src/consynth/PpHelper.ml" 71 1766 1777 "src/consynth/PpHelper.ml" 71 1766 1795
+type(
+  Str.regexp -> string -> int -> int
+)
+ident(
+  ext_ref Str.search_forward
+)
+"src/consynth/PpHelper.ml" 71 1766 1796 "src/consynth/PpHelper.ml" 71 1766 1802
+type(
+  Str.regexp
+)
+ident(
+  int_ref regexp "src/consynth/PpHelper.ml" 67 1656 1662 "src/consynth/PpHelper.ml" 67 1656 1668
+)
+"src/consynth/PpHelper.ml" 71 1766 1803 "src/consynth/PpHelper.ml" 71 1766 1807
+type(
+  string
+)
+ident(
+  int_ref loca "src/consynth/PpHelper.ml" 66 1631 1649 "src/consynth/PpHelper.ml" 66 1631 1653
+)
+"src/consynth/PpHelper.ml" 71 1766 1808 "src/consynth/PpHelper.ml" 71 1766 1809
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 71 1766 1776 "src/consynth/PpHelper.ml" 71 1766 1810
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 71 1766 1770 "src/consynth/PpHelper.ml" 71 1766 1810
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 72 1812 1820 "src/consynth/PpHelper.ml" 72 1812 1824
+type(
+  int
+)
+ident(
+  def line "src/consynth/PpHelper.ml" 73 1871 1875 "src/consynth/PpHelper.ml" 75 1979 2042
+)
+"src/consynth/PpHelper.ml" 72 1812 1827 "src/consynth/PpHelper.ml" 72 1812 1840
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/consynth/PpHelper.ml" 72 1812 1842 "src/consynth/PpHelper.ml" 72 1812 1859
+type(
+  int -> string -> string
+)
+ident(
+  ext_ref Str.matched_group
+)
+"src/consynth/PpHelper.ml" 72 1812 1860 "src/consynth/PpHelper.ml" 72 1812 1861
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 72 1812 1862 "src/consynth/PpHelper.ml" 72 1812 1866
+type(
+  string
+)
+ident(
+  int_ref loca "src/consynth/PpHelper.ml" 66 1631 1649 "src/consynth/PpHelper.ml" 66 1631 1653
+)
+"src/consynth/PpHelper.ml" 72 1812 1841 "src/consynth/PpHelper.ml" 72 1812 1867
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 72 1812 1827 "src/consynth/PpHelper.ml" 72 1812 1867
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 73 1871 1879 "src/consynth/PpHelper.ml" 73 1871 1888
+type(
+  string
+)
+ident(
+  def file_name "src/consynth/PpHelper.ml" 74 1919 1923 "src/consynth/PpHelper.ml" 75 1979 2042
+)
+"src/consynth/PpHelper.ml" 73 1871 1891 "src/consynth/PpHelper.ml" 73 1871 1908
+type(
+  int -> string -> string
+)
+ident(
+  ext_ref Str.matched_group
+)
+"src/consynth/PpHelper.ml" 73 1871 1909 "src/consynth/PpHelper.ml" 73 1871 1910
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 73 1871 1911 "src/consynth/PpHelper.ml" 73 1871 1915
+type(
+  string
+)
+ident(
+  int_ref loca "src/consynth/PpHelper.ml" 66 1631 1649 "src/consynth/PpHelper.ml" 66 1631 1653
+)
+"src/consynth/PpHelper.ml" 73 1871 1891 "src/consynth/PpHelper.ml" 73 1871 1915
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 74 1919 1927 "src/consynth/PpHelper.ml" 74 1919 1931
+type(
+  int
+)
+ident(
+  def byte "src/consynth/PpHelper.ml" 75 1979 1983 "src/consynth/PpHelper.ml" 75 1979 2042
+)
+"src/consynth/PpHelper.ml" 74 1919 1935 "src/consynth/PpHelper.ml" 74 1919 1948
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/consynth/PpHelper.ml" 74 1919 1950 "src/consynth/PpHelper.ml" 74 1919 1967
+type(
+  int -> string -> string
+)
+ident(
+  ext_ref Str.matched_group
+)
+"src/consynth/PpHelper.ml" 74 1919 1968 "src/consynth/PpHelper.ml" 74 1919 1969
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 74 1919 1970 "src/consynth/PpHelper.ml" 74 1919 1974
+type(
+  string
+)
+ident(
+  int_ref loca "src/consynth/PpHelper.ml" 66 1631 1649 "src/consynth/PpHelper.ml" 66 1631 1653
+)
+"src/consynth/PpHelper.ml" 74 1919 1949 "src/consynth/PpHelper.ml" 74 1919 1975
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 74 1919 1935 "src/consynth/PpHelper.ml" 74 1919 1975
+type(
+  int
+)
+"src/consynth/PpHelper.ml" 75 1979 2001 "src/consynth/PpHelper.ml" 75 1979 2005
+type(
+  int
+)
+ident(
+  int_ref line "src/consynth/PpHelper.ml" 72 1812 1820 "src/consynth/PpHelper.ml" 72 1812 1824
+)
+"src/consynth/PpHelper.ml" 75 1979 2014 "src/consynth/PpHelper.ml" 75 1979 2023
+type(
+  string
+)
+ident(
+  int_ref file_name "src/consynth/PpHelper.ml" 73 1871 1879 "src/consynth/PpHelper.ml" 73 1871 1888
+)
+"src/consynth/PpHelper.ml" 75 1979 2036 "src/consynth/PpHelper.ml" 75 1979 2040
+type(
+  int
+)
+ident(
+  int_ref byte "src/consynth/PpHelper.ml" 74 1919 1927 "src/consynth/PpHelper.ml" 74 1919 1931
+)
+"src/consynth/PpHelper.ml" 75 1979 1988 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location
+)
+"src/consynth/PpHelper.ml" 75 1979 1983 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 74 1919 1923 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 73 1871 1875 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 72 1812 1816 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 71 1766 1770 "src/consynth/PpHelper.ml" 75 1979 2042
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 76 2043 2050 "src/consynth/PpHelper.ml" 76 2043 2059
+type(
+  exn
+)
+"src/consynth/PpHelper.ml" 76 2043 2063 "src/consynth/PpHelper.ml" 76 2043 2067
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 70 1760 1762 "src/consynth/PpHelper.ml" 76 2043 2067
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 67 1656 1658 "src/consynth/PpHelper.ml" 76 2043 2067
+type(
+  Cil.location option
+)
+"src/consynth/PpHelper.ml" 80 2095 2099 "src/consynth/PpHelper.ml" 80 2095 2106
+type(
+  Format.formatter ->
+  (Format.formatter -> 'a -> unit) -> 'a Utils.IH.t -> unit
+)
+ident(
+  def pp_hash "src/consynth/PpHelper.ml" 88 2376 2376 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 80 2095 2107 "src/consynth/PpHelper.ml" 80 2095 2110
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 80 2095 2111 "src/consynth/PpHelper.ml" 84 2228 2281
+)
+"src/consynth/PpHelper.ml" 80 2095 2111 "src/consynth/PpHelper.ml" 80 2095 2120
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  def print_elt "src/consynth/PpHelper.ml" 80 2095 2121 "src/consynth/PpHelper.ml" 84 2228 2281
+)
+"src/consynth/PpHelper.ml" 80 2095 2121 "src/consynth/PpHelper.ml" 80 2095 2125
+type(
+  'a Utils.IH.t
+)
+ident(
+  def htbl "src/consynth/PpHelper.ml" 81 2128 2130 "src/consynth/PpHelper.ml" 84 2228 2281
+)
+"src/consynth/PpHelper.ml" 81 2128 2134 "src/consynth/PpHelper.ml" 81 2128 2141
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  def pp_elts "src/consynth/PpHelper.ml" 84 2228 2230 "src/consynth/PpHelper.ml" 84 2228 2281
+)
+"src/consynth/PpHelper.ml" 81 2128 2142 "src/consynth/PpHelper.ml" 81 2128 2145
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/PpHelper.ml" 81 2128 2146 "src/consynth/PpHelper.ml" 82 2151 2222
+)
+"src/consynth/PpHelper.ml" 81 2128 2146 "src/consynth/PpHelper.ml" 81 2128 2148
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 82 2151 2155 "src/consynth/PpHelper.ml" 82 2151 2162
+type(
+  (Utils.IH.key -> 'a -> unit) -> 'a Utils.IH.t -> unit
+)
+ident(
+  ext_ref Utils.IH.iter
+)
+"src/consynth/PpHelper.ml" 82 2151 2168 "src/consynth/PpHelper.ml" 82 2151 2169
+type(
+  Utils.IH.key
+)
+ident(
+  def k "src/consynth/PpHelper.ml" 82 2151 2170 "src/consynth/PpHelper.ml" 82 2151 2216
+)
+"src/consynth/PpHelper.ml" 82 2151 2170 "src/consynth/PpHelper.ml" 82 2151 2173
+type(
+  'a
+)
+ident(
+  def elt "src/consynth/PpHelper.ml" 82 2151 2177 "src/consynth/PpHelper.ml" 82 2151 2216
+)
+"src/consynth/PpHelper.ml" 82 2151 2177 "src/consynth/PpHelper.ml" 82 2151 2184
+type(
+  Format.formatter ->
+  (Utils.IH.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format -> Utils.IH.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 82 2151 2185 "src/consynth/PpHelper.ml" 82 2151 2188
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 81 2128 2142 "src/consynth/PpHelper.ml" 81 2128 2145
+)
+"src/consynth/PpHelper.ml" 82 2151 2189 "src/consynth/PpHelper.ml" 82 2151 2200
+type(
+  (Utils.IH.key -> (Format.formatter -> 'a -> unit) -> 'a -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/PpHelper.ml" 82 2151 2201 "src/consynth/PpHelper.ml" 82 2151 2202
+type(
+  Utils.IH.key
+)
+ident(
+  int_ref k "src/consynth/PpHelper.ml" 82 2151 2168 "src/consynth/PpHelper.ml" 82 2151 2169
+)
+"src/consynth/PpHelper.ml" 82 2151 2203 "src/consynth/PpHelper.ml" 82 2151 2212
+type(
+  Format.formatter -> 'a -> unit
+)
+ident(
+  int_ref print_elt "src/consynth/PpHelper.ml" 80 2095 2111 "src/consynth/PpHelper.ml" 80 2095 2120
+)
+"src/consynth/PpHelper.ml" 82 2151 2213 "src/consynth/PpHelper.ml" 82 2151 2216
+type(
+  'a
+)
+ident(
+  int_ref elt "src/consynth/PpHelper.ml" 82 2151 2170 "src/consynth/PpHelper.ml" 82 2151 2173
+)
+"src/consynth/PpHelper.ml" 82 2151 2177 "src/consynth/PpHelper.ml" 82 2151 2216
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 82 2151 2163 "src/consynth/PpHelper.ml" 82 2151 2217
+type(
+  Utils.IH.key -> 'a -> unit
+)
+"src/consynth/PpHelper.ml" 82 2151 2218 "src/consynth/PpHelper.ml" 82 2151 2222
+type(
+  'a Utils.IH.t
+)
+ident(
+  int_ref htbl "src/consynth/PpHelper.ml" 80 2095 2121 "src/consynth/PpHelper.ml" 80 2095 2125
+)
+"src/consynth/PpHelper.ml" 82 2151 2155 "src/consynth/PpHelper.ml" 82 2151 2222
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 84 2228 2230 "src/consynth/PpHelper.ml" 84 2228 2237
+type(
+  Format.formatter ->
+  ((Format.formatter -> unit -> unit) -> unit -> unit, Format.formatter,
+   unit)
+  format -> (Format.formatter -> unit -> unit) -> unit -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 84 2228 2238 "src/consynth/PpHelper.ml" 84 2228 2241
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/PpHelper.ml" 80 2095 2107 "src/consynth/PpHelper.ml" 80 2095 2110
+)
+"src/consynth/PpHelper.ml" 84 2228 2242 "src/consynth/PpHelper.ml" 84 2228 2270
+type(
+  ((Format.formatter -> unit -> unit) -> unit -> unit, Format.formatter,
+   unit)
+  format
+)
+"src/consynth/PpHelper.ml" 84 2228 2271 "src/consynth/PpHelper.ml" 84 2228 2278
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  int_ref pp_elts "src/consynth/PpHelper.ml" 81 2128 2134 "src/consynth/PpHelper.ml" 81 2128 2141
+)
+"src/consynth/PpHelper.ml" 84 2228 2279 "src/consynth/PpHelper.ml" 84 2228 2281
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 84 2228 2230 "src/consynth/PpHelper.ml" 84 2228 2281
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 81 2128 2130 "src/consynth/PpHelper.ml" 84 2228 2281
+type(
+  unit
+)
+"src/consynth/PpHelper.ml" 88 2376 2380 "src/consynth/PpHelper.ml" 88 2376 2388
+type(
+  string -> unit
+)
+ident(
+  def printerr "src/consynth/PpHelper.ml" 89 2393 2456 "src/consynth/PpHelper.ml" 1 0 -1
+)
+"src/consynth/PpHelper.ml" 88 2376 2389 "src/consynth/PpHelper.ml" 88 2376 2390
+type(
+  string
+)
+ident(
+  def s "src/consynth/PpHelper.ml" 89 2393 2395 "src/consynth/PpHelper.ml" 89 2393 2456
+)
+"src/consynth/PpHelper.ml" 89 2393 2395 "src/consynth/PpHelper.ml" 89 2393 2409
+type(
+  Format.formatter ->
+  (string -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/PpHelper.ml" 89 2393 2410 "src/consynth/PpHelper.ml" 89 2393 2423
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.err_formatter
+)
+"src/consynth/PpHelper.ml" 89 2393 2424 "src/consynth/PpHelper.ml" 89 2393 2432
+type(
+  (string -> string -> string -> unit, Format.formatter, unit) format
+)
+"src/consynth/PpHelper.ml" 89 2393 2434 "src/consynth/PpHelper.ml" 89 2393 2439
+type(
+  Utils.SM.key -> string
+)
+ident(
+  int_ref color "src/consynth/PpHelper.ml" 19 526 530 "src/consynth/PpHelper.ml" 19 526 535
+)
+"src/consynth/PpHelper.ml" 89 2393 2440 "src/consynth/PpHelper.ml" 89 2393 2445
+type(
+  Utils.SM.key
+)
+"src/consynth/PpHelper.ml" 89 2393 2433 "src/consynth/PpHelper.ml" 89 2393 2446
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/PpHelper.ml" 89 2393 2447 "src/consynth/PpHelper.ml" 89 2393 2448
+type(
+  string
+)
+ident(
+  int_ref s "src/consynth/PpHelper.ml" 88 2376 2389 "src/consynth/PpHelper.ml" 88 2376 2390
+)
+"src/consynth/PpHelper.ml" 89 2393 2449 "src/consynth/PpHelper.ml" 89 2393 2456
+type(
+  string
+)
+ident(
+  int_ref default "src/consynth/PpHelper.ml" 24 616 620 "src/consynth/PpHelper.ml" 24 616 627
+)
+"src/consynth/PpHelper.ml" 89 2393 2395 "src/consynth/PpHelper.ml" 89 2393 2456
+call(
+  tail
+)
+type(
+  unit
+)

@@ -1,0 +1,6577 @@
+"src/consynth/Sketch.ml" 13 138 150 "src/consynth/Sketch.ml" 13 138 167
+call(
+  stack
+)
+"src/consynth/Sketch.ml" 20 259 263 "src/consynth/Sketch.ml" 20 259 279
+type(
+  int ref
+)
+ident(
+  def iterations_limit "src/consynth/Sketch.ml" 23 348 348 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 21 282 284 "src/consynth/Sketch.ml" 21 282 287
+type(
+  int -> int ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Sketch.ml" 21 282 289 "src/consynth/Sketch.ml" 21 282 302
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/consynth/Sketch.ml" 21 282 304 "src/consynth/Sketch.ml" 21 282 324
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 21 282 325 "src/consynth/Sketch.ml" 21 282 344
+type(
+  string
+)
+"src/consynth/Sketch.ml" 21 282 303 "src/consynth/Sketch.ml" 21 282 345
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 21 282 288 "src/consynth/Sketch.ml" 21 282 346
+type(
+  int
+)
+"src/consynth/Sketch.ml" 21 282 284 "src/consynth/Sketch.ml" 21 282 346
+type(
+  int ref
+)
+"src/consynth/Sketch.ml" 23 348 352 "src/consynth/Sketch.ml" 23 348 366
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  def auxiliary_vars "src/consynth/Sketch.ml" 25 402 402 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 23 348 388 "src/consynth/Sketch.ml" 23 348 397
+type(
+  int -> Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref Utils.IH.create
+)
+"src/consynth/Sketch.ml" 23 348 398 "src/consynth/Sketch.ml" 23 348 400
+type(
+  int
+)
+"src/consynth/Sketch.ml" 23 348 388 "src/consynth/Sketch.ml" 23 348 400
+call(
+  stack
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+"src/consynth/Sketch.ml" 25 402 406 "src/consynth/Sketch.ml" 25 402 411
+type(
+  bool ref
+)
+ident(
+  def debug "src/consynth/Sketch.ml" 40 868 868 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 25 402 414 "src/consynth/Sketch.ml" 25 402 417
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Sketch.ml" 25 402 419 "src/consynth/Sketch.ml" 25 402 433
+type(
+  string -> bool
+)
+ident(
+  ext_ref Pervasives.bool_of_string
+)
+"src/consynth/Sketch.ml" 25 402 435 "src/consynth/Sketch.ml" 25 402 455
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 25 402 456 "src/consynth/Sketch.ml" 25 402 470
+type(
+  string
+)
+"src/consynth/Sketch.ml" 25 402 434 "src/consynth/Sketch.ml" 25 402 471
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 25 402 418 "src/consynth/Sketch.ml" 25 402 472
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 25 402 414 "src/consynth/Sketch.ml" 25 402 472
+type(
+  bool ref
+)
+"src/consynth/Sketch.ml" 47 1024 1028 "src/consynth/Sketch.ml" 47 1024 1041
+type(
+  Cil.varinfo -> Cil.varinfo list
+)
+ident(
+  def gen_cell_vars "src/consynth/Sketch.ml" 51 1147 1147 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 47 1024 1042 "src/consynth/Sketch.ml" 47 1024 1044
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 48 1047 1049 "src/consynth/Sketch.ml" 49 1082 1145
+)
+"src/consynth/Sketch.ml" 48 1047 1049 "src/consynth/Sketch.ml" 48 1047 1063
+type(
+  int -> (int -> Cil.varinfo) -> Cil.varinfo list
+)
+ident(
+  ext_ref Utils.ListTools.init
+)
+"src/consynth/Sketch.ml" 48 1047 1064 "src/consynth/Sketch.ml" 48 1047 1065
+type(
+  int ref -> int
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Sketch.ml" 48 1047 1065 "src/consynth/Sketch.ml" 48 1047 1081
+type(
+  int ref
+)
+ident(
+  int_ref iterations_limit "src/consynth/Sketch.ml" 20 259 263 "src/consynth/Sketch.ml" 20 259 279
+)
+"src/consynth/Sketch.ml" 48 1047 1064 "src/consynth/Sketch.ml" 48 1047 1081
+type(
+  int
+)
+"src/consynth/Sketch.ml" 49 1082 1091 "src/consynth/Sketch.ml" 49 1082 1092
+type(
+  int
+)
+ident(
+  def i "src/consynth/Sketch.ml" 49 1082 1096 "src/consynth/Sketch.ml" 49 1082 1144
+)
+"src/consynth/Sketch.ml" 49 1082 1097 "src/consynth/Sketch.ml" 49 1082 1099
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 47 1024 1042 "src/consynth/Sketch.ml" 47 1024 1044
+)
+"src/consynth/Sketch.ml" 49 1082 1113 "src/consynth/Sketch.ml" 49 1082 1115
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 47 1024 1042 "src/consynth/Sketch.ml" 47 1024 1044
+)
+"src/consynth/Sketch.ml" 49 1082 1113 "src/consynth/Sketch.ml" 49 1082 1121
+type(
+  string
+)
+"src/consynth/Sketch.ml" 49 1082 1121 "src/consynth/Sketch.ml" 49 1082 1122
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Sketch.ml" 49 1082 1122 "src/consynth/Sketch.ml" 49 1082 1125
+type(
+  string
+)
+"src/consynth/Sketch.ml" 49 1082 1125 "src/consynth/Sketch.ml" 49 1082 1126
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Sketch.ml" 49 1082 1127 "src/consynth/Sketch.ml" 49 1082 1140
+type(
+  int -> string
+)
+ident(
+  ext_ref Pervasives.string_of_int
+)
+"src/consynth/Sketch.ml" 49 1082 1141 "src/consynth/Sketch.ml" 49 1082 1142
+type(
+  int
+)
+ident(
+  int_ref i "src/consynth/Sketch.ml" 49 1082 1091 "src/consynth/Sketch.ml" 49 1082 1092
+)
+"src/consynth/Sketch.ml" 49 1082 1126 "src/consynth/Sketch.ml" 49 1082 1143
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 49 1082 1122 "src/consynth/Sketch.ml" 49 1082 1143
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 49 1082 1113 "src/consynth/Sketch.ml" 49 1082 1143
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 49 1082 1096 "src/consynth/Sketch.ml" 49 1082 1144
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 49 1082 1086 "src/consynth/Sketch.ml" 49 1082 1145
+type(
+  int -> Cil.varinfo
+)
+"src/consynth/Sketch.ml" 48 1047 1049 "src/consynth/Sketch.ml" 49 1082 1145
+call(
+  tail
+)
+type(
+  Cil.varinfo list
+)
+"src/consynth/Sketch.ml" 51 1147 1155 "src/consynth/Sketch.ml" 51 1147 1173
+type(
+  F.formatter -> define_symbolic -> unit
+)
+ident(
+  def pp_define_symbolic "src/consynth/Sketch.ml" 51 1147 1147 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 51 1147 1178 "src/consynth/Sketch.ml" 74 2081 2099
+)
+"src/consynth/Sketch.ml" 51 1147 1178 "src/consynth/Sketch.ml" 51 1147 1181
+type(
+  define_symbolic
+)
+ident(
+  def def "src/consynth/Sketch.ml" 52 1184 1186 "src/consynth/Sketch.ml" 74 2081 2099
+)
+"src/consynth/Sketch.ml" 52 1184 1190 "src/consynth/Sketch.ml" 52 1184 1194
+type(
+  Cil.varinfo list -> string list
+)
+ident(
+  def to_v "src/consynth/Sketch.ml" 53 1237 1239 "src/consynth/Sketch.ml" 74 2081 2099
+)
+"src/consynth/Sketch.ml" 52 1184 1195 "src/consynth/Sketch.ml" 52 1184 1196
+type(
+  Cil.varinfo list
+)
+ident(
+  def l "src/consynth/Sketch.ml" 52 1184 1200 "src/consynth/Sketch.ml" 52 1184 1233
+)
+"src/consynth/Sketch.ml" 52 1184 1201 "src/consynth/Sketch.ml" 52 1184 1209
+type(
+  (Cil.varinfo -> string) -> Cil.varinfo list -> string list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/Sketch.ml" 52 1184 1215 "src/consynth/Sketch.ml" 52 1184 1217
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 52 1184 1221 "src/consynth/Sketch.ml" 52 1184 1229
+)
+"src/consynth/Sketch.ml" 52 1184 1221 "src/consynth/Sketch.ml" 52 1184 1223
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 52 1184 1215 "src/consynth/Sketch.ml" 52 1184 1217
+)
+"src/consynth/Sketch.ml" 52 1184 1221 "src/consynth/Sketch.ml" 52 1184 1229
+type(
+  string
+)
+"src/consynth/Sketch.ml" 52 1184 1210 "src/consynth/Sketch.ml" 52 1184 1230
+type(
+  Cil.varinfo -> string
+)
+"src/consynth/Sketch.ml" 52 1184 1231 "src/consynth/Sketch.ml" 52 1184 1232
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref l "src/consynth/Sketch.ml" 52 1184 1195 "src/consynth/Sketch.ml" 52 1184 1196
+)
+"src/consynth/Sketch.ml" 52 1184 1200 "src/consynth/Sketch.ml" 52 1184 1233
+call(
+  tail
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 53 1237 1245 "src/consynth/Sketch.ml" 53 1237 1248
+type(
+  define_symbolic
+)
+ident(
+  int_ref def "src/consynth/Sketch.ml" 51 1147 1178 "src/consynth/Sketch.ml" 51 1147 1181
+)
+"src/consynth/Sketch.ml" 54 1254 1269 "src/consynth/Sketch.ml" 54 1254 1272
+type(
+  Cil.varinfo list
+)
+ident(
+  def vil "src/consynth/Sketch.ml" 54 1254 1276 "src/consynth/Sketch.ml" 55 1329 1378
+)
+"src/consynth/Sketch.ml" 54 1254 1258 "src/consynth/Sketch.ml" 54 1254 1272
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 54 1254 1276 "src/consynth/Sketch.ml" 54 1254 1285
+type(
+  F.formatter ->
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format -> (F.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 54 1254 1286 "src/consynth/Sketch.ml" 54 1254 1289
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+)
+"src/consynth/Sketch.ml" 54 1254 1290 "src/consynth/Sketch.ml" 54 1254 1328
+type(
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format
+)
+"src/consynth/Sketch.ml" 55 1329 1353 "src/consynth/Sketch.ml" 55 1329 1367
+type(
+  F.formatter -> string list -> unit
+)
+ident(
+  ext_ref PpHelper.pp_string_list
+)
+"src/consynth/Sketch.ml" 55 1329 1369 "src/consynth/Sketch.ml" 55 1329 1373
+type(
+  Cil.varinfo list -> string list
+)
+ident(
+  int_ref to_v "src/consynth/Sketch.ml" 52 1184 1190 "src/consynth/Sketch.ml" 52 1184 1194
+)
+"src/consynth/Sketch.ml" 55 1329 1374 "src/consynth/Sketch.ml" 55 1329 1377
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vil "src/consynth/Sketch.ml" 54 1254 1269 "src/consynth/Sketch.ml" 54 1254 1272
+)
+"src/consynth/Sketch.ml" 55 1329 1368 "src/consynth/Sketch.ml" 55 1329 1378
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 54 1254 1276 "src/consynth/Sketch.ml" 55 1329 1378
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 56 1379 1391 "src/consynth/Sketch.ml" 56 1379 1394
+type(
+  Cil.varinfo list
+)
+ident(
+  def vil "src/consynth/Sketch.ml" 56 1379 1398 "src/consynth/Sketch.ml" 57 1448 1494
+)
+"src/consynth/Sketch.ml" 56 1379 1383 "src/consynth/Sketch.ml" 56 1379 1394
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 56 1379 1398 "src/consynth/Sketch.ml" 56 1379 1407
+type(
+  F.formatter ->
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format -> (F.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 56 1379 1408 "src/consynth/Sketch.ml" 56 1379 1411
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+)
+"src/consynth/Sketch.ml" 56 1379 1412 "src/consynth/Sketch.ml" 56 1379 1447
+type(
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format
+)
+"src/consynth/Sketch.ml" 57 1448 1469 "src/consynth/Sketch.ml" 57 1448 1483
+type(
+  F.formatter -> string list -> unit
+)
+ident(
+  ext_ref PpHelper.pp_string_list
+)
+"src/consynth/Sketch.ml" 57 1448 1485 "src/consynth/Sketch.ml" 57 1448 1489
+type(
+  Cil.varinfo list -> string list
+)
+ident(
+  int_ref to_v "src/consynth/Sketch.ml" 52 1184 1190 "src/consynth/Sketch.ml" 52 1184 1194
+)
+"src/consynth/Sketch.ml" 57 1448 1490 "src/consynth/Sketch.ml" 57 1448 1493
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vil "src/consynth/Sketch.ml" 56 1379 1391 "src/consynth/Sketch.ml" 56 1379 1394
+)
+"src/consynth/Sketch.ml" 57 1448 1484 "src/consynth/Sketch.ml" 57 1448 1494
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 56 1379 1398 "src/consynth/Sketch.ml" 57 1448 1494
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 59 1496 1511 "src/consynth/Sketch.ml" 59 1496 1514
+type(
+  Cil.varinfo list
+)
+ident(
+  def vil "src/consynth/Sketch.ml" 59 1496 1518 "src/consynth/Sketch.ml" 60 1571 1620
+)
+"src/consynth/Sketch.ml" 59 1496 1500 "src/consynth/Sketch.ml" 59 1496 1514
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 59 1496 1518 "src/consynth/Sketch.ml" 59 1496 1527
+type(
+  F.formatter ->
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format -> (F.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 59 1496 1528 "src/consynth/Sketch.ml" 59 1496 1531
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+)
+"src/consynth/Sketch.ml" 59 1496 1532 "src/consynth/Sketch.ml" 59 1496 1570
+type(
+  ((F.formatter -> string list -> unit) -> string list -> unit, F.formatter,
+   unit)
+  format
+)
+"src/consynth/Sketch.ml" 60 1571 1595 "src/consynth/Sketch.ml" 60 1571 1609
+type(
+  F.formatter -> string list -> unit
+)
+ident(
+  ext_ref PpHelper.pp_string_list
+)
+"src/consynth/Sketch.ml" 60 1571 1611 "src/consynth/Sketch.ml" 60 1571 1615
+type(
+  Cil.varinfo list -> string list
+)
+ident(
+  int_ref to_v "src/consynth/Sketch.ml" 52 1184 1190 "src/consynth/Sketch.ml" 52 1184 1194
+)
+"src/consynth/Sketch.ml" 60 1571 1616 "src/consynth/Sketch.ml" 60 1571 1619
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vil "src/consynth/Sketch.ml" 59 1496 1511 "src/consynth/Sketch.ml" 59 1496 1514
+)
+"src/consynth/Sketch.ml" 60 1571 1610 "src/consynth/Sketch.ml" 60 1571 1620
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 59 1496 1518 "src/consynth/Sketch.ml" 60 1571 1620
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 61 1621 1634 "src/consynth/Sketch.ml" 61 1621 1637
+type(
+  Cil.varinfo list
+)
+ident(
+  def vil "src/consynth/Sketch.ml" 62 1641 1645 "src/consynth/Sketch.ml" 72 2027 2079
+)
+"src/consynth/Sketch.ml" 61 1621 1625 "src/consynth/Sketch.ml" 61 1621 1637
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 62 1641 1645 "src/consynth/Sketch.ml" 62 1641 1654
+type(
+  (Cil.varinfo -> unit) -> Cil.varinfo list -> unit
+)
+ident(
+  ext_ref List.iter
+)
+"src/consynth/Sketch.ml" 63 1655 1666 "src/consynth/Sketch.ml" 63 1655 1668
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 64 1672 1682 "src/consynth/Sketch.ml" 72 2027 2074
+)
+"src/consynth/Sketch.ml" 64 1672 1686 "src/consynth/Sketch.ml" 64 1672 1690
+type(
+  Cil.varinfo list
+)
+ident(
+  def vars "src/consynth/Sketch.ml" 65 1713 1723 "src/consynth/Sketch.ml" 72 2027 2074
+)
+"src/consynth/Sketch.ml" 64 1672 1693 "src/consynth/Sketch.ml" 64 1672 1706
+type(
+  Cil.varinfo -> Cil.varinfo list
+)
+ident(
+  int_ref gen_cell_vars "src/consynth/Sketch.ml" 47 1024 1028 "src/consynth/Sketch.ml" 47 1024 1041
+)
+"src/consynth/Sketch.ml" 64 1672 1707 "src/consynth/Sketch.ml" 64 1672 1709
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 63 1655 1666 "src/consynth/Sketch.ml" 63 1655 1668
+)
+"src/consynth/Sketch.ml" 64 1672 1693 "src/consynth/Sketch.ml" 64 1672 1709
+call(
+  stack
+)
+type(
+  Cil.varinfo list
+)
+"src/consynth/Sketch.ml" 65 1713 1723 "src/consynth/Sketch.ml" 65 1713 1741
+type(
+  F.formatter -> define_symbolic -> unit
+)
+ident(
+  int_ref pp_define_symbolic "src/consynth/Sketch.ml" 51 1147 1155 "src/consynth/Sketch.ml" 51 1147 1173
+)
+"src/consynth/Sketch.ml" 65 1713 1742 "src/consynth/Sketch.ml" 65 1713 1745
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+)
+"src/consynth/Sketch.ml" 66 1746 1765 "src/consynth/Sketch.ml" 66 1746 1775
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.array_type
+)
+"src/consynth/Sketch.ml" 66 1746 1777 "src/consynth/Sketch.ml" 66 1746 1796
+type(
+  Cil.typ -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.symb_type_of_ciltyp
+)
+"src/consynth/Sketch.ml" 66 1746 1797 "src/consynth/Sketch.ml" 66 1746 1799
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 63 1655 1666 "src/consynth/Sketch.ml" 63 1655 1668
+)
+"src/consynth/Sketch.ml" 66 1746 1797 "src/consynth/Sketch.ml" 66 1746 1805
+type(
+  Cil.typ
+)
+"src/consynth/Sketch.ml" 66 1746 1776 "src/consynth/Sketch.ml" 66 1746 1806
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 66 1746 1765 "src/consynth/Sketch.ml" 66 1746 1806
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 67 1812 1827 "src/consynth/Sketch.ml" 67 1812 1834
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 67 1812 1849 "src/consynth/Sketch.ml" 67 1812 1853
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vars "src/consynth/Sketch.ml" 64 1672 1686 "src/consynth/Sketch.ml" 64 1672 1690
+)
+"src/consynth/Sketch.ml" 67 1812 1838 "src/consynth/Sketch.ml" 67 1812 1853
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 68 1854 1869 "src/consynth/Sketch.ml" 68 1854 1873
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 68 1854 1885 "src/consynth/Sketch.ml" 68 1854 1889
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vars "src/consynth/Sketch.ml" 64 1672 1686 "src/consynth/Sketch.ml" 64 1672 1690
+)
+"src/consynth/Sketch.ml" 68 1854 1877 "src/consynth/Sketch.ml" 68 1854 1889
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 69 1890 1905 "src/consynth/Sketch.ml" 69 1890 1912
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 69 1890 1927 "src/consynth/Sketch.ml" 69 1890 1931
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vars "src/consynth/Sketch.ml" 64 1672 1686 "src/consynth/Sketch.ml" 64 1672 1690
+)
+"src/consynth/Sketch.ml" 69 1890 1916 "src/consynth/Sketch.ml" 69 1890 1931
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 70 1932 1947 "src/consynth/Sketch.ml" 70 1932 1948
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 70 1932 1952 "src/consynth/Sketch.ml" 70 1932 1960
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 66 1746 1758 "src/consynth/Sketch.ml" 70 1932 1961
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 65 1713 1723 "src/consynth/Sketch.ml" 70 1932 1961
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 71 1963 1973 "src/consynth/Sketch.ml" 71 1963 1982
+type(
+  F.formatter ->
+  (string -> (F.formatter -> string list -> unit) -> string list -> unit,
+   F.formatter, unit)
+  format ->
+  string -> (F.formatter -> string list -> unit) -> string list -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 71 1963 1983 "src/consynth/Sketch.ml" 71 1963 1986
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 51 1147 1174 "src/consynth/Sketch.ml" 51 1147 1177
+)
+"src/consynth/Sketch.ml" 71 1963 1987 "src/consynth/Sketch.ml" 71 1963 2026
+type(
+  (string -> (F.formatter -> string list -> unit) -> string list -> unit,
+   F.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 72 2027 2039 "src/consynth/Sketch.ml" 72 2027 2041
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 63 1655 1666 "src/consynth/Sketch.ml" 63 1655 1668
+)
+"src/consynth/Sketch.ml" 72 2027 2039 "src/consynth/Sketch.ml" 72 2027 2047
+type(
+  string
+)
+"src/consynth/Sketch.ml" 72 2027 2048 "src/consynth/Sketch.ml" 72 2027 2062
+type(
+  F.formatter -> string list -> unit
+)
+ident(
+  ext_ref PpHelper.pp_string_list
+)
+"src/consynth/Sketch.ml" 72 2027 2064 "src/consynth/Sketch.ml" 72 2027 2068
+type(
+  Cil.varinfo list -> string list
+)
+ident(
+  int_ref to_v "src/consynth/Sketch.ml" 52 1184 1190 "src/consynth/Sketch.ml" 52 1184 1194
+)
+"src/consynth/Sketch.ml" 72 2027 2069 "src/consynth/Sketch.ml" 72 2027 2073
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vars "src/consynth/Sketch.ml" 64 1672 1686 "src/consynth/Sketch.ml" 64 1672 1690
+)
+"src/consynth/Sketch.ml" 72 2027 2063 "src/consynth/Sketch.ml" 72 2027 2074
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 71 1963 1973 "src/consynth/Sketch.ml" 72 2027 2074
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 65 1713 1723 "src/consynth/Sketch.ml" 72 2027 2074
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 64 1672 1682 "src/consynth/Sketch.ml" 72 2027 2074
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 63 1655 1661 "src/consynth/Sketch.ml" 72 2027 2075
+type(
+  Cil.varinfo -> unit
+)
+"src/consynth/Sketch.ml" 72 2027 2076 "src/consynth/Sketch.ml" 72 2027 2079
+type(
+  Cil.varinfo list
+)
+ident(
+  int_ref vil "src/consynth/Sketch.ml" 61 1621 1634 "src/consynth/Sketch.ml" 61 1621 1637
+)
+"src/consynth/Sketch.ml" 62 1641 1645 "src/consynth/Sketch.ml" 72 2027 2079
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 74 2081 2085 "src/consynth/Sketch.ml" 74 2081 2093
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 74 2081 2097 "src/consynth/Sketch.ml" 74 2081 2099
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 53 1237 1239 "src/consynth/Sketch.ml" 74 2081 2099
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 52 1184 1186 "src/consynth/Sketch.ml" 74 2081 2099
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 77 2102 2106 "src/consynth/Sketch.ml" 77 2102 2120
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  def pp_vs_to_symbs "src/consynth/Sketch.ml" 94 2613 2613 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 77 2102 2121 "src/consynth/Sketch.ml" 77 2102 2124
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 77 2102 2125 "src/consynth/Sketch.ml" 91 2583 2610
+)
+"src/consynth/Sketch.ml" 77 2102 2125 "src/consynth/Sketch.ml" 77 2102 2127
+type(
+  VS.t
+)
+ident(
+  def vs "src/consynth/Sketch.ml" 79 2157 2159 "src/consynth/Sketch.ml" 91 2583 2610
+)
+"src/consynth/Sketch.ml" 79 2157 2159 "src/consynth/Sketch.ml" 79 2157 2166
+type(
+  (VS.elt -> unit) -> VS.t -> unit
+)
+ident(
+  ext_ref VS.iter
+)
+"src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+type(
+  VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 81 2182 2189 "src/consynth/Sketch.ml" 91 2583 2606
+)
+"src/consynth/Sketch.ml" 81 2182 2189 "src/consynth/Sketch.ml" 81 2182 2207
+type(
+  F.formatter -> define_symbolic -> unit
+)
+ident(
+  int_ref pp_define_symbolic "src/consynth/Sketch.ml" 51 1147 1155 "src/consynth/Sketch.ml" 51 1147 1173
+)
+"src/consynth/Sketch.ml" 81 2182 2208 "src/consynth/Sketch.ml" 81 2182 2211
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 77 2102 2121 "src/consynth/Sketch.ml" 77 2102 2124
+)
+"src/consynth/Sketch.ml" 82 2212 2228 "src/consynth/Sketch.ml" 82 2212 2247
+type(
+  Cil.typ -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.symb_type_of_ciltyp
+)
+"src/consynth/Sketch.ml" 82 2212 2248 "src/consynth/Sketch.ml" 82 2212 2250
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 82 2212 2248 "src/consynth/Sketch.ml" 82 2212 2256
+type(
+  Cil.typ
+)
+"src/consynth/Sketch.ml" 82 2212 2228 "src/consynth/Sketch.ml" 82 2212 2256
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 83 2262 2274 "src/consynth/Sketch.ml" 83 2262 2281
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 83 2262 2297 "src/consynth/Sketch.ml" 83 2262 2299
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 83 2262 2296 "src/consynth/Sketch.ml" 83 2262 2300
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 83 2262 2285 "src/consynth/Sketch.ml" 83 2262 2300
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 84 2301 2313 "src/consynth/Sketch.ml" 84 2301 2320
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 84 2301 2336 "src/consynth/Sketch.ml" 84 2301 2338
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 84 2301 2335 "src/consynth/Sketch.ml" 84 2301 2339
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 84 2301 2324 "src/consynth/Sketch.ml" 84 2301 2339
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 85 2340 2352 "src/consynth/Sketch.ml" 85 2340 2356
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 85 2340 2369 "src/consynth/Sketch.ml" 85 2340 2371
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 85 2340 2368 "src/consynth/Sketch.ml" 85 2340 2372
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 85 2340 2360 "src/consynth/Sketch.ml" 85 2340 2372
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 86 2373 2393 "src/consynth/Sketch.ml" 86 2373 2394
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def v "src/consynth/Sketch.ml" 86 2373 2402 "src/consynth/Sketch.ml" 86 2373 2415
+)
+"src/consynth/Sketch.ml" 86 2373 2396 "src/consynth/Sketch.ml" 86 2373 2397
+type(
+  int option
+)
+"src/consynth/Sketch.ml" 86 2373 2385 "src/consynth/Sketch.ml" 86 2373 2398
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 86 2373 2412 "src/consynth/Sketch.ml" 86 2373 2414
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 86 2373 2411 "src/consynth/Sketch.ml" 86 2373 2415
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 86 2373 2402 "src/consynth/Sketch.ml" 86 2373 2415
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 87 2416 2428 "src/consynth/Sketch.ml" 87 2416 2429
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/Sketch.ml" 88 2433 2446 "src/consynth/Sketch.ml" 88 2433 2455
+type(
+  (string -> unit, F.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref F.eprintf
+)
+"src/consynth/Sketch.ml" 88 2433 2456 "src/consynth/Sketch.ml" 89 2492 2557
+type(
+  (string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 90 2558 2573 "src/consynth/Sketch.ml" 90 2558 2575
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 80 2167 2176 "src/consynth/Sketch.ml" 80 2167 2178
+)
+"src/consynth/Sketch.ml" 90 2558 2573 "src/consynth/Sketch.ml" 90 2558 2581
+type(
+  string
+)
+"src/consynth/Sketch.ml" 88 2433 2446 "src/consynth/Sketch.ml" 90 2558 2581
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 91 2583 2596 "src/consynth/Sketch.ml" 91 2583 2604
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 88 2433 2445 "src/consynth/Sketch.ml" 91 2583 2605
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 82 2212 2221 "src/consynth/Sketch.ml" 91 2583 2606
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 81 2182 2189 "src/consynth/Sketch.ml" 91 2583 2606
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 80 2167 2171 "src/consynth/Sketch.ml" 91 2583 2607
+type(
+  VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 91 2583 2608 "src/consynth/Sketch.ml" 91 2583 2610
+type(
+  VS.t
+)
+ident(
+  int_ref vs "src/consynth/Sketch.ml" 77 2102 2125 "src/consynth/Sketch.ml" 77 2102 2127
+)
+"src/consynth/Sketch.ml" 79 2157 2159 "src/consynth/Sketch.ml" 91 2583 2610
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 94 2613 2617 "src/consynth/Sketch.ml" 94 2613 2636
+type(
+  VS.t -> VS.elt list
+)
+ident(
+  def input_symbols_of_vs "src/consynth/Sketch.ml" 102 2787 2787 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 94 2613 2637 "src/consynth/Sketch.ml" 94 2613 2639
+type(
+  VS.t
+)
+ident(
+  def vs "src/consynth/Sketch.ml" 95 2642 2644 "src/consynth/Sketch.ml" 100 2760 2785
+)
+"src/consynth/Sketch.ml" 95 2642 2644 "src/consynth/Sketch.ml" 95 2642 2651
+type(
+  (VS.elt -> VS.elt list -> VS.elt list) ->
+  VS.t -> VS.elt list -> VS.elt list
+)
+ident(
+  ext_ref VS.fold
+)
+"src/consynth/Sketch.ml" 96 2652 2661 "src/consynth/Sketch.ml" 96 2652 2663
+type(
+  VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 96 2652 2664 "src/consynth/Sketch.ml" 100 2760 2778
+)
+"src/consynth/Sketch.ml" 96 2652 2664 "src/consynth/Sketch.ml" 96 2652 2669
+type(
+  VS.elt list
+)
+ident(
+  def symbs "src/consynth/Sketch.ml" 97 2673 2680 "src/consynth/Sketch.ml" 100 2760 2778
+)
+"src/consynth/Sketch.ml" 97 2673 2683 "src/consynth/Sketch.ml" 97 2673 2705
+type(
+  VS.elt -> bool
+)
+ident(
+  ext_ref Utils.CilTools.is_like_array
+)
+"src/consynth/Sketch.ml" 97 2673 2706 "src/consynth/Sketch.ml" 97 2673 2708
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 96 2652 2661 "src/consynth/Sketch.ml" 96 2652 2663
+)
+"src/consynth/Sketch.ml" 97 2673 2683 "src/consynth/Sketch.ml" 97 2673 2708
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 98 2714 2723 "src/consynth/Sketch.ml" 98 2714 2728
+type(
+  VS.elt list
+)
+ident(
+  int_ref symbs "src/consynth/Sketch.ml" 96 2652 2664 "src/consynth/Sketch.ml" 96 2652 2669
+)
+"src/consynth/Sketch.ml" 98 2714 2728 "src/consynth/Sketch.ml" 98 2714 2729
+type(
+  VS.elt list -> VS.elt list -> VS.elt list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/Sketch.ml" 98 2714 2730 "src/consynth/Sketch.ml" 98 2714 2743
+type(
+  VS.elt -> VS.elt list
+)
+ident(
+  int_ref gen_cell_vars "src/consynth/Sketch.ml" 47 1024 1028 "src/consynth/Sketch.ml" 47 1024 1041
+)
+"src/consynth/Sketch.ml" 98 2714 2744 "src/consynth/Sketch.ml" 98 2714 2746
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 96 2652 2661 "src/consynth/Sketch.ml" 96 2652 2663
+)
+"src/consynth/Sketch.ml" 98 2714 2729 "src/consynth/Sketch.ml" 98 2714 2747
+call(
+  stack
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 98 2714 2723 "src/consynth/Sketch.ml" 98 2714 2747
+call(
+  tail
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 100 2760 2769 "src/consynth/Sketch.ml" 100 2760 2771
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 96 2652 2661 "src/consynth/Sketch.ml" 96 2652 2663
+)
+"src/consynth/Sketch.ml" 100 2760 2773 "src/consynth/Sketch.ml" 100 2760 2778
+type(
+  VS.elt list
+)
+ident(
+  int_ref symbs "src/consynth/Sketch.ml" 96 2652 2664 "src/consynth/Sketch.ml" 96 2652 2669
+)
+"src/consynth/Sketch.ml" 100 2760 2769 "src/consynth/Sketch.ml" 100 2760 2778
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 97 2673 2680 "src/consynth/Sketch.ml" 100 2760 2778
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 96 2652 2656 "src/consynth/Sketch.ml" 100 2760 2779
+type(
+  VS.elt -> VS.elt list -> VS.elt list
+)
+"src/consynth/Sketch.ml" 100 2760 2780 "src/consynth/Sketch.ml" 100 2760 2782
+type(
+  VS.t
+)
+ident(
+  int_ref vs "src/consynth/Sketch.ml" 94 2613 2637 "src/consynth/Sketch.ml" 94 2613 2639
+)
+"src/consynth/Sketch.ml" 100 2760 2783 "src/consynth/Sketch.ml" 100 2760 2785
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 95 2642 2644 "src/consynth/Sketch.ml" 100 2760 2785
+call(
+  tail
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 102 2787 2791 "src/consynth/Sketch.ml" 102 2787 2807
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  def pp_defined_input "src/consynth/Sketch.ml" 110 3069 3069 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 102 2787 2808 "src/consynth/Sketch.ml" 102 2787 2811
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 102 2787 2812 "src/consynth/Sketch.ml" 106 2930 2962
+)
+"src/consynth/Sketch.ml" 102 2787 2812 "src/consynth/Sketch.ml" 102 2787 2814
+type(
+  VS.t
+)
+ident(
+  def vs "src/consynth/Sketch.ml" 103 2817 2819 "src/consynth/Sketch.ml" 106 2930 2962
+)
+"src/consynth/Sketch.ml" 103 2817 2819 "src/consynth/Sketch.ml" 103 2817 2834
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> VS.elt -> unit) -> F.formatter -> VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 104 2835 2852 "src/consynth/Sketch.ml" 104 2835 2855
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 104 2835 2856 "src/consynth/Sketch.ml" 104 2835 2880
+)
+"src/consynth/Sketch.ml" 104 2835 2856 "src/consynth/Sketch.ml" 104 2835 2858
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 104 2835 2862 "src/consynth/Sketch.ml" 104 2835 2871
+type(
+  F.formatter -> (unit, F.formatter, unit) format -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 104 2835 2872 "src/consynth/Sketch.ml" 104 2835 2875
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 104 2835 2852 "src/consynth/Sketch.ml" 104 2835 2855
+)
+"src/consynth/Sketch.ml" 104 2835 2876 "src/consynth/Sketch.ml" 104 2835 2880
+type(
+  (unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 104 2835 2862 "src/consynth/Sketch.ml" 104 2835 2880
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 104 2835 2847 "src/consynth/Sketch.ml" 104 2835 2881
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 105 2882 2891 "src/consynth/Sketch.ml" 105 2882 2894
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 105 2882 2895 "src/consynth/Sketch.ml" 105 2882 2928
+)
+"src/consynth/Sketch.ml" 105 2882 2895 "src/consynth/Sketch.ml" 105 2882 2897
+type(
+  VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 105 2882 2901 "src/consynth/Sketch.ml" 105 2882 2928
+)
+"src/consynth/Sketch.ml" 105 2882 2901 "src/consynth/Sketch.ml" 105 2882 2910
+type(
+  F.formatter -> (string -> unit, F.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 105 2882 2911 "src/consynth/Sketch.ml" 105 2882 2914
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 105 2882 2891 "src/consynth/Sketch.ml" 105 2882 2894
+)
+"src/consynth/Sketch.ml" 105 2882 2915 "src/consynth/Sketch.ml" 105 2882 2919
+type(
+  (string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 105 2882 2920 "src/consynth/Sketch.ml" 105 2882 2922
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 105 2882 2895 "src/consynth/Sketch.ml" 105 2882 2897
+)
+"src/consynth/Sketch.ml" 105 2882 2920 "src/consynth/Sketch.ml" 105 2882 2928
+type(
+  string
+)
+"src/consynth/Sketch.ml" 105 2882 2901 "src/consynth/Sketch.ml" 105 2882 2928
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 105 2882 2886 "src/consynth/Sketch.ml" 105 2882 2929
+type(
+  F.formatter -> VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 106 2930 2934 "src/consynth/Sketch.ml" 106 2930 2937
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 102 2787 2808 "src/consynth/Sketch.ml" 102 2787 2811
+)
+"src/consynth/Sketch.ml" 106 2930 2939 "src/consynth/Sketch.ml" 106 2930 2958
+type(
+  VS.t -> VS.elt list
+)
+ident(
+  int_ref input_symbols_of_vs "src/consynth/Sketch.ml" 94 2613 2617 "src/consynth/Sketch.ml" 94 2613 2636
+)
+"src/consynth/Sketch.ml" 106 2930 2959 "src/consynth/Sketch.ml" 106 2930 2961
+type(
+  VS.t
+)
+ident(
+  int_ref vs "src/consynth/Sketch.ml" 102 2787 2812 "src/consynth/Sketch.ml" 102 2787 2814
+)
+"src/consynth/Sketch.ml" 106 2930 2938 "src/consynth/Sketch.ml" 106 2930 2962
+call(
+  stack
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 103 2817 2819 "src/consynth/Sketch.ml" 106 2930 2962
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+type(
+  string
+)
+ident(
+  def main_struct_name "src/consynth/Sketch.ml" 112 3185 3185 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 110 3069 3092 "src/consynth/Sketch.ml" 110 3069 3107
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 110 3069 3108 "src/consynth/Sketch.ml" 110 3069 3129
+type(
+  string
+)
+"src/consynth/Sketch.ml" 110 3069 3092 "src/consynth/Sketch.ml" 110 3069 3129
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 112 3185 3189 "src/consynth/Sketch.ml" 112 3185 3198
+type(
+  string
+)
+ident(
+  def join_name "src/consynth/Sketch.ml" 114 3292 3292 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 112 3185 3201 "src/consynth/Sketch.ml" 112 3185 3216
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 112 3185 3217 "src/consynth/Sketch.ml" 112 3185 3236
+type(
+  string
+)
+"src/consynth/Sketch.ml" 112 3185 3201 "src/consynth/Sketch.ml" 112 3185 3236
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 114 3292 3296 "src/consynth/Sketch.ml" 114 3292 3305
+type(
+  string
+)
+ident(
+  def body_name "src/consynth/Sketch.ml" 116 3417 3417 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 114 3292 3308 "src/consynth/Sketch.ml" 114 3292 3323
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 114 3292 3324 "src/consynth/Sketch.ml" 114 3292 3348
+type(
+  string
+)
+"src/consynth/Sketch.ml" 114 3292 3308 "src/consynth/Sketch.ml" 114 3292 3348
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 116 3417 3421 "src/consynth/Sketch.ml" 116 3417 3437
+type(
+  string
+)
+ident(
+  def ident_state_name "src/consynth/Sketch.ml" 117 3486 3486 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 116 3417 3440 "src/consynth/Sketch.ml" 116 3417 3455
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 116 3417 3456 "src/consynth/Sketch.ml" 116 3417 3485
+type(
+  string
+)
+"src/consynth/Sketch.ml" 116 3417 3440 "src/consynth/Sketch.ml" 116 3417 3485
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 117 3486 3490 "src/consynth/Sketch.ml" 117 3486 3505
+type(
+  string
+)
+ident(
+  def init_state_name "src/consynth/Sketch.ml" 119 3635 3635 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 117 3486 3508 "src/consynth/Sketch.ml" 117 3486 3523
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 117 3486 3524 "src/consynth/Sketch.ml" 117 3486 3552
+type(
+  string
+)
+"src/consynth/Sketch.ml" 117 3486 3508 "src/consynth/Sketch.ml" 117 3486 3552
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 119 3635 3639 "src/consynth/Sketch.ml" 119 3635 3661
+type(
+  SketchTypes.skExpr Utils.IM.t -> Cil.varinfo -> string
+)
+ident(
+  def base_init_value_choice "src/consynth/Sketch.ml" 134 4179 4179 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 119 3635 3662 "src/consynth/Sketch.ml" 119 3635 3677
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reaching_consts "src/consynth/Sketch.ml" 119 3635 3678 "src/consynth/Sketch.ml" 128 3976 4002
+)
+"src/consynth/Sketch.ml" 119 3635 3678 "src/consynth/Sketch.ml" 119 3635 3680
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 120 3683 3685 "src/consynth/Sketch.ml" 128 3976 4002
+)
+"src/consynth/Sketch.ml" 121 3690 3699 "src/consynth/Sketch.ml" 121 3690 3700
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/Sketch.ml" 122 3737 3742 "src/consynth/Sketch.ml" 124 3837 3855
+)
+"src/consynth/Sketch.ml" 121 3690 3703 "src/consynth/Sketch.ml" 121 3690 3710
+type(
+  Utils.IM.key -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Utils.IM.find
+)
+"src/consynth/Sketch.ml" 121 3690 3711 "src/consynth/Sketch.ml" 121 3690 3713
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 119 3635 3678 "src/consynth/Sketch.ml" 119 3635 3680
+)
+"src/consynth/Sketch.ml" 121 3690 3711 "src/consynth/Sketch.ml" 121 3690 3717
+type(
+  Utils.IM.key
+)
+"src/consynth/Sketch.ml" 121 3690 3718 "src/consynth/Sketch.ml" 121 3690 3733
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reaching_consts "src/consynth/Sketch.ml" 119 3635 3662 "src/consynth/Sketch.ml" 119 3635 3677
+)
+"src/consynth/Sketch.ml" 121 3690 3703 "src/consynth/Sketch.ml" 121 3690 3733
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 122 3737 3742 "src/consynth/Sketch.ml" 122 3737 3751
+type(
+  F.formatter ->
+  (string ->
+   (F.formatter -> SketchTypes.skExpr -> unit) -> SketchTypes.skExpr -> unit,
+   F.formatter, unit)
+  format ->
+  string ->
+  (F.formatter -> SketchTypes.skExpr -> unit) -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 122 3737 3752 "src/consynth/Sketch.ml" 122 3737 3767
+type(
+  F.formatter
+)
+ident(
+  ext_ref F.str_formatter
+)
+"src/consynth/Sketch.ml" 122 3737 3768 "src/consynth/Sketch.ml" 122 3737 3784
+type(
+  (string ->
+   (F.formatter -> SketchTypes.skExpr -> unit) -> SketchTypes.skExpr -> unit,
+   F.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 123 3785 3793 "src/consynth/Sketch.ml" 123 3785 3808
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 123 3785 3809 "src/consynth/Sketch.ml" 123 3785 3835
+type(
+  string
+)
+"src/consynth/Sketch.ml" 123 3785 3792 "src/consynth/Sketch.ml" 123 3785 3836
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 124 3837 3844 "src/consynth/Sketch.ml" 124 3837 3853
+type(
+  F.formatter -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref SPretty.pp_skexpr
+)
+"src/consynth/Sketch.ml" 124 3837 3854 "src/consynth/Sketch.ml" 124 3837 3855
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/Sketch.ml" 121 3690 3699 "src/consynth/Sketch.ml" 121 3690 3700
+)
+"src/consynth/Sketch.ml" 122 3737 3742 "src/consynth/Sketch.ml" 124 3837 3855
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 121 3690 3695 "src/consynth/Sketch.ml" 124 3837 3855
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 125 3856 3864 "src/consynth/Sketch.ml" 125 3856 3873
+type(
+  exn
+)
+"src/consynth/Sketch.ml" 126 3877 3882 "src/consynth/Sketch.ml" 126 3877 3891
+type(
+  F.formatter -> (string -> unit, F.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 126 3877 3892 "src/consynth/Sketch.ml" 126 3877 3907
+type(
+  F.formatter
+)
+ident(
+  ext_ref F.str_formatter
+)
+"src/consynth/Sketch.ml" 126 3877 3908 "src/consynth/Sketch.ml" 126 3877 3921
+type(
+  (string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 127 3922 3930 "src/consynth/Sketch.ml" 127 3922 3945
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 127 3922 3946 "src/consynth/Sketch.ml" 127 3922 3972
+type(
+  string
+)
+"src/consynth/Sketch.ml" 127 3922 3929 "src/consynth/Sketch.ml" 127 3922 3973
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 126 3877 3882 "src/consynth/Sketch.ml" 127 3922 3973
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 120 3683 3685 "src/consynth/Sketch.ml" 127 3922 3974
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 128 3976 3978 "src/consynth/Sketch.ml" 128 3976 3999
+type(
+  unit -> string
+)
+ident(
+  ext_ref F.flush_str_formatter
+)
+"src/consynth/Sketch.ml" 128 3976 4000 "src/consynth/Sketch.ml" 128 3976 4002
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 128 3976 3978 "src/consynth/Sketch.ml" 128 3976 4002
+call(
+  tail
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 120 3683 3685 "src/consynth/Sketch.ml" 128 3976 4002
+type(
+  string
+)
+"src/consynth/Sketch.ml" 138 4224 4228 "src/consynth/Sketch.ml" 138 4224 4234
+type(
+  F.formatter -> VS.t -> special_const -> Cil.varinfo
+)
+ident(
+  def create "src/consynth/Sketch.ml" 164 5182 5182 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 138 4224 4235 "src/consynth/Sketch.ml" 138 4224 4238
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 138 4224 4239 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 138 4224 4239 "src/consynth/Sketch.ml" 138 4224 4249
+type(
+  VS.t
+)
+ident(
+  def input_vars "src/consynth/Sketch.ml" 138 4224 4250 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 138 4224 4250 "src/consynth/Sketch.ml" 138 4224 4257
+type(
+  special_const
+)
+ident(
+  def varname "src/consynth/Sketch.ml" 139 4260 4262 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 139 4260 4262 "src/consynth/Sketch.ml" 139 4260 4272
+type(
+  F.formatter -> string -> unit
+)
+ident(
+  ext_ref Racket.pp_comment
+)
+"src/consynth/Sketch.ml" 139 4260 4273 "src/consynth/Sketch.ml" 139 4260 4276
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 138 4224 4235 "src/consynth/Sketch.ml" 138 4224 4238
+)
+"src/consynth/Sketch.ml" 139 4260 4277 "src/consynth/Sketch.ml" 139 4260 4319
+type(
+  string
+)
+"src/consynth/Sketch.ml" 139 4260 4262 "src/consynth/Sketch.ml" 139 4260 4319
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 140 4321 4327 "src/consynth/Sketch.ml" 140 4321 4340
+type(
+  (F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit
+)
+ident(
+  def pp_loc_assert "src/consynth/Sketch.ml" 141 4394 4396 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 140 4321 4343 "src/consynth/Sketch.ml" 140 4321 4352
+type(
+  F.formatter ->
+  ((F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit, F.formatter,
+   unit)
+  format -> (F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 140 4321 4353 "src/consynth/Sketch.ml" 140 4321 4356
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 138 4224 4235 "src/consynth/Sketch.ml" 138 4224 4238
+)
+"src/consynth/Sketch.ml" 140 4321 4357 "src/consynth/Sketch.ml" 140 4321 4390
+type(
+  ((F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit, F.formatter,
+   unit)
+  format
+)
+"src/consynth/Sketch.ml" 140 4321 4343 "src/consynth/Sketch.ml" 140 4321 4390
+call(
+  stack
+)
+type(
+  (F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 141 4394 4402 "src/consynth/Sketch.ml" 141 4394 4409
+type(
+  special_const
+)
+ident(
+  int_ref varname "src/consynth/Sketch.ml" 138 4224 4250 "src/consynth/Sketch.ml" 138 4224 4257
+)
+"src/consynth/Sketch.ml" 142 4415 4419 "src/consynth/Sketch.ml" 142 4415 4425
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 143 4429 4437 "src/consynth/Sketch.ml" 143 4429 4439
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 144 4494 4498 "src/consynth/Sketch.ml" 151 4790 4796
+)
+"src/consynth/Sketch.ml" 143 4429 4442 "src/consynth/Sketch.ml" 143 4429 4453
+type(
+  bool -> string -> ?init:Cil.init -> Cil.typ -> Cil.varinfo
+)
+ident(
+  ext_ref Cil.makeVarinfo
+)
+"src/consynth/Sketch.ml" 143 4429 4454 "src/consynth/Sketch.ml" 143 4429 4459
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 143 4429 4460 "src/consynth/Sketch.ml" 143 4429 4472
+type(
+  string
+)
+"src/consynth/Sketch.ml" 143 4429 4480 "src/consynth/Sketch.ml" 143 4429 4484
+type(
+  Cil.ikind
+)
+"src/consynth/Sketch.ml" 143 4429 4486 "src/consynth/Sketch.ml" 143 4429 4488
+type(
+  Cil.attributes
+)
+"src/consynth/Sketch.ml" 143 4429 4473 "src/consynth/Sketch.ml" 143 4429 4490
+type(
+  Cil.typ
+)
+"src/consynth/Sketch.ml" 143 4429 4442 "src/consynth/Sketch.ml" 143 4429 4490
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 144 4494 4498 "src/consynth/Sketch.ml" 144 4494 4516
+type(
+  F.formatter -> define_symbolic -> unit
+)
+ident(
+  int_ref pp_define_symbolic "src/consynth/Sketch.ml" 51 1147 1155 "src/consynth/Sketch.ml" 51 1147 1173
+)
+"src/consynth/Sketch.ml" 144 4494 4517 "src/consynth/Sketch.ml" 144 4494 4520
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 138 4224 4235 "src/consynth/Sketch.ml" 138 4224 4238
+)
+"src/consynth/Sketch.ml" 144 4494 4534 "src/consynth/Sketch.ml" 144 4494 4536
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 143 4429 4437 "src/consynth/Sketch.ml" 143 4429 4439
+)
+"src/consynth/Sketch.ml" 144 4494 4533 "src/consynth/Sketch.ml" 144 4494 4537
+type(
+  Cil.varinfo list
+)
+"src/consynth/Sketch.ml" 144 4494 4521 "src/consynth/Sketch.ml" 144 4494 4538
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 144 4494 4498 "src/consynth/Sketch.ml" 144 4494 4538
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 145 4540 4548 "src/consynth/Sketch.ml" 145 4540 4561
+type(
+  VS.elt list
+)
+ident(
+  def input_symbols "src/consynth/Sketch.ml" 146 4598 4602 "src/consynth/Sketch.ml" 151 4790 4796
+)
+"src/consynth/Sketch.ml" 145 4540 4564 "src/consynth/Sketch.ml" 145 4540 4583
+type(
+  VS.t -> VS.elt list
+)
+ident(
+  int_ref input_symbols_of_vs "src/consynth/Sketch.ml" 94 2613 2617 "src/consynth/Sketch.ml" 94 2613 2636
+)
+"src/consynth/Sketch.ml" 145 4540 4584 "src/consynth/Sketch.ml" 145 4540 4594
+type(
+  VS.t
+)
+ident(
+  int_ref input_vars "src/consynth/Sketch.ml" 138 4224 4239 "src/consynth/Sketch.ml" 138 4224 4249
+)
+"src/consynth/Sketch.ml" 145 4540 4564 "src/consynth/Sketch.ml" 145 4540 4594
+call(
+  stack
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 146 4598 4602 "src/consynth/Sketch.ml" 146 4598 4615
+type(
+  (F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit
+)
+ident(
+  int_ref pp_loc_assert "src/consynth/Sketch.ml" 140 4321 4327 "src/consynth/Sketch.ml" 140 4321 4340
+)
+"src/consynth/Sketch.ml" 147 4616 4623 "src/consynth/Sketch.ml" 147 4616 4638
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> VS.elt -> unit) -> F.formatter -> VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 148 4639 4661 "src/consynth/Sketch.ml" 148 4639 4664
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 148 4639 4665 "src/consynth/Sketch.ml" 148 4639 4689
+)
+"src/consynth/Sketch.ml" 148 4639 4665 "src/consynth/Sketch.ml" 148 4639 4667
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 148 4639 4671 "src/consynth/Sketch.ml" 148 4639 4680
+type(
+  F.formatter -> (unit, F.formatter, unit) format -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 148 4639 4681 "src/consynth/Sketch.ml" 148 4639 4684
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 148 4639 4661 "src/consynth/Sketch.ml" 148 4639 4664
+)
+"src/consynth/Sketch.ml" 148 4639 4685 "src/consynth/Sketch.ml" 148 4639 4689
+type(
+  (unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 148 4639 4671 "src/consynth/Sketch.ml" 148 4639 4689
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 148 4639 4656 "src/consynth/Sketch.ml" 148 4639 4690
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 149 4691 4705 "src/consynth/Sketch.ml" 149 4691 4708
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 149 4691 4709 "src/consynth/Sketch.ml" 149 4691 4766
+)
+"src/consynth/Sketch.ml" 149 4691 4709 "src/consynth/Sketch.ml" 149 4691 4715
+type(
+  VS.elt
+)
+ident(
+  def inp_vi "src/consynth/Sketch.ml" 149 4691 4719 "src/consynth/Sketch.ml" 149 4691 4766
+)
+"src/consynth/Sketch.ml" 149 4691 4719 "src/consynth/Sketch.ml" 149 4691 4728
+type(
+  F.formatter ->
+  (string -> string -> unit, F.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 149 4691 4729 "src/consynth/Sketch.ml" 149 4691 4732
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 149 4691 4705 "src/consynth/Sketch.ml" 149 4691 4708
+)
+"src/consynth/Sketch.ml" 149 4691 4733 "src/consynth/Sketch.ml" 149 4691 4744
+type(
+  (string -> string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 149 4691 4745 "src/consynth/Sketch.ml" 149 4691 4751
+type(
+  VS.elt
+)
+ident(
+  int_ref inp_vi "src/consynth/Sketch.ml" 149 4691 4709 "src/consynth/Sketch.ml" 149 4691 4715
+)
+"src/consynth/Sketch.ml" 149 4691 4745 "src/consynth/Sketch.ml" 149 4691 4757
+type(
+  string
+)
+"src/consynth/Sketch.ml" 149 4691 4758 "src/consynth/Sketch.ml" 149 4691 4760
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 143 4429 4437 "src/consynth/Sketch.ml" 143 4429 4439
+)
+"src/consynth/Sketch.ml" 149 4691 4758 "src/consynth/Sketch.ml" 149 4691 4766
+type(
+  string
+)
+"src/consynth/Sketch.ml" 149 4691 4719 "src/consynth/Sketch.ml" 149 4691 4766
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 149 4691 4700 "src/consynth/Sketch.ml" 149 4691 4767
+type(
+  F.formatter -> VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 147 4616 4622 "src/consynth/Sketch.ml" 149 4691 4768
+call(
+  stack
+)
+type(
+  F.formatter -> VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 150 4769 4775 "src/consynth/Sketch.ml" 150 4769 4788
+type(
+  VS.elt list
+)
+ident(
+  int_ref input_symbols "src/consynth/Sketch.ml" 145 4540 4548 "src/consynth/Sketch.ml" 145 4540 4561
+)
+"src/consynth/Sketch.ml" 146 4598 4602 "src/consynth/Sketch.ml" 150 4769 4788
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 151 4790 4794 "src/consynth/Sketch.ml" 151 4790 4796
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 143 4429 4437 "src/consynth/Sketch.ml" 143 4429 4439
+)
+"src/consynth/Sketch.ml" 146 4598 4602 "src/consynth/Sketch.ml" 151 4790 4796
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 145 4540 4544 "src/consynth/Sketch.ml" 151 4790 4796
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 144 4494 4498 "src/consynth/Sketch.ml" 151 4790 4796
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 143 4429 4433 "src/consynth/Sketch.ml" 151 4790 4796
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 153 4798 4802 "src/consynth/Sketch.ml" 153 4798 4809
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 154 4813 4821 "src/consynth/Sketch.ml" 154 4813 4823
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 155 4878 4882 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 154 4813 4826 "src/consynth/Sketch.ml" 154 4813 4837
+type(
+  bool -> string -> ?init:Cil.init -> Cil.typ -> Cil.varinfo
+)
+ident(
+  ext_ref Cil.makeVarinfo
+)
+"src/consynth/Sketch.ml" 154 4813 4838 "src/consynth/Sketch.ml" 154 4813 4843
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 154 4813 4844 "src/consynth/Sketch.ml" 154 4813 4856
+type(
+  string
+)
+"src/consynth/Sketch.ml" 154 4813 4864 "src/consynth/Sketch.ml" 154 4813 4868
+type(
+  Cil.ikind
+)
+"src/consynth/Sketch.ml" 154 4813 4870 "src/consynth/Sketch.ml" 154 4813 4872
+type(
+  Cil.attributes
+)
+"src/consynth/Sketch.ml" 154 4813 4857 "src/consynth/Sketch.ml" 154 4813 4874
+type(
+  Cil.typ
+)
+"src/consynth/Sketch.ml" 154 4813 4826 "src/consynth/Sketch.ml" 154 4813 4874
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 155 4878 4882 "src/consynth/Sketch.ml" 155 4878 4900
+type(
+  F.formatter -> define_symbolic -> unit
+)
+ident(
+  int_ref pp_define_symbolic "src/consynth/Sketch.ml" 51 1147 1155 "src/consynth/Sketch.ml" 51 1147 1173
+)
+"src/consynth/Sketch.ml" 155 4878 4901 "src/consynth/Sketch.ml" 155 4878 4904
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 138 4224 4235 "src/consynth/Sketch.ml" 138 4224 4238
+)
+"src/consynth/Sketch.ml" 155 4878 4918 "src/consynth/Sketch.ml" 155 4878 4920
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 154 4813 4821 "src/consynth/Sketch.ml" 154 4813 4823
+)
+"src/consynth/Sketch.ml" 155 4878 4917 "src/consynth/Sketch.ml" 155 4878 4921
+type(
+  Cil.varinfo list
+)
+"src/consynth/Sketch.ml" 155 4878 4905 "src/consynth/Sketch.ml" 155 4878 4922
+type(
+  define_symbolic
+)
+"src/consynth/Sketch.ml" 155 4878 4882 "src/consynth/Sketch.ml" 155 4878 4922
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 156 4924 4932 "src/consynth/Sketch.ml" 156 4924 4945
+type(
+  VS.elt list
+)
+ident(
+  def input_symbols "src/consynth/Sketch.ml" 157 4982 4986 "src/consynth/Sketch.ml" 162 5174 5180
+)
+"src/consynth/Sketch.ml" 156 4924 4948 "src/consynth/Sketch.ml" 156 4924 4967
+type(
+  VS.t -> VS.elt list
+)
+ident(
+  int_ref input_symbols_of_vs "src/consynth/Sketch.ml" 94 2613 2617 "src/consynth/Sketch.ml" 94 2613 2636
+)
+"src/consynth/Sketch.ml" 156 4924 4968 "src/consynth/Sketch.ml" 156 4924 4978
+type(
+  VS.t
+)
+ident(
+  int_ref input_vars "src/consynth/Sketch.ml" 138 4224 4239 "src/consynth/Sketch.ml" 138 4224 4249
+)
+"src/consynth/Sketch.ml" 156 4924 4948 "src/consynth/Sketch.ml" 156 4924 4978
+call(
+  stack
+)
+type(
+  VS.elt list
+)
+"src/consynth/Sketch.ml" 157 4982 4986 "src/consynth/Sketch.ml" 157 4982 4999
+type(
+  (F.formatter -> VS.elt list -> unit) -> VS.elt list -> unit
+)
+ident(
+  int_ref pp_loc_assert "src/consynth/Sketch.ml" 140 4321 4327 "src/consynth/Sketch.ml" 140 4321 4340
+)
+"src/consynth/Sketch.ml" 158 5000 5007 "src/consynth/Sketch.ml" 158 5000 5022
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> VS.elt -> unit) -> F.formatter -> VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 159 5023 5045 "src/consynth/Sketch.ml" 159 5023 5048
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 159 5023 5049 "src/consynth/Sketch.ml" 159 5023 5073
+)
+"src/consynth/Sketch.ml" 159 5023 5049 "src/consynth/Sketch.ml" 159 5023 5051
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 159 5023 5055 "src/consynth/Sketch.ml" 159 5023 5064
+type(
+  F.formatter -> (unit, F.formatter, unit) format -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 159 5023 5065 "src/consynth/Sketch.ml" 159 5023 5068
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 159 5023 5045 "src/consynth/Sketch.ml" 159 5023 5048
+)
+"src/consynth/Sketch.ml" 159 5023 5069 "src/consynth/Sketch.ml" 159 5023 5073
+type(
+  (unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 159 5023 5055 "src/consynth/Sketch.ml" 159 5023 5073
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 159 5023 5040 "src/consynth/Sketch.ml" 159 5023 5074
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 160 5075 5089 "src/consynth/Sketch.ml" 160 5075 5092
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 160 5075 5093 "src/consynth/Sketch.ml" 160 5075 5150
+)
+"src/consynth/Sketch.ml" 160 5075 5093 "src/consynth/Sketch.ml" 160 5075 5099
+type(
+  VS.elt
+)
+ident(
+  def inp_vi "src/consynth/Sketch.ml" 160 5075 5103 "src/consynth/Sketch.ml" 160 5075 5150
+)
+"src/consynth/Sketch.ml" 160 5075 5103 "src/consynth/Sketch.ml" 160 5075 5112
+type(
+  F.formatter ->
+  (string -> string -> unit, F.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 160 5075 5113 "src/consynth/Sketch.ml" 160 5075 5116
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 160 5075 5089 "src/consynth/Sketch.ml" 160 5075 5092
+)
+"src/consynth/Sketch.ml" 160 5075 5117 "src/consynth/Sketch.ml" 160 5075 5128
+type(
+  (string -> string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 160 5075 5129 "src/consynth/Sketch.ml" 160 5075 5135
+type(
+  VS.elt
+)
+ident(
+  int_ref inp_vi "src/consynth/Sketch.ml" 160 5075 5093 "src/consynth/Sketch.ml" 160 5075 5099
+)
+"src/consynth/Sketch.ml" 160 5075 5129 "src/consynth/Sketch.ml" 160 5075 5141
+type(
+  string
+)
+"src/consynth/Sketch.ml" 160 5075 5142 "src/consynth/Sketch.ml" 160 5075 5144
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 154 4813 4821 "src/consynth/Sketch.ml" 154 4813 4823
+)
+"src/consynth/Sketch.ml" 160 5075 5142 "src/consynth/Sketch.ml" 160 5075 5150
+type(
+  string
+)
+"src/consynth/Sketch.ml" 160 5075 5103 "src/consynth/Sketch.ml" 160 5075 5150
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 160 5075 5084 "src/consynth/Sketch.ml" 160 5075 5151
+type(
+  F.formatter -> VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 158 5000 5006 "src/consynth/Sketch.ml" 160 5075 5152
+call(
+  stack
+)
+type(
+  F.formatter -> VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 161 5153 5159 "src/consynth/Sketch.ml" 161 5153 5172
+type(
+  VS.elt list
+)
+ident(
+  int_ref input_symbols "src/consynth/Sketch.ml" 156 4924 4932 "src/consynth/Sketch.ml" 156 4924 4945
+)
+"src/consynth/Sketch.ml" 157 4982 4986 "src/consynth/Sketch.ml" 161 5153 5172
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 162 5174 5178 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 154 4813 4821 "src/consynth/Sketch.ml" 154 4813 4823
+)
+"src/consynth/Sketch.ml" 157 4982 4986 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 156 4924 4928 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 155 4878 4882 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 154 4813 4817 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 141 4394 4396 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 140 4321 4323 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 139 4260 4262 "src/consynth/Sketch.ml" 162 5174 5180
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 164 5182 5186 "src/consynth/Sketch.ml" 164 5182 5205
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  def special_const_table "src/consynth/Sketch.ml" 166 5241 5241 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 164 5182 5227 "src/consynth/Sketch.ml" 164 5182 5236
+type(
+  int -> Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref Utils.IH.create
+)
+"src/consynth/Sketch.ml" 164 5182 5237 "src/consynth/Sketch.ml" 164 5182 5239
+type(
+  int
+)
+"src/consynth/Sketch.ml" 164 5182 5227 "src/consynth/Sketch.ml" 164 5182 5239
+call(
+  stack
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+"src/consynth/Sketch.ml" 166 5241 5245 "src/consynth/Sketch.ml" 166 5241 5258
+type(
+  F.formatter -> VS.t -> special_const -> Cil.varinfo
+)
+ident(
+  def get_or_create "src/consynth/Sketch.ml" 180 5620 5620 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 166 5241 5259 "src/consynth/Sketch.ml" 166 5241 5262
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 166 5241 5263 "src/consynth/Sketch.ml" 178 5586 5618
+)
+"src/consynth/Sketch.ml" 166 5241 5263 "src/consynth/Sketch.ml" 166 5241 5273
+type(
+  VS.t
+)
+ident(
+  def input_vars "src/consynth/Sketch.ml" 166 5241 5274 "src/consynth/Sketch.ml" 178 5586 5618
+)
+"src/consynth/Sketch.ml" 166 5241 5274 "src/consynth/Sketch.ml" 166 5241 5291
+type(
+  special_const
+)
+ident(
+  def special_const_typ "src/consynth/Sketch.ml" 167 5294 5296 "src/consynth/Sketch.ml" 178 5586 5618
+)
+"src/consynth/Sketch.ml" 167 5294 5300 "src/consynth/Sketch.ml" 167 5294 5319
+type(
+  int
+)
+ident(
+  def special_const_index "src/consynth/Sketch.ml" 172 5397 5399 "src/consynth/Sketch.ml" 178 5586 5618
+)
+"src/consynth/Sketch.ml" 168 5322 5332 "src/consynth/Sketch.ml" 168 5322 5349
+type(
+  special_const
+)
+ident(
+  int_ref special_const_typ "src/consynth/Sketch.ml" 166 5241 5274 "src/consynth/Sketch.ml" 166 5241 5291
+)
+"src/consynth/Sketch.ml" 169 5355 5361 "src/consynth/Sketch.ml" 169 5355 5368
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 169 5355 5372 "src/consynth/Sketch.ml" 169 5355 5373
+type(
+  int
+)
+"src/consynth/Sketch.ml" 170 5374 5380 "src/consynth/Sketch.ml" 170 5374 5386
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 170 5374 5390 "src/consynth/Sketch.ml" 170 5374 5391
+type(
+  int
+)
+"src/consynth/Sketch.ml" 168 5322 5326 "src/consynth/Sketch.ml" 170 5374 5391
+type(
+  int
+)
+"src/consynth/Sketch.ml" 173 5403 5407 "src/consynth/Sketch.ml" 173 5403 5414
+type(
+  Cil.varinfo Utils.IH.t -> Utils.IH.key -> Cil.varinfo
+)
+ident(
+  ext_ref Utils.IH.find
+)
+"src/consynth/Sketch.ml" 173 5403 5415 "src/consynth/Sketch.ml" 173 5403 5434
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref special_const_table "src/consynth/Sketch.ml" 164 5182 5186 "src/consynth/Sketch.ml" 164 5182 5205
+)
+"src/consynth/Sketch.ml" 173 5403 5435 "src/consynth/Sketch.ml" 173 5403 5454
+type(
+  Utils.IH.key
+)
+ident(
+  int_ref special_const_index "src/consynth/Sketch.ml" 167 5294 5300 "src/consynth/Sketch.ml" 167 5294 5319
+)
+"src/consynth/Sketch.ml" 173 5403 5407 "src/consynth/Sketch.ml" 173 5403 5454
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 174 5455 5462 "src/consynth/Sketch.ml" 174 5455 5471
+type(
+  exn
+)
+"src/consynth/Sketch.ml" 175 5475 5483 "src/consynth/Sketch.ml" 175 5475 5485
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 176 5531 5535 "src/consynth/Sketch.ml" 178 5586 5618
+)
+"src/consynth/Sketch.ml" 175 5475 5488 "src/consynth/Sketch.ml" 175 5475 5494
+type(
+  F.formatter -> VS.t -> special_const -> Cil.varinfo
+)
+ident(
+  int_ref create "src/consynth/Sketch.ml" 138 4224 4228 "src/consynth/Sketch.ml" 138 4224 4234
+)
+"src/consynth/Sketch.ml" 175 5475 5495 "src/consynth/Sketch.ml" 175 5475 5498
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 166 5241 5259 "src/consynth/Sketch.ml" 166 5241 5262
+)
+"src/consynth/Sketch.ml" 175 5475 5499 "src/consynth/Sketch.ml" 175 5475 5509
+type(
+  VS.t
+)
+ident(
+  int_ref input_vars "src/consynth/Sketch.ml" 166 5241 5263 "src/consynth/Sketch.ml" 166 5241 5273
+)
+"src/consynth/Sketch.ml" 175 5475 5510 "src/consynth/Sketch.ml" 175 5475 5527
+type(
+  special_const
+)
+ident(
+  int_ref special_const_typ "src/consynth/Sketch.ml" 166 5241 5274 "src/consynth/Sketch.ml" 166 5241 5291
+)
+"src/consynth/Sketch.ml" 175 5475 5488 "src/consynth/Sketch.ml" 175 5475 5527
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 176 5531 5535 "src/consynth/Sketch.ml" 176 5531 5544
+type(
+  F.formatter -> (unit, F.formatter, unit) format -> unit
+)
+ident(
+  ext_ref F.fprintf
+)
+"src/consynth/Sketch.ml" 176 5531 5545 "src/consynth/Sketch.ml" 176 5531 5548
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 166 5241 5259 "src/consynth/Sketch.ml" 166 5241 5262
+)
+"src/consynth/Sketch.ml" 176 5531 5549 "src/consynth/Sketch.ml" 176 5531 5553
+type(
+  (unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 176 5531 5535 "src/consynth/Sketch.ml" 176 5531 5553
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 177 5555 5559 "src/consynth/Sketch.ml" 177 5555 5565
+type(
+  Cil.varinfo Utils.IH.t -> Utils.IH.key -> Cil.varinfo -> unit
+)
+ident(
+  ext_ref Utils.IH.add
+)
+"src/consynth/Sketch.ml" 177 5555 5566 "src/consynth/Sketch.ml" 177 5555 5585
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref special_const_table "src/consynth/Sketch.ml" 164 5182 5186 "src/consynth/Sketch.ml" 164 5182 5205
+)
+"src/consynth/Sketch.ml" 178 5586 5592 "src/consynth/Sketch.ml" 178 5586 5611
+type(
+  Utils.IH.key
+)
+ident(
+  int_ref special_const_index "src/consynth/Sketch.ml" 167 5294 5300 "src/consynth/Sketch.ml" 167 5294 5319
+)
+"src/consynth/Sketch.ml" 178 5586 5612 "src/consynth/Sketch.ml" 178 5586 5614
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 175 5475 5483 "src/consynth/Sketch.ml" 175 5475 5485
+)
+"src/consynth/Sketch.ml" 177 5555 5559 "src/consynth/Sketch.ml" 178 5586 5614
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 178 5586 5616 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 175 5475 5483 "src/consynth/Sketch.ml" 175 5475 5485
+)
+"src/consynth/Sketch.ml" 177 5555 5559 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 176 5531 5535 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 175 5475 5479 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 172 5397 5399 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 167 5294 5296 "src/consynth/Sketch.ml" 178 5586 5618
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 180 5620 5624 "src/consynth/Sketch.ml" 180 5620 5644
+type(
+  unit -> unit
+)
+ident(
+  def clear_special_consts "src/consynth/Sketch.ml" 182 5680 5680 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 180 5620 5645 "src/consynth/Sketch.ml" 180 5620 5647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 180 5620 5650 "src/consynth/Sketch.ml" 180 5620 5658
+type(
+  Cil.varinfo Utils.IH.t -> unit
+)
+ident(
+  ext_ref Utils.IH.clear
+)
+"src/consynth/Sketch.ml" 180 5620 5659 "src/consynth/Sketch.ml" 180 5620 5678
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref special_const_table "src/consynth/Sketch.ml" 164 5182 5186 "src/consynth/Sketch.ml" 164 5182 5205
+)
+"src/consynth/Sketch.ml" 180 5620 5650 "src/consynth/Sketch.ml" 180 5620 5678
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 182 5680 5684 "src/consynth/Sketch.ml" 182 5680 5705
+type(
+  F.formatter ->
+  VS.t -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def handle_special_consts "src/consynth/Sketch.ml" 202 6266 6266 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 182 5680 5706 "src/consynth/Sketch.ml" 182 5680 5709
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 182 5680 5710 "src/consynth/Sketch.ml" 195 6096 6128
+)
+"src/consynth/Sketch.ml" 182 5680 5710 "src/consynth/Sketch.ml" 182 5680 5720
+type(
+  VS.t
+)
+ident(
+  def input_vars "src/consynth/Sketch.ml" 182 5680 5721 "src/consynth/Sketch.ml" 195 6096 6128
+)
+"src/consynth/Sketch.ml" 182 5680 5721 "src/consynth/Sketch.ml" 182 5680 5733
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reach_consts "src/consynth/Sketch.ml" 183 5736 5738 "src/consynth/Sketch.ml" 195 6096 6128
+)
+"src/consynth/Sketch.ml" 183 5736 5738 "src/consynth/Sketch.ml" 183 5736 5744
+type(
+  (SketchTypes.skExpr -> SketchTypes.skExpr) ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.map
+)
+"src/consynth/Sketch.ml" 184 5745 5754 "src/consynth/Sketch.ml" 184 5745 5758
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def expr "src/consynth/Sketch.ml" 185 5762 5769 "src/consynth/Sketch.ml" 195 6096 6114
+)
+"src/consynth/Sketch.ml" 185 5762 5775 "src/consynth/Sketch.ml" 185 5762 5779
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref expr "src/consynth/Sketch.ml" 184 5745 5754 "src/consynth/Sketch.ml" 184 5745 5758
+)
+"src/consynth/Sketch.ml" 186 5785 5802 "src/consynth/Sketch.ml" 186 5785 5809
+type(
+  SketchTypes.constants
+)
+"src/consynth/Sketch.ml" 186 5785 5794 "src/consynth/Sketch.ml" 186 5785 5809
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 188 5892 5905 "src/consynth/Sketch.ml" 188 5892 5907
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 189 5950 5959 "src/consynth/Sketch.ml" 189 5950 5979
+)
+"src/consynth/Sketch.ml" 188 5892 5910 "src/consynth/Sketch.ml" 188 5892 5923
+type(
+  F.formatter -> VS.t -> special_const -> Cil.varinfo
+)
+ident(
+  int_ref get_or_create "src/consynth/Sketch.ml" 166 5241 5245 "src/consynth/Sketch.ml" 166 5241 5258
+)
+"src/consynth/Sketch.ml" 188 5892 5924 "src/consynth/Sketch.ml" 188 5892 5927
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 182 5680 5706 "src/consynth/Sketch.ml" 182 5680 5709
+)
+"src/consynth/Sketch.ml" 188 5892 5928 "src/consynth/Sketch.ml" 188 5892 5938
+type(
+  VS.t
+)
+ident(
+  int_ref input_vars "src/consynth/Sketch.ml" 182 5680 5710 "src/consynth/Sketch.ml" 182 5680 5720
+)
+"src/consynth/Sketch.ml" 188 5892 5939 "src/consynth/Sketch.ml" 188 5892 5946
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 188 5892 5910 "src/consynth/Sketch.ml" 188 5892 5946
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 189 5950 5976 "src/consynth/Sketch.ml" 189 5950 5978
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 188 5892 5905 "src/consynth/Sketch.ml" 188 5892 5907
+)
+"src/consynth/Sketch.ml" 189 5950 5965 "src/consynth/Sketch.ml" 189 5950 5979
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/Sketch.ml" 189 5950 5959 "src/consynth/Sketch.ml" 189 5950 5979
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 188 5892 5901 "src/consynth/Sketch.ml" 189 5950 5979
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 191 5981 5998 "src/consynth/Sketch.ml" 191 5981 6004
+type(
+  SketchTypes.constants
+)
+"src/consynth/Sketch.ml" 191 5981 5990 "src/consynth/Sketch.ml" 191 5981 6004
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 192 6008 6021 "src/consynth/Sketch.ml" 192 6008 6023
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 193 6065 6074 "src/consynth/Sketch.ml" 193 6065 6094
+)
+"src/consynth/Sketch.ml" 192 6008 6026 "src/consynth/Sketch.ml" 192 6008 6039
+type(
+  F.formatter -> VS.t -> special_const -> Cil.varinfo
+)
+ident(
+  int_ref get_or_create "src/consynth/Sketch.ml" 166 5241 5245 "src/consynth/Sketch.ml" 166 5241 5258
+)
+"src/consynth/Sketch.ml" 192 6008 6040 "src/consynth/Sketch.ml" 192 6008 6043
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 182 5680 5706 "src/consynth/Sketch.ml" 182 5680 5709
+)
+"src/consynth/Sketch.ml" 192 6008 6044 "src/consynth/Sketch.ml" 192 6008 6054
+type(
+  VS.t
+)
+ident(
+  int_ref input_vars "src/consynth/Sketch.ml" 182 5680 5710 "src/consynth/Sketch.ml" 182 5680 5720
+)
+"src/consynth/Sketch.ml" 192 6008 6055 "src/consynth/Sketch.ml" 192 6008 6061
+type(
+  special_const
+)
+"src/consynth/Sketch.ml" 192 6008 6026 "src/consynth/Sketch.ml" 192 6008 6061
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/Sketch.ml" 193 6065 6091 "src/consynth/Sketch.ml" 193 6065 6093
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 192 6008 6021 "src/consynth/Sketch.ml" 192 6008 6023
+)
+"src/consynth/Sketch.ml" 193 6065 6080 "src/consynth/Sketch.ml" 193 6065 6094
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/Sketch.ml" 193 6065 6074 "src/consynth/Sketch.ml" 193 6065 6094
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 192 6008 6017 "src/consynth/Sketch.ml" 193 6065 6094
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 195 6096 6105 "src/consynth/Sketch.ml" 195 6096 6106
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 195 6096 6110 "src/consynth/Sketch.ml" 195 6096 6114
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref expr "src/consynth/Sketch.ml" 184 5745 5754 "src/consynth/Sketch.ml" 184 5745 5758
+)
+"src/consynth/Sketch.ml" 185 5762 5769 "src/consynth/Sketch.ml" 195 6096 6114
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 184 5745 5749 "src/consynth/Sketch.ml" 195 6096 6115
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 195 6096 6116 "src/consynth/Sketch.ml" 195 6096 6128
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 182 5680 5721 "src/consynth/Sketch.ml" 182 5680 5733
+)
+"src/consynth/Sketch.ml" 183 5736 5738 "src/consynth/Sketch.ml" 195 6096 6128
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Sketch.ml" 202 6266 6270 "src/consynth/Sketch.ml" 202 6266 6289
+type(
+  Format.formatter -> string * string list -> unit
+)
+ident(
+  def pp_state_definition "src/consynth/Sketch.ml" 213 6684 6684 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 202 6266 6290 "src/consynth/Sketch.ml" 202 6266 6293
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 202 6266 6294 "src/consynth/Sketch.ml" 205 6374 6410
+)
+"src/consynth/Sketch.ml" 202 6266 6294 "src/consynth/Sketch.ml" 202 6266 6305
+type(
+  string * string list
+)
+ident(
+  def main_struct "src/consynth/Sketch.ml" 203 6308 6310 "src/consynth/Sketch.ml" 205 6374 6410
+)
+"src/consynth/Sketch.ml" 203 6308 6310 "src/consynth/Sketch.ml" 203 6308 6329
+type(
+  Format.formatter -> string * string list -> unit
+)
+ident(
+  ext_ref Racket.pp_struct_defintion
+)
+"src/consynth/Sketch.ml" 203 6308 6330 "src/consynth/Sketch.ml" 203 6308 6333
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 202 6266 6290 "src/consynth/Sketch.ml" 202 6266 6293
+)
+"src/consynth/Sketch.ml" 203 6308 6334 "src/consynth/Sketch.ml" 203 6308 6345
+type(
+  string * string list
+)
+ident(
+  int_ref main_struct "src/consynth/Sketch.ml" 202 6266 6294 "src/consynth/Sketch.ml" 202 6266 6305
+)
+"src/consynth/Sketch.ml" 203 6308 6310 "src/consynth/Sketch.ml" 203 6308 6345
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 204 6347 6349 "src/consynth/Sketch.ml" 204 6347 6365
+type(
+  Format.formatter -> unit -> unit
+)
+ident(
+  ext_ref PpHelper.pp_force_newline
+)
+"src/consynth/Sketch.ml" 204 6347 6366 "src/consynth/Sketch.ml" 204 6347 6369
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 202 6266 6290 "src/consynth/Sketch.ml" 202 6266 6293
+)
+"src/consynth/Sketch.ml" 204 6347 6370 "src/consynth/Sketch.ml" 204 6347 6372
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 204 6347 6349 "src/consynth/Sketch.ml" 204 6347 6372
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 205 6374 6376 "src/consynth/Sketch.ml" 205 6374 6394
+type(
+  Format.formatter -> string * string list -> unit
+)
+ident(
+  ext_ref Racket.pp_struct_equality
+)
+"src/consynth/Sketch.ml" 205 6374 6395 "src/consynth/Sketch.ml" 205 6374 6398
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 202 6266 6290 "src/consynth/Sketch.ml" 202 6266 6293
+)
+"src/consynth/Sketch.ml" 205 6374 6399 "src/consynth/Sketch.ml" 205 6374 6410
+type(
+  string * string list
+)
+ident(
+  int_ref main_struct "src/consynth/Sketch.ml" 202 6266 6294 "src/consynth/Sketch.ml" 202 6266 6305
+)
+"src/consynth/Sketch.ml" 205 6374 6376 "src/consynth/Sketch.ml" 205 6374 6410
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 204 6347 6349 "src/consynth/Sketch.ml" 205 6374 6410
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 203 6308 6310 "src/consynth/Sketch.ml" 205 6374 6410
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 213 6684 6688 "src/consynth/Sketch.ml" 213 6684 6714
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  def pp_symbolic_definitions_of "src/consynth/Sketch.ml" 223 7058 7058 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 213 6684 6715 "src/consynth/Sketch.ml" 213 6684 6718
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 213 6684 6719 "src/consynth/Sketch.ml" 214 6726 6751
+)
+"src/consynth/Sketch.ml" 213 6684 6719 "src/consynth/Sketch.ml" 213 6684 6723
+type(
+  VS.t
+)
+ident(
+  def vars "src/consynth/Sketch.ml" 214 6726 6728 "src/consynth/Sketch.ml" 214 6726 6751
+)
+"src/consynth/Sketch.ml" 214 6726 6728 "src/consynth/Sketch.ml" 214 6726 6742
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  int_ref pp_vs_to_symbs "src/consynth/Sketch.ml" 77 2102 2106 "src/consynth/Sketch.ml" 77 2102 2120
+)
+"src/consynth/Sketch.ml" 214 6726 6743 "src/consynth/Sketch.ml" 214 6726 6746
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 213 6684 6715 "src/consynth/Sketch.ml" 213 6684 6718
+)
+"src/consynth/Sketch.ml" 214 6726 6747 "src/consynth/Sketch.ml" 214 6726 6751
+type(
+  VS.t
+)
+ident(
+  int_ref vars "src/consynth/Sketch.ml" 213 6684 6719 "src/consynth/Sketch.ml" 213 6684 6723
+)
+"src/consynth/Sketch.ml" 214 6726 6728 "src/consynth/Sketch.ml" 214 6726 6751
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 223 7058 7062 "src/consynth/Sketch.ml" 223 7058 7074
+type(
+  Format.formatter -> SketchTypes.sklet * Utils.VS.t * string -> unit
+)
+ident(
+  def pp_loop_body "src/consynth/Sketch.ml" 240 7853 7853 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 223 7058 7075 "src/consynth/Sketch.ml" 223 7058 7078
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 223 7058 7079 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 223 7058 7080 "src/consynth/Sketch.ml" 223 7058 7089
+type(
+  SketchTypes.sklet
+)
+ident(
+  def loop_body "src/consynth/Sketch.ml" 224 7124 7126 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 223 7058 7091 "src/consynth/Sketch.ml" 223 7058 7101
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 224 7124 7126 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 223 7058 7103 "src/consynth/Sketch.ml" 223 7058 7120
+type(
+  string
+)
+ident(
+  def state_struct_name "src/consynth/Sketch.ml" 224 7124 7126 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 223 7058 7079 "src/consynth/Sketch.ml" 223 7058 7121
+type(
+  SketchTypes.sklet * Utils.VS.t * string
+)
+"src/consynth/Sketch.ml" 224 7124 7130 "src/consynth/Sketch.ml" 224 7124 7144
+type(
+  string
+)
+ident(
+  def state_arg_name "src/consynth/Sketch.ml" 225 7156 7158 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 224 7124 7147 "src/consynth/Sketch.ml" 224 7124 7152
+type(
+  string
+)
+"src/consynth/Sketch.ml" 225 7156 7162 "src/consynth/Sketch.ml" 225 7156 7173
+type(
+  string list
+)
+ident(
+  def field_names "src/consynth/Sketch.ml" 226 7205 7207 "src/consynth/Sketch.ml" 230 7390 7412
+)
+"src/consynth/Sketch.ml" 225 7156 7176 "src/consynth/Sketch.ml" 225 7156 7190
+type(
+  Utils.VS.t -> string list
+)
+ident(
+  ext_ref Utils.VSOps.namelist
+)
+"src/consynth/Sketch.ml" 225 7156 7191 "src/consynth/Sketch.ml" 225 7156 7201
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 223 7058 7091 "src/consynth/Sketch.ml" 223 7058 7101
+)
+"src/consynth/Sketch.ml" 225 7156 7176 "src/consynth/Sketch.ml" 225 7156 7201
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 226 7205 7207 "src/consynth/Sketch.ml" 226 7205 7221
+type(
+  Format.formatter ->
+  (string ->
+   (Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format ->
+  string ->
+  (Format.formatter -> (string * string) list -> unit) ->
+  (string * string) list ->
+  (Format.formatter -> SketchTypes.sklet -> unit) ->
+  SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 226 7205 7222 "src/consynth/Sketch.ml" 226 7205 7225
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 223 7058 7075 "src/consynth/Sketch.ml" 223 7058 7078
+)
+"src/consynth/Sketch.ml" 226 7205 7226 "src/consynth/Sketch.ml" 226 7205 7271
+type(
+  (string ->
+   (Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 227 7272 7276 "src/consynth/Sketch.ml" 227 7272 7290
+type(
+  string
+)
+ident(
+  int_ref state_arg_name "src/consynth/Sketch.ml" 224 7124 7130 "src/consynth/Sketch.ml" 224 7124 7144
+)
+"src/consynth/Sketch.ml" 228 7291 7296 "src/consynth/Sketch.ml" 228 7291 7310
+type(
+  string -> string -> Format.formatter -> (string * string) list -> unit
+)
+ident(
+  ext_ref Racket.pp_assignments
+)
+"src/consynth/Sketch.ml" 228 7291 7311 "src/consynth/Sketch.ml" 228 7291 7328
+type(
+  string
+)
+ident(
+  int_ref state_struct_name "src/consynth/Sketch.ml" 223 7058 7103 "src/consynth/Sketch.ml" 223 7058 7120
+)
+"src/consynth/Sketch.ml" 228 7291 7329 "src/consynth/Sketch.ml" 228 7291 7343
+type(
+  string
+)
+ident(
+  int_ref state_arg_name "src/consynth/Sketch.ml" 224 7124 7130 "src/consynth/Sketch.ml" 224 7124 7144
+)
+"src/consynth/Sketch.ml" 228 7291 7295 "src/consynth/Sketch.ml" 228 7291 7344
+call(
+  stack
+)
+type(
+  Format.formatter -> (string * string) list -> unit
+)
+"src/consynth/Sketch.ml" 229 7345 7350 "src/consynth/Sketch.ml" 229 7345 7364
+type(
+  string list -> string list -> (string * string) list
+)
+ident(
+  ext_ref Utils.ListTools.pair
+)
+"src/consynth/Sketch.ml" 229 7345 7365 "src/consynth/Sketch.ml" 229 7345 7376
+type(
+  string list
+)
+ident(
+  int_ref field_names "src/consynth/Sketch.ml" 225 7156 7162 "src/consynth/Sketch.ml" 225 7156 7173
+)
+"src/consynth/Sketch.ml" 229 7345 7377 "src/consynth/Sketch.ml" 229 7345 7388
+type(
+  string list
+)
+ident(
+  int_ref field_names "src/consynth/Sketch.ml" 225 7156 7162 "src/consynth/Sketch.ml" 225 7156 7173
+)
+"src/consynth/Sketch.ml" 229 7345 7349 "src/consynth/Sketch.ml" 229 7345 7389
+call(
+  stack
+)
+type(
+  (string * string) list
+)
+"src/consynth/Sketch.ml" 230 7390 7394 "src/consynth/Sketch.ml" 230 7390 7402
+type(
+  Format.formatter -> SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref SPretty.pp_sklet
+)
+"src/consynth/Sketch.ml" 230 7390 7403 "src/consynth/Sketch.ml" 230 7390 7412
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref loop_body "src/consynth/Sketch.ml" 223 7058 7080 "src/consynth/Sketch.ml" 223 7058 7089
+)
+"src/consynth/Sketch.ml" 226 7205 7207 "src/consynth/Sketch.ml" 230 7390 7412
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 225 7156 7158 "src/consynth/Sketch.ml" 230 7390 7412
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 224 7124 7126 "src/consynth/Sketch.ml" 230 7390 7412
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 240 7853 7857 "src/consynth/Sketch.ml" 240 7853 7864
+type(
+  Format.formatter ->
+  Utils.VS.t -> SketchTypes.sklet * Utils.VS.t -> string -> unit
+)
+ident(
+  def pp_loop "src/consynth/Sketch.ml" 272 9196 9196 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 240 7853 7865 "src/consynth/Sketch.ml" 240 7853 7868
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 240 7853 7869 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 240 7853 7869 "src/consynth/Sketch.ml" 240 7853 7878
+type(
+  Utils.VS.t
+)
+ident(
+  def index_set "src/consynth/Sketch.ml" 240 7853 7879 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 240 7853 7880 "src/consynth/Sketch.ml" 240 7853 7889
+type(
+  SketchTypes.sklet
+)
+ident(
+  def loop_body "src/consynth/Sketch.ml" 240 7853 7903 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 240 7853 7891 "src/consynth/Sketch.ml" 240 7853 7901
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 240 7853 7903 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 240 7853 7879 "src/consynth/Sketch.ml" 240 7853 7902
+type(
+  SketchTypes.sklet * Utils.VS.t
+)
+"src/consynth/Sketch.ml" 240 7853 7903 "src/consynth/Sketch.ml" 240 7853 7920
+type(
+  string
+)
+ident(
+  def state_struct_name "src/consynth/Sketch.ml" 241 7923 7925 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 241 7923 7929 "src/consynth/Sketch.ml" 241 7923 7939
+type(
+  Utils.VS.elt list
+)
+ident(
+  def index_list "src/consynth/Sketch.ml" 242 7969 7971 "src/consynth/Sketch.ml" 262 8818 8877
+)
+"src/consynth/Sketch.ml" 241 7923 7942 "src/consynth/Sketch.ml" 241 7923 7955
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/consynth/Sketch.ml" 241 7923 7956 "src/consynth/Sketch.ml" 241 7923 7965
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref index_set "src/consynth/Sketch.ml" 240 7853 7869 "src/consynth/Sketch.ml" 240 7853 7878
+)
+"src/consynth/Sketch.ml" 241 7923 7942 "src/consynth/Sketch.ml" 241 7923 7965
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/consynth/Sketch.ml" 242 7969 7971 "src/consynth/Sketch.ml" 242 7969 7981
+type(
+  Format.formatter -> string -> unit
+)
+ident(
+  ext_ref Racket.pp_comment
+)
+"src/consynth/Sketch.ml" 242 7969 7982 "src/consynth/Sketch.ml" 242 7969 7985
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 240 7853 7865 "src/consynth/Sketch.ml" 240 7853 7868
+)
+"src/consynth/Sketch.ml" 242 7969 7986 "src/consynth/Sketch.ml" 242 7969 8031
+type(
+  string
+)
+"src/consynth/Sketch.ml" 242 7969 7971 "src/consynth/Sketch.ml" 242 7969 8031
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 243 8033 8035 "src/consynth/Sketch.ml" 243 8033 8049
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   (F.formatter -> Utils.VS.elt list -> unit) ->
+   Utils.VS.elt list ->
+   (F.formatter -> Utils.VS.elt list -> unit) ->
+   Utils.VS.elt list ->
+   int ->
+   string ->
+   (F.formatter -> SketchTypes.sklet * Utils.VS.t * string -> unit) ->
+   SketchTypes.sklet * Utils.VS.t * string -> unit, F.formatter, unit)
+  format ->
+  string ->
+  string ->
+  (F.formatter -> Utils.VS.elt list -> unit) ->
+  Utils.VS.elt list ->
+  (F.formatter -> Utils.VS.elt list -> unit) ->
+  Utils.VS.elt list ->
+  int ->
+  string ->
+  (F.formatter -> SketchTypes.sklet * Utils.VS.t * string -> unit) ->
+  SketchTypes.sklet * Utils.VS.t * string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 243 8033 8050 "src/consynth/Sketch.ml" 243 8033 8053
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 240 7853 7865 "src/consynth/Sketch.ml" 240 7853 7868
+)
+"src/consynth/Sketch.ml" 244 8054 8058 "src/consynth/Sketch.ml" 245 8090 8133
+type(
+  (string ->
+   string ->
+   (F.formatter -> Utils.VS.elt list -> unit) ->
+   Utils.VS.elt list ->
+   (F.formatter -> Utils.VS.elt list -> unit) ->
+   Utils.VS.elt list ->
+   int ->
+   string ->
+   (F.formatter -> SketchTypes.sklet * Utils.VS.t * string -> unit) ->
+   SketchTypes.sklet * Utils.VS.t * string -> unit, F.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 246 8134 8138 "src/consynth/Sketch.ml" 246 8134 8147
+type(
+  string
+)
+ident(
+  int_ref body_name "src/consynth/Sketch.ml" 114 3292 3296 "src/consynth/Sketch.ml" 114 3292 3305
+)
+"src/consynth/Sketch.ml" 247 8148 8153 "src/consynth/Sketch.ml" 247 8148 8173
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 247 8148 8174 "src/consynth/Sketch.ml" 247 8148 8200
+type(
+  string
+)
+"src/consynth/Sketch.ml" 247 8148 8152 "src/consynth/Sketch.ml" 247 8148 8201
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 248 8202 8207 "src/consynth/Sketch.ml" 248 8202 8222
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> Utils.VS.elt -> unit) ->
+  F.formatter -> Utils.VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 248 8202 8236 "src/consynth/Sketch.ml" 248 8202 8239
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 248 8202 8240 "src/consynth/Sketch.ml" 248 8202 8268
+)
+"src/consynth/Sketch.ml" 248 8202 8240 "src/consynth/Sketch.ml" 248 8202 8242
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 248 8202 8246 "src/consynth/Sketch.ml" 248 8202 8260
+type(
+  F.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 248 8202 8261 "src/consynth/Sketch.ml" 248 8202 8264
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 248 8202 8236 "src/consynth/Sketch.ml" 248 8202 8239
+)
+"src/consynth/Sketch.ml" 248 8202 8265 "src/consynth/Sketch.ml" 248 8202 8268
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 248 8202 8246 "src/consynth/Sketch.ml" 248 8202 8268
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 248 8202 8231 "src/consynth/Sketch.ml" 248 8202 8269
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 249 8270 8282 "src/consynth/Sketch.ml" 249 8270 8285
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 249 8270 8286 "src/consynth/Sketch.ml" 251 8363 8427
+)
+"src/consynth/Sketch.ml" 249 8270 8286 "src/consynth/Sketch.ml" 249 8270 8288
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 250 8292 8302 "src/consynth/Sketch.ml" 251 8363 8427
+)
+"src/consynth/Sketch.ml" 250 8292 8306 "src/consynth/Sketch.ml" 250 8292 8314
+type(
+  Cil.varinfo
+)
+ident(
+  def start_vi "src/consynth/Sketch.ml" 251 8363 8373 "src/consynth/Sketch.ml" 251 8363 8427
+)
+"src/consynth/Sketch.ml" 250 8292 8316 "src/consynth/Sketch.ml" 250 8292 8322
+type(
+  Cil.varinfo
+)
+ident(
+  def end_vi "src/consynth/Sketch.ml" 251 8363 8373 "src/consynth/Sketch.ml" 251 8363 8427
+)
+"src/consynth/Sketch.ml" 250 8292 8306 "src/consynth/Sketch.ml" 250 8292 8322
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/consynth/Sketch.ml" 250 8292 8326 "src/consynth/Sketch.ml" 250 8292 8333
+type(
+  (Cil.varinfo * Cil.varinfo) Utils.IH.t ->
+  Utils.IH.key -> Cil.varinfo * Cil.varinfo
+)
+ident(
+  ext_ref Utils.IH.find
+)
+"src/consynth/Sketch.ml" 250 8292 8334 "src/consynth/Sketch.ml" 250 8292 8351
+type(
+  (Cil.varinfo * Cil.varinfo) Utils.IH.t
+)
+ident(
+  ext_ref SketchTypes.index_to_boundary
+)
+"src/consynth/Sketch.ml" 250 8292 8352 "src/consynth/Sketch.ml" 250 8292 8354
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 249 8270 8286 "src/consynth/Sketch.ml" 249 8270 8288
+)
+"src/consynth/Sketch.ml" 250 8292 8352 "src/consynth/Sketch.ml" 250 8292 8358
+type(
+  Utils.IH.key
+)
+"src/consynth/Sketch.ml" 250 8292 8325 "src/consynth/Sketch.ml" 250 8292 8359
+call(
+  stack
+)
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/consynth/Sketch.ml" 251 8363 8373 "src/consynth/Sketch.ml" 251 8363 8387
+type(
+  F.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 251 8363 8388 "src/consynth/Sketch.ml" 251 8363 8391
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 249 8270 8282 "src/consynth/Sketch.ml" 249 8270 8285
+)
+"src/consynth/Sketch.ml" 251 8363 8392 "src/consynth/Sketch.ml" 251 8363 8399
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 251 8363 8400 "src/consynth/Sketch.ml" 251 8363 8408
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref start_vi "src/consynth/Sketch.ml" 250 8292 8306 "src/consynth/Sketch.ml" 250 8292 8314
+)
+"src/consynth/Sketch.ml" 251 8363 8400 "src/consynth/Sketch.ml" 251 8363 8414
+type(
+  string
+)
+"src/consynth/Sketch.ml" 251 8363 8415 "src/consynth/Sketch.ml" 251 8363 8421
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref end_vi "src/consynth/Sketch.ml" 250 8292 8316 "src/consynth/Sketch.ml" 250 8292 8322
+)
+"src/consynth/Sketch.ml" 251 8363 8415 "src/consynth/Sketch.ml" 251 8363 8427
+type(
+  string
+)
+"src/consynth/Sketch.ml" 251 8363 8373 "src/consynth/Sketch.ml" 251 8363 8427
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 250 8292 8302 "src/consynth/Sketch.ml" 251 8363 8427
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 249 8270 8277 "src/consynth/Sketch.ml" 251 8363 8428
+type(
+  F.formatter -> Utils.VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 248 8202 8206 "src/consynth/Sketch.ml" 251 8363 8429
+call(
+  stack
+)
+type(
+  F.formatter -> Utils.VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 252 8430 8434 "src/consynth/Sketch.ml" 252 8430 8444
+type(
+  Utils.VS.elt list
+)
+ident(
+  int_ref index_list "src/consynth/Sketch.ml" 241 7923 7929 "src/consynth/Sketch.ml" 241 7923 7939
+)
+"src/consynth/Sketch.ml" 254 8446 8451 "src/consynth/Sketch.ml" 254 8446 8466
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> Utils.VS.elt -> unit) ->
+  F.formatter -> Utils.VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 254 8446 8480 "src/consynth/Sketch.ml" 254 8446 8483
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 254 8446 8484 "src/consynth/Sketch.ml" 254 8446 8512
+)
+"src/consynth/Sketch.ml" 254 8446 8484 "src/consynth/Sketch.ml" 254 8446 8486
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 254 8446 8490 "src/consynth/Sketch.ml" 254 8446 8504
+type(
+  F.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 254 8446 8505 "src/consynth/Sketch.ml" 254 8446 8508
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 254 8446 8480 "src/consynth/Sketch.ml" 254 8446 8483
+)
+"src/consynth/Sketch.ml" 254 8446 8509 "src/consynth/Sketch.ml" 254 8446 8512
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 254 8446 8490 "src/consynth/Sketch.ml" 254 8446 8512
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 254 8446 8475 "src/consynth/Sketch.ml" 254 8446 8513
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 255 8514 8526 "src/consynth/Sketch.ml" 255 8514 8529
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 255 8514 8530 "src/consynth/Sketch.ml" 257 8607 8671
+)
+"src/consynth/Sketch.ml" 255 8514 8530 "src/consynth/Sketch.ml" 255 8514 8532
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 256 8536 8546 "src/consynth/Sketch.ml" 257 8607 8671
+)
+"src/consynth/Sketch.ml" 256 8536 8550 "src/consynth/Sketch.ml" 256 8536 8558
+type(
+  Cil.varinfo
+)
+ident(
+  def start_vi "src/consynth/Sketch.ml" 257 8607 8617 "src/consynth/Sketch.ml" 257 8607 8671
+)
+"src/consynth/Sketch.ml" 256 8536 8560 "src/consynth/Sketch.ml" 256 8536 8566
+type(
+  Cil.varinfo
+)
+ident(
+  def end_vi "src/consynth/Sketch.ml" 257 8607 8617 "src/consynth/Sketch.ml" 257 8607 8671
+)
+"src/consynth/Sketch.ml" 256 8536 8550 "src/consynth/Sketch.ml" 256 8536 8566
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/consynth/Sketch.ml" 256 8536 8570 "src/consynth/Sketch.ml" 256 8536 8577
+type(
+  (Cil.varinfo * Cil.varinfo) Utils.IH.t ->
+  Utils.IH.key -> Cil.varinfo * Cil.varinfo
+)
+ident(
+  ext_ref Utils.IH.find
+)
+"src/consynth/Sketch.ml" 256 8536 8578 "src/consynth/Sketch.ml" 256 8536 8595
+type(
+  (Cil.varinfo * Cil.varinfo) Utils.IH.t
+)
+ident(
+  ext_ref SketchTypes.index_to_boundary
+)
+"src/consynth/Sketch.ml" 256 8536 8596 "src/consynth/Sketch.ml" 256 8536 8598
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 255 8514 8530 "src/consynth/Sketch.ml" 255 8514 8532
+)
+"src/consynth/Sketch.ml" 256 8536 8596 "src/consynth/Sketch.ml" 256 8536 8602
+type(
+  Utils.IH.key
+)
+"src/consynth/Sketch.ml" 256 8536 8569 "src/consynth/Sketch.ml" 256 8536 8603
+call(
+  stack
+)
+type(
+  Cil.varinfo * Cil.varinfo
+)
+"src/consynth/Sketch.ml" 257 8607 8617 "src/consynth/Sketch.ml" 257 8607 8631
+type(
+  F.formatter ->
+  (string -> string -> unit, Format.formatter, unit) format ->
+  string -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 257 8607 8632 "src/consynth/Sketch.ml" 257 8607 8635
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 255 8514 8526 "src/consynth/Sketch.ml" 255 8514 8529
+)
+"src/consynth/Sketch.ml" 257 8607 8636 "src/consynth/Sketch.ml" 257 8607 8643
+type(
+  (string -> string -> unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 257 8607 8644 "src/consynth/Sketch.ml" 257 8607 8652
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref start_vi "src/consynth/Sketch.ml" 256 8536 8550 "src/consynth/Sketch.ml" 256 8536 8558
+)
+"src/consynth/Sketch.ml" 257 8607 8644 "src/consynth/Sketch.ml" 257 8607 8658
+type(
+  string
+)
+"src/consynth/Sketch.ml" 257 8607 8659 "src/consynth/Sketch.ml" 257 8607 8665
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref end_vi "src/consynth/Sketch.ml" 256 8536 8560 "src/consynth/Sketch.ml" 256 8536 8566
+)
+"src/consynth/Sketch.ml" 257 8607 8659 "src/consynth/Sketch.ml" 257 8607 8671
+type(
+  string
+)
+"src/consynth/Sketch.ml" 257 8607 8617 "src/consynth/Sketch.ml" 257 8607 8671
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 256 8536 8546 "src/consynth/Sketch.ml" 257 8607 8671
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 255 8514 8521 "src/consynth/Sketch.ml" 257 8607 8672
+type(
+  F.formatter -> Utils.VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 254 8446 8450 "src/consynth/Sketch.ml" 257 8607 8673
+call(
+  stack
+)
+type(
+  F.formatter -> Utils.VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 258 8674 8678 "src/consynth/Sketch.ml" 258 8674 8688
+type(
+  Utils.VS.elt list
+)
+ident(
+  int_ref index_list "src/consynth/Sketch.ml" 241 7923 7929 "src/consynth/Sketch.ml" 241 7923 7939
+)
+"src/consynth/Sketch.ml" 259 8689 8694 "src/consynth/Sketch.ml" 259 8689 8707
+type(
+  string -> int
+)
+ident(
+  ext_ref Pervasives.int_of_string
+)
+"src/consynth/Sketch.ml" 259 8689 8709 "src/consynth/Sketch.ml" 259 8689 8729
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 259 8689 8730 "src/consynth/Sketch.ml" 259 8689 8760
+type(
+  string
+)
+"src/consynth/Sketch.ml" 259 8689 8708 "src/consynth/Sketch.ml" 259 8689 8761
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 259 8689 8693 "src/consynth/Sketch.ml" 259 8689 8762
+type(
+  int
+)
+"src/consynth/Sketch.ml" 260 8763 8768 "src/consynth/Sketch.ml" 260 8763 8788
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 260 8763 8789 "src/consynth/Sketch.ml" 260 8763 8815
+type(
+  string
+)
+"src/consynth/Sketch.ml" 260 8763 8767 "src/consynth/Sketch.ml" 260 8763 8816
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 262 8818 8822 "src/consynth/Sketch.ml" 262 8818 8834
+type(
+  F.formatter -> SketchTypes.sklet * Utils.VS.t * string -> unit
+)
+ident(
+  int_ref pp_loop_body "src/consynth/Sketch.ml" 223 7058 7062 "src/consynth/Sketch.ml" 223 7058 7074
+)
+"src/consynth/Sketch.ml" 262 8818 8836 "src/consynth/Sketch.ml" 262 8818 8845
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref loop_body "src/consynth/Sketch.ml" 240 7853 7880 "src/consynth/Sketch.ml" 240 7853 7889
+)
+"src/consynth/Sketch.ml" 262 8818 8847 "src/consynth/Sketch.ml" 262 8818 8857
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 240 7853 7891 "src/consynth/Sketch.ml" 240 7853 7901
+)
+"src/consynth/Sketch.ml" 262 8818 8859 "src/consynth/Sketch.ml" 262 8818 8876
+type(
+  string
+)
+ident(
+  int_ref state_struct_name "src/consynth/Sketch.ml" 240 7853 7903 "src/consynth/Sketch.ml" 240 7853 7920
+)
+"src/consynth/Sketch.ml" 262 8818 8835 "src/consynth/Sketch.ml" 262 8818 8877
+type(
+  SketchTypes.sklet * Utils.VS.t * string
+)
+"src/consynth/Sketch.ml" 243 8033 8035 "src/consynth/Sketch.ml" 262 8818 8877
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 242 7969 7971 "src/consynth/Sketch.ml" 262 8818 8877
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 241 7923 7925 "src/consynth/Sketch.ml" 262 8818 8877
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 272 9196 9200 "src/consynth/Sketch.ml" 272 9196 9212
+type(
+  Format.formatter ->
+  SketchTypes.sklet * Utils.VS.t * string * string -> unit
+)
+ident(
+  def pp_join_body "src/consynth/Sketch.ml" 298 10280 10280 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 272 9196 9213 "src/consynth/Sketch.ml" 272 9196 9216
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 272 9196 9217 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 272 9196 9218 "src/consynth/Sketch.ml" 272 9196 9227
+type(
+  SketchTypes.sklet
+)
+ident(
+  def join_body "src/consynth/Sketch.ml" 274 9270 9272 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 272 9196 9229 "src/consynth/Sketch.ml" 272 9196 9239
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 274 9270 9272 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 272 9196 9241 "src/consynth/Sketch.ml" 272 9196 9252
+type(
+  string
+)
+ident(
+  def lstate_name "src/consynth/Sketch.ml" 274 9270 9272 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 272 9196 9254 "src/consynth/Sketch.ml" 272 9196 9265
+type(
+  string
+)
+ident(
+  def rstate_name "src/consynth/Sketch.ml" 274 9270 9272 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 272 9196 9217 "src/consynth/Sketch.ml" 272 9196 9266
+type(
+  SketchTypes.sklet * Utils.VS.t * string * string
+)
+"src/consynth/Sketch.ml" 274 9270 9276 "src/consynth/Sketch.ml" 274 9270 9291
+type(
+  Utils.VS.t
+)
+ident(
+  def left_state_vars "src/consynth/Sketch.ml" 276 9391 9393 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 274 9270 9294 "src/consynth/Sketch.ml" 274 9270 9314
+type(
+  Utils.VS.t -> string -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VSOps.vs_with_prefix
+)
+"src/consynth/Sketch.ml" 274 9270 9315 "src/consynth/Sketch.ml" 274 9270 9325
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 272 9196 9229 "src/consynth/Sketch.ml" 272 9196 9239
+)
+"src/consynth/Sketch.ml" 275 9326 9333 "src/consynth/Sketch.ml" 275 9326 9353
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 275 9326 9354 "src/consynth/Sketch.ml" 275 9326 9386
+type(
+  string
+)
+"src/consynth/Sketch.ml" 275 9326 9332 "src/consynth/Sketch.ml" 275 9326 9387
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 274 9270 9294 "src/consynth/Sketch.ml" 275 9326 9387
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 276 9391 9397 "src/consynth/Sketch.ml" 276 9391 9413
+type(
+  Utils.VS.t
+)
+ident(
+  def right_state_vars "src/consynth/Sketch.ml" 278 9514 9516 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 276 9391 9416 "src/consynth/Sketch.ml" 276 9391 9436
+type(
+  Utils.VS.t -> string -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VSOps.vs_with_prefix
+)
+"src/consynth/Sketch.ml" 276 9391 9437 "src/consynth/Sketch.ml" 276 9391 9447
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 272 9196 9229 "src/consynth/Sketch.ml" 272 9196 9239
+)
+"src/consynth/Sketch.ml" 277 9448 9455 "src/consynth/Sketch.ml" 277 9448 9475
+type(
+  string -> string
+)
+ident(
+  ext_ref Conf.get_conf_string
+)
+"src/consynth/Sketch.ml" 277 9448 9476 "src/consynth/Sketch.ml" 277 9448 9509
+type(
+  string
+)
+"src/consynth/Sketch.ml" 277 9448 9454 "src/consynth/Sketch.ml" 277 9448 9510
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 276 9391 9416 "src/consynth/Sketch.ml" 277 9448 9510
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 278 9514 9520 "src/consynth/Sketch.ml" 278 9514 9530
+type(
+  string list
+)
+ident(
+  def lvar_names "src/consynth/Sketch.ml" 279 9567 9569 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 278 9514 9533 "src/consynth/Sketch.ml" 278 9514 9547
+type(
+  Utils.VS.t -> string list
+)
+ident(
+  ext_ref Utils.VSOps.namelist
+)
+"src/consynth/Sketch.ml" 278 9514 9548 "src/consynth/Sketch.ml" 278 9514 9563
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref left_state_vars "src/consynth/Sketch.ml" 274 9270 9276 "src/consynth/Sketch.ml" 274 9270 9291
+)
+"src/consynth/Sketch.ml" 278 9514 9533 "src/consynth/Sketch.ml" 278 9514 9563
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 279 9567 9573 "src/consynth/Sketch.ml" 279 9567 9583
+type(
+  string list
+)
+ident(
+  def rvar_names "src/consynth/Sketch.ml" 280 9621 9623 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 279 9567 9586 "src/consynth/Sketch.ml" 279 9567 9600
+type(
+  Utils.VS.t -> string list
+)
+ident(
+  ext_ref Utils.VSOps.namelist
+)
+"src/consynth/Sketch.ml" 279 9567 9601 "src/consynth/Sketch.ml" 279 9567 9617
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref right_state_vars "src/consynth/Sketch.ml" 276 9391 9397 "src/consynth/Sketch.ml" 276 9391 9413
+)
+"src/consynth/Sketch.ml" 279 9567 9586 "src/consynth/Sketch.ml" 279 9567 9617
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 280 9621 9627 "src/consynth/Sketch.ml" 280 9621 9638
+type(
+  string list
+)
+ident(
+  def field_names "src/consynth/Sketch.ml" 281 9670 9672 "src/consynth/Sketch.ml" 289 9967 9993
+)
+"src/consynth/Sketch.ml" 280 9621 9641 "src/consynth/Sketch.ml" 280 9621 9655
+type(
+  Utils.VS.t -> string list
+)
+ident(
+  ext_ref Utils.VSOps.namelist
+)
+"src/consynth/Sketch.ml" 280 9621 9656 "src/consynth/Sketch.ml" 280 9621 9666
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 272 9196 9229 "src/consynth/Sketch.ml" 272 9196 9239
+)
+"src/consynth/Sketch.ml" 280 9621 9641 "src/consynth/Sketch.ml" 280 9621 9666
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 281 9670 9672 "src/consynth/Sketch.ml" 281 9670 9687
+type(
+  bool ref
+)
+ident(
+  ext_ref SPretty.printing_sketch
+)
+"src/consynth/Sketch.ml" 281 9670 9688 "src/consynth/Sketch.ml" 281 9670 9690
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Sketch.ml" 281 9670 9691 "src/consynth/Sketch.ml" 281 9670 9695
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 281 9670 9672 "src/consynth/Sketch.ml" 281 9670 9695
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 282 9697 9699 "src/consynth/Sketch.ml" 282 9697 9713
+type(
+  Format.formatter ->
+  ((Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> (string * string) list -> unit) ->
+  (string * string) list ->
+  (Format.formatter -> (string * string) list -> unit) ->
+  (string * string) list ->
+  (Format.formatter -> SketchTypes.sklet -> unit) ->
+  SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 282 9697 9714 "src/consynth/Sketch.ml" 282 9697 9717
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 272 9196 9213 "src/consynth/Sketch.ml" 272 9196 9216
+)
+"src/consynth/Sketch.ml" 283 9718 9722 "src/consynth/Sketch.ml" 283 9718 9754
+type(
+  ((Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> (string * string) list -> unit) ->
+   (string * string) list ->
+   (Format.formatter -> SketchTypes.sklet -> unit) ->
+   SketchTypes.sklet -> unit, Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 284 9755 9760 "src/consynth/Sketch.ml" 284 9755 9774
+type(
+  string -> string -> Format.formatter -> (string * string) list -> unit
+)
+ident(
+  ext_ref Racket.pp_assignments
+)
+"src/consynth/Sketch.ml" 284 9755 9775 "src/consynth/Sketch.ml" 284 9755 9791
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 284 9755 9792 "src/consynth/Sketch.ml" 284 9755 9803
+type(
+  string
+)
+ident(
+  int_ref lstate_name "src/consynth/Sketch.ml" 272 9196 9241 "src/consynth/Sketch.ml" 272 9196 9252
+)
+"src/consynth/Sketch.ml" 284 9755 9759 "src/consynth/Sketch.ml" 284 9755 9804
+call(
+  stack
+)
+type(
+  Format.formatter -> (string * string) list -> unit
+)
+"src/consynth/Sketch.ml" 285 9805 9810 "src/consynth/Sketch.ml" 285 9805 9824
+type(
+  string list -> string list -> (string * string) list
+)
+ident(
+  ext_ref Utils.ListTools.pair
+)
+"src/consynth/Sketch.ml" 285 9805 9825 "src/consynth/Sketch.ml" 285 9805 9835
+type(
+  string list
+)
+ident(
+  int_ref lvar_names "src/consynth/Sketch.ml" 278 9514 9520 "src/consynth/Sketch.ml" 278 9514 9530
+)
+"src/consynth/Sketch.ml" 285 9805 9836 "src/consynth/Sketch.ml" 285 9805 9847
+type(
+  string list
+)
+ident(
+  int_ref field_names "src/consynth/Sketch.ml" 280 9621 9627 "src/consynth/Sketch.ml" 280 9621 9638
+)
+"src/consynth/Sketch.ml" 285 9805 9809 "src/consynth/Sketch.ml" 285 9805 9848
+call(
+  stack
+)
+type(
+  (string * string) list
+)
+"src/consynth/Sketch.ml" 286 9849 9854 "src/consynth/Sketch.ml" 286 9849 9868
+type(
+  string -> string -> Format.formatter -> (string * string) list -> unit
+)
+ident(
+  ext_ref Racket.pp_assignments
+)
+"src/consynth/Sketch.ml" 286 9849 9869 "src/consynth/Sketch.ml" 286 9849 9885
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 286 9849 9886 "src/consynth/Sketch.ml" 286 9849 9897
+type(
+  string
+)
+ident(
+  int_ref rstate_name "src/consynth/Sketch.ml" 272 9196 9254 "src/consynth/Sketch.ml" 272 9196 9265
+)
+"src/consynth/Sketch.ml" 286 9849 9853 "src/consynth/Sketch.ml" 286 9849 9898
+call(
+  stack
+)
+type(
+  Format.formatter -> (string * string) list -> unit
+)
+"src/consynth/Sketch.ml" 287 9899 9904 "src/consynth/Sketch.ml" 287 9899 9918
+type(
+  string list -> string list -> (string * string) list
+)
+ident(
+  ext_ref Utils.ListTools.pair
+)
+"src/consynth/Sketch.ml" 287 9899 9919 "src/consynth/Sketch.ml" 287 9899 9929
+type(
+  string list
+)
+ident(
+  int_ref rvar_names "src/consynth/Sketch.ml" 279 9567 9573 "src/consynth/Sketch.ml" 279 9567 9583
+)
+"src/consynth/Sketch.ml" 287 9899 9930 "src/consynth/Sketch.ml" 287 9899 9941
+type(
+  string list
+)
+ident(
+  int_ref field_names "src/consynth/Sketch.ml" 280 9621 9627 "src/consynth/Sketch.ml" 280 9621 9638
+)
+"src/consynth/Sketch.ml" 287 9899 9903 "src/consynth/Sketch.ml" 287 9899 9942
+call(
+  stack
+)
+type(
+  (string * string) list
+)
+"src/consynth/Sketch.ml" 288 9943 9947 "src/consynth/Sketch.ml" 288 9943 9955
+type(
+  Format.formatter -> SketchTypes.sklet -> unit
+)
+ident(
+  ext_ref SPretty.pp_sklet
+)
+"src/consynth/Sketch.ml" 288 9943 9956 "src/consynth/Sketch.ml" 288 9943 9965
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref join_body "src/consynth/Sketch.ml" 272 9196 9218 "src/consynth/Sketch.ml" 272 9196 9227
+)
+"src/consynth/Sketch.ml" 282 9697 9699 "src/consynth/Sketch.ml" 288 9943 9965
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 289 9967 9969 "src/consynth/Sketch.ml" 289 9967 9984
+type(
+  bool ref
+)
+ident(
+  ext_ref SPretty.printing_sketch
+)
+"src/consynth/Sketch.ml" 289 9967 9985 "src/consynth/Sketch.ml" 289 9967 9987
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Sketch.ml" 289 9967 9988 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 289 9967 9969 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 282 9697 9699 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 281 9670 9672 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 280 9621 9623 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 279 9567 9569 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 278 9514 9516 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 276 9391 9393 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 274 9270 9272 "src/consynth/Sketch.ml" 289 9967 9993
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 298 10280 10284 "src/consynth/Sketch.ml" 298 10280 10291
+type(
+  Format.formatter -> SketchTypes.sklet * Utils.VS.t -> unit
+)
+ident(
+  def pp_join "src/consynth/Sketch.ml" 317 11118 11118 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 298 10280 10292 "src/consynth/Sketch.ml" 298 10280 10295
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 298 10280 10296 "src/consynth/Sketch.ml" 304 10515 10581
+)
+"src/consynth/Sketch.ml" 298 10280 10297 "src/consynth/Sketch.ml" 298 10280 10306
+type(
+  SketchTypes.sklet
+)
+ident(
+  def join_body "src/consynth/Sketch.ml" 299 10322 10324 "src/consynth/Sketch.ml" 304 10515 10581
+)
+"src/consynth/Sketch.ml" 298 10280 10308 "src/consynth/Sketch.ml" 298 10280 10318
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 299 10322 10324 "src/consynth/Sketch.ml" 304 10515 10581
+)
+"src/consynth/Sketch.ml" 298 10280 10296 "src/consynth/Sketch.ml" 298 10280 10319
+type(
+  SketchTypes.sklet * Utils.VS.t
+)
+"src/consynth/Sketch.ml" 299 10322 10328 "src/consynth/Sketch.ml" 299 10322 10339
+type(
+  string
+)
+ident(
+  def lstate_name "src/consynth/Sketch.ml" 300 10366 10368 "src/consynth/Sketch.ml" 304 10515 10581
+)
+"src/consynth/Sketch.ml" 299 10322 10342 "src/consynth/Sketch.ml" 299 10322 10358
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 299 10322 10358 "src/consynth/Sketch.ml" 299 10322 10359
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Sketch.ml" 299 10322 10359 "src/consynth/Sketch.ml" 299 10322 10362
+type(
+  string
+)
+"src/consynth/Sketch.ml" 299 10322 10342 "src/consynth/Sketch.ml" 299 10322 10362
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 300 10366 10372 "src/consynth/Sketch.ml" 300 10366 10383
+type(
+  string
+)
+ident(
+  def rstate_name "src/consynth/Sketch.ml" 301 10410 10412 "src/consynth/Sketch.ml" 304 10515 10581
+)
+"src/consynth/Sketch.ml" 300 10366 10386 "src/consynth/Sketch.ml" 300 10366 10402
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 300 10366 10402 "src/consynth/Sketch.ml" 300 10366 10403
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Sketch.ml" 300 10366 10403 "src/consynth/Sketch.ml" 300 10366 10406
+type(
+  string
+)
+"src/consynth/Sketch.ml" 300 10366 10386 "src/consynth/Sketch.ml" 300 10366 10406
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 301 10410 10412 "src/consynth/Sketch.ml" 301 10410 10426
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   string ->
+   (Format.formatter ->
+    SketchTypes.sklet * Utils.VS.t * string * string -> unit) ->
+   SketchTypes.sklet * Utils.VS.t * string * string -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  string ->
+  (Format.formatter ->
+   SketchTypes.sklet * Utils.VS.t * string * string -> unit) ->
+  SketchTypes.sklet * Utils.VS.t * string * string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 301 10410 10427 "src/consynth/Sketch.ml" 301 10410 10430
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 298 10280 10292 "src/consynth/Sketch.ml" 298 10280 10295
+)
+"src/consynth/Sketch.ml" 302 10431 10435 "src/consynth/Sketch.ml" 302 10431 10475
+type(
+  (string ->
+   string ->
+   string ->
+   (Format.formatter ->
+    SketchTypes.sklet * Utils.VS.t * string * string -> unit) ->
+   SketchTypes.sklet * Utils.VS.t * string * string -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 303 10476 10480 "src/consynth/Sketch.ml" 303 10476 10489
+type(
+  string
+)
+ident(
+  int_ref join_name "src/consynth/Sketch.ml" 112 3185 3189 "src/consynth/Sketch.ml" 112 3185 3198
+)
+"src/consynth/Sketch.ml" 303 10476 10491 "src/consynth/Sketch.ml" 303 10476 10502
+type(
+  string
+)
+ident(
+  int_ref lstate_name "src/consynth/Sketch.ml" 299 10322 10328 "src/consynth/Sketch.ml" 299 10322 10339
+)
+"src/consynth/Sketch.ml" 303 10476 10503 "src/consynth/Sketch.ml" 303 10476 10514
+type(
+  string
+)
+ident(
+  int_ref rstate_name "src/consynth/Sketch.ml" 300 10366 10372 "src/consynth/Sketch.ml" 300 10366 10383
+)
+"src/consynth/Sketch.ml" 304 10515 10519 "src/consynth/Sketch.ml" 304 10515 10531
+type(
+  Format.formatter ->
+  SketchTypes.sklet * Utils.VS.t * string * string -> unit
+)
+ident(
+  int_ref pp_join_body "src/consynth/Sketch.ml" 272 9196 9200 "src/consynth/Sketch.ml" 272 9196 9212
+)
+"src/consynth/Sketch.ml" 304 10515 10533 "src/consynth/Sketch.ml" 304 10515 10542
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref join_body "src/consynth/Sketch.ml" 298 10280 10297 "src/consynth/Sketch.ml" 298 10280 10306
+)
+"src/consynth/Sketch.ml" 304 10515 10544 "src/consynth/Sketch.ml" 304 10515 10554
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 298 10280 10308 "src/consynth/Sketch.ml" 298 10280 10318
+)
+"src/consynth/Sketch.ml" 304 10515 10556 "src/consynth/Sketch.ml" 304 10515 10567
+type(
+  string
+)
+ident(
+  int_ref lstate_name "src/consynth/Sketch.ml" 299 10322 10328 "src/consynth/Sketch.ml" 299 10322 10339
+)
+"src/consynth/Sketch.ml" 304 10515 10569 "src/consynth/Sketch.ml" 304 10515 10580
+type(
+  string
+)
+ident(
+  int_ref rstate_name "src/consynth/Sketch.ml" 300 10366 10372 "src/consynth/Sketch.ml" 300 10366 10383
+)
+"src/consynth/Sketch.ml" 304 10515 10532 "src/consynth/Sketch.ml" 304 10515 10581
+type(
+  SketchTypes.sklet * Utils.VS.t * string * string
+)
+"src/consynth/Sketch.ml" 301 10410 10412 "src/consynth/Sketch.ml" 304 10515 10581
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 300 10366 10368 "src/consynth/Sketch.ml" 304 10515 10581
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 299 10322 10324 "src/consynth/Sketch.ml" 304 10515 10581
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 317 11118 11122 "src/consynth/Sketch.ml" 317 11118 11131
+type(
+  F.formatter ->
+  Utils.VS.t -> VS.t -> string -> SketchTypes.skExpr Utils.IM.t -> unit
+)
+ident(
+  def pp_states "src/consynth/Sketch.ml" 371 13078 13078 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 317 11118 11132 "src/consynth/Sketch.ml" 317 11118 11135
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 317 11118 11136 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 317 11118 11136 "src/consynth/Sketch.ml" 317 11118 11146
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 317 11118 11147 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 317 11118 11147 "src/consynth/Sketch.ml" 317 11118 11156
+type(
+  VS.t
+)
+ident(
+  def read_vars "src/consynth/Sketch.ml" 317 11118 11157 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 317 11118 11157 "src/consynth/Sketch.ml" 317 11118 11160
+type(
+  string
+)
+ident(
+  def st0 "src/consynth/Sketch.ml" 317 11118 11161 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 317 11118 11161 "src/consynth/Sketch.ml" 317 11118 11173
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reach_consts "src/consynth/Sketch.ml" 318 11176 11178 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 318 11176 11182 "src/consynth/Sketch.ml" 318 11176 11194
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reach_consts "src/consynth/Sketch.ml" 319 11249 11251 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 318 11176 11197 "src/consynth/Sketch.ml" 318 11176 11218
+type(
+  F.formatter ->
+  VS.t -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref handle_special_consts "src/consynth/Sketch.ml" 182 5680 5684 "src/consynth/Sketch.ml" 182 5680 5705
+)
+"src/consynth/Sketch.ml" 318 11176 11219 "src/consynth/Sketch.ml" 318 11176 11222
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 317 11118 11132 "src/consynth/Sketch.ml" 317 11118 11135
+)
+"src/consynth/Sketch.ml" 318 11176 11223 "src/consynth/Sketch.ml" 318 11176 11232
+type(
+  VS.t
+)
+ident(
+  int_ref read_vars "src/consynth/Sketch.ml" 317 11118 11147 "src/consynth/Sketch.ml" 317 11118 11156
+)
+"src/consynth/Sketch.ml" 318 11176 11233 "src/consynth/Sketch.ml" 318 11176 11245
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 317 11118 11161 "src/consynth/Sketch.ml" 317 11118 11173
+)
+"src/consynth/Sketch.ml" 318 11176 11197 "src/consynth/Sketch.ml" 318 11176 11245
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Sketch.ml" 319 11249 11255 "src/consynth/Sketch.ml" 319 11249 11272
+type(
+  F.formatter -> Utils.VS.elt list -> unit
+)
+ident(
+  def s0_sketch_printer "src/consynth/Sketch.ml" 326 11502 11504 "src/consynth/Sketch.ml" 360 12696 12727
+)
+"src/consynth/Sketch.ml" 320 11275 11279 "src/consynth/Sketch.ml" 320 11275 11294
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> Utils.VS.elt -> unit) ->
+  F.formatter -> Utils.VS.elt list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 321 11295 11314 "src/consynth/Sketch.ml" 321 11295 11317
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 321 11295 11318 "src/consynth/Sketch.ml" 321 11295 11346
+)
+"src/consynth/Sketch.ml" 321 11295 11318 "src/consynth/Sketch.ml" 321 11295 11320
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 321 11295 11324 "src/consynth/Sketch.ml" 321 11295 11338
+type(
+  F.formatter -> (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 321 11295 11339 "src/consynth/Sketch.ml" 321 11295 11342
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 321 11295 11314 "src/consynth/Sketch.ml" 321 11295 11317
+)
+"src/consynth/Sketch.ml" 321 11295 11343 "src/consynth/Sketch.ml" 321 11295 11346
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 321 11295 11324 "src/consynth/Sketch.ml" 321 11295 11346
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 321 11295 11309 "src/consynth/Sketch.ml" 321 11295 11347
+type(
+  F.formatter -> unit -> unit
+)
+"src/consynth/Sketch.ml" 322 11348 11359 "src/consynth/Sketch.ml" 322 11348 11362
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 322 11348 11363 "src/consynth/Sketch.ml" 323 11369 11442
+)
+"src/consynth/Sketch.ml" 322 11348 11363 "src/consynth/Sketch.ml" 322 11348 11365
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 323 11369 11378 "src/consynth/Sketch.ml" 323 11369 11442
+)
+"src/consynth/Sketch.ml" 323 11369 11378 "src/consynth/Sketch.ml" 323 11369 11392
+type(
+  F.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 323 11369 11393 "src/consynth/Sketch.ml" 323 11369 11396
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 322 11348 11359 "src/consynth/Sketch.ml" 322 11348 11362
+)
+"src/consynth/Sketch.ml" 323 11369 11397 "src/consynth/Sketch.ml" 323 11369 11401
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 323 11369 11403 "src/consynth/Sketch.ml" 323 11369 11425
+type(
+  SketchTypes.skExpr Utils.IM.t -> Utils.VS.elt -> string
+)
+ident(
+  int_ref base_init_value_choice "src/consynth/Sketch.ml" 119 3635 3639 "src/consynth/Sketch.ml" 119 3635 3661
+)
+"src/consynth/Sketch.ml" 323 11369 11426 "src/consynth/Sketch.ml" 323 11369 11438
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 318 11176 11182 "src/consynth/Sketch.ml" 318 11176 11194
+)
+"src/consynth/Sketch.ml" 323 11369 11439 "src/consynth/Sketch.ml" 323 11369 11441
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 322 11348 11363 "src/consynth/Sketch.ml" 322 11348 11365
+)
+"src/consynth/Sketch.ml" 323 11369 11402 "src/consynth/Sketch.ml" 323 11369 11442
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Sketch.ml" 323 11369 11378 "src/consynth/Sketch.ml" 323 11369 11442
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 322 11348 11354 "src/consynth/Sketch.ml" 323 11369 11443
+type(
+  F.formatter -> Utils.VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 320 11275 11279 "src/consynth/Sketch.ml" 323 11369 11443
+call(
+  stack
+)
+type(
+  F.formatter -> Utils.VS.elt list -> unit
+)
+"src/consynth/Sketch.ml" 326 11502 11504 "src/consynth/Sketch.ml" 326 11502 11518
+type(
+  F.formatter ->
+  (string ->
+   string ->
+   (F.formatter -> Utils.VS.elt list -> unit) -> Utils.VS.elt list -> unit,
+   F.formatter, unit)
+  format ->
+  string ->
+  string ->
+  (F.formatter -> Utils.VS.elt list -> unit) -> Utils.VS.elt list -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 326 11502 11519 "src/consynth/Sketch.ml" 326 11502 11522
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 317 11118 11132 "src/consynth/Sketch.ml" 317 11118 11135
+)
+"src/consynth/Sketch.ml" 327 11523 11527 "src/consynth/Sketch.ml" 327 11523 11554
+type(
+  (string ->
+   string ->
+   (F.formatter -> Utils.VS.elt list -> unit) -> Utils.VS.elt list -> unit,
+   F.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 328 11555 11559 "src/consynth/Sketch.ml" 328 11555 11575
+type(
+  string
+)
+ident(
+  int_ref ident_state_name "src/consynth/Sketch.ml" 116 3417 3421 "src/consynth/Sketch.ml" 116 3417 3437
+)
+"src/consynth/Sketch.ml" 328 11555 11576 "src/consynth/Sketch.ml" 328 11555 11592
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 329 11593 11597 "src/consynth/Sketch.ml" 329 11593 11614
+type(
+  F.formatter -> Utils.VS.elt list -> unit
+)
+ident(
+  int_ref s0_sketch_printer "src/consynth/Sketch.ml" 319 11249 11255 "src/consynth/Sketch.ml" 319 11249 11272
+)
+"src/consynth/Sketch.ml" 329 11593 11616 "src/consynth/Sketch.ml" 329 11593 11629
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/consynth/Sketch.ml" 329 11593 11630 "src/consynth/Sketch.ml" 329 11593 11640
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 317 11118 11136 "src/consynth/Sketch.ml" 317 11118 11146
+)
+"src/consynth/Sketch.ml" 329 11593 11615 "src/consynth/Sketch.ml" 329 11593 11641
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/consynth/Sketch.ml" 326 11502 11504 "src/consynth/Sketch.ml" 329 11593 11641
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 336 11883 11885 "src/consynth/Sketch.ml" 336 11883 11899
+type(
+  F.formatter ->
+  (string ->
+   string ->
+   (Format.formatter -> (Utils.IM.key * Utils.VS.elt) list -> unit) ->
+   (Utils.IM.key * Utils.VS.elt) list -> unit, Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  (Format.formatter -> (Utils.IM.key * Utils.VS.elt) list -> unit) ->
+  (Utils.IM.key * Utils.VS.elt) list -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 336 11883 11900 "src/consynth/Sketch.ml" 336 11883 11903
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 317 11118 11132 "src/consynth/Sketch.ml" 317 11118 11135
+)
+"src/consynth/Sketch.ml" 337 11904 11908 "src/consynth/Sketch.ml" 337 11904 11935
+type(
+  (string ->
+   string ->
+   (Format.formatter -> (Utils.IM.key * Utils.VS.elt) list -> unit) ->
+   (Utils.IM.key * Utils.VS.elt) list -> unit, Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 338 11936 11940 "src/consynth/Sketch.ml" 338 11936 11943
+type(
+  string
+)
+ident(
+  int_ref st0 "src/consynth/Sketch.ml" 317 11118 11157 "src/consynth/Sketch.ml" 317 11118 11160
+)
+"src/consynth/Sketch.ml" 339 11944 11948 "src/consynth/Sketch.ml" 339 11944 11964
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 340 11965 11974 "src/consynth/Sketch.ml" 340 11965 11977
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 340 11965 11978 "src/consynth/Sketch.ml" 359 12683 12694
+)
+"src/consynth/Sketch.ml" 340 11965 11978 "src/consynth/Sketch.ml" 340 11965 11980
+type(
+  (Utils.IM.key * Utils.VS.elt) list
+)
+ident(
+  def li "src/consynth/Sketch.ml" 341 11984 11991 "src/consynth/Sketch.ml" 359 12683 12694
+)
+"src/consynth/Sketch.ml" 341 11984 11992 "src/consynth/Sketch.ml" 341 11984 11996
+type(
+  Format.formatter ->
+  ?sep:string ->
+  (Format.formatter -> Utils.IM.key * Utils.VS.elt -> unit) ->
+  (Utils.IM.key * Utils.VS.elt) list -> unit
+)
+ident(
+  ext_ref PpHelper.ppli
+)
+"src/consynth/Sketch.ml" 341 11984 11997 "src/consynth/Sketch.ml" 341 11984 12000
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 340 11965 11974 "src/consynth/Sketch.ml" 340 11965 11977
+)
+"src/consynth/Sketch.ml" 341 11984 12006 "src/consynth/Sketch.ml" 341 11984 12009
+type(
+  string
+)
+"src/consynth/Sketch.ml" 342 12010 12025 "src/consynth/Sketch.ml" 342 12010 12028
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 342 12010 12029 "src/consynth/Sketch.ml" 358 12656 12680
+)
+"src/consynth/Sketch.ml" 342 12010 12030 "src/consynth/Sketch.ml" 342 12010 12033
+type(
+  Utils.IM.key
+)
+ident(
+  def vid "src/consynth/Sketch.ml" 343 12042 12055 "src/consynth/Sketch.ml" 358 12656 12680
+)
+"src/consynth/Sketch.ml" 342 12010 12035 "src/consynth/Sketch.ml" 342 12010 12037
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 343 12042 12055 "src/consynth/Sketch.ml" 358 12656 12680
+)
+"src/consynth/Sketch.ml" 342 12010 12029 "src/consynth/Sketch.ml" 342 12010 12038
+type(
+  Utils.IM.key * Utils.VS.elt
+)
+"src/consynth/Sketch.ml" 343 12042 12059 "src/consynth/Sketch.ml" 343 12042 12065
+type(
+  Utils.IM.key -> SketchTypes.skExpr Utils.IM.t -> bool
+)
+ident(
+  ext_ref Utils.IM.mem
+)
+"src/consynth/Sketch.ml" 343 12042 12066 "src/consynth/Sketch.ml" 343 12042 12069
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/Sketch.ml" 342 12010 12030 "src/consynth/Sketch.ml" 342 12010 12033
+)
+"src/consynth/Sketch.ml" 343 12042 12070 "src/consynth/Sketch.ml" 343 12042 12082
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 318 11176 11182 "src/consynth/Sketch.ml" 318 11176 11194
+)
+"src/consynth/Sketch.ml" 343 12042 12059 "src/consynth/Sketch.ml" 343 12042 12082
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 345 12102 12118 "src/consynth/Sketch.ml" 345 12102 12127
+type(
+  Format.formatter -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref SPretty.pp_skexpr
+)
+"src/consynth/Sketch.ml" 345 12102 12128 "src/consynth/Sketch.ml" 345 12102 12131
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 342 12010 12025 "src/consynth/Sketch.ml" 342 12010 12028
+)
+"src/consynth/Sketch.ml" 345 12102 12133 "src/consynth/Sketch.ml" 345 12102 12140
+type(
+  Utils.IM.key -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Utils.IM.find
+)
+"src/consynth/Sketch.ml" 345 12102 12141 "src/consynth/Sketch.ml" 345 12102 12144
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/Sketch.ml" 342 12010 12030 "src/consynth/Sketch.ml" 342 12010 12033
+)
+"src/consynth/Sketch.ml" 345 12102 12145 "src/consynth/Sketch.ml" 345 12102 12157
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 318 11176 11182 "src/consynth/Sketch.ml" 318 11176 11194
+)
+"src/consynth/Sketch.ml" 345 12102 12132 "src/consynth/Sketch.ml" 345 12102 12158
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/Sketch.ml" 345 12102 12118 "src/consynth/Sketch.ml" 345 12102 12158
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 347 12178 12198 "src/consynth/Sketch.ml" 347 12178 12204
+type(
+  Cil.varinfo Utils.IH.t -> Utils.IH.key -> bool
+)
+ident(
+  ext_ref Utils.IH.mem
+)
+"src/consynth/Sketch.ml" 347 12178 12205 "src/consynth/Sketch.ml" 347 12178 12219
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref auxiliary_vars "src/consynth/Sketch.ml" 23 348 352 "src/consynth/Sketch.ml" 23 348 366
+)
+"src/consynth/Sketch.ml" 347 12178 12220 "src/consynth/Sketch.ml" 347 12178 12223
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/Sketch.ml" 342 12010 12030 "src/consynth/Sketch.ml" 342 12010 12033
+)
+"src/consynth/Sketch.ml" 347 12178 12198 "src/consynth/Sketch.ml" 347 12178 12223
+type(
+  bool
+)
+"src/consynth/Sketch.ml" 349 12246 12265 "src/consynth/Sketch.ml" 349 12246 12279
+type(
+  Format.formatter ->
+  (string -> unit, Format.formatter, unit) format -> string -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 349 12246 12280 "src/consynth/Sketch.ml" 349 12246 12283
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 342 12010 12025 "src/consynth/Sketch.ml" 342 12010 12028
+)
+"src/consynth/Sketch.ml" 349 12246 12284 "src/consynth/Sketch.ml" 349 12246 12288
+type(
+  (string -> unit, Format.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 350 12289 12311 "src/consynth/Sketch.ml" 350 12289 12333
+type(
+  SketchTypes.skExpr Utils.IM.t -> Utils.VS.elt -> string
+)
+ident(
+  int_ref base_init_value_choice "src/consynth/Sketch.ml" 119 3635 3639 "src/consynth/Sketch.ml" 119 3635 3661
+)
+"src/consynth/Sketch.ml" 350 12289 12334 "src/consynth/Sketch.ml" 350 12289 12346
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Sketch.ml" 318 11176 11182 "src/consynth/Sketch.ml" 318 11176 11194
+)
+"src/consynth/Sketch.ml" 350 12289 12347 "src/consynth/Sketch.ml" 350 12289 12349
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 342 12010 12035 "src/consynth/Sketch.ml" 342 12010 12037
+)
+"src/consynth/Sketch.ml" 350 12289 12310 "src/consynth/Sketch.ml" 350 12289 12350
+type(
+  string
+)
+"src/consynth/Sketch.ml" 349 12246 12265 "src/consynth/Sketch.ml" 350 12289 12350
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 353 12398 12419 "src/consynth/Sketch.ml" 353 12398 12428
+type(
+  (string -> string -> string -> unit, F.formatter, unit) format ->
+  string -> string -> string -> unit
+)
+ident(
+  ext_ref F.eprintf
+)
+"src/consynth/Sketch.ml" 354 12429 12452 "src/consynth/Sketch.ml" 355 12467 12543
+type(
+  (string -> string -> string -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 356 12544 12568 "src/consynth/Sketch.ml" 356 12544 12573
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"src/consynth/Sketch.ml" 356 12544 12574 "src/consynth/Sketch.ml" 356 12544 12579
+type(
+  Utils.SM.key
+)
+"src/consynth/Sketch.ml" 356 12544 12567 "src/consynth/Sketch.ml" 356 12544 12580
+type(
+  string
+)
+"src/consynth/Sketch.ml" 356 12544 12581 "src/consynth/Sketch.ml" 356 12544 12583
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 342 12010 12035 "src/consynth/Sketch.ml" 342 12010 12037
+)
+"src/consynth/Sketch.ml" 356 12544 12581 "src/consynth/Sketch.ml" 356 12544 12593
+type(
+  string
+)
+"src/consynth/Sketch.ml" 356 12544 12594 "src/consynth/Sketch.ml" 356 12544 12601
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"src/consynth/Sketch.ml" 353 12398 12419 "src/consynth/Sketch.ml" 356 12544 12601
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 357 12603 12624 "src/consynth/Sketch.ml" 357 12603 12632
+type(
+  string -> unit
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/Sketch.ml" 357 12603 12633 "src/consynth/Sketch.ml" 357 12603 12655
+type(
+  string
+)
+"src/consynth/Sketch.ml" 357 12603 12624 "src/consynth/Sketch.ml" 357 12603 12655
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 352 12373 12392 "src/consynth/Sketch.ml" 358 12656 12678
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 347 12178 12194 "src/consynth/Sketch.ml" 358 12656 12679
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 343 12042 12055 "src/consynth/Sketch.ml" 358 12656 12680
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 342 12010 12020 "src/consynth/Sketch.ml" 358 12656 12681
+type(
+  Format.formatter -> Utils.IM.key * Utils.VS.elt -> unit
+)
+"src/consynth/Sketch.ml" 341 11984 11991 "src/consynth/Sketch.ml" 358 12656 12682
+type(
+  (Utils.IM.key * Utils.VS.elt) list -> unit
+)
+"src/consynth/Sketch.ml" 359 12683 12692 "src/consynth/Sketch.ml" 359 12683 12694
+type(
+  (Utils.IM.key * Utils.VS.elt) list
+)
+ident(
+  int_ref li "src/consynth/Sketch.ml" 340 11965 11978 "src/consynth/Sketch.ml" 340 11965 11980
+)
+"src/consynth/Sketch.ml" 341 11984 11991 "src/consynth/Sketch.ml" 359 12683 12694
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 340 11965 11969 "src/consynth/Sketch.ml" 359 12683 12695
+type(
+  Format.formatter -> (Utils.IM.key * Utils.VS.elt) list -> unit
+)
+"src/consynth/Sketch.ml" 360 12696 12701 "src/consynth/Sketch.ml" 360 12696 12715
+type(
+  Utils.VS.t -> (Utils.IM.key * Utils.VS.elt) list
+)
+ident(
+  ext_ref Utils.VSOps.bindings
+)
+"src/consynth/Sketch.ml" 360 12696 12716 "src/consynth/Sketch.ml" 360 12696 12726
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 317 11118 11136 "src/consynth/Sketch.ml" 317 11118 11146
+)
+"src/consynth/Sketch.ml" 360 12696 12700 "src/consynth/Sketch.ml" 360 12696 12727
+call(
+  stack
+)
+type(
+  (Utils.IM.key * Utils.VS.elt) list
+)
+"src/consynth/Sketch.ml" 336 11883 11885 "src/consynth/Sketch.ml" 360 12696 12727
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 326 11502 11504 "src/consynth/Sketch.ml" 360 12696 12727
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 319 11249 11251 "src/consynth/Sketch.ml" 360 12696 12727
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 318 11176 11178 "src/consynth/Sketch.ml" 360 12696 12727
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 371 13078 13082 "src/consynth/Sketch.ml" 371 13078 13107
+type(
+  Format.formatter -> string * int * int * int -> unit
+)
+ident(
+  def pp_verification_condition "src/consynth/Sketch.ml" 387 13744 13744 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 371 13078 13108 "src/consynth/Sketch.ml" 371 13078 13111
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 371 13078 13112 "src/consynth/Sketch.ml" 378 13323 13379
+)
+"src/consynth/Sketch.ml" 371 13078 13113 "src/consynth/Sketch.ml" 371 13078 13115
+type(
+  string
+)
+ident(
+  def s0 "src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 378 13323 13379
+)
+"src/consynth/Sketch.ml" 371 13078 13117 "src/consynth/Sketch.ml" 371 13078 13121
+type(
+  int
+)
+ident(
+  def i_st "src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 378 13323 13379
+)
+"src/consynth/Sketch.ml" 371 13078 13123 "src/consynth/Sketch.ml" 371 13078 13126
+type(
+  int
+)
+ident(
+  def i_m "src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 378 13323 13379
+)
+"src/consynth/Sketch.ml" 371 13078 13128 "src/consynth/Sketch.ml" 371 13078 13133
+type(
+  int
+)
+ident(
+  def i_end "src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 378 13323 13379
+)
+"src/consynth/Sketch.ml" 371 13078 13112 "src/consynth/Sketch.ml" 371 13078 13134
+type(
+  string * int * int * int
+)
+"src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 372 13137 13153
+type(
+  Format.formatter ->
+  (string ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int ->
+   string ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int -> unit, Format.formatter, unit)
+  format ->
+  string ->
+  (Format.formatter -> string * string * int * int -> unit) ->
+  string * string * int * int ->
+  string ->
+  (Format.formatter -> string * string * int * int -> unit) ->
+  string * string * int * int ->
+  (Format.formatter -> string * string * int * int -> unit) ->
+  string * string * int * int -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 372 13137 13154 "src/consynth/Sketch.ml" 372 13137 13157
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 371 13078 13108 "src/consynth/Sketch.ml" 371 13078 13111
+)
+"src/consynth/Sketch.ml" 373 13158 13162 "src/consynth/Sketch.ml" 373 13158 13199
+type(
+  (string ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int ->
+   string ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int ->
+   (Format.formatter -> string * string * int * int -> unit) ->
+   string * string * int * int -> unit, Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 374 13200 13204 "src/consynth/Sketch.ml" 374 13200 13220
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 375 13221 13225 "src/consynth/Sketch.ml" 375 13221 13236
+type(
+  Format.formatter -> string * string * int * int -> unit
+)
+ident(
+  ext_ref Racket.pp_body_app
+)
+"src/consynth/Sketch.ml" 375 13221 13238 "src/consynth/Sketch.ml" 375 13221 13247
+type(
+  string
+)
+ident(
+  int_ref body_name "src/consynth/Sketch.ml" 114 3292 3296 "src/consynth/Sketch.ml" 114 3292 3305
+)
+"src/consynth/Sketch.ml" 375 13221 13249 "src/consynth/Sketch.ml" 375 13221 13251
+type(
+  string
+)
+ident(
+  int_ref s0 "src/consynth/Sketch.ml" 371 13078 13113 "src/consynth/Sketch.ml" 371 13078 13115
+)
+"src/consynth/Sketch.ml" 375 13221 13253 "src/consynth/Sketch.ml" 375 13221 13257
+type(
+  int
+)
+ident(
+  int_ref i_st "src/consynth/Sketch.ml" 371 13078 13117 "src/consynth/Sketch.ml" 371 13078 13121
+)
+"src/consynth/Sketch.ml" 375 13221 13259 "src/consynth/Sketch.ml" 375 13221 13264
+type(
+  int
+)
+ident(
+  int_ref i_end "src/consynth/Sketch.ml" 371 13078 13128 "src/consynth/Sketch.ml" 371 13078 13133
+)
+"src/consynth/Sketch.ml" 375 13221 13237 "src/consynth/Sketch.ml" 375 13221 13265
+type(
+  string * string * int * int
+)
+"src/consynth/Sketch.ml" 376 13266 13270 "src/consynth/Sketch.ml" 376 13266 13279
+type(
+  string
+)
+ident(
+  int_ref join_name "src/consynth/Sketch.ml" 112 3185 3189 "src/consynth/Sketch.ml" 112 3185 3198
+)
+"src/consynth/Sketch.ml" 377 13280 13284 "src/consynth/Sketch.ml" 377 13280 13295
+type(
+  Format.formatter -> string * string * int * int -> unit
+)
+ident(
+  ext_ref Racket.pp_body_app
+)
+"src/consynth/Sketch.ml" 377 13280 13297 "src/consynth/Sketch.ml" 377 13280 13306
+type(
+  string
+)
+ident(
+  int_ref body_name "src/consynth/Sketch.ml" 114 3292 3296 "src/consynth/Sketch.ml" 114 3292 3305
+)
+"src/consynth/Sketch.ml" 377 13280 13308 "src/consynth/Sketch.ml" 377 13280 13310
+type(
+  string
+)
+ident(
+  int_ref s0 "src/consynth/Sketch.ml" 371 13078 13113 "src/consynth/Sketch.ml" 371 13078 13115
+)
+"src/consynth/Sketch.ml" 377 13280 13312 "src/consynth/Sketch.ml" 377 13280 13316
+type(
+  int
+)
+ident(
+  int_ref i_st "src/consynth/Sketch.ml" 371 13078 13117 "src/consynth/Sketch.ml" 371 13078 13121
+)
+"src/consynth/Sketch.ml" 377 13280 13318 "src/consynth/Sketch.ml" 377 13280 13321
+type(
+  int
+)
+ident(
+  int_ref i_m "src/consynth/Sketch.ml" 371 13078 13123 "src/consynth/Sketch.ml" 371 13078 13126
+)
+"src/consynth/Sketch.ml" 377 13280 13296 "src/consynth/Sketch.ml" 377 13280 13322
+type(
+  string * string * int * int
+)
+"src/consynth/Sketch.ml" 378 13323 13327 "src/consynth/Sketch.ml" 378 13323 13338
+type(
+  Format.formatter -> string * string * int * int -> unit
+)
+ident(
+  ext_ref Racket.pp_body_app
+)
+"src/consynth/Sketch.ml" 378 13323 13340 "src/consynth/Sketch.ml" 378 13323 13349
+type(
+  string
+)
+ident(
+  int_ref body_name "src/consynth/Sketch.ml" 114 3292 3296 "src/consynth/Sketch.ml" 114 3292 3305
+)
+"src/consynth/Sketch.ml" 378 13323 13351 "src/consynth/Sketch.ml" 378 13323 13366
+type(
+  string
+)
+ident(
+  int_ref init_state_name "src/consynth/Sketch.ml" 117 3486 3490 "src/consynth/Sketch.ml" 117 3486 3505
+)
+"src/consynth/Sketch.ml" 378 13323 13368 "src/consynth/Sketch.ml" 378 13323 13371
+type(
+  int
+)
+ident(
+  int_ref i_m "src/consynth/Sketch.ml" 371 13078 13123 "src/consynth/Sketch.ml" 371 13078 13126
+)
+"src/consynth/Sketch.ml" 378 13323 13373 "src/consynth/Sketch.ml" 378 13323 13378
+type(
+  int
+)
+ident(
+  int_ref i_end "src/consynth/Sketch.ml" 371 13078 13128 "src/consynth/Sketch.ml" 371 13078 13133
+)
+"src/consynth/Sketch.ml" 378 13323 13339 "src/consynth/Sketch.ml" 378 13323 13379
+type(
+  string * string * int * int
+)
+"src/consynth/Sketch.ml" 372 13137 13139 "src/consynth/Sketch.ml" 378 13323 13379
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 387 13744 13748 "src/consynth/Sketch.ml" 387 13744 13761
+type(
+  Format.formatter -> string * 'a * VS.t -> unit
+)
+ident(
+  def pp_synth_body "src/consynth/Sketch.ml" 402 14258 14258 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 387 13744 13762 "src/consynth/Sketch.ml" 387 13744 13765
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 387 13744 13766 "src/consynth/Sketch.ml" 396 14115 14147
+)
+"src/consynth/Sketch.ml" 387 13744 13767 "src/consynth/Sketch.ml" 387 13744 13769
+type(
+  string
+)
+ident(
+  def s0 "src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 396 14115 14147
+)
+"src/consynth/Sketch.ml" 387 13744 13771 "src/consynth/Sketch.ml" 387 13744 13781
+type(
+  'a
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 396 14115 14147
+)
+"src/consynth/Sketch.ml" 387 13744 13783 "src/consynth/Sketch.ml" 387 13744 13801
+type(
+  VS.t
+)
+ident(
+  def defined_input_vars "src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 396 14115 14147
+)
+"src/consynth/Sketch.ml" 387 13744 13766 "src/consynth/Sketch.ml" 387 13744 13802
+type(
+  string * 'a * VS.t
+)
+"src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 388 13805 13821
+type(
+  Format.formatter ->
+  ((F.formatter -> VS.t -> unit) -> VS.t -> unit, F.formatter, unit) format ->
+  (F.formatter -> VS.t -> unit) -> VS.t -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 388 13805 13822 "src/consynth/Sketch.ml" 388 13805 13825
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 387 13744 13762 "src/consynth/Sketch.ml" 387 13744 13765
+)
+"src/consynth/Sketch.ml" 389 13826 13830 "src/consynth/Sketch.ml" 389 13826 13875
+type(
+  ((F.formatter -> VS.t -> unit) -> VS.t -> unit, F.formatter, unit) format
+)
+"src/consynth/Sketch.ml" 390 13876 13880 "src/consynth/Sketch.ml" 390 13876 13896
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  int_ref pp_defined_input "src/consynth/Sketch.ml" 102 2787 2791 "src/consynth/Sketch.ml" 102 2787 2807
+)
+"src/consynth/Sketch.ml" 390 13876 13897 "src/consynth/Sketch.ml" 390 13876 13915
+type(
+  VS.t
+)
+ident(
+  int_ref defined_input_vars "src/consynth/Sketch.ml" 387 13744 13783 "src/consynth/Sketch.ml" 387 13744 13801
+)
+"src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 390 13876 13915
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 391 13917 13919 "src/consynth/Sketch.ml" 391 13917 13933
+type(
+  Format.formatter ->
+  ((F.formatter -> (int * int * int) list -> unit) ->
+   (int * int * int) list -> unit, F.formatter, unit)
+  format ->
+  (F.formatter -> (int * int * int) list -> unit) ->
+  (int * int * int) list -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 391 13917 13934 "src/consynth/Sketch.ml" 391 13917 13937
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 387 13744 13762 "src/consynth/Sketch.ml" 387 13744 13765
+)
+"src/consynth/Sketch.ml" 392 13938 13942 "src/consynth/Sketch.ml" 392 13938 13990
+type(
+  ((F.formatter -> (int * int * int) list -> unit) ->
+   (int * int * int) list -> unit, F.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 393 13991 13996 "src/consynth/Sketch.ml" 393 13991 14011
+type(
+  ?pp_sep:(F.formatter -> unit -> unit) ->
+  (F.formatter -> int * int * int -> unit) ->
+  F.formatter -> (int * int * int) list -> unit
+)
+ident(
+  ext_ref F.pp_print_list
+)
+"src/consynth/Sketch.ml" 394 14012 14024 "src/consynth/Sketch.ml" 394 14012 14027
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 394 14012 14028 "src/consynth/Sketch.ml" 395 14050 14112
+)
+"src/consynth/Sketch.ml" 394 14012 14029 "src/consynth/Sketch.ml" 394 14012 14033
+type(
+  int
+)
+ident(
+  def i_st "src/consynth/Sketch.ml" 395 14050 14060 "src/consynth/Sketch.ml" 395 14050 14112
+)
+"src/consynth/Sketch.ml" 394 14012 14035 "src/consynth/Sketch.ml" 394 14012 14038
+type(
+  int
+)
+ident(
+  def i_m "src/consynth/Sketch.ml" 395 14050 14060 "src/consynth/Sketch.ml" 395 14050 14112
+)
+"src/consynth/Sketch.ml" 394 14012 14040 "src/consynth/Sketch.ml" 394 14012 14045
+type(
+  int
+)
+ident(
+  def i_end "src/consynth/Sketch.ml" 395 14050 14060 "src/consynth/Sketch.ml" 395 14050 14112
+)
+"src/consynth/Sketch.ml" 394 14012 14028 "src/consynth/Sketch.ml" 394 14012 14046
+type(
+  int * int * int
+)
+"src/consynth/Sketch.ml" 395 14050 14060 "src/consynth/Sketch.ml" 395 14050 14085
+type(
+  F.formatter -> string * int * int * int -> unit
+)
+ident(
+  int_ref pp_verification_condition "src/consynth/Sketch.ml" 371 13078 13082 "src/consynth/Sketch.ml" 371 13078 13107
+)
+"src/consynth/Sketch.ml" 395 14050 14086 "src/consynth/Sketch.ml" 395 14050 14089
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 394 14012 14024 "src/consynth/Sketch.ml" 394 14012 14027
+)
+"src/consynth/Sketch.ml" 395 14050 14091 "src/consynth/Sketch.ml" 395 14050 14093
+type(
+  string
+)
+ident(
+  int_ref s0 "src/consynth/Sketch.ml" 387 13744 13767 "src/consynth/Sketch.ml" 387 13744 13769
+)
+"src/consynth/Sketch.ml" 395 14050 14095 "src/consynth/Sketch.ml" 395 14050 14099
+type(
+  int
+)
+ident(
+  int_ref i_st "src/consynth/Sketch.ml" 394 14012 14029 "src/consynth/Sketch.ml" 394 14012 14033
+)
+"src/consynth/Sketch.ml" 395 14050 14101 "src/consynth/Sketch.ml" 395 14050 14104
+type(
+  int
+)
+ident(
+  int_ref i_m "src/consynth/Sketch.ml" 394 14012 14035 "src/consynth/Sketch.ml" 394 14012 14038
+)
+"src/consynth/Sketch.ml" 395 14050 14106 "src/consynth/Sketch.ml" 395 14050 14111
+type(
+  int
+)
+ident(
+  int_ref i_end "src/consynth/Sketch.ml" 394 14012 14040 "src/consynth/Sketch.ml" 394 14012 14045
+)
+"src/consynth/Sketch.ml" 395 14050 14090 "src/consynth/Sketch.ml" 395 14050 14112
+type(
+  string * int * int * int
+)
+"src/consynth/Sketch.ml" 395 14050 14060 "src/consynth/Sketch.ml" 395 14050 14112
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 394 14012 14019 "src/consynth/Sketch.ml" 395 14050 14113
+type(
+  F.formatter -> int * int * int -> unit
+)
+"src/consynth/Sketch.ml" 393 13991 13995 "src/consynth/Sketch.ml" 395 14050 14114
+call(
+  stack
+)
+type(
+  F.formatter -> (int * int * int) list -> unit
+)
+"src/consynth/Sketch.ml" 396 14115 14119 "src/consynth/Sketch.ml" 396 14115 14147
+type(
+  (int * int * int) list
+)
+ident(
+  ext_ref Conf.verification_parameters
+)
+"src/consynth/Sketch.ml" 391 13917 13919 "src/consynth/Sketch.ml" 396 14115 14147
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 388 13805 13807 "src/consynth/Sketch.ml" 396 14115 14147
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 402 14258 14262 "src/consynth/Sketch.ml" 402 14258 14270
+type(
+  Format.formatter -> string -> 'a -> VS.t -> unit
+)
+ident(
+  def pp_synth "src/consynth/Sketch.ml" 425 15385 15385 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 402 14258 14271 "src/consynth/Sketch.ml" 402 14258 14274
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 402 14258 14275 "src/consynth/Sketch.ml" 405 14372 14417
+)
+"src/consynth/Sketch.ml" 402 14258 14275 "src/consynth/Sketch.ml" 402 14258 14277
+type(
+  string
+)
+ident(
+  def s0 "src/consynth/Sketch.ml" 402 14258 14278 "src/consynth/Sketch.ml" 405 14372 14417
+)
+"src/consynth/Sketch.ml" 402 14258 14278 "src/consynth/Sketch.ml" 402 14258 14288
+type(
+  'a
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 402 14258 14289 "src/consynth/Sketch.ml" 405 14372 14417
+)
+"src/consynth/Sketch.ml" 402 14258 14289 "src/consynth/Sketch.ml" 402 14258 14298
+type(
+  VS.t
+)
+ident(
+  def read_vars "src/consynth/Sketch.ml" 403 14301 14303 "src/consynth/Sketch.ml" 405 14372 14417
+)
+"src/consynth/Sketch.ml" 403 14301 14303 "src/consynth/Sketch.ml" 403 14301 14317
+type(
+  Format.formatter ->
+  ((Format.formatter -> string * 'a * VS.t -> unit) ->
+   string * 'a * VS.t -> unit, Format.formatter, unit)
+  format ->
+  (Format.formatter -> string * 'a * VS.t -> unit) ->
+  string * 'a * VS.t -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/Sketch.ml" 403 14301 14318 "src/consynth/Sketch.ml" 403 14301 14321
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 402 14258 14271 "src/consynth/Sketch.ml" 402 14258 14274
+)
+"src/consynth/Sketch.ml" 404 14322 14326 "src/consynth/Sketch.ml" 404 14322 14371
+type(
+  ((Format.formatter -> string * 'a * VS.t -> unit) ->
+   string * 'a * VS.t -> unit, Format.formatter, unit)
+  format
+)
+"src/consynth/Sketch.ml" 405 14372 14376 "src/consynth/Sketch.ml" 405 14372 14389
+type(
+  Format.formatter -> string * 'a * VS.t -> unit
+)
+ident(
+  int_ref pp_synth_body "src/consynth/Sketch.ml" 387 13744 13748 "src/consynth/Sketch.ml" 387 13744 13761
+)
+"src/consynth/Sketch.ml" 405 14372 14391 "src/consynth/Sketch.ml" 405 14372 14393
+type(
+  string
+)
+ident(
+  int_ref s0 "src/consynth/Sketch.ml" 402 14258 14275 "src/consynth/Sketch.ml" 402 14258 14277
+)
+"src/consynth/Sketch.ml" 405 14372 14395 "src/consynth/Sketch.ml" 405 14372 14405
+type(
+  'a
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 402 14258 14278 "src/consynth/Sketch.ml" 402 14258 14288
+)
+"src/consynth/Sketch.ml" 405 14372 14407 "src/consynth/Sketch.ml" 405 14372 14416
+type(
+  VS.t
+)
+ident(
+  int_ref read_vars "src/consynth/Sketch.ml" 402 14258 14289 "src/consynth/Sketch.ml" 402 14258 14298
+)
+"src/consynth/Sketch.ml" 405 14372 14390 "src/consynth/Sketch.ml" 405 14372 14417
+type(
+  string * 'a * VS.t
+)
+"src/consynth/Sketch.ml" 403 14301 14303 "src/consynth/Sketch.ml" 405 14372 14417
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 425 15385 15389 "src/consynth/Sketch.ml" 425 15385 15406
+type(
+  F.formatter -> SketchTypes.sketch_rep -> unit
+)
+ident(
+  def pp_rosette_sketch "src/consynth/Sketch.ml" 454 16607 16647 "src/consynth/Sketch.ml" 1 0 -1
+)
+"src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+type(
+  F.formatter
+)
+ident(
+  def fmt "src/consynth/Sketch.ml" 425 15385 15411 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch "src/consynth/Sketch.ml" 426 15435 15437 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 426 15435 15437 "src/consynth/Sketch.ml" 426 15435 15457
+type(
+  unit -> unit
+)
+ident(
+  int_ref clear_special_consts "src/consynth/Sketch.ml" 180 5620 5624 "src/consynth/Sketch.ml" 180 5620 5644
+)
+"src/consynth/Sketch.ml" 426 15435 15458 "src/consynth/Sketch.ml" 426 15435 15460
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 426 15435 15437 "src/consynth/Sketch.ml" 426 15435 15460
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+type(
+  Utils.VS.t
+)
+ident(
+  def state_vars "src/consynth/Sketch.ml" 430 15590 15592 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 428 15487 15506 "src/consynth/Sketch.ml" 428 15487 15512
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 428 15487 15506 "src/consynth/Sketch.ml" 428 15487 15521
+type(
+  SketchTypes.context
+)
+"src/consynth/Sketch.ml" 428 15487 15506 "src/consynth/Sketch.ml" 428 15487 15532
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 430 15590 15596 "src/consynth/Sketch.ml" 430 15590 15605
+type(
+  VS.t
+)
+ident(
+  def read_vars "src/consynth/Sketch.ml" 435 15741 15743 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 431 15608 15612 "src/consynth/Sketch.ml" 431 15608 15619
+type(
+  VS.t -> VS.t -> VS.t
+)
+ident(
+  ext_ref VS.diff
+)
+"src/consynth/Sketch.ml" 432 15620 15627 "src/consynth/Sketch.ml" 432 15620 15653
+type(
+  Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref SketchTypes.remove_interpreted_symbols
+)
+"src/consynth/Sketch.ml" 432 15620 15654 "src/consynth/Sketch.ml" 432 15620 15660
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 432 15620 15654 "src/consynth/Sketch.ml" 432 15620 15669
+type(
+  SketchTypes.context
+)
+"src/consynth/Sketch.ml" 432 15620 15654 "src/consynth/Sketch.ml" 432 15620 15679
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 432 15620 15626 "src/consynth/Sketch.ml" 432 15620 15680
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 433 15681 15688 "src/consynth/Sketch.ml" 433 15681 15696
+type(
+  VS.t -> VS.t -> VS.t
+)
+ident(
+  ext_ref VS.union
+)
+"src/consynth/Sketch.ml" 433 15681 15697 "src/consynth/Sketch.ml" 433 15681 15707
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 433 15681 15708 "src/consynth/Sketch.ml" 433 15681 15714
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 433 15681 15708 "src/consynth/Sketch.ml" 433 15681 15723
+type(
+  SketchTypes.context
+)
+"src/consynth/Sketch.ml" 433 15681 15708 "src/consynth/Sketch.ml" 433 15681 15734
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 433 15681 15687 "src/consynth/Sketch.ml" 433 15681 15735
+call(
+  stack
+)
+type(
+  VS.t
+)
+"src/consynth/Sketch.ml" 431 15608 15612 "src/consynth/Sketch.ml" 433 15681 15735
+call(
+  stack
+)
+type(
+  VS.t
+)
+"src/consynth/Sketch.ml" 435 15741 15747 "src/consynth/Sketch.ml" 435 15741 15750
+type(
+  Utils.VS.t
+)
+ident(
+  def idx "src/consynth/Sketch.ml" 436 15783 15785 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 435 15741 15753 "src/consynth/Sketch.ml" 435 15741 15759
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 435 15741 15753 "src/consynth/Sketch.ml" 435 15741 15768
+type(
+  SketchTypes.context
+)
+"src/consynth/Sketch.ml" 435 15741 15753 "src/consynth/Sketch.ml" 435 15741 15779
+type(
+  Utils.VS.t
+)
+"src/consynth/Sketch.ml" 436 15783 15789 "src/consynth/Sketch.ml" 436 15783 15800
+type(
+  string list
+)
+ident(
+  def field_names "src/consynth/Sketch.ml" 438 15871 15873 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 437 15803 15807 "src/consynth/Sketch.ml" 437 15803 15815
+type(
+  (Utils.VS.elt -> string) -> Utils.VS.elt list -> string list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/Sketch.ml" 437 15803 15821 "src/consynth/Sketch.ml" 437 15803 15823
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/Sketch.ml" 437 15803 15827 "src/consynth/Sketch.ml" 437 15803 15839
+)
+"src/consynth/Sketch.ml" 437 15803 15827 "src/consynth/Sketch.ml" 437 15803 15829
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/Sketch.ml" 437 15803 15821 "src/consynth/Sketch.ml" 437 15803 15823
+)
+"src/consynth/Sketch.ml" 437 15803 15827 "src/consynth/Sketch.ml" 437 15803 15839
+type(
+  string
+)
+"src/consynth/Sketch.ml" 437 15803 15816 "src/consynth/Sketch.ml" 437 15803 15840
+type(
+  Utils.VS.elt -> string
+)
+"src/consynth/Sketch.ml" 437 15803 15842 "src/consynth/Sketch.ml" 437 15803 15855
+type(
+  Utils.VS.t -> Utils.VS.elt list
+)
+ident(
+  ext_ref Utils.VSOps.varlist
+)
+"src/consynth/Sketch.ml" 437 15803 15856 "src/consynth/Sketch.ml" 437 15803 15866
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 437 15803 15841 "src/consynth/Sketch.ml" 437 15803 15867
+call(
+  stack
+)
+type(
+  Utils.VS.elt list
+)
+"src/consynth/Sketch.ml" 437 15803 15807 "src/consynth/Sketch.ml" 437 15803 15867
+call(
+  stack
+)
+type(
+  string list
+)
+"src/consynth/Sketch.ml" 438 15871 15877 "src/consynth/Sketch.ml" 438 15871 15888
+type(
+  string * string list
+)
+ident(
+  def main_struct "src/consynth/Sketch.ml" 439 15926 15928 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 438 15871 15892 "src/consynth/Sketch.ml" 438 15871 15908
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 438 15871 15910 "src/consynth/Sketch.ml" 438 15871 15921
+type(
+  string list
+)
+ident(
+  int_ref field_names "src/consynth/Sketch.ml" 436 15783 15789 "src/consynth/Sketch.ml" 436 15783 15800
+)
+"src/consynth/Sketch.ml" 438 15871 15891 "src/consynth/Sketch.ml" 438 15871 15922
+type(
+  string * string list
+)
+"src/consynth/Sketch.ml" 439 15926 15932 "src/consynth/Sketch.ml" 439 15926 15935
+type(
+  string
+)
+ident(
+  def st0 "src/consynth/Sketch.ml" 441 16011 16013 "src/consynth/Sketch.ml" 454 16607 16647
+)
+"src/consynth/Sketch.ml" 439 15926 15938 "src/consynth/Sketch.ml" 439 15926 15953
+type(
+  string
+)
+ident(
+  int_ref init_state_name "src/consynth/Sketch.ml" 117 3486 3490 "src/consynth/Sketch.ml" 117 3486 3505
+)
+"src/consynth/Sketch.ml" 441 16011 16013 "src/consynth/Sketch.ml" 441 16011 16038
+type(
+  string ref
+)
+ident(
+  ext_ref SPretty.state_struct_name
+)
+"src/consynth/Sketch.ml" 441 16011 16039 "src/consynth/Sketch.ml" 441 16011 16041
+type(
+  string ref -> string -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Sketch.ml" 441 16011 16042 "src/consynth/Sketch.ml" 441 16011 16058
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 441 16011 16013 "src/consynth/Sketch.ml" 441 16011 16058
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 442 16060 16062 "src/consynth/Sketch.ml" 442 16060 16088
+type(
+  F.formatter -> VS.t -> unit
+)
+ident(
+  int_ref pp_symbolic_definitions_of "src/consynth/Sketch.ml" 213 6684 6688 "src/consynth/Sketch.ml" 213 6684 6714
+)
+"src/consynth/Sketch.ml" 442 16060 16089 "src/consynth/Sketch.ml" 442 16060 16092
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 442 16060 16093 "src/consynth/Sketch.ml" 442 16060 16102
+type(
+  VS.t
+)
+ident(
+  int_ref read_vars "src/consynth/Sketch.ml" 430 15590 15596 "src/consynth/Sketch.ml" 430 15590 15605
+)
+"src/consynth/Sketch.ml" 442 16060 16062 "src/consynth/Sketch.ml" 442 16060 16102
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 443 16104 16106 "src/consynth/Sketch.ml" 443 16104 16122
+type(
+  F.formatter -> unit -> unit
+)
+ident(
+  ext_ref PpHelper.pp_force_newline
+)
+"src/consynth/Sketch.ml" 443 16104 16123 "src/consynth/Sketch.ml" 443 16104 16126
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 443 16104 16127 "src/consynth/Sketch.ml" 443 16104 16129
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 443 16104 16106 "src/consynth/Sketch.ml" 443 16104 16129
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 444 16131 16133 "src/consynth/Sketch.ml" 444 16131 16152
+type(
+  F.formatter -> string * string list -> unit
+)
+ident(
+  int_ref pp_state_definition "src/consynth/Sketch.ml" 202 6266 6270 "src/consynth/Sketch.ml" 202 6266 6289
+)
+"src/consynth/Sketch.ml" 444 16131 16153 "src/consynth/Sketch.ml" 444 16131 16156
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 444 16131 16157 "src/consynth/Sketch.ml" 444 16131 16168
+type(
+  string * string list
+)
+ident(
+  int_ref main_struct "src/consynth/Sketch.ml" 438 15871 15877 "src/consynth/Sketch.ml" 438 15871 15888
+)
+"src/consynth/Sketch.ml" 444 16131 16133 "src/consynth/Sketch.ml" 444 16131 16168
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 445 16170 16172 "src/consynth/Sketch.ml" 445 16170 16188
+type(
+  F.formatter -> unit -> unit
+)
+ident(
+  ext_ref PpHelper.pp_force_newline
+)
+"src/consynth/Sketch.ml" 445 16170 16189 "src/consynth/Sketch.ml" 445 16170 16192
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 445 16170 16193 "src/consynth/Sketch.ml" 445 16170 16195
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 445 16170 16172 "src/consynth/Sketch.ml" 445 16170 16195
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 446 16197 16199 "src/consynth/Sketch.ml" 446 16197 16206
+type(
+  F.formatter ->
+  Utils.VS.t -> SketchTypes.sklet * Utils.VS.t -> string -> unit
+)
+ident(
+  int_ref pp_loop "src/consynth/Sketch.ml" 240 7853 7857 "src/consynth/Sketch.ml" 240 7853 7864
+)
+"src/consynth/Sketch.ml" 446 16197 16207 "src/consynth/Sketch.ml" 446 16197 16210
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 446 16197 16211 "src/consynth/Sketch.ml" 446 16197 16214
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref idx "src/consynth/Sketch.ml" 435 15741 15747 "src/consynth/Sketch.ml" 435 15741 15750
+)
+"src/consynth/Sketch.ml" 446 16197 16216 "src/consynth/Sketch.ml" 446 16197 16222
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 446 16197 16216 "src/consynth/Sketch.ml" 446 16197 16232
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Sketch.ml" 446 16197 16234 "src/consynth/Sketch.ml" 446 16197 16244
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 446 16197 16215 "src/consynth/Sketch.ml" 446 16197 16245
+type(
+  SketchTypes.sklet * Utils.VS.t
+)
+"src/consynth/Sketch.ml" 446 16197 16246 "src/consynth/Sketch.ml" 446 16197 16262
+type(
+  string
+)
+ident(
+  int_ref main_struct_name "src/consynth/Sketch.ml" 110 3069 3073 "src/consynth/Sketch.ml" 110 3069 3089
+)
+"src/consynth/Sketch.ml" 446 16197 16199 "src/consynth/Sketch.ml" 446 16197 16262
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 447 16264 16266 "src/consynth/Sketch.ml" 447 16264 16276
+type(
+  F.formatter -> string -> unit
+)
+ident(
+  ext_ref Racket.pp_comment
+)
+"src/consynth/Sketch.ml" 447 16264 16277 "src/consynth/Sketch.ml" 447 16264 16280
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 447 16264 16281 "src/consynth/Sketch.ml" 447 16264 16319
+type(
+  string
+)
+"src/consynth/Sketch.ml" 447 16264 16266 "src/consynth/Sketch.ml" 447 16264 16319
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 448 16321 16323 "src/consynth/Sketch.ml" 448 16321 16330
+type(
+  F.formatter -> SketchTypes.sklet * Utils.VS.t -> unit
+)
+ident(
+  int_ref pp_join "src/consynth/Sketch.ml" 298 10280 10284 "src/consynth/Sketch.ml" 298 10280 10291
+)
+"src/consynth/Sketch.ml" 448 16321 16331 "src/consynth/Sketch.ml" 448 16321 16334
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 448 16321 16336 "src/consynth/Sketch.ml" 448 16321 16342
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 448 16321 16336 "src/consynth/Sketch.ml" 448 16321 16352
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Sketch.ml" 448 16321 16354 "src/consynth/Sketch.ml" 448 16321 16364
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 448 16321 16335 "src/consynth/Sketch.ml" 448 16321 16365
+type(
+  SketchTypes.sklet * Utils.VS.t
+)
+"src/consynth/Sketch.ml" 448 16321 16323 "src/consynth/Sketch.ml" 448 16321 16365
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 449 16367 16369 "src/consynth/Sketch.ml" 449 16367 16385
+type(
+  F.formatter -> unit -> unit
+)
+ident(
+  ext_ref PpHelper.pp_force_newline
+)
+"src/consynth/Sketch.ml" 449 16367 16386 "src/consynth/Sketch.ml" 449 16367 16389
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 449 16367 16390 "src/consynth/Sketch.ml" 449 16367 16392
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 449 16367 16369 "src/consynth/Sketch.ml" 449 16367 16392
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 450 16394 16396 "src/consynth/Sketch.ml" 450 16394 16406
+type(
+  F.formatter -> string -> unit
+)
+ident(
+  ext_ref Racket.pp_comment
+)
+"src/consynth/Sketch.ml" 450 16394 16407 "src/consynth/Sketch.ml" 450 16394 16410
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 450 16394 16411 "src/consynth/Sketch.ml" 450 16394 16458
+type(
+  string
+)
+"src/consynth/Sketch.ml" 450 16394 16396 "src/consynth/Sketch.ml" 450 16394 16458
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 451 16460 16462 "src/consynth/Sketch.ml" 451 16460 16471
+type(
+  F.formatter ->
+  Utils.VS.t -> VS.t -> string -> SketchTypes.skExpr Utils.IM.t -> unit
+)
+ident(
+  int_ref pp_states "src/consynth/Sketch.ml" 317 11118 11122 "src/consynth/Sketch.ml" 317 11118 11131
+)
+"src/consynth/Sketch.ml" 451 16460 16472 "src/consynth/Sketch.ml" 451 16460 16475
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 451 16460 16476 "src/consynth/Sketch.ml" 451 16460 16486
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 451 16460 16487 "src/consynth/Sketch.ml" 451 16460 16496
+type(
+  VS.t
+)
+ident(
+  int_ref read_vars "src/consynth/Sketch.ml" 430 15590 15596 "src/consynth/Sketch.ml" 430 15590 15605
+)
+"src/consynth/Sketch.ml" 451 16460 16497 "src/consynth/Sketch.ml" 451 16460 16500
+type(
+  string
+)
+ident(
+  int_ref st0 "src/consynth/Sketch.ml" 439 15926 15932 "src/consynth/Sketch.ml" 439 15926 15935
+)
+"src/consynth/Sketch.ml" 451 16460 16501 "src/consynth/Sketch.ml" 451 16460 16507
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch "src/consynth/Sketch.ml" 425 15385 15412 "src/consynth/Sketch.ml" 425 15385 15418
+)
+"src/consynth/Sketch.ml" 451 16460 16501 "src/consynth/Sketch.ml" 451 16460 16523
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Sketch.ml" 451 16460 16462 "src/consynth/Sketch.ml" 451 16460 16523
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 452 16525 16527 "src/consynth/Sketch.ml" 452 16525 16537
+type(
+  F.formatter -> string -> unit
+)
+ident(
+  ext_ref Racket.pp_comment
+)
+"src/consynth/Sketch.ml" 452 16525 16538 "src/consynth/Sketch.ml" 452 16525 16541
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 452 16525 16542 "src/consynth/Sketch.ml" 452 16525 16578
+type(
+  string
+)
+"src/consynth/Sketch.ml" 452 16525 16527 "src/consynth/Sketch.ml" 452 16525 16578
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 453 16580 16582 "src/consynth/Sketch.ml" 453 16580 16598
+type(
+  F.formatter -> unit -> unit
+)
+ident(
+  ext_ref PpHelper.pp_force_newline
+)
+"src/consynth/Sketch.ml" 453 16580 16599 "src/consynth/Sketch.ml" 453 16580 16602
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 453 16580 16603 "src/consynth/Sketch.ml" 453 16580 16605
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 453 16580 16582 "src/consynth/Sketch.ml" 453 16580 16605
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 454 16607 16609 "src/consynth/Sketch.ml" 454 16607 16617
+type(
+  F.formatter -> string -> Utils.VS.t -> VS.t -> unit
+)
+ident(
+  int_ref pp_synth "src/consynth/Sketch.ml" 402 14258 14262 "src/consynth/Sketch.ml" 402 14258 14270
+)
+"src/consynth/Sketch.ml" 454 16607 16618 "src/consynth/Sketch.ml" 454 16607 16621
+type(
+  F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Sketch.ml" 425 15385 15407 "src/consynth/Sketch.ml" 425 15385 15410
+)
+"src/consynth/Sketch.ml" 454 16607 16622 "src/consynth/Sketch.ml" 454 16607 16625
+type(
+  string
+)
+ident(
+  int_ref st0 "src/consynth/Sketch.ml" 439 15926 15932 "src/consynth/Sketch.ml" 439 15926 15935
+)
+"src/consynth/Sketch.ml" 454 16607 16626 "src/consynth/Sketch.ml" 454 16607 16636
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Sketch.ml" 428 15487 15493 "src/consynth/Sketch.ml" 428 15487 15503
+)
+"src/consynth/Sketch.ml" 454 16607 16637 "src/consynth/Sketch.ml" 454 16607 16646
+type(
+  VS.t
+)
+ident(
+  int_ref read_vars "src/consynth/Sketch.ml" 430 15590 15596 "src/consynth/Sketch.ml" 430 15590 15605
+)
+"src/consynth/Sketch.ml" 454 16607 16609 "src/consynth/Sketch.ml" 454 16607 16647
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 453 16580 16582 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 452 16525 16527 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 451 16460 16462 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 450 16394 16396 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 449 16367 16369 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 448 16321 16323 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 447 16264 16266 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 446 16197 16199 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 445 16170 16172 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 444 16131 16133 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 443 16104 16106 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 442 16060 16062 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 441 16011 16013 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 439 15926 15928 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 438 15871 15873 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 436 15783 15785 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 435 15741 15743 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 430 15590 15592 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 428 15487 15489 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)
+"src/consynth/Sketch.ml" 426 15435 15437 "src/consynth/Sketch.ml" 454 16607 16647
+type(
+  unit
+)

@@ -1,0 +1,2865 @@
+"src/consynth/Canalyst.ml" 15 203 207 "src/consynth/Canalyst.ml" 15 203 212
+type(
+  bool ref
+)
+ident(
+  def debug "src/consynth/Canalyst.ml" 16 225 225 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 15 203 215 "src/consynth/Canalyst.ml" 15 203 218
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Canalyst.ml" 15 203 219 "src/consynth/Canalyst.ml" 15 203 224
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 15 203 215 "src/consynth/Canalyst.ml" 15 203 224
+type(
+  bool ref
+)
+"src/consynth/Canalyst.ml" 16 225 229 "src/consynth/Canalyst.ml" 16 225 236
+type(
+  bool ref
+)
+ident(
+  def verbose "src/consynth/Canalyst.ml" 20 252 252 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 16 225 239 "src/consynth/Canalyst.ml" 16 225 242
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Canalyst.ml" 16 225 243 "src/consynth/Canalyst.ml" 16 225 248
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 16 225 239 "src/consynth/Canalyst.ml" 16 225 248
+type(
+  bool ref
+)
+"src/consynth/Canalyst.ml" 20 252 256 "src/consynth/Canalyst.ml" 20 252 268
+type(
+  string -> C.file
+)
+ident(
+  def parseOneFile "src/consynth/Canalyst.ml" 30 457 457 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 20 252 270 "src/consynth/Canalyst.ml" 20 252 275
+type(
+  string
+)
+ident(
+  def fname "src/consynth/Canalyst.ml" 20 252 286 "src/consynth/Canalyst.ml" 26 405 453
+)
+"src/consynth/Canalyst.ml" 22 303 307 "src/consynth/Canalyst.ml" 22 303 319
+type(
+  string -> unit -> C.file
+)
+ident(
+  ext_ref Frontc.parse
+)
+"src/consynth/Canalyst.ml" 22 303 320 "src/consynth/Canalyst.ml" 22 303 325
+type(
+  string
+)
+ident(
+  int_ref fname "src/consynth/Canalyst.ml" 20 252 270 "src/consynth/Canalyst.ml" 20 252 275
+)
+"src/consynth/Canalyst.ml" 22 303 326 "src/consynth/Canalyst.ml" 22 303 328
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 22 303 307 "src/consynth/Canalyst.ml" 22 303 328
+call(
+  stack
+)
+type(
+  C.file
+)
+"src/consynth/Canalyst.ml" 24 336 340 "src/consynth/Canalyst.ml" 24 336 354
+type(
+  exn
+)
+"src/consynth/Canalyst.ml" 25 358 362 "src/consynth/Canalyst.ml" 25 358 370
+type(
+  string -> C.file
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/Canalyst.ml" 25 358 371 "src/consynth/Canalyst.ml" 26 405 453
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 25 358 362 "src/consynth/Canalyst.ml" 26 405 453
+call(
+  tail
+)
+type(
+  C.file
+)
+"src/consynth/Canalyst.ml" 21 297 299 "src/consynth/Canalyst.ml" 26 405 453
+type(
+  C.file
+)
+type(
+  C.file
+)
+"src/consynth/Canalyst.ml" 30 457 461 "src/consynth/Canalyst.ml" 30 457 472
+type(
+  string -> Findloops.Cloop.t Utils.IM.t
+)
+ident(
+  def processFile "src/consynth/Canalyst.ml" 58 1466 1466 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 30 457 473 "src/consynth/Canalyst.ml" 30 457 481
+type(
+  string
+)
+ident(
+  def fileName "src/consynth/Canalyst.ml" 31 484 486 "src/consynth/Canalyst.ml" 45 1049 1056
+)
+"src/consynth/Canalyst.ml" 31 484 486 "src/consynth/Canalyst.ml" 31 484 495
+type(
+  unit -> unit
+)
+ident(
+  ext_ref C.initCIL
+)
+"src/consynth/Canalyst.ml" 31 484 496 "src/consynth/Canalyst.ml" 31 484 498
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 31 484 486 "src/consynth/Canalyst.ml" 31 484 498
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 32 500 502 "src/consynth/Canalyst.ml" 32 500 523
+type(
+  bool ref
+)
+ident(
+  ext_ref C.insertImplicitCasts
+)
+"src/consynth/Canalyst.ml" 32 500 524 "src/consynth/Canalyst.ml" 32 500 526
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 32 500 527 "src/consynth/Canalyst.ml" 32 500 532
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 32 500 502 "src/consynth/Canalyst.ml" 32 500 532
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 33 534 536 "src/consynth/Canalyst.ml" 33 534 548
+type(
+  int ref
+)
+ident(
+  ext_ref C.lineLength
+)
+"src/consynth/Canalyst.ml" 33 534 549 "src/consynth/Canalyst.ml" 33 534 551
+type(
+  int ref -> int -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 33 534 552 "src/consynth/Canalyst.ml" 33 534 556
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 33 534 536 "src/consynth/Canalyst.ml" 33 534 556
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 34 558 560 "src/consynth/Canalyst.ml" 34 558 574
+type(
+  bool ref
+)
+ident(
+  ext_ref C.warnTruncate
+)
+"src/consynth/Canalyst.ml" 34 558 575 "src/consynth/Canalyst.ml" 34 558 577
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 34 558 578 "src/consynth/Canalyst.ml" 34 558 583
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 34 558 560 "src/consynth/Canalyst.ml" 34 558 583
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 35 585 587 "src/consynth/Canalyst.ml" 35 585 614
+type(
+  bool ref
+)
+ident(
+  ext_ref Cabs2cil.doCollapseCallCast
+)
+"src/consynth/Canalyst.ml" 35 585 615 "src/consynth/Canalyst.ml" 35 585 617
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 35 585 618 "src/consynth/Canalyst.ml" 35 585 622
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 35 585 587 "src/consynth/Canalyst.ml" 35 585 622
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 38 721 727 "src/consynth/Canalyst.ml" 38 721 738
+type(
+  C.file
+)
+ident(
+  def decl_header "src/consynth/Canalyst.ml" 39 802 804 "src/consynth/Canalyst.ml" 45 1049 1056
+)
+"src/consynth/Canalyst.ml" 38 721 741 "src/consynth/Canalyst.ml" 38 721 753
+type(
+  string -> C.file
+)
+ident(
+  int_ref parseOneFile "src/consynth/Canalyst.ml" 20 252 256 "src/consynth/Canalyst.ml" 20 252 268
+)
+"src/consynth/Canalyst.ml" 38 721 756 "src/consynth/Canalyst.ml" 38 721 766
+type(
+  unit -> string
+)
+ident(
+  ext_ref Sys.getcwd
+)
+"src/consynth/Canalyst.ml" 38 721 767 "src/consynth/Canalyst.ml" 38 721 769
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 38 721 755 "src/consynth/Canalyst.ml" 38 721 770
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 38 721 770 "src/consynth/Canalyst.ml" 38 721 771
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Canalyst.ml" 38 721 771 "src/consynth/Canalyst.ml" 38 721 797
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 38 721 754 "src/consynth/Canalyst.ml" 38 721 798
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 38 721 741 "src/consynth/Canalyst.ml" 38 721 798
+call(
+  stack
+)
+type(
+  C.file
+)
+"src/consynth/Canalyst.ml" 39 802 808 "src/consynth/Canalyst.ml" 39 802 813
+type(
+  Cil.file
+)
+ident(
+  def cfile "src/consynth/Canalyst.ml" 40 878 880 "src/consynth/Canalyst.ml" 45 1049 1056
+)
+"src/consynth/Canalyst.ml" 39 802 816 "src/consynth/Canalyst.ml" 39 802 830
+type(
+  C.file list -> string -> Cil.file
+)
+ident(
+  ext_ref Mergecil.merge
+)
+"src/consynth/Canalyst.ml" 39 802 832 "src/consynth/Canalyst.ml" 39 802 843
+type(
+  C.file
+)
+ident(
+  int_ref decl_header "src/consynth/Canalyst.ml" 38 721 727 "src/consynth/Canalyst.ml" 38 721 738
+)
+"src/consynth/Canalyst.ml" 39 802 845 "src/consynth/Canalyst.ml" 39 802 857
+type(
+  string -> C.file
+)
+ident(
+  int_ref parseOneFile "src/consynth/Canalyst.ml" 20 252 256 "src/consynth/Canalyst.ml" 20 252 268
+)
+"src/consynth/Canalyst.ml" 39 802 858 "src/consynth/Canalyst.ml" 39 802 866
+type(
+  string
+)
+ident(
+  int_ref fileName "src/consynth/Canalyst.ml" 30 457 473 "src/consynth/Canalyst.ml" 30 457 481
+)
+"src/consynth/Canalyst.ml" 39 802 845 "src/consynth/Canalyst.ml" 39 802 866
+call(
+  stack
+)
+type(
+  C.file
+)
+"src/consynth/Canalyst.ml" 39 802 831 "src/consynth/Canalyst.ml" 39 802 867
+type(
+  C.file list
+)
+"src/consynth/Canalyst.ml" 39 802 868 "src/consynth/Canalyst.ml" 39 802 874
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 39 802 816 "src/consynth/Canalyst.ml" 39 802 874
+call(
+  stack
+)
+type(
+  Cil.file
+)
+"src/consynth/Canalyst.ml" 40 878 880 "src/consynth/Canalyst.ml" 40 878 898
+type(
+  Cil.file -> unit
+)
+ident(
+  ext_ref Cfg.computeFileCFG
+)
+"src/consynth/Canalyst.ml" 40 878 899 "src/consynth/Canalyst.ml" 40 878 904
+type(
+  Cil.file
+)
+ident(
+  int_ref cfile "src/consynth/Canalyst.ml" 39 802 808 "src/consynth/Canalyst.ml" 39 802 813
+)
+"src/consynth/Canalyst.ml" 40 878 880 "src/consynth/Canalyst.ml" 40 878 904
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 42 939 941 "src/consynth/Canalyst.ml" 42 939 956
+type(
+  bool ref
+)
+ident(
+  ext_ref Findloops.debug
+)
+"src/consynth/Canalyst.ml" 42 939 957 "src/consynth/Canalyst.ml" 42 939 959
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 42 939 960 "src/consynth/Canalyst.ml" 42 939 961
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 42 939 961 "src/consynth/Canalyst.ml" 42 939 966
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/Canalyst.ml" 15 203 207 "src/consynth/Canalyst.ml" 15 203 212
+)
+"src/consynth/Canalyst.ml" 42 939 960 "src/consynth/Canalyst.ml" 42 939 966
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 42 939 941 "src/consynth/Canalyst.ml" 42 939 966
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 43 968 970 "src/consynth/Canalyst.ml" 43 968 987
+type(
+  bool ref
+)
+ident(
+  ext_ref Findloops.verbose
+)
+"src/consynth/Canalyst.ml" 43 968 988 "src/consynth/Canalyst.ml" 43 968 990
+type(
+  bool ref -> bool -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 43 968 991 "src/consynth/Canalyst.ml" 43 968 992
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 43 968 992 "src/consynth/Canalyst.ml" 43 968 999
+type(
+  bool ref
+)
+ident(
+  int_ref verbose "src/consynth/Canalyst.ml" 16 225 229 "src/consynth/Canalyst.ml" 16 225 236
+)
+"src/consynth/Canalyst.ml" 43 968 991 "src/consynth/Canalyst.ml" 43 968 999
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 43 968 970 "src/consynth/Canalyst.ml" 43 968 999
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 44 1001 1007 "src/consynth/Canalyst.ml" 44 1001 1012
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+ident(
+  def loops "src/consynth/Canalyst.ml" 45 1049 1051 "src/consynth/Canalyst.ml" 45 1049 1056
+)
+"src/consynth/Canalyst.ml" 44 1001 1014 "src/consynth/Canalyst.ml" 44 1001 1015
+type(
+  int list
+)
+"src/consynth/Canalyst.ml" 44 1001 1007 "src/consynth/Canalyst.ml" 44 1001 1015
+type(
+  Findloops.Cloop.t Utils.IM.t * int list
+)
+"src/consynth/Canalyst.ml" 44 1001 1018 "src/consynth/Canalyst.ml" 44 1001 1039
+type(
+  Cil.file -> Findloops.Cloop.t Utils.IM.t * int list
+)
+ident(
+  ext_ref Findloops.processFile
+)
+"src/consynth/Canalyst.ml" 44 1001 1040 "src/consynth/Canalyst.ml" 44 1001 1045
+type(
+  Cil.file
+)
+ident(
+  int_ref cfile "src/consynth/Canalyst.ml" 39 802 808 "src/consynth/Canalyst.ml" 39 802 813
+)
+"src/consynth/Canalyst.ml" 44 1001 1018 "src/consynth/Canalyst.ml" 44 1001 1045
+call(
+  stack
+)
+type(
+  Findloops.Cloop.t Utils.IM.t * int list
+)
+"src/consynth/Canalyst.ml" 45 1049 1051 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+ident(
+  int_ref loops "src/consynth/Canalyst.ml" 44 1001 1007 "src/consynth/Canalyst.ml" 44 1001 1012
+)
+"src/consynth/Canalyst.ml" 44 1001 1003 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 43 968 970 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 42 939 941 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 40 878 880 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 39 802 804 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 38 721 723 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 35 585 587 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 34 558 560 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 33 534 536 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 32 500 502 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 31 484 486 "src/consynth/Canalyst.ml" 45 1049 1056
+type(
+  Findloops.Cloop.t Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 76 2063 2067 "src/consynth/Canalyst.ml" 76 2063 2084
+type(
+  int ref
+)
+ident(
+  def loop_idents_index "src/consynth/Canalyst.ml" 78 2094 2094 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 76 2063 2087 "src/consynth/Canalyst.ml" 76 2063 2090
+type(
+  int -> int ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Canalyst.ml" 76 2063 2091 "src/consynth/Canalyst.ml" 76 2063 2092
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 76 2063 2087 "src/consynth/Canalyst.ml" 76 2063 2092
+type(
+  int ref
+)
+"src/consynth/Canalyst.ml" 78 2094 2098 "src/consynth/Canalyst.ml" 78 2094 2109
+type(
+  string list ref
+)
+ident(
+  def loop_idents "src/consynth/Canalyst.ml" 80 2120 2120 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 78 2094 2112 "src/consynth/Canalyst.ml" 78 2094 2115
+type(
+  string list -> string list ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Canalyst.ml" 78 2094 2116 "src/consynth/Canalyst.ml" 78 2094 2118
+type(
+  string list
+)
+"src/consynth/Canalyst.ml" 78 2094 2112 "src/consynth/Canalyst.ml" 78 2094 2118
+type(
+  string list ref
+)
+"src/consynth/Canalyst.ml" 80 2120 2128 "src/consynth/Canalyst.ml" 80 2120 2142
+type(
+  string -> string
+)
+ident(
+  def new_loop_ident "src/consynth/Canalyst.ml" 80 2120 2120 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 80 2120 2143 "src/consynth/Canalyst.ml" 80 2120 2151
+type(
+  string
+)
+ident(
+  def fun_name "src/consynth/Canalyst.ml" 81 2154 2156 "src/consynth/Canalyst.ml" 87 2384 2398
+)
+"src/consynth/Canalyst.ml" 81 2154 2159 "src/consynth/Canalyst.ml" 81 2154 2167
+type(
+  string -> string list -> bool
+)
+ident(
+  ext_ref List.mem
+)
+"src/consynth/Canalyst.ml" 81 2154 2168 "src/consynth/Canalyst.ml" 81 2154 2176
+type(
+  string
+)
+ident(
+  int_ref fun_name "src/consynth/Canalyst.ml" 80 2120 2143 "src/consynth/Canalyst.ml" 80 2120 2151
+)
+"src/consynth/Canalyst.ml" 81 2154 2177 "src/consynth/Canalyst.ml" 81 2154 2178
+type(
+  string list ref -> string list
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 81 2154 2178 "src/consynth/Canalyst.ml" 81 2154 2189
+type(
+  string list ref
+)
+ident(
+  int_ref loop_idents "src/consynth/Canalyst.ml" 78 2094 2098 "src/consynth/Canalyst.ml" 78 2094 2109
+)
+"src/consynth/Canalyst.ml" 81 2154 2177 "src/consynth/Canalyst.ml" 81 2154 2189
+type(
+  string list
+)
+"src/consynth/Canalyst.ml" 81 2154 2159 "src/consynth/Canalyst.ml" 81 2154 2189
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 82 2195 2204 "src/consynth/Canalyst.ml" 82 2195 2213
+type(
+  string
+)
+ident(
+  def new_ident "src/consynth/Canalyst.ml" 83 2271 2276 "src/consynth/Canalyst.ml" 84 2300 2329
+)
+"src/consynth/Canalyst.ml" 82 2195 2216 "src/consynth/Canalyst.ml" 82 2195 2224
+type(
+  string
+)
+ident(
+  int_ref fun_name "src/consynth/Canalyst.ml" 80 2120 2143 "src/consynth/Canalyst.ml" 80 2120 2151
+)
+"src/consynth/Canalyst.ml" 82 2195 2225 "src/consynth/Canalyst.ml" 82 2195 2226
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Canalyst.ml" 82 2195 2227 "src/consynth/Canalyst.ml" 82 2195 2230
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 82 2195 2231 "src/consynth/Canalyst.ml" 82 2195 2232
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/Canalyst.ml" 82 2195 2234 "src/consynth/Canalyst.ml" 82 2195 2247
+type(
+  int -> string
+)
+ident(
+  ext_ref Pervasives.string_of_int
+)
+"src/consynth/Canalyst.ml" 82 2195 2248 "src/consynth/Canalyst.ml" 82 2195 2249
+type(
+  int ref -> int
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 82 2195 2249 "src/consynth/Canalyst.ml" 82 2195 2266
+type(
+  int ref
+)
+ident(
+  int_ref loop_idents_index "src/consynth/Canalyst.ml" 76 2063 2067 "src/consynth/Canalyst.ml" 76 2063 2084
+)
+"src/consynth/Canalyst.ml" 82 2195 2248 "src/consynth/Canalyst.ml" 82 2195 2266
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 82 2195 2233 "src/consynth/Canalyst.ml" 82 2195 2267
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 82 2195 2227 "src/consynth/Canalyst.ml" 82 2195 2267
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 82 2195 2216 "src/consynth/Canalyst.ml" 82 2195 2267
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 83 2271 2276 "src/consynth/Canalyst.ml" 83 2271 2280
+type(
+  int ref -> unit
+)
+ident(
+  ext_ref Pervasives.incr
+)
+"src/consynth/Canalyst.ml" 83 2271 2281 "src/consynth/Canalyst.ml" 83 2271 2298
+type(
+  int ref
+)
+ident(
+  int_ref loop_idents_index "src/consynth/Canalyst.ml" 76 2063 2067 "src/consynth/Canalyst.ml" 76 2063 2084
+)
+"src/consynth/Canalyst.ml" 83 2271 2276 "src/consynth/Canalyst.ml" 83 2271 2298
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 84 2300 2305 "src/consynth/Canalyst.ml" 84 2300 2319
+type(
+  string -> string
+)
+ident(
+  int_ref new_loop_ident "src/consynth/Canalyst.ml" 80 2120 2128 "src/consynth/Canalyst.ml" 80 2120 2142
+)
+"src/consynth/Canalyst.ml" 84 2300 2320 "src/consynth/Canalyst.ml" 84 2300 2329
+type(
+  string
+)
+ident(
+  int_ref new_ident "src/consynth/Canalyst.ml" 82 2195 2204 "src/consynth/Canalyst.ml" 82 2195 2213
+)
+"src/consynth/Canalyst.ml" 84 2300 2305 "src/consynth/Canalyst.ml" 84 2300 2329
+call(
+  tail
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 83 2271 2276 "src/consynth/Canalyst.ml" 84 2300 2329
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 82 2195 2199 "src/consynth/Canalyst.ml" 84 2300 2330
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 86 2338 2343 "src/consynth/Canalyst.ml" 86 2338 2354
+type(
+  string list ref
+)
+ident(
+  int_ref loop_idents "src/consynth/Canalyst.ml" 78 2094 2098 "src/consynth/Canalyst.ml" 78 2094 2109
+)
+"src/consynth/Canalyst.ml" 86 2338 2355 "src/consynth/Canalyst.ml" 86 2338 2357
+type(
+  string list ref -> string list -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/Canalyst.ml" 86 2338 2358 "src/consynth/Canalyst.ml" 86 2338 2366
+type(
+  string
+)
+ident(
+  int_ref fun_name "src/consynth/Canalyst.ml" 80 2120 2143 "src/consynth/Canalyst.ml" 80 2120 2151
+)
+"src/consynth/Canalyst.ml" 86 2338 2369 "src/consynth/Canalyst.ml" 86 2338 2370
+type(
+  string list ref -> string list
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 86 2338 2370 "src/consynth/Canalyst.ml" 86 2338 2381
+type(
+  string list ref
+)
+ident(
+  int_ref loop_idents "src/consynth/Canalyst.ml" 78 2094 2098 "src/consynth/Canalyst.ml" 78 2094 2109
+)
+"src/consynth/Canalyst.ml" 86 2338 2368 "src/consynth/Canalyst.ml" 86 2338 2382
+type(
+  string list
+)
+"src/consynth/Canalyst.ml" 86 2338 2358 "src/consynth/Canalyst.ml" 86 2338 2382
+type(
+  string list
+)
+"src/consynth/Canalyst.ml" 86 2338 2343 "src/consynth/Canalyst.ml" 86 2338 2382
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 87 2384 2389 "src/consynth/Canalyst.ml" 87 2384 2397
+type(
+  string
+)
+ident(
+  int_ref fun_name "src/consynth/Canalyst.ml" 80 2120 2143 "src/consynth/Canalyst.ml" 80 2120 2151
+)
+"src/consynth/Canalyst.ml" 86 2338 2342 "src/consynth/Canalyst.ml" 87 2384 2398
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 81 2154 2156 "src/consynth/Canalyst.ml" 87 2384 2398
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 92 2593 2597 "src/consynth/Canalyst.ml" 92 2593 2605
+type(
+  Findloops.Cloop.t A.IM.t ->
+  (string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+ident(
+  def cil2func "src/consynth/Canalyst.ml" 126 3722 3722 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 92 2593 2606 "src/consynth/Canalyst.ml" 92 2593 2611
+type(
+  Findloops.Cloop.t A.IM.t
+)
+ident(
+  def loops "src/consynth/Canalyst.ml" 93 2614 2616 "src/consynth/Canalyst.ml" 123 3705 3719
+)
+"src/consynth/Canalyst.ml" 93 2614 2616 "src/consynth/Canalyst.ml" 93 2614 2629
+type(
+  Findloops.Cloop.t A.IM.t -> unit
+)
+ident(
+  ext_ref Cil2Func.init
+)
+"src/consynth/Canalyst.ml" 93 2614 2630 "src/consynth/Canalyst.ml" 93 2614 2635
+type(
+  Findloops.Cloop.t A.IM.t
+)
+ident(
+  int_ref loops "src/consynth/Canalyst.ml" 92 2593 2606 "src/consynth/Canalyst.ml" 92 2593 2611
+)
+"src/consynth/Canalyst.ml" 93 2614 2616 "src/consynth/Canalyst.ml" 93 2614 2635
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 94 2637 2643 "src/consynth/Canalyst.ml" 94 2637 2653
+type(
+  Findloops.Cloop.t list
+)
+ident(
+  def sorted_lps "src/consynth/Canalyst.ml" 95 2686 2688 "src/consynth/Canalyst.ml" 123 3705 3719
+)
+"src/consynth/Canalyst.ml" 94 2637 2656 "src/consynth/Canalyst.ml" 94 2637 2676
+type(
+  Findloops.Cloop.t A.IM.t -> Findloops.Cloop.t list
+)
+ident(
+  ext_ref A.transform_and_sort
+)
+"src/consynth/Canalyst.ml" 94 2637 2677 "src/consynth/Canalyst.ml" 94 2637 2682
+type(
+  Findloops.Cloop.t A.IM.t
+)
+ident(
+  int_ref loops "src/consynth/Canalyst.ml" 92 2593 2606 "src/consynth/Canalyst.ml" 92 2593 2611
+)
+"src/consynth/Canalyst.ml" 94 2637 2656 "src/consynth/Canalyst.ml" 94 2637 2682
+call(
+  stack
+)
+type(
+  Findloops.Cloop.t list
+)
+"src/consynth/Canalyst.ml" 95 2686 2688 "src/consynth/Canalyst.ml" 95 2686 2696
+type(
+  (Cl.t ->
+   string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t) ->
+  Cl.t list ->
+  (string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+type(
+  Cl.t
+)
+ident(
+  def cl "src/consynth/Canalyst.ml" 98 2732 2739 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 98 2732 2743 "src/consynth/Canalyst.ml" 98 2732 2744
+type(
+  Cil.instr
+)
+ident(
+  def i "src/consynth/Canalyst.ml" 104 2896 2903 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 98 2732 2745 "src/consynth/Canalyst.ml" 98 2732 2746
+type(
+  Cil.exp
+)
+ident(
+  def g "src/consynth/Canalyst.ml" 104 2896 2903 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 98 2732 2747 "src/consynth/Canalyst.ml" 98 2732 2748
+type(
+  Cil.instr
+)
+ident(
+  def u "src/consynth/Canalyst.ml" 104 2896 2903 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 98 2732 2743 "src/consynth/Canalyst.ml" 98 2732 2748
+type(
+  Findloops.forIGU
+)
+"src/consynth/Canalyst.ml" 100 2764 2775 "src/consynth/Canalyst.ml" 100 2764 2787
+type(
+  Findloops.forIGU option -> Findloops.forIGU
+)
+ident(
+  ext_ref Utils.check_option
+)
+"src/consynth/Canalyst.ml" 100 2764 2788 "src/consynth/Canalyst.ml" 100 2764 2790
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 100 2764 2788 "src/consynth/Canalyst.ml" 100 2764 2802
+type(
+  Findloops.forIGU option
+)
+"src/consynth/Canalyst.ml" 100 2764 2775 "src/consynth/Canalyst.ml" 100 2764 2802
+call(
+  stack
+)
+type(
+  Findloops.forIGU
+)
+"src/consynth/Canalyst.ml" 101 2803 2825 "src/consynth/Canalyst.ml" 101 2803 2826
+type(
+  string
+)
+ident(
+  def s "src/consynth/Canalyst.ml" 102 2830 2841 "src/consynth/Canalyst.ml" 102 2830 2885
+)
+"src/consynth/Canalyst.ml" 101 2803 2817 "src/consynth/Canalyst.ml" 101 2803 2826
+type(
+  exn
+)
+"src/consynth/Canalyst.ml" 102 2830 2841 "src/consynth/Canalyst.ml" 102 2830 2849
+type(
+  string -> Findloops.forIGU
+)
+ident(
+  ext_ref SError.skip_exn
+)
+"src/consynth/Canalyst.ml" 102 2830 2850 "src/consynth/Canalyst.ml" 102 2830 2884
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 102 2830 2841 "src/consynth/Canalyst.ml" 102 2830 2885
+call(
+  stack
+)
+type(
+  Findloops.forIGU
+)
+"src/consynth/Canalyst.ml" 99 2751 2760 "src/consynth/Canalyst.ml" 102 2830 2885
+type(
+  Findloops.forIGU
+)
+"src/consynth/Canalyst.ml" 104 2896 2907 "src/consynth/Canalyst.ml" 104 2896 2917
+type(
+  string
+)
+ident(
+  def loop_ident "src/consynth/Canalyst.ml" 105 2966 2973 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 104 2896 2920 "src/consynth/Canalyst.ml" 104 2896 2934
+type(
+  string -> string
+)
+ident(
+  int_ref new_loop_ident "src/consynth/Canalyst.ml" 80 2120 2128 "src/consynth/Canalyst.ml" 80 2120 2142
+)
+"src/consynth/Canalyst.ml" 104 2896 2935 "src/consynth/Canalyst.ml" 104 2896 2937
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 104 2896 2935 "src/consynth/Canalyst.ml" 104 2896 2954
+type(
+  C.varinfo
+)
+"src/consynth/Canalyst.ml" 104 2896 2935 "src/consynth/Canalyst.ml" 104 2896 2962
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 104 2896 2920 "src/consynth/Canalyst.ml" 104 2896 2962
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 105 2966 2977 "src/consynth/Canalyst.ml" 105 2966 2981
+type(
+  C.block
+)
+ident(
+  def stmt "src/consynth/Canalyst.ml" 106 3013 3020 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 105 2966 2984 "src/consynth/Canalyst.ml" 105 2966 2993
+type(
+  C.stmt list -> C.block
+)
+ident(
+  ext_ref C.mkBlock
+)
+"src/consynth/Canalyst.ml" 105 2966 2994 "src/consynth/Canalyst.ml" 105 2966 2996
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 105 2966 2993 "src/consynth/Canalyst.ml" 105 2966 3009
+type(
+  C.stmt list
+)
+"src/consynth/Canalyst.ml" 105 2966 2984 "src/consynth/Canalyst.ml" 105 2966 3009
+call(
+  stack
+)
+type(
+  C.block
+)
+"src/consynth/Canalyst.ml" 106 3013 3024 "src/consynth/Canalyst.ml" 106 3013 3025
+type(
+  Utils.VS.t
+)
+ident(
+  def r "src/consynth/Canalyst.ml" 107 3046 3053 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 106 3013 3027 "src/consynth/Canalyst.ml" 106 3013 3028
+type(
+  Utils.VS.t
+)
+ident(
+  def w "src/consynth/Canalyst.ml" 107 3046 3053 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 106 3013 3024 "src/consynth/Canalyst.ml" 106 3013 3028
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 106 3013 3031 "src/consynth/Canalyst.ml" 106 3013 3033
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 106 3013 3031 "src/consynth/Canalyst.ml" 106 3013 3042
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 107 3046 3057 "src/consynth/Canalyst.ml" 107 3046 3061
+type(
+  Utils.VS.t
+)
+ident(
+  def vars "src/consynth/Canalyst.ml" 108 3107 3114 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 107 3046 3064 "src/consynth/Canalyst.ml" 107 3046 3084
+type(
+  Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref SketchTypes.remove_reserved_vars
+)
+"src/consynth/Canalyst.ml" 107 3046 3086 "src/consynth/Canalyst.ml" 107 3046 3099
+type(
+  Cl.t -> Utils.VS.t
+)
+ident(
+  ext_ref Cl.getAllVars
+)
+"src/consynth/Canalyst.ml" 107 3046 3100 "src/consynth/Canalyst.ml" 107 3046 3102
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 107 3046 3085 "src/consynth/Canalyst.ml" 107 3046 3103
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 107 3046 3064 "src/consynth/Canalyst.ml" 107 3046 3103
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 108 3107 3118 "src/consynth/Canalyst.ml" 108 3107 3121
+type(
+  Utils.VS.t
+)
+ident(
+  def stv "src/consynth/Canalyst.ml" 109 3146 3153 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 108 3107 3124 "src/consynth/Canalyst.ml" 108 3107 3139
+type(
+  Cl.t -> Utils.VS.t
+)
+ident(
+  ext_ref Cl.getStateVars
+)
+"src/consynth/Canalyst.ml" 108 3107 3140 "src/consynth/Canalyst.ml" 108 3107 3142
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 108 3107 3124 "src/consynth/Canalyst.ml" 108 3107 3142
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 109 3146 3157 "src/consynth/Canalyst.ml" 109 3146 3161
+type(
+  Cil2Func.letin
+)
+ident(
+  def func "src/consynth/Canalyst.ml" 110 3226 3233 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 109 3146 3163 "src/consynth/Canalyst.ml" 109 3146 3167
+type(
+  Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
+)
+ident(
+  def figu "src/consynth/Canalyst.ml" 110 3226 3233 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 109 3146 3157 "src/consynth/Canalyst.ml" 109 3146 3167
+type(
+  Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin))
+)
+"src/consynth/Canalyst.ml" 109 3146 3170 "src/consynth/Canalyst.ml" 109 3146 3187
+type(
+  Utils.VS.t ->
+  Utils.VS.t ->
+  C.block ->
+  Cil.instr * Cil.exp * Cil.instr ->
+  Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin))
+)
+ident(
+  ext_ref Cil2Func.cil2func
+)
+"src/consynth/Canalyst.ml" 109 3146 3189 "src/consynth/Canalyst.ml" 109 3146 3197
+type(
+  Utils.VS.t -> Utils.VS.t -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VS.union
+)
+"src/consynth/Canalyst.ml" 109 3146 3198 "src/consynth/Canalyst.ml" 109 3146 3202
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref vars "src/consynth/Canalyst.ml" 107 3046 3057 "src/consynth/Canalyst.ml" 107 3046 3061
+)
+"src/consynth/Canalyst.ml" 109 3146 3203 "src/consynth/Canalyst.ml" 109 3146 3204
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref w "src/consynth/Canalyst.ml" 106 3013 3027 "src/consynth/Canalyst.ml" 106 3013 3028
+)
+"src/consynth/Canalyst.ml" 109 3146 3188 "src/consynth/Canalyst.ml" 109 3146 3205
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 109 3146 3206 "src/consynth/Canalyst.ml" 109 3146 3209
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref stv "src/consynth/Canalyst.ml" 108 3107 3118 "src/consynth/Canalyst.ml" 108 3107 3121
+)
+"src/consynth/Canalyst.ml" 109 3146 3210 "src/consynth/Canalyst.ml" 109 3146 3214
+type(
+  C.block
+)
+ident(
+  int_ref stmt "src/consynth/Canalyst.ml" 105 2966 2977 "src/consynth/Canalyst.ml" 105 2966 2981
+)
+"src/consynth/Canalyst.ml" 109 3146 3216 "src/consynth/Canalyst.ml" 109 3146 3217
+type(
+  Cil.instr
+)
+ident(
+  int_ref i "src/consynth/Canalyst.ml" 98 2732 2743 "src/consynth/Canalyst.ml" 98 2732 2744
+)
+"src/consynth/Canalyst.ml" 109 3146 3218 "src/consynth/Canalyst.ml" 109 3146 3219
+type(
+  Cil.exp
+)
+ident(
+  int_ref g "src/consynth/Canalyst.ml" 98 2732 2745 "src/consynth/Canalyst.ml" 98 2732 2746
+)
+"src/consynth/Canalyst.ml" 109 3146 3220 "src/consynth/Canalyst.ml" 109 3146 3221
+type(
+  Cil.instr
+)
+ident(
+  int_ref u "src/consynth/Canalyst.ml" 98 2732 2747 "src/consynth/Canalyst.ml" 98 2732 2748
+)
+"src/consynth/Canalyst.ml" 109 3146 3215 "src/consynth/Canalyst.ml" 109 3146 3222
+type(
+  Cil.instr * Cil.exp * Cil.instr
+)
+"src/consynth/Canalyst.ml" 109 3146 3170 "src/consynth/Canalyst.ml" 109 3146 3222
+call(
+  stack
+)
+type(
+  Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin))
+)
+"src/consynth/Canalyst.ml" 110 3226 3237 "src/consynth/Canalyst.ml" 110 3226 3252
+type(
+  Cil.exp Utils.IM.t
+)
+ident(
+  def reaching_consts "src/consynth/Canalyst.ml" 111 3276 3283 "src/consynth/Canalyst.ml" 122 3679 3703
+)
+"src/consynth/Canalyst.ml" 110 3226 3255 "src/consynth/Canalyst.ml" 110 3226 3257
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 110 3226 3255 "src/consynth/Canalyst.ml" 110 3226 3272
+type(
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 111 3276 3286 "src/consynth/Canalyst.ml" 111 3276 3287
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 111 3276 3287 "src/consynth/Canalyst.ml" 111 3276 3294
+type(
+  bool ref
+)
+ident(
+  int_ref verbose "src/consynth/Canalyst.ml" 16 225 229 "src/consynth/Canalyst.ml" 16 225 236
+)
+"src/consynth/Canalyst.ml" 111 3276 3286 "src/consynth/Canalyst.ml" 111 3276 3294
+type(
+  bool
+)
+"src/consynth/Canalyst.ml" 112 3300 3313 "src/consynth/Canalyst.ml" 112 3300 3320
+type(
+  Cil2Func.cil2func_printer
+)
+ident(
+  def printer "src/consynth/Canalyst.ml" 113 3365 3374 "src/consynth/Canalyst.ml" 116 3531 3552
+)
+"src/consynth/Canalyst.ml" 112 3300 3323 "src/consynth/Canalyst.ml" 112 3300 3352
+type(
+  Utils.VS.t -> Utils.VS.t -> Cil2Func.cil2func_printer
+)
+"src/consynth/Canalyst.ml" 112 3300 3353 "src/consynth/Canalyst.ml" 112 3300 3357
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref vars "src/consynth/Canalyst.ml" 107 3046 3057 "src/consynth/Canalyst.ml" 107 3046 3061
+)
+"src/consynth/Canalyst.ml" 112 3300 3358 "src/consynth/Canalyst.ml" 112 3300 3361
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref stv "src/consynth/Canalyst.ml" 108 3107 3118 "src/consynth/Canalyst.ml" 108 3107 3121
+)
+"src/consynth/Canalyst.ml" 112 3300 3323 "src/consynth/Canalyst.ml" 112 3300 3361
+call(
+  stack
+)
+type(
+  Cil2Func.cil2func_printer
+)
+"src/consynth/Canalyst.ml" 113 3365 3375 "src/consynth/Canalyst.ml" 113 3365 3381
+type(
+  (string -> int -> string -> string -> unit, Format.formatter, unit) format ->
+  string -> int -> string -> string -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"src/consynth/Canalyst.ml" 113 3365 3382 "src/consynth/Canalyst.ml" 113 3365 3423
+type(
+  (string -> int -> string -> string -> unit, Format.formatter, unit) format
+)
+"src/consynth/Canalyst.ml" 114 3424 3437 "src/consynth/Canalyst.ml" 114 3424 3442
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"src/consynth/Canalyst.ml" 114 3424 3443 "src/consynth/Canalyst.ml" 114 3424 3448
+type(
+  Utils.SM.key
+)
+"src/consynth/Canalyst.ml" 114 3424 3436 "src/consynth/Canalyst.ml" 114 3424 3449
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 114 3424 3450 "src/consynth/Canalyst.ml" 114 3424 3452
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 114 3424 3450 "src/consynth/Canalyst.ml" 114 3424 3459
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 114 3424 3460 "src/consynth/Canalyst.ml" 114 3424 3462
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 114 3424 3460 "src/consynth/Canalyst.ml" 114 3424 3479
+type(
+  C.varinfo
+)
+"src/consynth/Canalyst.ml" 114 3424 3460 "src/consynth/Canalyst.ml" 114 3424 3487
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 114 3424 3488 "src/consynth/Canalyst.ml" 114 3424 3495
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"src/consynth/Canalyst.ml" 113 3365 3374 "src/consynth/Canalyst.ml" 114 3424 3497
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 115 3499 3508 "src/consynth/Canalyst.ml" 115 3499 3515
+type(
+  Cil2Func.cil2func_printer
+)
+ident(
+  int_ref printer "src/consynth/Canalyst.ml" 112 3300 3313 "src/consynth/Canalyst.ml" 112 3300 3320
+)
+"src/consynth/Canalyst.ml" 115 3499 3508 "src/consynth/Canalyst.ml" 115 3499 3524
+call(
+  stack
+)
+type(
+  ?wloc:bool -> Cil2Func.letin -> unit
+)
+"src/consynth/Canalyst.ml" 115 3499 3525 "src/consynth/Canalyst.ml" 115 3499 3529
+type(
+  Cil2Func.letin
+)
+ident(
+  int_ref func "src/consynth/Canalyst.ml" 109 3146 3157 "src/consynth/Canalyst.ml" 109 3146 3161
+)
+"src/consynth/Canalyst.ml" 115 3499 3508 "src/consynth/Canalyst.ml" 115 3499 3529
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 116 3531 3540 "src/consynth/Canalyst.ml" 116 3531 3546
+type(
+  (unit, Format.formatter, unit) format -> unit
+)
+ident(
+  ext_ref Format.printf
+)
+"src/consynth/Canalyst.ml" 116 3531 3547 "src/consynth/Canalyst.ml" 116 3531 3551
+type(
+  (unit, Format.formatter, unit) format
+)
+"src/consynth/Canalyst.ml" 116 3531 3540 "src/consynth/Canalyst.ml" 116 3531 3552
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 115 3499 3508 "src/consynth/Canalyst.ml" 116 3531 3552
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 113 3365 3374 "src/consynth/Canalyst.ml" 116 3531 3552
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 112 3300 3309 "src/consynth/Canalyst.ml" 116 3531 3552
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 117 3553 3565 "src/consynth/Canalyst.ml" 117 3553 3567
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 111 3276 3283 "src/consynth/Canalyst.ml" 117 3553 3567
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 118 3569 3577 "src/consynth/Canalyst.ml" 118 3569 3587
+type(
+  string
+)
+ident(
+  int_ref loop_ident "src/consynth/Canalyst.ml" 104 2896 2907 "src/consynth/Canalyst.ml" 104 2896 2917
+)
+"src/consynth/Canalyst.ml" 119 3589 3597 "src/consynth/Canalyst.ml" 119 3589 3615
+type(
+  Cl.t -> Cil.fundec
+)
+ident(
+  ext_ref Cl.getParentFundec
+)
+"src/consynth/Canalyst.ml" 119 3589 3616 "src/consynth/Canalyst.ml" 119 3589 3618
+type(
+  Cl.t
+)
+ident(
+  int_ref cl "src/consynth/Canalyst.ml" 96 2697 2706 "src/consynth/Canalyst.ml" 96 2697 2708
+)
+"src/consynth/Canalyst.ml" 119 3589 3597 "src/consynth/Canalyst.ml" 119 3589 3618
+call(
+  stack
+)
+type(
+  Cil.fundec
+)
+"src/consynth/Canalyst.ml" 120 3620 3628 "src/consynth/Canalyst.ml" 120 3620 3644
+type(
+  Utils.VS.t -> int list
+)
+ident(
+  ext_ref Utils.VSOps.vids_of_vs
+)
+"src/consynth/Canalyst.ml" 120 3620 3645 "src/consynth/Canalyst.ml" 120 3620 3646
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref r "src/consynth/Canalyst.ml" 106 3013 3024 "src/consynth/Canalyst.ml" 106 3013 3025
+)
+"src/consynth/Canalyst.ml" 120 3620 3628 "src/consynth/Canalyst.ml" 120 3620 3646
+call(
+  stack
+)
+type(
+  int list
+)
+"src/consynth/Canalyst.ml" 120 3620 3648 "src/consynth/Canalyst.ml" 120 3620 3651
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref stv "src/consynth/Canalyst.ml" 108 3107 3118 "src/consynth/Canalyst.ml" 108 3107 3121
+)
+"src/consynth/Canalyst.ml" 120 3620 3653 "src/consynth/Canalyst.ml" 120 3620 3657
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref vars "src/consynth/Canalyst.ml" 107 3046 3057 "src/consynth/Canalyst.ml" 107 3046 3061
+)
+"src/consynth/Canalyst.ml" 121 3659 3667 "src/consynth/Canalyst.ml" 121 3659 3671
+type(
+  Cil2Func.letin
+)
+ident(
+  int_ref func "src/consynth/Canalyst.ml" 109 3146 3157 "src/consynth/Canalyst.ml" 109 3146 3161
+)
+"src/consynth/Canalyst.ml" 121 3659 3673 "src/consynth/Canalyst.ml" 121 3659 3677
+type(
+  Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
+)
+ident(
+  int_ref figu "src/consynth/Canalyst.ml" 109 3146 3163 "src/consynth/Canalyst.ml" 109 3146 3167
+)
+"src/consynth/Canalyst.ml" 122 3679 3687 "src/consynth/Canalyst.ml" 122 3679 3702
+type(
+  Cil.exp Utils.IM.t
+)
+ident(
+  int_ref reaching_consts "src/consynth/Canalyst.ml" 110 3226 3237 "src/consynth/Canalyst.ml" 110 3226 3252
+)
+"src/consynth/Canalyst.ml" 118 3569 3576 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 111 3276 3283 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 110 3226 3233 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 109 3146 3153 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 108 3107 3114 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 107 3046 3053 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 106 3013 3020 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 105 2966 2973 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 104 2896 2903 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 98 2732 2739 "src/consynth/Canalyst.ml" 122 3679 3703
+type(
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 96 2697 2701 "src/consynth/Canalyst.ml" 122 3679 3704
+type(
+  Cl.t ->
+  string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t * Cil2Func.letin *
+  (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 123 3705 3709 "src/consynth/Canalyst.ml" 123 3705 3719
+type(
+  Cl.t list
+)
+ident(
+  int_ref sorted_lps "src/consynth/Canalyst.ml" 94 2637 2643 "src/consynth/Canalyst.ml" 94 2637 2653
+)
+"src/consynth/Canalyst.ml" 95 2686 2688 "src/consynth/Canalyst.ml" 123 3705 3719
+call(
+  tail
+)
+type(
+  (string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+"src/consynth/Canalyst.ml" 94 2637 2639 "src/consynth/Canalyst.ml" 123 3705 3719
+type(
+  (string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+"src/consynth/Canalyst.ml" 93 2614 2616 "src/consynth/Canalyst.ml" 123 3705 3719
+type(
+  (string * Cil.fundec * int list * Utils.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Utils.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+"src/consynth/Canalyst.ml" 126 3722 3726 "src/consynth/Canalyst.ml" 126 3722 3737
+type(
+  int ref
+)
+ident(
+  def no_sketches "src/consynth/Canalyst.ml" 128 3749 3749 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 126 3722 3740 "src/consynth/Canalyst.ml" 126 3722 3743
+type(
+  int -> int ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/Canalyst.ml" 126 3722 3744 "src/consynth/Canalyst.ml" 126 3722 3745
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 126 3722 3740 "src/consynth/Canalyst.ml" 126 3722 3745
+type(
+  int ref
+)
+"src/consynth/Canalyst.ml" 128 3749 3753 "src/consynth/Canalyst.ml" 128 3749 3764
+type(
+  (string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list -> SketchTypes.sketch_rep list
+)
+ident(
+  def func2sketch "src/consynth/Canalyst.ml" 185 5608 5608 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 128 3749 3765 "src/consynth/Canalyst.ml" 128 3749 3773
+type(
+  (string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+ident(
+  def funcreps "src/consynth/Canalyst.ml" 129 3776 3778 "src/consynth/Canalyst.ml" 183 5594 5606
+)
+"src/consynth/Canalyst.ml" 129 3776 3778 "src/consynth/Canalyst.ml" 129 3776 3786
+type(
+  (string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t -> SketchTypes.sketch_rep) ->
+  (string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list -> SketchTypes.sketch_rep list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/Canalyst.ml" 130 3787 3797 "src/consynth/Canalyst.ml" 130 3787 3807
+type(
+  string
+)
+ident(
+  def loop_ident "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 130 3787 3809 "src/consynth/Canalyst.ml" 130 3787 3822
+type(
+  Cil.fundec
+)
+ident(
+  def host_function "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3834 "src/consynth/Canalyst.ml" 131 3824 3845
+type(
+  int list
+)
+ident(
+  def ro_vars_ids "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3847 "src/consynth/Canalyst.ml" 131 3824 3857
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  def state_vars "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3859 "src/consynth/Canalyst.ml" 131 3824 3866
+type(
+  Utils.VS.t
+)
+ident(
+  def var_set "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3868 "src/consynth/Canalyst.ml" 131 3824 3872
+type(
+  Cil2Func.letin
+)
+ident(
+  def func "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3874 "src/consynth/Canalyst.ml" 131 3824 3878
+type(
+  Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
+)
+ident(
+  def figu "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 131 3824 3880 "src/consynth/Canalyst.ml" 131 3824 3892
+type(
+  Cil.exp Utils.IM.t
+)
+ident(
+  def reach_consts "src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 130 3787 3796 "src/consynth/Canalyst.ml" 131 3824 3893
+type(
+  string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+  Cil2Func.letin *
+  (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 132 3897 3907 "src/consynth/Canalyst.ml" 132 3897 3919
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def reach_consts "src/consynth/Canalyst.ml" 147 4372 4378 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 133 3922 3930 "src/consynth/Canalyst.ml" 133 3922 3937
+type(
+  (Utils.IM.key ->
+   Cil.exp -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t) ->
+  Cil.exp Utils.IM.t ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.fold
+)
+"src/consynth/Canalyst.ml" 134 3938 3953 "src/consynth/Canalyst.ml" 134 3938 3956
+type(
+  Utils.IM.key
+)
+ident(
+  def vid "src/consynth/Canalyst.ml" 134 3938 3957 "src/consynth/Canalyst.ml" 144 4304 4328
+)
+"src/consynth/Canalyst.ml" 134 3938 3957 "src/consynth/Canalyst.ml" 134 3938 3961
+type(
+  Cil.exp
+)
+ident(
+  def cilc "src/consynth/Canalyst.ml" 134 3938 3962 "src/consynth/Canalyst.ml" 144 4304 4328
+)
+"src/consynth/Canalyst.ml" 134 3938 3962 "src/consynth/Canalyst.ml" 134 3938 3963
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def m "src/consynth/Canalyst.ml" 135 3967 3980 "src/consynth/Canalyst.ml" 144 4304 4328
+)
+"src/consynth/Canalyst.ml" 135 3967 3984 "src/consynth/Canalyst.ml" 135 3967 3995
+type(
+  SymbExe.T.symbolic_type
+)
+ident(
+  def expect_type "src/consynth/Canalyst.ml" 142 4196 4209 "src/consynth/Canalyst.ml" 144 4304 4328
+)
+"src/consynth/Canalyst.ml" 137 4017 4035 "src/consynth/Canalyst.ml" 137 4017 4056
+type(
+  Cil.typ -> SymbExe.T.symbolic_type
+)
+ident(
+  ext_ref SymbExe.T.symb_type_of_ciltyp
+)
+"src/consynth/Canalyst.ml" 138 4057 4079 "src/consynth/Canalyst.ml" 138 4057 4095
+type(
+  Utils.IM.key -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/Canalyst.ml" 138 4057 4096 "src/consynth/Canalyst.ml" 138 4057 4099
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/Canalyst.ml" 134 3938 3953 "src/consynth/Canalyst.ml" 134 3938 3956
+)
+"src/consynth/Canalyst.ml" 138 4057 4100 "src/consynth/Canalyst.ml" 138 4057 4107
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref var_set "src/consynth/Canalyst.ml" 131 3824 3859 "src/consynth/Canalyst.ml" 131 3824 3866
+)
+"src/consynth/Canalyst.ml" 138 4057 4078 "src/consynth/Canalyst.ml" 138 4057 4108
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/Canalyst.ml" 138 4057 4077 "src/consynth/Canalyst.ml" 138 4057 4119
+type(
+  Cil.typ
+)
+"src/consynth/Canalyst.ml" 137 4017 4034 "src/consynth/Canalyst.ml" 138 4057 4120
+call(
+  stack
+)
+type(
+  SymbExe.T.symbolic_type
+)
+"src/consynth/Canalyst.ml" 139 4121 4141 "src/consynth/Canalyst.ml" 139 4121 4150
+type(
+  exn
+)
+"src/consynth/Canalyst.ml" 140 4154 4171 "src/consynth/Canalyst.ml" 140 4154 4179
+type(
+  SymbExe.T.symbolic_type
+)
+"src/consynth/Canalyst.ml" 136 3998 4013 "src/consynth/Canalyst.ml" 140 4154 4179
+type(
+  SymbExe.T.symbolic_type
+)
+"src/consynth/Canalyst.ml" 142 4196 4215 "src/consynth/Canalyst.ml" 142 4196 4241
+type(
+  SymbExe.T.symbolic_type -> Cil.exp -> SketchTypes.skExpr option
+)
+ident(
+  ext_ref Sketch.Body.conv_init_expr
+)
+"src/consynth/Canalyst.ml" 142 4196 4242 "src/consynth/Canalyst.ml" 142 4196 4253
+type(
+  SymbExe.T.symbolic_type
+)
+ident(
+  int_ref expect_type "src/consynth/Canalyst.ml" 135 3967 3984 "src/consynth/Canalyst.ml" 135 3967 3995
+)
+"src/consynth/Canalyst.ml" 142 4196 4254 "src/consynth/Canalyst.ml" 142 4196 4258
+type(
+  Cil.exp
+)
+ident(
+  int_ref cilc "src/consynth/Canalyst.ml" 134 3938 3957 "src/consynth/Canalyst.ml" 134 3938 3961
+)
+"src/consynth/Canalyst.ml" 142 4196 4215 "src/consynth/Canalyst.ml" 142 4196 4258
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr option
+)
+"src/consynth/Canalyst.ml" 143 4264 4284 "src/consynth/Canalyst.ml" 143 4264 4285
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/Canalyst.ml" 143 4264 4289 "src/consynth/Canalyst.ml" 143 4264 4303
+)
+"src/consynth/Canalyst.ml" 143 4264 4279 "src/consynth/Canalyst.ml" 143 4264 4285
+type(
+  SketchTypes.skExpr option
+)
+"src/consynth/Canalyst.ml" 143 4264 4289 "src/consynth/Canalyst.ml" 143 4264 4295
+type(
+  Utils.IM.key ->
+  SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.add
+)
+"src/consynth/Canalyst.ml" 143 4264 4296 "src/consynth/Canalyst.ml" 143 4264 4299
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/Canalyst.ml" 134 3938 3953 "src/consynth/Canalyst.ml" 134 3938 3956
+)
+"src/consynth/Canalyst.ml" 143 4264 4300 "src/consynth/Canalyst.ml" 143 4264 4301
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/Canalyst.ml" 143 4264 4284 "src/consynth/Canalyst.ml" 143 4264 4285
+)
+"src/consynth/Canalyst.ml" 143 4264 4302 "src/consynth/Canalyst.ml" 143 4264 4303
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref m "src/consynth/Canalyst.ml" 134 3938 3962 "src/consynth/Canalyst.ml" 134 3938 3963
+)
+"src/consynth/Canalyst.ml" 143 4264 4289 "src/consynth/Canalyst.ml" 143 4264 4303
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 144 4304 4319 "src/consynth/Canalyst.ml" 144 4304 4323
+type(
+  SketchTypes.skExpr option
+)
+"src/consynth/Canalyst.ml" 144 4304 4327 "src/consynth/Canalyst.ml" 144 4304 4328
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref m "src/consynth/Canalyst.ml" 134 3938 3962 "src/consynth/Canalyst.ml" 134 3938 3963
+)
+"src/consynth/Canalyst.ml" 142 4196 4209 "src/consynth/Canalyst.ml" 144 4304 4328
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 135 3967 3980 "src/consynth/Canalyst.ml" 144 4304 4328
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 134 3938 3948 "src/consynth/Canalyst.ml" 144 4304 4330
+type(
+  Utils.IM.key ->
+  Cil.exp -> SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 145 4331 4341 "src/consynth/Canalyst.ml" 145 4331 4353
+type(
+  Cil.exp Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Canalyst.ml" 131 3824 3880 "src/consynth/Canalyst.ml" 131 3824 3892
+)
+"src/consynth/Canalyst.ml" 145 4331 4354 "src/consynth/Canalyst.ml" 145 4331 4362
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.empty
+)
+"src/consynth/Canalyst.ml" 133 3922 3930 "src/consynth/Canalyst.ml" 145 4331 4362
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/Canalyst.ml" 147 4372 4382 "src/consynth/Canalyst.ml" 147 4372 4392
+type(
+  Sketch.Body.sketch_builder
+)
+ident(
+  def sketch_obj "src/consynth/Canalyst.ml" 150 4472 4478 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 148 4395 4403 "src/consynth/Canalyst.ml" 148 4395 4433
+type(
+  Sketch.Body.VS.t ->
+  Sketch.Body.VS.t ->
+  Cil2Func.letin ->
+  Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin) ->
+  Sketch.Body.sketch_builder
+)
+"src/consynth/Canalyst.ml" 148 4395 4434 "src/consynth/Canalyst.ml" 148 4395 4441
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref var_set "src/consynth/Canalyst.ml" 131 3824 3859 "src/consynth/Canalyst.ml" 131 3824 3866
+)
+"src/consynth/Canalyst.ml" 148 4395 4442 "src/consynth/Canalyst.ml" 148 4395 4452
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Canalyst.ml" 131 3824 3847 "src/consynth/Canalyst.ml" 131 3824 3857
+)
+"src/consynth/Canalyst.ml" 148 4395 4453 "src/consynth/Canalyst.ml" 148 4395 4457
+type(
+  Cil2Func.letin
+)
+ident(
+  int_ref func "src/consynth/Canalyst.ml" 131 3824 3868 "src/consynth/Canalyst.ml" 131 3824 3872
+)
+"src/consynth/Canalyst.ml" 148 4395 4458 "src/consynth/Canalyst.ml" 148 4395 4462
+type(
+  Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)
+)
+ident(
+  int_ref figu "src/consynth/Canalyst.ml" 131 3824 3874 "src/consynth/Canalyst.ml" 131 3824 3878
+)
+"src/consynth/Canalyst.ml" 148 4395 4403 "src/consynth/Canalyst.ml" 148 4395 4462
+call(
+  stack
+)
+type(
+  Sketch.Body.sketch_builder
+)
+"src/consynth/Canalyst.ml" 150 4472 4478 "src/consynth/Canalyst.ml" 150 4472 4488
+type(
+  Sketch.Body.sketch_builder
+)
+ident(
+  int_ref sketch_obj "src/consynth/Canalyst.ml" 147 4372 4382 "src/consynth/Canalyst.ml" 147 4372 4392
+)
+"src/consynth/Canalyst.ml" 150 4472 4478 "src/consynth/Canalyst.ml" 150 4472 4494
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 151 4496 4506 "src/consynth/Canalyst.ml" 151 4496 4515
+type(
+  SketchTypes.sklet
+)
+ident(
+  def loop_body "src/consynth/Canalyst.ml" 156 4658 4664 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 151 4496 4517 "src/consynth/Canalyst.ml" 151 4496 4521
+type(
+  Sketch.Body.VS.t *
+  (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+ident(
+  def sigu "src/consynth/Canalyst.ml" 156 4658 4664 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 151 4496 4506 "src/consynth/Canalyst.ml" 151 4496 4521
+type(
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+"src/consynth/Canalyst.ml" 152 4524 4538 "src/consynth/Canalyst.ml" 152 4524 4548
+type(
+  Sketch.Body.sketch_builder
+)
+ident(
+  int_ref sketch_obj "src/consynth/Canalyst.ml" 147 4372 4382 "src/consynth/Canalyst.ml" 147 4372 4392
+)
+"src/consynth/Canalyst.ml" 152 4524 4538 "src/consynth/Canalyst.ml" 152 4524 4559
+call(
+  stack
+)
+type(
+  (SketchTypes.sklet *
+   (Sketch.Body.VS.t *
+    (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)))
+  option
+)
+"src/consynth/Canalyst.ml" 153 4565 4581 "src/consynth/Canalyst.ml" 153 4565 4582
+type(
+  SketchTypes.sklet
+)
+ident(
+  def a "src/consynth/Canalyst.ml" 153 4565 4589 "src/consynth/Canalyst.ml" 153 4565 4592
+)
+"src/consynth/Canalyst.ml" 153 4565 4583 "src/consynth/Canalyst.ml" 153 4565 4584
+type(
+  Sketch.Body.VS.t *
+  (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+ident(
+  def b "src/consynth/Canalyst.ml" 153 4565 4589 "src/consynth/Canalyst.ml" 153 4565 4592
+)
+"src/consynth/Canalyst.ml" 153 4565 4580 "src/consynth/Canalyst.ml" 153 4565 4585
+type(
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+"src/consynth/Canalyst.ml" 153 4565 4575 "src/consynth/Canalyst.ml" 153 4565 4585
+type(
+  (SketchTypes.sklet *
+   (Sketch.Body.VS.t *
+    (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)))
+  option
+)
+"src/consynth/Canalyst.ml" 153 4565 4589 "src/consynth/Canalyst.ml" 153 4565 4590
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref a "src/consynth/Canalyst.ml" 153 4565 4581 "src/consynth/Canalyst.ml" 153 4565 4582
+)
+"src/consynth/Canalyst.ml" 153 4565 4591 "src/consynth/Canalyst.ml" 153 4565 4592
+type(
+  Sketch.Body.VS.t *
+  (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+ident(
+  int_ref b "src/consynth/Canalyst.ml" 153 4565 4583 "src/consynth/Canalyst.ml" 153 4565 4584
+)
+"src/consynth/Canalyst.ml" 153 4565 4589 "src/consynth/Canalyst.ml" 153 4565 4592
+type(
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+"src/consynth/Canalyst.ml" 154 4593 4603 "src/consynth/Canalyst.ml" 154 4593 4607
+type(
+  (SketchTypes.sklet *
+   (Sketch.Body.VS.t *
+    (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)))
+  option
+)
+"src/consynth/Canalyst.ml" 154 4593 4611 "src/consynth/Canalyst.ml" 154 4593 4619
+type(
+  string ->
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/Canalyst.ml" 154 4593 4620 "src/consynth/Canalyst.ml" 154 4593 4648
+type(
+  string
+)
+"src/consynth/Canalyst.ml" 154 4593 4611 "src/consynth/Canalyst.ml" 154 4593 4648
+call(
+  stack
+)
+type(
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+"src/consynth/Canalyst.ml" 152 4524 4532 "src/consynth/Canalyst.ml" 154 4593 4648
+type(
+  SketchTypes.sklet *
+  (Sketch.Body.VS.t *
+   (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet))
+)
+"src/consynth/Canalyst.ml" 156 4658 4668 "src/consynth/Canalyst.ml" 156 4658 4677
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  def index_set "src/consynth/Canalyst.ml" 157 4691 4697 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 156 4658 4679 "src/consynth/Canalyst.ml" 156 4658 4680
+type(
+  SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet
+)
+"src/consynth/Canalyst.ml" 156 4658 4668 "src/consynth/Canalyst.ml" 156 4658 4680
+type(
+  Sketch.Body.VS.t *
+  (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+"src/consynth/Canalyst.ml" 156 4658 4683 "src/consynth/Canalyst.ml" 156 4658 4687
+type(
+  Sketch.Body.VS.t *
+  (SketchTypes.sklet * SketchTypes.skExpr * SketchTypes.sklet)
+)
+ident(
+  int_ref sigu "src/consynth/Canalyst.ml" 151 4496 4517 "src/consynth/Canalyst.ml" 151 4496 4521
+)
+"src/consynth/Canalyst.ml" 157 4691 4697 "src/consynth/Canalyst.ml" 157 4691 4705
+type(
+  Cil.varinfo Utils.IH.t -> unit
+)
+ident(
+  ext_ref Utils.IH.clear
+)
+"src/consynth/Canalyst.ml" 157 4691 4706 "src/consynth/Canalyst.ml" 157 4691 4736
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref SketchJoin.auxiliary_variables
+)
+"src/consynth/Canalyst.ml" 157 4691 4697 "src/consynth/Canalyst.ml" 157 4691 4736
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 158 4738 4748 "src/consynth/Canalyst.ml" 158 4738 4757
+type(
+  SketchTypes.sklet
+)
+ident(
+  def join_body "src/consynth/Canalyst.ml" 159 4802 4808 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 158 4738 4760 "src/consynth/Canalyst.ml" 158 4738 4777
+type(
+  Utils.VS.t -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref Sketch.Join.build
+)
+"src/consynth/Canalyst.ml" 158 4738 4778 "src/consynth/Canalyst.ml" 158 4738 4788
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Canalyst.ml" 131 3824 3847 "src/consynth/Canalyst.ml" 131 3824 3857
+)
+"src/consynth/Canalyst.ml" 158 4738 4789 "src/consynth/Canalyst.ml" 158 4738 4798
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref loop_body "src/consynth/Canalyst.ml" 151 4496 4506 "src/consynth/Canalyst.ml" 151 4496 4515
+)
+"src/consynth/Canalyst.ml" 158 4738 4760 "src/consynth/Canalyst.ml" 158 4738 4798
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Canalyst.ml" 159 4802 4808 "src/consynth/Canalyst.ml" 159 4802 4812
+type(
+  int ref -> unit
+)
+ident(
+  ext_ref Pervasives.incr
+)
+"src/consynth/Canalyst.ml" 159 4802 4813 "src/consynth/Canalyst.ml" 159 4802 4824
+type(
+  int ref
+)
+ident(
+  int_ref no_sketches "src/consynth/Canalyst.ml" 126 3722 3726 "src/consynth/Canalyst.ml" 126 3722 3737
+)
+"src/consynth/Canalyst.ml" 159 4802 4808 "src/consynth/Canalyst.ml" 159 4802 4824
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 160 4826 4832 "src/consynth/Canalyst.ml" 160 4826 4857
+type(
+  Utils.VS.t -> unit
+)
+ident(
+  ext_ref SketchTypes.create_boundary_variables
+)
+"src/consynth/Canalyst.ml" 160 4826 4858 "src/consynth/Canalyst.ml" 160 4826 4867
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  int_ref index_set "src/consynth/Canalyst.ml" 156 4658 4668 "src/consynth/Canalyst.ml" 156 4658 4677
+)
+"src/consynth/Canalyst.ml" 160 4826 4832 "src/consynth/Canalyst.ml" 160 4826 4867
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 163 4961 4971 "src/consynth/Canalyst.ml" 163 4961 4985
+type(
+  Utils.VS.t
+)
+ident(
+  def bound_in_sklet "src/consynth/Canalyst.ml" 164 5030 5036 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 163 4961 4987 "src/consynth/Canalyst.ml" 163 4961 5000
+type(
+  Utils.VS.t
+)
+ident(
+  def used_vars_set "src/consynth/Canalyst.ml" 164 5030 5036 "src/consynth/Canalyst.ml" 182 5585 5592
+)
+"src/consynth/Canalyst.ml" 163 4961 4971 "src/consynth/Canalyst.ml" 163 4961 5000
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 163 4961 5003 "src/consynth/Canalyst.ml" 163 4961 5016
+type(
+  SketchTypes.sklet -> Utils.VS.t * Utils.VS.t
+)
+ident(
+  ext_ref SketchTypes.used_in_sklet
+)
+"src/consynth/Canalyst.ml" 163 4961 5017 "src/consynth/Canalyst.ml" 163 4961 5026
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref loop_body "src/consynth/Canalyst.ml" 151 4496 4506 "src/consynth/Canalyst.ml" 151 4496 4515
+)
+"src/consynth/Canalyst.ml" 163 4961 5003 "src/consynth/Canalyst.ml" 163 4961 5026
+call(
+  stack
+)
+type(
+  Utils.VS.t * Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 165 5038 5051 "src/consynth/Canalyst.ml" 165 5038 5052
+type(
+  int ref -> int
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/Canalyst.ml" 165 5038 5052 "src/consynth/Canalyst.ml" 165 5038 5063
+type(
+  int ref
+)
+ident(
+  int_ref no_sketches "src/consynth/Canalyst.ml" 126 3722 3726 "src/consynth/Canalyst.ml" 126 3722 3737
+)
+"src/consynth/Canalyst.ml" 165 5038 5051 "src/consynth/Canalyst.ml" 165 5038 5063
+type(
+  int
+)
+"src/consynth/Canalyst.ml" 166 5065 5089 "src/consynth/Canalyst.ml" 166 5065 5102
+type(
+  Cil.fundec
+)
+ident(
+  int_ref host_function "src/consynth/Canalyst.ml" 130 3787 3809 "src/consynth/Canalyst.ml" 130 3787 3822
+)
+"src/consynth/Canalyst.ml" 167 5104 5124 "src/consynth/Canalyst.ml" 167 5104 5134
+type(
+  string
+)
+ident(
+  int_ref loop_ident "src/consynth/Canalyst.ml" 130 3787 3797 "src/consynth/Canalyst.ml" 130 3787 3807
+)
+"src/consynth/Canalyst.ml" 168 5136 5158 "src/consynth/Canalyst.ml" 168 5136 5169
+type(
+  int list
+)
+ident(
+  int_ref ro_vars_ids "src/consynth/Canalyst.ml" 131 3824 3834 "src/consynth/Canalyst.ml" 131 3824 3845
+)
+"src/consynth/Canalyst.ml" 170 5190 5215 "src/consynth/Canalyst.ml" 170 5190 5225
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  int_ref state_vars "src/consynth/Canalyst.ml" 131 3824 3847 "src/consynth/Canalyst.ml" 131 3824 3857
+)
+"src/consynth/Canalyst.ml" 171 5227 5252 "src/consynth/Canalyst.ml" 171 5227 5261
+type(
+  Sketch.Body.VS.t
+)
+ident(
+  int_ref index_set "src/consynth/Canalyst.ml" 156 4658 4668 "src/consynth/Canalyst.ml" 156 4658 4677
+)
+"src/consynth/Canalyst.ml" 172 5263 5287 "src/consynth/Canalyst.ml" 172 5263 5300
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref used_vars_set "src/consynth/Canalyst.ml" 163 4961 4987 "src/consynth/Canalyst.ml" 163 4961 5000
+)
+"src/consynth/Canalyst.ml" 173 5302 5325 "src/consynth/Canalyst.ml" 173 5302 5332
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref var_set "src/consynth/Canalyst.ml" 131 3824 3859 "src/consynth/Canalyst.ml" 131 3824 3866
+)
+"src/consynth/Canalyst.ml" 174 5334 5361 "src/consynth/Canalyst.ml" 174 5334 5369
+type(
+  SketchTypes.ES.t
+)
+ident(
+  ext_ref SketchTypes.ES.empty
+)
+"src/consynth/Canalyst.ml" 170 5190 5200 "src/consynth/Canalyst.ml" 175 5371 5382
+type(
+  SketchTypes.context
+)
+"src/consynth/Canalyst.ml" 176 5384 5404 "src/consynth/Canalyst.ml" 176 5384 5413
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref loop_body "src/consynth/Canalyst.ml" 151 4496 4506 "src/consynth/Canalyst.ml" 151 4496 4515
+)
+"src/consynth/Canalyst.ml" 177 5415 5435 "src/consynth/Canalyst.ml" 177 5415 5444
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref join_body "src/consynth/Canalyst.ml" 158 4738 4748 "src/consynth/Canalyst.ml" 158 4738 4757
+)
+"src/consynth/Canalyst.ml" 178 5446 5480 "src/consynth/Canalyst.ml" 178 5446 5484
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/Canalyst.ml" 178 5446 5470 "src/consynth/Canalyst.ml" 178 5446 5484
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Canalyst.ml" 179 5486 5508 "src/consynth/Canalyst.ml" 179 5486 5516
+type(
+  Ast.expr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.empty
+)
+"src/consynth/Canalyst.ml" 180 5518 5539 "src/consynth/Canalyst.ml" 180 5518 5543
+type(
+  SketchTypes.sigu
+)
+ident(
+  int_ref sigu "src/consynth/Canalyst.ml" 151 4496 4517 "src/consynth/Canalyst.ml" 151 4496 4521
+)
+"src/consynth/Canalyst.ml" 181 5545 5571 "src/consynth/Canalyst.ml" 181 5545 5583
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref reach_consts "src/consynth/Canalyst.ml" 132 3897 3907 "src/consynth/Canalyst.ml" 132 3897 3919
+)
+"src/consynth/Canalyst.ml" 164 5030 5036 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 163 4961 4967 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 160 4826 4832 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 159 4802 4808 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 158 4738 4744 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 157 4691 4697 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 156 4658 4664 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 151 4496 4502 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 150 4472 4478 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 147 4372 4378 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 132 3897 3903 "src/consynth/Canalyst.ml" 182 5585 5592
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 130 3787 3791 "src/consynth/Canalyst.ml" 182 5585 5593
+type(
+  string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+  Cil2Func.letin *
+  (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+  Cil.exp Utils.IM.t -> SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 183 5594 5598 "src/consynth/Canalyst.ml" 183 5594 5606
+type(
+  (string * Cil.fundec * int list * Sketch.Body.VS.t * Utils.VS.t *
+   Cil2Func.letin *
+   (Sketch.Body.VS.t * (Cil2Func.letin * Cil2Func.expr * Cil2Func.letin)) *
+   Cil.exp Utils.IM.t)
+  list
+)
+ident(
+  int_ref funcreps "src/consynth/Canalyst.ml" 128 3749 3765 "src/consynth/Canalyst.ml" 128 3749 3773
+)
+"src/consynth/Canalyst.ml" 129 3776 3778 "src/consynth/Canalyst.ml" 183 5594 5606
+call(
+  tail
+)
+type(
+  SketchTypes.sketch_rep list
+)
+"src/consynth/Canalyst.ml" 185 5608 5612 "src/consynth/Canalyst.ml" 185 5608 5630
+type(
+  SketchTypes.sketch_rep -> SketchTypes.sketch_rep
+)
+ident(
+  def find_new_variables "src/consynth/Canalyst.ml" 205 6232 6232 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 185 5608 5631 "src/consynth/Canalyst.ml" 185 5608 5641
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch_rep "src/consynth/Canalyst.ml" 186 5644 5646 "src/consynth/Canalyst.ml" 203 6227 6230
+)
+"src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def new_sketch "src/consynth/Canalyst.ml" 188 5754 5756 "src/consynth/Canalyst.ml" 203 6227 6230
+)
+"src/consynth/Canalyst.ml" 186 5644 5663 "src/consynth/Canalyst.ml" 186 5644 5671
+type(
+  SketchTypes.sketch_rep -> SketchTypes.sketch_rep
+)
+ident(
+  ext_ref VariableDiscovery.discover
+)
+"src/consynth/Canalyst.ml" 186 5644 5672 "src/consynth/Canalyst.ml" 186 5644 5682
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch_rep "src/consynth/Canalyst.ml" 185 5608 5631 "src/consynth/Canalyst.ml" 185 5608 5641
+)
+"src/consynth/Canalyst.ml" 186 5644 5663 "src/consynth/Canalyst.ml" 186 5644 5682
+call(
+  stack
+)
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 188 5754 5760 "src/consynth/Canalyst.ml" 188 5754 5767
+type(
+  SketchTypes.sklet
+)
+ident(
+  def nlb_opt "src/consynth/Canalyst.ml" 189 5813 5815 "src/consynth/Canalyst.ml" 203 6227 6230
+)
+"src/consynth/Canalyst.ml" 188 5754 5770 "src/consynth/Canalyst.ml" 188 5754 5788
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref Sketch.Body.optims
+)
+"src/consynth/Canalyst.ml" 188 5754 5789 "src/consynth/Canalyst.ml" 188 5754 5799
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+)
+"src/consynth/Canalyst.ml" 188 5754 5789 "src/consynth/Canalyst.ml" 188 5754 5809
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Canalyst.ml" 188 5754 5770 "src/consynth/Canalyst.ml" 188 5754 5809
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/Canalyst.ml" 189 5813 5819 "src/consynth/Canalyst.ml" 189 5813 5832
+type(
+  SymbExe.T.sklet
+)
+ident(
+  def new_loop_body "src/consynth/Canalyst.ml" 192 5906 5908 "src/consynth/Canalyst.ml" 203 6227 6230
+)
+"src/consynth/Canalyst.ml" 190 5835 5839 "src/consynth/Canalyst.ml" 190 5835 5861
+type(
+  Utils.VS.t -> SymbExe.T.sklet -> SymbExe.T.sklet
+)
+ident(
+  ext_ref SymbExe.T.complete_final_state
+)
+"src/consynth/Canalyst.ml" 190 5835 5862 "src/consynth/Canalyst.ml" 190 5835 5872
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+)
+"src/consynth/Canalyst.ml" 190 5835 5862 "src/consynth/Canalyst.ml" 190 5835 5881
+type(
+  SketchTypes.context
+)
+"src/consynth/Canalyst.ml" 190 5835 5862 "src/consynth/Canalyst.ml" 190 5835 5892
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 190 5835 5893 "src/consynth/Canalyst.ml" 190 5835 5900
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref nlb_opt "src/consynth/Canalyst.ml" 188 5754 5760 "src/consynth/Canalyst.ml" 188 5754 5767
+)
+"src/consynth/Canalyst.ml" 190 5835 5839 "src/consynth/Canalyst.ml" 190 5835 5900
+call(
+  stack
+)
+type(
+  SymbExe.T.sklet
+)
+"src/consynth/Canalyst.ml" 192 5906 5908 "src/consynth/Canalyst.ml" 192 5906 5920
+type(
+  Cil.varinfo Utils.IntHashTbl.t -> Cil.varinfo Utils.IntHashTbl.t -> unit
+)
+ident(
+  ext_ref Utils.IH.copy_into
+)
+"src/consynth/Canalyst.ml" 192 5906 5921 "src/consynth/Canalyst.ml" 192 5906 5961
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref VariableDiscovery.discovered_aux_alltime
+)
+"src/consynth/Canalyst.ml" 193 5962 5966 "src/consynth/Canalyst.ml" 193 5962 5996
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref SketchJoin.auxiliary_variables
+)
+"src/consynth/Canalyst.ml" 192 5906 5908 "src/consynth/Canalyst.ml" 193 5962 5996
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 195 5999 6005 "src/consynth/Canalyst.ml" 195 5999 6014
+type(
+  SymbExe.T.sklet
+)
+ident(
+  def join_body "src/consynth/Canalyst.ml" 199 6145 6147 "src/consynth/Canalyst.ml" 203 6227 6230
+)
+"src/consynth/Canalyst.ml" 196 6017 6021 "src/consynth/Canalyst.ml" 196 6017 6043
+type(
+  Utils.VS.t -> SymbExe.T.sklet -> SymbExe.T.sklet
+)
+ident(
+  ext_ref SymbExe.T.complete_final_state
+)
+"src/consynth/Canalyst.ml" 196 6017 6044 "src/consynth/Canalyst.ml" 196 6017 6054
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+)
+"src/consynth/Canalyst.ml" 196 6017 6044 "src/consynth/Canalyst.ml" 196 6017 6063
+type(
+  SketchTypes.context
+)
+"src/consynth/Canalyst.ml" 196 6017 6044 "src/consynth/Canalyst.ml" 196 6017 6074
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 197 6075 6082 "src/consynth/Canalyst.ml" 197 6075 6099
+type(
+  Utils.VS.t -> SketchTypes.sklet -> SymbExe.T.sklet
+)
+ident(
+  ext_ref Sketch.Join.build
+)
+"src/consynth/Canalyst.ml" 197 6075 6100 "src/consynth/Canalyst.ml" 197 6075 6110
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+)
+"src/consynth/Canalyst.ml" 197 6075 6100 "src/consynth/Canalyst.ml" 197 6075 6119
+type(
+  SketchTypes.context
+)
+"src/consynth/Canalyst.ml" 197 6075 6100 "src/consynth/Canalyst.ml" 197 6075 6130
+type(
+  Utils.VS.t
+)
+"src/consynth/Canalyst.ml" 197 6075 6131 "src/consynth/Canalyst.ml" 197 6075 6138
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref nlb_opt "src/consynth/Canalyst.ml" 188 5754 5760 "src/consynth/Canalyst.ml" 188 5754 5767
+)
+"src/consynth/Canalyst.ml" 197 6075 6081 "src/consynth/Canalyst.ml" 197 6075 6139
+call(
+  stack
+)
+type(
+  SymbExe.T.sklet
+)
+"src/consynth/Canalyst.ml" 196 6017 6021 "src/consynth/Canalyst.ml" 197 6075 6139
+call(
+  stack
+)
+type(
+  SymbExe.T.sklet
+)
+"src/consynth/Canalyst.ml" 200 6149 6153 "src/consynth/Canalyst.ml" 200 6149 6163
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref new_sketch "src/consynth/Canalyst.ml" 186 5644 5650 "src/consynth/Canalyst.ml" 186 5644 5660
+)
+"src/consynth/Canalyst.ml" 201 6169 6185 "src/consynth/Canalyst.ml" 201 6169 6198
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref new_loop_body "src/consynth/Canalyst.ml" 189 5813 5819 "src/consynth/Canalyst.ml" 189 5813 5832
+)
+"src/consynth/Canalyst.ml" 202 6200 6216 "src/consynth/Canalyst.ml" 202 6200 6225
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref join_body "src/consynth/Canalyst.ml" 195 5999 6005 "src/consynth/Canalyst.ml" 195 5999 6014
+)
+"src/consynth/Canalyst.ml" 199 6145 6147 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 195 5999 6001 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 192 5906 5908 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 189 5813 5815 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 188 5754 5756 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 186 5644 5646 "src/consynth/Canalyst.ml" 203 6227 6230
+type(
+  SketchTypes.sketch_rep
+)
+"src/consynth/Canalyst.ml" 205 6232 6236 "src/consynth/Canalyst.ml" 205 6232 6245
+type(
+  Sketch.F.formatter -> SketchTypes.sketch_rep -> unit
+)
+ident(
+  def pp_sketch "src/consynth/Canalyst.ml" 207 6342 6383 "src/consynth/Canalyst.ml" 1 0 -1
+)
+"src/consynth/Canalyst.ml" 205 6232 6246 "src/consynth/Canalyst.ml" 205 6232 6249
+type(
+  Sketch.F.formatter
+)
+ident(
+  def fmt "src/consynth/Canalyst.ml" 205 6232 6250 "src/consynth/Canalyst.ml" 207 6342 6383
+)
+"src/consynth/Canalyst.ml" 205 6232 6250 "src/consynth/Canalyst.ml" 205 6232 6260
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  def sketch_rep "src/consynth/Canalyst.ml" 206 6263 6265 "src/consynth/Canalyst.ml" 207 6342 6383
+)
+"src/consynth/Canalyst.ml" 206 6263 6265 "src/consynth/Canalyst.ml" 206 6263 6277
+type(
+  Cil.varinfo Utils.IntHashTbl.t -> Cil.varinfo Utils.IntHashTbl.t -> unit
+)
+ident(
+  ext_ref Utils.IH.copy_into
+)
+"src/consynth/Canalyst.ml" 206 6263 6278 "src/consynth/Canalyst.ml" 206 6263 6318
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref VariableDiscovery.discovered_aux_alltime
+)
+"src/consynth/Canalyst.ml" 206 6263 6319 "src/consynth/Canalyst.ml" 206 6263 6340
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref Sketch.auxiliary_vars
+)
+"src/consynth/Canalyst.ml" 206 6263 6265 "src/consynth/Canalyst.ml" 206 6263 6340
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 207 6342 6344 "src/consynth/Canalyst.ml" 207 6342 6368
+type(
+  Sketch.F.formatter -> SketchTypes.sketch_rep -> unit
+)
+ident(
+  ext_ref Sketch.pp_rosette_sketch
+)
+"src/consynth/Canalyst.ml" 207 6342 6369 "src/consynth/Canalyst.ml" 207 6342 6372
+type(
+  Sketch.F.formatter
+)
+ident(
+  int_ref fmt "src/consynth/Canalyst.ml" 205 6232 6246 "src/consynth/Canalyst.ml" 205 6232 6249
+)
+"src/consynth/Canalyst.ml" 207 6342 6373 "src/consynth/Canalyst.ml" 207 6342 6383
+type(
+  SketchTypes.sketch_rep
+)
+ident(
+  int_ref sketch_rep "src/consynth/Canalyst.ml" 205 6232 6250 "src/consynth/Canalyst.ml" 205 6232 6260
+)
+"src/consynth/Canalyst.ml" 207 6342 6344 "src/consynth/Canalyst.ml" 207 6342 6383
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/Canalyst.ml" 206 6263 6265 "src/consynth/Canalyst.ml" 207 6342 6383
+type(
+  unit
+)

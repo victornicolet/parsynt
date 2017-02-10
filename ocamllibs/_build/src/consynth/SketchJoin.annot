@@ -1,0 +1,5668 @@
+"src/consynth/SketchJoin.ml" 5 42 46 "src/consynth/SketchJoin.ml" 5 42 51
+type(
+  bool ref
+)
+ident(
+  def debug "src/consynth/SketchJoin.ml" 7 65 65 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 5 42 54 "src/consynth/SketchJoin.ml" 5 42 57
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/SketchJoin.ml" 5 42 58 "src/consynth/SketchJoin.ml" 5 42 63
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 5 42 54 "src/consynth/SketchJoin.ml" 5 42 63
+type(
+  bool ref
+)
+"src/consynth/SketchJoin.ml" 7 65 69 "src/consynth/SketchJoin.ml" 7 65 88
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  def auxiliary_variables "src/consynth/SketchJoin.ml" 9 130 130 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 7 65 116 "src/consynth/SketchJoin.ml" 7 65 125
+type(
+  int -> Cil.varinfo Utils.IH.t
+)
+ident(
+  ext_ref Utils.IH.create
+)
+"src/consynth/SketchJoin.ml" 7 65 126 "src/consynth/SketchJoin.ml" 7 65 128
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 7 65 116 "src/consynth/SketchJoin.ml" 7 65 128
+call(
+  stack
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+type(
+  Cil.varinfo Utils.IH.t
+)
+"src/consynth/SketchJoin.ml" 9 130 134 "src/consynth/SketchJoin.ml" 9 130 150
+type(
+  SPretty.VS.t ref
+)
+ident(
+  def left_auxiliaries "src/consynth/SketchJoin.ml" 10 166 166 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 9 130 153 "src/consynth/SketchJoin.ml" 9 130 156
+type(
+  SPretty.VS.t -> SPretty.VS.t ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/SketchJoin.ml" 9 130 157 "src/consynth/SketchJoin.ml" 9 130 165
+type(
+  SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.empty
+)
+"src/consynth/SketchJoin.ml" 9 130 153 "src/consynth/SketchJoin.ml" 9 130 165
+type(
+  SPretty.VS.t ref
+)
+"src/consynth/SketchJoin.ml" 10 166 170 "src/consynth/SketchJoin.ml" 10 166 187
+type(
+  SPretty.VS.t ref
+)
+ident(
+  def right_auxiliaries "src/consynth/SketchJoin.ml" 12 204 204 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 10 166 190 "src/consynth/SketchJoin.ml" 10 166 193
+type(
+  SPretty.VS.t -> SPretty.VS.t ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/SketchJoin.ml" 10 166 194 "src/consynth/SketchJoin.ml" 10 166 202
+type(
+  SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.empty
+)
+"src/consynth/SketchJoin.ml" 10 166 190 "src/consynth/SketchJoin.ml" 10 166 202
+type(
+  SPretty.VS.t ref
+)
+"src/consynth/SketchJoin.ml" 12 204 208 "src/consynth/SketchJoin.ml" 12 204 212
+type(
+  unit -> unit
+)
+ident(
+  def init "src/consynth/SketchJoin.ml" 22 582 582 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 12 204 213 "src/consynth/SketchJoin.ml" 12 204 215
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 13 218 220 "src/consynth/SketchJoin.ml" 13 218 228
+type(
+  Cil.varinfo Utils.IH.t -> unit
+)
+ident(
+  ext_ref Utils.IH.clear
+)
+"src/consynth/SketchJoin.ml" 13 218 229 "src/consynth/SketchJoin.ml" 13 218 248
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref auxiliary_variables "src/consynth/SketchJoin.ml" 7 65 69 "src/consynth/SketchJoin.ml" 7 65 88
+)
+"src/consynth/SketchJoin.ml" 13 218 220 "src/consynth/SketchJoin.ml" 13 218 248
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 14 250 252 "src/consynth/SketchJoin.ml" 14 250 268
+type(
+  SPretty.VS.t ref
+)
+ident(
+  int_ref left_auxiliaries "src/consynth/SketchJoin.ml" 9 130 134 "src/consynth/SketchJoin.ml" 9 130 150
+)
+"src/consynth/SketchJoin.ml" 14 250 269 "src/consynth/SketchJoin.ml" 14 250 271
+type(
+  SPretty.VS.t ref -> SPretty.VS.t -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/SketchJoin.ml" 14 250 272 "src/consynth/SketchJoin.ml" 14 250 280
+type(
+  SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.empty
+)
+"src/consynth/SketchJoin.ml" 14 250 252 "src/consynth/SketchJoin.ml" 14 250 280
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 15 282 284 "src/consynth/SketchJoin.ml" 15 282 301
+type(
+  SPretty.VS.t ref
+)
+ident(
+  int_ref right_auxiliaries "src/consynth/SketchJoin.ml" 10 166 170 "src/consynth/SketchJoin.ml" 10 166 187
+)
+"src/consynth/SketchJoin.ml" 15 282 302 "src/consynth/SketchJoin.ml" 15 282 304
+type(
+  SPretty.VS.t ref -> SPretty.VS.t -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/SketchJoin.ml" 15 282 305 "src/consynth/SketchJoin.ml" 15 282 313
+type(
+  SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.empty
+)
+"src/consynth/SketchJoin.ml" 15 282 284 "src/consynth/SketchJoin.ml" 15 282 313
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 14 250 252 "src/consynth/SketchJoin.ml" 15 282 313
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 13 218 220 "src/consynth/SketchJoin.ml" 15 282 313
+type(
+  unit
+)
+"src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  def is_a_hole "src/consynth/SketchJoin.ml" 28 669 669 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 24 609 621 "src/consynth/SketchJoin.ml" 24 609 622
+type(
+  Utils.CS.t
+)
+type(
+  SketchTypes.skLVar
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 24 609 613 "src/consynth/SketchJoin.ml" 24 609 622
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 24 609 626 "src/consynth/SketchJoin.ml" 24 609 630
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 25 631 643 "src/consynth/SketchJoin.ml" 25 631 644
+type(
+  Utils.CS.t
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 25 631 635 "src/consynth/SketchJoin.ml" 25 631 644
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 25 631 648 "src/consynth/SketchJoin.ml" 25 631 652
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 26 653 657 "src/consynth/SketchJoin.ml" 26 653 658
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 26 653 662 "src/consynth/SketchJoin.ml" 26 653 667
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 23 598 600 "src/consynth/SketchJoin.ml" 26 653 667
+type(
+  SketchTypes.skExpr -> bool
+)
+"src/consynth/SketchJoin.ml" 28 669 673 "src/consynth/SketchJoin.ml" 28 669 686
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  def is_right_hole "src/consynth/SketchJoin.ml" 33 738 738 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 30 700 712 "src/consynth/SketchJoin.ml" 30 700 713
+type(
+  Utils.CS.t
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 30 700 704 "src/consynth/SketchJoin.ml" 30 700 713
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 30 700 717 "src/consynth/SketchJoin.ml" 30 700 721
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 31 722 726 "src/consynth/SketchJoin.ml" 31 722 727
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 31 722 731 "src/consynth/SketchJoin.ml" 31 722 736
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 29 689 691 "src/consynth/SketchJoin.ml" 31 722 736
+type(
+  SketchTypes.skExpr -> bool
+)
+"src/consynth/SketchJoin.ml" 33 738 742 "src/consynth/SketchJoin.ml" 33 738 759
+type(
+  SketchTypes.hole_type -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  def replace_hole_type "src/consynth/SketchJoin.ml" 39 872 872 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 33 738 760 "src/consynth/SketchJoin.ml" 33 738 762
+type(
+  SketchTypes.hole_type
+)
+ident(
+  def t' "src/consynth/SketchJoin.ml" 34 765 767 "src/consynth/SketchJoin.ml" 37 860 870
+)
+"src/consynth/SketchJoin.ml" 35 776 789 "src/consynth/SketchJoin.ml" 35 776 790
+type(
+  SketchTypes.hole_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 35 776 799 "src/consynth/SketchJoin.ml" 35 776 814
+)
+"src/consynth/SketchJoin.ml" 35 776 792 "src/consynth/SketchJoin.ml" 35 776 794
+type(
+  Utils.CS.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 35 776 799 "src/consynth/SketchJoin.ml" 35 776 814
+)
+"src/consynth/SketchJoin.ml" 35 776 780 "src/consynth/SketchJoin.ml" 35 776 795
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 35 776 807 "src/consynth/SketchJoin.ml" 35 776 809
+type(
+  SketchTypes.hole_type
+)
+ident(
+  int_ref t' "src/consynth/SketchJoin.ml" 33 738 760 "src/consynth/SketchJoin.ml" 33 738 762
+)
+"src/consynth/SketchJoin.ml" 35 776 811 "src/consynth/SketchJoin.ml" 35 776 813
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 35 776 792 "src/consynth/SketchJoin.ml" 35 776 794
+)
+"src/consynth/SketchJoin.ml" 35 776 799 "src/consynth/SketchJoin.ml" 35 776 814
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 36 815 828 "src/consynth/SketchJoin.ml" 36 815 829
+type(
+  SketchTypes.hole_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 36 815 841 "src/consynth/SketchJoin.ml" 36 815 859
+)
+"src/consynth/SketchJoin.ml" 36 815 831 "src/consynth/SketchJoin.ml" 36 815 832
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def v "src/consynth/SketchJoin.ml" 36 815 841 "src/consynth/SketchJoin.ml" 36 815 859
+)
+"src/consynth/SketchJoin.ml" 36 815 834 "src/consynth/SketchJoin.ml" 36 815 836
+type(
+  Utils.CS.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 36 815 841 "src/consynth/SketchJoin.ml" 36 815 859
+)
+"src/consynth/SketchJoin.ml" 36 815 819 "src/consynth/SketchJoin.ml" 36 815 837
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 36 815 849 "src/consynth/SketchJoin.ml" 36 815 851
+type(
+  SketchTypes.hole_type
+)
+ident(
+  int_ref t' "src/consynth/SketchJoin.ml" 33 738 760 "src/consynth/SketchJoin.ml" 33 738 762
+)
+"src/consynth/SketchJoin.ml" 36 815 853 "src/consynth/SketchJoin.ml" 36 815 854
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 36 815 831 "src/consynth/SketchJoin.ml" 36 815 832
+)
+"src/consynth/SketchJoin.ml" 36 815 856 "src/consynth/SketchJoin.ml" 36 815 858
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 36 815 834 "src/consynth/SketchJoin.ml" 36 815 836
+)
+"src/consynth/SketchJoin.ml" 36 815 841 "src/consynth/SketchJoin.ml" 36 815 859
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 37 860 864 "src/consynth/SketchJoin.ml" 37 860 865
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 37 860 869 "src/consynth/SketchJoin.ml" 37 860 870
+)
+"src/consynth/SketchJoin.ml" 37 860 869 "src/consynth/SketchJoin.ml" 37 860 870
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 37 860 864 "src/consynth/SketchJoin.ml" 37 860 865
+)
+"src/consynth/SketchJoin.ml" 34 765 767 "src/consynth/SketchJoin.ml" 37 860 870
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 39 872 876 "src/consynth/SketchJoin.ml" 39 872 888
+type(
+  SketchTypes.skExpr -> SketchTypes.hole_type option
+)
+ident(
+  def type_of_hole "src/consynth/SketchJoin.ml" 44 966 966 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 41 902 915 "src/consynth/SketchJoin.ml" 41 902 916
+type(
+  SketchTypes.hole_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 41 902 944 "src/consynth/SketchJoin.ml" 41 902 950
+)
+"src/consynth/SketchJoin.ml" 41 902 918 "src/consynth/SketchJoin.ml" 41 902 919
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 41 902 906 "src/consynth/SketchJoin.ml" 41 902 920
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 41 902 932 "src/consynth/SketchJoin.ml" 41 902 933
+type(
+  SketchTypes.hole_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 41 902 944 "src/consynth/SketchJoin.ml" 41 902 950
+)
+"src/consynth/SketchJoin.ml" 41 902 935 "src/consynth/SketchJoin.ml" 41 902 936
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 41 902 938 "src/consynth/SketchJoin.ml" 41 902 939
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 41 902 923 "src/consynth/SketchJoin.ml" 41 902 940
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 41 902 906 "src/consynth/SketchJoin.ml" 41 902 940
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 41 902 949 "src/consynth/SketchJoin.ml" 41 902 950
+type(
+  SketchTypes.hole_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 41 902 915 "src/consynth/SketchJoin.ml" 41 902 916
+)
+"src/consynth/SketchJoin.ml" 41 902 944 "src/consynth/SketchJoin.ml" 41 902 950
+type(
+  SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 42 951 955 "src/consynth/SketchJoin.ml" 42 951 956
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 42 951 960 "src/consynth/SketchJoin.ml" 42 951 964
+type(
+  SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 40 891 893 "src/consynth/SketchJoin.ml" 42 951 964
+type(
+  SketchTypes.skExpr -> SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 44 966 970 "src/consynth/SketchJoin.ml" 44 966 993
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+ident(
+  def completion_vars_of_hole "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 46 1007 1020 "src/consynth/SketchJoin.ml" 46 1007 1021
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 46 1007 1023 "src/consynth/SketchJoin.ml" 46 1007 1025
+type(
+  Utils.CS.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 46 1007 1030 "src/consynth/SketchJoin.ml" 46 1007 1032
+)
+"src/consynth/SketchJoin.ml" 46 1007 1011 "src/consynth/SketchJoin.ml" 46 1007 1026
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 46 1007 1030 "src/consynth/SketchJoin.ml" 46 1007 1032
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 46 1007 1023 "src/consynth/SketchJoin.ml" 46 1007 1025
+)
+"src/consynth/SketchJoin.ml" 47 1033 1046 "src/consynth/SketchJoin.ml" 47 1033 1047
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 47 1033 1049 "src/consynth/SketchJoin.ml" 47 1033 1050
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 47 1033 1052 "src/consynth/SketchJoin.ml" 47 1033 1054
+type(
+  Utils.CS.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 47 1033 1059 "src/consynth/SketchJoin.ml" 47 1033 1061
+)
+"src/consynth/SketchJoin.ml" 47 1033 1037 "src/consynth/SketchJoin.ml" 47 1033 1055
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 47 1033 1059 "src/consynth/SketchJoin.ml" 47 1033 1061
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 47 1033 1052 "src/consynth/SketchJoin.ml" 47 1033 1054
+)
+"src/consynth/SketchJoin.ml" 48 1062 1066 "src/consynth/SketchJoin.ml" 48 1062 1067
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 48 1062 1071 "src/consynth/SketchJoin.ml" 48 1062 1079
+type(
+  Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.empty
+)
+"src/consynth/SketchJoin.ml" 45 996 998 "src/consynth/SketchJoin.ml" 48 1062 1079
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  def make_holes "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 50 1081 1114 "src/consynth/SketchJoin.ml" 50 1081 1115
+type(
+  int
+)
+type(
+  int
+)
+ident(
+  int_ref *sth* "src/consynth/SketchJoin.ml" 50 1081 1114 "src/consynth/SketchJoin.ml" 50 1081 1115
+)
+type(
+  int option
+)
+type(
+  int option
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 50 1081 1119 "src/consynth/SketchJoin.ml" 50 1081 1127
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 50 1081 1130 "src/consynth/SketchJoin.ml" 50 1081 1135
+type(
+  bool
+)
+type(
+  bool
+)
+ident(
+  int_ref *sth* "src/consynth/SketchJoin.ml" 50 1081 1130 "src/consynth/SketchJoin.ml" 50 1081 1135
+)
+type(
+  bool option
+)
+type(
+  bool option
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+type(
+  SPretty.VS.t
+)
+ident(
+  def state "src/consynth/SketchJoin.ml" 51 1152 1156 "src/consynth/SketchJoin.ml" 111 3292 3321
+)
+"src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def optype "src/consynth/SketchJoin.ml" 52 1183 1185 "src/consynth/SketchJoin.ml" 111 3292 3321
+)
+"src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+type(
+  'a -> 'a * SketchTypes.operator_type
+)
+ident(
+  def holt "src/consynth/SketchJoin.ml" 53 1213 1215 "src/consynth/SketchJoin.ml" 111 3292 3321
+)
+"src/consynth/SketchJoin.ml" 52 1183 1194 "src/consynth/SketchJoin.ml" 52 1183 1195
+type(
+  'a
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 52 1183 1198 "src/consynth/SketchJoin.ml" 52 1183 1209
+)
+"src/consynth/SketchJoin.ml" 52 1183 1199 "src/consynth/SketchJoin.ml" 52 1183 1200
+type(
+  'a
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 52 1183 1194 "src/consynth/SketchJoin.ml" 52 1183 1195
+)
+"src/consynth/SketchJoin.ml" 52 1183 1202 "src/consynth/SketchJoin.ml" 52 1183 1208
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 52 1183 1198 "src/consynth/SketchJoin.ml" 52 1183 1209
+type(
+  'a * SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 54 1224 1234 "src/consynth/SketchJoin.ml" 54 1224 1238
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def sklv "src/consynth/SketchJoin.ml" 55 1242 1246 "src/consynth/SketchJoin.ml" 72 1951 1958
+)
+"src/consynth/SketchJoin.ml" 54 1224 1228 "src/consynth/SketchJoin.ml" 54 1224 1238
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 56 1252 1264 "src/consynth/SketchJoin.ml" 56 1252 1268
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref sklv "src/consynth/SketchJoin.ml" 54 1224 1234 "src/consynth/SketchJoin.ml" 54 1224 1238
+)
+"src/consynth/SketchJoin.ml" 57 1274 1292 "src/consynth/SketchJoin.ml" 57 1274 1294
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/SketchJoin.ml" 58 1298 1306 "src/consynth/SketchJoin.ml" 64 1559 1631
+)
+"src/consynth/SketchJoin.ml" 57 1274 1282 "src/consynth/SketchJoin.ml" 57 1274 1294
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 58 1298 1310 "src/consynth/SketchJoin.ml" 58 1298 1311
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 59 1350 1358 "src/consynth/SketchJoin.ml" 64 1559 1631
+)
+"src/consynth/SketchJoin.ml" 58 1298 1314 "src/consynth/SketchJoin.ml" 58 1298 1333
+type(
+  Cil.typ -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.symb_type_of_ciltyp
+)
+"src/consynth/SketchJoin.ml" 58 1298 1334 "src/consynth/SketchJoin.ml" 58 1298 1336
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/SketchJoin.ml" 57 1274 1292 "src/consynth/SketchJoin.ml" 57 1274 1294
+)
+"src/consynth/SketchJoin.ml" 58 1298 1334 "src/consynth/SketchJoin.ml" 58 1298 1346
+type(
+  Cil.typ
+)
+"src/consynth/SketchJoin.ml" 58 1298 1314 "src/consynth/SketchJoin.ml" 58 1298 1346
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 59 1350 1362 "src/consynth/SketchJoin.ml" 59 1350 1368
+type(
+  Cil.varinfo Utils.IH.t -> Utils.IH.key -> bool
+)
+ident(
+  ext_ref Utils.IH.mem
+)
+"src/consynth/SketchJoin.ml" 59 1350 1369 "src/consynth/SketchJoin.ml" 59 1350 1388
+type(
+  Cil.varinfo Utils.IH.t
+)
+ident(
+  int_ref auxiliary_variables "src/consynth/SketchJoin.ml" 7 65 69 "src/consynth/SketchJoin.ml" 7 65 88
+)
+"src/consynth/SketchJoin.ml" 59 1350 1389 "src/consynth/SketchJoin.ml" 59 1350 1391
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/SketchJoin.ml" 57 1274 1292 "src/consynth/SketchJoin.ml" 57 1274 1294
+)
+"src/consynth/SketchJoin.ml" 59 1350 1389 "src/consynth/SketchJoin.ml" 59 1350 1399
+type(
+  Utils.IH.key
+)
+"src/consynth/SketchJoin.ml" 59 1350 1361 "src/consynth/SketchJoin.ml" 59 1350 1400
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 59 1350 1401 "src/consynth/SketchJoin.ml" 59 1350 1403
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 59 1350 1404 "src/consynth/SketchJoin.ml" 59 1350 1412
+type(
+  bool
+)
+ident(
+  int_ref is_final "src/consynth/SketchJoin.ml" 50 1081 1119 "src/consynth/SketchJoin.ml" 50 1081 1127
+)
+"src/consynth/SketchJoin.ml" 59 1350 1361 "src/consynth/SketchJoin.ml" 59 1350 1412
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 60 1413 1432 "src/consynth/SketchJoin.ml" 60 1413 1436
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref sklv "src/consynth/SketchJoin.ml" 54 1224 1234 "src/consynth/SketchJoin.ml" 54 1224 1238
+)
+"src/consynth/SketchJoin.ml" 60 1413 1426 "src/consynth/SketchJoin.ml" 60 1413 1436
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 60 1413 1438 "src/consynth/SketchJoin.ml" 60 1413 1439
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 60 1413 1426 "src/consynth/SketchJoin.ml" 60 1413 1439
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 62 1453 1467 "src/consynth/SketchJoin.ml" 62 1453 1473
+type(
+  SPretty.VS.elt -> SPretty.VS.t -> bool
+)
+ident(
+  ext_ref SPretty.VS.mem
+)
+"src/consynth/SketchJoin.ml" 62 1453 1474 "src/consynth/SketchJoin.ml" 62 1453 1476
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/SketchJoin.ml" 57 1274 1292 "src/consynth/SketchJoin.ml" 57 1274 1294
+)
+"src/consynth/SketchJoin.ml" 62 1453 1477 "src/consynth/SketchJoin.ml" 62 1453 1482
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 62 1453 1467 "src/consynth/SketchJoin.ml" 62 1453 1482
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 63 1483 1508 "src/consynth/SketchJoin.ml" 63 1483 1512
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 63 1483 1513 "src/consynth/SketchJoin.ml" 63 1483 1514
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 58 1298 1310 "src/consynth/SketchJoin.ml" 58 1298 1311
+)
+"src/consynth/SketchJoin.ml" 63 1483 1508 "src/consynth/SketchJoin.ml" 63 1483 1514
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 63 1483 1516 "src/consynth/SketchJoin.ml" 63 1483 1520
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref sklv "src/consynth/SketchJoin.ml" 54 1224 1234 "src/consynth/SketchJoin.ml" 54 1224 1238
+)
+"src/consynth/SketchJoin.ml" 63 1483 1522 "src/consynth/SketchJoin.ml" 63 1483 1537
+type(
+  Utils.CSet.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.complete_all
+)
+"src/consynth/SketchJoin.ml" 63 1483 1539 "src/consynth/SketchJoin.ml" 63 1483 1547
+type(
+  Utils.VS.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.of_vs
+)
+"src/consynth/SketchJoin.ml" 63 1483 1548 "src/consynth/SketchJoin.ml" 63 1483 1553
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 63 1483 1538 "src/consynth/SketchJoin.ml" 63 1483 1554
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 63 1483 1522 "src/consynth/SketchJoin.ml" 63 1483 1554
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 63 1483 1499 "src/consynth/SketchJoin.ml" 63 1483 1555
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 63 1483 1557 "src/consynth/SketchJoin.ml" 63 1483 1558
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 63 1483 1499 "src/consynth/SketchJoin.ml" 63 1483 1558
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 64 1559 1584 "src/consynth/SketchJoin.ml" 64 1559 1588
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 64 1559 1589 "src/consynth/SketchJoin.ml" 64 1559 1590
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 58 1298 1310 "src/consynth/SketchJoin.ml" 58 1298 1311
+)
+"src/consynth/SketchJoin.ml" 64 1559 1584 "src/consynth/SketchJoin.ml" 64 1559 1590
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 64 1559 1592 "src/consynth/SketchJoin.ml" 64 1559 1609
+type(
+  Utils.CSet.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.complete_right
+)
+"src/consynth/SketchJoin.ml" 64 1559 1611 "src/consynth/SketchJoin.ml" 64 1559 1619
+type(
+  Utils.VS.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.of_vs
+)
+"src/consynth/SketchJoin.ml" 64 1559 1620 "src/consynth/SketchJoin.ml" 64 1559 1625
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 64 1559 1610 "src/consynth/SketchJoin.ml" 64 1559 1626
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 64 1559 1592 "src/consynth/SketchJoin.ml" 64 1559 1626
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 64 1559 1575 "src/consynth/SketchJoin.ml" 64 1559 1627
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 64 1559 1629 "src/consynth/SketchJoin.ml" 64 1559 1630
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 64 1559 1575 "src/consynth/SketchJoin.ml" 64 1559 1630
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 62 1453 1463 "src/consynth/SketchJoin.ml" 64 1559 1631
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 59 1350 1358 "src/consynth/SketchJoin.ml" 64 1559 1631
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 58 1298 1306 "src/consynth/SketchJoin.ml" 64 1559 1631
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 65 1632 1649 "src/consynth/SketchJoin.ml" 65 1632 1653
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def sklv "src/consynth/SketchJoin.ml" 67 1712 1720 "src/consynth/SketchJoin.ml" 70 1854 1906
+)
+"src/consynth/SketchJoin.ml" 65 1632 1655 "src/consynth/SketchJoin.ml" 65 1632 1659
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def expr "src/consynth/SketchJoin.ml" 67 1712 1720 "src/consynth/SketchJoin.ml" 70 1854 1906
+)
+"src/consynth/SketchJoin.ml" 65 1632 1640 "src/consynth/SketchJoin.ml" 65 1632 1660
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 67 1712 1724 "src/consynth/SketchJoin.ml" 67 1712 1725
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 68 1748 1756 "src/consynth/SketchJoin.ml" 70 1854 1906
+)
+"src/consynth/SketchJoin.ml" 67 1712 1728 "src/consynth/SketchJoin.ml" 67 1712 1739
+type(
+  SketchTypes.skLVar -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.type_of_var
+)
+"src/consynth/SketchJoin.ml" 67 1712 1740 "src/consynth/SketchJoin.ml" 67 1712 1744
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref sklv "src/consynth/SketchJoin.ml" 65 1632 1649 "src/consynth/SketchJoin.ml" 65 1632 1653
+)
+"src/consynth/SketchJoin.ml" 67 1712 1728 "src/consynth/SketchJoin.ml" 67 1712 1744
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 68 1748 1763 "src/consynth/SketchJoin.ml" 68 1748 1764
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 67 1712 1724 "src/consynth/SketchJoin.ml" 67 1712 1725
+)
+"src/consynth/SketchJoin.ml" 69 1770 1789 "src/consynth/SketchJoin.ml" 69 1770 1790
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 69 1770 1798 "src/consynth/SketchJoin.ml" 69 1770 1853
+)
+"src/consynth/SketchJoin.ml" 69 1770 1792 "src/consynth/SketchJoin.ml" 69 1770 1793
+type(
+  int option
+)
+"src/consynth/SketchJoin.ml" 69 1770 1781 "src/consynth/SketchJoin.ml" 69 1770 1794
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 69 1770 1807 "src/consynth/SketchJoin.ml" 69 1770 1811
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 69 1770 1812 "src/consynth/SketchJoin.ml" 69 1770 1813
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 69 1770 1789 "src/consynth/SketchJoin.ml" 69 1770 1790
+)
+"src/consynth/SketchJoin.ml" 69 1770 1807 "src/consynth/SketchJoin.ml" 69 1770 1813
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 69 1770 1815 "src/consynth/SketchJoin.ml" 69 1770 1832
+type(
+  Utils.CSet.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.complete_right
+)
+"src/consynth/SketchJoin.ml" 69 1770 1834 "src/consynth/SketchJoin.ml" 69 1770 1842
+type(
+  Utils.VS.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.of_vs
+)
+"src/consynth/SketchJoin.ml" 69 1770 1843 "src/consynth/SketchJoin.ml" 69 1770 1848
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 69 1770 1833 "src/consynth/SketchJoin.ml" 69 1770 1849
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 69 1770 1815 "src/consynth/SketchJoin.ml" 69 1770 1849
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 69 1770 1798 "src/consynth/SketchJoin.ml" 69 1770 1850
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 69 1770 1852 "src/consynth/SketchJoin.ml" 69 1770 1853
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 69 1770 1798 "src/consynth/SketchJoin.ml" 69 1770 1853
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 70 1854 1865 "src/consynth/SketchJoin.ml" 70 1854 1866
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 70 1854 1870 "src/consynth/SketchJoin.ml" 70 1854 1878
+type(
+  string -> SketchTypes.skExpr * int
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/SketchJoin.ml" 70 1854 1879 "src/consynth/SketchJoin.ml" 70 1854 1905
+type(
+  string
+)
+"src/consynth/SketchJoin.ml" 70 1854 1870 "src/consynth/SketchJoin.ml" 70 1854 1905
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 68 1748 1756 "src/consynth/SketchJoin.ml" 70 1854 1906
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 67 1712 1720 "src/consynth/SketchJoin.ml" 70 1854 1906
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 71 1907 1923 "src/consynth/SketchJoin.ml" 71 1907 1925
+type(
+  Utils.VS.t
+)
+ident(
+  def vs "src/consynth/SketchJoin.ml" 71 1907 1929 "src/consynth/SketchJoin.ml" 71 1907 1950
+)
+"src/consynth/SketchJoin.ml" 71 1907 1915 "src/consynth/SketchJoin.ml" 71 1907 1925
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 71 1907 1944 "src/consynth/SketchJoin.ml" 71 1907 1946
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref vs "src/consynth/SketchJoin.ml" 71 1907 1923 "src/consynth/SketchJoin.ml" 71 1907 1925
+)
+"src/consynth/SketchJoin.ml" 71 1907 1935 "src/consynth/SketchJoin.ml" 71 1907 1947
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/SketchJoin.ml" 71 1907 1929 "src/consynth/SketchJoin.ml" 71 1907 1947
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 71 1907 1949 "src/consynth/SketchJoin.ml" 71 1907 1950
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 71 1907 1929 "src/consynth/SketchJoin.ml" 71 1907 1950
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 55 1242 1246 "src/consynth/SketchJoin.ml" 72 1951 1958
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 74 1960 1972 "src/consynth/SketchJoin.ml" 74 1960 1973
+type(
+  SketchTypes.constants
+)
+ident(
+  def c "src/consynth/SketchJoin.ml" 75 1977 1981 "src/consynth/SketchJoin.ml" 82 2251 2258
+)
+"src/consynth/SketchJoin.ml" 74 1960 1964 "src/consynth/SketchJoin.ml" 74 1960 1973
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 75 1977 1985 "src/consynth/SketchJoin.ml" 75 1977 1987
+type(
+  Utils.CSet.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 76 2028 2032 "src/consynth/SketchJoin.ml" 82 2251 2258
+)
+"src/consynth/SketchJoin.ml" 75 1977 1990 "src/consynth/SketchJoin.ml" 75 1977 2007
+type(
+  Utils.CSet.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.complete_right
+)
+"src/consynth/SketchJoin.ml" 75 1977 2009 "src/consynth/SketchJoin.ml" 75 1977 2017
+type(
+  Utils.VS.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.of_vs
+)
+"src/consynth/SketchJoin.ml" 75 1977 2018 "src/consynth/SketchJoin.ml" 75 1977 2023
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 75 1977 2008 "src/consynth/SketchJoin.ml" 75 1977 2024
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 75 1977 1990 "src/consynth/SketchJoin.ml" 75 1977 2024
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 77 2038 2050 "src/consynth/SketchJoin.ml" 77 2038 2051
+type(
+  SketchTypes.constants
+)
+ident(
+  int_ref c "src/consynth/SketchJoin.ml" 74 1960 1972 "src/consynth/SketchJoin.ml" 74 1960 1973
+)
+"src/consynth/SketchJoin.ml" 78 2057 2070 "src/consynth/SketchJoin.ml" 78 2057 2071
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 78 2057 2065 "src/consynth/SketchJoin.ml" 78 2057 2071
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 78 2057 2081 "src/consynth/SketchJoin.ml" 78 2057 2082
+type(
+  int64
+)
+"src/consynth/SketchJoin.ml" 78 2057 2074 "src/consynth/SketchJoin.ml" 78 2057 2082
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 78 2057 2065 "src/consynth/SketchJoin.ml" 78 2057 2082
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 78 2057 2095 "src/consynth/SketchJoin.ml" 78 2057 2099
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 78 2057 2100 "src/consynth/SketchJoin.ml" 78 2057 2107
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 78 2057 2095 "src/consynth/SketchJoin.ml" 78 2057 2107
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 78 2057 2109 "src/consynth/SketchJoin.ml" 78 2057 2111
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 75 1977 1985 "src/consynth/SketchJoin.ml" 75 1977 1987
+)
+"src/consynth/SketchJoin.ml" 78 2057 2086 "src/consynth/SketchJoin.ml" 78 2057 2112
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 78 2057 2114 "src/consynth/SketchJoin.ml" 78 2057 2115
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 78 2057 2086 "src/consynth/SketchJoin.ml" 78 2057 2115
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 79 2116 2130 "src/consynth/SketchJoin.ml" 79 2116 2131
+type(
+  float
+)
+"src/consynth/SketchJoin.ml" 79 2116 2124 "src/consynth/SketchJoin.ml" 79 2116 2131
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 79 2116 2144 "src/consynth/SketchJoin.ml" 79 2116 2148
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 79 2116 2149 "src/consynth/SketchJoin.ml" 79 2116 2153
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 79 2116 2144 "src/consynth/SketchJoin.ml" 79 2116 2153
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 79 2116 2155 "src/consynth/SketchJoin.ml" 79 2116 2157
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 75 1977 1985 "src/consynth/SketchJoin.ml" 75 1977 1987
+)
+"src/consynth/SketchJoin.ml" 79 2116 2135 "src/consynth/SketchJoin.ml" 79 2116 2158
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 79 2116 2160 "src/consynth/SketchJoin.ml" 79 2116 2161
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 79 2116 2135 "src/consynth/SketchJoin.ml" 79 2116 2161
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 80 2162 2176 "src/consynth/SketchJoin.ml" 80 2162 2177
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 80 2162 2170 "src/consynth/SketchJoin.ml" 80 2162 2177
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 80 2162 2190 "src/consynth/SketchJoin.ml" 80 2162 2194
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 80 2162 2195 "src/consynth/SketchJoin.ml" 80 2162 2202
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 80 2162 2190 "src/consynth/SketchJoin.ml" 80 2162 2202
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 80 2162 2204 "src/consynth/SketchJoin.ml" 80 2162 2206
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 75 1977 1985 "src/consynth/SketchJoin.ml" 75 1977 1987
+)
+"src/consynth/SketchJoin.ml" 80 2162 2181 "src/consynth/SketchJoin.ml" 80 2162 2207
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 80 2162 2209 "src/consynth/SketchJoin.ml" 80 2162 2210
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 80 2162 2181 "src/consynth/SketchJoin.ml" 80 2162 2210
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 81 2211 2219 "src/consynth/SketchJoin.ml" 81 2211 2220
+type(
+  SketchTypes.constants
+)
+"src/consynth/SketchJoin.ml" 81 2211 2233 "src/consynth/SketchJoin.ml" 81 2211 2237
+type(
+  SketchTypes.symbolic_type -> SketchTypes.hole_type
+)
+ident(
+  int_ref holt "src/consynth/SketchJoin.ml" 52 1183 1189 "src/consynth/SketchJoin.ml" 52 1183 1193
+)
+"src/consynth/SketchJoin.ml" 81 2211 2238 "src/consynth/SketchJoin.ml" 81 2211 2242
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 81 2211 2233 "src/consynth/SketchJoin.ml" 81 2211 2242
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 81 2211 2244 "src/consynth/SketchJoin.ml" 81 2211 2246
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 75 1977 1985 "src/consynth/SketchJoin.ml" 75 1977 1987
+)
+"src/consynth/SketchJoin.ml" 81 2211 2224 "src/consynth/SketchJoin.ml" 81 2211 2247
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 81 2211 2249 "src/consynth/SketchJoin.ml" 81 2211 2250
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 81 2211 2224 "src/consynth/SketchJoin.ml" 81 2211 2250
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 76 2028 2032 "src/consynth/SketchJoin.ml" 82 2251 2258
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 75 1977 1981 "src/consynth/SketchJoin.ml" 82 2251 2258
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 84 2260 2270 "src/consynth/SketchJoin.ml" 84 2260 2273
+type(
+  SketchTypes.sklet
+)
+ident(
+  def skl "src/consynth/SketchJoin.ml" 84 2260 2277 "src/consynth/SketchJoin.ml" 84 2260 2323
+)
+"src/consynth/SketchJoin.ml" 84 2260 2264 "src/consynth/SketchJoin.ml" 84 2260 2273
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 84 2260 2284 "src/consynth/SketchJoin.ml" 84 2260 2293
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref make_join "src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+)
+"src/consynth/SketchJoin.ml" 84 2260 2301 "src/consynth/SketchJoin.ml" 84 2260 2306
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 84 2260 2313 "src/consynth/SketchJoin.ml" 84 2260 2315
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 84 2260 2316 "src/consynth/SketchJoin.ml" 84 2260 2319
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref skl "src/consynth/SketchJoin.ml" 84 2260 2270 "src/consynth/SketchJoin.ml" 84 2260 2273
+)
+"src/consynth/SketchJoin.ml" 84 2260 2283 "src/consynth/SketchJoin.ml" 84 2260 2320
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 84 2260 2277 "src/consynth/SketchJoin.ml" 84 2260 2320
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 84 2260 2322 "src/consynth/SketchJoin.ml" 84 2260 2323
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 84 2260 2277 "src/consynth/SketchJoin.ml" 84 2260 2323
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 86 2325 2338 "src/consynth/SketchJoin.ml" 86 2325 2340
+type(
+  SketchTypes.symb_binop
+)
+ident(
+  def op "src/consynth/SketchJoin.ml" 87 2353 2357 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 86 2325 2342 "src/consynth/SketchJoin.ml" 86 2325 2344
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e1 "src/consynth/SketchJoin.ml" 87 2353 2357 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 86 2325 2346 "src/consynth/SketchJoin.ml" 86 2325 2348
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e2 "src/consynth/SketchJoin.ml" 87 2353 2357 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 86 2325 2329 "src/consynth/SketchJoin.ml" 86 2325 2349
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 87 2353 2361 "src/consynth/SketchJoin.ml" 87 2353 2367
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def holes1 "src/consynth/SketchJoin.ml" 88 2429 2433 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 87 2353 2369 "src/consynth/SketchJoin.ml" 87 2353 2371
+type(
+  int
+)
+ident(
+  def d1 "src/consynth/SketchJoin.ml" 88 2429 2433 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 87 2353 2361 "src/consynth/SketchJoin.ml" 87 2353 2371
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 87 2353 2374 "src/consynth/SketchJoin.ml" 87 2353 2386
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 87 2353 2387 "src/consynth/SketchJoin.ml" 87 2353 2396
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 87 2353 2398 "src/consynth/SketchJoin.ml" 87 2353 2408
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 87 2353 2409 "src/consynth/SketchJoin.ml" 87 2353 2414
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 87 2353 2415 "src/consynth/SketchJoin.ml" 87 2353 2421
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 87 2353 2422 "src/consynth/SketchJoin.ml" 87 2353 2424
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e1 "src/consynth/SketchJoin.ml" 86 2325 2342 "src/consynth/SketchJoin.ml" 86 2325 2344
+)
+"src/consynth/SketchJoin.ml" 87 2353 2397 "src/consynth/SketchJoin.ml" 87 2353 2425
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 87 2353 2374 "src/consynth/SketchJoin.ml" 87 2353 2425
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 88 2429 2437 "src/consynth/SketchJoin.ml" 88 2429 2443
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def holes2 "src/consynth/SketchJoin.ml" 89 2505 2509 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 88 2429 2445 "src/consynth/SketchJoin.ml" 88 2429 2447
+type(
+  int
+)
+ident(
+  def d2 "src/consynth/SketchJoin.ml" 89 2505 2509 "src/consynth/SketchJoin.ml" 89 2505 2548
+)
+"src/consynth/SketchJoin.ml" 88 2429 2437 "src/consynth/SketchJoin.ml" 88 2429 2447
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 88 2429 2450 "src/consynth/SketchJoin.ml" 88 2429 2462
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 88 2429 2463 "src/consynth/SketchJoin.ml" 88 2429 2472
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 88 2429 2474 "src/consynth/SketchJoin.ml" 88 2429 2484
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 88 2429 2485 "src/consynth/SketchJoin.ml" 88 2429 2490
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 88 2429 2491 "src/consynth/SketchJoin.ml" 88 2429 2497
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 88 2429 2498 "src/consynth/SketchJoin.ml" 88 2429 2500
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e2 "src/consynth/SketchJoin.ml" 86 2325 2346 "src/consynth/SketchJoin.ml" 86 2325 2348
+)
+"src/consynth/SketchJoin.ml" 88 2429 2473 "src/consynth/SketchJoin.ml" 88 2429 2501
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 88 2429 2450 "src/consynth/SketchJoin.ml" 88 2429 2501
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 89 2505 2518 "src/consynth/SketchJoin.ml" 89 2505 2520
+type(
+  SketchTypes.symb_binop
+)
+ident(
+  int_ref op "src/consynth/SketchJoin.ml" 86 2325 2338 "src/consynth/SketchJoin.ml" 86 2325 2340
+)
+"src/consynth/SketchJoin.ml" 89 2505 2522 "src/consynth/SketchJoin.ml" 89 2505 2528
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref holes1 "src/consynth/SketchJoin.ml" 87 2353 2361 "src/consynth/SketchJoin.ml" 87 2353 2367
+)
+"src/consynth/SketchJoin.ml" 89 2505 2530 "src/consynth/SketchJoin.ml" 89 2505 2536
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref holes2 "src/consynth/SketchJoin.ml" 88 2429 2437 "src/consynth/SketchJoin.ml" 88 2429 2443
+)
+"src/consynth/SketchJoin.ml" 89 2505 2509 "src/consynth/SketchJoin.ml" 89 2505 2537
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 89 2505 2539 "src/consynth/SketchJoin.ml" 89 2505 2542
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.max
+)
+"src/consynth/SketchJoin.ml" 89 2505 2543 "src/consynth/SketchJoin.ml" 89 2505 2545
+type(
+  int
+)
+ident(
+  int_ref d1 "src/consynth/SketchJoin.ml" 87 2353 2369 "src/consynth/SketchJoin.ml" 87 2353 2371
+)
+"src/consynth/SketchJoin.ml" 89 2505 2546 "src/consynth/SketchJoin.ml" 89 2505 2548
+type(
+  int
+)
+ident(
+  int_ref d2 "src/consynth/SketchJoin.ml" 88 2429 2445 "src/consynth/SketchJoin.ml" 88 2429 2447
+)
+"src/consynth/SketchJoin.ml" 89 2505 2539 "src/consynth/SketchJoin.ml" 89 2505 2548
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 89 2505 2509 "src/consynth/SketchJoin.ml" 89 2505 2548
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 88 2429 2433 "src/consynth/SketchJoin.ml" 89 2505 2548
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 87 2353 2357 "src/consynth/SketchJoin.ml" 89 2505 2548
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 91 2550 2562 "src/consynth/SketchJoin.ml" 91 2550 2564
+type(
+  SketchTypes.symb_unop
+)
+ident(
+  def op "src/consynth/SketchJoin.ml" 92 2572 2576 "src/consynth/SketchJoin.ml" 92 2572 2626
+)
+"src/consynth/SketchJoin.ml" 91 2550 2566 "src/consynth/SketchJoin.ml" 91 2550 2567
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 92 2572 2576 "src/consynth/SketchJoin.ml" 92 2572 2626
+)
+"src/consynth/SketchJoin.ml" 91 2550 2554 "src/consynth/SketchJoin.ml" 91 2550 2568
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 92 2572 2576 "src/consynth/SketchJoin.ml" 92 2572 2588
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 92 2572 2589 "src/consynth/SketchJoin.ml" 92 2572 2598
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 92 2572 2600 "src/consynth/SketchJoin.ml" 92 2572 2610
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 92 2572 2611 "src/consynth/SketchJoin.ml" 92 2572 2616
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 92 2572 2617 "src/consynth/SketchJoin.ml" 92 2572 2623
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 92 2572 2624 "src/consynth/SketchJoin.ml" 92 2572 2625
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 91 2550 2566 "src/consynth/SketchJoin.ml" 91 2550 2567
+)
+"src/consynth/SketchJoin.ml" 92 2572 2599 "src/consynth/SketchJoin.ml" 92 2572 2626
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 92 2572 2576 "src/consynth/SketchJoin.ml" 92 2572 2626
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 94 2628 2640 "src/consynth/SketchJoin.ml" 94 2628 2641
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def c "src/consynth/SketchJoin.ml" 95 2654 2658 "src/consynth/SketchJoin.ml" 98 2764 2814
+)
+"src/consynth/SketchJoin.ml" 94 2628 2643 "src/consynth/SketchJoin.ml" 94 2628 2645
+type(
+  SketchTypes.sklet
+)
+ident(
+  def li "src/consynth/SketchJoin.ml" 95 2654 2658 "src/consynth/SketchJoin.ml" 98 2764 2814
+)
+"src/consynth/SketchJoin.ml" 94 2628 2647 "src/consynth/SketchJoin.ml" 94 2628 2649
+type(
+  SketchTypes.sklet
+)
+ident(
+  def le "src/consynth/SketchJoin.ml" 95 2654 2658 "src/consynth/SketchJoin.ml" 98 2764 2814
+)
+"src/consynth/SketchJoin.ml" 94 2628 2632 "src/consynth/SketchJoin.ml" 94 2628 2650
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 95 2654 2662 "src/consynth/SketchJoin.ml" 95 2654 2664
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ch "src/consynth/SketchJoin.ml" 96 2699 2703 "src/consynth/SketchJoin.ml" 98 2764 2814
+)
+"src/consynth/SketchJoin.ml" 95 2654 2666 "src/consynth/SketchJoin.ml" 95 2654 2667
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 95 2654 2662 "src/consynth/SketchJoin.ml" 95 2654 2667
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 95 2654 2670 "src/consynth/SketchJoin.ml" 95 2654 2680
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 95 2654 2681 "src/consynth/SketchJoin.ml" 95 2654 2686
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 95 2654 2687 "src/consynth/SketchJoin.ml" 95 2654 2693
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 95 2654 2694 "src/consynth/SketchJoin.ml" 95 2654 2695
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref c "src/consynth/SketchJoin.ml" 94 2628 2640 "src/consynth/SketchJoin.ml" 94 2628 2641
+)
+"src/consynth/SketchJoin.ml" 95 2654 2670 "src/consynth/SketchJoin.ml" 95 2654 2695
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 96 2699 2711 "src/consynth/SketchJoin.ml" 96 2699 2713
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ch "src/consynth/SketchJoin.ml" 95 2654 2662 "src/consynth/SketchJoin.ml" 95 2654 2664
+)
+"src/consynth/SketchJoin.ml" 97 2716 2728 "src/consynth/SketchJoin.ml" 97 2716 2737
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref make_join "src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+)
+"src/consynth/SketchJoin.ml" 97 2716 2745 "src/consynth/SketchJoin.ml" 97 2716 2750
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 97 2716 2757 "src/consynth/SketchJoin.ml" 97 2716 2759
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 97 2716 2760 "src/consynth/SketchJoin.ml" 97 2716 2762
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref li "src/consynth/SketchJoin.ml" 94 2628 2643 "src/consynth/SketchJoin.ml" 94 2628 2645
+)
+"src/consynth/SketchJoin.ml" 97 2716 2728 "src/consynth/SketchJoin.ml" 97 2716 2762
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 98 2764 2776 "src/consynth/SketchJoin.ml" 98 2764 2785
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref make_join "src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+)
+"src/consynth/SketchJoin.ml" 98 2764 2793 "src/consynth/SketchJoin.ml" 98 2764 2798
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 98 2764 2805 "src/consynth/SketchJoin.ml" 98 2764 2807
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 98 2764 2808 "src/consynth/SketchJoin.ml" 98 2764 2810
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref le "src/consynth/SketchJoin.ml" 94 2628 2647 "src/consynth/SketchJoin.ml" 94 2628 2649
+)
+"src/consynth/SketchJoin.ml" 98 2764 2776 "src/consynth/SketchJoin.ml" 98 2764 2810
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 96 2699 2703 "src/consynth/SketchJoin.ml" 98 2764 2811
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 98 2764 2813 "src/consynth/SketchJoin.ml" 98 2764 2814
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 96 2699 2703 "src/consynth/SketchJoin.ml" 98 2764 2814
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 95 2654 2658 "src/consynth/SketchJoin.ml" 98 2764 2814
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 100 2816 2832 "src/consynth/SketchJoin.ml" 100 2816 2833
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def c "src/consynth/SketchJoin.ml" 101 2846 2850 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 100 2816 2835 "src/consynth/SketchJoin.ml" 100 2816 2837
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ei "src/consynth/SketchJoin.ml" 101 2846 2850 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 100 2816 2839 "src/consynth/SketchJoin.ml" 100 2816 2841
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ee "src/consynth/SketchJoin.ml" 101 2846 2850 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 100 2816 2820 "src/consynth/SketchJoin.ml" 100 2816 2842
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 101 2846 2854 "src/consynth/SketchJoin.ml" 101 2846 2856
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def h1 "src/consynth/SketchJoin.ml" 102 2919 2923 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 101 2846 2858 "src/consynth/SketchJoin.ml" 101 2846 2860
+type(
+  int
+)
+ident(
+  def d1 "src/consynth/SketchJoin.ml" 102 2919 2923 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 101 2846 2854 "src/consynth/SketchJoin.ml" 101 2846 2860
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 101 2846 2864 "src/consynth/SketchJoin.ml" 101 2846 2876
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 101 2846 2877 "src/consynth/SketchJoin.ml" 101 2846 2886
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 101 2846 2888 "src/consynth/SketchJoin.ml" 101 2846 2898
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 101 2846 2899 "src/consynth/SketchJoin.ml" 101 2846 2904
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 101 2846 2905 "src/consynth/SketchJoin.ml" 101 2846 2911
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 101 2846 2912 "src/consynth/SketchJoin.ml" 101 2846 2914
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ei "src/consynth/SketchJoin.ml" 100 2816 2835 "src/consynth/SketchJoin.ml" 100 2816 2837
+)
+"src/consynth/SketchJoin.ml" 101 2846 2887 "src/consynth/SketchJoin.ml" 101 2846 2915
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 101 2846 2864 "src/consynth/SketchJoin.ml" 101 2846 2915
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 102 2919 2927 "src/consynth/SketchJoin.ml" 102 2919 2929
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def h2 "src/consynth/SketchJoin.ml" 103 2991 2995 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 102 2919 2931 "src/consynth/SketchJoin.ml" 102 2919 2933
+type(
+  int
+)
+ident(
+  def d2 "src/consynth/SketchJoin.ml" 103 2991 2995 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 102 2919 2927 "src/consynth/SketchJoin.ml" 102 2919 2933
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 102 2919 2936 "src/consynth/SketchJoin.ml" 102 2919 2948
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 102 2919 2949 "src/consynth/SketchJoin.ml" 102 2919 2958
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 102 2919 2960 "src/consynth/SketchJoin.ml" 102 2919 2970
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 102 2919 2971 "src/consynth/SketchJoin.ml" 102 2919 2976
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 102 2919 2977 "src/consynth/SketchJoin.ml" 102 2919 2983
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 102 2919 2984 "src/consynth/SketchJoin.ml" 102 2919 2986
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ee "src/consynth/SketchJoin.ml" 100 2816 2839 "src/consynth/SketchJoin.ml" 100 2816 2841
+)
+"src/consynth/SketchJoin.ml" 102 2919 2959 "src/consynth/SketchJoin.ml" 102 2919 2987
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 102 2919 2936 "src/consynth/SketchJoin.ml" 102 2919 2987
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 103 2991 2999 "src/consynth/SketchJoin.ml" 103 2991 3001
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def hc "src/consynth/SketchJoin.ml" 104 3062 3066 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 103 2991 3003 "src/consynth/SketchJoin.ml" 103 2991 3005
+type(
+  int
+)
+ident(
+  def dc "src/consynth/SketchJoin.ml" 104 3062 3066 "src/consynth/SketchJoin.ml" 104 3062 3109
+)
+"src/consynth/SketchJoin.ml" 103 2991 2999 "src/consynth/SketchJoin.ml" 103 2991 3005
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 103 2991 3008 "src/consynth/SketchJoin.ml" 103 2991 3020
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 103 2991 3021 "src/consynth/SketchJoin.ml" 103 2991 3030
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 50 1081 1102 "src/consynth/SketchJoin.ml" 50 1081 1111
+)
+"src/consynth/SketchJoin.ml" 103 2991 3032 "src/consynth/SketchJoin.ml" 103 2991 3042
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 103 2991 3043 "src/consynth/SketchJoin.ml" 103 2991 3048
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 103 2991 3049 "src/consynth/SketchJoin.ml" 103 2991 3055
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 103 2991 3056 "src/consynth/SketchJoin.ml" 103 2991 3057
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref c "src/consynth/SketchJoin.ml" 100 2816 2832 "src/consynth/SketchJoin.ml" 100 2816 2833
+)
+"src/consynth/SketchJoin.ml" 103 2991 3031 "src/consynth/SketchJoin.ml" 103 2991 3058
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 103 2991 3008 "src/consynth/SketchJoin.ml" 103 2991 3058
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 104 3062 3078 "src/consynth/SketchJoin.ml" 104 3062 3080
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref hc "src/consynth/SketchJoin.ml" 103 2991 2999 "src/consynth/SketchJoin.ml" 103 2991 3001
+)
+"src/consynth/SketchJoin.ml" 104 3062 3082 "src/consynth/SketchJoin.ml" 104 3062 3084
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 101 2846 2854 "src/consynth/SketchJoin.ml" 101 2846 2856
+)
+"src/consynth/SketchJoin.ml" 104 3062 3086 "src/consynth/SketchJoin.ml" 104 3062 3088
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 102 2919 2927 "src/consynth/SketchJoin.ml" 102 2919 2929
+)
+"src/consynth/SketchJoin.ml" 104 3062 3066 "src/consynth/SketchJoin.ml" 104 3062 3089
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 104 3062 3091 "src/consynth/SketchJoin.ml" 104 3062 3094
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.max
+)
+"src/consynth/SketchJoin.ml" 104 3062 3096 "src/consynth/SketchJoin.ml" 104 3062 3099
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.max
+)
+"src/consynth/SketchJoin.ml" 104 3062 3100 "src/consynth/SketchJoin.ml" 104 3062 3102
+type(
+  int
+)
+ident(
+  int_ref d1 "src/consynth/SketchJoin.ml" 101 2846 2858 "src/consynth/SketchJoin.ml" 101 2846 2860
+)
+"src/consynth/SketchJoin.ml" 104 3062 3103 "src/consynth/SketchJoin.ml" 104 3062 3105
+type(
+  int
+)
+ident(
+  int_ref d2 "src/consynth/SketchJoin.ml" 102 2919 2931 "src/consynth/SketchJoin.ml" 102 2919 2933
+)
+"src/consynth/SketchJoin.ml" 104 3062 3095 "src/consynth/SketchJoin.ml" 104 3062 3106
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 104 3062 3107 "src/consynth/SketchJoin.ml" 104 3062 3109
+type(
+  int
+)
+ident(
+  int_ref dc "src/consynth/SketchJoin.ml" 103 2991 3003 "src/consynth/SketchJoin.ml" 103 2991 3005
+)
+"src/consynth/SketchJoin.ml" 104 3062 3091 "src/consynth/SketchJoin.ml" 104 3062 3109
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 104 3062 3066 "src/consynth/SketchJoin.ml" 104 3062 3109
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 103 2991 2995 "src/consynth/SketchJoin.ml" 104 3062 3109
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 102 2919 2923 "src/consynth/SketchJoin.ml" 104 3062 3109
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 101 2846 2850 "src/consynth/SketchJoin.ml" 104 3062 3109
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 106 3111 3122 "src/consynth/SketchJoin.ml" 106 3111 3123
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 107 3138 3142 "src/consynth/SketchJoin.ml" 109 3233 3290
+)
+"src/consynth/SketchJoin.ml" 106 3111 3125 "src/consynth/SketchJoin.ml" 106 3111 3127
+type(
+  Cil.varinfo option
+)
+ident(
+  def vo "src/consynth/SketchJoin.ml" 107 3138 3142 "src/consynth/SketchJoin.ml" 109 3233 3290
+)
+"src/consynth/SketchJoin.ml" 106 3111 3129 "src/consynth/SketchJoin.ml" 106 3111 3133
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  def args "src/consynth/SketchJoin.ml" 107 3138 3142 "src/consynth/SketchJoin.ml" 109 3233 3290
+)
+"src/consynth/SketchJoin.ml" 106 3111 3115 "src/consynth/SketchJoin.ml" 106 3111 3134
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 107 3138 3146 "src/consynth/SketchJoin.ml" 107 3138 3154
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  def new_args "src/consynth/SketchJoin.ml" 109 3233 3237 "src/consynth/SketchJoin.ml" 109 3233 3290
+)
+"src/consynth/SketchJoin.ml" 107 3138 3156 "src/consynth/SketchJoin.ml" 107 3138 3162
+type(
+  int list
+)
+ident(
+  def depths "src/consynth/SketchJoin.ml" 109 3233 3237 "src/consynth/SketchJoin.ml" 109 3233 3290
+)
+"src/consynth/SketchJoin.ml" 107 3138 3146 "src/consynth/SketchJoin.ml" 107 3138 3162
+type(
+  SketchTypes.skExpr list * int list
+)
+"src/consynth/SketchJoin.ml" 108 3165 3171 "src/consynth/SketchJoin.ml" 108 3165 3187
+type(
+  (SketchTypes.skExpr * int) list -> SketchTypes.skExpr list * int list
+)
+ident(
+  ext_ref Utils.ListTools.unpair
+)
+"src/consynth/SketchJoin.ml" 108 3165 3189 "src/consynth/SketchJoin.ml" 108 3165 3197
+type(
+  (SketchTypes.skExpr -> SketchTypes.skExpr * int) ->
+  SketchTypes.skExpr list -> (SketchTypes.skExpr * int) list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/SketchJoin.ml" 108 3165 3199 "src/consynth/SketchJoin.ml" 108 3165 3209
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 108 3165 3210 "src/consynth/SketchJoin.ml" 108 3165 3215
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 50 1081 1138 "src/consynth/SketchJoin.ml" 50 1081 1143
+)
+"src/consynth/SketchJoin.ml" 108 3165 3216 "src/consynth/SketchJoin.ml" 108 3165 3222
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 51 1152 1157 "src/consynth/SketchJoin.ml" 51 1152 1163
+)
+"src/consynth/SketchJoin.ml" 108 3165 3198 "src/consynth/SketchJoin.ml" 108 3165 3223
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 108 3165 3224 "src/consynth/SketchJoin.ml" 108 3165 3228
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  int_ref args "src/consynth/SketchJoin.ml" 106 3111 3129 "src/consynth/SketchJoin.ml" 106 3111 3133
+)
+"src/consynth/SketchJoin.ml" 108 3165 3188 "src/consynth/SketchJoin.ml" 108 3165 3229
+call(
+  stack
+)
+type(
+  (SketchTypes.skExpr * int) list
+)
+"src/consynth/SketchJoin.ml" 108 3165 3171 "src/consynth/SketchJoin.ml" 108 3165 3229
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr list * int list
+)
+"src/consynth/SketchJoin.ml" 109 3233 3244 "src/consynth/SketchJoin.ml" 109 3233 3245
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 106 3111 3122 "src/consynth/SketchJoin.ml" 106 3111 3123
+)
+"src/consynth/SketchJoin.ml" 109 3233 3247 "src/consynth/SketchJoin.ml" 109 3233 3249
+type(
+  Cil.varinfo option
+)
+ident(
+  int_ref vo "src/consynth/SketchJoin.ml" 106 3111 3125 "src/consynth/SketchJoin.ml" 106 3111 3127
+)
+"src/consynth/SketchJoin.ml" 109 3233 3251 "src/consynth/SketchJoin.ml" 109 3233 3259
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  int_ref new_args "src/consynth/SketchJoin.ml" 107 3138 3146 "src/consynth/SketchJoin.ml" 107 3138 3154
+)
+"src/consynth/SketchJoin.ml" 109 3233 3237 "src/consynth/SketchJoin.ml" 109 3233 3260
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 109 3233 3262 "src/consynth/SketchJoin.ml" 109 3233 3283
+type(
+  int list -> int
+)
+ident(
+  ext_ref Utils.ListTools.intlist_max
+)
+"src/consynth/SketchJoin.ml" 109 3233 3284 "src/consynth/SketchJoin.ml" 109 3233 3290
+type(
+  int list
+)
+ident(
+  int_ref depths "src/consynth/SketchJoin.ml" 107 3138 3156 "src/consynth/SketchJoin.ml" 107 3138 3162
+)
+"src/consynth/SketchJoin.ml" 109 3233 3262 "src/consynth/SketchJoin.ml" 109 3233 3290
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 109 3233 3237 "src/consynth/SketchJoin.ml" 109 3233 3290
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 107 3138 3142 "src/consynth/SketchJoin.ml" 109 3233 3290
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 111 3292 3296 "src/consynth/SketchJoin.ml" 111 3292 3297
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 111 3292 3301 "src/consynth/SketchJoin.ml" 111 3292 3307
+ident(
+  def skexpr "src/consynth/SketchJoin.ml" 111 3292 3312 "src/consynth/SketchJoin.ml" 111 3292 3321
+)
+"src/consynth/SketchJoin.ml" 111 3292 3296 "src/consynth/SketchJoin.ml" 111 3292 3307
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 111 3292 3312 "src/consynth/SketchJoin.ml" 111 3292 3318
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref skexpr "src/consynth/SketchJoin.ml" 111 3292 3296 "src/consynth/SketchJoin.ml" 111 3292 3307
+)
+"src/consynth/SketchJoin.ml" 111 3292 3320 "src/consynth/SketchJoin.ml" 111 3292 3321
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 111 3292 3312 "src/consynth/SketchJoin.ml" 111 3292 3321
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 53 1213 1215 "src/consynth/SketchJoin.ml" 111 3292 3321
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 52 1183 1185 "src/consynth/SketchJoin.ml" 111 3292 3321
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 114 3324 3328 "src/consynth/SketchJoin.ml" 114 3324 3339
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  def make_hole_e "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 115 3340 3346 "src/consynth/SketchJoin.ml" 115 3340 3355
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 115 3340 3358 "src/consynth/SketchJoin.ml" 115 3340 3359
+type(
+  int
+)
+type(
+  int
+)
+ident(
+  int_ref *sth* "src/consynth/SketchJoin.ml" 115 3340 3358 "src/consynth/SketchJoin.ml" 115 3340 3359
+)
+type(
+  int option
+)
+type(
+  int option
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 116 3361 3367 "src/consynth/SketchJoin.ml" 116 3361 3375
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 116 3361 3376 "src/consynth/SketchJoin.ml" 116 3361 3381
+type(
+  bool
+)
+type(
+  bool
+)
+ident(
+  int_ref *sth* "src/consynth/SketchJoin.ml" 116 3361 3376 "src/consynth/SketchJoin.ml" 116 3361 3381
+)
+type(
+  bool option
+)
+type(
+  bool option
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 117 3383 3388 "src/consynth/SketchJoin.ml" 117 3383 3393
+type(
+  SPretty.VS.t
+)
+ident(
+  def state "src/consynth/SketchJoin.ml" 117 3383 3402 "src/consynth/SketchJoin.ml" 122 3513 3531
+)
+"src/consynth/SketchJoin.ml" 117 3383 3403 "src/consynth/SketchJoin.ml" 117 3383 3404
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 118 3417 3419 "src/consynth/SketchJoin.ml" 122 3513 3531
+)
+"src/consynth/SketchJoin.ml" 118 3417 3423 "src/consynth/SketchJoin.ml" 118 3417 3429
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def optype "src/consynth/SketchJoin.ml" 119 3452 3454 "src/consynth/SketchJoin.ml" 122 3513 3531
+)
+"src/consynth/SketchJoin.ml" 118 3417 3432 "src/consynth/SketchJoin.ml" 118 3417 3446
+type(
+  SketchTypes.skExpr -> SketchTypes.operator_type
+)
+ident(
+  ext_ref SketchTypes.analyze_optype
+)
+"src/consynth/SketchJoin.ml" 118 3417 3447 "src/consynth/SketchJoin.ml" 118 3417 3448
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 117 3383 3403 "src/consynth/SketchJoin.ml" 117 3383 3404
+)
+"src/consynth/SketchJoin.ml" 118 3417 3432 "src/consynth/SketchJoin.ml" 118 3417 3448
+call(
+  stack
+)
+type(
+  SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 119 3452 3454 "src/consynth/SketchJoin.ml" 119 3452 3464
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t ->
+  SketchTypes.operator_type -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_holes "src/consynth/SketchJoin.ml" 50 1081 1089 "src/consynth/SketchJoin.ml" 50 1081 1099
+)
+"src/consynth/SketchJoin.ml" 120 3465 3480 "src/consynth/SketchJoin.ml" 120 3465 3489
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 115 3340 3346 "src/consynth/SketchJoin.ml" 115 3340 3355
+)
+"src/consynth/SketchJoin.ml" 121 3490 3504 "src/consynth/SketchJoin.ml" 121 3490 3512
+type(
+  bool
+)
+ident(
+  int_ref is_final "src/consynth/SketchJoin.ml" 116 3361 3367 "src/consynth/SketchJoin.ml" 116 3361 3375
+)
+"src/consynth/SketchJoin.ml" 122 3513 3517 "src/consynth/SketchJoin.ml" 122 3513 3522
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 117 3383 3388 "src/consynth/SketchJoin.ml" 117 3383 3393
+)
+"src/consynth/SketchJoin.ml" 122 3513 3523 "src/consynth/SketchJoin.ml" 122 3513 3529
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref optype "src/consynth/SketchJoin.ml" 118 3417 3423 "src/consynth/SketchJoin.ml" 118 3417 3429
+)
+"src/consynth/SketchJoin.ml" 122 3513 3530 "src/consynth/SketchJoin.ml" 122 3513 3531
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 117 3383 3403 "src/consynth/SketchJoin.ml" 117 3383 3404
+)
+"src/consynth/SketchJoin.ml" 119 3452 3454 "src/consynth/SketchJoin.ml" 122 3513 3531
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 118 3417 3419 "src/consynth/SketchJoin.ml" 122 3513 3531
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 124 3533 3537 "src/consynth/SketchJoin.ml" 124 3533 3557
+type(
+  Utils.VS.t ->
+  SketchTypes.skLVar list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def make_assignment_list "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 124 3533 3558 "src/consynth/SketchJoin.ml" 124 3533 3563
+type(
+  Utils.VS.t
+)
+ident(
+  def state "src/consynth/SketchJoin.ml" 124 3533 3564 "src/consynth/SketchJoin.ml" 136 3927 3983
+)
+"src/consynth/SketchJoin.ml" 124 3533 3564 "src/consynth/SketchJoin.ml" 124 3533 3568
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  def skip "src/consynth/SketchJoin.ml" 125 3571 3573 "src/consynth/SketchJoin.ml" 136 3927 3983
+)
+"src/consynth/SketchJoin.ml" 125 3571 3573 "src/consynth/SketchJoin.ml" 125 3571 3581
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr ->
+   SketchTypes.skLVar * SketchTypes.skExpr) ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/SketchJoin.ml" 125 3571 3588 "src/consynth/SketchJoin.ml" 125 3571 3589
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def v "src/consynth/SketchJoin.ml" 126 3597 3603 "src/consynth/SketchJoin.ml" 136 3927 3982
+)
+"src/consynth/SketchJoin.ml" 125 3571 3591 "src/consynth/SketchJoin.ml" 125 3571 3592
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 126 3597 3603 "src/consynth/SketchJoin.ml" 136 3927 3982
+)
+"src/consynth/SketchJoin.ml" 125 3571 3587 "src/consynth/SketchJoin.ml" 125 3571 3593
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 126 3597 3609 "src/consynth/SketchJoin.ml" 126 3597 3610
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 125 3571 3591 "src/consynth/SketchJoin.ml" 125 3571 3592
+)
+"src/consynth/SketchJoin.ml" 127 3616 3630 "src/consynth/SketchJoin.ml" 127 3616 3631
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def v "src/consynth/SketchJoin.ml" 127 3616 3637 "src/consynth/SketchJoin.ml" 127 3616 3662
+)
+"src/consynth/SketchJoin.ml" 127 3616 3624 "src/consynth/SketchJoin.ml" 127 3616 3631
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 127 3616 3637 "src/consynth/SketchJoin.ml" 127 3616 3645
+type(
+  SketchTypes.skLVar -> SketchTypes.skLVar list -> bool
+)
+ident(
+  ext_ref List.mem
+)
+"src/consynth/SketchJoin.ml" 127 3616 3646 "src/consynth/SketchJoin.ml" 127 3616 3647
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 127 3616 3630 "src/consynth/SketchJoin.ml" 127 3616 3631
+)
+"src/consynth/SketchJoin.ml" 127 3616 3648 "src/consynth/SketchJoin.ml" 127 3616 3652
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  int_ref skip "src/consynth/SketchJoin.ml" 124 3533 3564 "src/consynth/SketchJoin.ml" 124 3533 3568
+)
+"src/consynth/SketchJoin.ml" 127 3616 3637 "src/consynth/SketchJoin.ml" 127 3616 3652
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 127 3616 3657 "src/consynth/SketchJoin.ml" 127 3616 3658
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 127 3616 3630 "src/consynth/SketchJoin.ml" 127 3616 3631
+)
+"src/consynth/SketchJoin.ml" 127 3616 3660 "src/consynth/SketchJoin.ml" 127 3616 3661
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 125 3571 3591 "src/consynth/SketchJoin.ml" 125 3571 3592
+)
+"src/consynth/SketchJoin.ml" 127 3616 3656 "src/consynth/SketchJoin.ml" 127 3616 3662
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 129 3664 3672 "src/consynth/SketchJoin.ml" 129 3664 3673
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 130 3677 3689 "src/consynth/SketchJoin.ml" 130 3677 3691
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/SketchJoin.ml" 131 3720 3728 "src/consynth/SketchJoin.ml" 136 3927 3982
+)
+"src/consynth/SketchJoin.ml" 130 3677 3694 "src/consynth/SketchJoin.ml" 130 3677 3706
+type(
+  Cil.varinfo option -> Cil.varinfo
+)
+ident(
+  ext_ref Utils.check_option
+)
+"src/consynth/SketchJoin.ml" 130 3677 3708 "src/consynth/SketchJoin.ml" 130 3677 3713
+type(
+  SketchTypes.skLVar -> Cil.varinfo option
+)
+ident(
+  ext_ref SketchTypes.vi_of
+)
+"src/consynth/SketchJoin.ml" 130 3677 3714 "src/consynth/SketchJoin.ml" 130 3677 3715
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 125 3571 3588 "src/consynth/SketchJoin.ml" 125 3571 3589
+)
+"src/consynth/SketchJoin.ml" 130 3677 3707 "src/consynth/SketchJoin.ml" 130 3677 3716
+call(
+  stack
+)
+type(
+  Cil.varinfo option
+)
+"src/consynth/SketchJoin.ml" 130 3677 3694 "src/consynth/SketchJoin.ml" 130 3677 3716
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/SketchJoin.ml" 131 3720 3731 "src/consynth/SketchJoin.ml" 131 3720 3737
+type(
+  SPretty.VS.elt -> SPretty.VS.t -> bool
+)
+ident(
+  ext_ref SPretty.VS.mem
+)
+"src/consynth/SketchJoin.ml" 131 3720 3738 "src/consynth/SketchJoin.ml" 131 3720 3740
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/SketchJoin.ml" 130 3677 3689 "src/consynth/SketchJoin.ml" 130 3677 3691
+)
+"src/consynth/SketchJoin.ml" 131 3720 3741 "src/consynth/SketchJoin.ml" 131 3720 3742
+type(
+  SPretty.VS.t ref -> SPretty.VS.t
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/SketchJoin.ml" 131 3720 3742 "src/consynth/SketchJoin.ml" 131 3720 3758
+type(
+  SPretty.VS.t ref
+)
+ident(
+  int_ref left_auxiliaries "src/consynth/SketchJoin.ml" 9 130 134 "src/consynth/SketchJoin.ml" 9 130 150
+)
+"src/consynth/SketchJoin.ml" 131 3720 3741 "src/consynth/SketchJoin.ml" 131 3720 3758
+type(
+  SPretty.VS.t
+)
+"src/consynth/SketchJoin.ml" 131 3720 3731 "src/consynth/SketchJoin.ml" 131 3720 3758
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 131 3720 3759 "src/consynth/SketchJoin.ml" 131 3720 3761
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( || )
+)
+"src/consynth/SketchJoin.ml" 132 3762 3773 "src/consynth/SketchJoin.ml" 132 3762 3779
+type(
+  SPretty.VS.elt -> SPretty.VS.t -> bool
+)
+ident(
+  ext_ref SPretty.VS.mem
+)
+"src/consynth/SketchJoin.ml" 132 3762 3780 "src/consynth/SketchJoin.ml" 132 3762 3782
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/SketchJoin.ml" 130 3677 3689 "src/consynth/SketchJoin.ml" 130 3677 3691
+)
+"src/consynth/SketchJoin.ml" 132 3762 3783 "src/consynth/SketchJoin.ml" 132 3762 3784
+type(
+  SPretty.VS.t ref -> SPretty.VS.t
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/SketchJoin.ml" 132 3762 3784 "src/consynth/SketchJoin.ml" 132 3762 3801
+type(
+  SPretty.VS.t ref
+)
+ident(
+  int_ref right_auxiliaries "src/consynth/SketchJoin.ml" 10 166 170 "src/consynth/SketchJoin.ml" 10 166 187
+)
+"src/consynth/SketchJoin.ml" 132 3762 3783 "src/consynth/SketchJoin.ml" 132 3762 3801
+type(
+  SPretty.VS.t
+)
+"src/consynth/SketchJoin.ml" 132 3762 3773 "src/consynth/SketchJoin.ml" 132 3762 3801
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 131 3720 3731 "src/consynth/SketchJoin.ml" 132 3762 3801
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 133 3808 3819 "src/consynth/SketchJoin.ml" 133 3808 3820
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 125 3571 3588 "src/consynth/SketchJoin.ml" 125 3571 3589
+)
+"src/consynth/SketchJoin.ml" 133 3808 3833 "src/consynth/SketchJoin.ml" 133 3808 3840
+type(
+  SketchTypes.skExpr -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.type_of
+)
+"src/consynth/SketchJoin.ml" 133 3808 3841 "src/consynth/SketchJoin.ml" 133 3808 3842
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 125 3571 3591 "src/consynth/SketchJoin.ml" 125 3571 3592
+)
+"src/consynth/SketchJoin.ml" 133 3808 3832 "src/consynth/SketchJoin.ml" 133 3808 3843
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 133 3808 3845 "src/consynth/SketchJoin.ml" 133 3808 3850
+type(
+  SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 133 3808 3831 "src/consynth/SketchJoin.ml" 133 3808 3851
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 133 3808 3853 "src/consynth/SketchJoin.ml" 133 3808 3854
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 125 3571 3588 "src/consynth/SketchJoin.ml" 125 3571 3589
+)
+"src/consynth/SketchJoin.ml" 134 3856 3879 "src/consynth/SketchJoin.ml" 134 3856 3894
+type(
+  Utils.CSet.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.complete_all
+)
+"src/consynth/SketchJoin.ml" 134 3856 3896 "src/consynth/SketchJoin.ml" 134 3856 3904
+type(
+  Utils.VS.t -> Utils.CSet.t
+)
+ident(
+  ext_ref Utils.CS.of_vs
+)
+"src/consynth/SketchJoin.ml" 134 3856 3905 "src/consynth/SketchJoin.ml" 134 3856 3910
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 124 3533 3558 "src/consynth/SketchJoin.ml" 124 3533 3563
+)
+"src/consynth/SketchJoin.ml" 134 3856 3895 "src/consynth/SketchJoin.ml" 134 3856 3911
+call(
+  stack
+)
+type(
+  Utils.CSet.t
+)
+"src/consynth/SketchJoin.ml" 134 3856 3879 "src/consynth/SketchJoin.ml" 134 3856 3911
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 133 3808 3822 "src/consynth/SketchJoin.ml" 134 3856 3912
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 133 3808 3818 "src/consynth/SketchJoin.ml" 134 3856 3913
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 136 3927 3938 "src/consynth/SketchJoin.ml" 136 3927 3939
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 125 3571 3588 "src/consynth/SketchJoin.ml" 125 3571 3589
+)
+"src/consynth/SketchJoin.ml" 136 3927 3941 "src/consynth/SketchJoin.ml" 136 3927 3944
+type(
+  SketchTypes.skExpr * int -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Utils.fst
+)
+"src/consynth/SketchJoin.ml" 136 3927 3946 "src/consynth/SketchJoin.ml" 136 3927 3957
+type(
+  ?max_depth:int ->
+  ?is_final:bool ->
+  SPretty.VS.t -> SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref make_hole_e "src/consynth/SketchJoin.ml" 114 3324 3328 "src/consynth/SketchJoin.ml" 114 3324 3339
+)
+"src/consynth/SketchJoin.ml" 136 3927 3968 "src/consynth/SketchJoin.ml" 136 3927 3972
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 136 3927 3973 "src/consynth/SketchJoin.ml" 136 3927 3978
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 124 3533 3558 "src/consynth/SketchJoin.ml" 124 3533 3563
+)
+"src/consynth/SketchJoin.ml" 136 3927 3979 "src/consynth/SketchJoin.ml" 136 3927 3980
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 125 3571 3591 "src/consynth/SketchJoin.ml" 125 3571 3592
+)
+"src/consynth/SketchJoin.ml" 136 3927 3945 "src/consynth/SketchJoin.ml" 136 3927 3981
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 136 3927 3941 "src/consynth/SketchJoin.ml" 136 3927 3981
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 136 3927 3937 "src/consynth/SketchJoin.ml" 136 3927 3982
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 131 3720 3728 "src/consynth/SketchJoin.ml" 136 3927 3982
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 130 3677 3685 "src/consynth/SketchJoin.ml" 136 3927 3982
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 126 3597 3603 "src/consynth/SketchJoin.ml" 136 3927 3982
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 125 3571 3582 "src/consynth/SketchJoin.ml" 136 3927 3983
+type(
+  SketchTypes.skLVar * SketchTypes.skExpr ->
+  SketchTypes.skLVar * SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 125 3571 3573 "src/consynth/SketchJoin.ml" 136 3927 3983
+call(
+  tail
+)
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  def make_join "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 139 3986 4002 "src/consynth/SketchJoin.ml" 139 3986 4007
+type(
+  SPretty.VS.t
+)
+ident(
+  def state "src/consynth/SketchJoin.ml" 139 3986 4016 "src/consynth/SketchJoin.ml" 148 4276 4331
+)
+"src/consynth/SketchJoin.ml" 139 3986 4018 "src/consynth/SketchJoin.ml" 139 3986 4022
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  def skip "src/consynth/SketchJoin.ml" 140 4039 4041 "src/consynth/SketchJoin.ml" 148 4276 4331
+)
+"src/consynth/SketchJoin.ml" 141 4050 4064 "src/consynth/SketchJoin.ml" 141 4050 4071
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def ve_list "src/consynth/SketchJoin.ml" 142 4075 4079 "src/consynth/SketchJoin.ml" 142 4075 4130
+)
+"src/consynth/SketchJoin.ml" 141 4050 4054 "src/consynth/SketchJoin.ml" 141 4050 4071
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 142 4075 4090 "src/consynth/SketchJoin.ml" 142 4075 4110
+type(
+  Utils.VS.t ->
+  SketchTypes.skLVar list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref make_assignment_list "src/consynth/SketchJoin.ml" 124 3533 3537 "src/consynth/SketchJoin.ml" 124 3533 3557
+)
+"src/consynth/SketchJoin.ml" 142 4075 4111 "src/consynth/SketchJoin.ml" 142 4075 4116
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 139 3986 4002 "src/consynth/SketchJoin.ml" 139 3986 4007
+)
+"src/consynth/SketchJoin.ml" 142 4075 4117 "src/consynth/SketchJoin.ml" 142 4075 4121
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  int_ref skip "src/consynth/SketchJoin.ml" 139 3986 4018 "src/consynth/SketchJoin.ml" 139 3986 4022
+)
+"src/consynth/SketchJoin.ml" 142 4075 4122 "src/consynth/SketchJoin.ml" 142 4075 4129
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref ve_list "src/consynth/SketchJoin.ml" 141 4050 4064 "src/consynth/SketchJoin.ml" 141 4050 4071
+)
+"src/consynth/SketchJoin.ml" 142 4075 4089 "src/consynth/SketchJoin.ml" 142 4075 4130
+call(
+  stack
+)
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/SketchJoin.ml" 142 4075 4079 "src/consynth/SketchJoin.ml" 142 4075 4130
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 144 4132 4145 "src/consynth/SketchJoin.ml" 144 4132 4152
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def ve_list "src/consynth/SketchJoin.ml" 145 4163 4167 "src/consynth/SketchJoin.ml" 148 4276 4331
+)
+"src/consynth/SketchJoin.ml" 144 4132 4154 "src/consynth/SketchJoin.ml" 144 4132 4158
+type(
+  SketchTypes.sklet
+)
+ident(
+  def cont "src/consynth/SketchJoin.ml" 145 4163 4167 "src/consynth/SketchJoin.ml" 148 4276 4331
+)
+"src/consynth/SketchJoin.ml" 144 4132 4136 "src/consynth/SketchJoin.ml" 144 4132 4159
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 145 4163 4171 "src/consynth/SketchJoin.ml" 145 4163 4178
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  def to_skip "src/consynth/SketchJoin.ml" 146 4215 4219 "src/consynth/SketchJoin.ml" 148 4276 4331
+)
+"src/consynth/SketchJoin.ml" 145 4163 4181 "src/consynth/SketchJoin.ml" 145 4163 4184
+type(
+  SketchTypes.skLVar list * SketchTypes.skExpr list ->
+  SketchTypes.skLVar list
+)
+ident(
+  ext_ref Utils.fst
+)
+"src/consynth/SketchJoin.ml" 145 4163 4186 "src/consynth/SketchJoin.ml" 145 4163 4202
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  SketchTypes.skLVar list * SketchTypes.skExpr list
+)
+ident(
+  ext_ref Utils.ListTools.unpair
+)
+"src/consynth/SketchJoin.ml" 145 4163 4203 "src/consynth/SketchJoin.ml" 145 4163 4210
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref ve_list "src/consynth/SketchJoin.ml" 144 4132 4145 "src/consynth/SketchJoin.ml" 144 4132 4152
+)
+"src/consynth/SketchJoin.ml" 145 4163 4185 "src/consynth/SketchJoin.ml" 145 4163 4211
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar list * SketchTypes.skExpr list
+)
+"src/consynth/SketchJoin.ml" 145 4163 4181 "src/consynth/SketchJoin.ml" 145 4163 4211
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 147 4229 4235 "src/consynth/SketchJoin.ml" 147 4229 4255
+type(
+  Utils.VS.t ->
+  SketchTypes.skLVar list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list ->
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref make_assignment_list "src/consynth/SketchJoin.ml" 124 3533 3537 "src/consynth/SketchJoin.ml" 124 3533 3557
+)
+"src/consynth/SketchJoin.ml" 147 4229 4256 "src/consynth/SketchJoin.ml" 147 4229 4261
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 139 3986 4002 "src/consynth/SketchJoin.ml" 139 3986 4007
+)
+"src/consynth/SketchJoin.ml" 147 4229 4262 "src/consynth/SketchJoin.ml" 147 4229 4266
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  int_ref skip "src/consynth/SketchJoin.ml" 139 3986 4018 "src/consynth/SketchJoin.ml" 139 3986 4022
+)
+"src/consynth/SketchJoin.ml" 147 4229 4267 "src/consynth/SketchJoin.ml" 147 4229 4274
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref ve_list "src/consynth/SketchJoin.ml" 144 4132 4145 "src/consynth/SketchJoin.ml" 144 4132 4152
+)
+"src/consynth/SketchJoin.ml" 147 4229 4235 "src/consynth/SketchJoin.ml" 147 4229 4274
+call(
+  stack
+)
+type(
+  (SketchTypes.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/SketchJoin.ml" 148 4276 4282 "src/consynth/SketchJoin.ml" 148 4276 4291
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref make_join "src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+)
+"src/consynth/SketchJoin.ml" 148 4276 4299 "src/consynth/SketchJoin.ml" 148 4276 4304
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 139 3986 4002 "src/consynth/SketchJoin.ml" 139 3986 4007
+)
+"src/consynth/SketchJoin.ml" 148 4276 4312 "src/consynth/SketchJoin.ml" 148 4276 4316
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  int_ref skip "src/consynth/SketchJoin.ml" 139 3986 4018 "src/consynth/SketchJoin.ml" 139 3986 4022
+)
+"src/consynth/SketchJoin.ml" 148 4276 4316 "src/consynth/SketchJoin.ml" 148 4276 4317
+type(
+  SketchTypes.skLVar list ->
+  SketchTypes.skLVar list -> SketchTypes.skLVar list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/SketchJoin.ml" 148 4276 4317 "src/consynth/SketchJoin.ml" 148 4276 4324
+type(
+  SketchTypes.skLVar list
+)
+ident(
+  int_ref to_skip "src/consynth/SketchJoin.ml" 145 4163 4171 "src/consynth/SketchJoin.ml" 145 4163 4178
+)
+"src/consynth/SketchJoin.ml" 148 4276 4311 "src/consynth/SketchJoin.ml" 148 4276 4325
+call(
+  stack
+)
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 148 4276 4326 "src/consynth/SketchJoin.ml" 148 4276 4330
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref cont "src/consynth/SketchJoin.ml" 144 4132 4154 "src/consynth/SketchJoin.ml" 144 4132 4158
+)
+"src/consynth/SketchJoin.ml" 148 4276 4282 "src/consynth/SketchJoin.ml" 148 4276 4330
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 146 4215 4219 "src/consynth/SketchJoin.ml" 148 4276 4331
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 145 4163 4167 "src/consynth/SketchJoin.ml" 148 4276 4331
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 140 4039 4041 "src/consynth/SketchJoin.ml" 148 4276 4331
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  def merge_leaves "src/consynth/SketchJoin.ml" 50 1081 1081 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 150 4333 4350 "src/consynth/SketchJoin.ml" 150 4333 4359
+type(
+  int
+)
+ident(
+  def max_depth "src/consynth/SketchJoin.ml" 150 4333 4360 "src/consynth/SketchJoin.ml" 214 6416 6430
+)
+"src/consynth/SketchJoin.ml" 150 4333 4361 "src/consynth/SketchJoin.ml" 150 4333 4362
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 151 4368 4370 "src/consynth/SketchJoin.ml" 214 6416 6430
+)
+"src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+type(
+  int
+)
+ident(
+  def d "src/consynth/SketchJoin.ml" 151 4368 4370 "src/consynth/SketchJoin.ml" 214 6416 6430
+)
+"src/consynth/SketchJoin.ml" 150 4333 4360 "src/consynth/SketchJoin.ml" 150 4333 4365
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 151 4368 4373 "src/consynth/SketchJoin.ml" 151 4368 4374
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 151 4368 4375 "src/consynth/SketchJoin.ml" 151 4368 4376
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.( + )
+)
+"src/consynth/SketchJoin.ml" 151 4368 4377 "src/consynth/SketchJoin.ml" 151 4368 4378
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 151 4368 4373 "src/consynth/SketchJoin.ml" 151 4368 4378
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 151 4368 4379 "src/consynth/SketchJoin.ml" 151 4368 4381
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( >= )
+)
+"src/consynth/SketchJoin.ml" 151 4368 4382 "src/consynth/SketchJoin.ml" 151 4368 4391
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 150 4333 4350 "src/consynth/SketchJoin.ml" 150 4333 4359
+)
+"src/consynth/SketchJoin.ml" 151 4368 4373 "src/consynth/SketchJoin.ml" 151 4368 4391
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 153 4407 4419 "src/consynth/SketchJoin.ml" 153 4407 4420
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 150 4333 4361 "src/consynth/SketchJoin.ml" 150 4333 4362
+)
+"src/consynth/SketchJoin.ml" 154 4426 4442 "src/consynth/SketchJoin.ml" 154 4426 4444
+type(
+  SketchTypes.symb_unop
+)
+ident(
+  def op "src/consynth/SketchJoin.ml" 154 4426 4455 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 154 4426 4447 "src/consynth/SketchJoin.ml" 154 4426 4448
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def h "src/consynth/SketchJoin.ml" 154 4426 4455 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 154 4426 4434 "src/consynth/SketchJoin.ml" 154 4426 4449
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 154 4426 4455 "src/consynth/SketchJoin.ml" 154 4426 4464
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 154 4426 4465 "src/consynth/SketchJoin.ml" 154 4426 4466
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h "src/consynth/SketchJoin.ml" 154 4426 4447 "src/consynth/SketchJoin.ml" 154 4426 4448
+)
+"src/consynth/SketchJoin.ml" 154 4426 4455 "src/consynth/SketchJoin.ml" 154 4426 4466
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 155 4470 4482 "src/consynth/SketchJoin.ml" 155 4470 4484
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def ht "src/consynth/SketchJoin.ml" 156 4524 4532 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 155 4470 4486 "src/consynth/SketchJoin.ml" 155 4470 4488
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def ot "src/consynth/SketchJoin.ml" 156 4524 4532 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 155 4470 4482 "src/consynth/SketchJoin.ml" 155 4470 4488
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 155 4470 4491 "src/consynth/SketchJoin.ml" 155 4470 4503
+type(
+  SketchTypes.hole_type option -> SketchTypes.hole_type
+)
+ident(
+  ext_ref Utils.check_option
+)
+"src/consynth/SketchJoin.ml" 155 4470 4505 "src/consynth/SketchJoin.ml" 155 4470 4517
+type(
+  SketchTypes.skExpr -> SketchTypes.hole_type option
+)
+ident(
+  int_ref type_of_hole "src/consynth/SketchJoin.ml" 39 872 876 "src/consynth/SketchJoin.ml" 39 872 888
+)
+"src/consynth/SketchJoin.ml" 155 4470 4518 "src/consynth/SketchJoin.ml" 155 4470 4519
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h "src/consynth/SketchJoin.ml" 154 4426 4447 "src/consynth/SketchJoin.ml" 154 4426 4448
+)
+"src/consynth/SketchJoin.ml" 155 4470 4504 "src/consynth/SketchJoin.ml" 155 4470 4520
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 155 4470 4491 "src/consynth/SketchJoin.ml" 155 4470 4520
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 156 4524 4536 "src/consynth/SketchJoin.ml" 156 4524 4543
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def op_type "src/consynth/SketchJoin.ml" 161 4676 4684 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 157 4546 4563 "src/consynth/SketchJoin.ml" 157 4546 4575
+type(
+  SketchTypes.symbolic_type ->
+  SketchTypes.symb_unop -> SketchTypes.symbolic_type option
+)
+ident(
+  ext_ref SketchTypes.type_of_unop
+)
+"src/consynth/SketchJoin.ml" 157 4546 4576 "src/consynth/SketchJoin.ml" 157 4546 4578
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref ht "src/consynth/SketchJoin.ml" 155 4470 4482 "src/consynth/SketchJoin.ml" 155 4470 4484
+)
+"src/consynth/SketchJoin.ml" 157 4546 4579 "src/consynth/SketchJoin.ml" 157 4546 4581
+type(
+  SketchTypes.symb_unop
+)
+ident(
+  int_ref op "src/consynth/SketchJoin.ml" 154 4426 4442 "src/consynth/SketchJoin.ml" 154 4426 4444
+)
+"src/consynth/SketchJoin.ml" 157 4546 4563 "src/consynth/SketchJoin.ml" 157 4546 4581
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 158 4587 4605 "src/consynth/SketchJoin.ml" 158 4587 4606
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 158 4587 4610 "src/consynth/SketchJoin.ml" 158 4587 4611
+)
+"src/consynth/SketchJoin.ml" 158 4587 4600 "src/consynth/SketchJoin.ml" 158 4587 4606
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 158 4587 4610 "src/consynth/SketchJoin.ml" 158 4587 4611
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 158 4587 4605 "src/consynth/SketchJoin.ml" 158 4587 4606
+)
+"src/consynth/SketchJoin.ml" 159 4612 4625 "src/consynth/SketchJoin.ml" 159 4612 4629
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 159 4612 4633 "src/consynth/SketchJoin.ml" 159 4612 4641
+type(
+  string -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/SketchJoin.ml" 159 4612 4642 "src/consynth/SketchJoin.ml" 159 4612 4663
+type(
+  string
+)
+"src/consynth/SketchJoin.ml" 159 4612 4633 "src/consynth/SketchJoin.ml" 159 4612 4663
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 157 4546 4556 "src/consynth/SketchJoin.ml" 159 4612 4664
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 161 4676 4688 "src/consynth/SketchJoin.ml" 161 4676 4696
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def ht_final "src/consynth/SketchJoin.ml" 164 4777 4785 "src/consynth/SketchJoin.ml" 164 4777 4822
+)
+"src/consynth/SketchJoin.ml" 162 4699 4712 "src/consynth/SketchJoin.ml" 162 4699 4719
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref op_type "src/consynth/SketchJoin.ml" 156 4524 4536 "src/consynth/SketchJoin.ml" 156 4524 4543
+)
+"src/consynth/SketchJoin.ml" 162 4699 4720 "src/consynth/SketchJoin.ml" 162 4699 4721
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/SketchJoin.ml" 162 4699 4722 "src/consynth/SketchJoin.ml" 162 4699 4724
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref ht "src/consynth/SketchJoin.ml" 155 4470 4482 "src/consynth/SketchJoin.ml" 155 4470 4484
+)
+"src/consynth/SketchJoin.ml" 162 4699 4712 "src/consynth/SketchJoin.ml" 162 4699 4724
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 162 4699 4730 "src/consynth/SketchJoin.ml" 162 4699 4737
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref op_type "src/consynth/SketchJoin.ml" 156 4524 4536 "src/consynth/SketchJoin.ml" 156 4524 4543
+)
+"src/consynth/SketchJoin.ml" 162 4699 4753 "src/consynth/SketchJoin.ml" 162 4699 4755
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref ht "src/consynth/SketchJoin.ml" 155 4470 4482 "src/consynth/SketchJoin.ml" 155 4470 4484
+)
+"src/consynth/SketchJoin.ml" 162 4699 4757 "src/consynth/SketchJoin.ml" 162 4699 4764
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref op_type "src/consynth/SketchJoin.ml" 156 4524 4536 "src/consynth/SketchJoin.ml" 156 4524 4543
+)
+"src/consynth/SketchJoin.ml" 162 4699 4743 "src/consynth/SketchJoin.ml" 162 4699 4765
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 162 4699 4709 "src/consynth/SketchJoin.ml" 162 4699 4765
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 164 4777 4785 "src/consynth/SketchJoin.ml" 164 4777 4802
+type(
+  SketchTypes.hole_type -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  int_ref replace_hole_type "src/consynth/SketchJoin.ml" 33 738 742 "src/consynth/SketchJoin.ml" 33 738 759
+)
+"src/consynth/SketchJoin.ml" 164 4777 4804 "src/consynth/SketchJoin.ml" 164 4777 4812
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref ht_final "src/consynth/SketchJoin.ml" 161 4676 4688 "src/consynth/SketchJoin.ml" 161 4676 4696
+)
+"src/consynth/SketchJoin.ml" 164 4777 4814 "src/consynth/SketchJoin.ml" 164 4777 4816
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref ot "src/consynth/SketchJoin.ml" 155 4470 4486 "src/consynth/SketchJoin.ml" 155 4470 4488
+)
+"src/consynth/SketchJoin.ml" 164 4777 4803 "src/consynth/SketchJoin.ml" 164 4777 4817
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 164 4777 4818 "src/consynth/SketchJoin.ml" 164 4777 4819
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h "src/consynth/SketchJoin.ml" 154 4426 4447 "src/consynth/SketchJoin.ml" 154 4426 4448
+)
+"src/consynth/SketchJoin.ml" 164 4777 4785 "src/consynth/SketchJoin.ml" 164 4777 4819
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 164 4777 4821 "src/consynth/SketchJoin.ml" 164 4777 4822
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 164 4777 4785 "src/consynth/SketchJoin.ml" 164 4777 4822
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 161 4676 4684 "src/consynth/SketchJoin.ml" 164 4777 4822
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 156 4524 4532 "src/consynth/SketchJoin.ml" 164 4777 4822
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 155 4470 4478 "src/consynth/SketchJoin.ml" 164 4777 4822
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 167 4825 4842 "src/consynth/SketchJoin.ml" 167 4825 4844
+type(
+  SketchTypes.symb_binop
+)
+ident(
+  def op "src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def h1 "src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def h2 "src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 167 4825 4833 "src/consynth/SketchJoin.ml" 167 4825 4853
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 167 4825 4868
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 167 4825 4869 "src/consynth/SketchJoin.ml" 167 4825 4871
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+)
+"src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 167 4825 4871
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 167 4825 4872 "src/consynth/SketchJoin.ml" 167 4825 4874
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 167 4825 4875 "src/consynth/SketchJoin.ml" 167 4825 4884
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 167 4825 4885 "src/consynth/SketchJoin.ml" 167 4825 4887
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+)
+"src/consynth/SketchJoin.ml" 167 4825 4875 "src/consynth/SketchJoin.ml" 167 4825 4887
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 167 4825 4859 "src/consynth/SketchJoin.ml" 167 4825 4887
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 168 4891 4903 "src/consynth/SketchJoin.ml" 168 4891 4905
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t1 "src/consynth/SketchJoin.ml" 169 4946 4954 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 168 4891 4907 "src/consynth/SketchJoin.ml" 168 4891 4909
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def o1 "src/consynth/SketchJoin.ml" 169 4946 4954 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 168 4891 4903 "src/consynth/SketchJoin.ml" 168 4891 4909
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 168 4891 4912 "src/consynth/SketchJoin.ml" 168 4891 4924
+type(
+  SketchTypes.hole_type option -> SketchTypes.hole_type
+)
+ident(
+  ext_ref Utils.check_option
+)
+"src/consynth/SketchJoin.ml" 168 4891 4926 "src/consynth/SketchJoin.ml" 168 4891 4938
+type(
+  SketchTypes.skExpr -> SketchTypes.hole_type option
+)
+ident(
+  int_ref type_of_hole "src/consynth/SketchJoin.ml" 39 872 876 "src/consynth/SketchJoin.ml" 39 872 888
+)
+"src/consynth/SketchJoin.ml" 168 4891 4939 "src/consynth/SketchJoin.ml" 168 4891 4941
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+)
+"src/consynth/SketchJoin.ml" 168 4891 4925 "src/consynth/SketchJoin.ml" 168 4891 4942
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 168 4891 4912 "src/consynth/SketchJoin.ml" 168 4891 4942
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 169 4946 4958 "src/consynth/SketchJoin.ml" 169 4946 4960
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t2 "src/consynth/SketchJoin.ml" 170 5001 5009 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 169 4946 4962 "src/consynth/SketchJoin.ml" 169 4946 4964
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def o2 "src/consynth/SketchJoin.ml" 170 5001 5009 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 169 4946 4958 "src/consynth/SketchJoin.ml" 169 4946 4964
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 169 4946 4967 "src/consynth/SketchJoin.ml" 169 4946 4979
+type(
+  SketchTypes.hole_type option -> SketchTypes.hole_type
+)
+ident(
+  ext_ref Utils.check_option
+)
+"src/consynth/SketchJoin.ml" 169 4946 4981 "src/consynth/SketchJoin.ml" 169 4946 4993
+type(
+  SketchTypes.skExpr -> SketchTypes.hole_type option
+)
+ident(
+  int_ref type_of_hole "src/consynth/SketchJoin.ml" 39 872 876 "src/consynth/SketchJoin.ml" 39 872 888
+)
+"src/consynth/SketchJoin.ml" 169 4946 4994 "src/consynth/SketchJoin.ml" 169 4946 4996
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+)
+"src/consynth/SketchJoin.ml" 169 4946 4980 "src/consynth/SketchJoin.ml" 169 4946 4997
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type option
+)
+"src/consynth/SketchJoin.ml" 169 4946 4967 "src/consynth/SketchJoin.ml" 169 4946 4997
+call(
+  stack
+)
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 170 5001 5013 "src/consynth/SketchJoin.ml" 170 5001 5018
+type(
+  bool
+)
+ident(
+  def rh_h1 "src/consynth/SketchJoin.ml" 171 5041 5049 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 170 5001 5021 "src/consynth/SketchJoin.ml" 170 5001 5034
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_right_hole "src/consynth/SketchJoin.ml" 28 669 673 "src/consynth/SketchJoin.ml" 28 669 686
+)
+"src/consynth/SketchJoin.ml" 170 5001 5035 "src/consynth/SketchJoin.ml" 170 5001 5037
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+)
+"src/consynth/SketchJoin.ml" 170 5001 5021 "src/consynth/SketchJoin.ml" 170 5001 5037
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 171 5041 5053 "src/consynth/SketchJoin.ml" 171 5041 5058
+type(
+  bool
+)
+ident(
+  def rh_h2 "src/consynth/SketchJoin.ml" 172 5081 5089 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 171 5041 5061 "src/consynth/SketchJoin.ml" 171 5041 5074
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_right_hole "src/consynth/SketchJoin.ml" 28 669 673 "src/consynth/SketchJoin.ml" 28 669 686
+)
+"src/consynth/SketchJoin.ml" 171 5041 5075 "src/consynth/SketchJoin.ml" 171 5041 5077
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+)
+"src/consynth/SketchJoin.ml" 171 5041 5061 "src/consynth/SketchJoin.ml" 171 5041 5077
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 172 5081 5093 "src/consynth/SketchJoin.ml" 172 5081 5097
+type(
+  Utils.CS.t
+)
+ident(
+  def vars "src/consynth/SketchJoin.ml" 175 5190 5198 "src/consynth/SketchJoin.ml" 183 5491 5541
+)
+"src/consynth/SketchJoin.ml" 172 5081 5100 "src/consynth/SketchJoin.ml" 172 5081 5108
+type(
+  Utils.CS.t -> Utils.CS.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.union
+)
+"src/consynth/SketchJoin.ml" 172 5081 5110 "src/consynth/SketchJoin.ml" 172 5081 5133
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+ident(
+  int_ref completion_vars_of_hole "src/consynth/SketchJoin.ml" 44 966 970 "src/consynth/SketchJoin.ml" 44 966 993
+)
+"src/consynth/SketchJoin.ml" 172 5081 5134 "src/consynth/SketchJoin.ml" 172 5081 5136
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+)
+"src/consynth/SketchJoin.ml" 172 5081 5109 "src/consynth/SketchJoin.ml" 172 5081 5137
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 173 5138 5151 "src/consynth/SketchJoin.ml" 173 5138 5174
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+ident(
+  int_ref completion_vars_of_hole "src/consynth/SketchJoin.ml" 44 966 970 "src/consynth/SketchJoin.ml" 44 966 993
+)
+"src/consynth/SketchJoin.ml" 173 5138 5175 "src/consynth/SketchJoin.ml" 173 5138 5177
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+)
+"src/consynth/SketchJoin.ml" 173 5138 5150 "src/consynth/SketchJoin.ml" 173 5138 5178
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 172 5081 5100 "src/consynth/SketchJoin.ml" 173 5138 5178
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 175 5190 5206 "src/consynth/SketchJoin.ml" 175 5190 5219
+type(
+  SketchTypes.symbolic_type ->
+  SketchTypes.symbolic_type ->
+  SketchTypes.symb_binop -> SketchTypes.symbolic_type option
+)
+ident(
+  ext_ref SketchTypes.type_of_binop
+)
+"src/consynth/SketchJoin.ml" 175 5190 5221 "src/consynth/SketchJoin.ml" 175 5190 5229
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.res_type
+)
+"src/consynth/SketchJoin.ml" 175 5190 5230 "src/consynth/SketchJoin.ml" 175 5190 5232
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t1 "src/consynth/SketchJoin.ml" 168 4891 4903 "src/consynth/SketchJoin.ml" 168 4891 4905
+)
+"src/consynth/SketchJoin.ml" 175 5190 5220 "src/consynth/SketchJoin.ml" 175 5190 5233
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 175 5190 5235 "src/consynth/SketchJoin.ml" 175 5190 5243
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.res_type
+)
+"src/consynth/SketchJoin.ml" 175 5190 5244 "src/consynth/SketchJoin.ml" 175 5190 5246
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t2 "src/consynth/SketchJoin.ml" 169 4946 4958 "src/consynth/SketchJoin.ml" 169 4946 4960
+)
+"src/consynth/SketchJoin.ml" 175 5190 5234 "src/consynth/SketchJoin.ml" 175 5190 5247
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 175 5190 5248 "src/consynth/SketchJoin.ml" 175 5190 5250
+type(
+  SketchTypes.symb_binop
+)
+ident(
+  int_ref op "src/consynth/SketchJoin.ml" 167 4825 4842 "src/consynth/SketchJoin.ml" 167 4825 4844
+)
+"src/consynth/SketchJoin.ml" 175 5190 5205 "src/consynth/SketchJoin.ml" 175 5190 5251
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 176 5257 5273 "src/consynth/SketchJoin.ml" 176 5257 5274
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 177 5278 5289 "src/consynth/SketchJoin.ml" 181 5450 5489
+)
+"src/consynth/SketchJoin.ml" 176 5257 5268 "src/consynth/SketchJoin.ml" 176 5257 5274
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 177 5278 5292 "src/consynth/SketchJoin.ml" 177 5278 5294
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t1 "src/consynth/SketchJoin.ml" 168 4891 4903 "src/consynth/SketchJoin.ml" 168 4891 4905
+)
+"src/consynth/SketchJoin.ml" 177 5278 5295 "src/consynth/SketchJoin.ml" 177 5278 5296
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/SketchJoin.ml" 177 5278 5297 "src/consynth/SketchJoin.ml" 177 5278 5299
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t2 "src/consynth/SketchJoin.ml" 169 4946 4958 "src/consynth/SketchJoin.ml" 169 4946 4960
+)
+"src/consynth/SketchJoin.ml" 177 5278 5292 "src/consynth/SketchJoin.ml" 177 5278 5299
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 177 5278 5300 "src/consynth/SketchJoin.ml" 177 5278 5302
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 177 5278 5303 "src/consynth/SketchJoin.ml" 177 5278 5308
+type(
+  bool
+)
+ident(
+  int_ref rh_h1 "src/consynth/SketchJoin.ml" 170 5001 5013 "src/consynth/SketchJoin.ml" 170 5001 5018
+)
+"src/consynth/SketchJoin.ml" 177 5278 5309 "src/consynth/SketchJoin.ml" 177 5278 5311
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 177 5278 5312 "src/consynth/SketchJoin.ml" 177 5278 5317
+type(
+  bool
+)
+ident(
+  int_ref rh_h2 "src/consynth/SketchJoin.ml" 171 5041 5053 "src/consynth/SketchJoin.ml" 171 5041 5058
+)
+"src/consynth/SketchJoin.ml" 177 5278 5303 "src/consynth/SketchJoin.ml" 177 5278 5317
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 177 5278 5292 "src/consynth/SketchJoin.ml" 177 5278 5317
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 178 5323 5340 "src/consynth/SketchJoin.ml" 178 5323 5348
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def ht_final "src/consynth/SketchJoin.ml" 179 5371 5384 "src/consynth/SketchJoin.ml" 179 5371 5433
+)
+"src/consynth/SketchJoin.ml" 178 5323 5361 "src/consynth/SketchJoin.ml" 178 5323 5363
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t1 "src/consynth/SketchJoin.ml" 168 4891 4903 "src/consynth/SketchJoin.ml" 168 4891 4905
+)
+"src/consynth/SketchJoin.ml" 178 5323 5365 "src/consynth/SketchJoin.ml" 178 5323 5366
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 176 5257 5273 "src/consynth/SketchJoin.ml" 176 5257 5274
+)
+"src/consynth/SketchJoin.ml" 178 5323 5351 "src/consynth/SketchJoin.ml" 178 5323 5367
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 179 5371 5394 "src/consynth/SketchJoin.ml" 179 5371 5402
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref ht_final "src/consynth/SketchJoin.ml" 178 5323 5340 "src/consynth/SketchJoin.ml" 178 5323 5348
+)
+"src/consynth/SketchJoin.ml" 179 5371 5404 "src/consynth/SketchJoin.ml" 179 5371 5416
+type(
+  SketchTypes.operator_type ->
+  SketchTypes.operator_type -> SketchTypes.operator_type
+)
+ident(
+  ext_ref SketchTypes.join_optypes
+)
+"src/consynth/SketchJoin.ml" 179 5371 5417 "src/consynth/SketchJoin.ml" 179 5371 5419
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref o1 "src/consynth/SketchJoin.ml" 168 4891 4907 "src/consynth/SketchJoin.ml" 168 4891 4909
+)
+"src/consynth/SketchJoin.ml" 179 5371 5420 "src/consynth/SketchJoin.ml" 179 5371 5422
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref o2 "src/consynth/SketchJoin.ml" 169 4946 4962 "src/consynth/SketchJoin.ml" 169 4946 4964
+)
+"src/consynth/SketchJoin.ml" 179 5371 5404 "src/consynth/SketchJoin.ml" 179 5371 5422
+call(
+  stack
+)
+type(
+  SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 179 5371 5393 "src/consynth/SketchJoin.ml" 179 5371 5423
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 179 5371 5425 "src/consynth/SketchJoin.ml" 179 5371 5429
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref vars "src/consynth/SketchJoin.ml" 172 5081 5093 "src/consynth/SketchJoin.ml" 172 5081 5097
+)
+"src/consynth/SketchJoin.ml" 179 5371 5384 "src/consynth/SketchJoin.ml" 179 5371 5430
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 179 5371 5432 "src/consynth/SketchJoin.ml" 179 5371 5433
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 179 5371 5384 "src/consynth/SketchJoin.ml" 179 5371 5433
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 178 5323 5336 "src/consynth/SketchJoin.ml" 179 5371 5433
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 181 5450 5471 "src/consynth/SketchJoin.ml" 181 5450 5473
+type(
+  SketchTypes.symb_binop
+)
+ident(
+  int_ref op "src/consynth/SketchJoin.ml" 167 4825 4842 "src/consynth/SketchJoin.ml" 167 4825 4844
+)
+"src/consynth/SketchJoin.ml" 181 5450 5475 "src/consynth/SketchJoin.ml" 181 5450 5477
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h1 "src/consynth/SketchJoin.ml" 167 4825 4846 "src/consynth/SketchJoin.ml" 167 4825 4848
+)
+"src/consynth/SketchJoin.ml" 181 5450 5479 "src/consynth/SketchJoin.ml" 181 5450 5481
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref h2 "src/consynth/SketchJoin.ml" 167 4825 4850 "src/consynth/SketchJoin.ml" 167 4825 4852
+)
+"src/consynth/SketchJoin.ml" 181 5450 5463 "src/consynth/SketchJoin.ml" 181 5450 5482
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 181 5450 5484 "src/consynth/SketchJoin.ml" 181 5450 5485
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 181 5450 5486 "src/consynth/SketchJoin.ml" 181 5450 5487
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.( + )
+)
+"src/consynth/SketchJoin.ml" 181 5450 5488 "src/consynth/SketchJoin.ml" 181 5450 5489
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 181 5450 5484 "src/consynth/SketchJoin.ml" 181 5450 5489
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 181 5450 5463 "src/consynth/SketchJoin.ml" 181 5450 5489
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 177 5278 5289 "src/consynth/SketchJoin.ml" 181 5450 5489
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 183 5491 5502 "src/consynth/SketchJoin.ml" 183 5491 5506
+type(
+  SketchTypes.symbolic_type option
+)
+"src/consynth/SketchJoin.ml" 183 5491 5510 "src/consynth/SketchJoin.ml" 183 5491 5518
+type(
+  string -> SketchTypes.skExpr * int
+)
+ident(
+  ext_ref Pervasives.failwith
+)
+"src/consynth/SketchJoin.ml" 183 5491 5519 "src/consynth/SketchJoin.ml" 183 5491 5540
+type(
+  string
+)
+"src/consynth/SketchJoin.ml" 183 5491 5510 "src/consynth/SketchJoin.ml" 183 5491 5540
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 175 5190 5198 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 172 5081 5089 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 171 5041 5049 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 170 5001 5009 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 169 4946 4954 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 168 4891 4899 "src/consynth/SketchJoin.ml" 183 5491 5541
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 185 5543 5558 "src/consynth/SketchJoin.ml" 185 5543 5559
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 186 5572 5580 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 185 5543 5561 "src/consynth/SketchJoin.ml" 185 5543 5563
+type(
+  Cil.varinfo option
+)
+ident(
+  def ov "src/consynth/SketchJoin.ml" 186 5572 5580 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 185 5543 5565 "src/consynth/SketchJoin.ml" 185 5543 5567
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  def el "src/consynth/SketchJoin.ml" 186 5572 5580 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 185 5543 5551 "src/consynth/SketchJoin.ml" 185 5543 5568
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 186 5572 5584 "src/consynth/SketchJoin.ml" 186 5572 5593
+type(
+  bool
+)
+ident(
+  def all_holes "src/consynth/SketchJoin.ml" 194 5807 5815 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 186 5572 5595 "src/consynth/SketchJoin.ml" 186 5572 5599
+type(
+  Utils.CS.t
+)
+ident(
+  def vars "src/consynth/SketchJoin.ml" 194 5807 5815 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 186 5572 5584 "src/consynth/SketchJoin.ml" 186 5572 5599
+type(
+  bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 187 5602 5612 "src/consynth/SketchJoin.ml" 187 5602 5626
+type(
+  (bool * Utils.CS.t -> SketchTypes.skExpr -> bool * Utils.CS.t) ->
+  bool * Utils.CS.t -> SketchTypes.skExpr list -> bool * Utils.CS.t
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/SketchJoin.ml" 188 5627 5645 "src/consynth/SketchJoin.ml" 188 5627 5649
+type(
+  bool
+)
+ident(
+  def is_h "src/consynth/SketchJoin.ml" 188 5627 5657 "src/consynth/SketchJoin.ml" 190 5703 5761
+)
+"src/consynth/SketchJoin.ml" 188 5627 5651 "src/consynth/SketchJoin.ml" 188 5627 5655
+type(
+  Utils.CS.t
+)
+ident(
+  def vars "src/consynth/SketchJoin.ml" 188 5627 5657 "src/consynth/SketchJoin.ml" 190 5703 5761
+)
+"src/consynth/SketchJoin.ml" 188 5627 5644 "src/consynth/SketchJoin.ml" 188 5627 5656
+type(
+  bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 188 5627 5657 "src/consynth/SketchJoin.ml" 188 5627 5658
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 189 5662 5677 "src/consynth/SketchJoin.ml" 190 5703 5761
+)
+"src/consynth/SketchJoin.ml" 189 5662 5678 "src/consynth/SketchJoin.ml" 189 5662 5682
+type(
+  bool
+)
+ident(
+  int_ref is_h "src/consynth/SketchJoin.ml" 188 5627 5645 "src/consynth/SketchJoin.ml" 188 5627 5649
+)
+"src/consynth/SketchJoin.ml" 189 5662 5683 "src/consynth/SketchJoin.ml" 189 5662 5685
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 189 5662 5686 "src/consynth/SketchJoin.ml" 189 5662 5699
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_right_hole "src/consynth/SketchJoin.ml" 28 669 673 "src/consynth/SketchJoin.ml" 28 669 686
+)
+"src/consynth/SketchJoin.ml" 189 5662 5700 "src/consynth/SketchJoin.ml" 189 5662 5701
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 188 5627 5657 "src/consynth/SketchJoin.ml" 188 5627 5658
+)
+"src/consynth/SketchJoin.ml" 189 5662 5686 "src/consynth/SketchJoin.ml" 189 5662 5701
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 189 5662 5678 "src/consynth/SketchJoin.ml" 189 5662 5701
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 190 5703 5719 "src/consynth/SketchJoin.ml" 190 5703 5727
+type(
+  Utils.CS.t -> Utils.CS.t -> Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.union
+)
+"src/consynth/SketchJoin.ml" 190 5703 5728 "src/consynth/SketchJoin.ml" 190 5703 5732
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref vars "src/consynth/SketchJoin.ml" 188 5627 5651 "src/consynth/SketchJoin.ml" 188 5627 5655
+)
+"src/consynth/SketchJoin.ml" 190 5703 5734 "src/consynth/SketchJoin.ml" 190 5703 5757
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+ident(
+  int_ref completion_vars_of_hole "src/consynth/SketchJoin.ml" 44 966 970 "src/consynth/SketchJoin.ml" 44 966 993
+)
+"src/consynth/SketchJoin.ml" 190 5703 5758 "src/consynth/SketchJoin.ml" 190 5703 5759
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 188 5627 5657 "src/consynth/SketchJoin.ml" 188 5627 5658
+)
+"src/consynth/SketchJoin.ml" 190 5703 5733 "src/consynth/SketchJoin.ml" 190 5703 5760
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 190 5703 5719 "src/consynth/SketchJoin.ml" 190 5703 5760
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 189 5662 5677 "src/consynth/SketchJoin.ml" 190 5703 5761
+type(
+  bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 188 5627 5639 "src/consynth/SketchJoin.ml" 190 5703 5762
+type(
+  bool * Utils.CS.t -> SketchTypes.skExpr -> bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 192 5764 5777 "src/consynth/SketchJoin.ml" 192 5764 5781
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 192 5764 5783 "src/consynth/SketchJoin.ml" 192 5764 5791
+type(
+  Utils.CS.t
+)
+ident(
+  ext_ref Utils.CS.empty
+)
+"src/consynth/SketchJoin.ml" 192 5764 5776 "src/consynth/SketchJoin.ml" 192 5764 5792
+type(
+  bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 192 5764 5793 "src/consynth/SketchJoin.ml" 192 5764 5795
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  int_ref el "src/consynth/SketchJoin.ml" 185 5543 5565 "src/consynth/SketchJoin.ml" 185 5543 5567
+)
+"src/consynth/SketchJoin.ml" 187 5602 5612 "src/consynth/SketchJoin.ml" 192 5764 5795
+call(
+  stack
+)
+type(
+  bool * Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 194 5807 5818 "src/consynth/SketchJoin.ml" 194 5807 5827
+type(
+  bool
+)
+ident(
+  int_ref all_holes "src/consynth/SketchJoin.ml" 186 5572 5584 "src/consynth/SketchJoin.ml" 186 5572 5593
+)
+"src/consynth/SketchJoin.ml" 196 5841 5861 "src/consynth/SketchJoin.ml" 196 5841 5862
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 185 5543 5558 "src/consynth/SketchJoin.ml" 185 5543 5559
+)
+"src/consynth/SketchJoin.ml" 196 5841 5864 "src/consynth/SketchJoin.ml" 196 5841 5870
+type(
+  SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 196 5841 5860 "src/consynth/SketchJoin.ml" 196 5841 5871
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 196 5841 5873 "src/consynth/SketchJoin.ml" 196 5841 5877
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref vars "src/consynth/SketchJoin.ml" 186 5572 5595 "src/consynth/SketchJoin.ml" 186 5572 5599
+)
+"src/consynth/SketchJoin.ml" 196 5841 5851 "src/consynth/SketchJoin.ml" 196 5841 5878
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 196 5841 5880 "src/consynth/SketchJoin.ml" 196 5841 5881
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 196 5841 5851 "src/consynth/SketchJoin.ml" 196 5841 5881
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 198 5895 5909 "src/consynth/SketchJoin.ml" 198 5895 5912
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  def el' "src/consynth/SketchJoin.ml" 200 6006 6019 "src/consynth/SketchJoin.ml" 200 6006 6040
+)
+"src/consynth/SketchJoin.ml" 198 5895 5914 "src/consynth/SketchJoin.ml" 198 5895 5915
+type(
+  int list
+)
+"src/consynth/SketchJoin.ml" 198 5895 5909 "src/consynth/SketchJoin.ml" 198 5895 5915
+type(
+  SketchTypes.skExpr list * int list
+)
+"src/consynth/SketchJoin.ml" 198 5895 5918 "src/consynth/SketchJoin.ml" 198 5895 5934
+type(
+  (SketchTypes.skExpr * int) list -> SketchTypes.skExpr list * int list
+)
+ident(
+  ext_ref Utils.ListTools.unpair
+)
+"src/consynth/SketchJoin.ml" 199 5935 5950 "src/consynth/SketchJoin.ml" 199 5935 5958
+type(
+  (SketchTypes.skExpr -> SketchTypes.skExpr * int) ->
+  SketchTypes.skExpr list -> (SketchTypes.skExpr * int) list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/SketchJoin.ml" 199 5935 5964 "src/consynth/SketchJoin.ml" 199 5935 5966
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e_ "src/consynth/SketchJoin.ml" 199 5935 5970 "src/consynth/SketchJoin.ml" 199 5935 6000
+)
+"src/consynth/SketchJoin.ml" 199 5935 5970 "src/consynth/SketchJoin.ml" 199 5935 5982
+type(
+  int -> SketchTypes.skExpr * int -> SketchTypes.skExpr * int
+)
+ident(
+  int_ref merge_leaves "src/consynth/SketchJoin.ml" 150 4333 4337 "src/consynth/SketchJoin.ml" 150 4333 4349
+)
+"src/consynth/SketchJoin.ml" 199 5935 5983 "src/consynth/SketchJoin.ml" 199 5935 5992
+type(
+  int
+)
+ident(
+  int_ref max_depth "src/consynth/SketchJoin.ml" 150 4333 4350 "src/consynth/SketchJoin.ml" 150 4333 4359
+)
+"src/consynth/SketchJoin.ml" 199 5935 5994 "src/consynth/SketchJoin.ml" 199 5935 5996
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e_ "src/consynth/SketchJoin.ml" 199 5935 5964 "src/consynth/SketchJoin.ml" 199 5935 5966
+)
+"src/consynth/SketchJoin.ml" 199 5935 5998 "src/consynth/SketchJoin.ml" 199 5935 5999
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 199 5935 5993 "src/consynth/SketchJoin.ml" 199 5935 6000
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 199 5935 5970 "src/consynth/SketchJoin.ml" 199 5935 6000
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 199 5935 5959 "src/consynth/SketchJoin.ml" 199 5935 6001
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 199 5935 6002 "src/consynth/SketchJoin.ml" 199 5935 6004
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  int_ref el "src/consynth/SketchJoin.ml" 185 5543 5565 "src/consynth/SketchJoin.ml" 185 5543 5567
+)
+"src/consynth/SketchJoin.ml" 199 5935 5949 "src/consynth/SketchJoin.ml" 199 5935 6005
+call(
+  stack
+)
+type(
+  (SketchTypes.skExpr * int) list
+)
+"src/consynth/SketchJoin.ml" 198 5895 5918 "src/consynth/SketchJoin.ml" 199 5935 6005
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr list * int list
+)
+"src/consynth/SketchJoin.ml" 200 6006 6026 "src/consynth/SketchJoin.ml" 200 6006 6027
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 185 5543 5558 "src/consynth/SketchJoin.ml" 185 5543 5559
+)
+"src/consynth/SketchJoin.ml" 200 6006 6029 "src/consynth/SketchJoin.ml" 200 6006 6031
+type(
+  Cil.varinfo option
+)
+ident(
+  int_ref ov "src/consynth/SketchJoin.ml" 185 5543 5561 "src/consynth/SketchJoin.ml" 185 5543 5563
+)
+"src/consynth/SketchJoin.ml" 200 6006 6033 "src/consynth/SketchJoin.ml" 200 6006 6036
+type(
+  SketchTypes.skExpr list
+)
+ident(
+  int_ref el' "src/consynth/SketchJoin.ml" 198 5895 5909 "src/consynth/SketchJoin.ml" 198 5895 5912
+)
+"src/consynth/SketchJoin.ml" 200 6006 6019 "src/consynth/SketchJoin.ml" 200 6006 6037
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 200 6006 6039 "src/consynth/SketchJoin.ml" 200 6006 6040
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 200 6006 6019 "src/consynth/SketchJoin.ml" 200 6006 6040
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 198 5895 5905 "src/consynth/SketchJoin.ml" 200 6006 6040
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 194 5807 5815 "src/consynth/SketchJoin.ml" 200 6006 6040
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 186 5572 5580 "src/consynth/SketchJoin.ml" 200 6006 6040
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 202 6042 6062 "src/consynth/SketchJoin.ml" 202 6042 6063
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def c "src/consynth/SketchJoin.ml" 203 6076 6084 "src/consynth/SketchJoin.ml" 209 6299 6310
+)
+"src/consynth/SketchJoin.ml" 202 6042 6065 "src/consynth/SketchJoin.ml" 202 6042 6067
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ei "src/consynth/SketchJoin.ml" 203 6076 6084 "src/consynth/SketchJoin.ml" 209 6299 6310
+)
+"src/consynth/SketchJoin.ml" 202 6042 6069 "src/consynth/SketchJoin.ml" 202 6042 6071
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ee "src/consynth/SketchJoin.ml" 203 6076 6084 "src/consynth/SketchJoin.ml" 209 6299 6310
+)
+"src/consynth/SketchJoin.ml" 202 6042 6050 "src/consynth/SketchJoin.ml" 202 6042 6072
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 204 6090 6103 "src/consynth/SketchJoin.ml" 204 6090 6112
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 204 6090 6113 "src/consynth/SketchJoin.ml" 204 6090 6115
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ei "src/consynth/SketchJoin.ml" 202 6042 6065 "src/consynth/SketchJoin.ml" 202 6042 6067
+)
+"src/consynth/SketchJoin.ml" 204 6090 6103 "src/consynth/SketchJoin.ml" 204 6090 6115
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 204 6090 6116 "src/consynth/SketchJoin.ml" 204 6090 6118
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 204 6090 6119 "src/consynth/SketchJoin.ml" 204 6090 6128
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 204 6090 6129 "src/consynth/SketchJoin.ml" 204 6090 6131
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ee "src/consynth/SketchJoin.ml" 202 6042 6069 "src/consynth/SketchJoin.ml" 202 6042 6071
+)
+"src/consynth/SketchJoin.ml" 204 6090 6119 "src/consynth/SketchJoin.ml" 204 6090 6131
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 204 6090 6132 "src/consynth/SketchJoin.ml" 204 6090 6134
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/SketchJoin.ml" 204 6090 6135 "src/consynth/SketchJoin.ml" 204 6090 6144
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 204 6090 6145 "src/consynth/SketchJoin.ml" 204 6090 6146
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref c "src/consynth/SketchJoin.ml" 202 6042 6062 "src/consynth/SketchJoin.ml" 202 6042 6063
+)
+"src/consynth/SketchJoin.ml" 204 6090 6135 "src/consynth/SketchJoin.ml" 204 6090 6146
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 204 6090 6119 "src/consynth/SketchJoin.ml" 204 6090 6146
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 204 6090 6103 "src/consynth/SketchJoin.ml" 204 6090 6146
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 205 6152 6186 "src/consynth/SketchJoin.ml" 205 6152 6193
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 205 6152 6195 "src/consynth/SketchJoin.ml" 205 6152 6201
+type(
+  SketchTypes.operator_type
+)
+"src/consynth/SketchJoin.ml" 205 6152 6185 "src/consynth/SketchJoin.ml" 205 6152 6202
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 205 6152 6204 "src/consynth/SketchJoin.ml" 205 6152 6227
+type(
+  SketchTypes.skExpr -> Utils.CS.t
+)
+ident(
+  int_ref completion_vars_of_hole "src/consynth/SketchJoin.ml" 44 966 970 "src/consynth/SketchJoin.ml" 44 966 993
+)
+"src/consynth/SketchJoin.ml" 205 6152 6228 "src/consynth/SketchJoin.ml" 205 6152 6229
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref c "src/consynth/SketchJoin.ml" 202 6042 6062 "src/consynth/SketchJoin.ml" 202 6042 6063
+)
+"src/consynth/SketchJoin.ml" 205 6152 6204 "src/consynth/SketchJoin.ml" 205 6152 6229
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 205 6152 6176 "src/consynth/SketchJoin.ml" 205 6152 6230
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 206 6232 6256 "src/consynth/SketchJoin.ml" 206 6232 6258
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ei "src/consynth/SketchJoin.ml" 202 6042 6065 "src/consynth/SketchJoin.ml" 202 6042 6067
+)
+"src/consynth/SketchJoin.ml" 206 6232 6260 "src/consynth/SketchJoin.ml" 206 6232 6262
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ee "src/consynth/SketchJoin.ml" 202 6042 6069 "src/consynth/SketchJoin.ml" 202 6042 6071
+)
+"src/consynth/SketchJoin.ml" 205 6152 6164 "src/consynth/SketchJoin.ml" 206 6232 6263
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 206 6232 6265 "src/consynth/SketchJoin.ml" 206 6232 6266
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 205 6152 6164 "src/consynth/SketchJoin.ml" 206 6232 6266
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 208 6282 6294 "src/consynth/SketchJoin.ml" 208 6282 6295
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 150 4333 4361 "src/consynth/SketchJoin.ml" 150 4333 4362
+)
+"src/consynth/SketchJoin.ml" 208 6282 6297 "src/consynth/SketchJoin.ml" 208 6282 6298
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 208 6282 6294 "src/consynth/SketchJoin.ml" 208 6282 6298
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 203 6076 6084 "src/consynth/SketchJoin.ml" 209 6299 6310
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 211 6381 6389 "src/consynth/SketchJoin.ml" 211 6381 6390
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 211 6381 6395 "src/consynth/SketchJoin.ml" 211 6381 6396
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 150 4333 4361 "src/consynth/SketchJoin.ml" 150 4333 4362
+)
+"src/consynth/SketchJoin.ml" 211 6381 6398 "src/consynth/SketchJoin.ml" 211 6381 6399
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 211 6381 6394 "src/consynth/SketchJoin.ml" 211 6381 6400
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 152 4397 4401 "src/consynth/SketchJoin.ml" 212 6401 6408
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 214 6416 6421 "src/consynth/SketchJoin.ml" 214 6416 6422
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 150 4333 4361 "src/consynth/SketchJoin.ml" 150 4333 4362
+)
+"src/consynth/SketchJoin.ml" 214 6416 6424 "src/consynth/SketchJoin.ml" 214 6416 6425
+type(
+  int
+)
+ident(
+  int_ref d "src/consynth/SketchJoin.ml" 150 4333 4363 "src/consynth/SketchJoin.ml" 150 4333 4364
+)
+"src/consynth/SketchJoin.ml" 214 6416 6426 "src/consynth/SketchJoin.ml" 214 6416 6427
+type(
+  int -> int -> int
+)
+ident(
+  ext_ref Pervasives.( + )
+)
+"src/consynth/SketchJoin.ml" 214 6416 6428 "src/consynth/SketchJoin.ml" 214 6416 6429
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 214 6416 6424 "src/consynth/SketchJoin.ml" 214 6416 6429
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 214 6416 6420 "src/consynth/SketchJoin.ml" 214 6416 6430
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 151 4368 4370 "src/consynth/SketchJoin.ml" 214 6416 6430
+type(
+  SketchTypes.skExpr * int
+)
+"src/consynth/SketchJoin.ml" 216 6432 6436 "src/consynth/SketchJoin.ml" 216 6432 6457
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  def set_types_and_varsets "src/consynth/SketchJoin.ml" 247 7169 7169 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 217 6460 6466 "src/consynth/SketchJoin.ml" 217 6460 6480
+type(
+  Utils.CS.t ->
+  SketchTypes.symbolic_type -> Utils.CS.t * SketchTypes.symbolic_type
+)
+ident(
+  def adapt_vs_and_t "src/consynth/SketchJoin.ml" 228 6739 6741 "src/consynth/SketchJoin.ml" 245 7142 7167
+)
+"src/consynth/SketchJoin.ml" 217 6460 6481 "src/consynth/SketchJoin.ml" 217 6460 6483
+type(
+  Utils.CS.t
+)
+ident(
+  def cs "src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 226 6721 6733
+)
+"src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 217 6460 6485
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 218 6488 6492 "src/consynth/SketchJoin.ml" 226 6721 6733
+)
+"src/consynth/SketchJoin.ml" 218 6488 6496 "src/consynth/SketchJoin.ml" 218 6488 6499
+type(
+  Utils.CS.t
+)
+ident(
+  def nvs "src/consynth/SketchJoin.ml" 219 6549 6553 "src/consynth/SketchJoin.ml" 226 6721 6733
+)
+"src/consynth/SketchJoin.ml" 218 6488 6502 "src/consynth/SketchJoin.ml" 218 6488 6519
+type(
+  SketchTypes.symbolic_type -> Utils.CS.t -> Utils.CS.t
+)
+ident(
+  ext_ref SketchTypes.filter_cs_by_type
+)
+"src/consynth/SketchJoin.ml" 218 6488 6521 "src/consynth/SketchJoin.ml" 218 6488 6539
+type(
+  SketchTypes.symbolic_type -> SketchTypes.symbolic_type
+)
+ident(
+  ext_ref SketchTypes.input_type_or_type
+)
+"src/consynth/SketchJoin.ml" 218 6488 6540 "src/consynth/SketchJoin.ml" 218 6488 6541
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 217 6460 6485
+)
+"src/consynth/SketchJoin.ml" 218 6488 6520 "src/consynth/SketchJoin.ml" 218 6488 6542
+call(
+  stack
+)
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 218 6488 6543 "src/consynth/SketchJoin.ml" 218 6488 6545
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 217 6460 6481 "src/consynth/SketchJoin.ml" 217 6460 6483
+)
+"src/consynth/SketchJoin.ml" 218 6488 6502 "src/consynth/SketchJoin.ml" 218 6488 6545
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 219 6549 6556 "src/consynth/SketchJoin.ml" 219 6549 6567
+type(
+  Utils.CS.t -> int
+)
+ident(
+  ext_ref Utils.CS.cardinal
+)
+"src/consynth/SketchJoin.ml" 219 6549 6568 "src/consynth/SketchJoin.ml" 219 6549 6571
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs "src/consynth/SketchJoin.ml" 218 6488 6496 "src/consynth/SketchJoin.ml" 218 6488 6499
+)
+"src/consynth/SketchJoin.ml" 219 6549 6556 "src/consynth/SketchJoin.ml" 219 6549 6571
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 219 6549 6572 "src/consynth/SketchJoin.ml" 219 6549 6573
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/SketchJoin.ml" 219 6549 6574 "src/consynth/SketchJoin.ml" 219 6549 6575
+type(
+  int
+)
+"src/consynth/SketchJoin.ml" 219 6549 6556 "src/consynth/SketchJoin.ml" 219 6549 6575
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 220 6581 6593 "src/consynth/SketchJoin.ml" 220 6581 6594
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 217 6460 6485
+)
+"src/consynth/SketchJoin.ml" 221 6600 6618 "src/consynth/SketchJoin.ml" 221 6600 6620
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def it "src/consynth/SketchJoin.ml" 222 6629 6637 "src/consynth/SketchJoin.ml" 223 6675 6691
+)
+"src/consynth/SketchJoin.ml" 221 6600 6622 "src/consynth/SketchJoin.ml" 221 6600 6624
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def rt "src/consynth/SketchJoin.ml" 222 6629 6637 "src/consynth/SketchJoin.ml" 223 6675 6691
+)
+"src/consynth/SketchJoin.ml" 221 6600 6608 "src/consynth/SketchJoin.ml" 221 6600 6625
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 222 6629 6641 "src/consynth/SketchJoin.ml" 222 6629 6645
+type(
+  Utils.CS.t
+)
+ident(
+  def nvs' "src/consynth/SketchJoin.ml" 223 6675 6683 "src/consynth/SketchJoin.ml" 223 6675 6691
+)
+"src/consynth/SketchJoin.ml" 222 6629 6648 "src/consynth/SketchJoin.ml" 222 6629 6665
+type(
+  SketchTypes.symbolic_type -> Utils.CS.t -> Utils.CS.t
+)
+ident(
+  ext_ref SketchTypes.filter_cs_by_type
+)
+"src/consynth/SketchJoin.ml" 222 6629 6666 "src/consynth/SketchJoin.ml" 222 6629 6668
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref rt "src/consynth/SketchJoin.ml" 221 6600 6622 "src/consynth/SketchJoin.ml" 221 6600 6624
+)
+"src/consynth/SketchJoin.ml" 222 6629 6669 "src/consynth/SketchJoin.ml" 222 6629 6671
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref cs "src/consynth/SketchJoin.ml" 217 6460 6481 "src/consynth/SketchJoin.ml" 217 6460 6483
+)
+"src/consynth/SketchJoin.ml" 222 6629 6648 "src/consynth/SketchJoin.ml" 222 6629 6671
+call(
+  stack
+)
+type(
+  Utils.CS.t
+)
+"src/consynth/SketchJoin.ml" 223 6675 6683 "src/consynth/SketchJoin.ml" 223 6675 6687
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs' "src/consynth/SketchJoin.ml" 222 6629 6641 "src/consynth/SketchJoin.ml" 222 6629 6645
+)
+"src/consynth/SketchJoin.ml" 223 6675 6689 "src/consynth/SketchJoin.ml" 223 6675 6691
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref rt "src/consynth/SketchJoin.ml" 221 6600 6622 "src/consynth/SketchJoin.ml" 221 6600 6624
+)
+"src/consynth/SketchJoin.ml" 223 6675 6683 "src/consynth/SketchJoin.ml" 223 6675 6691
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 222 6629 6637 "src/consynth/SketchJoin.ml" 223 6675 6691
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 224 6692 6700 "src/consynth/SketchJoin.ml" 224 6692 6701
+type(
+  SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 224 6692 6705 "src/consynth/SketchJoin.ml" 224 6692 6708
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs "src/consynth/SketchJoin.ml" 218 6488 6496 "src/consynth/SketchJoin.ml" 218 6488 6499
+)
+"src/consynth/SketchJoin.ml" 224 6692 6710 "src/consynth/SketchJoin.ml" 224 6692 6711
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 217 6460 6485
+)
+"src/consynth/SketchJoin.ml" 224 6692 6705 "src/consynth/SketchJoin.ml" 224 6692 6711
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 220 6581 6587 "src/consynth/SketchJoin.ml" 224 6692 6711
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 226 6721 6727 "src/consynth/SketchJoin.ml" 226 6721 6730
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs "src/consynth/SketchJoin.ml" 218 6488 6496 "src/consynth/SketchJoin.ml" 218 6488 6499
+)
+"src/consynth/SketchJoin.ml" 226 6721 6732 "src/consynth/SketchJoin.ml" 226 6721 6733
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 217 6460 6484 "src/consynth/SketchJoin.ml" 217 6460 6485
+)
+"src/consynth/SketchJoin.ml" 226 6721 6727 "src/consynth/SketchJoin.ml" 226 6721 6733
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 219 6549 6553 "src/consynth/SketchJoin.ml" 226 6721 6733
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 218 6488 6492 "src/consynth/SketchJoin.ml" 226 6721 6733
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 228 6739 6745 "src/consynth/SketchJoin.ml" 228 6739 6752
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  def aux_set "src/consynth/SketchJoin.ml" 245 7142 7144 "src/consynth/SketchJoin.ml" 245 7142 7167
+)
+"src/consynth/SketchJoin.ml" 229 6755 6759 "src/consynth/SketchJoin.ml" 229 6755 6773
+type(
+  (SketchTypes.skExpr -> bool) ->
+  ((SketchTypes.skExpr -> SketchTypes.skExpr) ->
+   SketchTypes.skExpr -> SketchTypes.skExpr) ->
+  (SketchTypes.constants -> SketchTypes.constants) ->
+  (SketchTypes.skLVar -> SketchTypes.skLVar) ->
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref SketchTypes.transform_expr
+)
+"src/consynth/SketchJoin.ml" 230 6774 6785 "src/consynth/SketchJoin.ml" 230 6774 6786
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 230 6774 6790 "src/consynth/SketchJoin.ml" 230 6774 6801
+)
+"src/consynth/SketchJoin.ml" 230 6774 6790 "src/consynth/SketchJoin.ml" 230 6774 6799
+type(
+  SketchTypes.skExpr -> bool
+)
+ident(
+  int_ref is_a_hole "src/consynth/SketchJoin.ml" 22 582 586 "src/consynth/SketchJoin.ml" 22 582 595
+)
+"src/consynth/SketchJoin.ml" 230 6774 6800 "src/consynth/SketchJoin.ml" 230 6774 6801
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 230 6774 6785 "src/consynth/SketchJoin.ml" 230 6774 6786
+)
+"src/consynth/SketchJoin.ml" 230 6774 6790 "src/consynth/SketchJoin.ml" 230 6774 6801
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/SketchJoin.ml" 230 6774 6780 "src/consynth/SketchJoin.ml" 230 6774 6802
+type(
+  SketchTypes.skExpr -> bool
+)
+"src/consynth/SketchJoin.ml" 231 6803 6814 "src/consynth/SketchJoin.ml" 231 6803 6818
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  def rfun "src/consynth/SketchJoin.ml" 231 6803 6819 "src/consynth/SketchJoin.ml" 241 7088 7110
+)
+"src/consynth/SketchJoin.ml" 231 6803 6819 "src/consynth/SketchJoin.ml" 231 6803 6820
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/SketchJoin.ml" 232 6824 6833 "src/consynth/SketchJoin.ml" 241 7088 7110
+)
+"src/consynth/SketchJoin.ml" 232 6824 6839 "src/consynth/SketchJoin.ml" 232 6824 6840
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 231 6803 6819 "src/consynth/SketchJoin.ml" 231 6803 6820
+)
+"src/consynth/SketchJoin.ml" 233 6846 6867 "src/consynth/SketchJoin.ml" 233 6846 6868
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 234 6884 6895 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 233 6846 6870 "src/consynth/SketchJoin.ml" 233 6846 6871
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def o "src/consynth/SketchJoin.ml" 234 6884 6895 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 233 6846 6866 "src/consynth/SketchJoin.ml" 233 6846 6872
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 233 6846 6874 "src/consynth/SketchJoin.ml" 233 6846 6875
+type(
+  SketchTypes.skLVar
+)
+ident(
+  def v "src/consynth/SketchJoin.ml" 234 6884 6895 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 233 6846 6877 "src/consynth/SketchJoin.ml" 233 6846 6879
+type(
+  Utils.CS.t
+)
+ident(
+  def vs "src/consynth/SketchJoin.ml" 234 6884 6895 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 233 6846 6857 "src/consynth/SketchJoin.ml" 233 6846 6880
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 234 6884 6899 "src/consynth/SketchJoin.ml" 234 6884 6902
+type(
+  Utils.CS.t
+)
+ident(
+  def nvs "src/consynth/SketchJoin.ml" 235 6932 6943 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 234 6884 6904 "src/consynth/SketchJoin.ml" 234 6884 6906
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def nt "src/consynth/SketchJoin.ml" 235 6932 6943 "src/consynth/SketchJoin.ml" 235 6932 6968
+)
+"src/consynth/SketchJoin.ml" 234 6884 6899 "src/consynth/SketchJoin.ml" 234 6884 6906
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 234 6884 6909 "src/consynth/SketchJoin.ml" 234 6884 6923
+type(
+  Utils.CS.t ->
+  SketchTypes.symbolic_type -> Utils.CS.t * SketchTypes.symbolic_type
+)
+ident(
+  int_ref adapt_vs_and_t "src/consynth/SketchJoin.ml" 217 6460 6466 "src/consynth/SketchJoin.ml" 217 6460 6480
+)
+"src/consynth/SketchJoin.ml" 234 6884 6924 "src/consynth/SketchJoin.ml" 234 6884 6926
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref vs "src/consynth/SketchJoin.ml" 233 6846 6877 "src/consynth/SketchJoin.ml" 233 6846 6879
+)
+"src/consynth/SketchJoin.ml" 234 6884 6927 "src/consynth/SketchJoin.ml" 234 6884 6928
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 233 6846 6867 "src/consynth/SketchJoin.ml" 233 6846 6868
+)
+"src/consynth/SketchJoin.ml" 234 6884 6909 "src/consynth/SketchJoin.ml" 234 6884 6928
+call(
+  stack
+)
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 235 6932 6953 "src/consynth/SketchJoin.ml" 235 6932 6955
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref nt "src/consynth/SketchJoin.ml" 234 6884 6904 "src/consynth/SketchJoin.ml" 234 6884 6906
+)
+"src/consynth/SketchJoin.ml" 235 6932 6957 "src/consynth/SketchJoin.ml" 235 6932 6958
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref o "src/consynth/SketchJoin.ml" 233 6846 6870 "src/consynth/SketchJoin.ml" 233 6846 6871
+)
+"src/consynth/SketchJoin.ml" 235 6932 6952 "src/consynth/SketchJoin.ml" 235 6932 6959
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 235 6932 6961 "src/consynth/SketchJoin.ml" 235 6932 6962
+type(
+  SketchTypes.skLVar
+)
+ident(
+  int_ref v "src/consynth/SketchJoin.ml" 233 6846 6874 "src/consynth/SketchJoin.ml" 233 6846 6875
+)
+"src/consynth/SketchJoin.ml" 235 6932 6964 "src/consynth/SketchJoin.ml" 235 6932 6967
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs "src/consynth/SketchJoin.ml" 234 6884 6899 "src/consynth/SketchJoin.ml" 234 6884 6902
+)
+"src/consynth/SketchJoin.ml" 235 6932 6943 "src/consynth/SketchJoin.ml" 235 6932 6968
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 234 6884 6895 "src/consynth/SketchJoin.ml" 235 6932 6968
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 237 6970 6991 "src/consynth/SketchJoin.ml" 237 6970 6992
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def t "src/consynth/SketchJoin.ml" 238 7005 7016 "src/consynth/SketchJoin.ml" 239 7053 7086
+)
+"src/consynth/SketchJoin.ml" 237 6970 6994 "src/consynth/SketchJoin.ml" 237 6970 6995
+type(
+  SketchTypes.operator_type
+)
+ident(
+  def o "src/consynth/SketchJoin.ml" 238 7005 7016 "src/consynth/SketchJoin.ml" 239 7053 7086
+)
+"src/consynth/SketchJoin.ml" 237 6970 6990 "src/consynth/SketchJoin.ml" 237 6970 6996
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 237 6970 6998 "src/consynth/SketchJoin.ml" 237 6970 7000
+type(
+  Utils.CS.t
+)
+ident(
+  def vs "src/consynth/SketchJoin.ml" 238 7005 7016 "src/consynth/SketchJoin.ml" 239 7053 7086
+)
+"src/consynth/SketchJoin.ml" 237 6970 6981 "src/consynth/SketchJoin.ml" 237 6970 7001
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 238 7005 7020 "src/consynth/SketchJoin.ml" 238 7005 7023
+type(
+  Utils.CS.t
+)
+ident(
+  def nvs "src/consynth/SketchJoin.ml" 239 7053 7064 "src/consynth/SketchJoin.ml" 239 7053 7086
+)
+"src/consynth/SketchJoin.ml" 238 7005 7025 "src/consynth/SketchJoin.ml" 238 7005 7027
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  def nt "src/consynth/SketchJoin.ml" 239 7053 7064 "src/consynth/SketchJoin.ml" 239 7053 7086
+)
+"src/consynth/SketchJoin.ml" 238 7005 7020 "src/consynth/SketchJoin.ml" 238 7005 7027
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 238 7005 7030 "src/consynth/SketchJoin.ml" 238 7005 7044
+type(
+  Utils.CS.t ->
+  SketchTypes.symbolic_type -> Utils.CS.t * SketchTypes.symbolic_type
+)
+ident(
+  int_ref adapt_vs_and_t "src/consynth/SketchJoin.ml" 217 6460 6466 "src/consynth/SketchJoin.ml" 217 6460 6480
+)
+"src/consynth/SketchJoin.ml" 238 7005 7045 "src/consynth/SketchJoin.ml" 238 7005 7047
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref vs "src/consynth/SketchJoin.ml" 237 6970 6998 "src/consynth/SketchJoin.ml" 237 6970 7000
+)
+"src/consynth/SketchJoin.ml" 238 7005 7048 "src/consynth/SketchJoin.ml" 238 7005 7049
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref t "src/consynth/SketchJoin.ml" 237 6970 6991 "src/consynth/SketchJoin.ml" 237 6970 6992
+)
+"src/consynth/SketchJoin.ml" 238 7005 7030 "src/consynth/SketchJoin.ml" 238 7005 7049
+call(
+  stack
+)
+type(
+  Utils.CS.t * SketchTypes.symbolic_type
+)
+"src/consynth/SketchJoin.ml" 239 7053 7074 "src/consynth/SketchJoin.ml" 239 7053 7076
+type(
+  SketchTypes.symbolic_type
+)
+ident(
+  int_ref nt "src/consynth/SketchJoin.ml" 238 7005 7025 "src/consynth/SketchJoin.ml" 238 7005 7027
+)
+"src/consynth/SketchJoin.ml" 239 7053 7078 "src/consynth/SketchJoin.ml" 239 7053 7079
+type(
+  SketchTypes.operator_type
+)
+ident(
+  int_ref o "src/consynth/SketchJoin.ml" 237 6970 6994 "src/consynth/SketchJoin.ml" 237 6970 6995
+)
+"src/consynth/SketchJoin.ml" 239 7053 7073 "src/consynth/SketchJoin.ml" 239 7053 7080
+type(
+  SketchTypes.hole_type
+)
+"src/consynth/SketchJoin.ml" 239 7053 7082 "src/consynth/SketchJoin.ml" 239 7053 7085
+type(
+  Utils.CS.t
+)
+ident(
+  int_ref nvs "src/consynth/SketchJoin.ml" 238 7005 7020 "src/consynth/SketchJoin.ml" 238 7005 7023
+)
+"src/consynth/SketchJoin.ml" 239 7053 7064 "src/consynth/SketchJoin.ml" 239 7053 7086
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 238 7005 7016 "src/consynth/SketchJoin.ml" 239 7053 7086
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 241 7088 7099 "src/consynth/SketchJoin.ml" 241 7088 7100
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 241 7088 7104 "src/consynth/SketchJoin.ml" 241 7088 7108
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  int_ref rfun "src/consynth/SketchJoin.ml" 231 6803 6814 "src/consynth/SketchJoin.ml" 231 6803 6818
+)
+"src/consynth/SketchJoin.ml" 241 7088 7109 "src/consynth/SketchJoin.ml" 241 7088 7110
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/SketchJoin.ml" 231 6803 6819 "src/consynth/SketchJoin.ml" 231 6803 6820
+)
+"src/consynth/SketchJoin.ml" 241 7088 7104 "src/consynth/SketchJoin.ml" 241 7088 7110
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 232 6824 6833 "src/consynth/SketchJoin.ml" 241 7088 7110
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 231 6803 6809 "src/consynth/SketchJoin.ml" 241 7088 7111
+type(
+  (SketchTypes.skExpr -> SketchTypes.skExpr) ->
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 243 7113 7119 "src/consynth/SketchJoin.ml" 243 7113 7127
+type(
+  SketchTypes.constants -> SketchTypes.constants
+)
+ident(
+  ext_ref Utils.identity
+)
+"src/consynth/SketchJoin.ml" 243 7113 7128 "src/consynth/SketchJoin.ml" 243 7113 7136
+type(
+  SketchTypes.skLVar -> SketchTypes.skLVar
+)
+ident(
+  ext_ref Utils.identity
+)
+"src/consynth/SketchJoin.ml" 229 6755 6759 "src/consynth/SketchJoin.ml" 243 7113 7136
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+"src/consynth/SketchJoin.ml" 245 7142 7144 "src/consynth/SketchJoin.ml" 245 7142 7159
+type(
+  (SketchTypes.skExpr -> SketchTypes.skExpr) ->
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.transform_exprs
+)
+"src/consynth/SketchJoin.ml" 245 7142 7160 "src/consynth/SketchJoin.ml" 245 7142 7167
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  int_ref aux_set "src/consynth/SketchJoin.ml" 228 6739 6745 "src/consynth/SketchJoin.ml" 228 6739 6752
+)
+"src/consynth/SketchJoin.ml" 245 7142 7144 "src/consynth/SketchJoin.ml" 245 7142 7167
+call(
+  stack
+)
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 228 6739 6741 "src/consynth/SketchJoin.ml" 245 7142 7167
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 217 6460 6462 "src/consynth/SketchJoin.ml" 245 7142 7167
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 247 7169 7173 "src/consynth/SketchJoin.ml" 247 7169 7178
+type(
+  SPretty.VS.t -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  def build "src/consynth/SketchJoin.ml" 248 7212 7275 "src/consynth/SketchJoin.ml" 1 0 -1
+)
+"src/consynth/SketchJoin.ml" 247 7169 7180 "src/consynth/SketchJoin.ml" 247 7169 7185
+type(
+  SPretty.VS.t
+)
+ident(
+  def state "src/consynth/SketchJoin.ml" 247 7169 7194 "src/consynth/SketchJoin.ml" 248 7212 7275
+)
+"src/consynth/SketchJoin.ml" 247 7169 7195 "src/consynth/SketchJoin.ml" 247 7169 7200
+type(
+  SketchTypes.sklet
+)
+ident(
+  def sklet "src/consynth/SketchJoin.ml" 248 7212 7214 "src/consynth/SketchJoin.ml" 248 7212 7275
+)
+"src/consynth/SketchJoin.ml" 248 7212 7214 "src/consynth/SketchJoin.ml" 248 7212 7235
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref set_types_and_varsets "src/consynth/SketchJoin.ml" 216 6432 6436 "src/consynth/SketchJoin.ml" 216 6432 6457
+)
+"src/consynth/SketchJoin.ml" 248 7212 7237 "src/consynth/SketchJoin.ml" 248 7212 7246
+type(
+  state:SPretty.VS.t ->
+  skip:SketchTypes.skLVar list -> SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  int_ref make_join "src/consynth/SketchJoin.ml" 139 3986 3990 "src/consynth/SketchJoin.ml" 139 3986 3999
+)
+"src/consynth/SketchJoin.ml" 248 7212 7254 "src/consynth/SketchJoin.ml" 248 7212 7259
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref state "src/consynth/SketchJoin.ml" 247 7169 7180 "src/consynth/SketchJoin.ml" 247 7169 7185
+)
+"src/consynth/SketchJoin.ml" 248 7212 7266 "src/consynth/SketchJoin.ml" 248 7212 7268
+type(
+  SketchTypes.skLVar list
+)
+"src/consynth/SketchJoin.ml" 248 7212 7269 "src/consynth/SketchJoin.ml" 248 7212 7274
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref sklet "src/consynth/SketchJoin.ml" 247 7169 7195 "src/consynth/SketchJoin.ml" 247 7169 7200
+)
+"src/consynth/SketchJoin.ml" 248 7212 7236 "src/consynth/SketchJoin.ml" 248 7212 7275
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/SketchJoin.ml" 248 7212 7214 "src/consynth/SketchJoin.ml" 248 7212 7275
+call(
+  tail
+)
+type(
+  SketchTypes.sklet
+)

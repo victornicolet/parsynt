@@ -1,0 +1,3426 @@
+"src/consynth/VUtils.ml" 9 109 113 "src/consynth/VUtils.ml" 9 109 118
+type(
+  bool ref
+)
+ident(
+  def debug "src/consynth/VUtils.ml" 11 132 132 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 9 109 121 "src/consynth/VUtils.ml" 9 109 124
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/VUtils.ml" 9 109 125 "src/consynth/VUtils.ml" 9 109 130
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 9 109 121 "src/consynth/VUtils.ml" 9 109 130
+type(
+  bool ref
+)
+"src/consynth/VUtils.ml" 21 260 264 "src/consynth/VUtils.ml" 21 260 282
+type(
+  SPretty.VS.elt -> unit
+)
+ident(
+  def add_left_auxiliary "src/consynth/VUtils.ml" 25 366 366 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 21 260 283 "src/consynth/VUtils.ml" 21 260 285
+type(
+  SPretty.VS.elt
+)
+ident(
+  def vi "src/consynth/VUtils.ml" 22 288 290 "src/consynth/VUtils.ml" 23 320 364
+)
+"src/consynth/VUtils.ml" 22 288 290 "src/consynth/VUtils.ml" 22 288 317
+type(
+  Utils.VS.t ref
+)
+ident(
+  ext_ref SketchJoin.left_auxiliaries
+)
+"src/consynth/VUtils.ml" 22 288 317 "src/consynth/VUtils.ml" 22 288 319
+type(
+  Utils.VS.t ref -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/VUtils.ml" 23 320 325 "src/consynth/VUtils.ml" 23 320 331
+type(
+  SPretty.VS.elt -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.add
+)
+"src/consynth/VUtils.ml" 23 320 332 "src/consynth/VUtils.ml" 23 320 334
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/VUtils.ml" 21 260 283 "src/consynth/VUtils.ml" 21 260 285
+)
+"src/consynth/VUtils.ml" 23 320 335 "src/consynth/VUtils.ml" 23 320 336
+type(
+  Utils.VS.t ref -> Utils.VS.t
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/VUtils.ml" 23 320 336 "src/consynth/VUtils.ml" 23 320 363
+type(
+  Utils.VS.t ref
+)
+ident(
+  ext_ref SketchJoin.left_auxiliaries
+)
+"src/consynth/VUtils.ml" 23 320 335 "src/consynth/VUtils.ml" 23 320 363
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 23 320 324 "src/consynth/VUtils.ml" 23 320 364
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 22 288 290 "src/consynth/VUtils.ml" 23 320 364
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 25 366 370 "src/consynth/VUtils.ml" 25 366 389
+type(
+  SPretty.VS.elt -> unit
+)
+ident(
+  def add_right_auxiliary "src/consynth/VUtils.ml" 33 653 653 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 25 366 390 "src/consynth/VUtils.ml" 25 366 392
+type(
+  SPretty.VS.elt
+)
+ident(
+  def vi "src/consynth/VUtils.ml" 26 395 397 "src/consynth/VUtils.ml" 27 428 473
+)
+"src/consynth/VUtils.ml" 26 395 397 "src/consynth/VUtils.ml" 26 395 425
+type(
+  Utils.VS.t ref
+)
+ident(
+  ext_ref SketchJoin.right_auxiliaries
+)
+"src/consynth/VUtils.ml" 26 395 425 "src/consynth/VUtils.ml" 26 395 427
+type(
+  Utils.VS.t ref -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Pervasives.( := )
+)
+"src/consynth/VUtils.ml" 27 428 433 "src/consynth/VUtils.ml" 27 428 439
+type(
+  SPretty.VS.elt -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.add
+)
+"src/consynth/VUtils.ml" 27 428 440 "src/consynth/VUtils.ml" 27 428 442
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/VUtils.ml" 25 366 390 "src/consynth/VUtils.ml" 25 366 392
+)
+"src/consynth/VUtils.ml" 27 428 443 "src/consynth/VUtils.ml" 27 428 444
+type(
+  Utils.VS.t ref -> Utils.VS.t
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/VUtils.ml" 27 428 444 "src/consynth/VUtils.ml" 27 428 472
+type(
+  Utils.VS.t ref
+)
+ident(
+  ext_ref SketchJoin.right_auxiliaries
+)
+"src/consynth/VUtils.ml" 27 428 443 "src/consynth/VUtils.ml" 27 428 472
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 27 428 432 "src/consynth/VUtils.ml" 27 428 473
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 26 395 397 "src/consynth/VUtils.ml" 27 428 473
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 33 653 657 "src/consynth/VUtils.ml" 33 653 664
+type(
+  SymbExe.exec_info ->
+  SketchTypes.sklet ->
+  Utils.VS.t ->
+  auxiliary Utils.IM.t ->
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def compose "src/consynth/VUtils.ml" 143 5173 5173 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo "src/consynth/VUtils.ml" 33 653 671 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 33 653 671 "src/consynth/VUtils.ml" 33 653 672
+type(
+  SketchTypes.sklet
+)
+ident(
+  def f "src/consynth/VUtils.ml" 33 653 673 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 33 653 673 "src/consynth/VUtils.ml" 33 653 679
+type(
+  Utils.VS.t
+)
+ident(
+  def aux_vs "src/consynth/VUtils.ml" 33 653 680 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 33 653 680 "src/consynth/VUtils.ml" 33 653 686
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  def aux_ef "src/consynth/VUtils.ml" 34 689 691 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 34 689 695 "src/consynth/VUtils.ml" 34 689 702
+type(
+  SketchTypes.context
+)
+ident(
+  def new_ctx "src/consynth/VUtils.ml" 35 746 748 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 34 689 705 "src/consynth/VUtils.ml" 34 689 721
+type(
+  SymbExe.T.context -> Utils.VS.t -> SketchTypes.context
+)
+ident(
+  ext_ref SketchTypes.ctx_update_vsets
+)
+"src/consynth/VUtils.ml" 34 689 722 "src/consynth/VUtils.ml" 34 689 727
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 34 689 722 "src/consynth/VUtils.ml" 34 689 735
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 34 689 736 "src/consynth/VUtils.ml" 34 689 742
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref aux_vs "src/consynth/VUtils.ml" 33 653 673 "src/consynth/VUtils.ml" 33 653 679
+)
+"src/consynth/VUtils.ml" 34 689 705 "src/consynth/VUtils.ml" 34 689 742
+call(
+  stack
+)
+type(
+  SketchTypes.context
+)
+"src/consynth/VUtils.ml" 35 746 752 "src/consynth/VUtils.ml" 35 746 759
+type(
+  SketchTypes.sklet
+)
+ident(
+  def clean_f "src/consynth/VUtils.ml" 36 785 787 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 35 746 762 "src/consynth/VUtils.ml" 35 746 779
+type(
+  SketchTypes.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.remove_id_binding
+)
+"src/consynth/VUtils.ml" 35 746 780 "src/consynth/VUtils.ml" 35 746 781
+type(
+  SketchTypes.sklet
+)
+ident(
+  int_ref f "src/consynth/VUtils.ml" 33 653 671 "src/consynth/VUtils.ml" 33 653 672
+)
+"src/consynth/VUtils.ml" 35 746 762 "src/consynth/VUtils.ml" 35 746 781
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/VUtils.ml" 36 785 791 "src/consynth/VUtils.ml" 36 785 809
+type(
+  (SPretty.VS.elt -> Cil.varinfo) ->
+  SPretty.VS.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  def replace_index_uses "src/consynth/VUtils.ml" 45 1043 1045 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 36 785 810 "src/consynth/VUtils.ml" 36 785 819
+type(
+  SPretty.VS.elt -> Cil.varinfo
+)
+ident(
+  def index_set "src/consynth/VUtils.ml" 37 822 826 "src/consynth/VUtils.ml" 43 1014 1037
+)
+"src/consynth/VUtils.ml" 37 822 826 "src/consynth/VUtils.ml" 37 822 833
+type(
+  (SPretty.VS.elt -> SymbExe.T.skExpr -> SymbExe.T.skExpr) ->
+  SPretty.VS.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref SPretty.VS.fold
+)
+"src/consynth/VUtils.ml" 38 834 845 "src/consynth/VUtils.ml" 38 834 850
+type(
+  SPretty.VS.elt
+)
+ident(
+  def index "src/consynth/VUtils.ml" 38 834 851 "src/consynth/VUtils.ml" 43 1014 1036
+)
+"src/consynth/VUtils.ml" 38 834 851 "src/consynth/VUtils.ml" 38 834 855
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def expr "src/consynth/VUtils.ml" 39 859 868 "src/consynth/VUtils.ml" 43 1014 1036
+)
+"src/consynth/VUtils.ml" 39 859 869 "src/consynth/VUtils.ml" 39 859 889
+type(
+  ?in_subscripts:bool ->
+  to_replace:SymbExe.T.skExpr ->
+  by:SymbExe.T.skExpr -> ine:SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref SymbExe.T.replace_expression
+)
+"src/consynth/VUtils.ml" 40 890 917 "src/consynth/VUtils.ml" 40 890 921
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 41 922 947 "src/consynth/VUtils.ml" 41 922 958
+type(
+  ?offsets:SymbExe.T.skExpr list -> SPretty.VS.elt -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref SymbExe.T.mkVarExpr
+)
+"src/consynth/VUtils.ml" 41 922 959 "src/consynth/VUtils.ml" 41 922 964
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref index "src/consynth/VUtils.ml" 38 834 845 "src/consynth/VUtils.ml" 38 834 850
+)
+"src/consynth/VUtils.ml" 41 922 946 "src/consynth/VUtils.ml" 41 922 965
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 42 966 983 "src/consynth/VUtils.ml" 42 966 994
+type(
+  ?offsets:SymbExe.T.skExpr list -> Cil.varinfo -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref SymbExe.T.mkVarExpr
+)
+"src/consynth/VUtils.ml" 42 966 996 "src/consynth/VUtils.ml" 42 966 1005
+type(
+  SPretty.VS.elt -> Cil.varinfo
+)
+ident(
+  int_ref index_set "src/consynth/VUtils.ml" 36 785 810 "src/consynth/VUtils.ml" 36 785 819
+)
+"src/consynth/VUtils.ml" 42 966 1006 "src/consynth/VUtils.ml" 42 966 1011
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref index "src/consynth/VUtils.ml" 38 834 845 "src/consynth/VUtils.ml" 38 834 850
+)
+"src/consynth/VUtils.ml" 42 966 995 "src/consynth/VUtils.ml" 42 966 1012
+call(
+  stack
+)
+type(
+  Cil.varinfo
+)
+"src/consynth/VUtils.ml" 42 966 982 "src/consynth/VUtils.ml" 42 966 1013
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 43 1014 1031 "src/consynth/VUtils.ml" 43 1014 1035
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref expr "src/consynth/VUtils.ml" 38 834 851 "src/consynth/VUtils.ml" 38 834 855
+)
+"src/consynth/VUtils.ml" 39 859 868 "src/consynth/VUtils.ml" 43 1014 1036
+call(
+  tail
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 38 834 840 "src/consynth/VUtils.ml" 43 1014 1037
+type(
+  SPretty.VS.elt -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 37 822 826 "src/consynth/VUtils.ml" 43 1014 1037
+call(
+  tail
+)
+type(
+  SPretty.VS.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 45 1043 1049 "src/consynth/VUtils.ml" 45 1043 1057
+type(
+  SymbExe.T.sklet
+)
+ident(
+  def new_func "src/consynth/VUtils.ml" 139 5135 5137 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 45 1043 1059 "src/consynth/VUtils.ml" 45 1043 1070
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def const_exprs "src/consynth/VUtils.ml" 139 5135 5137 "src/consynth/VUtils.ml" 139 5135 5169
+)
+"src/consynth/VUtils.ml" 45 1043 1049 "src/consynth/VUtils.ml" 45 1043 1070
+type(
+  SymbExe.T.sklet * (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 46 1073 1081 "src/consynth/VUtils.ml" 46 1073 1091
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def head_assgn "src/consynth/VUtils.ml" 134 4980 4984 "src/consynth/VUtils.ml" 137 5083 5129
+)
+"src/consynth/VUtils.ml" 46 1073 1093 "src/consynth/VUtils.ml" 46 1073 1103
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def tail_assgn "src/consynth/VUtils.ml" 134 4980 4984 "src/consynth/VUtils.ml" 137 5083 5129
+)
+"src/consynth/VUtils.ml" 46 1073 1105 "src/consynth/VUtils.ml" 46 1073 1116
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def const_exprs "src/consynth/VUtils.ml" 134 4980 4984 "src/consynth/VUtils.ml" 137 5083 5129
+)
+"src/consynth/VUtils.ml" 46 1073 1081 "src/consynth/VUtils.ml" 46 1073 1116
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 47 1119 1126 "src/consynth/VUtils.ml" 47 1119 1133
+type(
+  (Utils.IM.key ->
+   auxiliary ->
+   (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+   (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+   (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+   (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+   (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+   (SymbExe.T.skLVar * SymbExe.T.skExpr) list) ->
+  auxiliary Utils.IM.t ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Utils.IM.fold
+)
+"src/consynth/VUtils.ml" 48 1134 1148 "src/consynth/VUtils.ml" 48 1134 1155
+type(
+  Utils.IM.key
+)
+ident(
+  def aux_vid "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+type(
+  auxiliary
+)
+ident(
+  def aux "src/consynth/VUtils.ml" 48 1134 1160 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 48 1134 1161 "src/consynth/VUtils.ml" 48 1134 1176
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def head_assgn_list "src/consynth/VUtils.ml" 60 1761 1773 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 48 1134 1178 "src/consynth/VUtils.ml" 48 1134 1193
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def tail_assgn_list "src/consynth/VUtils.ml" 60 1761 1773 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 48 1134 1195 "src/consynth/VUtils.ml" 48 1134 1206
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def const_exprs "src/consynth/VUtils.ml" 60 1761 1773 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 48 1134 1160 "src/consynth/VUtils.ml" 48 1134 1207
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 60 1761 1779 "src/consynth/VUtils.ml" 60 1761 1782
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 60 1761 1779 "src/consynth/VUtils.ml" 60 1761 1788
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+type(
+  Cil.varinfo
+)
+ident(
+  def v "src/consynth/VUtils.ml" 61 1794 1837 "src/consynth/VUtils.ml" 88 3095 3139
+)
+"src/consynth/VUtils.ml" 61 1794 1816 "src/consynth/VUtils.ml" 61 1794 1831
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 61 1794 1808 "src/consynth/VUtils.ml" 61 1794 1831
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 61 1794 1837 "src/consynth/VUtils.ml" 61 1794 1838
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+)
+"src/consynth/VUtils.ml" 61 1794 1837 "src/consynth/VUtils.ml" 61 1794 1846
+type(
+  Utils.IM.key
+)
+"src/consynth/VUtils.ml" 61 1794 1847 "src/consynth/VUtils.ml" 61 1794 1848
+type(
+  Utils.IM.key -> Utils.IM.key -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/VUtils.ml" 61 1794 1849 "src/consynth/VUtils.ml" 61 1794 1856
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref aux_vid "src/consynth/VUtils.ml" 48 1134 1148 "src/consynth/VUtils.ml" 48 1134 1155
+)
+"src/consynth/VUtils.ml" 61 1794 1837 "src/consynth/VUtils.ml" 61 1794 1856
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 63 1920 1938 "src/consynth/VUtils.ml" 63 1920 1952
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def aux_expression "src/consynth/VUtils.ml" 70 2305 2319 "src/consynth/VUtils.ml" 88 3095 3139
+)
+"src/consynth/VUtils.ml" 64 1955 1971 "src/consynth/VUtils.ml" 64 1955 1989
+type(
+  SPretty.VS.elt -> unit
+)
+ident(
+  int_ref add_left_auxiliary "src/consynth/VUtils.ml" 21 260 264 "src/consynth/VUtils.ml" 21 260 282
+)
+"src/consynth/VUtils.ml" 64 1955 1990 "src/consynth/VUtils.ml" 64 1955 1991
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+)
+"src/consynth/VUtils.ml" 64 1955 1971 "src/consynth/VUtils.ml" 64 1955 1991
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 65 1993 2009 "src/consynth/VUtils.ml" 65 1993 2027
+type(
+  (SPretty.VS.elt -> Cil.varinfo) ->
+  SPretty.VS.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  int_ref replace_index_uses "src/consynth/VUtils.ml" 36 785 791 "src/consynth/VUtils.ml" 36 785 809
+)
+"src/consynth/VUtils.ml" 65 1993 2028 "src/consynth/VUtils.ml" 65 1993 2043
+type(
+  SPretty.VS.elt -> Cil.varinfo
+)
+ident(
+  ext_ref SymbExe.T.left_index_vi
+)
+"src/consynth/VUtils.ml" 65 1993 2044 "src/consynth/VUtils.ml" 65 1993 2049
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 65 1993 2044 "src/consynth/VUtils.ml" 65 1993 2057
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 65 1993 2044 "src/consynth/VUtils.ml" 65 1993 2068
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 65 1993 2069 "src/consynth/VUtils.ml" 65 1993 2072
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 65 1993 2069 "src/consynth/VUtils.ml" 65 1993 2078
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 65 1993 2009 "src/consynth/VUtils.ml" 65 1993 2078
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 64 1955 1971 "src/consynth/VUtils.ml" 65 1993 2078
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 72 2344 2366 "src/consynth/VUtils.ml" 72 2344 2375
+type(
+  Utils.VS.t
+)
+ident(
+  def used_vars "src/consynth/VUtils.ml" 73 2411 2429 "src/consynth/VUtils.ml" 80 2757 2809
+)
+"src/consynth/VUtils.ml" 72 2344 2378 "src/consynth/VUtils.ml" 72 2344 2392
+type(
+  SymbExe.T.skExpr -> Utils.VS.t
+)
+ident(
+  ext_ref SketchTypes.used_in_skexpr
+)
+"src/consynth/VUtils.ml" 72 2344 2393 "src/consynth/VUtils.ml" 72 2344 2407
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref aux_expression "src/consynth/VUtils.ml" 63 1920 1938 "src/consynth/VUtils.ml" 63 1920 1952
+)
+"src/consynth/VUtils.ml" 72 2344 2378 "src/consynth/VUtils.ml" 72 2344 2407
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 73 2411 2433 "src/consynth/VUtils.ml" 73 2411 2446
+type(
+  SPretty.VS.t
+)
+ident(
+  def not_read_vars "src/consynth/VUtils.ml" 77 2582 2600 "src/consynth/VUtils.ml" 80 2757 2809
+)
+"src/consynth/VUtils.ml" 74 2449 2469 "src/consynth/VUtils.ml" 74 2449 2476
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 74 2449 2477 "src/consynth/VUtils.ml" 74 2449 2486
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref used_vars "src/consynth/VUtils.ml" 72 2344 2366 "src/consynth/VUtils.ml" 72 2344 2375
+)
+"src/consynth/VUtils.ml" 75 2487 2510 "src/consynth/VUtils.ml" 75 2487 2517
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 75 2487 2518 "src/consynth/VUtils.ml" 75 2487 2523
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 75 2487 2518 "src/consynth/VUtils.ml" 75 2487 2531
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 75 2487 2518 "src/consynth/VUtils.ml" 75 2487 2540
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 75 2487 2541 "src/consynth/VUtils.ml" 75 2487 2548
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref new_ctx "src/consynth/VUtils.ml" 34 689 695 "src/consynth/VUtils.ml" 34 689 702
+)
+"src/consynth/VUtils.ml" 75 2487 2541 "src/consynth/VUtils.ml" 75 2487 2559
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 75 2487 2509 "src/consynth/VUtils.ml" 75 2487 2560
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 74 2449 2469 "src/consynth/VUtils.ml" 75 2487 2560
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 77 2582 2604 "src/consynth/VUtils.ml" 77 2582 2622
+type(
+  SPretty.VS.t
+)
+ident(
+  def not_read_not_index "src/consynth/VUtils.ml" 80 2757 2775 "src/consynth/VUtils.ml" 80 2757 2809
+)
+"src/consynth/VUtils.ml" 78 2625 2645 "src/consynth/VUtils.ml" 78 2625 2652
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 78 2625 2653 "src/consynth/VUtils.ml" 78 2625 2666
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref not_read_vars "src/consynth/VUtils.ml" 73 2411 2433 "src/consynth/VUtils.ml" 73 2411 2446
+)
+"src/consynth/VUtils.ml" 78 2625 2667 "src/consynth/VUtils.ml" 78 2625 2674
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref new_ctx "src/consynth/VUtils.ml" 34 689 695 "src/consynth/VUtils.ml" 34 689 702
+)
+"src/consynth/VUtils.ml" 78 2625 2667 "src/consynth/VUtils.ml" 78 2625 2685
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 78 2625 2645 "src/consynth/VUtils.ml" 78 2625 2685
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 80 2757 2775 "src/consynth/VUtils.ml" 80 2757 2786
+type(
+  SPretty.VS.t -> int
+)
+ident(
+  ext_ref SPretty.VS.cardinal
+)
+"src/consynth/VUtils.ml" 80 2757 2787 "src/consynth/VUtils.ml" 80 2757 2805
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref not_read_not_index "src/consynth/VUtils.ml" 77 2582 2604 "src/consynth/VUtils.ml" 77 2582 2622
+)
+"src/consynth/VUtils.ml" 80 2757 2775 "src/consynth/VUtils.ml" 80 2757 2805
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 80 2757 2806 "src/consynth/VUtils.ml" 80 2757 2807
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/VUtils.ml" 80 2757 2808 "src/consynth/VUtils.ml" 80 2757 2809
+type(
+  int
+)
+"src/consynth/VUtils.ml" 80 2757 2775 "src/consynth/VUtils.ml" 80 2757 2809
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 77 2582 2600 "src/consynth/VUtils.ml" 80 2757 2809
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 73 2411 2429 "src/consynth/VUtils.ml" 80 2757 2809
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 71 2322 2338 "src/consynth/VUtils.ml" 81 2810 2829
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 83 2849 2865 "src/consynth/VUtils.ml" 83 2849 2880
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref head_assgn_list "src/consynth/VUtils.ml" 48 1134 1161 "src/consynth/VUtils.ml" 48 1134 1176
+)
+"src/consynth/VUtils.ml" 83 2849 2880 "src/consynth/VUtils.ml" 83 2849 2881
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 83 2849 2895 "src/consynth/VUtils.ml" 83 2849 2896
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+)
+"src/consynth/VUtils.ml" 83 2849 2883 "src/consynth/VUtils.ml" 83 2849 2896
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 83 2849 2898 "src/consynth/VUtils.ml" 83 2849 2912
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref aux_expression "src/consynth/VUtils.ml" 63 1920 1938 "src/consynth/VUtils.ml" 63 1920 1952
+)
+"src/consynth/VUtils.ml" 83 2849 2882 "src/consynth/VUtils.ml" 83 2849 2913
+type(
+  SymbExe.T.skLVar * SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 83 2849 2881 "src/consynth/VUtils.ml" 83 2849 2914
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 83 2849 2865 "src/consynth/VUtils.ml" 83 2849 2914
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 84 2916 2932 "src/consynth/VUtils.ml" 84 2916 2947
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref tail_assgn_list "src/consynth/VUtils.ml" 48 1134 1178 "src/consynth/VUtils.ml" 48 1134 1193
+)
+"src/consynth/VUtils.ml" 85 2949 2965 "src/consynth/VUtils.ml" 85 2949 2976
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref const_exprs "src/consynth/VUtils.ml" 48 1134 1195 "src/consynth/VUtils.ml" 48 1134 1206
+)
+"src/consynth/VUtils.ml" 85 2949 2976 "src/consynth/VUtils.ml" 85 2949 2977
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 85 2949 2990 "src/consynth/VUtils.ml" 85 2949 2991
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+)
+"src/consynth/VUtils.ml" 85 2949 2978 "src/consynth/VUtils.ml" 85 2949 2991
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 85 2949 2993 "src/consynth/VUtils.ml" 85 2949 3007
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref aux_expression "src/consynth/VUtils.ml" 63 1920 1938 "src/consynth/VUtils.ml" 63 1920 1952
+)
+"src/consynth/VUtils.ml" 85 2949 2978 "src/consynth/VUtils.ml" 85 2949 3007
+type(
+  SymbExe.T.skLVar * SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 85 2949 2977 "src/consynth/VUtils.ml" 85 2949 3008
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 85 2949 2965 "src/consynth/VUtils.ml" 85 2949 3008
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 83 2849 2865 "src/consynth/VUtils.ml" 85 2949 3008
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 87 3028 3044 "src/consynth/VUtils.ml" 87 3028 3059
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref head_assgn_list "src/consynth/VUtils.ml" 48 1134 1161 "src/consynth/VUtils.ml" 48 1134 1176
+)
+"src/consynth/VUtils.ml" 87 3028 3059 "src/consynth/VUtils.ml" 87 3028 3060
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 87 3028 3074 "src/consynth/VUtils.ml" 87 3028 3075
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 61 1794 1829 "src/consynth/VUtils.ml" 61 1794 1830
+)
+"src/consynth/VUtils.ml" 87 3028 3062 "src/consynth/VUtils.ml" 87 3028 3075
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 87 3028 3077 "src/consynth/VUtils.ml" 87 3028 3091
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref aux_expression "src/consynth/VUtils.ml" 63 1920 1938 "src/consynth/VUtils.ml" 63 1920 1952
+)
+"src/consynth/VUtils.ml" 87 3028 3061 "src/consynth/VUtils.ml" 87 3028 3092
+type(
+  SymbExe.T.skLVar * SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 87 3028 3060 "src/consynth/VUtils.ml" 87 3028 3093
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 87 3028 3044 "src/consynth/VUtils.ml" 87 3028 3093
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 88 3095 3111 "src/consynth/VUtils.ml" 88 3095 3126
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref tail_assgn_list "src/consynth/VUtils.ml" 48 1134 1178 "src/consynth/VUtils.ml" 48 1134 1193
+)
+"src/consynth/VUtils.ml" 88 3095 3128 "src/consynth/VUtils.ml" 88 3095 3139
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref const_exprs "src/consynth/VUtils.ml" 48 1134 1195 "src/consynth/VUtils.ml" 48 1134 1206
+)
+"src/consynth/VUtils.ml" 87 3028 3044 "src/consynth/VUtils.ml" 88 3095 3139
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 70 2305 2319 "src/consynth/VUtils.ml" 88 3095 3139
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 63 1920 1934 "src/consynth/VUtils.ml" 88 3095 3139
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 89 3140 3154 "src/consynth/VUtils.ml" 89 3140 3155
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 94 3360 3378 "src/consynth/VUtils.ml" 94 3360 3384
+type(
+  Utils.VS.elt
+)
+ident(
+  def cur_vi "src/consynth/VUtils.ml" 95 3424 3438 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 94 3360 3388 "src/consynth/VUtils.ml" 94 3360 3404
+type(
+  Utils.IM.key -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/VUtils.ml" 94 3360 3405 "src/consynth/VUtils.ml" 94 3360 3412
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref aux_vid "src/consynth/VUtils.ml" 48 1134 1148 "src/consynth/VUtils.ml" 48 1134 1155
+)
+"src/consynth/VUtils.ml" 94 3360 3413 "src/consynth/VUtils.ml" 94 3360 3419
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref aux_vs "src/consynth/VUtils.ml" 33 653 673 "src/consynth/VUtils.ml" 33 653 679
+)
+"src/consynth/VUtils.ml" 94 3360 3387 "src/consynth/VUtils.ml" 94 3360 3420
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/VUtils.ml" 95 3424 3442 "src/consynth/VUtils.ml" 95 3424 3443
+type(
+  SymbExe.T.skLVar
+)
+ident(
+  def v "src/consynth/VUtils.ml" 96 3470 3484 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 95 3424 3459 "src/consynth/VUtils.ml" 95 3424 3465
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref cur_vi "src/consynth/VUtils.ml" 94 3360 3378 "src/consynth/VUtils.ml" 94 3360 3384
+)
+"src/consynth/VUtils.ml" 95 3424 3446 "src/consynth/VUtils.ml" 95 3424 3466
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 96 3470 3488 "src/consynth/VUtils.ml" 96 3470 3503
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  def new_const_exprs "src/consynth/VUtils.ml" 119 4441 4455 "src/consynth/VUtils.ml" 130 4867 4940
+)
+"src/consynth/VUtils.ml" 97 3506 3522 "src/consynth/VUtils.ml" 97 3506 3533
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref const_exprs "src/consynth/VUtils.ml" 48 1134 1195 "src/consynth/VUtils.ml" 48 1134 1206
+)
+"src/consynth/VUtils.ml" 97 3506 3533 "src/consynth/VUtils.ml" 97 3506 3534
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 100 3579 3603 "src/consynth/VUtils.ml" 100 3579 3612
+type(
+  Utils.VS.t
+)
+ident(
+  def used_vars "src/consynth/VUtils.ml" 101 3643 3663 "src/consynth/VUtils.ml" 108 4015 4069
+)
+"src/consynth/VUtils.ml" 100 3579 3615 "src/consynth/VUtils.ml" 100 3579 3629
+type(
+  SketchTypes.skExpr -> Utils.VS.t
+)
+ident(
+  ext_ref SketchTypes.used_in_skexpr
+)
+"src/consynth/VUtils.ml" 100 3579 3630 "src/consynth/VUtils.ml" 100 3579 3633
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 100 3579 3630 "src/consynth/VUtils.ml" 100 3579 3639
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 100 3579 3615 "src/consynth/VUtils.ml" 100 3579 3639
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 101 3643 3667 "src/consynth/VUtils.ml" 101 3643 3680
+type(
+  SPretty.VS.t
+)
+ident(
+  def not_read_vars "src/consynth/VUtils.ml" 105 3828 3848 "src/consynth/VUtils.ml" 108 4015 4069
+)
+"src/consynth/VUtils.ml" 102 3683 3705 "src/consynth/VUtils.ml" 102 3683 3712
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 102 3683 3713 "src/consynth/VUtils.ml" 102 3683 3722
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref used_vars "src/consynth/VUtils.ml" 100 3579 3603 "src/consynth/VUtils.ml" 100 3579 3612
+)
+"src/consynth/VUtils.ml" 103 3723 3748 "src/consynth/VUtils.ml" 103 3723 3755
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 103 3723 3756 "src/consynth/VUtils.ml" 103 3723 3761
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 103 3723 3756 "src/consynth/VUtils.ml" 103 3723 3769
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 103 3723 3756 "src/consynth/VUtils.ml" 103 3723 3778
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 103 3723 3779 "src/consynth/VUtils.ml" 103 3723 3784
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 103 3723 3779 "src/consynth/VUtils.ml" 103 3723 3792
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 103 3723 3779 "src/consynth/VUtils.ml" 103 3723 3803
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 103 3723 3747 "src/consynth/VUtils.ml" 103 3723 3804
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 102 3683 3705 "src/consynth/VUtils.ml" 103 3723 3804
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 105 3828 3852 "src/consynth/VUtils.ml" 105 3828 3870
+type(
+  SPretty.VS.t
+)
+ident(
+  def not_read_not_index "src/consynth/VUtils.ml" 108 4015 4035 "src/consynth/VUtils.ml" 108 4015 4069
+)
+"src/consynth/VUtils.ml" 106 3873 3895 "src/consynth/VUtils.ml" 106 3873 3902
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.diff
+)
+"src/consynth/VUtils.ml" 106 3873 3903 "src/consynth/VUtils.ml" 106 3873 3916
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref not_read_vars "src/consynth/VUtils.ml" 101 3643 3667 "src/consynth/VUtils.ml" 101 3643 3680
+)
+"src/consynth/VUtils.ml" 106 3873 3917 "src/consynth/VUtils.ml" 106 3873 3922
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 106 3873 3917 "src/consynth/VUtils.ml" 106 3873 3930
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 106 3873 3917 "src/consynth/VUtils.ml" 106 3873 3941
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 106 3873 3895 "src/consynth/VUtils.ml" 106 3873 3941
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 108 4015 4035 "src/consynth/VUtils.ml" 108 4015 4046
+type(
+  SPretty.VS.t -> int
+)
+ident(
+  ext_ref SPretty.VS.cardinal
+)
+"src/consynth/VUtils.ml" 108 4015 4047 "src/consynth/VUtils.ml" 108 4015 4065
+type(
+  SPretty.VS.t
+)
+ident(
+  int_ref not_read_not_index "src/consynth/VUtils.ml" 105 3828 3852 "src/consynth/VUtils.ml" 105 3828 3870
+)
+"src/consynth/VUtils.ml" 108 4015 4035 "src/consynth/VUtils.ml" 108 4015 4065
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 108 4015 4066 "src/consynth/VUtils.ml" 108 4015 4067
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/VUtils.ml" 108 4015 4068 "src/consynth/VUtils.ml" 108 4015 4069
+type(
+  int
+)
+"src/consynth/VUtils.ml" 108 4015 4035 "src/consynth/VUtils.ml" 108 4015 4069
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 105 3828 3848 "src/consynth/VUtils.ml" 108 4015 4069
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 101 3643 3663 "src/consynth/VUtils.ml" 108 4015 4069
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 99 3555 3573 "src/consynth/VUtils.ml" 109 4070 4091
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 112 4195 4215 "src/consynth/VUtils.ml" 112 4195 4234
+type(
+  SPretty.VS.elt -> unit
+)
+ident(
+  int_ref add_right_auxiliary "src/consynth/VUtils.ml" 25 366 370 "src/consynth/VUtils.ml" 25 366 389
+)
+"src/consynth/VUtils.ml" 112 4195 4235 "src/consynth/VUtils.ml" 112 4195 4241
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref cur_vi "src/consynth/VUtils.ml" 94 3360 3378 "src/consynth/VUtils.ml" 94 3360 3384
+)
+"src/consynth/VUtils.ml" 112 4195 4215 "src/consynth/VUtils.ml" 112 4195 4241
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 113 4243 4263 "src/consynth/VUtils.ml" 113 4243 4264
+type(
+  SymbExe.T.skLVar
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 95 3424 3442 "src/consynth/VUtils.ml" 95 3424 3443
+)
+"src/consynth/VUtils.ml" 114 4266 4286 "src/consynth/VUtils.ml" 114 4266 4304
+type(
+  (SPretty.VS.elt -> Cil.varinfo) ->
+  SPretty.VS.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  int_ref replace_index_uses "src/consynth/VUtils.ml" 36 785 791 "src/consynth/VUtils.ml" 36 785 809
+)
+"src/consynth/VUtils.ml" 115 4305 4327 "src/consynth/VUtils.ml" 115 4305 4341
+type(
+  SPretty.VS.elt -> Cil.varinfo
+)
+ident(
+  ext_ref SketchTypes.right_index_vi
+)
+"src/consynth/VUtils.ml" 115 4305 4342 "src/consynth/VUtils.ml" 115 4305 4347
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 115 4305 4342 "src/consynth/VUtils.ml" 115 4305 4355
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 115 4305 4342 "src/consynth/VUtils.ml" 115 4305 4366
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 115 4305 4367 "src/consynth/VUtils.ml" 115 4305 4370
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 115 4305 4367 "src/consynth/VUtils.ml" 115 4305 4376
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 114 4266 4286 "src/consynth/VUtils.ml" 115 4305 4376
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 113 4243 4263 "src/consynth/VUtils.ml" 115 4305 4376
+type(
+  SymbExe.T.skLVar * SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 113 4243 4262 "src/consynth/VUtils.ml" 115 4305 4377
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 112 4195 4214 "src/consynth/VUtils.ml" 115 4305 4378
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 117 4401 4420 "src/consynth/VUtils.ml" 117 4401 4422
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 98 3535 3551 "src/consynth/VUtils.ml" 117 4401 4423
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 97 3506 3522 "src/consynth/VUtils.ml" 117 4401 4423
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 119 4441 4460 "src/consynth/VUtils.ml" 119 4441 4465
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  def assgn "src/consynth/VUtils.ml" 122 4518 4533 "src/consynth/VUtils.ml" 130 4867 4939
+)
+"src/consynth/VUtils.ml" 120 4468 4486 "src/consynth/VUtils.ml" 120 4468 4487
+type(
+  SymbExe.T.skLVar
+)
+ident(
+  int_ref v "src/consynth/VUtils.ml" 95 3424 3442 "src/consynth/VUtils.ml" 95 3424 3443
+)
+"src/consynth/VUtils.ml" 120 4468 4489 "src/consynth/VUtils.ml" 120 4468 4492
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 120 4468 4489 "src/consynth/VUtils.ml" 120 4468 4498
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 120 4468 4486 "src/consynth/VUtils.ml" 120 4468 4498
+type(
+  SymbExe.T.skLVar * SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 120 4468 4485 "src/consynth/VUtils.ml" 120 4468 4499
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/VUtils.ml" 122 4518 4537 "src/consynth/VUtils.ml" 122 4518 4549
+type(
+  int
+)
+ident(
+  def dependencies "src/consynth/VUtils.ml" 125 4647 4662 "src/consynth/VUtils.ml" 130 4867 4939
+)
+"src/consynth/VUtils.ml" 123 4552 4569 "src/consynth/VUtils.ml" 123 4552 4580
+type(
+  SPretty.VS.t -> int
+)
+ident(
+  ext_ref SPretty.VS.cardinal
+)
+"src/consynth/VUtils.ml" 123 4552 4582 "src/consynth/VUtils.ml" 123 4552 4590
+type(
+  SPretty.VS.t -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.inter
+)
+"src/consynth/VUtils.ml" 123 4552 4591 "src/consynth/VUtils.ml" 123 4552 4594
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 48 1134 1156 "src/consynth/VUtils.ml" 48 1134 1159
+)
+"src/consynth/VUtils.ml" 123 4552 4591 "src/consynth/VUtils.ml" 123 4552 4602
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 123 4552 4603 "src/consynth/VUtils.ml" 123 4552 4608
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 33 653 665 "src/consynth/VUtils.ml" 33 653 670
+)
+"src/consynth/VUtils.ml" 123 4552 4603 "src/consynth/VUtils.ml" 123 4552 4616
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 123 4552 4603 "src/consynth/VUtils.ml" 123 4552 4627
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 123 4552 4581 "src/consynth/VUtils.ml" 123 4552 4628
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 123 4552 4569 "src/consynth/VUtils.ml" 123 4552 4628
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 125 4647 4665 "src/consynth/VUtils.ml" 125 4647 4677
+type(
+  int
+)
+ident(
+  int_ref dependencies "src/consynth/VUtils.ml" 122 4518 4537 "src/consynth/VUtils.ml" 122 4518 4549
+)
+"src/consynth/VUtils.ml" 125 4647 4678 "src/consynth/VUtils.ml" 125 4647 4679
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( > )
+)
+"src/consynth/VUtils.ml" 125 4647 4680 "src/consynth/VUtils.ml" 125 4647 4681
+type(
+  int
+)
+"src/consynth/VUtils.ml" 125 4647 4665 "src/consynth/VUtils.ml" 125 4647 4681
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 128 4774 4791 "src/consynth/VUtils.ml" 128 4774 4806
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref head_assgn_list "src/consynth/VUtils.ml" 48 1134 1161 "src/consynth/VUtils.ml" 48 1134 1176
+)
+"src/consynth/VUtils.ml" 128 4774 4808 "src/consynth/VUtils.ml" 128 4774 4823
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref tail_assgn_list "src/consynth/VUtils.ml" 48 1134 1178 "src/consynth/VUtils.ml" 48 1134 1193
+)
+"src/consynth/VUtils.ml" 128 4774 4823 "src/consynth/VUtils.ml" 128 4774 4824
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list ->
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list ->
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 128 4774 4824 "src/consynth/VUtils.ml" 128 4774 4829
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref assgn "src/consynth/VUtils.ml" 119 4441 4460 "src/consynth/VUtils.ml" 119 4441 4465
+)
+"src/consynth/VUtils.ml" 128 4774 4808 "src/consynth/VUtils.ml" 128 4774 4829
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/VUtils.ml" 128 4774 4831 "src/consynth/VUtils.ml" 128 4774 4846
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref new_const_exprs "src/consynth/VUtils.ml" 96 3470 3488 "src/consynth/VUtils.ml" 96 3470 3503
+)
+"src/consynth/VUtils.ml" 128 4774 4791 "src/consynth/VUtils.ml" 128 4774 4846
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 130 4867 4884 "src/consynth/VUtils.ml" 130 4867 4899
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref head_assgn_list "src/consynth/VUtils.ml" 48 1134 1161 "src/consynth/VUtils.ml" 48 1134 1176
+)
+"src/consynth/VUtils.ml" 130 4867 4899 "src/consynth/VUtils.ml" 130 4867 4900
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/VUtils.ml" 130 4867 4900 "src/consynth/VUtils.ml" 130 4867 4905
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref assgn "src/consynth/VUtils.ml" 119 4441 4460 "src/consynth/VUtils.ml" 119 4441 4465
+)
+"src/consynth/VUtils.ml" 130 4867 4884 "src/consynth/VUtils.ml" 130 4867 4905
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 130 4867 4907 "src/consynth/VUtils.ml" 130 4867 4922
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+ident(
+  int_ref tail_assgn_list "src/consynth/VUtils.ml" 48 1134 1178 "src/consynth/VUtils.ml" 48 1134 1193
+)
+"src/consynth/VUtils.ml" 130 4867 4924 "src/consynth/VUtils.ml" 130 4867 4939
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref new_const_exprs "src/consynth/VUtils.ml" 96 3470 3488 "src/consynth/VUtils.ml" 96 3470 3503
+)
+"src/consynth/VUtils.ml" 130 4867 4884 "src/consynth/VUtils.ml" 130 4867 4939
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 125 4647 4662 "src/consynth/VUtils.ml" 130 4867 4939
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 122 4518 4533 "src/consynth/VUtils.ml" 130 4867 4939
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 119 4441 4455 "src/consynth/VUtils.ml" 130 4867 4940
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 96 3470 3484 "src/consynth/VUtils.ml" 130 4867 4940
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 95 3424 3438 "src/consynth/VUtils.ml" 130 4867 4940
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 94 3360 3374 "src/consynth/VUtils.ml" 130 4867 4940
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 60 1761 1773 "src/consynth/VUtils.ml" 130 4867 4940
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 48 1134 1143 "src/consynth/VUtils.ml" 130 4867 4941
+type(
+  Utils.IM.key ->
+  auxiliary ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 132 4943 4952 "src/consynth/VUtils.ml" 132 4943 4958
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref aux_ef "src/consynth/VUtils.ml" 33 653 680 "src/consynth/VUtils.ml" 33 653 686
+)
+"src/consynth/VUtils.ml" 132 4943 4960 "src/consynth/VUtils.ml" 132 4943 4962
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 132 4943 4964 "src/consynth/VUtils.ml" 132 4943 4966
+type(
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list
+)
+"src/consynth/VUtils.ml" 132 4943 4968 "src/consynth/VUtils.ml" 132 4943 4970
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 132 4943 4959 "src/consynth/VUtils.ml" 132 4943 4971
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 47 1119 1125 "src/consynth/VUtils.ml" 132 4943 4972
+call(
+  stack
+)
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list *
+  (SymbExe.T.skLVar * SketchTypes.skExpr) list *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 134 4980 4988 "src/consynth/VUtils.ml" 134 4980 4989
+type(
+  SketchTypes.sklet
+)
+ident(
+  def f "src/consynth/VUtils.ml" 137 5083 5087 "src/consynth/VUtils.ml" 137 5083 5129
+)
+"src/consynth/VUtils.ml" 134 4980 4992 "src/consynth/VUtils.ml" 134 4980 5012
+type(
+  Utils.VS.t -> SymbExe.T.sklet -> SketchTypes.sklet
+)
+ident(
+  ext_ref SketchTypes.complete_final_state
+)
+"src/consynth/VUtils.ml" 134 4980 5013 "src/consynth/VUtils.ml" 134 4980 5020
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref new_ctx "src/consynth/VUtils.ml" 34 689 695 "src/consynth/VUtils.ml" 34 689 702
+)
+"src/consynth/VUtils.ml" 134 4980 5013 "src/consynth/VUtils.ml" 134 4980 5031
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 135 5032 5041 "src/consynth/VUtils.ml" 135 5032 5055
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  SymbExe.T.sklet -> SymbExe.T.sklet
+)
+ident(
+  ext_ref SymbExe.T.compose_tail
+)
+"src/consynth/VUtils.ml" 135 5032 5056 "src/consynth/VUtils.ml" 135 5032 5066
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref tail_assgn "src/consynth/VUtils.ml" 46 1073 1093 "src/consynth/VUtils.ml" 46 1073 1103
+)
+"src/consynth/VUtils.ml" 135 5032 5067 "src/consynth/VUtils.ml" 135 5032 5074
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref clean_f "src/consynth/VUtils.ml" 35 746 752 "src/consynth/VUtils.ml" 35 746 759
+)
+"src/consynth/VUtils.ml" 135 5032 5040 "src/consynth/VUtils.ml" 135 5032 5075
+call(
+  stack
+)
+type(
+  SymbExe.T.sklet
+)
+"src/consynth/VUtils.ml" 134 4980 4992 "src/consynth/VUtils.ml" 135 5032 5075
+call(
+  stack
+)
+type(
+  SketchTypes.sklet
+)
+"src/consynth/VUtils.ml" 137 5083 5088 "src/consynth/VUtils.ml" 137 5083 5102
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list ->
+  SymbExe.T.sklet -> SymbExe.T.sklet
+)
+ident(
+  ext_ref SymbExe.T.compose_head
+)
+"src/consynth/VUtils.ml" 137 5083 5103 "src/consynth/VUtils.ml" 137 5083 5113
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref head_assgn "src/consynth/VUtils.ml" 46 1073 1081 "src/consynth/VUtils.ml" 46 1073 1091
+)
+"src/consynth/VUtils.ml" 137 5083 5114 "src/consynth/VUtils.ml" 137 5083 5115
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref f "src/consynth/VUtils.ml" 134 4980 4988 "src/consynth/VUtils.ml" 134 4980 4989
+)
+"src/consynth/VUtils.ml" 137 5083 5087 "src/consynth/VUtils.ml" 137 5083 5116
+call(
+  stack
+)
+type(
+  SymbExe.T.sklet
+)
+"src/consynth/VUtils.ml" 137 5083 5118 "src/consynth/VUtils.ml" 137 5083 5129
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref const_exprs "src/consynth/VUtils.ml" 46 1073 1105 "src/consynth/VUtils.ml" 46 1073 1116
+)
+"src/consynth/VUtils.ml" 137 5083 5087 "src/consynth/VUtils.ml" 137 5083 5129
+type(
+  SymbExe.T.sklet * (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 134 4980 4984 "src/consynth/VUtils.ml" 137 5083 5129
+type(
+  SymbExe.T.sklet * (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 46 1073 1077 "src/consynth/VUtils.ml" 137 5083 5129
+type(
+  SymbExe.T.sklet * (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 139 5135 5138 "src/consynth/VUtils.ml" 139 5135 5145
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref new_ctx "src/consynth/VUtils.ml" 34 689 695 "src/consynth/VUtils.ml" 34 689 702
+)
+"src/consynth/VUtils.ml" 139 5135 5147 "src/consynth/VUtils.ml" 139 5135 5155
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref new_func "src/consynth/VUtils.ml" 45 1043 1049 "src/consynth/VUtils.ml" 45 1043 1057
+)
+"src/consynth/VUtils.ml" 139 5135 5157 "src/consynth/VUtils.ml" 139 5135 5168
+type(
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+ident(
+  int_ref const_exprs "src/consynth/VUtils.ml" 45 1043 1059 "src/consynth/VUtils.ml" 45 1043 1070
+)
+"src/consynth/VUtils.ml" 139 5135 5137 "src/consynth/VUtils.ml" 139 5135 5169
+type(
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 45 1043 1045 "src/consynth/VUtils.ml" 139 5135 5169
+type(
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 36 785 787 "src/consynth/VUtils.ml" 139 5135 5169
+type(
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 35 746 748 "src/consynth/VUtils.ml" 139 5135 5169
+type(
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 34 689 691 "src/consynth/VUtils.ml" 139 5135 5169
+type(
+  SketchTypes.context * SymbExe.T.sklet *
+  (SymbExe.T.skLVar * SymbExe.T.skExpr) list
+)
+"src/consynth/VUtils.ml" 143 5173 5177 "src/consynth/VUtils.ml" 143 5173 5185
+type(
+  auxiliary Utils.IM.t -> auxiliary Utils.IM.t -> bool
+)
+ident(
+  def same_aux "src/consynth/VUtils.ml" 156 5508 5508 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 143 5173 5186 "src/consynth/VUtils.ml" 143 5173 5193
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  def old_aux "src/consynth/VUtils.ml" 143 5173 5194 "src/consynth/VUtils.ml" 154 5496 5506
+)
+"src/consynth/VUtils.ml" 143 5173 5194 "src/consynth/VUtils.ml" 143 5173 5201
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  def new_aux "src/consynth/VUtils.ml" 144 5204 5206 "src/consynth/VUtils.ml" 154 5496 5506
+)
+"src/consynth/VUtils.ml" 144 5204 5209 "src/consynth/VUtils.ml" 144 5204 5220
+type(
+  auxiliary Utils.IM.t -> int
+)
+ident(
+  ext_ref Utils.IM.cardinal
+)
+"src/consynth/VUtils.ml" 144 5204 5221 "src/consynth/VUtils.ml" 144 5204 5228
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref old_aux "src/consynth/VUtils.ml" 143 5173 5186 "src/consynth/VUtils.ml" 143 5173 5193
+)
+"src/consynth/VUtils.ml" 144 5204 5209 "src/consynth/VUtils.ml" 144 5204 5228
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 144 5204 5229 "src/consynth/VUtils.ml" 144 5204 5231
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( != )
+)
+"src/consynth/VUtils.ml" 144 5204 5232 "src/consynth/VUtils.ml" 144 5204 5243
+type(
+  auxiliary Utils.IM.t -> int
+)
+ident(
+  ext_ref Utils.IM.cardinal
+)
+"src/consynth/VUtils.ml" 144 5204 5244 "src/consynth/VUtils.ml" 144 5204 5251
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref new_aux "src/consynth/VUtils.ml" 143 5173 5194 "src/consynth/VUtils.ml" 143 5173 5201
+)
+"src/consynth/VUtils.ml" 144 5204 5232 "src/consynth/VUtils.ml" 144 5204 5251
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 144 5204 5209 "src/consynth/VUtils.ml" 144 5204 5251
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 145 5252 5259 "src/consynth/VUtils.ml" 145 5252 5264
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 147 5272 5276 "src/consynth/VUtils.ml" 147 5272 5283
+type(
+  (Utils.IM.key -> auxiliary -> bool -> bool) ->
+  auxiliary Utils.IM.t -> bool -> bool
+)
+ident(
+  ext_ref Utils.IM.fold
+)
+"src/consynth/VUtils.ml" 148 5284 5295 "src/consynth/VUtils.ml" 148 5284 5300
+type(
+  Utils.IM.key
+)
+ident(
+  def n_vid "src/consynth/VUtils.ml" 148 5284 5301 "src/consynth/VUtils.ml" 152 5448 5480
+)
+"src/consynth/VUtils.ml" 148 5284 5301 "src/consynth/VUtils.ml" 148 5284 5306
+type(
+  auxiliary
+)
+ident(
+  def n_aux "src/consynth/VUtils.ml" 148 5284 5307 "src/consynth/VUtils.ml" 152 5448 5480
+)
+"src/consynth/VUtils.ml" 148 5284 5307 "src/consynth/VUtils.ml" 148 5284 5311
+type(
+  bool
+)
+ident(
+  def same "src/consynth/VUtils.ml" 149 5315 5324 "src/consynth/VUtils.ml" 152 5448 5480
+)
+"src/consynth/VUtils.ml" 150 5328 5344 "src/consynth/VUtils.ml" 150 5328 5349
+type(
+  auxiliary
+)
+ident(
+  def o_aux "src/consynth/VUtils.ml" 151 5377 5389 "src/consynth/VUtils.ml" 151 5377 5446
+)
+"src/consynth/VUtils.ml" 150 5328 5352 "src/consynth/VUtils.ml" 150 5328 5359
+type(
+  Utils.IM.key -> auxiliary Utils.IM.t -> auxiliary
+)
+ident(
+  ext_ref Utils.IM.find
+)
+"src/consynth/VUtils.ml" 150 5328 5360 "src/consynth/VUtils.ml" 150 5328 5365
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref n_vid "src/consynth/VUtils.ml" 148 5284 5295 "src/consynth/VUtils.ml" 148 5284 5300
+)
+"src/consynth/VUtils.ml" 150 5328 5366 "src/consynth/VUtils.ml" 150 5328 5373
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref old_aux "src/consynth/VUtils.ml" 143 5173 5186 "src/consynth/VUtils.ml" 143 5173 5193
+)
+"src/consynth/VUtils.ml" 150 5328 5352 "src/consynth/VUtils.ml" 150 5328 5373
+call(
+  stack
+)
+type(
+  auxiliary
+)
+"src/consynth/VUtils.ml" 151 5377 5392 "src/consynth/VUtils.ml" 151 5377 5397
+type(
+  auxiliary
+)
+ident(
+  int_ref o_aux "src/consynth/VUtils.ml" 150 5328 5344 "src/consynth/VUtils.ml" 150 5328 5349
+)
+"src/consynth/VUtils.ml" 151 5377 5392 "src/consynth/VUtils.ml" 151 5377 5403
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 151 5377 5404 "src/consynth/VUtils.ml" 151 5377 5405
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/VUtils.ml" 151 5377 5406 "src/consynth/VUtils.ml" 151 5377 5411
+type(
+  auxiliary
+)
+ident(
+  int_ref n_aux "src/consynth/VUtils.ml" 148 5284 5301 "src/consynth/VUtils.ml" 148 5284 5306
+)
+"src/consynth/VUtils.ml" 151 5377 5406 "src/consynth/VUtils.ml" 151 5377 5417
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 151 5377 5392 "src/consynth/VUtils.ml" 151 5377 5417
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 151 5377 5423 "src/consynth/VUtils.ml" 151 5377 5427
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 151 5377 5428 "src/consynth/VUtils.ml" 151 5377 5430
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/VUtils.ml" 151 5377 5431 "src/consynth/VUtils.ml" 151 5377 5435
+type(
+  bool
+)
+ident(
+  int_ref same "src/consynth/VUtils.ml" 148 5284 5307 "src/consynth/VUtils.ml" 148 5284 5311
+)
+"src/consynth/VUtils.ml" 151 5377 5423 "src/consynth/VUtils.ml" 151 5377 5435
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 151 5377 5441 "src/consynth/VUtils.ml" 151 5377 5446
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 151 5377 5389 "src/consynth/VUtils.ml" 151 5377 5446
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 150 5328 5339 "src/consynth/VUtils.ml" 151 5377 5447
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 152 5448 5462 "src/consynth/VUtils.ml" 152 5448 5471
+type(
+  exn
+)
+"src/consynth/VUtils.ml" 152 5448 5475 "src/consynth/VUtils.ml" 152 5448 5480
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 149 5315 5324 "src/consynth/VUtils.ml" 152 5448 5480
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 148 5284 5290 "src/consynth/VUtils.ml" 152 5448 5481
+type(
+  Utils.IM.key -> auxiliary -> bool -> bool
+)
+"src/consynth/VUtils.ml" 153 5482 5488 "src/consynth/VUtils.ml" 153 5482 5495
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref new_aux "src/consynth/VUtils.ml" 143 5173 5194 "src/consynth/VUtils.ml" 143 5173 5201
+)
+"src/consynth/VUtils.ml" 154 5496 5502 "src/consynth/VUtils.ml" 154 5496 5506
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 147 5272 5276 "src/consynth/VUtils.ml" 154 5496 5506
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 144 5204 5206 "src/consynth/VUtils.ml" 154 5496 5506
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 156 5508 5512 "src/consynth/VUtils.ml" 156 5508 5531
+type(
+  SymbExe.exec_info ->
+  int * Utils.VS.t * SketchTypes.skExpr ->
+  SketchTypes.skExpr Utils.IM.t -> bool
+)
+ident(
+  def is_already_computed "src/consynth/VUtils.ml" 172 6079 6079 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 156 5508 5532 "src/consynth/VUtils.ml" 156 5508 5537
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo "src/consynth/VUtils.ml" 156 5508 5538 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 156 5508 5539 "src/consynth/VUtils.ml" 156 5508 5545
+type(
+  int
+)
+ident(
+  def aux_id "src/consynth/VUtils.ml" 156 5508 5566 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 156 5508 5547 "src/consynth/VUtils.ml" 156 5508 5553
+type(
+  Utils.VS.t
+)
+ident(
+  def aux_vs "src/consynth/VUtils.ml" 156 5508 5566 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 156 5508 5555 "src/consynth/VUtils.ml" 156 5508 5564
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def func_expr "src/consynth/VUtils.ml" 156 5508 5566 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 156 5508 5538 "src/consynth/VUtils.ml" 156 5508 5565
+type(
+  int * Utils.VS.t * SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 156 5508 5566 "src/consynth/VUtils.ml" 156 5508 5571
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def exprs "src/consynth/VUtils.ml" 157 5574 5576 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 157 5574 5580 "src/consynth/VUtils.ml" 157 5574 5605
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  def candidate_state_variables "src/consynth/VUtils.ml" 170 6034 6036 "src/consynth/VUtils.ml" 170 6034 6077
+)
+"src/consynth/VUtils.ml" 158 5608 5612 "src/consynth/VUtils.ml" 158 5608 5621
+type(
+  (Utils.IM.key -> SketchTypes.skExpr -> bool) ->
+  SketchTypes.skExpr Utils.IM.t -> SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.filter
+)
+"src/consynth/VUtils.ml" 159 5622 5633 "src/consynth/VUtils.ml" 159 5622 5634
+type(
+  Utils.IM.key
+)
+ident(
+  def i "src/consynth/VUtils.ml" 159 5622 5635 "src/consynth/VUtils.ml" 168 6002 6021
+)
+"src/consynth/VUtils.ml" 159 5622 5635 "src/consynth/VUtils.ml" 159 5622 5636
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e "src/consynth/VUtils.ml" 161 5702 5711 "src/consynth/VUtils.ml" 168 6002 6021
+)
+"src/consynth/VUtils.ml" 161 5702 5715 "src/consynth/VUtils.ml" 161 5702 5720
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def e_rep "src/consynth/VUtils.ml" 168 6002 6011 "src/consynth/VUtils.ml" 168 6002 6021
+)
+"src/consynth/VUtils.ml" 162 5723 5734 "src/consynth/VUtils.ml" 162 5723 5752
+type(
+  ?in_subscripts:bool ->
+  to_replace:SketchTypes.skExpr ->
+  by:SketchTypes.skExpr -> ine:SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref SketchTypes.replace_expression
+)
+"src/consynth/VUtils.ml" 162 5723 5768 "src/consynth/VUtils.ml" 162 5723 5773
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 163 5774 5818 "src/consynth/VUtils.ml" 163 5774 5834
+type(
+  int -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/VUtils.ml" 163 5774 5835 "src/consynth/VUtils.ml" 163 5774 5841
+type(
+  int
+)
+ident(
+  int_ref aux_id "src/consynth/VUtils.ml" 156 5508 5539 "src/consynth/VUtils.ml" 156 5508 5545
+)
+"src/consynth/VUtils.ml" 163 5774 5842 "src/consynth/VUtils.ml" 163 5774 5848
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref aux_vs "src/consynth/VUtils.ml" 156 5508 5547 "src/consynth/VUtils.ml" 156 5508 5553
+)
+"src/consynth/VUtils.ml" 163 5774 5817 "src/consynth/VUtils.ml" 163 5774 5849
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/VUtils.ml" 163 5774 5806 "src/consynth/VUtils.ml" 163 5774 5850
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/VUtils.ml" 163 5774 5799 "src/consynth/VUtils.ml" 163 5774 5851
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 165 5887 5915 "src/consynth/VUtils.ml" 165 5887 5931
+type(
+  Utils.IM.key -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/VUtils.ml" 165 5887 5932 "src/consynth/VUtils.ml" 165 5887 5933
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref i "src/consynth/VUtils.ml" 159 5622 5633 "src/consynth/VUtils.ml" 159 5622 5634
+)
+"src/consynth/VUtils.ml" 165 5887 5934 "src/consynth/VUtils.ml" 165 5887 5939
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 156 5508 5532 "src/consynth/VUtils.ml" 156 5508 5537
+)
+"src/consynth/VUtils.ml" 165 5887 5934 "src/consynth/VUtils.ml" 165 5887 5947
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 165 5887 5934 "src/consynth/VUtils.ml" 165 5887 5958
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 165 5887 5914 "src/consynth/VUtils.ml" 165 5887 5959
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/VUtils.ml" 164 5852 5876 "src/consynth/VUtils.ml" 165 5887 5960
+type(
+  SketchTypes.skLVar
+)
+"src/consynth/VUtils.ml" 164 5852 5869 "src/consynth/VUtils.ml" 165 5887 5961
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 166 5962 5980 "src/consynth/VUtils.ml" 166 5962 5989
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref func_expr "src/consynth/VUtils.ml" 156 5508 5555 "src/consynth/VUtils.ml" 156 5508 5564
+)
+"src/consynth/VUtils.ml" 162 5723 5734 "src/consynth/VUtils.ml" 166 5962 5989
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 168 6002 6011 "src/consynth/VUtils.ml" 168 6002 6016
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e_rep "src/consynth/VUtils.ml" 161 5702 5715 "src/consynth/VUtils.ml" 161 5702 5720
+)
+"src/consynth/VUtils.ml" 168 6002 6017 "src/consynth/VUtils.ml" 168 6002 6019
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr -> bool
+)
+ident(
+  ext_ref Expressions.( @= )
+)
+"src/consynth/VUtils.ml" 168 6002 6020 "src/consynth/VUtils.ml" 168 6002 6021
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref e "src/consynth/VUtils.ml" 159 5622 5635 "src/consynth/VUtils.ml" 159 5622 5636
+)
+"src/consynth/VUtils.ml" 168 6002 6011 "src/consynth/VUtils.ml" 168 6002 6021
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 161 5702 5711 "src/consynth/VUtils.ml" 168 6002 6021
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 159 5622 5628 "src/consynth/VUtils.ml" 168 6002 6022
+type(
+  Utils.IM.key -> SketchTypes.skExpr -> bool
+)
+"src/consynth/VUtils.ml" 168 6002 6023 "src/consynth/VUtils.ml" 168 6002 6028
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref exprs "src/consynth/VUtils.ml" 156 5508 5566 "src/consynth/VUtils.ml" 156 5508 5571
+)
+"src/consynth/VUtils.ml" 158 5608 5612 "src/consynth/VUtils.ml" 168 6002 6028
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+"src/consynth/VUtils.ml" 170 6034 6036 "src/consynth/VUtils.ml" 170 6034 6047
+type(
+  SketchTypes.skExpr Utils.IM.t -> int
+)
+ident(
+  ext_ref Utils.IM.cardinal
+)
+"src/consynth/VUtils.ml" 170 6034 6048 "src/consynth/VUtils.ml" 170 6034 6073
+type(
+  SketchTypes.skExpr Utils.IM.t
+)
+ident(
+  int_ref candidate_state_variables "src/consynth/VUtils.ml" 157 5574 5580 "src/consynth/VUtils.ml" 157 5574 5605
+)
+"src/consynth/VUtils.ml" 170 6034 6036 "src/consynth/VUtils.ml" 170 6034 6073
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/VUtils.ml" 170 6034 6074 "src/consynth/VUtils.ml" 170 6034 6075
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( > )
+)
+"src/consynth/VUtils.ml" 170 6034 6076 "src/consynth/VUtils.ml" 170 6034 6077
+type(
+  int
+)
+"src/consynth/VUtils.ml" 170 6034 6036 "src/consynth/VUtils.ml" 170 6034 6077
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 157 5574 5576 "src/consynth/VUtils.ml" 170 6034 6077
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 172 6079 6083 "src/consynth/VUtils.ml" 172 6079 6111
+type(
+  SymbExe.exec_info ->
+  Utils.VS.t * auxiliary Utils.IM.t ->
+  SymbExe.T.sklet -> SPretty.VS.t * auxiliary Utils.IM.t
+)
+ident(
+  def remove_duplicate_auxiliaries "src/consynth/VUtils.ml" 183 6435 6435 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 172 6079 6112 "src/consynth/VUtils.ml" 172 6079 6117
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo "src/consynth/VUtils.ml" 172 6079 6118 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 172 6079 6119 "src/consynth/VUtils.ml" 172 6079 6125
+type(
+  Utils.VS.t
+)
+ident(
+  def aux_vs "src/consynth/VUtils.ml" 172 6079 6135 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 172 6079 6127 "src/consynth/VUtils.ml" 172 6079 6133
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  def aux_ef "src/consynth/VUtils.ml" 172 6079 6135 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 172 6079 6118 "src/consynth/VUtils.ml" 172 6079 6134
+type(
+  Utils.VS.t * auxiliary Utils.IM.t
+)
+"src/consynth/VUtils.ml" 172 6079 6135 "src/consynth/VUtils.ml" 172 6079 6145
+type(
+  SymbExe.T.sklet
+)
+ident(
+  def input_func "src/consynth/VUtils.ml" 173 6148 6150 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 173 6148 6154 "src/consynth/VUtils.ml" 173 6148 6159
+type(
+  SymbExe.T.skExpr Utils.IM.t
+)
+ident(
+  def exprs "src/consynth/VUtils.ml" 174 6215 6217 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 173 6148 6161 "src/consynth/VUtils.ml" 173 6148 6167
+type(
+  SymbExe.T.ES.t
+)
+ident(
+  def inputs "src/consynth/VUtils.ml" 174 6215 6217 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 173 6148 6154 "src/consynth/VUtils.ml" 173 6148 6167
+type(
+  SymbExe.T.skExpr Utils.IM.t * SymbExe.T.ES.t
+)
+"src/consynth/VUtils.ml" 173 6148 6170 "src/consynth/VUtils.ml" 173 6148 6181
+type(
+  ?silent:bool ->
+  SymbExe.exec_info ->
+  SymbExe.T.sklet -> SymbExe.T.skExpr Utils.IM.t * SymbExe.T.ES.t
+)
+ident(
+  ext_ref SymbExe.unfold_once
+)
+"src/consynth/VUtils.ml" 173 6148 6190 "src/consynth/VUtils.ml" 173 6148 6194
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 173 6148 6195 "src/consynth/VUtils.ml" 173 6148 6200
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 172 6079 6112 "src/consynth/VUtils.ml" 172 6079 6117
+)
+"src/consynth/VUtils.ml" 173 6148 6201 "src/consynth/VUtils.ml" 173 6148 6211
+type(
+  SymbExe.T.sklet
+)
+ident(
+  int_ref input_func "src/consynth/VUtils.ml" 172 6079 6135 "src/consynth/VUtils.ml" 172 6079 6145
+)
+"src/consynth/VUtils.ml" 173 6148 6170 "src/consynth/VUtils.ml" 173 6148 6211
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr Utils.IM.t * SymbExe.T.ES.t
+)
+"src/consynth/VUtils.ml" 174 6215 6221 "src/consynth/VUtils.ml" 174 6215 6231
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  def new_aux_ef "src/consynth/VUtils.ml" 180 6361 6363 "src/consynth/VUtils.ml" 180 6361 6432
+)
+"src/consynth/VUtils.ml" 175 6234 6238 "src/consynth/VUtils.ml" 175 6234 6247
+type(
+  (Utils.IM.key -> auxiliary -> bool) ->
+  auxiliary Utils.IM.t -> auxiliary Utils.IM.t
+)
+ident(
+  ext_ref Utils.IM.filter
+)
+"src/consynth/VUtils.ml" 176 6248 6259 "src/consynth/VUtils.ml" 176 6248 6262
+type(
+  Utils.IM.key
+)
+ident(
+  def vid "src/consynth/VUtils.ml" 176 6248 6263 "src/consynth/VUtils.ml" 177 6270 6341
+)
+"src/consynth/VUtils.ml" 176 6248 6263 "src/consynth/VUtils.ml" 176 6248 6266
+type(
+  auxiliary
+)
+ident(
+  def aux "src/consynth/VUtils.ml" 177 6270 6279 "src/consynth/VUtils.ml" 177 6270 6341
+)
+"src/consynth/VUtils.ml" 177 6270 6279 "src/consynth/VUtils.ml" 177 6270 6282
+type(
+  bool -> bool
+)
+ident(
+  ext_ref Pervasives.not
+)
+"src/consynth/VUtils.ml" 177 6270 6284 "src/consynth/VUtils.ml" 177 6270 6303
+type(
+  SymbExe.exec_info ->
+  Utils.IM.key * Utils.VS.t * SketchTypes.skExpr ->
+  SymbExe.T.skExpr Utils.IM.t -> bool
+)
+ident(
+  int_ref is_already_computed "src/consynth/VUtils.ml" 156 5508 5512 "src/consynth/VUtils.ml" 156 5508 5531
+)
+"src/consynth/VUtils.ml" 177 6270 6304 "src/consynth/VUtils.ml" 177 6270 6309
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 172 6079 6112 "src/consynth/VUtils.ml" 172 6079 6117
+)
+"src/consynth/VUtils.ml" 177 6270 6311 "src/consynth/VUtils.ml" 177 6270 6314
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/VUtils.ml" 176 6248 6259 "src/consynth/VUtils.ml" 176 6248 6262
+)
+"src/consynth/VUtils.ml" 177 6270 6316 "src/consynth/VUtils.ml" 177 6270 6322
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref aux_vs "src/consynth/VUtils.ml" 172 6079 6119 "src/consynth/VUtils.ml" 172 6079 6125
+)
+"src/consynth/VUtils.ml" 177 6270 6324 "src/consynth/VUtils.ml" 177 6270 6327
+type(
+  auxiliary
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 176 6248 6263 "src/consynth/VUtils.ml" 176 6248 6266
+)
+"src/consynth/VUtils.ml" 177 6270 6324 "src/consynth/VUtils.ml" 177 6270 6333
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 177 6270 6310 "src/consynth/VUtils.ml" 177 6270 6334
+type(
+  Utils.IM.key * Utils.VS.t * SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 177 6270 6335 "src/consynth/VUtils.ml" 177 6270 6340
+type(
+  SymbExe.T.skExpr Utils.IM.t
+)
+ident(
+  int_ref exprs "src/consynth/VUtils.ml" 173 6148 6154 "src/consynth/VUtils.ml" 173 6148 6159
+)
+"src/consynth/VUtils.ml" 177 6270 6283 "src/consynth/VUtils.ml" 177 6270 6341
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 177 6270 6279 "src/consynth/VUtils.ml" 177 6270 6341
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 176 6248 6254 "src/consynth/VUtils.ml" 177 6270 6342
+type(
+  Utils.IM.key -> auxiliary -> bool
+)
+"src/consynth/VUtils.ml" 178 6343 6349 "src/consynth/VUtils.ml" 178 6343 6355
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref aux_ef "src/consynth/VUtils.ml" 172 6079 6127 "src/consynth/VUtils.ml" 172 6079 6133
+)
+"src/consynth/VUtils.ml" 175 6234 6238 "src/consynth/VUtils.ml" 178 6343 6355
+call(
+  stack
+)
+type(
+  auxiliary Utils.IM.t
+)
+"src/consynth/VUtils.ml" 180 6361 6364 "src/consynth/VUtils.ml" 180 6361 6373
+type(
+  (SPretty.VS.elt -> bool) -> SPretty.VS.t -> SPretty.VS.t
+)
+ident(
+  ext_ref SPretty.VS.filter
+)
+"src/consynth/VUtils.ml" 180 6361 6379 "src/consynth/VUtils.ml" 180 6361 6381
+type(
+  SPretty.VS.elt
+)
+ident(
+  def vi "src/consynth/VUtils.ml" 180 6361 6385 "src/consynth/VUtils.ml" 180 6361 6411
+)
+"src/consynth/VUtils.ml" 180 6361 6385 "src/consynth/VUtils.ml" 180 6361 6391
+type(
+  Utils.IM.key -> auxiliary Utils.IM.t -> bool
+)
+ident(
+  ext_ref Utils.IM.mem
+)
+"src/consynth/VUtils.ml" 180 6361 6392 "src/consynth/VUtils.ml" 180 6361 6394
+type(
+  SPretty.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/VUtils.ml" 180 6361 6379 "src/consynth/VUtils.ml" 180 6361 6381
+)
+"src/consynth/VUtils.ml" 180 6361 6392 "src/consynth/VUtils.ml" 180 6361 6400
+type(
+  Utils.IM.key
+)
+"src/consynth/VUtils.ml" 180 6361 6401 "src/consynth/VUtils.ml" 180 6361 6411
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref new_aux_ef "src/consynth/VUtils.ml" 174 6215 6221 "src/consynth/VUtils.ml" 174 6215 6231
+)
+"src/consynth/VUtils.ml" 180 6361 6385 "src/consynth/VUtils.ml" 180 6361 6411
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 180 6361 6374 "src/consynth/VUtils.ml" 180 6361 6412
+type(
+  SPretty.VS.elt -> bool
+)
+"src/consynth/VUtils.ml" 180 6361 6413 "src/consynth/VUtils.ml" 180 6361 6419
+type(
+  Utils.VS.t
+)
+ident(
+  int_ref aux_vs "src/consynth/VUtils.ml" 172 6079 6119 "src/consynth/VUtils.ml" 172 6079 6125
+)
+"src/consynth/VUtils.ml" 180 6361 6363 "src/consynth/VUtils.ml" 180 6361 6420
+call(
+  stack
+)
+type(
+  SPretty.VS.t
+)
+"src/consynth/VUtils.ml" 180 6361 6422 "src/consynth/VUtils.ml" 180 6361 6432
+type(
+  auxiliary Utils.IM.t
+)
+ident(
+  int_ref new_aux_ef "src/consynth/VUtils.ml" 174 6215 6221 "src/consynth/VUtils.ml" 174 6215 6231
+)
+"src/consynth/VUtils.ml" 180 6361 6363 "src/consynth/VUtils.ml" 180 6361 6432
+type(
+  SPretty.VS.t * auxiliary Utils.IM.t
+)
+"src/consynth/VUtils.ml" 174 6215 6217 "src/consynth/VUtils.ml" 180 6361 6432
+type(
+  SPretty.VS.t * auxiliary Utils.IM.t
+)
+"src/consynth/VUtils.ml" 173 6148 6150 "src/consynth/VUtils.ml" 180 6361 6432
+type(
+  SPretty.VS.t * auxiliary Utils.IM.t
+)
+"src/consynth/VUtils.ml" 183 6435 6439 "src/consynth/VUtils.ml" 183 6435 6461
+type(
+  SketchTypes.context -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  def reduction_with_warning "src/consynth/VUtils.ml" 199 6976 6976 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 183 6435 6462 "src/consynth/VUtils.ml" 183 6435 6465
+type(
+  SketchTypes.context
+)
+ident(
+  def ctx "src/consynth/VUtils.ml" 183 6435 6466 "src/consynth/VUtils.ml" 196 6953 6973
+)
+"src/consynth/VUtils.ml" 183 6435 6466 "src/consynth/VUtils.ml" 183 6435 6470
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def expr "src/consynth/VUtils.ml" 184 6473 6475 "src/consynth/VUtils.ml" 196 6953 6973
+)
+"src/consynth/VUtils.ml" 184 6473 6479 "src/consynth/VUtils.ml" 184 6473 6497
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def reduced_expression "src/consynth/VUtils.ml" 185 6524 6526 "src/consynth/VUtils.ml" 196 6953 6973
+)
+"src/consynth/VUtils.ml" 184 6473 6500 "src/consynth/VUtils.ml" 184 6473 6511
+type(
+  ?limit:int ->
+  SketchTypes.context -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref ExpressionReduction.reduce_full
+)
+"src/consynth/VUtils.ml" 184 6473 6512 "src/consynth/VUtils.ml" 184 6473 6515
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref ctx "src/consynth/VUtils.ml" 183 6435 6462 "src/consynth/VUtils.ml" 183 6435 6465
+)
+"src/consynth/VUtils.ml" 184 6473 6516 "src/consynth/VUtils.ml" 184 6473 6520
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref expr "src/consynth/VUtils.ml" 183 6435 6466 "src/consynth/VUtils.ml" 183 6435 6470
+)
+"src/consynth/VUtils.ml" 184 6473 6500 "src/consynth/VUtils.ml" 184 6473 6520
+call(
+  stack
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 185 6524 6530 "src/consynth/VUtils.ml" 185 6524 6534
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref expr "src/consynth/VUtils.ml" 183 6435 6466 "src/consynth/VUtils.ml" 183 6435 6470
+)
+"src/consynth/VUtils.ml" 185 6524 6535 "src/consynth/VUtils.ml" 185 6524 6536
+type(
+  SketchTypes.skExpr -> SketchTypes.skExpr -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/VUtils.ml" 185 6524 6537 "src/consynth/VUtils.ml" 185 6524 6555
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref reduced_expression "src/consynth/VUtils.ml" 184 6473 6479 "src/consynth/VUtils.ml" 184 6473 6497
+)
+"src/consynth/VUtils.ml" 185 6524 6529 "src/consynth/VUtils.ml" 185 6524 6556
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 185 6524 6557 "src/consynth/VUtils.ml" 185 6524 6559
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/VUtils.ml" 185 6524 6560 "src/consynth/VUtils.ml" 185 6524 6561
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/VUtils.ml" 185 6524 6561 "src/consynth/VUtils.ml" 185 6524 6566
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/VUtils.ml" 9 109 113 "src/consynth/VUtils.ml" 9 109 118
+)
+"src/consynth/VUtils.ml" 185 6524 6560 "src/consynth/VUtils.ml" 185 6524 6566
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 185 6524 6529 "src/consynth/VUtils.ml" 185 6524 6566
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 187 6582 6588 "src/consynth/VUtils.ml" 187 6582 6602
+type(
+  Format.formatter ->
+  (string ->
+   string ->
+   (Format.formatter -> SketchTypes.skExpr -> unit) ->
+   SketchTypes.skExpr ->
+   (Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> SketchTypes.ES.t -> unit) -> SketchTypes.ES.t -> unit,
+   Format.formatter, unit)
+  format ->
+  string ->
+  string ->
+  (Format.formatter -> SketchTypes.skExpr -> unit) ->
+  SketchTypes.skExpr ->
+  (Format.formatter -> Utils.VS.t -> unit) ->
+  Utils.VS.t ->
+  (Format.formatter -> SketchTypes.ES.t -> unit) -> SketchTypes.ES.t -> unit
+)
+ident(
+  ext_ref Format.fprintf
+)
+"src/consynth/VUtils.ml" 187 6582 6603 "src/consynth/VUtils.ml" 187 6582 6623
+type(
+  Format.formatter
+)
+ident(
+  ext_ref Format.std_formatter
+)
+"src/consynth/VUtils.ml" 188 6624 6632 "src/consynth/VUtils.ml" 189 6683 6741
+type(
+  (string ->
+   string ->
+   (Format.formatter -> SketchTypes.skExpr -> unit) ->
+   SketchTypes.skExpr ->
+   (Format.formatter -> Utils.VS.t -> unit) ->
+   Utils.VS.t ->
+   (Format.formatter -> SketchTypes.ES.t -> unit) -> SketchTypes.ES.t -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/VUtils.ml" 190 6742 6751 "src/consynth/VUtils.ml" 190 6742 6765
+type(
+  Utils.SM.key -> string
+)
+ident(
+  ext_ref PpHelper.color
+)
+"src/consynth/VUtils.ml" 190 6742 6766 "src/consynth/VUtils.ml" 190 6742 6771
+type(
+  Utils.SM.key
+)
+"src/consynth/VUtils.ml" 190 6742 6750 "src/consynth/VUtils.ml" 190 6742 6772
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/VUtils.ml" 190 6742 6773 "src/consynth/VUtils.ml" 190 6742 6789
+type(
+  string
+)
+ident(
+  ext_ref PpHelper.default
+)
+"src/consynth/VUtils.ml" 191 6790 6798 "src/consynth/VUtils.ml" 191 6790 6815
+type(
+  Format.formatter -> SketchTypes.skExpr -> unit
+)
+ident(
+  ext_ref SPretty.pp_skexpr
+)
+"src/consynth/VUtils.ml" 191 6790 6816 "src/consynth/VUtils.ml" 191 6790 6834
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref reduced_expression "src/consynth/VUtils.ml" 184 6473 6479 "src/consynth/VUtils.ml" 184 6473 6497
+)
+"src/consynth/VUtils.ml" 192 6835 6843 "src/consynth/VUtils.ml" 192 6835 6852
+type(
+  Format.formatter -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VSOps.pvs
+)
+"src/consynth/VUtils.ml" 192 6835 6853 "src/consynth/VUtils.ml" 192 6835 6856
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref ctx "src/consynth/VUtils.ml" 183 6435 6462 "src/consynth/VUtils.ml" 183 6435 6465
+)
+"src/consynth/VUtils.ml" 192 6835 6853 "src/consynth/VUtils.ml" 192 6835 6867
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 193 6868 6881 "src/consynth/VUtils.ml" 193 6868 6884
+type(
+  Format.formatter
+)
+ident(
+  def fmt "src/consynth/VUtils.ml" 193 6868 6885 "src/consynth/VUtils.ml" 193 6868 6915
+)
+"src/consynth/VUtils.ml" 193 6868 6885 "src/consynth/VUtils.ml" 193 6868 6886
+type(
+  SketchTypes.ES.t
+)
+ident(
+  def a "src/consynth/VUtils.ml" 193 6868 6890 "src/consynth/VUtils.ml" 193 6868 6915
+)
+"src/consynth/VUtils.ml" 193 6868 6890 "src/consynth/VUtils.ml" 193 6868 6909
+type(
+  Format.formatter ->
+  ?sep:(Format.formatter -> unit -> unit) -> SketchTypes.ES.t -> unit
+)
+ident(
+  ext_ref SPretty.pp_expr_set
+)
+"src/consynth/VUtils.ml" 193 6868 6910 "src/consynth/VUtils.ml" 193 6868 6913
+type(
+  Format.formatter
+)
+ident(
+  int_ref fmt "src/consynth/VUtils.ml" 193 6868 6881 "src/consynth/VUtils.ml" 193 6868 6884
+)
+"src/consynth/VUtils.ml" 193 6868 6914 "src/consynth/VUtils.ml" 193 6868 6915
+type(
+  SketchTypes.ES.t
+)
+ident(
+  int_ref a "src/consynth/VUtils.ml" 193 6868 6885 "src/consynth/VUtils.ml" 193 6868 6886
+)
+"src/consynth/VUtils.ml" 193 6868 6890 "src/consynth/VUtils.ml" 193 6868 6915
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 193 6868 6876 "src/consynth/VUtils.ml" 193 6868 6916
+type(
+  Format.formatter -> SketchTypes.ES.t -> unit
+)
+"src/consynth/VUtils.ml" 193 6868 6917 "src/consynth/VUtils.ml" 193 6868 6920
+type(
+  SketchTypes.context
+)
+ident(
+  int_ref ctx "src/consynth/VUtils.ml" 183 6435 6462 "src/consynth/VUtils.ml" 183 6435 6465
+)
+"src/consynth/VUtils.ml" 193 6868 6917 "src/consynth/VUtils.ml" 193 6868 6933
+type(
+  SketchTypes.ES.t
+)
+"src/consynth/VUtils.ml" 186 6572 6576 "src/consynth/VUtils.ml" 194 6934 6941
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 195 6942 6949 "src/consynth/VUtils.ml" 195 6942 6951
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 185 6524 6526 "src/consynth/VUtils.ml" 195 6942 6951
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 196 6953 6955 "src/consynth/VUtils.ml" 196 6953 6973
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref reduced_expression "src/consynth/VUtils.ml" 184 6473 6479 "src/consynth/VUtils.ml" 184 6473 6497
+)
+"src/consynth/VUtils.ml" 185 6524 6526 "src/consynth/VUtils.ml" 196 6953 6973
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 184 6473 6475 "src/consynth/VUtils.ml" 196 6953 6973
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 199 6976 6980 "src/consynth/VUtils.ml" 199 6976 7003
+type(
+  SymbExe.exec_info -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  def reset_index_expressions "src/consynth/VUtils.ml" 218 7592 7592 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 199 6976 7004 "src/consynth/VUtils.ml" 199 6976 7009
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo "src/consynth/VUtils.ml" 199 6976 7010 "src/consynth/VUtils.ml" 216 7581 7590
+)
+"src/consynth/VUtils.ml" 199 6976 7010 "src/consynth/VUtils.ml" 199 6976 7013
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def aux "src/consynth/VUtils.ml" 200 7016 7020 "src/consynth/VUtils.ml" 216 7581 7590
+)
+"src/consynth/VUtils.ml" 200 7016 7020 "src/consynth/VUtils.ml" 200 7016 7027
+type(
+  (Utils.IM.key -> SymbExe.T.skExpr -> SymbExe.T.skExpr -> SymbExe.T.skExpr) ->
+  SymbExe.T.skExpr Utils.IM.t -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref Utils.IM.fold
+)
+"src/consynth/VUtils.ml" 201 7028 7039 "src/consynth/VUtils.ml" 201 7028 7045
+type(
+  Utils.IM.key
+)
+ident(
+  def idx_id "src/consynth/VUtils.ml" 201 7028 7046 "src/consynth/VUtils.ml" 213 7522 7548
+)
+"src/consynth/VUtils.ml" 201 7028 7046 "src/consynth/VUtils.ml" 201 7028 7054
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def idx_expr "src/consynth/VUtils.ml" 201 7028 7055 "src/consynth/VUtils.ml" 213 7522 7548
+)
+"src/consynth/VUtils.ml" 201 7028 7055 "src/consynth/VUtils.ml" 201 7028 7056
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def e "src/consynth/VUtils.ml" 202 7060 7069 "src/consynth/VUtils.ml" 213 7522 7548
+)
+"src/consynth/VUtils.ml" 204 7140 7151 "src/consynth/VUtils.ml" 204 7140 7171
+type(
+  ?in_subscripts:bool ->
+  to_replace:SymbExe.T.skExpr ->
+  by:SymbExe.T.skExpr -> ine:SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref SymbExe.T.replace_expression
+)
+"src/consynth/VUtils.ml" 204 7140 7187 "src/consynth/VUtils.ml" 204 7140 7191
+type(
+  bool
+)
+"src/consynth/VUtils.ml" 205 7192 7217 "src/consynth/VUtils.ml" 205 7192 7225
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref idx_expr "src/consynth/VUtils.ml" 201 7028 7046 "src/consynth/VUtils.ml" 201 7028 7054
+)
+"src/consynth/VUtils.ml" 208 7281 7301 "src/consynth/VUtils.ml" 208 7281 7317
+type(
+  Utils.IM.key -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/VUtils.ml" 208 7281 7318 "src/consynth/VUtils.ml" 208 7281 7324
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref idx_id "src/consynth/VUtils.ml" 201 7028 7039 "src/consynth/VUtils.ml" 201 7028 7045
+)
+"src/consynth/VUtils.ml" 208 7281 7325 "src/consynth/VUtils.ml" 208 7281 7330
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 199 6976 7004 "src/consynth/VUtils.ml" 199 6976 7009
+)
+"src/consynth/VUtils.ml" 208 7281 7325 "src/consynth/VUtils.ml" 208 7281 7338
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 208 7281 7325 "src/consynth/VUtils.ml" 208 7281 7349
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 208 7281 7300 "src/consynth/VUtils.ml" 208 7281 7350
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/VUtils.ml" 207 7252 7268 "src/consynth/VUtils.ml" 208 7281 7351
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 206 7226 7243 "src/consynth/VUtils.ml" 208 7281 7352
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 209 7353 7371 "src/consynth/VUtils.ml" 209 7353 7372
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref e "src/consynth/VUtils.ml" 201 7028 7055 "src/consynth/VUtils.ml" 201 7028 7056
+)
+"src/consynth/VUtils.ml" 204 7140 7151 "src/consynth/VUtils.ml" 209 7353 7372
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 210 7373 7387 "src/consynth/VUtils.ml" 210 7373 7396
+type(
+  exn
+)
+"src/consynth/VUtils.ml" 211 7400 7411 "src/consynth/VUtils.ml" 211 7400 7425
+type(
+  (Utils.IM.key ->
+   (Format.formatter -> Utils.VS.t -> unit) -> Utils.VS.t -> unit,
+   Format.formatter, unit)
+  format ->
+  Utils.IM.key ->
+  (Format.formatter -> Utils.VS.t -> unit) -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Format.eprintf
+)
+"src/consynth/VUtils.ml" 211 7400 7426 "src/consynth/VUtils.ml" 211 7400 7465
+type(
+  (Utils.IM.key ->
+   (Format.formatter -> Utils.VS.t -> unit) -> Utils.VS.t -> unit,
+   Format.formatter, unit)
+  format
+)
+"src/consynth/VUtils.ml" 212 7466 7479 "src/consynth/VUtils.ml" 212 7466 7485
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref idx_id "src/consynth/VUtils.ml" 201 7028 7039 "src/consynth/VUtils.ml" 201 7028 7045
+)
+"src/consynth/VUtils.ml" 212 7466 7486 "src/consynth/VUtils.ml" 212 7466 7495
+type(
+  Format.formatter -> Utils.VS.t -> unit
+)
+ident(
+  ext_ref Utils.VSOps.pvs
+)
+"src/consynth/VUtils.ml" 212 7466 7496 "src/consynth/VUtils.ml" 212 7466 7501
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 199 6976 7004 "src/consynth/VUtils.ml" 199 6976 7009
+)
+"src/consynth/VUtils.ml" 212 7466 7496 "src/consynth/VUtils.ml" 212 7466 7509
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 212 7466 7496 "src/consynth/VUtils.ml" 212 7466 7520
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 211 7400 7411 "src/consynth/VUtils.ml" 212 7466 7520
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/VUtils.ml" 213 7522 7533 "src/consynth/VUtils.ml" 213 7522 7538
+type(
+  exn -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/VUtils.ml" 213 7522 7539 "src/consynth/VUtils.ml" 213 7522 7548
+type(
+  exn
+)
+"src/consynth/VUtils.ml" 213 7522 7533 "src/consynth/VUtils.ml" 213 7522 7548
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 211 7400 7411 "src/consynth/VUtils.ml" 213 7522 7548
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 202 7060 7069 "src/consynth/VUtils.ml" 213 7522 7548
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 201 7028 7034 "src/consynth/VUtils.ml" 214 7549 7556
+type(
+  Utils.IM.key -> SymbExe.T.skExpr -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 215 7557 7563 "src/consynth/VUtils.ml" 215 7557 7568
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 199 6976 7004 "src/consynth/VUtils.ml" 199 6976 7009
+)
+"src/consynth/VUtils.ml" 215 7557 7563 "src/consynth/VUtils.ml" 215 7557 7580
+type(
+  SymbExe.T.skExpr Utils.IM.t
+)
+"src/consynth/VUtils.ml" 216 7581 7587 "src/consynth/VUtils.ml" 216 7581 7590
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref aux "src/consynth/VUtils.ml" 199 6976 7010 "src/consynth/VUtils.ml" 199 6976 7013
+)
+"src/consynth/VUtils.ml" 200 7016 7020 "src/consynth/VUtils.ml" 216 7581 7590
+call(
+  tail
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 218 7592 7596 "src/consynth/VUtils.ml" 218 7592 7618
+type(
+  SymbExe.exec_info ->
+  SymbExe.exec_info -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  def replace_available_vars "src/consynth/VUtils.ml" 228 7936 7944 "src/consynth/VUtils.ml" 1 0 -1
+)
+"src/consynth/VUtils.ml" 218 7592 7619 "src/consynth/VUtils.ml" 218 7592 7624
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo "src/consynth/VUtils.ml" 218 7592 7625 "src/consynth/VUtils.ml" 228 7936 7944
+)
+"src/consynth/VUtils.ml" 218 7592 7625 "src/consynth/VUtils.ml" 218 7592 7634
+type(
+  SymbExe.exec_info
+)
+ident(
+  def xinfo_aux "src/consynth/VUtils.ml" 218 7592 7635 "src/consynth/VUtils.ml" 228 7936 7944
+)
+"src/consynth/VUtils.ml" 218 7592 7635 "src/consynth/VUtils.ml" 218 7592 7637
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ce "src/consynth/VUtils.ml" 219 7640 7643 "src/consynth/VUtils.ml" 228 7936 7944
+)
+"src/consynth/VUtils.ml" 219 7640 7643 "src/consynth/VUtils.ml" 219 7640 7650
+type(
+  (Utils.IM.key ->
+   SymbExe.T.skExpr -> SketchTypes.skExpr -> SketchTypes.skExpr) ->
+  SymbExe.T.skExpr Utils.IM.t -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Utils.IM.fold
+)
+"src/consynth/VUtils.ml" 220 7651 7662 "src/consynth/VUtils.ml" 220 7651 7665
+type(
+  Utils.IM.key
+)
+ident(
+  def vid "src/consynth/VUtils.ml" 220 7651 7666 "src/consynth/VUtils.ml" 226 7888 7906
+)
+"src/consynth/VUtils.ml" 220 7651 7666 "src/consynth/VUtils.ml" 220 7651 7667
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  def e "src/consynth/VUtils.ml" 220 7651 7668 "src/consynth/VUtils.ml" 226 7888 7906
+)
+"src/consynth/VUtils.ml" 220 7651 7668 "src/consynth/VUtils.ml" 220 7651 7670
+type(
+  SketchTypes.skExpr
+)
+ident(
+  def ce "src/consynth/VUtils.ml" 221 7674 7683 "src/consynth/VUtils.ml" 226 7888 7906
+)
+"src/consynth/VUtils.ml" 221 7674 7687 "src/consynth/VUtils.ml" 221 7674 7689
+type(
+  Utils.VS.elt
+)
+ident(
+  def vi "src/consynth/VUtils.ml" 222 7741 7750 "src/consynth/VUtils.ml" 226 7888 7906
+)
+"src/consynth/VUtils.ml" 221 7674 7692 "src/consynth/VUtils.ml" 221 7674 7708
+type(
+  Utils.IM.key -> Utils.VS.t -> Utils.VS.elt
+)
+ident(
+  ext_ref Utils.VSOps.find_by_id
+)
+"src/consynth/VUtils.ml" 221 7674 7709 "src/consynth/VUtils.ml" 221 7674 7712
+type(
+  Utils.IM.key
+)
+ident(
+  int_ref vid "src/consynth/VUtils.ml" 220 7651 7662 "src/consynth/VUtils.ml" 220 7651 7665
+)
+"src/consynth/VUtils.ml" 221 7674 7713 "src/consynth/VUtils.ml" 221 7674 7718
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo "src/consynth/VUtils.ml" 218 7592 7619 "src/consynth/VUtils.ml" 218 7592 7624
+)
+"src/consynth/VUtils.ml" 221 7674 7713 "src/consynth/VUtils.ml" 221 7674 7726
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 221 7674 7713 "src/consynth/VUtils.ml" 221 7674 7737
+type(
+  Utils.VS.t
+)
+"src/consynth/VUtils.ml" 221 7674 7692 "src/consynth/VUtils.ml" 221 7674 7737
+call(
+  stack
+)
+type(
+  Utils.VS.elt
+)
+"src/consynth/VUtils.ml" 222 7741 7750 "src/consynth/VUtils.ml" 222 7741 7760
+type(
+  SymbExe.T.context ->
+  to_replace:SymbExe.T.skExpr ->
+  by:SymbExe.T.skExpr -> ine:SketchTypes.skExpr -> SketchTypes.skExpr
+)
+ident(
+  ext_ref Expressions.replace_AC
+)
+"src/consynth/VUtils.ml" 223 7761 7772 "src/consynth/VUtils.ml" 223 7761 7781
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo_aux "src/consynth/VUtils.ml" 218 7592 7625 "src/consynth/VUtils.ml" 218 7592 7634
+)
+"src/consynth/VUtils.ml" 223 7761 7772 "src/consynth/VUtils.ml" 223 7761 7789
+type(
+  SymbExe.T.context
+)
+"src/consynth/VUtils.ml" 224 7790 7835 "src/consynth/VUtils.ml" 224 7790 7837
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/VUtils.ml" 221 7674 7687 "src/consynth/VUtils.ml" 221 7674 7689
+)
+"src/consynth/VUtils.ml" 224 7790 7822 "src/consynth/VUtils.ml" 224 7790 7838
+type(
+  SymbExe.T.skLVar
+)
+"src/consynth/VUtils.ml" 224 7790 7813 "src/consynth/VUtils.ml" 224 7790 7839
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 225 7840 7856 "src/consynth/VUtils.ml" 225 7840 7881
+type(
+  Utils.VS.elt -> SymbExe.T.skExpr -> SymbExe.T.skExpr
+)
+ident(
+  ext_ref Expressions.accumulated_subexpression
+)
+"src/consynth/VUtils.ml" 225 7840 7882 "src/consynth/VUtils.ml" 225 7840 7884
+type(
+  Utils.VS.elt
+)
+ident(
+  int_ref vi "src/consynth/VUtils.ml" 221 7674 7687 "src/consynth/VUtils.ml" 221 7674 7689
+)
+"src/consynth/VUtils.ml" 225 7840 7885 "src/consynth/VUtils.ml" 225 7840 7886
+type(
+  SymbExe.T.skExpr
+)
+ident(
+  int_ref e "src/consynth/VUtils.ml" 220 7651 7666 "src/consynth/VUtils.ml" 220 7651 7667
+)
+"src/consynth/VUtils.ml" 225 7840 7855 "src/consynth/VUtils.ml" 225 7840 7887
+call(
+  stack
+)
+type(
+  SymbExe.T.skExpr
+)
+"src/consynth/VUtils.ml" 226 7888 7904 "src/consynth/VUtils.ml" 226 7888 7906
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ce "src/consynth/VUtils.ml" 220 7651 7668 "src/consynth/VUtils.ml" 220 7651 7670
+)
+"src/consynth/VUtils.ml" 222 7741 7750 "src/consynth/VUtils.ml" 226 7888 7906
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 221 7674 7683 "src/consynth/VUtils.ml" 226 7888 7906
+type(
+  SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 220 7651 7657 "src/consynth/VUtils.ml" 226 7888 7907
+type(
+  Utils.IM.key ->
+  SymbExe.T.skExpr -> SketchTypes.skExpr -> SketchTypes.skExpr
+)
+"src/consynth/VUtils.ml" 227 7908 7914 "src/consynth/VUtils.ml" 227 7908 7923
+type(
+  SymbExe.exec_info
+)
+ident(
+  int_ref xinfo_aux "src/consynth/VUtils.ml" 218 7592 7625 "src/consynth/VUtils.ml" 218 7592 7634
+)
+"src/consynth/VUtils.ml" 227 7908 7914 "src/consynth/VUtils.ml" 227 7908 7935
+type(
+  SymbExe.T.skExpr Utils.IM.t
+)
+"src/consynth/VUtils.ml" 228 7936 7942 "src/consynth/VUtils.ml" 228 7936 7944
+type(
+  SketchTypes.skExpr
+)
+ident(
+  int_ref ce "src/consynth/VUtils.ml" 218 7592 7635 "src/consynth/VUtils.ml" 218 7592 7637
+)
+"src/consynth/VUtils.ml" 219 7640 7643 "src/consynth/VUtils.ml" 228 7936 7944
+call(
+  tail
+)
+type(
+  SketchTypes.skExpr
+)

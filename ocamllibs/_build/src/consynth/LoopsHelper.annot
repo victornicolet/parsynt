@@ -1,0 +1,5225 @@
+"src/consynth/LoopsHelper.ml" 10 143 147 "src/consynth/LoopsHelper.ml" 10 143 152
+type(
+  bool ref
+)
+ident(
+  def debug "src/consynth/LoopsHelper.ml" 12 166 166 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 10 143 155 "src/consynth/LoopsHelper.ml" 10 143 158
+type(
+  bool -> bool ref
+)
+ident(
+  ext_ref Pervasives.ref
+)
+"src/consynth/LoopsHelper.ml" 10 143 159 "src/consynth/LoopsHelper.ml" 10 143 164
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 10 143 155 "src/consynth/LoopsHelper.ml" 10 143 164
+type(
+  bool ref
+)
+"src/consynth/LoopsHelper.ml" 22 359 363 "src/consynth/LoopsHelper.ml" 22 359 378
+type(
+  Cil.stmt -> unit
+)
+ident(
+  def rem_stmt_in_cfg "src/consynth/LoopsHelper.ml" 29 626 626 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 22 359 380 "src/consynth/LoopsHelper.ml" 22 359 383
+type(
+  Cil.stmt
+)
+ident(
+  def stm "src/consynth/LoopsHelper.ml" 23 394 396 "src/consynth/LoopsHelper.ml" 27 556 624
+)
+"src/consynth/LoopsHelper.ml" 23 394 400 "src/consynth/LoopsHelper.ml" 23 394 405
+type(
+  Cil.stmt list
+)
+ident(
+  def succs "src/consynth/LoopsHelper.ml" 24 421 423 "src/consynth/LoopsHelper.ml" 27 556 624
+)
+"src/consynth/LoopsHelper.ml" 23 394 408 "src/consynth/LoopsHelper.ml" 23 394 411
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stm "src/consynth/LoopsHelper.ml" 22 359 380 "src/consynth/LoopsHelper.ml" 22 359 383
+)
+"src/consynth/LoopsHelper.ml" 23 394 408 "src/consynth/LoopsHelper.ml" 23 394 417
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 24 421 427 "src/consynth/LoopsHelper.ml" 24 421 432
+type(
+  Cil.stmt list
+)
+ident(
+  def preds "src/consynth/LoopsHelper.ml" 25 448 450 "src/consynth/LoopsHelper.ml" 27 556 624
+)
+"src/consynth/LoopsHelper.ml" 24 421 435 "src/consynth/LoopsHelper.ml" 24 421 438
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stm "src/consynth/LoopsHelper.ml" 22 359 380 "src/consynth/LoopsHelper.ml" 22 359 383
+)
+"src/consynth/LoopsHelper.ml" 24 421 435 "src/consynth/LoopsHelper.ml" 24 421 444
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 25 448 454 "src/consynth/LoopsHelper.ml" 25 448 460
+type(
+  Cil.stmt -> bool
+)
+ident(
+  def eq_stm "src/consynth/LoopsHelper.ml" 26 486 488 "src/consynth/LoopsHelper.ml" 27 556 624
+)
+"src/consynth/LoopsHelper.ml" 25 448 461 "src/consynth/LoopsHelper.ml" 25 448 462
+type(
+  Cil.stmt
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 25 448 465 "src/consynth/LoopsHelper.ml" 25 448 482
+)
+"src/consynth/LoopsHelper.ml" 25 448 466 "src/consynth/LoopsHelper.ml" 25 448 469
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stm "src/consynth/LoopsHelper.ml" 22 359 380 "src/consynth/LoopsHelper.ml" 22 359 383
+)
+"src/consynth/LoopsHelper.ml" 25 448 466 "src/consynth/LoopsHelper.ml" 25 448 473
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 25 448 474 "src/consynth/LoopsHelper.ml" 25 448 475
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 25 448 476 "src/consynth/LoopsHelper.ml" 25 448 477
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 25 448 461 "src/consynth/LoopsHelper.ml" 25 448 462
+)
+"src/consynth/LoopsHelper.ml" 25 448 476 "src/consynth/LoopsHelper.ml" 25 448 481
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 25 448 465 "src/consynth/LoopsHelper.ml" 25 448 482
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 26 486 488 "src/consynth/LoopsHelper.ml" 26 486 497
+type(
+  (Cil.stmt -> unit) -> Cil.stmt list -> unit
+)
+ident(
+  ext_ref List.iter
+)
+"src/consynth/LoopsHelper.ml" 26 486 503 "src/consynth/LoopsHelper.ml" 26 486 504
+type(
+  Cil.stmt
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 26 486 508 "src/consynth/LoopsHelper.ml" 26 486 547
+)
+"src/consynth/LoopsHelper.ml" 26 486 509 "src/consynth/LoopsHelper.ml" 26 486 510
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 26 486 503 "src/consynth/LoopsHelper.ml" 26 486 504
+)
+"src/consynth/LoopsHelper.ml" 26 486 520 "src/consynth/LoopsHelper.ml" 26 486 531
+type(
+  (Cil.stmt -> bool) -> Cil.stmt list -> Cil.stmt list
+)
+ident(
+  ext_ref List.filter
+)
+"src/consynth/LoopsHelper.ml" 26 486 532 "src/consynth/LoopsHelper.ml" 26 486 538
+type(
+  Cil.stmt -> bool
+)
+ident(
+  int_ref eq_stm "src/consynth/LoopsHelper.ml" 25 448 454 "src/consynth/LoopsHelper.ml" 25 448 460
+)
+"src/consynth/LoopsHelper.ml" 26 486 539 "src/consynth/LoopsHelper.ml" 26 486 540
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 26 486 503 "src/consynth/LoopsHelper.ml" 26 486 504
+)
+"src/consynth/LoopsHelper.ml" 26 486 539 "src/consynth/LoopsHelper.ml" 26 486 546
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 26 486 520 "src/consynth/LoopsHelper.ml" 26 486 546
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 26 486 508 "src/consynth/LoopsHelper.ml" 26 486 547
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 26 486 498 "src/consynth/LoopsHelper.ml" 26 486 548
+type(
+  Cil.stmt -> unit
+)
+"src/consynth/LoopsHelper.ml" 26 486 549 "src/consynth/LoopsHelper.ml" 26 486 554
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref preds "src/consynth/LoopsHelper.ml" 24 421 427 "src/consynth/LoopsHelper.ml" 24 421 432
+)
+"src/consynth/LoopsHelper.ml" 26 486 488 "src/consynth/LoopsHelper.ml" 26 486 554
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 27 556 558 "src/consynth/LoopsHelper.ml" 27 556 567
+type(
+  (Cil.stmt -> unit) -> Cil.stmt list -> unit
+)
+ident(
+  ext_ref List.iter
+)
+"src/consynth/LoopsHelper.ml" 27 556 573 "src/consynth/LoopsHelper.ml" 27 556 574
+type(
+  Cil.stmt
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 27 556 578 "src/consynth/LoopsHelper.ml" 27 556 617
+)
+"src/consynth/LoopsHelper.ml" 27 556 579 "src/consynth/LoopsHelper.ml" 27 556 580
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 27 556 573 "src/consynth/LoopsHelper.ml" 27 556 574
+)
+"src/consynth/LoopsHelper.ml" 27 556 590 "src/consynth/LoopsHelper.ml" 27 556 601
+type(
+  (Cil.stmt -> bool) -> Cil.stmt list -> Cil.stmt list
+)
+ident(
+  ext_ref List.filter
+)
+"src/consynth/LoopsHelper.ml" 27 556 602 "src/consynth/LoopsHelper.ml" 27 556 608
+type(
+  Cil.stmt -> bool
+)
+ident(
+  int_ref eq_stm "src/consynth/LoopsHelper.ml" 25 448 454 "src/consynth/LoopsHelper.ml" 25 448 460
+)
+"src/consynth/LoopsHelper.ml" 27 556 609 "src/consynth/LoopsHelper.ml" 27 556 610
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 27 556 573 "src/consynth/LoopsHelper.ml" 27 556 574
+)
+"src/consynth/LoopsHelper.ml" 27 556 609 "src/consynth/LoopsHelper.ml" 27 556 616
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 27 556 590 "src/consynth/LoopsHelper.ml" 27 556 616
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 27 556 578 "src/consynth/LoopsHelper.ml" 27 556 617
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 27 556 568 "src/consynth/LoopsHelper.ml" 27 556 618
+type(
+  Cil.stmt -> unit
+)
+"src/consynth/LoopsHelper.ml" 27 556 619 "src/consynth/LoopsHelper.ml" 27 556 624
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref succs "src/consynth/LoopsHelper.ml" 23 394 400 "src/consynth/LoopsHelper.ml" 23 394 405
+)
+"src/consynth/LoopsHelper.ml" 27 556 558 "src/consynth/LoopsHelper.ml" 27 556 624
+call(
+  tail
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 26 486 488 "src/consynth/LoopsHelper.ml" 27 556 624
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 25 448 450 "src/consynth/LoopsHelper.ml" 27 556 624
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 24 421 423 "src/consynth/LoopsHelper.ml" 27 556 624
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 23 394 396 "src/consynth/LoopsHelper.ml" 27 556 624
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 29 626 634 "src/consynth/LoopsHelper.ml" 29 626 648
+type(
+  Cil.stmt list -> Cil.instr option * Cil.stmt list option
+)
+ident(
+  def rem_last_instr "src/consynth/LoopsHelper.ml" 29 626 626 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+type(
+  Cil.stmt list
+)
+ident(
+  def bdy "src/consynth/LoopsHelper.ml" 30 669 671 "src/consynth/LoopsHelper.ml" 56 1242 1267
+)
+"src/consynth/LoopsHelper.ml" 30 669 674 "src/consynth/LoopsHelper.ml" 30 669 685
+type(
+  Cil.stmt list -> int
+)
+ident(
+  ext_ref List.length
+)
+"src/consynth/LoopsHelper.ml" 30 669 686 "src/consynth/LoopsHelper.ml" 30 669 689
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+)
+"src/consynth/LoopsHelper.ml" 30 669 674 "src/consynth/LoopsHelper.ml" 30 669 689
+call(
+  stack
+)
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 30 669 690 "src/consynth/LoopsHelper.ml" 30 669 691
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( < )
+)
+"src/consynth/LoopsHelper.ml" 30 669 692 "src/consynth/LoopsHelper.ml" 30 669 693
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 30 669 674 "src/consynth/LoopsHelper.ml" 30 669 693
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 31 694 701 "src/consynth/LoopsHelper.ml" 31 694 705
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 31 694 707 "src/consynth/LoopsHelper.ml" 31 694 711
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 31 694 701 "src/consynth/LoopsHelper.ml" 31 694 711
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 33 719 727 "src/consynth/LoopsHelper.ml" 33 719 735
+type(
+  Cil.stmt
+)
+ident(
+  def lastStmt "src/consynth/LoopsHelper.ml" 34 750 754 "src/consynth/LoopsHelper.ml" 56 1242 1267
+)
+"src/consynth/LoopsHelper.ml" 33 719 738 "src/consynth/LoopsHelper.ml" 33 719 742
+type(
+  Cil.stmt list -> Cil.stmt
+)
+ident(
+  ext_ref Utils.ListTools.last
+)
+"src/consynth/LoopsHelper.ml" 33 719 743 "src/consynth/LoopsHelper.ml" 33 719 746
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+)
+"src/consynth/LoopsHelper.ml" 33 719 738 "src/consynth/LoopsHelper.ml" 33 719 746
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 34 750 760 "src/consynth/LoopsHelper.ml" 34 750 768
+type(
+  Cil.stmt
+)
+ident(
+  int_ref lastStmt "src/consynth/LoopsHelper.ml" 33 719 727 "src/consynth/LoopsHelper.ml" 33 719 735
+)
+"src/consynth/LoopsHelper.ml" 34 750 760 "src/consynth/LoopsHelper.ml" 34 750 774
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 35 780 792 "src/consynth/LoopsHelper.ml" 35 780 794
+type(
+  Cil.instr list
+)
+ident(
+  def il "src/consynth/LoopsHelper.ml" 36 798 805 "src/consynth/LoopsHelper.ml" 52 1188 1198
+)
+"src/consynth/LoopsHelper.ml" 35 780 786 "src/consynth/LoopsHelper.ml" 35 780 794
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 37 811 826 "src/consynth/LoopsHelper.ml" 37 811 828
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/LoopsHelper.ml" 35 780 792 "src/consynth/LoopsHelper.ml" 35 780 794
+)
+"src/consynth/LoopsHelper.ml" 38 834 846 "src/consynth/LoopsHelper.ml" 38 834 847
+type(
+  Cil.instr
+)
+ident(
+  def i "src/consynth/LoopsHelper.ml" 39 852 864 "src/consynth/LoopsHelper.ml" 43 992 1007
+)
+"src/consynth/LoopsHelper.ml" 38 834 845 "src/consynth/LoopsHelper.ml" 38 834 848
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 40 870 884 "src/consynth/LoopsHelper.ml" 40 870 899
+type(
+  Cil.stmt -> unit
+)
+ident(
+  int_ref rem_stmt_in_cfg "src/consynth/LoopsHelper.ml" 22 359 363 "src/consynth/LoopsHelper.ml" 22 359 378
+)
+"src/consynth/LoopsHelper.ml" 40 870 900 "src/consynth/LoopsHelper.ml" 40 870 908
+type(
+  Cil.stmt
+)
+ident(
+  int_ref lastStmt "src/consynth/LoopsHelper.ml" 33 719 727 "src/consynth/LoopsHelper.ml" 33 719 735
+)
+"src/consynth/LoopsHelper.ml" 40 870 884 "src/consynth/LoopsHelper.ml" 40 870 908
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 41 910 928 "src/consynth/LoopsHelper.ml" 41 910 934
+type(
+  Cil.stmt list
+)
+ident(
+  def stmtli "src/consynth/LoopsHelper.ml" 42 958 972 "src/consynth/LoopsHelper.ml" 42 958 991
+)
+"src/consynth/LoopsHelper.ml" 41 910 938 "src/consynth/LoopsHelper.ml" 41 910 949
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  ext_ref Utils.ListTools.remove_last
+)
+"src/consynth/LoopsHelper.ml" 41 910 950 "src/consynth/LoopsHelper.ml" 41 910 953
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+)
+"src/consynth/LoopsHelper.ml" 41 910 937 "src/consynth/LoopsHelper.ml" 41 910 954
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 42 958 977 "src/consynth/LoopsHelper.ml" 42 958 978
+type(
+  Cil.instr
+)
+ident(
+  int_ref i "src/consynth/LoopsHelper.ml" 38 834 846 "src/consynth/LoopsHelper.ml" 38 834 847
+)
+"src/consynth/LoopsHelper.ml" 42 958 972 "src/consynth/LoopsHelper.ml" 42 958 978
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 42 958 985 "src/consynth/LoopsHelper.ml" 42 958 991
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref stmtli "src/consynth/LoopsHelper.ml" 41 910 928 "src/consynth/LoopsHelper.ml" 41 910 934
+)
+"src/consynth/LoopsHelper.ml" 42 958 980 "src/consynth/LoopsHelper.ml" 42 958 991
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 42 958 972 "src/consynth/LoopsHelper.ml" 42 958 991
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 41 910 924 "src/consynth/LoopsHelper.ml" 42 958 991
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 39 852 864 "src/consynth/LoopsHelper.ml" 43 992 1007
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 45 1009 1020 "src/consynth/LoopsHelper.ml" 45 1009 1022
+type(
+  Cil.instr
+)
+ident(
+  def hd "src/consynth/LoopsHelper.ml" 46 1030 1042 "src/consynth/LoopsHelper.ml" 49 1143 1158
+)
+"src/consynth/LoopsHelper.ml" 45 1009 1024 "src/consynth/LoopsHelper.ml" 45 1009 1026
+type(
+  Cil.instr list
+)
+ident(
+  def tl "src/consynth/LoopsHelper.ml" 46 1030 1042 "src/consynth/LoopsHelper.ml" 49 1143 1158
+)
+"src/consynth/LoopsHelper.ml" 45 1009 1020 "src/consynth/LoopsHelper.ml" 45 1009 1026
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1062 "src/consynth/LoopsHelper.ml" 47 1048 1070
+type(
+  Cil.stmt
+)
+ident(
+  int_ref lastStmt "src/consynth/LoopsHelper.ml" 33 719 727 "src/consynth/LoopsHelper.ml" 33 719 735
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1087 "src/consynth/LoopsHelper.ml" 47 1048 1098
+type(
+  Cil.instr list -> Cil.instr list
+)
+ident(
+  ext_ref Utils.ListTools.remove_last
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1099 "src/consynth/LoopsHelper.ml" 47 1048 1101
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/LoopsHelper.ml" 35 780 792 "src/consynth/LoopsHelper.ml" 35 780 794
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1086 "src/consynth/LoopsHelper.ml" 47 1048 1102
+call(
+  stack
+)
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1080 "src/consynth/LoopsHelper.ml" 47 1048 1102
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 47 1048 1062 "src/consynth/LoopsHelper.ml" 47 1048 1102
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1124 "src/consynth/LoopsHelper.ml" 48 1104 1128
+type(
+  Cil.instr list -> Cil.instr
+)
+ident(
+  ext_ref Utils.ListTools.last
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1129 "src/consynth/LoopsHelper.ml" 48 1104 1131
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/LoopsHelper.ml" 35 780 792 "src/consynth/LoopsHelper.ml" 35 780 794
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1123 "src/consynth/LoopsHelper.ml" 48 1104 1132
+call(
+  stack
+)
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1118 "src/consynth/LoopsHelper.ml" 48 1104 1132
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1139 "src/consynth/LoopsHelper.ml" 48 1104 1142
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1134 "src/consynth/LoopsHelper.ml" 48 1104 1142
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 48 1104 1118 "src/consynth/LoopsHelper.ml" 48 1104 1142
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 46 1030 1042 "src/consynth/LoopsHelper.ml" 49 1143 1158
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 51 1160 1171 "src/consynth/LoopsHelper.ml" 51 1160 1173
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 51 1160 1177 "src/consynth/LoopsHelper.ml" 51 1160 1181
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 51 1160 1183 "src/consynth/LoopsHelper.ml" 51 1160 1187
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 51 1160 1177 "src/consynth/LoopsHelper.ml" 51 1160 1187
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 36 798 805 "src/consynth/LoopsHelper.ml" 52 1188 1198
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1212 "src/consynth/LoopsHelper.ml" 54 1200 1213
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/LoopsHelper.ml" 54 1200 1217 "src/consynth/LoopsHelper.ml" 54 1200 1240
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1206 "src/consynth/LoopsHelper.ml" 54 1200 1213
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1217 "src/consynth/LoopsHelper.ml" 54 1200 1231
+type(
+  Cil.stmt list -> Cil.instr option * Cil.stmt list option
+)
+ident(
+  int_ref rem_last_instr "src/consynth/LoopsHelper.ml" 29 626 634 "src/consynth/LoopsHelper.ml" 29 626 648
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1232 "src/consynth/LoopsHelper.ml" 54 1200 1233
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/LoopsHelper.ml" 54 1200 1212 "src/consynth/LoopsHelper.ml" 54 1200 1213
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1232 "src/consynth/LoopsHelper.ml" 54 1200 1240
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 54 1200 1217 "src/consynth/LoopsHelper.ml" 54 1200 1240
+call(
+  tail
+)
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 56 1242 1248 "src/consynth/LoopsHelper.ml" 56 1242 1249
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 56 1242 1253 "src/consynth/LoopsHelper.ml" 56 1242 1257
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 56 1242 1264 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 29 626 650 "src/consynth/LoopsHelper.ml" 29 626 653
+)
+"src/consynth/LoopsHelper.ml" 56 1242 1259 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 56 1242 1253 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 34 750 754 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 33 719 723 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 30 669 671 "src/consynth/LoopsHelper.ml" 56 1242 1267
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 61 1320 1328 "src/consynth/LoopsHelper.ml" 61 1320 1336
+type(
+  Cil.instr -> Cil.instr -> bool
+)
+ident(
+  def instr_eq "src/consynth/LoopsHelper.ml" 61 1320 1320 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 61 1320 1337 "src/consynth/LoopsHelper.ml" 61 1320 1342
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/LoopsHelper.ml" 61 1320 1343 "src/consynth/LoopsHelper.ml" 67 1569 1587
+)
+"src/consynth/LoopsHelper.ml" 61 1320 1343 "src/consynth/LoopsHelper.ml" 61 1320 1349
+type(
+  Cil.instr
+)
+ident(
+  def instr' "src/consynth/LoopsHelper.ml" 62 1352 1354 "src/consynth/LoopsHelper.ml" 67 1569 1587
+)
+"src/consynth/LoopsHelper.ml" 62 1352 1360 "src/consynth/LoopsHelper.ml" 62 1352 1365
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/LoopsHelper.ml" 61 1320 1337 "src/consynth/LoopsHelper.ml" 61 1320 1342
+)
+"src/consynth/LoopsHelper.ml" 62 1352 1367 "src/consynth/LoopsHelper.ml" 62 1352 1373
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr' "src/consynth/LoopsHelper.ml" 61 1320 1343 "src/consynth/LoopsHelper.ml" 61 1320 1349
+)
+"src/consynth/LoopsHelper.ml" 62 1352 1360 "src/consynth/LoopsHelper.ml" 62 1352 1373
+type(
+  Cil.instr * Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1388 "src/consynth/LoopsHelper.ml" 63 1379 1390
+type(
+  Cil.lval
+)
+ident(
+  def lv "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1392 "src/consynth/LoopsHelper.ml" 63 1379 1393
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1395 "src/consynth/LoopsHelper.ml" 63 1379 1398
+type(
+  Cil.location
+)
+ident(
+  def loc "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1383 "src/consynth/LoopsHelper.ml" 63 1379 1399
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1406 "src/consynth/LoopsHelper.ml" 63 1379 1409
+type(
+  Cil.lval
+)
+ident(
+  def lv' "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1411 "src/consynth/LoopsHelper.ml" 63 1379 1413
+type(
+  Cil.exp
+)
+ident(
+  def e' "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1415 "src/consynth/LoopsHelper.ml" 63 1379 1419
+type(
+  Cil.location
+)
+ident(
+  def loc' "src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1401 "src/consynth/LoopsHelper.ml" 63 1379 1420
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 63 1379 1383 "src/consynth/LoopsHelper.ml" 63 1379 1420
+type(
+  Cil.instr * Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1430 "src/consynth/LoopsHelper.ml" 64 1424 1437
+type(
+  Cil.lval -> Cil.lval -> bool
+)
+ident(
+  int_ref lval_eq "src/consynth/LoopsHelper.ml" 69 1589 1593 "src/consynth/LoopsHelper.ml" 69 1589 1600
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1438 "src/consynth/LoopsHelper.ml" 64 1424 1440
+type(
+  Cil.lval
+)
+ident(
+  int_ref lv "src/consynth/LoopsHelper.ml" 63 1379 1388 "src/consynth/LoopsHelper.ml" 63 1379 1390
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1441 "src/consynth/LoopsHelper.ml" 64 1424 1444
+type(
+  Cil.lval
+)
+ident(
+  int_ref lv' "src/consynth/LoopsHelper.ml" 63 1379 1406 "src/consynth/LoopsHelper.ml" 63 1379 1409
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1445
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1446 "src/consynth/LoopsHelper.ml" 64 1424 1448
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1450 "src/consynth/LoopsHelper.ml" 64 1424 1457
+type(
+  Cil.exp -> Cil.exp -> bool
+)
+ident(
+  int_ref expr_eq "src/consynth/LoopsHelper.ml" 72 1663 1667 "src/consynth/LoopsHelper.ml" 72 1663 1674
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1458 "src/consynth/LoopsHelper.ml" 64 1424 1459
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 63 1379 1392 "src/consynth/LoopsHelper.ml" 63 1379 1393
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1460 "src/consynth/LoopsHelper.ml" 64 1424 1462
+type(
+  Cil.exp
+)
+ident(
+  int_ref e' "src/consynth/LoopsHelper.ml" 63 1379 1411 "src/consynth/LoopsHelper.ml" 63 1379 1413
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1449 "src/consynth/LoopsHelper.ml" 64 1424 1463
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 64 1424 1429 "src/consynth/LoopsHelper.ml" 64 1424 1463
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1474 "src/consynth/LoopsHelper.ml" 65 1464 1477
+type(
+  Cil.lval option
+)
+ident(
+  def lvo "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1479 "src/consynth/LoopsHelper.ml" 65 1464 1481
+type(
+  Cil.exp
+)
+ident(
+  def ef "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1483 "src/consynth/LoopsHelper.ml" 65 1464 1485
+type(
+  Cil.exp list
+)
+ident(
+  def el "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1487 "src/consynth/LoopsHelper.ml" 65 1464 1490
+type(
+  Cil.location
+)
+ident(
+  def loc "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1468 "src/consynth/LoopsHelper.ml" 65 1464 1491
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1499 "src/consynth/LoopsHelper.ml" 65 1464 1503
+type(
+  Cil.lval option
+)
+ident(
+  def lvo' "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1505 "src/consynth/LoopsHelper.ml" 65 1464 1508
+type(
+  Cil.exp
+)
+ident(
+  def ef' "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1510 "src/consynth/LoopsHelper.ml" 65 1464 1513
+type(
+  Cil.exp list
+)
+ident(
+  def el' "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1514 "src/consynth/LoopsHelper.ml" 65 1464 1518
+type(
+  Cil.location
+)
+ident(
+  def loc' "src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1493 "src/consynth/LoopsHelper.ml" 65 1464 1519
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 65 1464 1468 "src/consynth/LoopsHelper.ml" 65 1464 1519
+type(
+  Cil.instr * Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1529 "src/consynth/LoopsHelper.ml" 66 1523 1532
+type(
+  Cil.lval option
+)
+ident(
+  int_ref lvo "src/consynth/LoopsHelper.ml" 65 1464 1474 "src/consynth/LoopsHelper.ml" 65 1464 1477
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1533 "src/consynth/LoopsHelper.ml" 66 1523 1534
+type(
+  Cil.lval option -> Cil.lval option -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1535 "src/consynth/LoopsHelper.ml" 66 1523 1539
+type(
+  Cil.lval option
+)
+ident(
+  int_ref lvo' "src/consynth/LoopsHelper.ml" 65 1464 1499 "src/consynth/LoopsHelper.ml" 65 1464 1503
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1540
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1541 "src/consynth/LoopsHelper.ml" 66 1523 1543
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1545 "src/consynth/LoopsHelper.ml" 66 1523 1547
+type(
+  Cil.exp
+)
+ident(
+  int_ref ef "src/consynth/LoopsHelper.ml" 65 1464 1479 "src/consynth/LoopsHelper.ml" 65 1464 1481
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1548 "src/consynth/LoopsHelper.ml" 66 1523 1549
+type(
+  Cil.exp -> Cil.exp -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1550 "src/consynth/LoopsHelper.ml" 66 1523 1553
+type(
+  Cil.exp
+)
+ident(
+  int_ref ef' "src/consynth/LoopsHelper.ml" 65 1464 1505 "src/consynth/LoopsHelper.ml" 65 1464 1508
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1544 "src/consynth/LoopsHelper.ml" 66 1523 1554
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1555 "src/consynth/LoopsHelper.ml" 66 1523 1557
+type(
+  bool -> bool -> bool
+)
+ident(
+  ext_ref Pervasives.( && )
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1559 "src/consynth/LoopsHelper.ml" 66 1523 1561
+type(
+  Cil.exp list
+)
+ident(
+  int_ref el "src/consynth/LoopsHelper.ml" 65 1464 1483 "src/consynth/LoopsHelper.ml" 65 1464 1485
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1562 "src/consynth/LoopsHelper.ml" 66 1523 1563
+type(
+  Cil.exp list -> Cil.exp list -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1564 "src/consynth/LoopsHelper.ml" 66 1523 1567
+type(
+  Cil.exp list
+)
+ident(
+  int_ref el' "src/consynth/LoopsHelper.ml" 65 1464 1510 "src/consynth/LoopsHelper.ml" 65 1464 1513
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1558 "src/consynth/LoopsHelper.ml" 66 1523 1568
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1544 "src/consynth/LoopsHelper.ml" 66 1523 1568
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 66 1523 1528 "src/consynth/LoopsHelper.ml" 66 1523 1568
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 67 1569 1573 "src/consynth/LoopsHelper.ml" 67 1569 1574
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 67 1569 1577 "src/consynth/LoopsHelper.ml" 67 1569 1578
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 67 1569 1573 "src/consynth/LoopsHelper.ml" 67 1569 1578
+type(
+  Cil.instr * Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 67 1569 1582 "src/consynth/LoopsHelper.ml" 67 1569 1587
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 62 1352 1354 "src/consynth/LoopsHelper.ml" 67 1569 1587
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 69 1589 1593 "src/consynth/LoopsHelper.ml" 69 1589 1600
+type(
+  Cil.lval -> Cil.lval -> bool
+)
+ident(
+  def lval_eq "src/consynth/LoopsHelper.ml" 61 1320 1320 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 69 1589 1601 "src/consynth/LoopsHelper.ml" 69 1589 1605
+type(
+  Cil.lval
+)
+ident(
+  def lval "src/consynth/LoopsHelper.ml" 69 1589 1606 "src/consynth/LoopsHelper.ml" 70 1614 1661
+)
+"src/consynth/LoopsHelper.ml" 69 1589 1606 "src/consynth/LoopsHelper.ml" 69 1589 1611
+type(
+  Cil.lval
+)
+ident(
+  def lval' "src/consynth/LoopsHelper.ml" 70 1614 1616 "src/consynth/LoopsHelper.ml" 70 1614 1661
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1616 "src/consynth/LoopsHelper.ml" 70 1614 1624
+type(
+  VS.t -> VS.t -> bool
+)
+ident(
+  ext_ref VS.equal
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1626 "src/consynth/LoopsHelper.ml" 70 1614 1636
+type(
+  ?onlyNoOffset:bool -> Cil.lval -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VSOps.sovv
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1637 "src/consynth/LoopsHelper.ml" 70 1614 1641
+type(
+  Cil.lval
+)
+ident(
+  int_ref lval "src/consynth/LoopsHelper.ml" 69 1589 1601 "src/consynth/LoopsHelper.ml" 69 1589 1605
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1625 "src/consynth/LoopsHelper.ml" 70 1614 1642
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1644 "src/consynth/LoopsHelper.ml" 70 1614 1654
+type(
+  ?onlyNoOffset:bool -> Cil.lval -> Utils.VS.t
+)
+ident(
+  ext_ref Utils.VSOps.sovv
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1655 "src/consynth/LoopsHelper.ml" 70 1614 1660
+type(
+  Cil.lval
+)
+ident(
+  int_ref lval' "src/consynth/LoopsHelper.ml" 69 1589 1606 "src/consynth/LoopsHelper.ml" 69 1589 1611
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1643 "src/consynth/LoopsHelper.ml" 70 1614 1661
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/LoopsHelper.ml" 70 1614 1616 "src/consynth/LoopsHelper.ml" 70 1614 1661
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 72 1663 1667 "src/consynth/LoopsHelper.ml" 72 1663 1674
+type(
+  Cil.exp -> Cil.exp -> bool
+)
+ident(
+  def expr_eq "src/consynth/LoopsHelper.ml" 61 1320 1320 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 72 1663 1675 "src/consynth/LoopsHelper.ml" 72 1663 1676
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 72 1663 1677 "src/consynth/LoopsHelper.ml" 73 1681 1689
+)
+"src/consynth/LoopsHelper.ml" 72 1663 1677 "src/consynth/LoopsHelper.ml" 72 1663 1679
+type(
+  Cil.exp
+)
+ident(
+  def e' "src/consynth/LoopsHelper.ml" 73 1681 1683 "src/consynth/LoopsHelper.ml" 73 1681 1689
+)
+"src/consynth/LoopsHelper.ml" 73 1681 1683 "src/consynth/LoopsHelper.ml" 73 1681 1684
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 72 1663 1675 "src/consynth/LoopsHelper.ml" 72 1663 1676
+)
+"src/consynth/LoopsHelper.ml" 73 1681 1685 "src/consynth/LoopsHelper.ml" 73 1681 1686
+type(
+  Cil.exp -> Cil.exp -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 73 1681 1687 "src/consynth/LoopsHelper.ml" 73 1681 1689
+type(
+  Cil.exp
+)
+ident(
+  int_ref e' "src/consynth/LoopsHelper.ml" 72 1663 1677 "src/consynth/LoopsHelper.ml" 72 1663 1679
+)
+"src/consynth/LoopsHelper.ml" 73 1681 1683 "src/consynth/LoopsHelper.ml" 73 1681 1689
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 76 1726 1730 "src/consynth/LoopsHelper.ml" 76 1726 1744
+type(
+  'a * VS.t -> bool
+)
+ident(
+  def is_empty_state "src/consynth/LoopsHelper.ml" 85 1985 1985 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 76 1726 1746 "src/consynth/LoopsHelper.ml" 76 1726 1747
+type(
+  'a
+)
+ident(
+  def r "src/consynth/LoopsHelper.ml" 77 1754 1756 "src/consynth/LoopsHelper.ml" 77 1754 1769
+)
+"src/consynth/LoopsHelper.ml" 76 1726 1749 "src/consynth/LoopsHelper.ml" 76 1726 1750
+type(
+  VS.t
+)
+ident(
+  def w "src/consynth/LoopsHelper.ml" 77 1754 1756 "src/consynth/LoopsHelper.ml" 77 1754 1769
+)
+"src/consynth/LoopsHelper.ml" 76 1726 1745 "src/consynth/LoopsHelper.ml" 76 1726 1751
+type(
+  'a * VS.t
+)
+"src/consynth/LoopsHelper.ml" 77 1754 1756 "src/consynth/LoopsHelper.ml" 77 1754 1767
+type(
+  VS.t -> bool
+)
+ident(
+  ext_ref VS.is_empty
+)
+"src/consynth/LoopsHelper.ml" 77 1754 1768 "src/consynth/LoopsHelper.ml" 77 1754 1769
+type(
+  VS.t
+)
+ident(
+  int_ref w "src/consynth/LoopsHelper.ml" 76 1726 1749 "src/consynth/LoopsHelper.ml" 76 1726 1750
+)
+"src/consynth/LoopsHelper.ml" 77 1754 1756 "src/consynth/LoopsHelper.ml" 77 1754 1769
+call(
+  tail
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 85 1985 1993 "src/consynth/LoopsHelper.ml" 85 1985 2006
+type(
+  Cil.stmt list -> 'a -> Cil.instr -> Cil.stmt -> Cil.stmt list
+)
+ident(
+  def rem_loop_init "src/consynth/LoopsHelper.ml" 85 1985 1985 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 85 1985 2008 "src/consynth/LoopsHelper.ml" 85 1985 2011
+type(
+  Cil.stmt list
+)
+ident(
+  def bdy "src/consynth/LoopsHelper.ml" 85 1985 2025 "src/consynth/LoopsHelper.ml" 104 2463 2487
+)
+"src/consynth/LoopsHelper.ml" 85 1985 2025 "src/consynth/LoopsHelper.ml" 85 1985 2029
+type(
+  'a
+)
+ident(
+  def nbdy "src/consynth/LoopsHelper.ml" 85 1985 2030 "src/consynth/LoopsHelper.ml" 104 2463 2487
+)
+"src/consynth/LoopsHelper.ml" 85 1985 2031 "src/consynth/LoopsHelper.ml" 85 1985 2035
+type(
+  Cil.instr
+)
+ident(
+  def init "src/consynth/LoopsHelper.ml" 85 1985 2045 "src/consynth/LoopsHelper.ml" 104 2463 2487
+)
+"src/consynth/LoopsHelper.ml" 85 1985 2046 "src/consynth/LoopsHelper.ml" 85 1985 2051
+type(
+  Cil.stmt
+)
+ident(
+  def inner "src/consynth/LoopsHelper.ml" 86 2060 2064 "src/consynth/LoopsHelper.ml" 104 2463 2487
+)
+"src/consynth/LoopsHelper.ml" 87 2078 2084 "src/consynth/LoopsHelper.ml" 87 2078 2093
+type(
+  Cil.stmt -> Cil.stmt
+)
+ident(
+  def rem_instr "src/consynth/LoopsHelper.ml" 104 2463 2465 "src/consynth/LoopsHelper.ml" 104 2463 2487
+)
+"src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/LoopsHelper.ml" 88 2101 2105 "src/consynth/LoopsHelper.ml" 102 2424 2457
+)
+"src/consynth/LoopsHelper.ml" 88 2101 2109 "src/consynth/LoopsHelper.ml" 88 2101 2118
+type(
+  Cil.stmtkind
+)
+ident(
+  def stmtskind "src/consynth/LoopsHelper.ml" 102 2424 2428 "src/consynth/LoopsHelper.ml" 102 2424 2457
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2130 "src/consynth/LoopsHelper.ml" 89 2121 2138
+type(
+  Cil.stmt -> Cil.stmt list -> bool
+)
+ident(
+  ext_ref List.mem
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2139 "src/consynth/LoopsHelper.ml" 89 2121 2144
+type(
+  Cil.stmt
+)
+ident(
+  int_ref inner "src/consynth/LoopsHelper.ml" 85 1985 2046 "src/consynth/LoopsHelper.ml" 85 1985 2051
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2145 "src/consynth/LoopsHelper.ml" 89 2121 2149
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2145 "src/consynth/LoopsHelper.ml" 89 2121 2155
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2130 "src/consynth/LoopsHelper.ml" 89 2121 2155
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 92 2181 2197 "src/consynth/LoopsHelper.ml" 92 2181 2201
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+)
+"src/consynth/LoopsHelper.ml" 92 2181 2197 "src/consynth/LoopsHelper.ml" 92 2181 2207
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 93 2213 2231 "src/consynth/LoopsHelper.ml" 93 2213 2233
+type(
+  Cil.instr list
+)
+ident(
+  def il "src/consynth/LoopsHelper.ml" 94 2237 2250 "src/consynth/LoopsHelper.ml" 96 2285 2346
+)
+"src/consynth/LoopsHelper.ml" 93 2213 2225 "src/consynth/LoopsHelper.ml" 93 2213 2233
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 95 2258 2273 "src/consynth/LoopsHelper.ml" 95 2258 2284
+type(
+  (Cil.instr -> bool) -> Cil.instr list -> Cil.instr list
+)
+ident(
+  ext_ref List.filter
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2307 "src/consynth/LoopsHelper.ml" 96 2285 2312
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/LoopsHelper.ml" 96 2285 2316 "src/consynth/LoopsHelper.ml" 96 2285 2341
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2316 "src/consynth/LoopsHelper.ml" 96 2285 2319
+type(
+  bool -> bool
+)
+ident(
+  ext_ref Pervasives.not
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2321 "src/consynth/LoopsHelper.ml" 96 2285 2329
+type(
+  Cil.instr -> Cil.instr -> bool
+)
+ident(
+  int_ref instr_eq "src/consynth/LoopsHelper.ml" 61 1320 1328 "src/consynth/LoopsHelper.ml" 61 1320 1336
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2330 "src/consynth/LoopsHelper.ml" 96 2285 2335
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/LoopsHelper.ml" 96 2285 2307 "src/consynth/LoopsHelper.ml" 96 2285 2312
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2336 "src/consynth/LoopsHelper.ml" 96 2285 2340
+type(
+  Cil.instr
+)
+ident(
+  int_ref init "src/consynth/LoopsHelper.ml" 85 1985 2031 "src/consynth/LoopsHelper.ml" 85 1985 2035
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2320 "src/consynth/LoopsHelper.ml" 96 2285 2341
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2316 "src/consynth/LoopsHelper.ml" 96 2285 2341
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2302 "src/consynth/LoopsHelper.ml" 96 2285 2342
+type(
+  Cil.instr -> bool
+)
+"src/consynth/LoopsHelper.ml" 96 2285 2343 "src/consynth/LoopsHelper.ml" 96 2285 2345
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/LoopsHelper.ml" 93 2213 2231 "src/consynth/LoopsHelper.ml" 93 2213 2233
+)
+"src/consynth/LoopsHelper.ml" 94 2237 2256 "src/consynth/LoopsHelper.ml" 96 2285 2346
+call(
+  stack
+)
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 94 2237 2250 "src/consynth/LoopsHelper.ml" 96 2285 2346
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 97 2347 2359 "src/consynth/LoopsHelper.ml" 97 2347 2360
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 97 2347 2364 "src/consynth/LoopsHelper.ml" 97 2347 2368
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+)
+"src/consynth/LoopsHelper.ml" 97 2347 2364 "src/consynth/LoopsHelper.ml" 97 2347 2374
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 91 2167 2175 "src/consynth/LoopsHelper.ml" 98 2375 2386
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 100 2398 2406 "src/consynth/LoopsHelper.ml" 100 2398 2410
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+)
+"src/consynth/LoopsHelper.ml" 100 2398 2406 "src/consynth/LoopsHelper.ml" 100 2398 2416
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 89 2121 2127 "src/consynth/LoopsHelper.ml" 100 2398 2416
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 102 2424 2429 "src/consynth/LoopsHelper.ml" 102 2424 2433
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 87 2078 2094 "src/consynth/LoopsHelper.ml" 87 2078 2098
+)
+"src/consynth/LoopsHelper.ml" 102 2424 2447 "src/consynth/LoopsHelper.ml" 102 2424 2456
+type(
+  Cil.stmtkind
+)
+ident(
+  int_ref stmtskind "src/consynth/LoopsHelper.ml" 88 2101 2109 "src/consynth/LoopsHelper.ml" 88 2101 2118
+)
+"src/consynth/LoopsHelper.ml" 102 2424 2428 "src/consynth/LoopsHelper.ml" 102 2424 2457
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 88 2101 2105 "src/consynth/LoopsHelper.ml" 102 2424 2457
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 104 2463 2465 "src/consynth/LoopsHelper.ml" 104 2463 2473
+type(
+  (Cil.stmt -> Cil.stmt) -> Cil.stmt list -> Cil.stmt list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/LoopsHelper.ml" 104 2463 2474 "src/consynth/LoopsHelper.ml" 104 2463 2483
+type(
+  Cil.stmt -> Cil.stmt
+)
+ident(
+  int_ref rem_instr "src/consynth/LoopsHelper.ml" 87 2078 2084 "src/consynth/LoopsHelper.ml" 87 2078 2093
+)
+"src/consynth/LoopsHelper.ml" 104 2463 2484 "src/consynth/LoopsHelper.ml" 104 2463 2487
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 85 1985 2008 "src/consynth/LoopsHelper.ml" 85 1985 2011
+)
+"src/consynth/LoopsHelper.ml" 104 2463 2465 "src/consynth/LoopsHelper.ml" 104 2463 2487
+call(
+  tail
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 87 2078 2080 "src/consynth/LoopsHelper.ml" 104 2463 2487
+type(
+  Cil.stmt list
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 107 2545 2549 "src/consynth/LoopsHelper.ml" 107 2545 2567
+type(
+  Cil.block -> Cil.exp option * Cil.stmt list
+)
+ident(
+  def get_loop_condition "src/consynth/LoopsHelper.ml" 186 5286 5286 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 107 2545 2568 "src/consynth/LoopsHelper.ml" 107 2545 2569
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/LoopsHelper.ml" 111 2672 2674 "src/consynth/LoopsHelper.ml" 182 5209 5224
+)
+"src/consynth/LoopsHelper.ml" 111 2672 2682 "src/consynth/LoopsHelper.ml" 111 2672 2691
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  def skipEmpty "src/consynth/LoopsHelper.ml" 111 2672 2674 "src/consynth/LoopsHelper.ml" 182 5209 5224
+)
+"src/consynth/LoopsHelper.ml" 112 2703 2709 "src/consynth/LoopsHelper.ml" 112 2703 2711
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 112 2703 2715 "src/consynth/LoopsHelper.ml" 112 2703 2717
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2739 "src/consynth/LoopsHelper.ml" 113 2718 2741
+type(
+  Cil.instr list
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2733 "src/consynth/LoopsHelper.ml" 113 2718 2741
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2752 "src/consynth/LoopsHelper.ml" 113 2718 2754
+type(
+  Cil.label list
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2724 "src/consynth/LoopsHelper.ml" 113 2718 2755
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2757 "src/consynth/LoopsHelper.ml" 113 2718 2761
+type(
+  Cil.stmt list
+)
+ident(
+  def rest "src/consynth/LoopsHelper.ml" 114 2765 2769 "src/consynth/LoopsHelper.ml" 114 2765 2783
+)
+"src/consynth/LoopsHelper.ml" 113 2718 2724 "src/consynth/LoopsHelper.ml" 113 2718 2761
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 114 2765 2769 "src/consynth/LoopsHelper.ml" 114 2765 2778
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  int_ref skipEmpty "src/consynth/LoopsHelper.ml" 111 2672 2682 "src/consynth/LoopsHelper.ml" 111 2672 2691
+)
+"src/consynth/LoopsHelper.ml" 114 2765 2779 "src/consynth/LoopsHelper.ml" 114 2765 2783
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref rest "src/consynth/LoopsHelper.ml" 113 2718 2757 "src/consynth/LoopsHelper.ml" 113 2718 2761
+)
+"src/consynth/LoopsHelper.ml" 114 2765 2769 "src/consynth/LoopsHelper.ml" 114 2765 2783
+call(
+  tail
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 115 2784 2790 "src/consynth/LoopsHelper.ml" 115 2784 2791
+type(
+  Cil.stmt list
+)
+ident(
+  def x "src/consynth/LoopsHelper.ml" 115 2784 2795 "src/consynth/LoopsHelper.ml" 115 2784 2796
+)
+"src/consynth/LoopsHelper.ml" 115 2784 2795 "src/consynth/LoopsHelper.ml" 115 2784 2796
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref x "src/consynth/LoopsHelper.ml" 115 2784 2790 "src/consynth/LoopsHelper.ml" 115 2784 2791
+)
+"src/consynth/LoopsHelper.ml" 111 2672 2694 "src/consynth/LoopsHelper.ml" 115 2784 2796
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  def get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2843 "src/consynth/LoopsHelper.ml" 182 5209 5224
+)
+"src/consynth/LoopsHelper.ml" 118 2841 2868 "src/consynth/LoopsHelper.ml" 118 2841 2874
+type(
+  Cil.stmt
+)
+ident(
+  def if_stm "src/consynth/LoopsHelper.ml" 119 2877 2881 "src/consynth/LoopsHelper.ml" 170 4828 4842
+)
+"src/consynth/LoopsHelper.ml" 119 2877 2887 "src/consynth/LoopsHelper.ml" 119 2877 2893
+type(
+  Cil.stmt
+)
+ident(
+  int_ref if_stm "src/consynth/LoopsHelper.ml" 118 2841 2868 "src/consynth/LoopsHelper.ml" 118 2841 2874
+)
+"src/consynth/LoopsHelper.ml" 119 2877 2887 "src/consynth/LoopsHelper.ml" 119 2877 2899
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 120 2905 2914 "src/consynth/LoopsHelper.ml" 120 2905 2915
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 121 2928 2933 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 120 2905 2916 "src/consynth/LoopsHelper.ml" 120 2905 2918
+type(
+  Cil.block
+)
+ident(
+  def tb "src/consynth/LoopsHelper.ml" 121 2928 2933 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 120 2905 2919 "src/consynth/LoopsHelper.ml" 120 2905 2921
+type(
+  Cil.block
+)
+ident(
+  def fb "src/consynth/LoopsHelper.ml" 121 2928 2933 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 120 2905 2922 "src/consynth/LoopsHelper.ml" 120 2905 2923
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 120 2905 2911 "src/consynth/LoopsHelper.ml" 120 2905 2924
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 122 2963 2968 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 121 2928 2941 "src/consynth/LoopsHelper.ml" 121 2928 2957
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 121 2928 2958 "src/consynth/LoopsHelper.ml" 121 2928 2959
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 120 2905 2914 "src/consynth/LoopsHelper.ml" 120 2905 2915
+)
+"src/consynth/LoopsHelper.ml" 121 2928 2941 "src/consynth/LoopsHelper.ml" 121 2928 2959
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2972 "src/consynth/LoopsHelper.ml" 122 2963 2975
+type(
+  Cil.stmt list
+)
+ident(
+  def tsl "src/consynth/LoopsHelper.ml" 123 3001 3006 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2978 "src/consynth/LoopsHelper.ml" 122 2963 2987
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  int_ref skipEmpty "src/consynth/LoopsHelper.ml" 111 2672 2682 "src/consynth/LoopsHelper.ml" 111 2672 2691
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2988 "src/consynth/LoopsHelper.ml" 122 2963 2990
+type(
+  Cil.block
+)
+ident(
+  int_ref tb "src/consynth/LoopsHelper.ml" 120 2905 2916 "src/consynth/LoopsHelper.ml" 120 2905 2918
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2988 "src/consynth/LoopsHelper.ml" 122 2963 2997
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2978 "src/consynth/LoopsHelper.ml" 122 2963 2997
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3010 "src/consynth/LoopsHelper.ml" 123 3001 3013
+type(
+  Cil.stmt list
+)
+ident(
+  def fsl "src/consynth/LoopsHelper.ml" 124 3039 3044 "src/consynth/LoopsHelper.ml" 167 4716 4735
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3016 "src/consynth/LoopsHelper.ml" 123 3001 3025
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  int_ref skipEmpty "src/consynth/LoopsHelper.ml" 111 2672 2682 "src/consynth/LoopsHelper.ml" 111 2672 2691
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3026 "src/consynth/LoopsHelper.ml" 123 3001 3028
+type(
+  Cil.block
+)
+ident(
+  int_ref fb "src/consynth/LoopsHelper.ml" 120 2905 2919 "src/consynth/LoopsHelper.ml" 120 2905 2921
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3026 "src/consynth/LoopsHelper.ml" 123 3001 3035
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3016 "src/consynth/LoopsHelper.ml" 123 3001 3035
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 124 3039 3051 "src/consynth/LoopsHelper.ml" 124 3039 3054
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref tsl "src/consynth/LoopsHelper.ml" 122 2963 2972 "src/consynth/LoopsHelper.ml" 122 2963 2975
+)
+"src/consynth/LoopsHelper.ml" 124 3039 3056 "src/consynth/LoopsHelper.ml" 124 3039 3059
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref fsl "src/consynth/LoopsHelper.ml" 123 3001 3010 "src/consynth/LoopsHelper.ml" 123 3001 3013
+)
+"src/consynth/LoopsHelper.ml" 124 3039 3051 "src/consynth/LoopsHelper.ml" 124 3039 3059
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3087 "src/consynth/LoopsHelper.ml" 125 3065 3088
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3081 "src/consynth/LoopsHelper.ml" 125 3065 3088
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3072 "src/consynth/LoopsHelper.ml" 125 3065 3089
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3093 "src/consynth/LoopsHelper.ml" 125 3065 3094
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3072 "src/consynth/LoopsHelper.ml" 125 3065 3094
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3096 "src/consynth/LoopsHelper.ml" 125 3065 3098
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3072 "src/consynth/LoopsHelper.ml" 125 3065 3098
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3107 "src/consynth/LoopsHelper.ml" 125 3065 3108
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 125 3065 3102 "src/consynth/LoopsHelper.ml" 125 3065 3108
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3116 "src/consynth/LoopsHelper.ml" 126 3109 3118
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3135 "src/consynth/LoopsHelper.ml" 126 3109 3136
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3129 "src/consynth/LoopsHelper.ml" 126 3109 3136
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3120 "src/consynth/LoopsHelper.ml" 126 3109 3137
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3141 "src/consynth/LoopsHelper.ml" 126 3109 3142
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3120 "src/consynth/LoopsHelper.ml" 126 3109 3142
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 126 3109 3116 "src/consynth/LoopsHelper.ml" 126 3109 3142
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 127 3146 3164 "src/consynth/LoopsHelper.ml" 127 3146 3168
+type(
+  Cil.unop
+)
+"src/consynth/LoopsHelper.ml" 127 3146 3170 "src/consynth/LoopsHelper.ml" 127 3146 3171
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 127 3146 3173 "src/consynth/LoopsHelper.ml" 127 3146 3180
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 127 3146 3158 "src/consynth/LoopsHelper.ml" 127 3146 3182
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 127 3146 3154 "src/consynth/LoopsHelper.ml" 127 3146 3182
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3203 "src/consynth/LoopsHelper.ml" 128 3183 3204
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3205 "src/consynth/LoopsHelper.ml" 128 3183 3206
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3207 "src/consynth/LoopsHelper.ml" 128 3183 3208
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3209 "src/consynth/LoopsHelper.ml" 128 3183 3210
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3200 "src/consynth/LoopsHelper.ml" 128 3183 3211
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3191 "src/consynth/LoopsHelper.ml" 128 3183 3212
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3216 "src/consynth/LoopsHelper.ml" 128 3183 3217
+ident(
+  def s "src/consynth/LoopsHelper.ml" 129 3231 3239 "src/consynth/LoopsHelper.ml" 133 3339 3395
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3190 "src/consynth/LoopsHelper.ml" 128 3183 3218
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3222 "src/consynth/LoopsHelper.ml" 128 3183 3223
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3190 "src/consynth/LoopsHelper.ml" 128 3183 3223
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3225 "src/consynth/LoopsHelper.ml" 128 3183 3227
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 128 3183 3190 "src/consynth/LoopsHelper.ml" 128 3183 3227
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 129 3231 3243 "src/consynth/LoopsHelper.ml" 129 3231 3246
+type(
+  Cil.exp option
+)
+ident(
+  def teo "src/consynth/LoopsHelper.ml" 130 3271 3279 "src/consynth/LoopsHelper.ml" 133 3339 3395
+)
+"src/consynth/LoopsHelper.ml" 129 3231 3249 "src/consynth/LoopsHelper.ml" 129 3231 3265
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 129 3231 3266 "src/consynth/LoopsHelper.ml" 129 3231 3267
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 128 3183 3190 "src/consynth/LoopsHelper.ml" 128 3183 3218
+)
+"src/consynth/LoopsHelper.ml" 129 3231 3249 "src/consynth/LoopsHelper.ml" 129 3231 3267
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 130 3271 3286 "src/consynth/LoopsHelper.ml" 130 3271 3289
+type(
+  Cil.exp option
+)
+ident(
+  int_ref teo "src/consynth/LoopsHelper.ml" 129 3231 3243 "src/consynth/LoopsHelper.ml" 129 3231 3246
+)
+"src/consynth/LoopsHelper.ml" 131 3295 3305 "src/consynth/LoopsHelper.ml" 131 3295 3309
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 131 3295 3313 "src/consynth/LoopsHelper.ml" 131 3295 3317
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 132 3318 3333 "src/consynth/LoopsHelper.ml" 132 3318 3335
+type(
+  Cil.exp
+)
+ident(
+  def te "src/consynth/LoopsHelper.ml" 133 3339 3347 "src/consynth/LoopsHelper.ml" 133 3339 3394
+)
+"src/consynth/LoopsHelper.ml" 132 3318 3328 "src/consynth/LoopsHelper.ml" 132 3318 3335
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3358 "src/consynth/LoopsHelper.ml" 133 3339 3362
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3363 "src/consynth/LoopsHelper.ml" 133 3339 3364
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3365 "src/consynth/LoopsHelper.ml" 133 3339 3381
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3382 "src/consynth/LoopsHelper.ml" 133 3339 3384
+type(
+  Cil.exp
+)
+ident(
+  int_ref te "src/consynth/LoopsHelper.ml" 132 3318 3333 "src/consynth/LoopsHelper.ml" 132 3318 3335
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3365 "src/consynth/LoopsHelper.ml" 133 3339 3384
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3385 "src/consynth/LoopsHelper.ml" 133 3339 3392
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3351 "src/consynth/LoopsHelper.ml" 133 3339 3394
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 133 3339 3347 "src/consynth/LoopsHelper.ml" 133 3339 3394
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 130 3271 3279 "src/consynth/LoopsHelper.ml" 133 3339 3395
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 129 3231 3239 "src/consynth/LoopsHelper.ml" 133 3339 3395
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3403 "src/consynth/LoopsHelper.ml" 134 3396 3405
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3420 "src/consynth/LoopsHelper.ml" 134 3396 3421
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3422 "src/consynth/LoopsHelper.ml" 134 3396 3423
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3424 "src/consynth/LoopsHelper.ml" 134 3396 3425
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3426 "src/consynth/LoopsHelper.ml" 134 3396 3427
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3417 "src/consynth/LoopsHelper.ml" 134 3396 3428
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3408 "src/consynth/LoopsHelper.ml" 134 3396 3429
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3433 "src/consynth/LoopsHelper.ml" 134 3396 3434
+ident(
+  def s "src/consynth/LoopsHelper.ml" 135 3444 3452 "src/consynth/LoopsHelper.ml" 140 3598 3644
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3407 "src/consynth/LoopsHelper.ml" 134 3396 3435
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3439 "src/consynth/LoopsHelper.ml" 134 3396 3440
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3407 "src/consynth/LoopsHelper.ml" 134 3396 3440
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 134 3396 3403 "src/consynth/LoopsHelper.ml" 134 3396 3440
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 135 3444 3456 "src/consynth/LoopsHelper.ml" 135 3444 3459
+type(
+  Cil.exp option
+)
+ident(
+  def feo "src/consynth/LoopsHelper.ml" 136 3484 3492 "src/consynth/LoopsHelper.ml" 140 3598 3644
+)
+"src/consynth/LoopsHelper.ml" 135 3444 3462 "src/consynth/LoopsHelper.ml" 135 3444 3478
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 135 3444 3479 "src/consynth/LoopsHelper.ml" 135 3444 3480
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 134 3396 3407 "src/consynth/LoopsHelper.ml" 134 3396 3435
+)
+"src/consynth/LoopsHelper.ml" 135 3444 3462 "src/consynth/LoopsHelper.ml" 135 3444 3480
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 136 3484 3499 "src/consynth/LoopsHelper.ml" 136 3484 3502
+type(
+  Cil.exp option
+)
+ident(
+  int_ref feo "src/consynth/LoopsHelper.ml" 135 3444 3456 "src/consynth/LoopsHelper.ml" 135 3444 3459
+)
+"src/consynth/LoopsHelper.ml" 137 3508 3518 "src/consynth/LoopsHelper.ml" 137 3508 3522
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 137 3508 3526 "src/consynth/LoopsHelper.ml" 137 3508 3530
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 138 3531 3546 "src/consynth/LoopsHelper.ml" 138 3531 3548
+type(
+  Cil.exp
+)
+ident(
+  def fe "src/consynth/LoopsHelper.ml" 139 3552 3560 "src/consynth/LoopsHelper.ml" 140 3598 3643
+)
+"src/consynth/LoopsHelper.ml" 138 3531 3541 "src/consynth/LoopsHelper.ml" 138 3531 3548
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3571 "src/consynth/LoopsHelper.ml" 139 3552 3575
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3581 "src/consynth/LoopsHelper.ml" 139 3552 3585
+type(
+  Cil.unop
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3586 "src/consynth/LoopsHelper.ml" 139 3552 3587
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3588 "src/consynth/LoopsHelper.ml" 139 3552 3595
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3576 "src/consynth/LoopsHelper.ml" 139 3552 3596
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 140 3598 3614 "src/consynth/LoopsHelper.ml" 140 3598 3630
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 140 3598 3631 "src/consynth/LoopsHelper.ml" 140 3598 3633
+type(
+  Cil.exp
+)
+ident(
+  int_ref fe "src/consynth/LoopsHelper.ml" 138 3531 3546 "src/consynth/LoopsHelper.ml" 138 3531 3548
+)
+"src/consynth/LoopsHelper.ml" 140 3598 3614 "src/consynth/LoopsHelper.ml" 140 3598 3633
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 140 3598 3634 "src/consynth/LoopsHelper.ml" 140 3598 3641
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3564 "src/consynth/LoopsHelper.ml" 140 3598 3643
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 139 3552 3560 "src/consynth/LoopsHelper.ml" 140 3598 3643
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 136 3484 3492 "src/consynth/LoopsHelper.ml" 140 3598 3644
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 135 3444 3452 "src/consynth/LoopsHelper.ml" 140 3598 3644
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3667 "src/consynth/LoopsHelper.ml" 141 3645 3668
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3661 "src/consynth/LoopsHelper.ml" 141 3645 3668
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3652 "src/consynth/LoopsHelper.ml" 141 3645 3669
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3673 "src/consynth/LoopsHelper.ml" 141 3645 3674
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3652 "src/consynth/LoopsHelper.ml" 141 3645 3674
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3689 "src/consynth/LoopsHelper.ml" 141 3645 3690
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3691 "src/consynth/LoopsHelper.ml" 141 3645 3692
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3693 "src/consynth/LoopsHelper.ml" 141 3645 3694
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3695 "src/consynth/LoopsHelper.ml" 141 3645 3696
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3686 "src/consynth/LoopsHelper.ml" 141 3645 3697
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3677 "src/consynth/LoopsHelper.ml" 141 3645 3698
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3702 "src/consynth/LoopsHelper.ml" 141 3645 3703
+ident(
+  def s "src/consynth/LoopsHelper.ml" 142 3712 3720 "src/consynth/LoopsHelper.ml" 146 3820 3875
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3676 "src/consynth/LoopsHelper.ml" 141 3645 3704
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3707 "src/consynth/LoopsHelper.ml" 141 3645 3708
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3676 "src/consynth/LoopsHelper.ml" 141 3645 3708
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 141 3645 3652 "src/consynth/LoopsHelper.ml" 141 3645 3708
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 142 3712 3724 "src/consynth/LoopsHelper.ml" 142 3712 3727
+type(
+  Cil.exp option
+)
+ident(
+  def feo "src/consynth/LoopsHelper.ml" 143 3752 3760 "src/consynth/LoopsHelper.ml" 146 3820 3875
+)
+"src/consynth/LoopsHelper.ml" 142 3712 3730 "src/consynth/LoopsHelper.ml" 142 3712 3746
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 142 3712 3747 "src/consynth/LoopsHelper.ml" 142 3712 3748
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 141 3645 3676 "src/consynth/LoopsHelper.ml" 141 3645 3704
+)
+"src/consynth/LoopsHelper.ml" 142 3712 3730 "src/consynth/LoopsHelper.ml" 142 3712 3748
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 143 3752 3767 "src/consynth/LoopsHelper.ml" 143 3752 3770
+type(
+  Cil.exp option
+)
+ident(
+  int_ref feo "src/consynth/LoopsHelper.ml" 142 3712 3724 "src/consynth/LoopsHelper.ml" 142 3712 3727
+)
+"src/consynth/LoopsHelper.ml" 144 3776 3786 "src/consynth/LoopsHelper.ml" 144 3776 3790
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 144 3776 3794 "src/consynth/LoopsHelper.ml" 144 3776 3798
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 145 3799 3814 "src/consynth/LoopsHelper.ml" 145 3799 3816
+type(
+  Cil.exp
+)
+ident(
+  def fe "src/consynth/LoopsHelper.ml" 146 3820 3828 "src/consynth/LoopsHelper.ml" 146 3820 3874
+)
+"src/consynth/LoopsHelper.ml" 145 3799 3809 "src/consynth/LoopsHelper.ml" 145 3799 3816
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3839 "src/consynth/LoopsHelper.ml" 146 3820 3842
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3843 "src/consynth/LoopsHelper.ml" 146 3820 3844
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3845 "src/consynth/LoopsHelper.ml" 146 3820 3861
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3862 "src/consynth/LoopsHelper.ml" 146 3820 3864
+type(
+  Cil.exp
+)
+ident(
+  int_ref fe "src/consynth/LoopsHelper.ml" 145 3799 3814 "src/consynth/LoopsHelper.ml" 145 3799 3816
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3845 "src/consynth/LoopsHelper.ml" 146 3820 3864
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3865 "src/consynth/LoopsHelper.ml" 146 3820 3872
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3832 "src/consynth/LoopsHelper.ml" 146 3820 3874
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 146 3820 3828 "src/consynth/LoopsHelper.ml" 146 3820 3874
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 143 3752 3760 "src/consynth/LoopsHelper.ml" 146 3820 3875
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 142 3712 3720 "src/consynth/LoopsHelper.ml" 146 3820 3875
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3896 "src/consynth/LoopsHelper.ml" 147 3876 3897
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3898 "src/consynth/LoopsHelper.ml" 147 3876 3899
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3900 "src/consynth/LoopsHelper.ml" 147 3876 3901
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3902 "src/consynth/LoopsHelper.ml" 147 3876 3903
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3893 "src/consynth/LoopsHelper.ml" 147 3876 3904
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3884 "src/consynth/LoopsHelper.ml" 147 3876 3905
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3909 "src/consynth/LoopsHelper.ml" 147 3876 3910
+ident(
+  def s "src/consynth/LoopsHelper.ml" 148 3944 3952 "src/consynth/LoopsHelper.ml" 153 4097 4143
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3883 "src/consynth/LoopsHelper.ml" 147 3876 3911
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3915 "src/consynth/LoopsHelper.ml" 147 3876 3916
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3883 "src/consynth/LoopsHelper.ml" 147 3876 3916
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3933 "src/consynth/LoopsHelper.ml" 147 3876 3934
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3927 "src/consynth/LoopsHelper.ml" 147 3876 3934
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3918 "src/consynth/LoopsHelper.ml" 147 3876 3935
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3939 "src/consynth/LoopsHelper.ml" 147 3876 3940
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3918 "src/consynth/LoopsHelper.ml" 147 3876 3940
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 147 3876 3883 "src/consynth/LoopsHelper.ml" 147 3876 3940
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 148 3944 3956 "src/consynth/LoopsHelper.ml" 148 3944 3959
+type(
+  Cil.exp option
+)
+ident(
+  def teo "src/consynth/LoopsHelper.ml" 149 3984 3992 "src/consynth/LoopsHelper.ml" 153 4097 4143
+)
+"src/consynth/LoopsHelper.ml" 148 3944 3962 "src/consynth/LoopsHelper.ml" 148 3944 3978
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 148 3944 3979 "src/consynth/LoopsHelper.ml" 148 3944 3980
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 147 3876 3883 "src/consynth/LoopsHelper.ml" 147 3876 3911
+)
+"src/consynth/LoopsHelper.ml" 148 3944 3962 "src/consynth/LoopsHelper.ml" 148 3944 3980
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 149 3984 3999 "src/consynth/LoopsHelper.ml" 149 3984 4002
+type(
+  Cil.exp option
+)
+ident(
+  int_ref teo "src/consynth/LoopsHelper.ml" 148 3944 3956 "src/consynth/LoopsHelper.ml" 148 3944 3959
+)
+"src/consynth/LoopsHelper.ml" 150 4008 4018 "src/consynth/LoopsHelper.ml" 150 4008 4022
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 150 4008 4026 "src/consynth/LoopsHelper.ml" 150 4008 4030
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 151 4031 4046 "src/consynth/LoopsHelper.ml" 151 4031 4048
+type(
+  Cil.exp
+)
+ident(
+  def te "src/consynth/LoopsHelper.ml" 152 4052 4060 "src/consynth/LoopsHelper.ml" 153 4097 4142
+)
+"src/consynth/LoopsHelper.ml" 151 4031 4041 "src/consynth/LoopsHelper.ml" 151 4031 4048
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4071 "src/consynth/LoopsHelper.ml" 152 4052 4074
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4080 "src/consynth/LoopsHelper.ml" 152 4052 4084
+type(
+  Cil.unop
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4085 "src/consynth/LoopsHelper.ml" 152 4052 4086
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4087 "src/consynth/LoopsHelper.ml" 152 4052 4094
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4075 "src/consynth/LoopsHelper.ml" 152 4052 4095
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 153 4097 4113 "src/consynth/LoopsHelper.ml" 153 4097 4129
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 153 4097 4130 "src/consynth/LoopsHelper.ml" 153 4097 4132
+type(
+  Cil.exp
+)
+ident(
+  int_ref te "src/consynth/LoopsHelper.ml" 151 4031 4046 "src/consynth/LoopsHelper.ml" 151 4031 4048
+)
+"src/consynth/LoopsHelper.ml" 153 4097 4113 "src/consynth/LoopsHelper.ml" 153 4097 4132
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 153 4097 4133 "src/consynth/LoopsHelper.ml" 153 4097 4140
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4064 "src/consynth/LoopsHelper.ml" 153 4097 4142
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 152 4052 4060 "src/consynth/LoopsHelper.ml" 153 4097 4142
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 149 3984 3992 "src/consynth/LoopsHelper.ml" 153 4097 4143
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 148 3944 3952 "src/consynth/LoopsHelper.ml" 153 4097 4143
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4164 "src/consynth/LoopsHelper.ml" 154 4144 4165
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4166 "src/consynth/LoopsHelper.ml" 154 4144 4167
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4168 "src/consynth/LoopsHelper.ml" 154 4144 4169
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4170 "src/consynth/LoopsHelper.ml" 154 4144 4171
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4161 "src/consynth/LoopsHelper.ml" 154 4144 4172
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4152 "src/consynth/LoopsHelper.ml" 154 4144 4173
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4177 "src/consynth/LoopsHelper.ml" 154 4144 4179
+ident(
+  def ts "src/consynth/LoopsHelper.ml" 156 4237 4245 "src/consynth/LoopsHelper.ml" 163 4554 4576
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4151 "src/consynth/LoopsHelper.ml" 154 4144 4180
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4184 "src/consynth/LoopsHelper.ml" 154 4144 4185
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4151 "src/consynth/LoopsHelper.ml" 154 4144 4185
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4212 "src/consynth/LoopsHelper.ml" 155 4188 4213
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4214 "src/consynth/LoopsHelper.ml" 155 4188 4215
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4216 "src/consynth/LoopsHelper.ml" 155 4188 4217
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4218 "src/consynth/LoopsHelper.ml" 155 4188 4219
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4209 "src/consynth/LoopsHelper.ml" 155 4188 4220
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4200 "src/consynth/LoopsHelper.ml" 155 4188 4221
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4225 "src/consynth/LoopsHelper.ml" 155 4188 4227
+ident(
+  def fs "src/consynth/LoopsHelper.ml" 156 4237 4245 "src/consynth/LoopsHelper.ml" 163 4554 4576
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4199 "src/consynth/LoopsHelper.ml" 155 4188 4228
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4232 "src/consynth/LoopsHelper.ml" 155 4188 4233
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 155 4188 4199 "src/consynth/LoopsHelper.ml" 155 4188 4233
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 154 4144 4151 "src/consynth/LoopsHelper.ml" 155 4188 4233
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 156 4237 4249 "src/consynth/LoopsHelper.ml" 156 4237 4252
+type(
+  Cil.exp option
+)
+ident(
+  def teo "src/consynth/LoopsHelper.ml" 157 4278 4286 "src/consynth/LoopsHelper.ml" 163 4554 4576
+)
+"src/consynth/LoopsHelper.ml" 156 4237 4255 "src/consynth/LoopsHelper.ml" 156 4237 4271
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 156 4237 4272 "src/consynth/LoopsHelper.ml" 156 4237 4274
+type(
+  Cil.stmt
+)
+ident(
+  int_ref ts "src/consynth/LoopsHelper.ml" 154 4144 4151 "src/consynth/LoopsHelper.ml" 154 4144 4180
+)
+"src/consynth/LoopsHelper.ml" 156 4237 4255 "src/consynth/LoopsHelper.ml" 156 4237 4274
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 157 4278 4290 "src/consynth/LoopsHelper.ml" 157 4278 4293
+type(
+  Cil.exp option
+)
+ident(
+  def feo "src/consynth/LoopsHelper.ml" 158 4319 4327 "src/consynth/LoopsHelper.ml" 163 4554 4576
+)
+"src/consynth/LoopsHelper.ml" 157 4278 4296 "src/consynth/LoopsHelper.ml" 157 4278 4312
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 157 4278 4313 "src/consynth/LoopsHelper.ml" 157 4278 4315
+type(
+  Cil.stmt
+)
+ident(
+  int_ref fs "src/consynth/LoopsHelper.ml" 155 4188 4199 "src/consynth/LoopsHelper.ml" 155 4188 4228
+)
+"src/consynth/LoopsHelper.ml" 157 4278 4296 "src/consynth/LoopsHelper.ml" 157 4278 4315
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 158 4319 4334 "src/consynth/LoopsHelper.ml" 158 4319 4337
+type(
+  Cil.exp option
+)
+ident(
+  int_ref teo "src/consynth/LoopsHelper.ml" 156 4237 4249 "src/consynth/LoopsHelper.ml" 156 4237 4252
+)
+"src/consynth/LoopsHelper.ml" 158 4319 4339 "src/consynth/LoopsHelper.ml" 158 4319 4342
+type(
+  Cil.exp option
+)
+ident(
+  int_ref feo "src/consynth/LoopsHelper.ml" 157 4278 4290 "src/consynth/LoopsHelper.ml" 157 4278 4293
+)
+"src/consynth/LoopsHelper.ml" 158 4319 4334 "src/consynth/LoopsHelper.ml" 158 4319 4342
+type(
+  Cil.exp option * Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 159 4348 4363 "src/consynth/LoopsHelper.ml" 159 4348 4365
+type(
+  Cil.exp
+)
+ident(
+  def te "src/consynth/LoopsHelper.ml" 160 4378 4387 "src/consynth/LoopsHelper.ml" 162 4495 4553
+)
+"src/consynth/LoopsHelper.ml" 159 4348 4358 "src/consynth/LoopsHelper.ml" 159 4348 4365
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 159 4348 4372 "src/consynth/LoopsHelper.ml" 159 4348 4374
+type(
+  Cil.exp
+)
+ident(
+  def fe "src/consynth/LoopsHelper.ml" 160 4378 4387 "src/consynth/LoopsHelper.ml" 162 4495 4553
+)
+"src/consynth/LoopsHelper.ml" 159 4348 4367 "src/consynth/LoopsHelper.ml" 159 4348 4374
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 159 4348 4358 "src/consynth/LoopsHelper.ml" 159 4348 4374
+type(
+  Cil.exp option * Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4398 "src/consynth/LoopsHelper.ml" 160 4378 4401
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4408 "src/consynth/LoopsHelper.ml" 160 4378 4412
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4413 "src/consynth/LoopsHelper.ml" 160 4378 4414
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4415 "src/consynth/LoopsHelper.ml" 160 4378 4431
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4432 "src/consynth/LoopsHelper.ml" 160 4378 4434
+type(
+  Cil.exp
+)
+ident(
+  int_ref te "src/consynth/LoopsHelper.ml" 159 4348 4363 "src/consynth/LoopsHelper.ml" 159 4348 4365
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4415 "src/consynth/LoopsHelper.ml" 160 4378 4434
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4435 "src/consynth/LoopsHelper.ml" 160 4378 4442
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4402 "src/consynth/LoopsHelper.ml" 160 4378 4443
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4468 "src/consynth/LoopsHelper.ml" 161 4445 4472
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4478 "src/consynth/LoopsHelper.ml" 161 4445 4482
+type(
+  Cil.unop
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4483 "src/consynth/LoopsHelper.ml" 161 4445 4484
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 121 2928 2937 "src/consynth/LoopsHelper.ml" 121 2928 2938
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4485 "src/consynth/LoopsHelper.ml" 161 4445 4492
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4473 "src/consynth/LoopsHelper.ml" 161 4445 4493
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 162 4495 4515 "src/consynth/LoopsHelper.ml" 162 4495 4531
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref EC.stripNopCasts
+)
+"src/consynth/LoopsHelper.ml" 162 4495 4532 "src/consynth/LoopsHelper.ml" 162 4495 4534
+type(
+  Cil.exp
+)
+ident(
+  int_ref fe "src/consynth/LoopsHelper.ml" 159 4348 4372 "src/consynth/LoopsHelper.ml" 159 4348 4374
+)
+"src/consynth/LoopsHelper.ml" 162 4495 4515 "src/consynth/LoopsHelper.ml" 162 4495 4534
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 162 4495 4535 "src/consynth/LoopsHelper.ml" 162 4495 4542
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 161 4445 4462 "src/consynth/LoopsHelper.ml" 162 4495 4543
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 162 4495 4544 "src/consynth/LoopsHelper.ml" 162 4495 4551
+type(
+  Cil.typ
+)
+ident(
+  ext_ref Cil.intType
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4391 "src/consynth/LoopsHelper.ml" 162 4495 4553
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 160 4378 4387 "src/consynth/LoopsHelper.ml" 162 4495 4553
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 163 4554 4564 "src/consynth/LoopsHelper.ml" 163 4554 4565
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 163 4554 4566 "src/consynth/LoopsHelper.ml" 163 4554 4567
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 163 4554 4564 "src/consynth/LoopsHelper.ml" 163 4554 4567
+type(
+  Cil.exp option * Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 163 4554 4571 "src/consynth/LoopsHelper.ml" 163 4554 4575
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 158 4319 4327 "src/consynth/LoopsHelper.ml" 163 4554 4576
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 157 4278 4286 "src/consynth/LoopsHelper.ml" 163 4554 4576
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 156 4237 4245 "src/consynth/LoopsHelper.ml" 163 4554 4576
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4584 "src/consynth/LoopsHelper.ml" 164 4577 4585
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4587 "src/consynth/LoopsHelper.ml" 164 4577 4588
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4584 "src/consynth/LoopsHelper.ml" 164 4577 4588
+type(
+  Cil.stmt list * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4596 "src/consynth/LoopsHelper.ml" 164 4577 4597
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4597 "src/consynth/LoopsHelper.ml" 164 4577 4602
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/LoopsHelper.ml" 10 143 147 "src/consynth/LoopsHelper.ml" 10 143 152
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4596 "src/consynth/LoopsHelper.ml" 164 4577 4602
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 165 4603 4618 "src/consynth/LoopsHelper.ml" 165 4603 4624
+type(
+  unit -> unit
+)
+ident(
+  ext_ref Pervasives.ignore
+)
+"src/consynth/LoopsHelper.ml" 165 4603 4625 "src/consynth/LoopsHelper.ml" 165 4603 4630
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4 -> (unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit
+)
+ident(
+  ext_ref E.log
+)
+"src/consynth/LoopsHelper.ml" 165 4603 4631 "src/consynth/LoopsHelper.ml" 165 4603 4671
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4
+)
+"src/consynth/LoopsHelper.ml" 166 4672 4700 "src/consynth/LoopsHelper.ml" 166 4672 4706
+type(
+  unit -> Cil.stmt -> Pretty.doc
+)
+ident(
+  ext_ref Cil.d_stmt
+)
+"src/consynth/LoopsHelper.ml" 166 4672 4707 "src/consynth/LoopsHelper.ml" 166 4672 4713
+type(
+  Cil.stmt
+)
+ident(
+  int_ref if_stm "src/consynth/LoopsHelper.ml" 118 2841 2868 "src/consynth/LoopsHelper.ml" 118 2841 2874
+)
+"src/consynth/LoopsHelper.ml" 165 4603 4624 "src/consynth/LoopsHelper.ml" 166 4672 4714
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 165 4603 4618 "src/consynth/LoopsHelper.ml" 166 4672 4714
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4593 "src/consynth/LoopsHelper.ml" 166 4672 4714
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 167 4716 4729 "src/consynth/LoopsHelper.ml" 167 4716 4733
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 164 4577 4592 "src/consynth/LoopsHelper.ml" 167 4716 4734
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 124 3039 3044 "src/consynth/LoopsHelper.ml" 167 4716 4735
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 123 3001 3006 "src/consynth/LoopsHelper.ml" 167 4716 4735
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 122 2963 2968 "src/consynth/LoopsHelper.ml" 167 4716 4735
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 121 2928 2933 "src/consynth/LoopsHelper.ml" 167 4716 4735
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4742 "src/consynth/LoopsHelper.ml" 168 4736 4743
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4751 "src/consynth/LoopsHelper.ml" 168 4736 4752
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4752 "src/consynth/LoopsHelper.ml" 168 4736 4757
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/LoopsHelper.ml" 10 143 147 "src/consynth/LoopsHelper.ml" 10 143 152
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4751 "src/consynth/LoopsHelper.ml" 168 4736 4757
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4769 "src/consynth/LoopsHelper.ml" 169 4758 4775
+type(
+  unit -> unit
+)
+ident(
+  ext_ref Pervasives.ignore
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4776 "src/consynth/LoopsHelper.ml" 169 4758 4781
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4 -> (unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit
+)
+ident(
+  ext_ref E.log
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4782 "src/consynth/LoopsHelper.ml" 169 4758 4811
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4812 "src/consynth/LoopsHelper.ml" 169 4758 4818
+type(
+  unit -> Cil.stmt -> Pretty.doc
+)
+ident(
+  ext_ref Cil.d_stmt
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4819 "src/consynth/LoopsHelper.ml" 169 4758 4825
+type(
+  Cil.stmt
+)
+ident(
+  int_ref if_stm "src/consynth/LoopsHelper.ml" 118 2841 2868 "src/consynth/LoopsHelper.ml" 118 2841 2874
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4775 "src/consynth/LoopsHelper.ml" 169 4758 4826
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 169 4758 4769 "src/consynth/LoopsHelper.ml" 169 4758 4826
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4748 "src/consynth/LoopsHelper.ml" 169 4758 4826
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 170 4828 4837 "src/consynth/LoopsHelper.ml" 170 4828 4841
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 168 4736 4747 "src/consynth/LoopsHelper.ml" 170 4828 4842
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 119 2877 2881 "src/consynth/LoopsHelper.ml" 170 4828 4842
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4854 "src/consynth/LoopsHelper.ml" 172 4848 4856
+type(
+  Cil.stmt list
+)
+ident(
+  def sl "src/consynth/LoopsHelper.ml" 173 4881 4883 "src/consynth/LoopsHelper.ml" 182 5209 5224
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4859 "src/consynth/LoopsHelper.ml" 172 4848 4868
+type(
+  Cil.stmt list -> Cil.stmt list
+)
+ident(
+  int_ref skipEmpty "src/consynth/LoopsHelper.ml" 111 2672 2682 "src/consynth/LoopsHelper.ml" 111 2672 2691
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4869 "src/consynth/LoopsHelper.ml" 172 4848 4870
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/LoopsHelper.ml" 107 2545 2568 "src/consynth/LoopsHelper.ml" 107 2545 2569
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4869 "src/consynth/LoopsHelper.ml" 172 4848 4877
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4859 "src/consynth/LoopsHelper.ml" 172 4848 4877
+call(
+  stack
+)
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 173 4881 4889 "src/consynth/LoopsHelper.ml" 173 4881 4891
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref sl "src/consynth/LoopsHelper.ml" 172 4848 4854 "src/consynth/LoopsHelper.ml" 172 4848 4856
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4914 "src/consynth/LoopsHelper.ml" 174 4897 4915
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4916 "src/consynth/LoopsHelper.ml" 174 4897 4917
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4918 "src/consynth/LoopsHelper.ml" 174 4897 4919
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4920 "src/consynth/LoopsHelper.ml" 174 4897 4921
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4911 "src/consynth/LoopsHelper.ml" 174 4897 4922
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4931 "src/consynth/LoopsHelper.ml" 174 4897 4933
+type(
+  Cil.label list
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4902 "src/consynth/LoopsHelper.ml" 174 4897 4934
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4938 "src/consynth/LoopsHelper.ml" 174 4897 4939
+ident(
+  def s "src/consynth/LoopsHelper.ml" 175 4952 4958 "src/consynth/LoopsHelper.ml" 175 4952 4982
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4901 "src/consynth/LoopsHelper.ml" 174 4897 4940
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4944 "src/consynth/LoopsHelper.ml" 174 4897 4948
+type(
+  Cil.stmt list
+)
+ident(
+  def rest "src/consynth/LoopsHelper.ml" 175 4952 4958 "src/consynth/LoopsHelper.ml" 175 4952 4982
+)
+"src/consynth/LoopsHelper.ml" 174 4897 4901 "src/consynth/LoopsHelper.ml" 174 4897 4948
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 175 4952 4958 "src/consynth/LoopsHelper.ml" 175 4952 4974
+type(
+  Cil.stmt -> Cil.exp option
+)
+ident(
+  int_ref get_cond_from_if "src/consynth/LoopsHelper.ml" 118 2841 2851 "src/consynth/LoopsHelper.ml" 118 2841 2867
+)
+"src/consynth/LoopsHelper.ml" 175 4952 4975 "src/consynth/LoopsHelper.ml" 175 4952 4976
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 174 4897 4901 "src/consynth/LoopsHelper.ml" 174 4897 4940
+)
+"src/consynth/LoopsHelper.ml" 175 4952 4958 "src/consynth/LoopsHelper.ml" 175 4952 4976
+call(
+  stack
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 175 4952 4978 "src/consynth/LoopsHelper.ml" 175 4952 4982
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref rest "src/consynth/LoopsHelper.ml" 174 4897 4944 "src/consynth/LoopsHelper.ml" 174 4897 4948
+)
+"src/consynth/LoopsHelper.ml" 175 4952 4958 "src/consynth/LoopsHelper.ml" 175 4952 4982
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 176 4983 4987 "src/consynth/LoopsHelper.ml" 176 4983 4988
+type(
+  Cil.stmt
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 177 4997 5002 "src/consynth/LoopsHelper.ml" 179 5102 5117
+)
+"src/consynth/LoopsHelper.ml" 176 4983 4992 "src/consynth/LoopsHelper.ml" 176 4983 4993
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 176 4983 4987 "src/consynth/LoopsHelper.ml" 176 4983 4993
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5006 "src/consynth/LoopsHelper.ml" 177 4997 5007
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5007 "src/consynth/LoopsHelper.ml" 177 4997 5012
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/LoopsHelper.ml" 10 143 147 "src/consynth/LoopsHelper.ml" 10 143 152
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5006 "src/consynth/LoopsHelper.ml" 177 4997 5012
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5018 "src/consynth/LoopsHelper.ml" 177 4997 5024
+type(
+  unit -> unit
+)
+ident(
+  ext_ref Pervasives.ignore
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5025 "src/consynth/LoopsHelper.ml" 177 4997 5030
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4 -> (unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit
+)
+ident(
+  ext_ref E.log
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5031 "src/consynth/LoopsHelper.ml" 177 4997 5069
+type(
+  ((unit -> Cil.stmt -> Pretty.doc) -> Cil.stmt -> unit, unit, Pretty.doc,
+   unit)
+  format4
+)
+"src/consynth/LoopsHelper.ml" 178 5070 5091 "src/consynth/LoopsHelper.ml" 178 5070 5097
+type(
+  unit -> Cil.stmt -> Pretty.doc
+)
+ident(
+  ext_ref Cil.d_stmt
+)
+"src/consynth/LoopsHelper.ml" 178 5070 5098 "src/consynth/LoopsHelper.ml" 178 5070 5099
+type(
+  Cil.stmt
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 176 4983 4987 "src/consynth/LoopsHelper.ml" 176 4983 4988
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5024 "src/consynth/LoopsHelper.ml" 178 5070 5100
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5018 "src/consynth/LoopsHelper.ml" 178 5070 5100
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5003 "src/consynth/LoopsHelper.ml" 178 5070 5100
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 179 5102 5108 "src/consynth/LoopsHelper.ml" 179 5102 5112
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 179 5102 5114 "src/consynth/LoopsHelper.ml" 179 5102 5116
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref sl "src/consynth/LoopsHelper.ml" 172 4848 4854 "src/consynth/LoopsHelper.ml" 172 4848 4856
+)
+"src/consynth/LoopsHelper.ml" 179 5102 5108 "src/consynth/LoopsHelper.ml" 179 5102 5116
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 177 4997 5002 "src/consynth/LoopsHelper.ml" 179 5102 5117
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 180 5118 5122 "src/consynth/LoopsHelper.ml" 180 5118 5124
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5137 "src/consynth/LoopsHelper.ml" 181 5128 5138
+type(
+  bool ref -> bool
+)
+ident(
+  ext_ref Pervasives.( ! )
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5138 "src/consynth/LoopsHelper.ml" 181 5128 5143
+type(
+  bool ref
+)
+ident(
+  int_ref debug "src/consynth/LoopsHelper.ml" 10 143 147 "src/consynth/LoopsHelper.ml" 10 143 152
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5137 "src/consynth/LoopsHelper.ml" 181 5128 5143
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5149 "src/consynth/LoopsHelper.ml" 181 5128 5155
+type(
+  unit -> unit
+)
+ident(
+  ext_ref Pervasives.ignore
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5156 "src/consynth/LoopsHelper.ml" 181 5128 5161
+type(
+  (unit, unit, Pretty.doc, unit) format4 -> unit
+)
+ident(
+  ext_ref E.log
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5162 "src/consynth/LoopsHelper.ml" 181 5128 5206
+type(
+  (unit, unit, Pretty.doc, unit) format4
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5155 "src/consynth/LoopsHelper.ml" 181 5128 5207
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5149 "src/consynth/LoopsHelper.ml" 181 5128 5207
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5134 "src/consynth/LoopsHelper.ml" 181 5128 5207
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 182 5209 5215 "src/consynth/LoopsHelper.ml" 182 5209 5219
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 182 5209 5221 "src/consynth/LoopsHelper.ml" 182 5209 5223
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref sl "src/consynth/LoopsHelper.ml" 172 4848 4854 "src/consynth/LoopsHelper.ml" 172 4848 4856
+)
+"src/consynth/LoopsHelper.ml" 182 5209 5215 "src/consynth/LoopsHelper.ml" 182 5209 5223
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 181 5128 5133 "src/consynth/LoopsHelper.ml" 182 5209 5224
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 173 4881 4883 "src/consynth/LoopsHelper.ml" 182 5209 5224
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 172 4848 4850 "src/consynth/LoopsHelper.ml" 182 5209 5224
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 118 2841 2843 "src/consynth/LoopsHelper.ml" 182 5209 5224
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 111 2672 2674 "src/consynth/LoopsHelper.ml" 182 5209 5224
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 186 5286 5290 "src/consynth/LoopsHelper.ml" 186 5286 5302
+type(
+  Cil.stmt -> forIGU option * Cil.stmt list
+)
+ident(
+  def get_loop_IGU "src/consynth/LoopsHelper.ml" 228 6720 6720 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 186 5286 5303 "src/consynth/LoopsHelper.ml" 186 5286 5312
+type(
+  Cil.stmt
+)
+ident(
+  def loop_stmt "src/consynth/LoopsHelper.ml" 186 5286 5313 "src/consynth/LoopsHelper.ml" 225 6649 6717
+)
+"src/consynth/LoopsHelper.ml" 187 5349 5357 "src/consynth/LoopsHelper.ml" 187 5349 5366
+type(
+  Cil.stmt
+)
+ident(
+  int_ref loop_stmt "src/consynth/LoopsHelper.ml" 186 5286 5303 "src/consynth/LoopsHelper.ml" 186 5286 5312
+)
+"src/consynth/LoopsHelper.ml" 187 5349 5357 "src/consynth/LoopsHelper.ml" 187 5349 5372
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 188 5378 5388 "src/consynth/LoopsHelper.ml" 188 5378 5391
+type(
+  Cil.block
+)
+ident(
+  def bdy "src/consynth/LoopsHelper.ml" 189 5405 5410 "src/consynth/LoopsHelper.ml" 221 6604 6612
+)
+"src/consynth/LoopsHelper.ml" 188 5378 5393 "src/consynth/LoopsHelper.ml" 188 5378 5394
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 188 5378 5396 "src/consynth/LoopsHelper.ml" 188 5378 5397
+type(
+  Cil.stmt option
+)
+"src/consynth/LoopsHelper.ml" 188 5378 5399 "src/consynth/LoopsHelper.ml" 188 5378 5400
+type(
+  Cil.stmt option
+)
+"src/consynth/LoopsHelper.ml" 188 5378 5382 "src/consynth/LoopsHelper.ml" 188 5378 5401
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5440 "src/consynth/LoopsHelper.ml" 191 5427 5449
+type(
+  Cil.block
+)
+ident(
+  def body_copy "src/consynth/LoopsHelper.ml" 196 5612 5621 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5452 "src/consynth/LoopsHelper.ml" 191 5427 5463
+type(
+  Cil.stmt list -> Cil.block
+)
+ident(
+  ext_ref Cil.mkBlock
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5464 "src/consynth/LoopsHelper.ml" 191 5427 5467
+type(
+  Cil.block
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 188 5378 5388 "src/consynth/LoopsHelper.ml" 188 5378 5391
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5464 "src/consynth/LoopsHelper.ml" 191 5427 5474
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5452 "src/consynth/LoopsHelper.ml" 191 5427 5474
+call(
+  stack
+)
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5625 "src/consynth/LoopsHelper.ml" 196 5612 5636
+type(
+  Cil.exp option
+)
+ident(
+  def term_expr_o "src/consynth/LoopsHelper.ml" 197 5676 5685 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5638 "src/consynth/LoopsHelper.ml" 196 5612 5641
+type(
+  Cil.stmt list
+)
+ident(
+  def rem "src/consynth/LoopsHelper.ml" 197 5676 5685 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5625 "src/consynth/LoopsHelper.ml" 196 5612 5641
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5644 "src/consynth/LoopsHelper.ml" 196 5612 5662
+type(
+  Cil.block -> Cil.exp option * Cil.stmt list
+)
+ident(
+  int_ref get_loop_condition "src/consynth/LoopsHelper.ml" 107 2545 2549 "src/consynth/LoopsHelper.ml" 107 2545 2567
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5663 "src/consynth/LoopsHelper.ml" 196 5612 5672
+type(
+  Cil.block
+)
+ident(
+  int_ref body_copy "src/consynth/LoopsHelper.ml" 191 5427 5440 "src/consynth/LoopsHelper.ml" 191 5427 5449
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5644 "src/consynth/LoopsHelper.ml" 196 5612 5672
+call(
+  stack
+)
+type(
+  Cil.exp option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 197 5676 5689 "src/consynth/LoopsHelper.ml" 197 5676 5698
+type(
+  Cil.exp
+)
+ident(
+  def term_expr "src/consynth/LoopsHelper.ml" 203 5874 5883 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 197 5676 5707 "src/consynth/LoopsHelper.ml" 197 5676 5718
+type(
+  Cil.exp option
+)
+ident(
+  int_ref term_expr_o "src/consynth/LoopsHelper.ml" 196 5612 5625 "src/consynth/LoopsHelper.ml" 196 5612 5636
+)
+"src/consynth/LoopsHelper.ml" 198 5724 5742 "src/consynth/LoopsHelper.ml" 198 5724 5746
+type(
+  Cil.exp
+)
+ident(
+  def expr "src/consynth/LoopsHelper.ml" 199 5750 5764 "src/consynth/LoopsHelper.ml" 199 5750 5768
+)
+"src/consynth/LoopsHelper.ml" 198 5724 5737 "src/consynth/LoopsHelper.ml" 198 5724 5746
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 199 5750 5764 "src/consynth/LoopsHelper.ml" 199 5750 5768
+type(
+  Cil.exp
+)
+ident(
+  int_ref expr "src/consynth/LoopsHelper.ml" 198 5724 5742 "src/consynth/LoopsHelper.ml" 198 5724 5746
+)
+"src/consynth/LoopsHelper.ml" 200 5769 5782 "src/consynth/LoopsHelper.ml" 200 5769 5786
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 201 5790 5804 "src/consynth/LoopsHelper.ml" 201 5790 5809
+type(
+  exn -> Cil.exp
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/LoopsHelper.ml" 201 5790 5819 "src/consynth/LoopsHelper.ml" 201 5790 5860
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 201 5790 5810 "src/consynth/LoopsHelper.ml" 201 5790 5861
+type(
+  exn
+)
+"src/consynth/LoopsHelper.ml" 201 5790 5804 "src/consynth/LoopsHelper.ml" 201 5790 5861
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 197 5676 5701 "src/consynth/LoopsHelper.ml" 201 5790 5861
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5887 "src/consynth/LoopsHelper.ml" 203 5874 5891
+type(
+  Cil.instr
+)
+ident(
+  def init "src/consynth/LoopsHelper.ml" 205 6018 6027 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5894 "src/consynth/LoopsHelper.ml" 203 5874 5904
+type(
+  Cil.stmt -> Cil.instr
+)
+ident(
+  ext_ref Utils.last_instr
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5906 "src/consynth/LoopsHelper.ml" 203 5874 5914
+type(
+  Cil.stmt list -> int -> Cil.stmt
+)
+ident(
+  ext_ref List.nth
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5915 "src/consynth/LoopsHelper.ml" 203 5874 5924
+type(
+  Cil.stmt
+)
+ident(
+  int_ref loop_stmt "src/consynth/LoopsHelper.ml" 186 5286 5303 "src/consynth/LoopsHelper.ml" 186 5286 5312
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5915 "src/consynth/LoopsHelper.ml" 203 5874 5930
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5931 "src/consynth/LoopsHelper.ml" 203 5874 5932
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5905 "src/consynth/LoopsHelper.ml" 203 5874 5933
+call(
+  stack
+)
+type(
+  Cil.stmt
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5894 "src/consynth/LoopsHelper.ml" 203 5874 5933
+call(
+  stack
+)
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 205 6018 6031 "src/consynth/LoopsHelper.ml" 205 6018 6037
+type(
+  Cil.instr
+)
+ident(
+  def update "src/consynth/LoopsHelper.ml" 218 6459 6468 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 205 6018 6039 "src/consynth/LoopsHelper.ml" 205 6018 6046
+type(
+  Cil.stmt list
+)
+ident(
+  def newbody "src/consynth/LoopsHelper.ml" 218 6459 6468 "src/consynth/LoopsHelper.ml" 218 6459 6520
+)
+"src/consynth/LoopsHelper.ml" 205 6018 6031 "src/consynth/LoopsHelper.ml" 205 6018 6046
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 206 6049 6067 "src/consynth/LoopsHelper.ml" 206 6049 6081
+type(
+  Cil.stmt list -> Cil.instr option * Cil.stmt list option
+)
+ident(
+  int_ref rem_last_instr "src/consynth/LoopsHelper.ml" 29 626 634 "src/consynth/LoopsHelper.ml" 29 626 648
+)
+"src/consynth/LoopsHelper.ml" 206 6049 6082 "src/consynth/LoopsHelper.ml" 206 6049 6085
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref rem "src/consynth/LoopsHelper.ml" 196 5612 5638 "src/consynth/LoopsHelper.ml" 196 5612 5641
+)
+"src/consynth/LoopsHelper.ml" 206 6049 6067 "src/consynth/LoopsHelper.ml" 206 6049 6085
+call(
+  stack
+)
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 207 6091 6109 "src/consynth/LoopsHelper.ml" 207 6091 6114
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/LoopsHelper.ml" 208 6126 6140 "src/consynth/LoopsHelper.ml" 208 6126 6148
+)
+"src/consynth/LoopsHelper.ml" 207 6091 6104 "src/consynth/LoopsHelper.ml" 207 6091 6114
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 207 6091 6121 "src/consynth/LoopsHelper.ml" 207 6091 6122
+type(
+  Cil.stmt list
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 208 6126 6140 "src/consynth/LoopsHelper.ml" 208 6126 6148
+)
+"src/consynth/LoopsHelper.ml" 207 6091 6116 "src/consynth/LoopsHelper.ml" 207 6091 6122
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 207 6091 6104 "src/consynth/LoopsHelper.ml" 207 6091 6122
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 208 6126 6140 "src/consynth/LoopsHelper.ml" 208 6126 6145
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/LoopsHelper.ml" 207 6091 6109 "src/consynth/LoopsHelper.ml" 207 6091 6114
+)
+"src/consynth/LoopsHelper.ml" 208 6126 6147 "src/consynth/LoopsHelper.ml" 208 6126 6148
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 207 6091 6121 "src/consynth/LoopsHelper.ml" 207 6091 6122
+)
+"src/consynth/LoopsHelper.ml" 208 6126 6140 "src/consynth/LoopsHelper.ml" 208 6126 6148
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 209 6149 6162 "src/consynth/LoopsHelper.ml" 209 6149 6166
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 209 6149 6173 "src/consynth/LoopsHelper.ml" 209 6149 6174
+type(
+  Cil.stmt list
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 210 6178 6192 "src/consynth/LoopsHelper.ml" 213 6305 6322
+)
+"src/consynth/LoopsHelper.ml" 209 6149 6168 "src/consynth/LoopsHelper.ml" 209 6149 6174
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 209 6149 6162 "src/consynth/LoopsHelper.ml" 209 6149 6174
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 211 6198 6214 "src/consynth/LoopsHelper.ml" 211 6198 6221
+type(
+  Cil.block -> unit
+)
+ident(
+  ext_ref Ct.ppbk
+)
+"src/consynth/LoopsHelper.ml" 211 6198 6223 "src/consynth/LoopsHelper.ml" 211 6198 6234
+type(
+  Cil.stmt list -> Cil.block
+)
+ident(
+  ext_ref Cil.mkBlock
+)
+"src/consynth/LoopsHelper.ml" 211 6198 6235 "src/consynth/LoopsHelper.ml" 211 6198 6236
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 209 6149 6173 "src/consynth/LoopsHelper.ml" 209 6149 6174
+)
+"src/consynth/LoopsHelper.ml" 211 6198 6222 "src/consynth/LoopsHelper.ml" 211 6198 6237
+call(
+  stack
+)
+type(
+  Cil.block
+)
+"src/consynth/LoopsHelper.ml" 211 6198 6214 "src/consynth/LoopsHelper.ml" 211 6198 6237
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 212 6239 6255 "src/consynth/LoopsHelper.ml" 212 6239 6260
+type(
+  exn -> Cil.instr * Cil.stmt list
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/LoopsHelper.ml" 212 6239 6270 "src/consynth/LoopsHelper.ml" 212 6239 6303
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 212 6239 6261 "src/consynth/LoopsHelper.ml" 212 6239 6304
+type(
+  exn
+)
+"src/consynth/LoopsHelper.ml" 212 6239 6255 "src/consynth/LoopsHelper.ml" 212 6239 6304
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 210 6178 6192 "src/consynth/LoopsHelper.ml" 213 6305 6322
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 214 6323 6341 "src/consynth/LoopsHelper.ml" 214 6323 6342
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 214 6323 6336 "src/consynth/LoopsHelper.ml" 214 6323 6342
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 214 6323 6344 "src/consynth/LoopsHelper.ml" 214 6323 6348
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 214 6323 6336 "src/consynth/LoopsHelper.ml" 214 6323 6348
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 215 6349 6362 "src/consynth/LoopsHelper.ml" 215 6349 6366
+type(
+  Cil.instr option
+)
+"src/consynth/LoopsHelper.ml" 215 6349 6368 "src/consynth/LoopsHelper.ml" 215 6349 6372
+type(
+  Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 215 6349 6362 "src/consynth/LoopsHelper.ml" 215 6349 6372
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 214 6323 6336 "src/consynth/LoopsHelper.ml" 215 6349 6372
+type(
+  Cil.instr option * Cil.stmt list option
+)
+"src/consynth/LoopsHelper.ml" 216 6376 6390 "src/consynth/LoopsHelper.ml" 216 6376 6395
+type(
+  exn -> Cil.instr * Cil.stmt list
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/LoopsHelper.ml" 216 6376 6405 "src/consynth/LoopsHelper.ml" 216 6376 6445
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 216 6376 6396 "src/consynth/LoopsHelper.ml" 216 6376 6446
+type(
+  exn
+)
+"src/consynth/LoopsHelper.ml" 216 6376 6390 "src/consynth/LoopsHelper.ml" 216 6376 6446
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 206 6049 6060 "src/consynth/LoopsHelper.ml" 216 6376 6446
+type(
+  Cil.instr * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6474 "src/consynth/LoopsHelper.ml" 218 6459 6478
+type(
+  Cil.instr
+)
+ident(
+  int_ref init "src/consynth/LoopsHelper.ml" 203 5874 5887 "src/consynth/LoopsHelper.ml" 203 5874 5891
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6481 "src/consynth/LoopsHelper.ml" 218 6459 6491
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref Ct.neg_exp
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6492 "src/consynth/LoopsHelper.ml" 218 6459 6501
+type(
+  Cil.exp
+)
+ident(
+  int_ref term_expr "src/consynth/LoopsHelper.ml" 197 5676 5689 "src/consynth/LoopsHelper.ml" 197 5676 5698
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6480 "src/consynth/LoopsHelper.ml" 218 6459 6502
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6504 "src/consynth/LoopsHelper.ml" 218 6459 6510
+type(
+  Cil.instr
+)
+ident(
+  int_ref update "src/consynth/LoopsHelper.ml" 205 6018 6031 "src/consynth/LoopsHelper.ml" 205 6018 6037
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6473 "src/consynth/LoopsHelper.ml" 218 6459 6511
+type(
+  forIGU
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6468 "src/consynth/LoopsHelper.ml" 218 6459 6511
+type(
+  forIGU option
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6513 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref newbody "src/consynth/LoopsHelper.ml" 205 6018 6039 "src/consynth/LoopsHelper.ml" 205 6018 6046
+)
+"src/consynth/LoopsHelper.ml" 218 6459 6468 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 205 6018 6027 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 203 5874 5883 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 197 5676 5685 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 196 5612 5621 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 191 5427 5436 "src/consynth/LoopsHelper.ml" 218 6459 6520
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 219 6521 6541 "src/consynth/LoopsHelper.ml" 219 6521 6542
+type(
+  string
+)
+ident(
+  def s "src/consynth/LoopsHelper.ml" 220 6546 6549 "src/consynth/LoopsHelper.ml" 220 6546 6603
+)
+"src/consynth/LoopsHelper.ml" 219 6521 6533 "src/consynth/LoopsHelper.ml" 219 6521 6542
+type(
+  exn
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6549 "src/consynth/LoopsHelper.ml" 220 6546 6562
+type(
+  string -> unit
+)
+ident(
+  ext_ref Pervasives.print_endline
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6564 "src/consynth/LoopsHelper.ml" 220 6546 6581
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6581 "src/consynth/LoopsHelper.ml" 220 6546 6582
+type(
+  string -> string -> string
+)
+ident(
+  ext_ref Pervasives.( ^ )
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6582 "src/consynth/LoopsHelper.ml" 220 6546 6583
+type(
+  string
+)
+ident(
+  int_ref s "src/consynth/LoopsHelper.ml" 219 6521 6541 "src/consynth/LoopsHelper.ml" 219 6521 6542
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6563 "src/consynth/LoopsHelper.ml" 220 6546 6584
+call(
+  stack
+)
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6549 "src/consynth/LoopsHelper.ml" 220 6546 6584
+call(
+  stack
+)
+type(
+  unit
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6586 "src/consynth/LoopsHelper.ml" 220 6546 6590
+type(
+  forIGU option
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6593 "src/consynth/LoopsHelper.ml" 220 6546 6596
+type(
+  Cil.block
+)
+ident(
+  int_ref bdy "src/consynth/LoopsHelper.ml" 188 5378 5388 "src/consynth/LoopsHelper.ml" 188 5378 5391
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6593 "src/consynth/LoopsHelper.ml" 220 6546 6603
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6586 "src/consynth/LoopsHelper.ml" 220 6546 6603
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 220 6546 6549 "src/consynth/LoopsHelper.ml" 220 6546 6603
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 189 5405 5410 "src/consynth/LoopsHelper.ml" 221 6604 6612
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 222 6613 6616 "src/consynth/LoopsHelper.ml" 222 6613 6617
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 223 6621 6626 "src/consynth/LoopsHelper.ml" 223 6621 6631
+type(
+  exn -> forIGU option * Cil.stmt list
+)
+ident(
+  ext_ref Pervasives.raise
+)
+"src/consynth/LoopsHelper.ml" 224 6633 6647 "src/consynth/LoopsHelper.ml" 225 6649 6716
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 223 6621 6631 "src/consynth/LoopsHelper.ml" 225 6649 6717
+type(
+  exn
+)
+"src/consynth/LoopsHelper.ml" 223 6621 6626 "src/consynth/LoopsHelper.ml" 225 6649 6717
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 187 5349 5351 "src/consynth/LoopsHelper.ml" 225 6649 6717
+type(
+  forIGU option * Cil.stmt list
+)
+type(
+  forIGU option * Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 228 6720 6724 "src/consynth/LoopsHelper.ml" 228 6720 6730
+type(
+  Cil.exp list -> Cil.exp
+)
+ident(
+  def mkcond "src/consynth/LoopsHelper.ml" 234 6898 6898 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 228 6720 6731 "src/consynth/LoopsHelper.ml" 228 6720 6740
+type(
+  Cil.exp list
+)
+ident(
+  def expr_list "src/consynth/LoopsHelper.ml" 229 6743 6745 "src/consynth/LoopsHelper.ml" 232 6883 6896
+)
+"src/consynth/LoopsHelper.ml" 229 6743 6745 "src/consynth/LoopsHelper.ml" 229 6743 6759
+type(
+  (Cil.exp -> Cil.exp -> Cil.exp) -> Cil.exp -> Cil.exp list -> Cil.exp
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6769 "src/consynth/LoopsHelper.ml" 230 6760 6770
+type(
+  Cil.exp
+)
+ident(
+  def c "src/consynth/LoopsHelper.ml" 230 6760 6771 "src/consynth/LoopsHelper.ml" 230 6760 6818
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6771 "src/consynth/LoopsHelper.ml" 230 6760 6773
+type(
+  Cil.exp
+)
+ident(
+  def nc "src/consynth/LoopsHelper.ml" 230 6760 6777 "src/consynth/LoopsHelper.ml" 230 6760 6818
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6784 "src/consynth/LoopsHelper.ml" 230 6760 6792
+type(
+  Cil.binop
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6794 "src/consynth/LoopsHelper.ml" 230 6760 6795
+type(
+  Cil.exp
+)
+ident(
+  int_ref c "src/consynth/LoopsHelper.ml" 230 6760 6769 "src/consynth/LoopsHelper.ml" 230 6760 6770
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6797 "src/consynth/LoopsHelper.ml" 230 6760 6799
+type(
+  Cil.exp
+)
+ident(
+  int_ref nc "src/consynth/LoopsHelper.ml" 230 6760 6771 "src/consynth/LoopsHelper.ml" 230 6760 6773
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6807 "src/consynth/LoopsHelper.ml" 230 6760 6812
+type(
+  Cil.ikind
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6814 "src/consynth/LoopsHelper.ml" 230 6760 6816
+type(
+  Cil.attributes
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6801 "src/consynth/LoopsHelper.ml" 230 6760 6817
+type(
+  Cil.typ
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6777 "src/consynth/LoopsHelper.ml" 230 6760 6818
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 230 6760 6764 "src/consynth/LoopsHelper.ml" 230 6760 6819
+type(
+  Cil.exp -> Cil.exp -> Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6848 "src/consynth/LoopsHelper.ml" 231 6820 6860
+type(
+  int -> int64
+)
+ident(
+  ext_ref Int64.of_int
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6861 "src/consynth/LoopsHelper.ml" 231 6820 6862
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6848 "src/consynth/LoopsHelper.ml" 231 6820 6862
+type(
+  int64
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6864 "src/consynth/LoopsHelper.ml" 231 6820 6873
+type(
+  Cil.ikind
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6875 "src/consynth/LoopsHelper.ml" 231 6820 6879
+type(
+  string option
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6835 "src/consynth/LoopsHelper.ml" 231 6820 6881
+type(
+  Cil.constant
+)
+"src/consynth/LoopsHelper.ml" 231 6820 6824 "src/consynth/LoopsHelper.ml" 231 6820 6882
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 232 6883 6887 "src/consynth/LoopsHelper.ml" 232 6883 6896
+type(
+  Cil.exp list
+)
+ident(
+  int_ref expr_list "src/consynth/LoopsHelper.ml" 228 6720 6731 "src/consynth/LoopsHelper.ml" 228 6720 6740
+)
+"src/consynth/LoopsHelper.ml" 229 6743 6745 "src/consynth/LoopsHelper.ml" 232 6883 6896
+call(
+  tail
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 234 6898 6902 "src/consynth/LoopsHelper.ml" 234 6898 6919
+type(
+  'a -> Cil.stmt list -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  def search_loop_exits "src/consynth/LoopsHelper.ml" 260 7631 7631 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 234 6898 6920 "src/consynth/LoopsHelper.ml" 234 6898 6934
+type(
+  'a
+)
+ident(
+  def loop_statement "src/consynth/LoopsHelper.ml" 234 6898 6935 "src/consynth/LoopsHelper.ml" 256 7564 7598
+)
+"src/consynth/LoopsHelper.ml" 234 6898 6935 "src/consynth/LoopsHelper.ml" 234 6898 6939
+type(
+  Cil.stmt list
+)
+ident(
+  def body "src/consynth/LoopsHelper.ml" 235 6942 6944 "src/consynth/LoopsHelper.ml" 256 7564 7598
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6952 "src/consynth/LoopsHelper.ml" 235 6942 6955
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  def aux "src/consynth/LoopsHelper.ml" 235 6942 6944 "src/consynth/LoopsHelper.ml" 256 7564 7598
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+type(
+  Cil.exp list
+)
+ident(
+  def cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6977 "src/consynth/LoopsHelper.ml" 254 7527 7558
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6969 "src/consynth/LoopsHelper.ml" 235 6942 6975
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  def breaks "src/consynth/LoopsHelper.ml" 235 6942 6977 "src/consynth/LoopsHelper.ml" 254 7527 7558
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6956 "src/consynth/LoopsHelper.ml" 235 6942 6976
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6977 "src/consynth/LoopsHelper.ml" 235 6942 6980
+type(
+  Cil.stmt
+)
+ident(
+  def stm "src/consynth/LoopsHelper.ml" 236 6983 6987 "src/consynth/LoopsHelper.ml" 254 7527 7558
+)
+"src/consynth/LoopsHelper.ml" 236 6983 6993 "src/consynth/LoopsHelper.ml" 236 6983 6996
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stm "src/consynth/LoopsHelper.ml" 235 6942 6977 "src/consynth/LoopsHelper.ml" 235 6942 6980
+)
+"src/consynth/LoopsHelper.ml" 236 6983 6993 "src/consynth/LoopsHelper.ml" 236 6983 7002
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 237 7008 7018 "src/consynth/LoopsHelper.ml" 237 7008 7019
+type(
+  Cil.exp
+)
+ident(
+  def c "src/consynth/LoopsHelper.ml" 238 7041 7048 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 237 7008 7021 "src/consynth/LoopsHelper.ml" 237 7008 7024
+type(
+  Cil.block
+)
+ident(
+  def sif "src/consynth/LoopsHelper.ml" 238 7041 7048 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 237 7008 7026 "src/consynth/LoopsHelper.ml" 237 7008 7031
+type(
+  Cil.block
+)
+ident(
+  def selse "src/consynth/LoopsHelper.ml" 238 7041 7048 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 237 7008 7033 "src/consynth/LoopsHelper.ml" 237 7008 7036
+type(
+  Cil.location
+)
+ident(
+  def loc "src/consynth/LoopsHelper.ml" 238 7041 7048 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 237 7008 7014 "src/consynth/LoopsHelper.ml" 237 7008 7037
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 238 7041 7052 "src/consynth/LoopsHelper.ml" 238 7041 7053
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 238 7041 7055 "src/consynth/LoopsHelper.ml" 238 7041 7064
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  def breaks_if "src/consynth/LoopsHelper.ml" 241 7137 7144 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 238 7041 7052 "src/consynth/LoopsHelper.ml" 238 7041 7064
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7076 "src/consynth/LoopsHelper.ml" 239 7067 7090
+type(
+  (Cil.exp list * (Cil.stmt * Cil.exp) list ->
+   Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list) ->
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt list -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7091 "src/consynth/LoopsHelper.ml" 239 7067 7094
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref aux "src/consynth/LoopsHelper.ml" 235 6942 6952 "src/consynth/LoopsHelper.ml" 235 6942 6955
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7096 "src/consynth/LoopsHelper.ml" 239 7067 7106
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7106 "src/consynth/LoopsHelper.ml" 239 7067 7107
+type(
+  Cil.exp list -> Cil.exp list -> Cil.exp list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7108 "src/consynth/LoopsHelper.ml" 239 7067 7109
+type(
+  Cil.exp
+)
+ident(
+  int_ref c "src/consynth/LoopsHelper.ml" 237 7008 7018 "src/consynth/LoopsHelper.ml" 237 7008 7019
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7107 "src/consynth/LoopsHelper.ml" 239 7067 7110
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7096 "src/consynth/LoopsHelper.ml" 239 7067 7110
+call(
+  stack
+)
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7112 "src/consynth/LoopsHelper.ml" 239 7067 7114
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7095 "src/consynth/LoopsHelper.ml" 239 7067 7115
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7116 "src/consynth/LoopsHelper.ml" 239 7067 7119
+type(
+  Cil.block
+)
+ident(
+  int_ref sif "src/consynth/LoopsHelper.ml" 237 7008 7021 "src/consynth/LoopsHelper.ml" 237 7008 7024
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7116 "src/consynth/LoopsHelper.ml" 239 7067 7126
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 239 7067 7076 "src/consynth/LoopsHelper.ml" 239 7067 7126
+call(
+  stack
+)
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 241 7137 7148 "src/consynth/LoopsHelper.ml" 241 7137 7149
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 241 7137 7151 "src/consynth/LoopsHelper.ml" 241 7137 7162
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  def breaks_else "src/consynth/LoopsHelper.ml" 245 7265 7272 "src/consynth/LoopsHelper.ml" 245 7265 7314
+)
+"src/consynth/LoopsHelper.ml" 241 7137 7148 "src/consynth/LoopsHelper.ml" 241 7137 7162
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 242 7165 7174 "src/consynth/LoopsHelper.ml" 242 7165 7188
+type(
+  (Cil.exp list * (Cil.stmt * Cil.exp) list ->
+   Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list) ->
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt list -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7200 "src/consynth/LoopsHelper.ml" 243 7189 7203
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref aux "src/consynth/LoopsHelper.ml" 235 6942 6952 "src/consynth/LoopsHelper.ml" 235 6942 6955
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7205 "src/consynth/LoopsHelper.ml" 243 7189 7215
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7215 "src/consynth/LoopsHelper.ml" 243 7189 7216
+type(
+  Cil.exp list -> Cil.exp list -> Cil.exp list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7217 "src/consynth/LoopsHelper.ml" 243 7189 7233
+type(
+  Cil.exp -> Cil.exp
+)
+ident(
+  ext_ref Utils.CilTools.neg_exp
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7234 "src/consynth/LoopsHelper.ml" 243 7189 7235
+type(
+  Cil.exp
+)
+ident(
+  int_ref c "src/consynth/LoopsHelper.ml" 237 7008 7018 "src/consynth/LoopsHelper.ml" 237 7008 7019
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7217 "src/consynth/LoopsHelper.ml" 243 7189 7235
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7216 "src/consynth/LoopsHelper.ml" 243 7189 7236
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7205 "src/consynth/LoopsHelper.ml" 243 7189 7236
+call(
+  stack
+)
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7238 "src/consynth/LoopsHelper.ml" 243 7189 7240
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7204 "src/consynth/LoopsHelper.ml" 243 7189 7241
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7242 "src/consynth/LoopsHelper.ml" 243 7189 7247
+type(
+  Cil.block
+)
+ident(
+  int_ref selse "src/consynth/LoopsHelper.ml" 237 7008 7026 "src/consynth/LoopsHelper.ml" 237 7008 7031
+)
+"src/consynth/LoopsHelper.ml" 243 7189 7242 "src/consynth/LoopsHelper.ml" 243 7189 7254
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 242 7165 7174 "src/consynth/LoopsHelper.ml" 243 7189 7254
+call(
+  stack
+)
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7273 "src/consynth/LoopsHelper.ml" 245 7265 7283
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7285 "src/consynth/LoopsHelper.ml" 245 7265 7291
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks "src/consynth/LoopsHelper.ml" 235 6942 6969 "src/consynth/LoopsHelper.ml" 235 6942 6975
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7291 "src/consynth/LoopsHelper.ml" 245 7265 7292
+type(
+  (Cil.stmt * Cil.exp) list ->
+  (Cil.stmt * Cil.exp) list -> (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7292 "src/consynth/LoopsHelper.ml" 245 7265 7301
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks_if "src/consynth/LoopsHelper.ml" 238 7041 7055 "src/consynth/LoopsHelper.ml" 238 7041 7064
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7301 "src/consynth/LoopsHelper.ml" 245 7265 7302
+type(
+  (Cil.stmt * Cil.exp) list ->
+  (Cil.stmt * Cil.exp) list -> (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7302 "src/consynth/LoopsHelper.ml" 245 7265 7313
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks_else "src/consynth/LoopsHelper.ml" 241 7137 7151 "src/consynth/LoopsHelper.ml" 241 7137 7162
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7292 "src/consynth/LoopsHelper.ml" 245 7265 7313
+call(
+  stack
+)
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7285 "src/consynth/LoopsHelper.ml" 245 7265 7313
+call(
+  stack
+)
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 245 7265 7272 "src/consynth/LoopsHelper.ml" 245 7265 7314
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 241 7137 7144 "src/consynth/LoopsHelper.ml" 245 7265 7314
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 238 7041 7048 "src/consynth/LoopsHelper.ml" 245 7265 7314
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 247 7316 7328 "src/consynth/LoopsHelper.ml" 247 7316 7329
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 247 7316 7322 "src/consynth/LoopsHelper.ml" 247 7316 7329
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7341 "src/consynth/LoopsHelper.ml" 248 7333 7351
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7353 "src/consynth/LoopsHelper.ml" 248 7333 7359
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks "src/consynth/LoopsHelper.ml" 235 6942 6969 "src/consynth/LoopsHelper.ml" 235 6942 6975
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7359 "src/consynth/LoopsHelper.ml" 248 7333 7360
+type(
+  (Cil.stmt * Cil.exp) list ->
+  (Cil.stmt * Cil.exp) list -> (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref Pervasives.( @ )
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7362 "src/consynth/LoopsHelper.ml" 248 7333 7365
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stm "src/consynth/LoopsHelper.ml" 235 6942 6977 "src/consynth/LoopsHelper.ml" 235 6942 6980
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7366 "src/consynth/LoopsHelper.ml" 248 7333 7372
+type(
+  Cil.exp list -> Cil.exp
+)
+ident(
+  int_ref mkcond "src/consynth/LoopsHelper.ml" 228 6720 6724 "src/consynth/LoopsHelper.ml" 228 6720 6730
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7373 "src/consynth/LoopsHelper.ml" 248 7333 7383
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7366 "src/consynth/LoopsHelper.ml" 248 7333 7383
+call(
+  stack
+)
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7361 "src/consynth/LoopsHelper.ml" 248 7333 7384
+type(
+  Cil.stmt * Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7360 "src/consynth/LoopsHelper.ml" 248 7333 7385
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7353 "src/consynth/LoopsHelper.ml" 248 7333 7385
+call(
+  stack
+)
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 248 7333 7340 "src/consynth/LoopsHelper.ml" 248 7333 7386
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 250 7388 7400 "src/consynth/LoopsHelper.ml" 250 7388 7401
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/LoopsHelper.ml" 252 7429 7436 "src/consynth/LoopsHelper.ml" 252 7429 7480
+)
+"src/consynth/LoopsHelper.ml" 250 7388 7394 "src/consynth/LoopsHelper.ml" 250 7388 7401
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 251 7402 7414 "src/consynth/LoopsHelper.ml" 251 7402 7415
+type(
+  Cil.block
+)
+ident(
+  def b "src/consynth/LoopsHelper.ml" 252 7429 7436 "src/consynth/LoopsHelper.ml" 252 7429 7480
+)
+"src/consynth/LoopsHelper.ml" 251 7402 7417 "src/consynth/LoopsHelper.ml" 251 7402 7418
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 251 7402 7420 "src/consynth/LoopsHelper.ml" 251 7402 7421
+type(
+  Cil.stmt option
+)
+"src/consynth/LoopsHelper.ml" 251 7402 7423 "src/consynth/LoopsHelper.ml" 251 7402 7424
+type(
+  Cil.stmt option
+)
+"src/consynth/LoopsHelper.ml" 251 7402 7408 "src/consynth/LoopsHelper.ml" 251 7402 7425
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 250 7388 7394 "src/consynth/LoopsHelper.ml" 251 7402 7425
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7436 "src/consynth/LoopsHelper.ml" 252 7429 7450
+type(
+  (Cil.exp list * (Cil.stmt * Cil.exp) list ->
+   Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list) ->
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt list -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7451 "src/consynth/LoopsHelper.ml" 252 7429 7454
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref aux "src/consynth/LoopsHelper.ml" 235 6942 6952 "src/consynth/LoopsHelper.ml" 235 6942 6955
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7456 "src/consynth/LoopsHelper.ml" 252 7429 7466
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7468 "src/consynth/LoopsHelper.ml" 252 7429 7470
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7455 "src/consynth/LoopsHelper.ml" 252 7429 7471
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7472 "src/consynth/LoopsHelper.ml" 252 7429 7473
+type(
+  Cil.block
+)
+ident(
+  int_ref b "src/consynth/LoopsHelper.ml" 250 7388 7400 "src/consynth/LoopsHelper.ml" 250 7388 7401
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7472 "src/consynth/LoopsHelper.ml" 252 7429 7480
+type(
+  Cil.stmt list
+)
+"src/consynth/LoopsHelper.ml" 252 7429 7436 "src/consynth/LoopsHelper.ml" 252 7429 7480
+call(
+  tail
+)
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7493 "src/consynth/LoopsHelper.ml" 253 7481 7498
+type(
+  Cil.stmt ref
+)
+ident(
+  def stmtr "src/consynth/LoopsHelper.ml" 253 7481 7506 "src/consynth/LoopsHelper.ml" 253 7481 7526
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7500 "src/consynth/LoopsHelper.ml" 253 7481 7501
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7487 "src/consynth/LoopsHelper.ml" 253 7481 7502
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7507 "src/consynth/LoopsHelper.ml" 253 7481 7517
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7519 "src/consynth/LoopsHelper.ml" 253 7481 7525
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks "src/consynth/LoopsHelper.ml" 235 6942 6969 "src/consynth/LoopsHelper.ml" 235 6942 6975
+)
+"src/consynth/LoopsHelper.ml" 253 7481 7506 "src/consynth/LoopsHelper.ml" 253 7481 7526
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 254 7527 7533 "src/consynth/LoopsHelper.ml" 254 7527 7534
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 254 7527 7539 "src/consynth/LoopsHelper.ml" 254 7527 7549
+type(
+  Cil.exp list
+)
+ident(
+  int_ref cond_stack "src/consynth/LoopsHelper.ml" 235 6942 6957 "src/consynth/LoopsHelper.ml" 235 6942 6967
+)
+"src/consynth/LoopsHelper.ml" 254 7527 7551 "src/consynth/LoopsHelper.ml" 254 7527 7557
+type(
+  (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref breaks "src/consynth/LoopsHelper.ml" 235 6942 6969 "src/consynth/LoopsHelper.ml" 235 6942 6975
+)
+"src/consynth/LoopsHelper.ml" 254 7527 7538 "src/consynth/LoopsHelper.ml" 254 7527 7558
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 236 6983 6987 "src/consynth/LoopsHelper.ml" 254 7527 7558
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7566 "src/consynth/LoopsHelper.ml" 256 7564 7580
+type(
+  (Cil.exp list * (Cil.stmt * Cil.exp) list ->
+   Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list) ->
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt list -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  ext_ref List.fold_left
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7582 "src/consynth/LoopsHelper.ml" 256 7564 7585
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list ->
+  Cil.stmt -> Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+ident(
+  int_ref aux "src/consynth/LoopsHelper.ml" 235 6942 6952 "src/consynth/LoopsHelper.ml" 235 6942 6955
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7587 "src/consynth/LoopsHelper.ml" 256 7564 7589
+type(
+  Cil.exp list
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7590 "src/consynth/LoopsHelper.ml" 256 7564 7592
+type(
+  (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7586 "src/consynth/LoopsHelper.ml" 256 7564 7593
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7594 "src/consynth/LoopsHelper.ml" 256 7564 7598
+type(
+  Cil.stmt list
+)
+ident(
+  int_ref body "src/consynth/LoopsHelper.ml" 234 6898 6935 "src/consynth/LoopsHelper.ml" 234 6898 6939
+)
+"src/consynth/LoopsHelper.ml" 256 7564 7566 "src/consynth/LoopsHelper.ml" 256 7564 7598
+call(
+  tail
+)
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 235 6942 6944 "src/consynth/LoopsHelper.ml" 256 7564 7598
+type(
+  Cil.exp list * (Cil.stmt * Cil.exp) list
+)
+"src/consynth/LoopsHelper.ml" 260 7631 7635 "src/consynth/LoopsHelper.ml" 260 7631 7646
+type(
+  Cil.exp -> Cil.exp option
+)
+ident(
+  def reduce_expr "src/consynth/LoopsHelper.ml" 272 7881 7881 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 260 7631 7647 "src/consynth/LoopsHelper.ml" 260 7631 7648
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 261 7651 7653 "src/consynth/LoopsHelper.ml" 270 7866 7879
+)
+"src/consynth/LoopsHelper.ml" 261 7651 7659 "src/consynth/LoopsHelper.ml" 261 7651 7660
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 260 7631 7647 "src/consynth/LoopsHelper.ml" 260 7631 7648
+)
+"src/consynth/LoopsHelper.ml" 262 7666 7676 "src/consynth/LoopsHelper.ml" 262 7666 7677
+type(
+  Cil.constant
+)
+ident(
+  def c "src/consynth/LoopsHelper.ml" 262 7666 7681 "src/consynth/LoopsHelper.ml" 262 7666 7687
+)
+"src/consynth/LoopsHelper.ml" 262 7666 7670 "src/consynth/LoopsHelper.ml" 262 7666 7677
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 262 7666 7686 "src/consynth/LoopsHelper.ml" 262 7666 7687
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 260 7631 7647 "src/consynth/LoopsHelper.ml" 260 7631 7648
+)
+"src/consynth/LoopsHelper.ml" 262 7666 7681 "src/consynth/LoopsHelper.ml" 262 7666 7687
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 263 7688 7698 "src/consynth/LoopsHelper.ml" 263 7688 7699
+type(
+  Cil.lhost
+)
+ident(
+  def h "src/consynth/LoopsHelper.ml" 264 7707 7711 "src/consynth/LoopsHelper.ml" 269 7848 7865
+)
+"src/consynth/LoopsHelper.ml" 263 7688 7701 "src/consynth/LoopsHelper.ml" 263 7688 7702
+type(
+  Cil.offset
+)
+ident(
+  def o "src/consynth/LoopsHelper.ml" 264 7707 7711 "src/consynth/LoopsHelper.ml" 269 7848 7865
+)
+"src/consynth/LoopsHelper.ml" 263 7688 7697 "src/consynth/LoopsHelper.ml" 263 7688 7703
+type(
+  Cil.lval
+)
+"src/consynth/LoopsHelper.ml" 263 7688 7692 "src/consynth/LoopsHelper.ml" 263 7688 7703
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 264 7707 7718 "src/consynth/LoopsHelper.ml" 264 7707 7719
+type(
+  Cil.lhost
+)
+ident(
+  int_ref h "src/consynth/LoopsHelper.ml" 263 7688 7698 "src/consynth/LoopsHelper.ml" 263 7688 7699
+)
+"src/consynth/LoopsHelper.ml" 265 7725 7740 "src/consynth/LoopsHelper.ml" 265 7725 7742
+type(
+  Cil.varinfo
+)
+ident(
+  def vi "src/consynth/LoopsHelper.ml" 266 7746 7753 "src/consynth/LoopsHelper.ml" 268 7823 7847
+)
+"src/consynth/LoopsHelper.ml" 265 7725 7732 "src/consynth/LoopsHelper.ml" 265 7725 7742
+type(
+  Cil.lhost
+)
+"src/consynth/LoopsHelper.ml" 266 7746 7760 "src/consynth/LoopsHelper.ml" 266 7746 7779
+type(
+  string -> bool
+)
+ident(
+  ext_ref Conf.is_builtin_var
+)
+"src/consynth/LoopsHelper.ml" 266 7746 7780 "src/consynth/LoopsHelper.ml" 266 7746 7782
+type(
+  Cil.varinfo
+)
+ident(
+  int_ref vi "src/consynth/LoopsHelper.ml" 265 7725 7740 "src/consynth/LoopsHelper.ml" 265 7725 7742
+)
+"src/consynth/LoopsHelper.ml" 266 7746 7780 "src/consynth/LoopsHelper.ml" 266 7746 7792
+type(
+  string
+)
+"src/consynth/LoopsHelper.ml" 266 7746 7760 "src/consynth/LoopsHelper.ml" 266 7746 7792
+call(
+  stack
+)
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 267 7798 7808 "src/consynth/LoopsHelper.ml" 267 7798 7812
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 267 7798 7821 "src/consynth/LoopsHelper.ml" 267 7798 7822
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 260 7631 7647 "src/consynth/LoopsHelper.ml" 260 7631 7648
+)
+"src/consynth/LoopsHelper.ml" 267 7798 7816 "src/consynth/LoopsHelper.ml" 267 7798 7822
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 268 7823 7833 "src/consynth/LoopsHelper.ml" 268 7823 7838
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 268 7823 7842 "src/consynth/LoopsHelper.ml" 268 7823 7846
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 266 7746 7753 "src/consynth/LoopsHelper.ml" 268 7823 7847
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 269 7848 7855 "src/consynth/LoopsHelper.ml" 269 7848 7856
+type(
+  Cil.lhost
+)
+"src/consynth/LoopsHelper.ml" 269 7848 7860 "src/consynth/LoopsHelper.ml" 269 7848 7864
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 264 7707 7711 "src/consynth/LoopsHelper.ml" 269 7848 7865
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 270 7866 7870 "src/consynth/LoopsHelper.ml" 270 7866 7871
+type(
+  Cil.exp
+)
+"src/consynth/LoopsHelper.ml" 270 7866 7875 "src/consynth/LoopsHelper.ml" 270 7866 7879
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 261 7651 7653 "src/consynth/LoopsHelper.ml" 270 7866 7879
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 272 7881 7885 "src/consynth/LoopsHelper.ml" 272 7881 7904
+type(
+  int -> Cil.stmt -> Cil.exp option
+)
+ident(
+  def reduce_def_to_const "src/consynth/LoopsHelper.ml" 286 8274 8287 "src/consynth/LoopsHelper.ml" 1 0 -1
+)
+"src/consynth/LoopsHelper.ml" 272 7881 7905 "src/consynth/LoopsHelper.ml" 272 7881 7908
+type(
+  int
+)
+ident(
+  def vid "src/consynth/LoopsHelper.ml" 272 7881 7909 "src/consynth/LoopsHelper.ml" 286 8274 8287
+)
+"src/consynth/LoopsHelper.ml" 272 7881 7909 "src/consynth/LoopsHelper.ml" 272 7881 7913
+type(
+  Cil.stmt
+)
+ident(
+  def stmt "src/consynth/LoopsHelper.ml" 273 7916 7918 "src/consynth/LoopsHelper.ml" 286 8274 8287
+)
+"src/consynth/LoopsHelper.ml" 273 7916 7922 "src/consynth/LoopsHelper.ml" 273 7916 7935
+type(
+  int -> Cil.instr -> Cil.exp option
+)
+ident(
+  def aux_for_instr "src/consynth/LoopsHelper.ml" 282 8121 8123 "src/consynth/LoopsHelper.ml" 286 8274 8287
+)
+"src/consynth/LoopsHelper.ml" 273 7916 7936 "src/consynth/LoopsHelper.ml" 273 7916 7939
+type(
+  int
+)
+ident(
+  def vid "src/consynth/LoopsHelper.ml" 273 7916 7940 "src/consynth/LoopsHelper.ml" 280 8100 8115
+)
+"src/consynth/LoopsHelper.ml" 273 7916 7940 "src/consynth/LoopsHelper.ml" 273 7916 7945
+type(
+  Cil.instr
+)
+ident(
+  def instr "src/consynth/LoopsHelper.ml" 274 7948 7952 "src/consynth/LoopsHelper.ml" 280 8100 8115
+)
+"src/consynth/LoopsHelper.ml" 274 7948 7958 "src/consynth/LoopsHelper.ml" 274 7948 7963
+type(
+  Cil.instr
+)
+ident(
+  int_ref instr "src/consynth/LoopsHelper.ml" 273 7916 7940 "src/consynth/LoopsHelper.ml" 273 7916 7945
+)
+"src/consynth/LoopsHelper.ml" 275 7969 7980 "src/consynth/LoopsHelper.ml" 275 7969 7982
+type(
+  Cil.lval
+)
+ident(
+  def lv "src/consynth/LoopsHelper.ml" 276 7993 8000 "src/consynth/LoopsHelper.ml" 279 8083 8099
+)
+"src/consynth/LoopsHelper.ml" 275 7969 7984 "src/consynth/LoopsHelper.ml" 275 7969 7985
+type(
+  Cil.exp
+)
+ident(
+  def e "src/consynth/LoopsHelper.ml" 276 7993 8000 "src/consynth/LoopsHelper.ml" 279 8083 8099
+)
+"src/consynth/LoopsHelper.ml" 275 7969 7987 "src/consynth/LoopsHelper.ml" 275 7969 7988
+type(
+  Cil.location
+)
+"src/consynth/LoopsHelper.ml" 275 7969 7975 "src/consynth/LoopsHelper.ml" 275 7969 7989
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8004 "src/consynth/LoopsHelper.ml" 276 7993 8006
+type(
+  VS.elt
+)
+ident(
+  def vi "src/consynth/LoopsHelper.ml" 277 8034 8041 "src/consynth/LoopsHelper.ml" 279 8083 8099
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8009 "src/consynth/LoopsHelper.ml" 276 7993 8019
+type(
+  VS.t -> VS.elt
+)
+ident(
+  ext_ref VS.max_elt
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8021 "src/consynth/LoopsHelper.ml" 276 7993 8026
+type(
+  Cil.lval -> Utils.VS.t
+)
+ident(
+  ext_ref VariableAnalysis.basic
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8027 "src/consynth/LoopsHelper.ml" 276 7993 8029
+type(
+  Cil.lval
+)
+ident(
+  int_ref lv "src/consynth/LoopsHelper.ml" 275 7969 7980 "src/consynth/LoopsHelper.ml" 275 7969 7982
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8020 "src/consynth/LoopsHelper.ml" 276 7993 8030
+call(
+  stack
+)
+type(
+  Utils.VS.t
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8009 "src/consynth/LoopsHelper.ml" 276 7993 8030
+call(
+  stack
+)
+type(
+  VS.elt
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8044 "src/consynth/LoopsHelper.ml" 277 8034 8046
+type(
+  VS.elt
+)
+ident(
+  int_ref vi "src/consynth/LoopsHelper.ml" 276 7993 8004 "src/consynth/LoopsHelper.ml" 276 7993 8006
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8044 "src/consynth/LoopsHelper.ml" 277 8034 8050
+type(
+  int
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8051 "src/consynth/LoopsHelper.ml" 277 8034 8052
+type(
+  int -> int -> bool
+)
+ident(
+  ext_ref Pervasives.( = )
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8053 "src/consynth/LoopsHelper.ml" 277 8034 8056
+type(
+  int
+)
+ident(
+  int_ref vid "src/consynth/LoopsHelper.ml" 273 7916 7936 "src/consynth/LoopsHelper.ml" 273 7916 7939
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8044 "src/consynth/LoopsHelper.ml" 277 8034 8056
+type(
+  bool
+)
+"src/consynth/LoopsHelper.ml" 278 8057 8069 "src/consynth/LoopsHelper.ml" 278 8057 8080
+type(
+  Cil.exp -> Cil.exp option
+)
+ident(
+  int_ref reduce_expr "src/consynth/LoopsHelper.ml" 260 7631 7635 "src/consynth/LoopsHelper.ml" 260 7631 7646
+)
+"src/consynth/LoopsHelper.ml" 278 8057 8081 "src/consynth/LoopsHelper.ml" 278 8057 8082
+type(
+  Cil.exp
+)
+ident(
+  int_ref e "src/consynth/LoopsHelper.ml" 275 7969 7984 "src/consynth/LoopsHelper.ml" 275 7969 7985
+)
+"src/consynth/LoopsHelper.ml" 278 8057 8069 "src/consynth/LoopsHelper.ml" 278 8057 8082
+call(
+  tail
+)
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 279 8083 8095 "src/consynth/LoopsHelper.ml" 279 8083 8099
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 277 8034 8041 "src/consynth/LoopsHelper.ml" 279 8083 8099
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 276 7993 8000 "src/consynth/LoopsHelper.ml" 279 8083 8099
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 280 8100 8106 "src/consynth/LoopsHelper.ml" 280 8100 8107
+type(
+  Cil.instr
+)
+"src/consynth/LoopsHelper.ml" 280 8100 8111 "src/consynth/LoopsHelper.ml" 280 8100 8115
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 274 7948 7952 "src/consynth/LoopsHelper.ml" 280 8100 8115
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 282 8121 8129 "src/consynth/LoopsHelper.ml" 282 8121 8133
+type(
+  Cil.stmt
+)
+ident(
+  int_ref stmt "src/consynth/LoopsHelper.ml" 272 7881 7909 "src/consynth/LoopsHelper.ml" 272 7881 7913
+)
+"src/consynth/LoopsHelper.ml" 282 8121 8129 "src/consynth/LoopsHelper.ml" 282 8121 8139
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 283 8145 8155 "src/consynth/LoopsHelper.ml" 283 8145 8157
+type(
+  Cil.instr list
+)
+ident(
+  def il "src/consynth/LoopsHelper.ml" 284 8161 8166 "src/consynth/LoopsHelper.ml" 285 8231 8273
+)
+"src/consynth/LoopsHelper.ml" 283 8145 8149 "src/consynth/LoopsHelper.ml" 283 8145 8157
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8170 "src/consynth/LoopsHelper.ml" 284 8161 8171
+type(
+  Cil.exp option list
+)
+ident(
+  def l "src/consynth/LoopsHelper.ml" 285 8231 8236 "src/consynth/LoopsHelper.ml" 285 8231 8273
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8174 "src/consynth/LoopsHelper.ml" 284 8161 8185
+type(
+  (Cil.exp option -> bool) -> Cil.exp option list -> Cil.exp option list
+)
+ident(
+  ext_ref List.filter
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8186 "src/consynth/LoopsHelper.ml" 284 8161 8193
+type(
+  Cil.exp option -> bool
+)
+ident(
+  ext_ref Utils.is_some
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8195 "src/consynth/LoopsHelper.ml" 284 8161 8203
+type(
+  (Cil.instr -> Cil.exp option) -> Cil.instr list -> Cil.exp option list
+)
+ident(
+  ext_ref List.map
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8205 "src/consynth/LoopsHelper.ml" 284 8161 8218
+type(
+  int -> Cil.instr -> Cil.exp option
+)
+ident(
+  int_ref aux_for_instr "src/consynth/LoopsHelper.ml" 273 7916 7922 "src/consynth/LoopsHelper.ml" 273 7916 7935
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8219 "src/consynth/LoopsHelper.ml" 284 8161 8222
+type(
+  int
+)
+ident(
+  int_ref vid "src/consynth/LoopsHelper.ml" 272 7881 7905 "src/consynth/LoopsHelper.ml" 272 7881 7908
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8204 "src/consynth/LoopsHelper.ml" 284 8161 8223
+call(
+  stack
+)
+type(
+  Cil.instr -> Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8224 "src/consynth/LoopsHelper.ml" 284 8161 8226
+type(
+  Cil.instr list
+)
+ident(
+  int_ref il "src/consynth/LoopsHelper.ml" 283 8145 8155 "src/consynth/LoopsHelper.ml" 283 8145 8157
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8194 "src/consynth/LoopsHelper.ml" 284 8161 8227
+call(
+  stack
+)
+type(
+  Cil.exp option list
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8174 "src/consynth/LoopsHelper.ml" 284 8161 8227
+call(
+  stack
+)
+type(
+  Cil.exp option list
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8243 "src/consynth/LoopsHelper.ml" 285 8231 8244
+type(
+  Cil.exp option list
+)
+ident(
+  int_ref l "src/consynth/LoopsHelper.ml" 284 8161 8170 "src/consynth/LoopsHelper.ml" 284 8161 8171
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8253 "src/consynth/LoopsHelper.ml" 285 8231 8254
+type(
+  Cil.exp option
+)
+ident(
+  def c "src/consynth/LoopsHelper.ml" 285 8231 8259 "src/consynth/LoopsHelper.ml" 285 8231 8260
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8252 "src/consynth/LoopsHelper.ml" 285 8231 8255
+type(
+  Cil.exp option list
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8259 "src/consynth/LoopsHelper.ml" 285 8231 8260
+type(
+  Cil.exp option
+)
+ident(
+  int_ref c "src/consynth/LoopsHelper.ml" 285 8231 8253 "src/consynth/LoopsHelper.ml" 285 8231 8254
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8263 "src/consynth/LoopsHelper.ml" 285 8231 8264
+type(
+  Cil.exp option list
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8268 "src/consynth/LoopsHelper.ml" 285 8231 8272
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 285 8231 8236 "src/consynth/LoopsHelper.ml" 285 8231 8273
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 284 8161 8166 "src/consynth/LoopsHelper.ml" 285 8231 8273
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 286 8274 8278 "src/consynth/LoopsHelper.ml" 286 8274 8279
+type(
+  Cil.stmtkind
+)
+"src/consynth/LoopsHelper.ml" 286 8274 8283 "src/consynth/LoopsHelper.ml" 286 8274 8287
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 282 8121 8123 "src/consynth/LoopsHelper.ml" 286 8274 8287
+type(
+  Cil.exp option
+)
+"src/consynth/LoopsHelper.ml" 273 7916 7918 "src/consynth/LoopsHelper.ml" 286 8274 8287
+type(
+  Cil.exp option
+)
