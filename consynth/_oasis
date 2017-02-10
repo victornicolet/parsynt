@@ -19,7 +19,6 @@ PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
 
 Library conf
   Path: src/conf
-  BuildDepends: core
   CompiledObject: best
   Modules: Conf
   BuildTools : ocamlbuild
@@ -27,7 +26,7 @@ Library conf
 
 Library rosetteInterface
   Path: src/rosetteInterface
-  BuildDepends: core, extlib, conf
+  BuildDepends: conf, extlib
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
@@ -37,13 +36,13 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, core, extlib, Z3, conf
+  BuildDepends: alt-cil, rosetteInterface, extlib, Z3, conf
 
 Library codegen
   Path: src/codegen
   Modules: Codegen
   CompiledObject: best
-  BuildDepends: consynth, cil, rosetteInterface, core, extlib, Z3, conf
+  BuildDepends: consynth, cil, rosetteInterface, extlib, Z3, conf
 
 Executable test_main
   Path: test
@@ -73,7 +72,7 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, str, getopt, codegen
+  BuildDepends: consynth, getopt, codegen
 
 Document consynth
  Title: Consynth Library Doc

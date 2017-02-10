@@ -1,4 +1,3 @@
-open Core.Std
 open Utils
 open SketchTypes
 open SPretty
@@ -45,7 +44,7 @@ let apply_remove sklet =
   match sklet with
   | SkLetExpr el -> sklet
   | SkLetIn (el, cont) ->
-    let new_rewrites = List.map el ~f:remove_simple_state_rewritings in
+    let new_rewrites = List.map remove_simple_state_rewritings el in
     SkLetIn (new_rewrites, cont)
 
 (**
@@ -87,16 +86,16 @@ let rebuild_boolean_expressions (var, expr) =
       end
     | _ -> failwith "Unexpected case."
   in
-  (var, transform_expr to_rearrange rearrange_aux ident ident expr)
+  (var, transform_expr to_rearrange rearrange_aux identity identity expr)
 
 
 (** Apply or- and and- rebuilding in expression tree *)
 let rec apply_rearrange sklet =
   match sklet with
   | SkLetExpr el ->
-    SkLetExpr (List.map ~f:rebuild_boolean_expressions el)
+    SkLetExpr (List.map rebuild_boolean_expressions el)
   | SkLetIn (el, cont) ->
-    SkLetIn (List.map ~f:rebuild_boolean_expressions el,
+    SkLetIn (List.map rebuild_boolean_expressions el,
              apply_rearrange cont)
 
 
@@ -199,11 +198,11 @@ let booleanize (v, e) =
 let rec remove_boolean_ifs sklet =
   match sklet with
   | SkLetExpr el ->
-    SkLetExpr (List.map ~f:booleanize
-                 (List.map ~f:force_boolean_constants el))
+    SkLetExpr (List.map booleanize
+                 (List.map force_boolean_constants el))
   | SkLetIn (el, cont) ->
-    SkLetIn (List.map ~f:booleanize
-               (List.map ~f:force_boolean_constants el),
+    SkLetIn (List.map booleanize
+               (List.map force_boolean_constants el),
              remove_boolean_ifs cont)
 
 
@@ -240,13 +239,13 @@ class sketch_builder
 
         (** TODO : array -> region *)
         | Array (vi, el) ->
-          let skexpr_list = List.map el ~f:(convert cur_v) in
+          let skexpr_list = List.map (convert cur_v) el in
           mkVarExpr ~offsets:skexpr_list vi
 
         | FunApp (ef, arg_l) ->
           let is_c_def, vi_o, ty = is_exp_function ef in
           let sty = symb_type_of_ciltyp ty in
-          let fargs =  List.map arg_l ~f:(convert cur_v) in
+          let fargs =  List.map (convert cur_v) arg_l in
           if is_c_def then
             SkApp (sty, vi_o, fargs)
           else
@@ -363,9 +362,8 @@ class sketch_builder
         | Cil.Field _ -> []
 
       and convert_offsets offsets_list =
-        List.fold_left offsets_list
-          ~init:[]
-          ~f:(fun acc x -> acc@[convert_cils x])
+        List.fold_left
+          (fun acc x -> acc@[convert_cils x]) [] offsets_list
 
 
       and skexpr_of_lval ((host, offset) : Cil.lval) =
@@ -503,10 +501,8 @@ let rec make_conditional_guards (initial_vs : VS.t) (letin_form : sklet) =
     SkLetExpr new_bindings, new_state_vars
 
 and mk_cg bindings vs =
-  (List.fold
-     bindings
-     ~init: []
-     ~f:(fun acc binding -> acc @ [mk_cg_binding vs binding])), vs
+  (List.fold_left
+     (fun acc binding -> acc @ [mk_cg_binding vs binding]) [] bindings), vs
 
 and mk_cg_binding vs ((var, expr) : skLVar * skExpr) =
   (var, expr)

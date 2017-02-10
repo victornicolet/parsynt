@@ -67,8 +67,8 @@ let ih_join_left (newh : ('a * 'b option) IH.t)
 let identity x = x
 let identity2 x y = y
 
-let is_some = Core.Std.is_some
-let is_none = Core.Std.is_none
+let is_some = function Some _ -> true | _ -> false
+let is_none = function None -> true | _ -> false
 
 (** Convert a varinfo to an expression *)
 let v2e (v : varinfo): Cil.exp = Lval (var v)
@@ -99,6 +99,11 @@ module ListTools = struct
       if n < i then acc else aux (n-1) (n :: acc)
     in aux j []
 
+
+  let init (len : int) (f: int -> 'a) : 'a list =
+    let rec aux_init l i =
+      if i <= 0 then (f 0)::l else (aux_init ((f i)::l) (i -1))
+    in aux_init [] len
   (**
       Returns the max of a list.
       /!\ The max of an empty list is min_int.

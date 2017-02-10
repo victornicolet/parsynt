@@ -1,5 +1,4 @@
 open Utils
-open Core.Std
 open Conf
 open SketchTypes
 open SPretty
@@ -46,11 +45,11 @@ type define_symbolic =
   | DefEmpty
 
 let gen_cell_vars vi =
-  List.init !iterations_limit
+  ListTools.init !iterations_limit
     (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
 
 let rec pp_define_symbolic fmt def =
-  let to_v l  = (List.map ~f:(fun vi -> vi.vname) l) in
+  let to_v l  = (List.map (fun vi -> vi.vname) l) in
   match def with
   | DefInteger vil -> F.fprintf fmt "@[(define-symbolic %a integer?)@]@\n"
                         pp_string_list (to_v vil)
@@ -61,7 +60,7 @@ let rec pp_define_symbolic fmt def =
                         pp_string_list (to_v vil)
   | DefArray vil ->
     List.iter
-      ~f:(fun vi ->
+      (fun vi ->
           let vars = gen_cell_vars vi in
           pp_define_symbolic fmt
             (match array_type (symb_type_of_ciltyp vi.vtype) with
@@ -435,8 +434,7 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   in
   let idx = sketch.scontext.index_vars in
   let field_names =
-    List.map (VSOps.varlist state_vars)
-      ~f:(fun vi -> vi.Cil.vname) in
+    List.map (fun vi -> vi.Cil.vname) (VSOps.varlist state_vars) in
   let main_struct = (main_struct_name, field_names) in
   let st0 = init_state_name in
   (** SPretty configuration for the current sketch *)

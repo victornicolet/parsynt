@@ -140,7 +140,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "core" "sexplib" "extlib" "getopt")
+declare -a OCAML_PACKAGES=("oasis" "extlib" "getopt")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -148,9 +148,10 @@ do
 	PKG_NOT_FOUND=$(ocamlfind query $OCAML_REQ_PACKAGE | grep 'not found')
 	if [[ -z $PKG_NOT_FOUND ]]
 	then
-		msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
+	    msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
 	else
-		msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
+	    msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
+	    opam_install OCAML_REQ_PACKAGE
 	fi
 done
 
@@ -168,7 +169,7 @@ fi
 
 cd alt-cil
 echo "Creating local cil package and installing it with opam .."
-sudo opam pin add alt-cil .
+
 cd ..
 sep
 msg_success "Installed all requirements."
