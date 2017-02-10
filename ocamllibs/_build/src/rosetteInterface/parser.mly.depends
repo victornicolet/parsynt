@@ -1,2 +1,0 @@
-src/rosetteInterface/parser.ml: Ast Lexing List
-src/rosetteInterface/parser.mli: Ast Lexing

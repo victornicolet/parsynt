@@ -15,6 +15,9 @@ examples/Basic
 # Build / compilation directories
 # OCaml
 _build
+ocamllibs/_build
+ocamllibs/_build/_digests
+ocamllibs/_build/_log
 tbb_examples/*.cpp
 dafny_examples/*.dfy
 alt-cil/

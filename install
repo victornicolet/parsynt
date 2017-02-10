@@ -193,7 +193,7 @@ if [[ -d "z3-master" ]]; then
 else
     echo "Cloning Z3 source repository."
     eval "git clone https://github.com/Z3Prover/z3.git"
-    cd z3
+    cd z3-master
     python scripts/mk_make.py --ml
     cd build
     make
