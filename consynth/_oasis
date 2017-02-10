@@ -4,7 +4,7 @@ Plugins: META (0.4), DevFiles (0.4)
 
 Name: ConSynth
 Version: 0.1
-Synopsis: Concurrent programs synthesis.
+Synopsis: Parallel program synthesis.
 Authors: Victor Nicolet
 License: LGPL with OCaml linking exception
 
