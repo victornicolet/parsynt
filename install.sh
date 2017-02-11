@@ -145,17 +145,19 @@ else
 fi
 
 # Install oasis
-OASIS_VERSION=$(oasis version)
+oasis version
 if [ $? -eq 0 ]; then
+    OASIS_VERSION=$(oasis version)
     msg_success "Oasis $OASIS_VERSION is already installed!"
 else
     echo "Installing Oasis and m4"
     sudo apt-get install m4
+    sudo apt-get install oasis
     opam install oasis
-    OASIS_VERSION=$(oasis version)
-    echo "Oasis version $OASIS_VERSION installed."
+    oasis version
     if [ $? -eq 0 ]; then
-	echo ""
+	OASIS_VERSION=$(oasis version)
+	echo "Oasis version $OASIS_VERSION installed."
     else
 	msg_fail "Failed to install Oasis. Please install it manually."
 	exit 0;
@@ -165,14 +167,16 @@ fi
 #Install menhir for parser/lexer compilation."
 MENHIR_VERSION=$(menhir --version)
 if [ $? -eq 0 ]; then
+    MENHIR_VERSION=$(menhir --version)
     msg_success "$MENHIR_VERSION is already installed!"
 else
     echo "Installing menhir"
+    sudo apt-get install menhir
     opam install menhir
-    MENHIR_VERSION=$(menhir --version)
-    echo "$MENHIR_VERSION installed."
+    menhir --version
     if [ $? -eq 0 ]; then
-	echo ""
+	MENHIR_VERSION=$(menhir --version)
+	echo "$MENHIR_VERSION installed."
     else
 	msg_fail "Failed to install Menhir. Please install it manually."
 	exit 0;
