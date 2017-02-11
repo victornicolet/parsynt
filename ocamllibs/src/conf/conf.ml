@@ -1,6 +1,7 @@
 open Format
 
 
+
 (**
    1 - General settings.
    2 - Builtin variables.
@@ -18,6 +19,7 @@ module SH =
   end)
 
 let (>>) l n = List.nth l n
+
 
 let import file_name separator =
   let reg_separator = Str.regexp separator in
@@ -80,7 +82,9 @@ let get_builtin s = List.assoc s builtin_var_names
 
 
 (** 3 - Parameters of the verification condition of the synthesis *)
-let verif_params_filename = "./src/conf/verification.params"
+let verif_params_filename =
+  if Sys.file_exists "verification.params" then "verification.params"
+  else "./src/conf/verification.params"
 
 let verification_parameters =
   let reg_separator = Str.regexp "," in

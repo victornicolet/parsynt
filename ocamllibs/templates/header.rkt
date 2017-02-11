@@ -1,6 +1,6 @@
 #lang rosette
 
 (require rosette/lib/synthax
-         consynth/lib)
+         parsynth_racket/lib)
 
 (current-bitwidth #f)

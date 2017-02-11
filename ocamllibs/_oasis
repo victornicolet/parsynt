@@ -12,7 +12,7 @@ Description: A library that synthesizes parallel C programs from sequential spec
 Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
-XOCamlbuildExtraArgs: "-tag thread -use-menhir"
+XOCamlbuildExtraArgs: "-use-menhir"
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
 PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
@@ -81,4 +81,4 @@ Document consynth
  BuildTools: ocamldoc
  XOcamlBuildLibraries : consynth
  XOCamlbuildPath: src
- XOCamlbuildExtraArgs: "-docflags '-html -all-params -colorize-code -short-functors -charset utf-8' -tag thread"
+ XOCamlbuildExtraArgs: "-docflags '-html -all-params -colorize-code -short-functors -charset utf-8'"

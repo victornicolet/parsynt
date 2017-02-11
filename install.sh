@@ -15,6 +15,8 @@ sep () {
     echo ""
     echo "----------------------------------------------------------------"
 }
+
+
 echo "Installing Parsynth."
 #Check for Racket installation
 sep
@@ -230,8 +232,17 @@ oasis setup -setup-update dynamic
 msg_success "Makefiles created, trying make in ocamllib"
 #cd ./consynth
 make $1
+cd ..
+#Add links to binaries in base dir
+ln -sf ocamllibs/Parsy.native Parsynth
+ln -sf ocamllibs/templates/
+ln -sf ocamllibs/conf
+ln -sf ocamllibs/tbb_examples/
+ln -sf ocamllibs/dafny_examples/
+ln -sf ocamllibs/conf.csv
+ln -sf ocamllibs/src/conf/verification.params
 
 sep
 echo "Testing with simple example Sum."
 sep
-eval "./Parsy.native test/solved/sum.c"
+eval "./Parsynth c_examples/solved/sum.c"
