@@ -27,12 +27,12 @@ if [ -z $RACKET_VERSION ]
 then
     msg_fail "Racket not installed !"
     sep
-    echo "Installing Racket..."
+    echo "Installing Racket using ppa:plt/racket."
     sudo add-apt-repository ppa:plt/racket
     sudo apt-get update
     sudo install racket
 fi
-
+sep
 if [[ $(bc <<< "$RACKET_VERSION > 6.0") ]]
 then
     msg_success "Racket $RACKET_VERSION is installed."
@@ -119,7 +119,14 @@ if [ -z $OCAML_VERSION ]
 then
     msg_fail "Ocaml not installed !"
     sudo apt-get install ocaml
-    exit 0
+    # Check ocaml installation
+    if [ -z $(ocaml -vnum)]
+    then
+	msg_fail "couldn't install Ocaml, please install it manually and run the script again."
+	exit 0
+    else
+	msg_success "Ocaml succesfully installed."
+    fi
 else
     msg_success "Ocaml $OCAML_VERSION is installed."
 fi
@@ -137,38 +144,74 @@ else
     msg_success "opam $OPAM_VERSION is installed."
 fi
 
+# Install oasis
+OASIS_VERSION=$(oasis version)
+if [ $? -eq 0 ]; then
+    msg_success "Oasis $OASIS_VERSION is already installed!"
+else
+    echo "Installing Oasis and m4"
+    sudo apt-get install m4
+    opam install oasis
+    OASIS_VERSION=$(oasis version)
+    echo "Oasis version $OASIS_VERSION installed."
+    if [ $? -eq 0 ]; then
+	echo ""
+    else
+	msg_fail "Failed to install Oasis. Please install it manually."
+	exit 0;
+    fi
+fi
+
+#Install menhir for parser/lexer compilation."
+MENHIR_VERSION=$(menhir --version)
+if [ $? -eq 0 ]; then
+    msg_success "$MENHIR_VERSION is already installed!"
+else
+    echo "Installing menhir"
+    opam install menhir
+    MENHIR_VERSION=$(menhir --version)
+    echo "$MENHIR_VERSION installed."
+    if [ $? -eq 0 ]; then
+	echo ""
+    else
+	msg_fail "Failed to install Menhir. Please install it manually."
+	exit 0;
+    fi
+fi
+
 
 # Automatic package installation with OPAM
 opam_install () {
-    if [[-z $OPAM_VERSION ]]
+    if [[ -z $OPAM_VERSION ]]
     then
-	msg_fail "$1 is not installed."
+	msg_fail "Opam is not installed. Please install it manually."
+	exit 0;
     else
 	opam install $1;
 	PKG_VERSION=$(opam show $1 | sed -n "s/^\s*version:\s\([0-9]\)*/\1/p")
 	if [[ -z $PACKAGE_VERSION ]]
 	then
+	    msg_sucess "$1 $PACKAGE_VERSION has been successfully installed."
+	else
 	    msg_fail "Failed to install package $1. Please install it manually!"
 	    exit 0;
-	else
-	    msg_sucess "$1 $PACKAGE_VERSION has been successfully installed."
 	fi
     fi
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "extlib" "getopt" "menhir")
+declare -a OCAML_PACKAGES=("extlib" "getopt")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
     PKG_SRC=$(ocamlfind query $OCAML_REQ_PACKAGE)
-    PKG_NOT_FOUND=$(ocamlfind query $OCAML_REQ_PACKAGE | grep 'not found')
-    if [[ -z $PKG_NOT_FOUND ]]
+    if [[ -z $PKG_SRC ]]
     then
-	msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
+       	msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
+	opam_install $OCAML_REQ_PACKAGE
     else
-	msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
-	opam_install OCAML_REQ_PACKAGE
+	msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
+
     fi
 done
 
