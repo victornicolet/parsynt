@@ -156,9 +156,8 @@ if [ $? -eq 0 ]; then
     OASIS_VERSION=$(oasis version)
     msg_success "Oasis $OASIS_VERSION is already installed!"
 else
-    echo "Installing Oasis and m4"
-    sudo apt-get install m4
-    sudo apt-get install oasis
+    echo "Installing Oasis"
+    opam install m4
     opam install oasis
     oasis version
     if [ $? -eq 0 ]; then
@@ -177,7 +176,6 @@ if [ $? -eq 0 ]; then
     msg_success "$MENHIR_VERSION is already installed!"
 else
     echo "Installing menhir"
-    sudo apt-get install menhir
     opam install menhir
     menhir --version
     if [ $? -eq 0 ]; then
