@@ -9,7 +9,6 @@ open Cil
 
 module L = Local
 module C = Canalyst
-module Z3c = Z3conversion
 module Pf = Proofs
 
 let debug = ref false
