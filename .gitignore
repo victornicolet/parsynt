@@ -17,8 +17,8 @@ _build
 ocamllibs/_build
 ocamllibs/_build/_digests
 ocamllibs/_build/_log
-tbb_examples/*.cpp
-dafny_examples/*.dfy
+*/tbb_examples/*.cpp
+*/dafny_examples/*.dfy
 alt-cil/
 *.mldylib
 *.mlib
