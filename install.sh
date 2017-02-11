@@ -140,6 +140,10 @@ then
     eval $(opam config env)
     opam init
     opam install depext
+    if [ $? -eq 0 ]; then
+	echo "Opam installed, you should restart your computer and re-run the script."
+	exit 0;
+    fi
 else
     msg_success "opam $OPAM_VERSION is installed."
 fi
@@ -160,7 +164,7 @@ else
 	echo "Oasis version $OASIS_VERSION installed."
     else
 	msg_fail "Failed to install Oasis. Please install it manually."
-	exit 0;
+	exit 1;
     fi
 fi
 
@@ -179,7 +183,7 @@ else
 	echo "$MENHIR_VERSION installed."
     else
 	msg_fail "Failed to install Menhir. Please install it manually."
-	exit 0;
+	exit 1;
     fi
 fi
 
@@ -189,16 +193,16 @@ opam_install () {
     if [[ -z $OPAM_VERSION ]]
     then
 	msg_fail "Opam is not installed. Please install it manually."
-	exit 0;
+	exit 1;
     else
 	opam install $1;
 	PKG_VERSION=$(opam show $1 | sed -n "s/^\s*version:\s\([0-9]\)*/\1/p")
 	if [[ -z $PACKAGE_VERSION ]]
 	then
-	    msg_sucess "$1 $PACKAGE_VERSION has been successfully installed."
+	    msg_success "$1 $PACKAGE_VERSION has been successfully installed."
 	else
 	    msg_fail "Failed to install package $1. Please install it manually!"
-	    exit 0;
+	    exit 1;
 	fi
     fi
 }
@@ -233,17 +237,10 @@ fi
 
 cd alt-cil
 echo "Creating local cil package and installing it with opam .."
+echo "If you already went through this step, and you are sure that the cil package installed is the one we provide, then just type 'n' when asked for confirmation."
+opam pin add cil . -n
+opam install cil --verbose
 
-CIL_PKG_SRC=$(ocamlfind query cil)
-CIL_PKG_NOT_FOUND=$(echo $CIL_PKG_SRC | grep 'not found')
-if [[ -z $CIL_PKG_NOT_FOUND ]]
-then
-    msg_success "Found OCaml cil in $CIL_PKG_SRC (ocamlfind)"
-else
-    msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
-    opam pin add cil . -n
-    opam install cil --verbose
-fi
 
 cd ..
 
@@ -279,6 +276,13 @@ oasis setup -setup-update dynamic
 msg_success "Makefiles created, trying make in ocamllib"
 #cd ./consynth
 make $1
+
+if [ $? -eq 0 ]; then
+    msg_success "Successfully compiled sources! Let us finish with a small test..."
+else
+    msg_fail "Try reloading .profile or restarting the computer"
+    echo "If it fails again, contact victor.nicolet@polytechnique.edu"
+fi
 cd ..
 #Add links to binaries in base dir
 ln -sf ocamllibs/Parsy.native Parsynth
