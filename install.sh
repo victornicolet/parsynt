@@ -157,7 +157,7 @@ if [ $? -eq 0 ]; then
     msg_success "Oasis $OASIS_VERSION is already installed!"
 else
     echo "Installing Oasis"
-    opam install m4
+    sudo apt-get install m4
     opam install oasis
     oasis version
     if [ $? -eq 0 ]; then

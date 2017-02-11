@@ -1,6 +1,8 @@
 # ConSynth
-## Note
-A ```install.sh``` script is in progress, so the part about requirements will be shorter but more precise.
+## Installation
+
+Run ```./install.sh``` in the base folder.
+REMARK : we use Ocaml's OPAM package manager, so you should have the environment variables correctly set if you have already installed it. Otherwise, you will be asked during the installation of OPAM is you want it to write into your ```.profile```. We assume the environment has access to OPAM's binaries, so please agree.
 
 ## Requirements
 
