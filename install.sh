@@ -145,7 +145,7 @@ opam_install () {
 	PKG_VERSION=$(opam show $1 | sed -n "s/^\s*version:\s\([0-9]\)*/\1/p")
 	if [[ -z $PACKAGE_VERSION ]]
 	then
-	    msg_fail "Failed to install package $1. Please install it manually !"
+	    msg_fail "Failed to install package $1. Please install it manually!"
 	    exit 0;
 	else
 	    msg_sucess "$1 $PACKAGE_VERSION has been successfully installed."
@@ -154,7 +154,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("oasis" "extlib" "getopt")
+declare -a OCAML_PACKAGES=("oasis" "extlib" "getopt" "menhir")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -184,17 +184,15 @@ fi
 cd alt-cil
 echo "Creating local cil package and installing it with opam .."
 
-CIL_PKG_SRC=$(ocamlfind query cil)
+CIL_PKG_SRC=$(ocamlfind query alt-cil)
 CIL_PKG_NOT_FOUND=$(echo $CIL_PKG_SRC | grep 'not found')
 if [[ -z $CIL_PKG_NOT_FOUND ]]
 then
     msg_success "Found OCaml cil in $CIL_PKG_SRC (ocamlfind)"
 else
     msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
-    OPAM_CFG_VAR_PREFIX=$(opam config var prefix)
-    eval './configure --prefix=$OPAM_CFG_VAR_PREFIX'
-    make
-    sudo make install
+    opam pin add alt-cil . -n
+    opam install alt-cil --verbose
 fi
 
 cd ..
@@ -216,7 +214,6 @@ cd ..
 # fi
 
 # sep
-
 
 sep
 msg_success "Installed all requirements."
