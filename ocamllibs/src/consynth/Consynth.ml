@@ -5,4 +5,3 @@ module SketchJoin = SketchJoin
 module SketchBody = SketchBody
 module Sketch = Sketch
 module Utils = Utils
-module Z3Conv = Z3conversion
