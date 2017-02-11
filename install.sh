@@ -46,7 +46,7 @@ fi
 
 
 echo "Checking installation of Racket components : rosette, c-utils ..."
-declare -a REQUIRED_PACKAGES=("rosette" "c-utils")
+declare -a REQUIRED_PACKAGES=("rosette")
 
 # Function to query the source of a package. If empty, it means the package
 # is not installed in raco.
