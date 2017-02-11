@@ -176,8 +176,6 @@ let main () =
     end
   else ();
 
-
-
   elapsed_time := Unix.gettimeofday ();
   printf "Parsing C program ...\t\t\t\t";
   let c_program = C.processFile filename in

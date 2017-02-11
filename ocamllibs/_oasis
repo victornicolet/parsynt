@@ -36,20 +36,20 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, extlib, Z3, conf
+  BuildDepends: cil, rosetteInterface, extlib, conf
 
 Library codegen
   Path: src/codegen
   Modules: Codegen
   CompiledObject: best
-  BuildDepends: consynth, cil, rosetteInterface, extlib, Z3, conf
+  BuildDepends: consynth, cil, rosetteInterface, extlib, conf
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, rosetteInterface, Z3, consynth, conf, codegen
+  BuildDepends: cil, getopt, rosetteInterface, consynth, conf, codegen
 
 
 Executable examples
@@ -57,7 +57,7 @@ Executable examples
   MainIs: Examples.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth, rosetteInterface, getopt, Z3
+  BuildDepends: cil, consynth, rosetteInterface, getopt
 
 Executable test_scheme_parsing
   Path: test

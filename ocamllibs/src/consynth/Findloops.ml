@@ -569,6 +569,7 @@ let set_rw_info cl =
 *)
 
 let processFile cfile =
+  printf "Start@.";
   fileName := cfile.fileName;
   (** Locate the loops in the file *)
   iterGlobals cfile (global_filter_only_func (fun fd -> find_loops fd cfile));
