@@ -12,6 +12,7 @@ contact () {
     exit
 }
 sep () {
+    echo ""
     echo "----------------------------------------------------------------"
 }
 echo "Installing Parsynth."
@@ -184,15 +185,15 @@ fi
 cd alt-cil
 echo "Creating local cil package and installing it with opam .."
 
-CIL_PKG_SRC=$(ocamlfind query alt-cil)
+CIL_PKG_SRC=$(ocamlfind query cil)
 CIL_PKG_NOT_FOUND=$(echo $CIL_PKG_SRC | grep 'not found')
 if [[ -z $CIL_PKG_NOT_FOUND ]]
 then
     msg_success "Found OCaml cil in $CIL_PKG_SRC (ocamlfind)"
 else
     msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
-    opam pin add alt-cil . -n
-    opam install alt-cil --verbose
+    opam pin add cil . -n
+    opam install cil --verbose
 fi
 
 cd ..
@@ -229,3 +230,8 @@ oasis setup -setup-update dynamic
 msg_success "Makefiles created, trying make in ocamllib"
 #cd ./consynth
 make $1
+
+sep
+echo "Testing with simple example Sum."
+sep
+eval "./Parsy.native test/solved/sum.c"
