@@ -1,0 +1,29 @@
+Setting name,Setting value
+class_member_appendix,my_
+class_name_appendix,Parallel
+dafny_examples_folder,dafny_examples/
+dafny_join_suffix,Join
+dafny_hom_prefix,Hom
+dafny_hom_empty_assert,assert(s + [] == s);
+debug_sketch,false
+loop_finite_limit,10
+rosette_base_init_values,0 1 #t #f
+rosette_identity_state_name,$_identity
+rosette_initial_state_name,$_initial
+rosette_join_name,__join__
+rosette_join_left_state_prefix,l.
+rosette_join_right_state_prefix,x.
+rosette_loop_body_name,__loop_body__
+rosette_loop_iteration_limit,10
+rosette_index_suffix_start,_begin_
+rosette_index_suffix_end,_end_
+rosette_state_param_name,s
+rosette_struct_name,$
+tbb_chunk_size,1000000
+tbb_examples_folder,tbb_examples/
+tbb_begin_index_value,-1
+tbb_end_index_value,-1
+tbb_iterator_name,_r_
+tbb_iterator_type_name,__iterator_type__
+tbb_iterator_type,long
+tbb_right_state_name,x
