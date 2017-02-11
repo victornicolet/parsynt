@@ -22,6 +22,7 @@ echo "Installing Parsynth."
 sep
 echo "Checking Racket installation ..."
 sep
+
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
 if [ -z $RACKET_VERSION ]
 then
@@ -30,16 +31,17 @@ then
     echo "Installing Racket using ppa:plt/racket."
     sudo add-apt-repository ppa:plt/racket
     sudo apt-get update
-    sudo install racket
+    sudo apt-get install racket
 fi
 sep
+RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
 if [[ $(bc <<< "$RACKET_VERSION > 6.0") ]]
 then
     msg_success "Racket $RACKET_VERSION is installed."
 else
-    msg_fail "Racket $RACKET_VERSION is installed, we need at least 6.0."
+    msg_fail "Racket $RACKET_VERSION is installed, but we need at least 6.0."
     echo "Please install a more recent version of Racket."
-    exit 0
+    exit 1;
 fi
 
 
