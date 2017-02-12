@@ -50,7 +50,7 @@ then
 fi
 
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
-if [[ $(bc <<< "$RACKET_VERSION > 6.0") ]]
+if [[ $(bc <<< "$RACKET_VERSION > 6.5") ]]
 then
     msg_success "Racket $RACKET_VERSION is installed."
 else
