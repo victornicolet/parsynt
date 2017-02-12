@@ -1458,12 +1458,13 @@ let rec pass_sequentialize sklet =
   let rec reorganize ve_list let_queue =
     (** A variable should be only bound once in a binding group, therefore
         we can identify a binding only by the variables it binds to.
-        This supports only scalar types ! n *)
+        We supports only scalar types ! n *)
     let modified_vars, vid_to_expr, depends_graph_unpure =
       List.fold_left
         (fun (modified_set, expr_map, dep_graph) (v, e) ->
            match e with
-           | SkVar v -> modified_set, expr_map, dep_graph (* Identity binding *)
+           | SkVar v' when v = v' ->
+             modified_set, expr_map, dep_graph (* Identity binding *)
            | _ ->
              let vi =
                try check_option (vi_of v)
