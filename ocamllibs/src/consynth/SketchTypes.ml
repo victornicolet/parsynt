@@ -947,26 +947,6 @@ let scm_register s =
   {varinfo with Cil.vname = s}
 
 
-let scm_handle_hole_expr hole_name hole_comps arglist =
-  Nil_e
-
-let scm_handle_hole_op op_name arglist = Nil_e
-
-let scm_match_holes e arglist =
-  match e with
-  | Apply_e (Id_e ht_n, ali) ->
-    begin
-      if Conf.is_hole_type ht_n then
-        (printf "<matched %s>@." ht_n;
-        Some (scm_handle_hole_expr ht_n ali arglist))
-      else
-        (if Conf.is_op_choice ht_n then
-        (printf "<matched %s>@." ht_n;
-         Some (scm_handle_hole_op ht_n arglist))
-         else
-           None)
-    end
-  | _ -> None
 
 
 let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
@@ -1019,21 +999,19 @@ let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
               failwith (s^"\nUnexpected form in conditional.")
           end
       end
+
     | Apply_e (e, arglist) ->
-      (match scm_match_holes e arglist with
-       | Some e' -> scm_to_sk e'
-       | None ->
-         (match e with
-          | Id_e s ->
-            (match s with
-             | "vector-ref" ->
-               (None, Some (SkVar (to_array_var arglist)))
-             | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
-               (Some (rosette_state_struct_to_sklet arglist), None)
-             | _ ->
-               (None, Some (to_fun_app e arglist)))
+      (match e with
+       | Id_e s ->
+         (match s with
+          | "vector-ref" ->
+            (None, Some (SkVar (to_array_var arglist)))
+          | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
+            (Some (rosette_state_struct_to_sklet arglist), None)
           | _ ->
-            failwith "TODO"))
+            (None, Some (to_fun_app e arglist)))
+          | _ ->
+            failwith "TODO")
 
 
     | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->

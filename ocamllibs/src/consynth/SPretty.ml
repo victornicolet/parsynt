@@ -2,6 +2,7 @@ open SketchTypes
 open PpHelper
 open Format
 open Utils
+open Racket
 
 module Ct = Utils.CilTools
 module VS = Utils.VS
@@ -23,35 +24,35 @@ let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 let hole_type_expr fmt ((t, ot) : hole_type) =
   let hole_num_optype optype =
     match optype with
-    | NotNum -> Conf.get_hole_type_name "basic_num"
-    | Basic -> Conf.get_hole_type_name "basic_num"
-    | Arith -> Conf.get_hole_type_name "arith"
-    | NonLinear -> Conf.get_hole_type_name "non_linear"
+    | NotNum -> hole_type_name HBasicNum
+    | Basic -> hole_type_name HBasicNum
+    | Arith -> hole_type_name HArith
+    | NonLinear -> hole_type_name HNonLinear
   in
   fprintf fmt "%s"
   (match t with
-   | Unit -> Conf.get_hole_type_name "scalar_expr"
+   | Unit -> hole_type_name HScalarExpr
 
    | Integer | Real -> (hole_num_optype ot)
 
-   | Boolean -> Conf.get_hole_type_name "boolean"
+   | Boolean -> hole_type_name HBoolean
 
    | Function (a, b) ->
      begin
        match a, b with
-       | Integer, Boolean -> Conf.get_hole_type_name "comparison"
+       | Integer, Boolean -> hole_type_name HComparison
 
-       | Boolean, Boolean -> Conf.get_hole_type_name "boolean"
+       | Boolean, Boolean -> hole_type_name HBoolean
 
        | Integer, Integer -> (hole_num_optype ot)
 
-       | _ ,_ -> Conf.get_hole_type_name "scalar_expr"
+       | _ ,_ -> hole_type_name HScalarExpr
 
      end
-   | _ -> Conf.get_hole_type_name "scalar_expr")
+   | _ -> hole_type_name HScalarExpr)
 
-let string_of_opchoice s =
-  "(" ^ (Conf.get_operator_choice s) ^" 0)"
+let string_of_opchoice oct =
+  "(" ^ (operator_choice_name oct) ^" 0)"
 
 (** Pretty-printing operators *)
 
@@ -278,7 +279,7 @@ let fp = Format.fprintf in
     if !printing_sketch && (is_comparison_op op)
     then
       fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
-        (string_of_opchoice "comparison")
+        (string_of_opchoice OCComparison)
         pp_skexpr e1 pp_skexpr e2
     else
     fp ppf "@[<hov 1>(%s@;%a@;%a)@]"

@@ -1,7 +1,7 @@
 open Str
 open Printf
 open Parser
-
+open Racket
 (**
     Locally, solving sketches is done by writing to files,
     executing a compiled racket program and then retrieving the result
@@ -110,7 +110,9 @@ let compile ?(print_err_msg = default_error) printer printer_arg =
 let fetch_solution filename =
   let parsed =
     try
-      Parser.main Lexer.token (Lexing.from_string (Std.input_file filename))
+      List.map
+        clean
+        (Parser.main Lexer.token (Lexing.from_string (Std.input_file filename)))
     with e ->
       (let err_code = Sys.command ("cat "^filename) in
        Format.printf "@.cat %s : %i@." filename err_code;
