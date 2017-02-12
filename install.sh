@@ -156,13 +156,16 @@ then
     eval $(opam config env)
     opam init
     opam install depext
+    opam config setup -a
     if [ $? -eq 0 ]; then
-	echo "Opam installed, you should restart your computer and re-run the script."
-	exit 0;
+	msg_success "Opam installed"
+	msg_success "If the scripts fails, check Opam is configured : opam config setup -a"
     fi
 else
     msg_success "opam $OPAM_VERSION is installed."
 fi
+
+eval "opam config env"
 
 # Install oasis
 oasis version
