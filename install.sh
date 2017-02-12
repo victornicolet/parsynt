@@ -1,27 +1,42 @@
 #!/bin/bash
 
 # Pretty-printing helper
+# BLACK_FG="30"
+# BLACK_BG="40"
+# RED_FG="31"
+# RED_BG="41"
+# GREEN_FG="32"
+# GREEN_BG="42"
+# YELLOW_FG="33"
+# YELLOW_BG="43"
+# BLUE_FG="34"
+# BLUE_BG="44"
+# MAGENTA_FG="35"
+# MAGENTA_BG="45"
+# CYAN_FG="36"
+# CYAN_BG="46"
+# WHITE_FG="37"
+# WHITE_BG="47"
+
 msg_fail () {
-    echo "FAILED : $1";
+    echo -e "\033[31m FAILED : $1\033[0m";
 }
 msg_success () {
-    echo "OK : $1"
+    echo -e "\033[32m OK : $1\033[0m"
 }
 contact () {
-    echo "Please report error to victor.nicolet@polytechnique.edu";
-    exit
+    echo -e "\033[46m Please report error to victor.nicolet@polytechnique.edu\033[0m";
+    exit 0
 }
 sep () {
     echo ""
-    echo "----------------------------------------------------------------"
+    echo -e "\033[44m $1 \033[0m"
 }
 
 
-echo "Installing Parsynth."
 #Check for Racket installation
-sep
-echo "Checking Racket installation ..."
-sep
+sep "Checking Racket installation ..."
+
 
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
 if [ -z $RACKET_VERSION ]
@@ -33,7 +48,7 @@ then
     sudo apt-get update
     sudo apt-get install racket
 fi
-sep
+
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
 if [[ $(bc <<< "$RACKET_VERSION > 6.0") ]]
 then
@@ -112,9 +127,8 @@ msg_success "All Racket components present."
 
 
 # Ocaml componenets
-sep
-echo "Checking Ocaml components."
-sep
+sep "Checking Ocaml components."
+
 # Ocaml version (and if Ocaml is present)
 OCAML_VERSION=$(ocaml -vnum)
 if [ -z $OCAML_VERSION ]
@@ -223,9 +237,8 @@ do
     fi
 done
 
-sep
-echo "Installing modified version of Cil."
-sep
+sep "Installing modified version of Cil."
+
 
 # Retrieve and install our modified version
 if [[ -d "alt-cil" ]]; then
@@ -235,40 +248,31 @@ else
     eval "git clone https://github.com/victornicolet/alt-cil.git"
 fi
 
-cd alt-cil
-echo "Creating local cil package and installing it with opam .."
-echo "If you already went through this step, and you are sure that the cil package installed is the one we provide, then just type 'n' when asked for confirmation."
-opam pin add cil . -n
-opam install cil --verbose
+CIL_PINNED=$(opam show cil | sed -n -e 's/^.*pinned: //p')
+
+if [[ -z $CIL_PINNED ]]
+then
+    cd alt-cil
+    echo "Creating local cil package and installing it with opam .."
+    opam pin add cil . -n
+    cd ..
+else
+    msg_success "Cil version pinned to local repository."
+fi
+CIL_INSTALLED_VERSION=$(opam show cil | sed -n -e 's/^.*installed-version: //p')
+if [[ -z $CIL_INSTALLED_VERSION ]]
+then
+    opam install cil --verbose
+else
+    msg_success "Cil version $CIL_INSTALLED_VERSION installed."
+fi
 
 
-cd ..
+sep "Installed all requirements."
 
-# sep
-# echo "Installing z3 and z3 bindings."
-# sep
-# if [[ -d "z3-master" ]]; then
-#     echo "z3 already downloaded."
-# else
-#     echo "Cloning Z3 source repository."
-#     eval "git clone https://github.com/Z3Prover/z3.git"
-#     cd z3
-#     python scripts/mk_make.py --ml
-#     cd build
-#     make
-#     sudo make install
-#     cd ../..
-# fi
 
-# sep
+sep "Creating Makefiles for Ocaml sources ..."
 
-sep
-msg_success "Installed all requirements."
-sep
-
-sep
-echo "Creating Makefiles for Ocaml sources ..."
-sep
 
 cd ocamllibs
 oasis setup -setup-update dynamic
@@ -284,6 +288,7 @@ else
     echo "If it fails again, contact victor.nicolet@polytechnique.edu"
 fi
 cd ..
+
 #Add links to binaries in base dir
 ln -sf ocamllibs/Parsy.native Parsynth
 ln -sf ocamllibs/templates/
@@ -293,7 +298,6 @@ ln -sf ocamllibs/dafny_examples/
 ln -sf ocamllibs/conf.csv
 ln -sf ocamllibs/src/conf/verification.params
 
-sep
-echo "Testing with simple example Sum."
-sep
+sep "Testing with simple example Sum."
+
 eval "./Parsynth c_examples/solved/sum.c"
