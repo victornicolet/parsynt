@@ -1,7 +1,3 @@
-# Sketch solving
-- Sub-optimal use of non-linear operator. We should first try to solve the sketch with arith only, that would be much faster (for example in the plynomial or atoi examples).
-- Some holes are sometimes left unfilled (unreachable code for example).
-
 # Variable discovery
 
 # TBB example generation

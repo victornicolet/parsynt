@@ -22,6 +22,7 @@ let keywords =
      "definerec", DEFINEREC;
      "delay", DELAY;
      "force", FORCE;
+     "not", NOT;
     ]
 
 let keyword_tbl = Hashtbl.create 256
@@ -48,7 +49,6 @@ rule token = parse
   | "*"            { MUL }
   | "/"            { DIV }
   | "%"            { MOD }
-  | "~"            { NOT }
   | "&&"            { AND }
   | "||"            { OR }
   | "="            { EQ }

@@ -1006,8 +1006,13 @@ let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
          (match s with
           | "vector-ref" ->
             (None, Some (SkVar (to_array_var arglist)))
+
           | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
             (Some (rosette_state_struct_to_sklet arglist), None)
+
+          | "identity" ->
+            scm_to_sk (arglist >> 0)
+
           | _ ->
             (None, Some (to_fun_app e arglist)))
           | _ ->

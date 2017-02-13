@@ -129,7 +129,7 @@
 
 
 (define-synthax BasicUnopsBool
-  ([(BasicUnopsBool 0) (choose ! identity)]))
+  ([(BasicUnopsBool 0) (choose not identity)]))
 
 (define-synthax (NumExprArith x ... depth)
   #:base (Scalar x ...)
