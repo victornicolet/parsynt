@@ -11,8 +11,18 @@ let print_imp_style = ref false
 let printing_sketch = ref false
 let holes_expr_depth = ref 1
 let state_struct_name = ref "__state"
+let use_non_linear_operator = ref false
+let skipped_non_linear_operator = ref false
 
 let state_vars = ref VS.empty
+
+let reinit ?(ed = 1) ?(use_nl = false) =
+  printing_sketch := false;
+  holes_expr_depth := ed;
+  if use_nl then
+    printf "Using non-linear operators.@.";
+  use_non_linear_operator := use_nl;
+  skipped_non_linear_operator := false
 
 (**
    TODO : find a way to be able to generate different hole
@@ -27,7 +37,12 @@ let hole_type_expr fmt ((t, ot) : hole_type) =
     | NotNum -> hole_type_name HBasicNum
     | Basic -> hole_type_name HBasicNum
     | Arith -> hole_type_name HArith
-    | NonLinear -> hole_type_name HNonLinear
+    | NonLinear ->
+      if !use_non_linear_operator then
+        hole_type_name HNonLinear
+      else
+        (skipped_non_linear_operator := true;
+        hole_type_name HBasicNum)
   in
   fprintf fmt "%s"
   (match t with

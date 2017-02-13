@@ -85,34 +85,39 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
 
 let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
   SPretty.holes_expr_depth := expr_depth;
-  List.fold_left
-    (fun (solved, unsolved) sketch ->
-       let lp_name = sketch.loop_name in
-       try
-         printf "@.SOLVING sketch for %s.@." lp_name;
-         let parsed =
-           L.compile_and_fetch
-             ~print_err_msg:err_handler_sketch C.pp_sketch sketch
-         in
-         if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
-           (* We get an "unsat" answer : add loop to auxliary discovery *)
-           begin
-             printf
-               "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
-               (color "orange") default lp_name;
-             (solved, unsolved@[sketch])
-           end
-         else
-           (* A solution has been found *)
-           solution_found lp_name parsed sketch solved, unsolved
-       with Failure s ->
-         begin
-           printf "@.%sFAILED to find a solution for %s%s.@."
-             (color "red") lp_name default;
-           (solved, unsolved)
-         end)
-    ([], [])
-    sketch_list
+  let rec solve_one (solved, unsolved) sketch =
+    let lp_name = sketch.loop_name in
+    try
+      printf "@.SOLVING sketch for %s.@." lp_name;
+      let parsed =
+        L.compile_and_fetch
+          ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+      in
+      if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+        (* We get an "unsat" answer : add loop to auxliary discovery *)
+        begin
+          printf
+            "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
+            (color "orange") default lp_name;
+          if !SPretty.skipped_non_linear_operator then
+            (** Try with non-linear operators. *)
+            (SPretty.reinit ~ed:expr_depth ~use_nl:true;
+             solve_one (solved, unsolved) sketch)
+          else
+            (SPretty.reinit ~ed:expr_depth ~use_nl:false;
+            (solved, unsolved@[sketch]))
+        end
+      else
+        (* A solution has been found *)
+        solution_found lp_name parsed sketch solved, unsolved
+    with Failure s ->
+      begin
+        printf "@.%sFAILED to find a solution for %s%s.@."
+          (color "red") lp_name default;
+        (solved, unsolved)
+      end
+  in
+  List.fold_left solve_one ([], []) sketch_list
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let tbb_test_filename (solution : sketch_rep) =

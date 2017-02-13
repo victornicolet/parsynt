@@ -300,6 +300,7 @@ ln -sf ocamllibs/tbb_examples/
 ln -sf ocamllibs/dafny_examples/
 ln -sf ocamllibs/conf.csv
 ln -sf ocamllibs/src/conf/verification.params
+mkdir ocamllibs/dump/
 
 sep "Testing with simple example Sum."
 

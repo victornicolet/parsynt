@@ -44,4 +44,4 @@ _tags
 z3-master/
 
 #Temporary dump files
-consynth/dump/conSynth*
+ocamllibs/dump/conSynth*
