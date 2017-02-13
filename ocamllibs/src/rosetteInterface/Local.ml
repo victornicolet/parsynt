@@ -11,8 +11,8 @@ open Racket
 let debug = ref false
 let dump_sketch = ref false
 
-let templateDir = Filename.current_dir_name^"/templates/"
-let dumpDir = Filename.current_dir_name^"/dump/"
+let templateDir = Conf.project_dir^"/templates/"
+let dumpDir = Filename.concat Conf.project_dir "/ocamllibs/dump/"
 
 let copy_file from_filename to_filename =
   let oc = open_out to_filename in

@@ -275,8 +275,9 @@ sep "Installed all requirements."
 
 
 sep "Creating Makefiles for Ocaml sources ..."
-
-
+PROJECT_DIR=$(pwd)
+rm ./ocamllibs/src/conf/project_dir.ml
+echo "let base = \"$PROJECT_DIR\"" >> ./ocamllibs/src/conf/project_dir.ml
 cd ocamllibs
 oasis setup -setup-update dynamic
 #cd ..

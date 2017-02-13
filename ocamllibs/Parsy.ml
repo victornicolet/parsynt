@@ -25,7 +25,9 @@ let options = [
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
-  ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None)
+  ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
+  ( 'o', "output-folder", None,
+    Some (fun o_folder -> Conf.output_dir := o_folder));
 ]
 
 let solution_found lp_name parsed (sketch : sketch_rep) solved =
@@ -121,8 +123,20 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let tbb_test_filename (solution : sketch_rep) =
-  (Conf.get_conf_string "tbb_examples_folder")^
-  (Tbb.pbname_of_sketch solution)^".cpp"
+  let folder_name =
+    (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
+  in
+  let errco =
+    if Sys.file_exists folder_name then
+      0
+    else
+      Sys.command ("mkdir "^folder_name)
+  in
+  if errco = 0 then
+    folder_name^(Tbb.pbname_of_sketch solution)^".cpp"
+  else
+    failwith "Failed to create directory for tbb example output."
+
 
 let output_tbb_test (solution : sketch_rep) =
   let tbb_file_oc =  open_out (tbb_test_filename solution) in
@@ -138,8 +152,19 @@ let output_tbb_tests (solutions : sketch_rep list) =
 
 (** Generating Dafny proofs *)
 let dafny_proof_filename (sol : sketch_rep) =
-  (Conf.get_conf_string "dafny_examples_folder")^
-  (Pf.filename_of_solution sol)^".dfy"
+    let folder_name =
+    (!Conf.output_dir)^"/"^(Conf.get_conf_string "dafny_examples_folder")
+  in
+  let errco =
+    if Sys.file_exists folder_name then
+      0
+    else
+      Sys.command ("mkdir "^folder_name)
+  in
+  if errco = 0 then
+    folder_name^(Pf.filename_of_solution sol)^".dfy"
+  else
+    failwith "Failed to create directory for Dafny proof output."
 
 let output_dafny_proof (solution : sketch_rep) =
   let dafny_file_oc = open_out (dafny_proof_filename solution) in

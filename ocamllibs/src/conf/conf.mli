@@ -1,4 +1,6 @@
 (** General settings *)
+val project_dir: string
+val output_dir:string ref
 val get_conf_string: string -> string
 (** Builtin variables *)
 type builtins =
