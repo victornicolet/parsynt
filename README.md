@@ -1,8 +1,14 @@
 # ConSynth
 ## Installation
 
-Run ```./install.sh``` in the base folder.
+Run ```./setup.sh``` in the base folder. You will need an active internet connection because the script will try to install missing packages and components.
 REMARK : we use Ocaml's OPAM package manager, so you should have the environment variables correctly set if you have already installed it. Otherwise, you will be asked during the installation of OPAM is you want it to write into your ```.profile```. We assume the environment has access to OPAM's binaries, so please agree.
+
+## Using the tool
+
+When ```setup.sh``` succeeds, you have a link to an executable in the base folder. Try the tool on a file ```example.c``` :\\
+```./Parsynth example.c```
+The tool will search for all the innermost for loops and try to find a divide-and-conquer parallelization for them. If it succeeds, it will produce a TBB implementation in ```tbb_examples/<name of the function where the loop appears>.cpp``` and a proof to be checked by Dafny in ```dafny_examples/<name of the function where the loop appears>.dfy```.
 
 ## Requirements
 
@@ -14,9 +20,13 @@ Or you can install it from source, [more information here](https://github.com/em
 You will also need to install the project package in order to run the different tests :\\
 ``` $ cd consynth```\\
 ``` $ raco pkg install ```\\
+You can aslo use a ppa :
+ ```sudo add-apt-repository ppa:plt/racket```\\
+``` sudo apt-get update```\\
+``` sudo apt-get install racket```\\
 
 ### OCaml
-Most of the functionaliaties are written in OCaml : input C code parsing, code transformations and sketch generation. You will need some libraries to compile the tool. \\
+Most of the functionalities are written in OCaml : input C code parsing, code transformations and sketch generation. You will need some libraries to compile the tool. \\
 We use a custom version of Cil that marks the temporary variables it introduces. You can download it [here](https://github.com/victornicolet/faithfulCil) and follow the installation instructions. Don't use opam to install cil!
 The installation script uses ocamlfind to look for packages and tries to install them with opam. If you don't wish to use opam, please install all the packages manually.
 - Project management : oasis. \\
