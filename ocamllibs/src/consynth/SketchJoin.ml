@@ -6,13 +6,25 @@ let debug = ref false
 
 let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
 
-let left_auxiliaries = ref VS.empty
-let right_auxiliaries = ref VS.empty
+let cur_left_auxiliaries = ref VS.empty
+let cur_right_auxiliaries = ref VS.empty
+
+let left_aux_ids = ref []
+let right_aux_ids = ref []
+
+let add_laux_id i = left_aux_ids := i :: !left_aux_ids
+let add_raux_id i = right_aux_ids := i :: !right_aux_ids
+
+let is_left_aux i =
+  List.mem i !left_aux_ids
+
+let is_right_aux i =
+  List.mem i !right_aux_ids
 
 let init () =
   IH.clear auxiliary_variables;
-  left_auxiliaries := VS.empty;
-  right_auxiliaries := VS.empty
+  cur_left_auxiliaries := VS.empty;
+  cur_right_auxiliaries := VS.empty
 
 (* Returns true is the expression is a hole. The second
    boolean in the pair is useful when we are trying to merge
@@ -128,8 +140,8 @@ and make_assignment_list state skip =
 
       | _ ->
         let vi = check_option (vi_of v) in
-        if VS.mem vi !left_auxiliaries ||
-           VS.mem vi !right_auxiliaries  then
+        if VS.mem vi !cur_left_auxiliaries ||
+           VS.mem vi !cur_right_auxiliaries  then
           (v, SkHoleL (((type_of e), Basic), v,
                        CS.complete_all (CS.of_vs state)))
         else

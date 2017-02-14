@@ -243,6 +243,12 @@ let join_optypes opt1 opt2 =
   | Arith, _ | _, Arith -> Arith
   | _, _ -> NotNum        (* Join *)
 
+
+let is_op_c_fun op =
+  match op with
+  | Max | Min -> true
+  | _ -> false
+
 (** Identity function *)
 let identity_sk =
   SkLetExpr ([])

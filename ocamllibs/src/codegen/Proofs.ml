@@ -59,6 +59,8 @@ type proofVariable =
     empty_value : constants;
     function_expr : skExpr;
     join_expr : skExpr;
+    mutable requires :
+      ((Format.formatter -> (string * string)-> unit) * int) list;
     mutable depends : proofVariable list;
     mutable join_depends : proofVariable list;
   }
@@ -155,6 +157,9 @@ let pp_assertion_concat fmt (s,t) =
   fprintf fmt "@[assert(%s + %s[..|%s|-1]) + [%s[|%s|-1]] == %s + %s;@]"
     s t t t t s t
 
+let pp_require_min_length i fmt (s, t) =
+  fprintf fmt "requires |%s| >= %i && |%s| >= %i" s i t i
+
 let pp_func_of_concat fmt (pfv, s, t) =
   fprintf fmt "%s(%s + %s)" pfv.name s t
 
@@ -179,9 +184,16 @@ let pp_depend_lemmas fmt (pfv, s, t) =
     fmt
     (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
 
+let pp_requires fmt (s,t, reqs) =
+  if reqs = [] then ()
+  else
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
+      (fun fmt (p, _) -> p fmt (s, t)) fmt reqs
+
 let pp_hom fmt pfv s t =
   fprintf fmt "@\n\
                @[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
+               @[%a@]
                @[ensures %a == %a@]@\n\
                @[<v 2>{@\n\
                if %s == [] @;{@;%a@\n\
@@ -194,6 +206,7 @@ let pp_hom fmt pfv s t =
                @\n"
     hom_prefix pfv.name s pp_converted_stype pfv.in_type t
     pp_converted_stype pfv.in_type
+    pp_requires (s, t, pfv.requires)
     pp_func_of_concat (pfv, s, t) pp_joined_res (pfv, s, t)
     t pp_assertion_emptylist (s,t)
     pp_func_of_concat (pfv, s, t)
@@ -226,8 +239,53 @@ let find_exprs vi solved_sketch =
   check_option (find_binding vi (sk_for_c solved_sketch.loop_body)),
   check_option (find_binding vi (sk_for_c solved_sketch.join_solution))
 
+(**
+   Rebuild max/min for a nicer syntax, but then we need to
+    introduce the fitting definitions
+*)
+let use_min = ref false
+let use_max = ref false
+let clear_uses () =
+  use_min := false;
+  use_max := false
 
+let rebuild_min_max =
+  let filter =
+    function
+    | SkQuestion (SkBinop (op, e1, e2), e1', e2')
+      when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) -> true
+    | _ -> false
+  in
+  let transform rfunc e =
+    match e with
+    | SkQuestion (SkBinop (op, e1, e2), e1', e2')
+      when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) ->
+      let e1o = rfunc e1 in
+      let e2o = rfunc e2 in
+      if op = Lt then
+        (use_min := true; SkBinop (Min, e1o, e2o))
+      else
+        (use_max := true; SkBinop (Max, e1o, e2o))
+    | _ -> e
+  in
+  transform_expr filter transform identity identity
+
+
+let pp_min_def fmt =
+  fprintf fmt "function %s(x: int, y: int): int { if x > y then y else x}@.@."
+    (Conf.get_conf_string "dafny_min_fun")
+
+
+let pp_max_def fmt =
+  fprintf fmt "function %s(x: int, y: int): int { if x > y then x else y}@.@."
+    (Conf.get_conf_string "dafny_max_fun")
+(**
+   Generate the proof variables : one proof variable per state variables, and
+    for each proof variable we will print a function, a join and the proof that
+    the restriction is an homorphism
+*)
 let gen_proof_vars sketch =
+  clear_uses ();
   let array_of_sketch =
     let arrays =
       VS.filter
@@ -238,6 +296,11 @@ let gen_proof_vars sketch =
       failwith "Cannot generate proofs for multiple arrays."
     else
       VS.max_elt arrays
+  in
+  let special_req vi =
+    if SketchJoin.is_left_aux vi.vid || SketchJoin.is_right_aux vi.vid then
+      [pp_require_min_length 1, vi.vid]
+    else []
   in
   let pfv_id = ref 0 in
   input_seq_vi := Some array_of_sketch;
@@ -253,15 +316,18 @@ let gen_proof_vars sketch =
          in_type = array_type (type_of_var (SkVarinfo array_of_sketch));
          out_type = type_of function_expr;
          empty_value = force_constant (get_init_value sketch vi);
-         function_expr = function_expr;
-         join_expr = join_expr;
+         function_expr = rebuild_min_max function_expr;
+         requires = special_req vi;
+         join_expr = rebuild_min_max join_expr;
          join_depends = [];
          depends = [];
        }
     )
     sketch.scontext.state_vars;
   (* Now the hash table contains the proof variables, we can compute
-     the dependencies *)
+     the dependencies.
+     We also need to update requirements accordingly.
+  *)
   IH.iter
     (fun vid pfv ->
        let depend_set =
@@ -280,13 +346,22 @@ let gen_proof_vars sketch =
               (used_in_skexpr pfv.join_expr))
            []
        in
+       let update_requires old_req depend_set =
+         List.fold_left
+           (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
+           old_req depend_set
+       in
+       pfv.requires <- update_requires pfv.requires depend_set;
        pfv.depends <- depend_set;
        pfv.join_depends <- join_depend_set;) vi_to_proofVars
 
 
 let pp_all_and_clear fmt =
   let s = "s" in let t = "t" in
+  if !use_max then pp_max_def fmt;
+  if !use_min then pp_min_def fmt;
   IH.iter (fun vid pfv -> pp_function fmt (pfv,s)) vi_to_proofVars;
   IH.iter (fun vid pfv -> pp_join fmt pfv) vi_to_proofVars;
   IH.iter (fun vid pfv -> pp_hom fmt pfv s t) vi_to_proofVars;
+  clear_uses ();
   clear ()

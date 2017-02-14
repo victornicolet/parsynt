@@ -42,29 +42,29 @@ let hole_type_expr fmt ((t, ot) : hole_type) =
         hole_type_name HNonLinear
       else
         (skipped_non_linear_operator := true;
-        hole_type_name HBasicNum)
+         hole_type_name HBasicNum)
   in
   fprintf fmt "%s"
-  (match t with
-   | Unit -> hole_type_name HScalarExpr
+    (match t with
+     | Unit -> hole_type_name HScalarExpr
 
-   | Integer | Real -> (hole_num_optype ot)
+     | Integer | Real -> (hole_num_optype ot)
 
-   | Boolean -> hole_type_name HBoolean
+     | Boolean -> hole_type_name HBoolean
 
-   | Function (a, b) ->
-     begin
-       match a, b with
-       | Integer, Boolean -> hole_type_name HComparison
+     | Function (a, b) ->
+       begin
+         match a, b with
+         | Integer, Boolean -> hole_type_name HComparison
 
-       | Boolean, Boolean -> hole_type_name HBoolean
+         | Boolean, Boolean -> hole_type_name HBoolean
 
-       | Integer, Integer -> (hole_num_optype ot)
+         | Integer, Integer -> (hole_num_optype ot)
 
-       | _ ,_ -> hole_type_name HScalarExpr
+         | _ ,_ -> hole_type_name HScalarExpr
 
-     end
-   | _ -> hole_type_name HScalarExpr)
+       end
+     | _ -> hole_type_name HScalarExpr)
 
 let string_of_opchoice oct =
   "(" ^ (operator_choice_name oct) ^" 0)"
@@ -133,60 +133,60 @@ and pp_symb_type_aux ppf t =
   match ostring_of_baseSymbolicType t with
   | Some s -> fprintf ppf "%s" s
   | None ->
-     begin
-       match t with
-       | Unit -> fprintf ppf "unit"
-       | Tuple tl ->
-          fprintf ppf "(%a)"
-            (fun ppf l ->
-              pp_print_list
-                ~pp_sep:(fun ppf () -> fprintf ppf ",")
-                (fun ppf ty -> pp_symb_type ppf ty)
-                ppf
-                l)
-            tl
+    begin
+      match t with
+      | Unit -> fprintf ppf "unit"
+      | Tuple tl ->
+        fprintf ppf "(%a)"
+          (fun ppf l ->
+             pp_print_list
+               ~pp_sep:(fun ppf () -> fprintf ppf ",")
+               (fun ppf ty -> pp_symb_type ppf ty)
+               ppf
+               l)
+          tl
 
-       | Bitvector  i ->
-          fprintf ppf "(bitvector %i)" i
+      | Bitvector  i ->
+        fprintf ppf "(bitvector %i)" i
 
-       | Function (a, b)
-       | Procedure (a, b) ->
-          fprintf ppf "%a->%a"
-            pp_symb_type a
-            pp_symb_type b
+      | Function (a, b)
+      | Procedure (a, b) ->
+        fprintf ppf "%a->%a"
+          pp_symb_type a
+          pp_symb_type b
 
-       | Pair t -> fprintf ppf "(pair %a)" pp_symb_type t
+      | Pair t -> fprintf ppf "(pair %a)" pp_symb_type t
 
-       | List (t, io) ->
-          begin
-            match io with
-            | Some i ->
-               fprintf ppf "(list %a %i)"
-                 pp_symb_type t i
-            | None ->
-               fprintf ppf "(list %a ??)"
-                 pp_symb_type t
-          end
+      | List (t, io) ->
+        begin
+          match io with
+          | Some i ->
+            fprintf ppf "(list %a %i)"
+              pp_symb_type t i
+          | None ->
+            fprintf ppf "(list %a ??)"
+              pp_symb_type t
+        end
 
-       | Vector (t, io) ->
-          begin
-            match io with
-            | Some i ->
-               fprintf ppf "(vector %a %i)"
-                 pp_symb_type t i
-            | None ->
-               fprintf ppf "(vector %a ??)"
-                 pp_symb_type t
-          end
+      | Vector (t, io) ->
+        begin
+          match io with
+          | Some i ->
+            fprintf ppf "(vector %a %i)"
+              pp_symb_type t i
+          | None ->
+            fprintf ppf "(vector %a ??)"
+              pp_symb_type t
+        end
 
-       | Box t ->
-          fprintf ppf "(box %a)" pp_symb_type t
+      | Box t ->
+        fprintf ppf "(box %a)" pp_symb_type t
 
-       | Struct t ->
-          fprintf ppf "(struct %a)" pp_symb_type t
+      | Struct t ->
+        fprintf ppf "(struct %a)" pp_symb_type t
 
-       | _ -> ()
-     end
+      | _ -> ()
+    end
 
 let rec pp_constants ?(for_dafny=false) ppf =
   function
@@ -207,9 +207,14 @@ let rec pp_constants ?(for_dafny=false) ppf =
     fprintf ppf "(%s %a)" (string_of_symb_unop op)
       (pp_constants ~for_dafny:for_dafny) c
   | CBinop (op, c1, c2) ->
-     fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
-       (pp_constants ~for_dafny:for_dafny) c1
-       (pp_constants ~for_dafny:for_dafny) c2
+    if is_op_c_fun op then
+      fprintf ppf "%s(%a,@; %a)" (string_of_symb_binop op)
+        (pp_constants ~for_dafny:for_dafny) c1
+        (pp_constants ~for_dafny:for_dafny) c2
+    else
+      fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
+        (pp_constants ~for_dafny:for_dafny) c1
+        (pp_constants ~for_dafny:for_dafny) c2
 
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
@@ -231,42 +236,42 @@ let rec pp_skstmt ppf ((vi, sklet) : Cil.varinfo * sklet)  =
 and pp_sklet ppf =
   function
   | SkLetExpr el ->
-     fprintf ppf "@[<hov 2>(%s %a)@]"
-       !state_struct_name
-       (pp_print_list
-          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
-            pp_skexpr e)) el
+    fprintf ppf "@[<hov 2>(%s %a)@]"
+      !state_struct_name
+      (pp_print_list
+         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
+         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+             pp_skexpr e)) el
 
   | SkLetIn (el, l) ->
-     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
-       (fun ppf el ->
+    fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
+      (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
-              Format.fprintf ppf "@[<hov 2>[%a %a]@]"
-                pp_sklvar v pp_skexpr e) ppf el)) el
-       pp_sklet l
+               Format.fprintf ppf "@[<hov 2>[%a %a]@]"
+                 pp_sklvar v pp_skexpr e) ppf el)) el
+      pp_sklet l
 
 and pp_sklvar (ppf : Format.formatter) sklvar =
   match sklvar with
   | SkVarinfo v ->
-	fprintf ppf "%s" v.Cil.vname
+    fprintf ppf "%s" v.Cil.vname
   | SkArray (v, offset) ->
     let offset_str =
       fprintf str_formatter "%a" pp_skexpr offset;
       flush_str_formatter ()
     in
-      if !print_imp_style then
-        fprintf ppf "%a[%s]" pp_sklvar v offset_str
-      else
-	(fprintf ppf "(vector-ref %a %s)"
-    pp_sklvar v offset_str)
+    if !print_imp_style then
+      fprintf ppf "%a[%s]" pp_sklvar v offset_str
+    else
+      (fprintf ppf "(vector-ref %a %s)"
+         pp_sklvar v offset_str)
 
   | SkTuple vs ->
     fprintf ppf "(%a)" VSOps.pvs vs
 
 and pp_skexpr (ppf : Format.formatter) skexpr =
-let fp = Format.fprintf in
+  let fp = Format.fprintf in
   match skexpr with
   | SkVar v -> fp ppf "%a" pp_sklvar v
 
@@ -275,21 +280,21 @@ let fp = Format.fprintf in
   | SkFun l -> pp_sklet ppf l
 
   | SkApp (t, vio, argl) ->
-     let funname =
-       match vio with
-       | Some vi -> vi.Cil.vname
-       | None -> "()"
-     in
-     fp ppf "(%s %a)" funname
-       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_skexpr) argl
+    let funname =
+      match vio with
+      | Some vi -> vi.Cil.vname
+      | None -> "()"
+    in
+    fp ppf "(%s %a)" funname
+      (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_skexpr) argl
 
   | SkHoleR (t, cs) ->
-     fp ppf "@[<hv 2>(%a %a %i)@]"
-       hole_type_expr t CS.pp_cs cs !holes_expr_depth
+    fp ppf "@[<hv 2>(%a %a %i)@]"
+      hole_type_expr t CS.pp_cs cs !holes_expr_depth
 
   | SkHoleL (t, v, cs) ->
-     fp ppf "@[<hv 2>(%a %a %i)@]"
-       hole_type_expr t CS.pp_cs cs !holes_expr_depth
+    fp ppf "@[<hv 2>(%a %a %i)@]"
+      hole_type_expr t CS.pp_cs cs !holes_expr_depth
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 
@@ -306,17 +311,17 @@ let fp = Format.fprintf in
         (string_of_opchoice OCComparison)
         pp_skexpr e1 pp_skexpr e2
     else
-    fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
-      (string_of_symb_binop op)
-      pp_skexpr e1 pp_skexpr e2
+      fp ppf "@[<hov 1>(%s@;%a@;%a)@]"
+        (string_of_symb_binop op)
+        pp_skexpr e1 pp_skexpr e2
 
   | SkUnop (op, e) ->
     fp ppf "@[<hov 1>(%s %a)@]"
-       (string_of_symb_unop op) pp_skexpr e
+      (string_of_symb_unop op) pp_skexpr e
 
   | SkCond (c, e1, e2) ->
-     fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
-       pp_skexpr c pp_sklet e1 pp_sklet e2
+    fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
+      pp_skexpr c pp_sklet e1 pp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
     if !print_imp_style then
@@ -327,11 +332,11 @@ let fp = Format.fprintf in
         pp_skexpr c pp_skexpr e1 pp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
-     fp ppf "@[<hov 2>(Loop %s %s %s %a)@]"
-       (Ct.psprint80 Cil.dn_instr i)
-       (Ct.psprint80 Cil.dn_exp g)
-       (Ct.psprint80 Cil.dn_instr u)
-       pp_sklet e
+    fp ppf "@[<hov 2>(Loop %s %s %s %a)@]"
+      (Ct.psprint80 Cil.dn_instr i)
+      (Ct.psprint80 Cil.dn_exp g)
+      (Ct.psprint80 Cil.dn_instr u)
+      pp_sklet e
 
   | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
 
@@ -340,7 +345,7 @@ let fp = Format.fprintf in
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
 
   | SkCastE (t,e) ->
-     fp ppf "%a" pp_skexpr e
+    fp ppf "%a" pp_skexpr e
 
   | SkStartOf l -> fp ppf "(StartOf %a)" pp_skexpr l
 
@@ -416,11 +421,11 @@ and cp_sklet ppf =
       (color "b")
       !state_struct_name
       default
-       (pp_print_list
-          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
-              cp_skexpr e)) el
-       (color "red") default
+      (pp_print_list
+         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
+         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+             cp_skexpr e)) el
+      (color "red") default
 
   | SkLetIn (el, l) ->
     fprintf ppf "%s(%slet%s @[<hov 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
@@ -428,14 +433,14 @@ and cp_sklet ppf =
       (color "red")
       (* Let keyword *)
       (color "b")  default
-       (fun ppf el ->
+      (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
-              Format.fprintf ppf "@[[%a %a]@]"
-                cp_sklvar v cp_skexpr e) ppf el)) el
-       cp_sklet l
-       (* Closing parenthesis *)
-       (color "red") default
+               Format.fprintf ppf "@[[%a %a]@]"
+                 cp_sklvar v cp_skexpr e) ppf el)) el
+      cp_sklet l
+      (* Closing parenthesis *)
+      (color "red") default
 
 and cp_sklvar (ppf : Format.formatter) sklvar =
   match sklvar with
@@ -454,7 +459,7 @@ and cp_sklvar (ppf : Format.formatter) sklvar =
     fprintf ppf "(%a)" VSOps.pvs vs
 
 and cp_skexpr (ppf : Format.formatter) skexpr =
-let fp = Format.fprintf in
+  let fp = Format.fprintf in
   match skexpr with
   | SkVar v -> fp ppf "%a" cp_sklvar v
 
@@ -464,21 +469,21 @@ let fp = Format.fprintf in
   | SkFun l -> cp_sklet ppf l
 
   | SkApp (t, vio, argl) ->
-     let funname =
-       match vio with
-       | Some vi -> vi.Cil.vname
-       | None -> "()"
-     in
-     fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname default
-       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
+    let funname =
+      match vio with
+      | Some vi -> vi.Cil.vname
+      | None -> "()"
+    in
+    fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname default
+      (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
 
   | SkHoleR (t, _) ->
-     fp ppf "%s%a%s"
-       (color "grey") hole_type_expr t default
+    fp ppf "%s%a%s"
+      (color "grey") hole_type_expr t default
 
   | SkHoleL (t, v, _) ->
-     fp ppf "%s %a %s"
-       (color "grey") hole_type_expr t default
+    fp ppf "%s %a %s"
+      (color "grey") hole_type_expr t default
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 
@@ -500,7 +505,7 @@ let fp = Format.fprintf in
   | SkCond (c, e1, e2) ->
     fp ppf "@[<hov 1> (%sif%s@;%a@;%a@;%a)@]"
       (color "b") default
-       cp_skexpr c cp_sklet e1 cp_sklet e2
+      cp_skexpr c cp_sklet e1 cp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
     fp ppf "@[<hov 2>((%a)%s? %s%a%s %s%a)@]"
@@ -511,11 +516,11 @@ let fp = Format.fprintf in
       cp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
-     fp ppf "(Loop %s %s %s %a)"
-       (Ct.psprint80 Cil.dn_instr i)
-       (Ct.psprint80 Cil.dn_exp g)
-       (Ct.psprint80 Cil.dn_instr u)
-       cp_sklet e
+    fp ppf "(Loop %s %s %s %a)"
+      (Ct.psprint80 Cil.dn_instr i)
+      (Ct.psprint80 Cil.dn_exp g)
+      (Ct.psprint80 Cil.dn_instr u)
+      cp_sklet e
 
   | SkSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
 
@@ -524,7 +529,7 @@ let fp = Format.fprintf in
   | SkSizeofStr str -> fp ppf "(SizeOf %s)" str
 
   | SkCastE (t,e) ->
-     fp ppf "%a" cp_skexpr e
+    fp ppf "%a" cp_skexpr e
 
   | SkStartOf l -> fp ppf "(StartOf %a)" cp_skexpr l
 
@@ -583,15 +588,22 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
       (pp_c_expr ~for_dafny:for_dafny) e1
 
   | SkBinop (op, e1, e2) ->
-    fprintf fmt "@[<hov 2>(%a %s %a)@]"
-      (pp_c_expr ~for_dafny:for_dafny) e1 (string_of_symb_binop ~fd:true op)
-      (pp_c_expr ~for_dafny:for_dafny) e2
+    if is_op_c_fun op then
+      fprintf fmt "@[<hov 2>%s(%a, %a)@]"
+        (string_of_symb_binop ~fd:true op)
+        (pp_c_expr ~for_dafny:for_dafny) e1
+        (pp_c_expr ~for_dafny:for_dafny) e2
+    else
+      fprintf fmt "@[<hov 2>(%a %s %a)@]"
+        (pp_c_expr ~for_dafny:for_dafny) e1
+        (string_of_symb_binop ~fd:true op)
+        (pp_c_expr ~for_dafny:for_dafny) e2
 
   | SkQuestion (c, e1, e2) ->
     (if for_dafny then
        fprintf fmt "@[<hov 2>if %a then@;%a else@;%a@]"
-    else
-      fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]")
+     else
+       fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]")
       (pp_c_expr ~for_dafny:for_dafny) c (pp_c_expr ~for_dafny:for_dafny) e1
       (pp_c_expr ~for_dafny:for_dafny) e2
 
@@ -603,7 +615,7 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
   | SkHoleL ((t, _), v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
-                        pp_c_var v pp_typ t
+                                 pp_c_var v pp_typ t
   | SkHoleR ((t, _), _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_skexpr e
@@ -613,16 +625,16 @@ and pp_c_var fmt v =
   | SkVarinfo v ->
     let var_name =
       if !printing_for_join then
-          if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
-            match is_right_state_varname v.Cil.vname with
-            | real_varname, true, true ->
-              (rs_prefix^"my_"^real_varname)
-            | real_varname, true, false ->
-              "my_"^real_varname
-            | _ , false, _ ->
-              "my_"^v.Cil.vname
-          else
-            v.Cil.vname
+        if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
+          match is_right_state_varname v.Cil.vname with
+          | real_varname, true, true ->
+            (rs_prefix^"my_"^real_varname)
+          | real_varname, true, false ->
+            "my_"^real_varname
+          | _ , false, _ ->
+            "my_"^v.Cil.vname
+        else
+          v.Cil.vname
       else
         v.Cil.vname
     in

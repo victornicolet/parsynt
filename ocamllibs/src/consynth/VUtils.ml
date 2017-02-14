@@ -19,12 +19,14 @@ type auxiliary =
   }
 
 let add_left_auxiliary vi =
-  SketchJoin.left_auxiliaries:=
-    (VS.add vi !SketchJoin.left_auxiliaries)
+  SketchJoin.add_laux_id vi.Cil.vid;
+  SketchJoin.cur_left_auxiliaries:=
+    (VS.add vi !SketchJoin.cur_left_auxiliaries)
 
 let add_right_auxiliary vi =
-  SketchJoin.right_auxiliaries:=
-    (VS.add vi !SketchJoin.right_auxiliaries)
+  SketchJoin.add_raux_id vi.Cil.vid;
+  SketchJoin.cur_right_auxiliaries:=
+    (VS.add vi !SketchJoin.cur_right_auxiliaries)
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
