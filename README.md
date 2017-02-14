@@ -62,10 +62,14 @@ We only tested the tool on Ubuntu 16.04 (including a fresh installation of Ubunt
 
 ### Compile the Ocaml exectuable
 ```cd ocamllibs```
+
 ```oasis setup -setup-update dynamic```
+
 ```make```
+
 The compilation and execution of the Ocaml executable relies on some project structure that is setup at the end of the ```setup.sh``` script.
 
 ### Install the Racket library
 ```cd parsynth_racket```
+
 ```raco pkg install```

@@ -84,7 +84,8 @@ let string_of_symb_binop ?(fd=false) =
   | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
   | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
   (** Max and min *)
-  | Max -> if fd then "Max" else "max" | Min -> if fd then "Min" else "min"
+  | Max -> if fd then Conf.get_conf_string "dafny_max_fun" else "max"
+  | Min -> if fd then Conf.get_conf_string "dafny_min_fun" else "min"
   (** Comparison *)
   | Eq -> if fd then "==" else "="
   | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
