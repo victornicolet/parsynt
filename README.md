@@ -32,15 +32,16 @@ You will also need to install the project package in order to run the different 
 Most of the functionalities are written in OCaml : input C code parsing, code transformations and sketch generation. You will need some libraries to compile the tool.
 
 ### We use a modified Cil
-We use a custom version of Cil that marks the temporary variables it introduces. You can download it [here](https://github.com/victornicolet/alt-cil) and follow the installation instructions. *Don't use opam to install cil!* You should also remove or set a specific environment for this project if you are already using Cil.
+We use a custom version of [Cil](https://github.com/cil-project/cil) that marks the temporary variables it introduces. You can download it [here](https://github.com/victornicolet/alt-cil) and follow the installation instructions. **Don't use opam to install cil!** You should also remove or set a specific environment for this project if you are already using Cil.
 
+### Other packages
 The installation script uses ocamlfind to look for packages and tries to install them with [opam](https://opam.ocaml.org/). If you don't wish to use opam, please install all the packages manually, and make sure ```ocamlfind``` can find them.
 
 - Project management : oasis.
 
   ``` opam install oasis ```
 
-- Parser & lexers :
+- [Menhir](http://gallium.inria.fr/~fpottier/menhir/) for parsing and lexing :
 
 ``` opam install menhir ```
 
@@ -52,3 +53,19 @@ To set up the Makefiles, in each directory where you can find a ```_oasis``` fil
 ```oasis setup -setup-update dynamic```
 
 And then compile using make in ```ocamllibs```.
+
+
+**If every component is installed, the script ```setup.sh``` should terminate without any error.**
+
+## Compiling
+We only tested the tool on Ubuntu 16.04 (including a fresh installation of Ubuntu on a virtual machine). However, if every component is installed, you should be able to compile the project.
+
+### Compile the Ocaml exectuable
+```cd ocamllibs```
+```oasis setup -setup-update dynamic```
+```make```
+The compilation and execution of the Ocaml executable relies on some project structure that is setup at the end of the ```setup.sh``` script.
+
+### Install the Racket library
+```cd parsynth_racket```
+```raco pkg install```
