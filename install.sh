@@ -1,22 +1,6 @@
 #!/bin/bash
 
 # Pretty-printing helper
-# BLACK_FG="30"
-# BLACK_BG="40"
-# RED_FG="31"
-# RED_BG="41"
-# GREEN_FG="32"
-# GREEN_BG="42"
-# YELLOW_FG="33"
-# YELLOW_BG="43"
-# BLUE_FG="34"
-# BLUE_BG="44"
-# MAGENTA_FG="35"
-# MAGENTA_BG="45"
-# CYAN_FG="36"
-# CYAN_BG="46"
-# WHITE_FG="37"
-# WHITE_BG="47"
 
 msg_fail () {
     echo -e "\033[31m FAILED : $1\033[0m";

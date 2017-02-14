@@ -75,7 +75,7 @@ let string_of_unsafe_binop =
   function
   | TODO -> "TODO"
 
-let string_of_symb_binop =
+let string_of_symb_binop ?(fd=false) =
   function
   | And -> "&&"
   | Nand -> "nand" | Or -> "||" | Nor -> "nor" | Implies -> "implies"
@@ -84,10 +84,11 @@ let string_of_symb_binop =
   | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
   | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
   (** Max and min *)
-  | Max -> "max" | Min -> "min"
+  | Max -> if fd then "Max" else "max" | Min -> if fd then "Min" else "min"
   (** Comparison *)
-  | Eq -> "=" | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
-  | Neq -> "neq"
+  | Eq -> if fd then "==" else "="
+  | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
+  | Neq -> if fd then "!=" else "neq"
   (** Shift*)
   | ShiftL -> "shiftl" | ShiftR -> "shiftr"
   | Expt -> "expt"
@@ -186,22 +187,29 @@ and pp_symb_type_aux ppf t =
        | _ -> ()
      end
 
-let rec pp_constants ppf =
+let rec pp_constants ?(for_dafny=false) ppf =
   function
   | CNil -> fprintf ppf "()"
   | CInt i -> fprintf ppf "%i" i
   | CInt64 i -> fprintf ppf "%i" (Int64.to_int i)
   | CReal f -> fprintf ppf "%10.3f" f
   | CBool b ->
-    if b then fprintf ppf "#t" else fprintf ppf "#f"
+    if for_dafny then
+      (if b then fprintf ppf "true" else fprintf ppf "false")
+    else
+      (if b then fprintf ppf "#t" else fprintf ppf "#f")
+
   | CBox cst -> fprintf ppf "<Cil.constant>"
   | CChar c -> fprintf ppf "%c" c
   | CString s -> fprintf ppf "%s" s
   | CUnop (op, c) ->
-     fprintf ppf "(%s %a)" (string_of_symb_unop op) pp_constants c
+    fprintf ppf "(%s %a)" (string_of_symb_unop op)
+      (pp_constants ~for_dafny:for_dafny) c
   | CBinop (op, c1, c2) ->
      fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
-       pp_constants c1 pp_constants c2
+       (pp_constants ~for_dafny:for_dafny) c1
+       (pp_constants ~for_dafny:for_dafny) c2
+
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
   | Infnty -> fprintf ppf "+inf.0"
@@ -261,7 +269,7 @@ let fp = Format.fprintf in
   match skexpr with
   | SkVar v -> fp ppf "%a" pp_sklvar v
 
-  | SkConst c -> fp ppf "%a" pp_constants c
+  | SkConst c -> fp ppf "%a" (pp_constants ~for_dafny:false) c
 
   | SkFun l -> pp_sklet ppf l
 
@@ -449,7 +457,8 @@ let fp = Format.fprintf in
   match skexpr with
   | SkVar v -> fp ppf "%a" cp_sklvar v
 
-  | SkConst c -> fp ppf "%s%a%s" (color "cyan") pp_constants c default
+  | SkConst c -> fp ppf "%s%a%s" (color "cyan")
+                   (pp_constants ~for_dafny:false) c default
 
   | SkFun l -> cp_sklet ppf l
 
@@ -566,7 +575,7 @@ let cpp_class_members_set = ref VS.empty
 let rec pp_c_expr ?(for_dafny = false) fmt e =
   match e with
   | SkVar v -> pp_c_var fmt v
-  | SkConst c -> pp_skexpr fmt e
+  | SkConst c -> pp_constants ~for_dafny:for_dafny fmt c
 
   | SkUnop (op, e1) ->
     fprintf fmt "@[%s %a]@" (string_of_symb_unop op)
@@ -574,7 +583,7 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
 
   | SkBinop (op, e1, e2) ->
     fprintf fmt "@[<hov 2>(%a %s %a)@]"
-      (pp_c_expr ~for_dafny:for_dafny) e1 (string_of_symb_binop op)
+      (pp_c_expr ~for_dafny:for_dafny) e1 (string_of_symb_binop ~fd:true op)
       (pp_c_expr ~for_dafny:for_dafny) e2
 
   | SkQuestion (c, e1, e2) ->

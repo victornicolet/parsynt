@@ -100,8 +100,17 @@ let pp_dfy fmt (s, e, for_join) =
 
          | SkArray (v, e) ->
            let input_i = check_option (vi_of v) in
-           SkVarinfo {input_i with vname = "s[|s|-1]"}
-
+           (** Check the index, two cases:
+               - it is the current index.
+               - it is the beggining of the chunk. *)
+           begin
+             match e with
+             | SkVar (SkVarinfo i_vi) when is_left_index_vi i_vi ->
+               SkVarinfo {input_i with vname = "s[0]"}
+             | SkVar (SkVarinfo i_vi) ->
+               SkVarinfo {input_i with vname = "s[|s|-1]"}
+             | _ -> failwith "Cannot generate proofs whith complex indexes."
+           end
          | _ -> failwith "Cannot generate proofs for tuples")
       expr
   in
@@ -111,7 +120,8 @@ let pp_dfy fmt (s, e, for_join) =
 let pp_function_body fmt (pfv, s) =
   fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
                else @;%a@;@]"
-    s pp_constants pfv.empty_value pp_dfy (s, pfv.function_expr, false)
+    s (pp_constants ~for_dafny:true) pfv.empty_value
+    pp_dfy (s, pfv.function_expr, false)
 
 let pp_function fmt (pfv, s) =
   fprintf fmt "@[function %s(%s: seq<%a>): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
@@ -119,9 +129,7 @@ let pp_function fmt (pfv, s) =
     pp_function_body (pfv, s)
 
 
-
 (** Print the join corresponding to a variable.*)
-
 
 let pp_join fmt pfv =
   let pp_args fmt thread =

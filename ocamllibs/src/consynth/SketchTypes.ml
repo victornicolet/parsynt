@@ -1146,11 +1146,25 @@ let left_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
   let l, _ = IH.find index_to_boundary vi.Cil.vid in l
 
+let is_left_index_vi i =
+  try
+    (IH.iter
+      (fun vid (vil, _) ->
+         if i = vil then failwith "found" else ()) index_to_boundary;
+    false)
+  with Failure s -> if s = "found" then true else false
 
 let right_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
   let _, r = IH.find index_to_boundary vi.Cil.vid in r
 
+let is_right_index_vi i =
+  try
+    (IH.iter
+      (fun vid (_, vir) ->
+         if i = vir then failwith "found" else ()) index_to_boundary;
+    false)
+  with Failure s -> if s = "found" then true else false
 
 (* ------------------------ 7- TYPING EXPRESSIONS ----------------------------*)
 

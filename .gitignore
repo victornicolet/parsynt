@@ -19,6 +19,8 @@ ocamllibs/_build/_digests
 ocamllibs/_build/_log
 ocamllibs/tbb_examples/*.cpp
 ocamllibs/dafny_examples/*.dfy
+ocamllibs/dafny_examples/*.dll
+ocamllibs/dafny_examples/*.mdb
 ocamllibs/dump
 ocamllibs/src/conf/project_dir.ml
 alt-cil/
