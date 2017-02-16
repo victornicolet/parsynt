@@ -1,0 +1,46 @@
+Example name		# Join synth.	# Tbb compiled	# Proof checks
+sum			yes    		no     		yes
+min			yes		no		no
+max			yes		no		no
+average			no		no		no
+hamming			yes		no		no
+length			yes		no		no
+2nd-min			t-o		no		no
+2nd-max			yes		no		no
+mps			yes		no		no
+mts			yes		no		no
+mss			yes		no		no
+mps-p			no		no		no
+mts-p			no		no		no
+poly			yes		no		no
+atoi			t-o		no		no
+is-sorted		yes		no		no
+dropwhile		yes		no		no
+balanced-parenthesis	yes		no		no
+0star1star		yes		no		no
+count-1s		yes		no		no
+line-sight		yes		no		no
+0after1			yes		no		no
+max-blockno1		t-o		no		no
+
+Problems :
+
+General :
+- mts-p and mps-p 's joins we proposed previously are not correct. I don't know why the solver
+  was able to solve the problem before. But we have to express this problem in a different
+  manner. The problem is, if the mps sets back to 0 the position is changed, but the prefix is actually
+  the current prefix (not very well explained but.. )
+
+Synthesizing the join :
+- average : this "not an application" error appears again. Racket is unable to use the parameter n.
+- dropwhile : generates a (??) expression that cannot be parsed. (Lexer.Error)
+- balanced-parenthesis : generates a (??) expression that cannot be parsed. (Lexer.Error)
+- 0star1star : solution uses the opertor ~ for not. Should add a clause to parse it a not.
+- 0after1 : || does not appear in the parsed solution. & used instead of &&.
+
+Compiling the TBB implementation:
+- need to add the structure for the example.
+
+Compiling the proof:
+- check dependencies to order homomorphisms proofs / functions / joins.
+- "requires" dependency collection does not work yet ...

@@ -1,3 +1,5 @@
+function DfMax(x: int, y: int): int { if x > y then x else y}
+
 function Sum(s: seq<int>): int
 { if s == [] then  0 else  (Sum(s[..|s|-1]) + s[|s|-1]) 
 }
@@ -6,25 +8,24 @@ function Mps(s: seq<int>): int
 { if s == [] then
     0
    else 
-   if ((Sum(s[..|s|-1]) + s[|s|-1]) > Mps(s[..|s|-1])) then
-     (Sum(s[..|s|-1]) + s[|s|-1]) else Mps(s[..|s|-1])
+   DfMax((Sum(s[..|s|-1]) + s[|s|-1]), Mps(s[..|s|-1]))
    
 }
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  (leftSum + rightSum)
+  ((leftSum - 1) + (rightSum - -1))
 }
 
 function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
 {
-  if (((-3940 + leftMps) + 3940) > (rightMps + leftSum)) then
-    ((-3940 + leftMps) + 3940) else (rightMps + leftSum)
+  DfMax(((leftMps - 1) + 1), (rightMps + leftSum))
 }
 
 
 lemma HomSum(s : seq<int>, t : seq<int>)
-  ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
+  
+               ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
   {
     if t == [] 
     {
@@ -39,7 +40,8 @@ lemma HomSum(s : seq<int>, t : seq<int>)
 } // End lemma.
 
 lemma HomMps(s : seq<int>, t : seq<int>)
-  ensures Mps(s + t) == MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t))
+  
+               ensures Mps(s + t) == MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t))
   {
     if t == [] 
     {

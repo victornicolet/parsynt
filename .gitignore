@@ -23,6 +23,7 @@ ocamllibs/dafny_examples/*.dll
 ocamllibs/dafny_examples/*.mdb
 ocamllibs/dump
 ocamllibs/src/conf/project_dir.ml
+
 alt-cil/
 *.mldylib
 *.mlib
@@ -49,3 +50,9 @@ z3-master/
 
 #Temporary dump files
 ocamllibs/dump/conSynth*
+
+#Example selection
+# Examples are selected when setup.sh is run. Don't add examples here,
+# but add them in ocamllibs/test and then if it goes through use the
+# setup.sh script to copy it from this folder to the c_examples
+c_examples/*

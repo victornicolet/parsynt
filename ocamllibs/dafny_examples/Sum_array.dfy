@@ -4,12 +4,13 @@ function Sum(s: seq<int>): int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  (leftSum + rightSum)
+  ((2 + leftSum) + (-2 + rightSum))
 }
 
 
 lemma HomSum(s : seq<int>, t : seq<int>)
-  ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
+  
+               ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
   {
     if t == [] 
     {

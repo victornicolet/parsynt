@@ -277,6 +277,8 @@ else
 fi
 cd ..
 
+#Copy experiments in c_examples
+cp -r ocamllibs/test/experiments c_examples
 #Add links to binaries in base dir
 ln -sf ocamllibs/Parsy.native Parsynth
 ln -sf ocamllibs/templates/
@@ -289,4 +291,4 @@ mkdir ocamllibs/dump/
 
 sep "Testing with simple example Sum."
 
-eval "./Parsynth c_examples/solved/sum.c"
+eval "./Parsynth c_examples/experiments/sum.c"

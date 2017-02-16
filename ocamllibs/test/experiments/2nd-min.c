@@ -1,8 +1,8 @@
 /* Returns the second smallest element of an array */
 
-int second_smallest (int * a, int n) {
-  int m = 0;
-  int m2 = 0;
+int second_min (int * a, int n) {
+  int m = _max_int_;
+  int m2 = _max_int_;
   for(int i = 0; i < n; i++) {
     m2 = min (m2, max (m, a[i]));
     m = min (m, a[i]);
@@ -25,16 +25,16 @@ int second_smallest (int * a, int n) {
    in 5.117s.
 */
 
-int second_max (int * a, int n) {
-  int m = 0;
-  int m2 = 0;
+/* int second_max (int * a, int n) { */
+/*   int m = 0; */
+/*   int m2 = 0; */
 
-  for(int i = 0; i < n; i++) {
-    m2 = max (m2, min (m, a[i]));
-    m = max (m, a[i]);
-  }
-  return m2;
-}
+/*   for(int i = 0; i < n; i++) { */
+/*     m2 = max (m2, min (m, a[i])); */
+/*     m = max (m, a[i]); */
+/*   } */
+/*   return m2; */
+/* } */
 
 /*
    The tool outputs the join :
