@@ -67,7 +67,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t)
     begin
       match sklv with
       | SkVarinfo vi ->
-        let t = symb_type_of_ciltyp vi.Cil.vtype in
+        let t = type_of_ciltyp vi.Cil.vtype in
         if (IH.mem auxiliary_variables vi.Cil.vid) && is_final
         then SkVar sklv, 0
         else

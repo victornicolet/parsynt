@@ -74,7 +74,7 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
       IH.fold
         (fun vid vi map ->
            IM.add vid
-             (match symb_type_of_ciltyp vi.vtype with
+             (match type_of_ciltyp vi.vtype with
               | Integer -> Ast.Int_e 0
               | Boolean -> Ast.Bool_e true
               | Real -> Ast.Int_e 1
@@ -114,8 +114,8 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
         solution_found lp_name parsed sketch solved, unsolved
     with Failure s ->
       begin
-        printf "@.%sFAILED to find a solution for %s%s.@."
-          (color "red") lp_name default;
+        printf "@.%sFAILED to find a solution for %s%s.@.Failure : %s@."
+          (color "red") lp_name default s;
         (solved, unsolved)
       end
   in

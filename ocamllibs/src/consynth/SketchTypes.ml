@@ -459,9 +459,12 @@ let rec vi_of sklv =
   | SkArray (sklv', _) -> vi_of sklv'
   | SkTuple _ -> None
 
+
 let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
 
+
 let is_reserved_name s = not (uninterpeted s)
+
 
 (** Remove interpreted symbols from a set of vars *)
 let remove_reserved_vars vs =
@@ -471,11 +474,13 @@ let remove_reserved_vars vs =
           (if !debug then printf "@.Removing %s." vi.Cil.vname; true)
         else false)) vs
 
+
 (** When an expression is supposed to be a constant *)
 let force_constant expr =
   match expr with
   | SkConst c -> c
   | _ -> failwith "Force_constant failure."
+
 
 let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
@@ -483,13 +488,16 @@ let mkOp ?(t = Unit) vi argl =
   | Some unop ->
     SkUnop (unop, List.hd argl)
   | None ->
-    match symb_binop_of_fname fname with
-    | Some binop ->
-      SkBinop (binop, List.hd argl, List.nth argl 2)
-    | None ->
-      SkApp (t, Some vi, argl)
+    begin
+      match symb_binop_of_fname fname with
+      | Some binop ->
+        SkBinop (binop, List.hd argl, List.nth argl 2)
+      | None ->
+        SkApp (t, Some vi, argl)
+    end
 
-let rec symb_type_of_ciltyp =
+
+let rec type_of_ciltyp =
   function
   | Cil.TInt (ik, _) ->
     begin
@@ -501,24 +509,24 @@ let rec symb_type_of_ciltyp =
   | Cil.TFloat _ -> Real
 
   | Cil.TArray (t, _, _) ->
-    Vector (symb_type_of_ciltyp t, None)
+    Vector (type_of_ciltyp t, None)
 
   | Cil.TFun (t, arglisto, _, _) ->
-    Procedure (symb_type_of_args arglisto, symb_type_of_ciltyp t)
+    Procedure (type_of_args arglisto, type_of_ciltyp t)
   | Cil.TComp (ci, _) -> Unit
   | Cil.TVoid _ -> Unit
   | Cil.TPtr (t, _) ->
-    Vector (symb_type_of_ciltyp t, None)
+    Vector (type_of_ciltyp t, None)
   | Cil.TNamed (ti, _) ->
-    symb_type_of_ciltyp ti.Cil.ttype
+    type_of_ciltyp ti.Cil.ttype
   | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
 
-and symb_type_of_args argslisto =
+and type_of_args argslisto =
   try
     let argslist = check_option argslisto in
     let symb_types_list =
       List.map
-        (fun (s, t, atr) -> symb_type_of_ciltyp t)
+        (fun (s, t, atr) -> type_of_ciltyp t)
         argslist
     in
     match symb_types_list with
@@ -527,7 +535,7 @@ and symb_type_of_args argslisto =
     | _ -> Tuple symb_types_list
   with Failure s -> Unit
 
-let rec symb_type_of_cilconst c =
+let rec type_of_cilconst c =
   match c with
   | Cil.CInt64 _  | Cil.CChr _ -> Integer
   | Cil.CReal _ -> Real
@@ -544,6 +552,19 @@ let rec ciltyp_of_symb_type =
      | Some tc -> Some (Cil.TArray (tc, None, []))
      | None -> None)
   | _ -> None
+
+let type_of_binop_args =
+  function
+  | Rem | Mod | Quot | Expt
+  | Lt | Gt | Ge | Le | Max | Min
+  | Plus | Minus | Times | Div  -> Num
+  | Xor | And | Nand | Nor | Or | Implies -> Boolean
+  | _ -> Unit
+
+let type_of_unop_args =
+  function
+  | Not -> Boolean
+  | _ -> Num
 
 
 (** ---------------------------- 3 - RECURSORS -------------------------------*)
@@ -902,7 +923,10 @@ let get_binop_of_scm (op : Ast.op) =
   | Geq -> Ge
   | And -> And
   | Or -> Or
-  | _ -> failwith "Scheme binary operator not supported"
+  | Min -> Min
+  | Max -> Max
+  | Not -> failwith "Scm to sk : Not is not a binary operator !"
+  | _ -> failwith "Car, cdr, Null and Load are not yet supported"
 
 let get_unop_of_scm  (op : Ast.op)=
   match op with
@@ -952,91 +976,133 @@ let scm_register s =
   in
   {varinfo with Cil.vname = s}
 
+let hole_var_name = "??_hole"
+let hole_var = Cil.makeVarinfo false hole_var_name (Cil.TVoid [])
 
 
+let remove_hole_vars (expr: skExpr) : skExpr =
+  let rec aux_rem_h t e =
+    match e with
+    | SkVar (SkVarinfo v) when v = hole_var ->
+      (match t with
+       | Num -> SkConst (CInt 0)
+       | _ -> SkConst (CBool true))
+
+    | SkBinop (op, e1, e2) ->
+      let tdown = type_of_binop_args op in
+      SkBinop (op, aux_rem_h tdown e1, aux_rem_h tdown e2)
+
+    | SkUnop (op, e0) ->
+      let tdown = type_of_unop_args op in
+      SkUnop (op, aux_rem_h tdown e0)
+
+    | SkQuestion (c, e1, e2) ->
+      SkQuestion (aux_rem_h Boolean c, aux_rem_h t e1, aux_rem_h t e2)
+
+    | SkApp (t, vo, el) ->
+      SkApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
+
+    | _ -> e
+  in
+  aux_rem_h Unit expr
+
+let rec remove_hole_vars_sklet (sklet : sklet) : sklet =
+  match sklet with
+  | SkLetExpr ve_list ->
+    SkLetExpr (List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list)
+  | SkLetIn (ve_list, letin) ->
+    SkLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
+            remove_hole_vars_sklet letin)
 
 let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
-  try
-    match scm with
-    | Int_e i -> None, Some (SkConst (CInt i))
-    | Float_e f -> None, Some (SkConst (CReal f))
-    | Str_e s -> None, Some (SkConst (CString s))
-    | Bool_e b -> None, Some (SkConst (CBool b))
-    | Id_e id ->
-      (let vi = scm_register id in
-       None, Some (SkVar (SkVarinfo vi)))
-    | Nil_e -> None, Some (SkConst (CNil))
+  let rec translate (scm : Ast.expr) : sklet option * skExpr option =
+    try
+      match scm with
+      | Int_e i -> None, Some (SkConst (CInt i))
+      | Float_e f -> None, Some (SkConst (CReal f))
+      | Str_e s -> None, Some (SkConst (CString s))
+      | Bool_e b -> None, Some (SkConst (CBool b))
+      | Id_e id ->
+        (match id with
+         | "??" -> None, Some (SkVar (SkVarinfo hole_var))
+         | _ ->
+           (let vi = scm_register id in
+            None, Some (SkVar (SkVarinfo vi))))
+      | Nil_e -> None, Some (SkConst (CNil))
 
-    | Binop_e (op, e1, e2) ->
-      let _, e1' = scm_to_sk  e1 in
-      let _, e2' = scm_to_sk  e2 in
-      None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
+      | Binop_e (op, e1, e2) ->
+        let _, e1' = translate  e1 in
+        let _, e2' = translate  e2 in
+        None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
 
-    | Unop_e (op, e) ->
-      let _, e' = scm_to_sk  e in
-      None, Some (SkUnop (get_unop_of_scm op, co e'))
+      | Unop_e (op, e) ->
+        let _, e' = translate  e in
+        None, Some (SkUnop (get_unop_of_scm op, co e'))
 
-    | Cons_e (x, y)-> failwith "Cons not supported"
+      | Cons_e (x, y)-> failwith "Cons not supported"
 
-    | Let_e (bindings, e2)
-    | Letrec_e (bindings, e2) ->
-      let bds = List.map
-          (fun (ids, e) ->
-             let _, exp = scm_to_sk e in
-             let vi = scm_register ids in
-             (SkVarinfo vi), co exp)
-          bindings
-      in
-      let sk_let, _ = scm_to_sk  e2 in
-      Some (SkLetIn (bds, co sk_let)), None
+      | Let_e (bindings, e2)
+      | Letrec_e (bindings, e2) ->
+        let bds = List.map
+            (fun (ids, e) ->
+               let _, exp = translate e in
+               let vi = scm_register ids in
+               (SkVarinfo vi), co exp)
+            bindings
+        in
+        let sk_let, _ = translate  e2 in
+        Some (SkLetIn (bds, co sk_let)), None
 
-    | If_e (c, e1, e2) ->
-      let _, cond = scm_to_sk  c in
-      let le1, ex1 = scm_to_sk  e1 in
-      let le2, ex2 = scm_to_sk  e2 in
-      begin
-        if is_some ex1 && is_some ex2 then
-          None, Some (SkQuestion (co cond, co ex1, co ex2))
-        else
-          begin
-            try
-              None, Some (SkCond (co cond, co le1, co le2))
-            with Failure s ->
-              failwith (s^"\nUnexpected form in conditional.")
-          end
-      end
+      | If_e (c, e1, e2) ->
+        let _, cond = translate  c in
+        let le1, ex1 = translate  e1 in
+        let le2, ex2 = translate  e2 in
+        begin
+          if is_some ex1 && is_some ex2 then
+            None, Some (SkQuestion (co cond, co ex1, co ex2))
+          else
+            begin
+              try
+                None, Some (SkCond (co cond, co le1, co le2))
+              with Failure s ->
+                failwith (s^"\nUnexpected form in conditional.")
+            end
+        end
 
-    | Apply_e (e, arglist) ->
-      (match e with
-       | Id_e s ->
-         (match s with
-          | "vector-ref" ->
-            (None, Some (SkVar (to_array_var arglist)))
+      | Apply_e (e, arglist) ->
+        (match e with
+         | Id_e s ->
+           (match s with
+            | "vector-ref" ->
+              (None, Some (SkVar (to_array_var arglist)))
 
-          | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
-            (Some (rosette_state_struct_to_sklet arglist), None)
+            | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
+              (Some (rosette_state_struct_to_sklet arglist), None)
 
-          | "identity" ->
-            scm_to_sk (arglist >> 0)
+            | "identity" ->
+              translate (arglist >> 0)
 
-          | _ ->
-            (None, Some (to_fun_app e arglist)))
-          | _ ->
-            failwith "TODO")
+            | _ ->
+              (None, Some (to_fun_app e arglist)))
+         | _ ->
+           failwith "TODO")
 
 
-    | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
-      failwith "Not supported"
+      | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
+        failwith "Not supported"
 
-  with Not_found ->
-    failwith "Variable name not found in current environment."
+    with Not_found ->
+      failwith "Variable name not found in current environment."
+  in
+  let fo, eo = translate scm in
+  remove_hole_vars_sklet =>> fo, remove_hole_vars =>> eo
 
-(** Structure translation is parameterized by the current information
-    loaded in the join_info. The order had been created using the order in
-    the set of staate variables so we use the same order to re-build the
-    expressions.
-    Additionally we remove identity bindings.
-*)
+  (** Structure translation is parameterized by the current information
+      loaded in the join_info. The order had been created using the order in
+      the set of staate variables so we use the same order to re-build the
+      expressions.
+      Additionally we remove identity bindings.
+  *)
 and rosette_state_struct_to_sklet scm_expr_list =
   let stv_vars_list = VSOps.varlist join_info.initial_state_vars in
   let sk_expr_list = to_expression_list scm_expr_list in
@@ -1283,7 +1349,7 @@ let rec type_of_const c =
   | CString _ -> List (Integer, None)
   | CReal _ -> Real
   | CInt _ | CInt64 _ -> Integer
-  | CBox b -> Box (symb_type_of_cilconst b)
+  | CBox b -> Box (type_of_cilconst b)
   | CUnop (op, c) -> type_of (SkUnop (op, SkConst c))
   | CBinop (op, c, c') -> type_of (SkBinop (op, SkConst c, SkConst c'))
   | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
@@ -1293,7 +1359,7 @@ let rec type_of_const c =
 
 and type_of_var v =
   match v with
-  | SkVarinfo vi -> symb_type_of_ciltyp vi.Cil.vtype
+  | SkVarinfo vi -> type_of_ciltyp vi.Cil.vtype
   | SkArray (v, e) ->
     (** We only consider integer indexes for now *)
     (** Return the type of the array cells *)
@@ -1307,7 +1373,7 @@ and type_of_var v =
     end
   | SkTuple vs ->
     let tl =
-      VS.fold (fun vi tl -> tl@[symb_type_of_ciltyp vi.Cil.vtype]) vs []
+      VS.fold (fun vi tl -> tl@[type_of_ciltyp vi.Cil.vtype]) vs []
     in
     Tuple tl
 
@@ -1341,14 +1407,14 @@ and type_of expr =
 let filter_vs_by_type t =
   VS.filter
     (fun vi ->
-       let st = symb_type_of_ciltyp vi.Cil.vtype in
+       let st = type_of_ciltyp vi.Cil.vtype in
        st = t)
 
 
 let filter_cs_by_type t =
   CS.filter
     (fun jc ->
-       let st = symb_type_of_ciltyp jc.cvi.Cil.vtype in
+       let st = type_of_ciltyp jc.cvi.Cil.vtype in
        st = t)
 
 

@@ -1,26 +1,4 @@
-int drop_while_pos (_Bool *a, int n) {
-  int pos = 0;
-  _Bool first_pos = 1;
-
-  for(int i = 0; i < n; i++) {
-    if (a[i] && first_pos) {
-      pos = i;
-      first_pos = 0;
-    }
-  }
-
-  return pos;
-}
-
-/*
-  Join found :
-
-  pos = first_pos-l ? pos-r : pos-l;
-  first_pos = first_pos-l && first_pos-r
-
-*/
-
-int drop_while_pos_int (int *a, int n) {
+int drop_while_pos (int *a, int n) {
   int pos = 0;
   _Bool first_pos = 1;
 

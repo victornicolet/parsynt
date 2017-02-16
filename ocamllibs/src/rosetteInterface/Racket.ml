@@ -1,6 +1,7 @@
 open Format
 open RUtils
 open Ast
+open Utils
 
 type racket_struct = string * (string list)
 
@@ -94,7 +95,6 @@ let operator_choice_type s =
 
 let unsolved_hole (expr : Ast.expr) =
   match expr with
-
   (* (HoleName args hole-depth) *)
   | Apply_e (Id_e s, arglist) ->
     (match hole_name_type s with
@@ -149,6 +149,98 @@ let rec clean (expr : Ast.expr) =
   | e -> e
 
 
+let rec partial_eval_cond e =
+  let pc_t =
+    { t_expr =
+        (fun rfunc e ->
+           match  e with
+           | Binop_e (op, _e1, _e2) ->
+             let e1 = rfunc _e1 in let e2 = rfunc _e2 in
+             begin
+             match e1, e2 with
+             | e1, e2 when e1 = e2 ->
+               (match op with
+                  (* Boolean operators *)
+                  | Eq -> Some (Bool_e true)
+                  | Neq -> Some (Bool_e false)
+                  | Or  | And -> Some e1
+                  (* Comparisons  *)
+                  | Lt | Gt -> Some (Bool_e false)
+                  | Geq | Leq -> Some (Bool_e true)
+                  | _ -> None)
+
+             | Bool_e true, e' | e', Bool_e true ->
+               (match op with
+                | And -> Some e'
+                | Or -> Some (Bool_e true)
+                | Eq -> Some e'
+                | _ -> None)
+
+             | Bool_e false, e' | e', Bool_e false ->
+               (match op with
+                | And -> Some (Bool_e false)
+                | Or -> Some e'
+                | Eq -> Some e'
+                | _ -> None)
+
+             | _ -> None
+             end
+
+           | Unop_e (op, e0) ->
+             let e0_ev = rfunc e0 in
+             (match e0_ev with
+              | Bool_e t -> Some (Bool_e (not t))
+              | Id_e "??" -> Some e0_ev
+              | _ -> Some e0_ev)
+
+           | _ -> None);
+      t_const = identity;
+      t_id = identity;
+    }
+  in transform pc_t e
+
+and partial_eval e =
+  let pe_t =
+    {
+      t_expr =
+        (fun rfunc e ->
+           match e with
+           | If_e (c, e1, e2) ->
+             (match partial_eval_cond c with
+             | Bool_e true -> Some e1
+             | Bool_e false -> Some e2
+             | _ -> None)
+           | _ -> None);
+      t_const = identity;
+      t_id = identity;
+    }
+  in
+  transform pe_t e
+
+and partial_eval_arith e =
+  let arith_t =
+    {
+      t_expr =
+        (fun rfunc e ->
+           match e with
+           | Binop_e (op, e1, e2) ->
+             (match rfunc e1, rfunc e2 with
+             | Int_e i1, Int_e i2 ->
+               Some (apply_int op i1 i2)
+             | Float_e i1, Float_e i2 ->
+               Some (apply_float op i1 i2)
+             | Bool_e i1, Bool_e i2 ->
+               Some (apply_bool op i1 i2)
+             | _, _ -> None)
+           | Unop_e (op, e0) -> None
+           | _ -> None);
+      t_id = identity;
+      t_const = identity;
+    }
+  in
+  transform arith_t e
+
 (*** MAIN FUNCTION *)
 let parse_scm s =
-  List.map clean (Parser.main Lexer.token (Lexing.from_string s))
+  List.map (clean --> partial_eval_arith --> partial_eval)
+    (Parser.main Lexer.token (Lexing.from_string s))

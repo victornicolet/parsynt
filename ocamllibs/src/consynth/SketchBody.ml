@@ -244,7 +244,7 @@ class sketch_builder
 
         | FunApp (ef, arg_l) ->
           let is_c_def, vi_o, ty = is_exp_function ef in
-          let sty = symb_type_of_ciltyp ty in
+          let sty = type_of_ciltyp ty in
           let fargs =  List.map (convert cur_v) arg_l in
           if is_c_def then
             SkApp (sty, vi_o, fargs)
@@ -279,12 +279,12 @@ class sketch_builder
 
         | FConst c -> SkConst c
 
-        | FSizeof t -> SkSizeof (symb_type_of_ciltyp t)
+        | FSizeof t -> SkSizeof (type_of_ciltyp t)
         | FSizeofE e -> SkSizeofE (convert cur_v e)
         | FSizeofStr s -> SkSizeofStr s
-        | FAlignof t -> SkAlignof (symb_type_of_ciltyp t)
+        | FAlignof t -> SkAlignof (type_of_ciltyp t)
         | FAlignofE e -> SkAlignofE (convert cur_v e)
-        | FCastE (t, e) -> SkCastE (symb_type_of_ciltyp t, convert cur_v e)
+        | FCastE (t, e) -> SkCastE (type_of_ciltyp t, convert cur_v e)
         | FAddrof lval -> SkAddrof (skexpr_of_lval lval)
         | _ -> failwith "not yet implemented"
 
@@ -303,7 +303,7 @@ class sketch_builder
           end
 
         | Cil.SizeOf t->
-          let typ = symb_type_of_ciltyp t in
+          let typ = type_of_ciltyp t in
           SkSizeof typ
 
         | Cil.SizeOfE e ->
@@ -313,7 +313,7 @@ class sketch_builder
           SkSizeofStr s
 
         | Cil.AlignOf t ->
-          SkAlignof (symb_type_of_ciltyp t)
+          SkAlignof (type_of_ciltyp t)
 
         | Cil.AlignOfE e ->
           SkAlignofE (convert_cils ~subs:subs e)
@@ -347,7 +347,7 @@ class sketch_builder
                       convert_cils ~subs:subs e2)
 
         | Cil.CastE (t, e) ->
-          let ty = symb_type_of_ciltyp t in
+          let ty = type_of_ciltyp t in
           SkCastE (ty , convert_cils ~subs:subs ~expect_ty:ty e)
 
         | Cil.StartOf lv ->
@@ -395,7 +395,7 @@ class sketch_builder
           in
           let t =  Cil.typeOfLval (host,offset) in
           vi_to_expr
-            (symb_type_of_ciltyp t)
+            (type_of_ciltyp t)
             (mkVarExpr ~offsets:off_list)
 
 

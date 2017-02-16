@@ -63,7 +63,7 @@ let rec pp_define_symbolic fmt def =
       (fun vi ->
           let vars = gen_cell_vars vi in
           pp_define_symbolic fmt
-            (match array_type (symb_type_of_ciltyp vi.vtype) with
+            (match array_type (type_of_ciltyp vi.vtype) with
              | Integer -> DefInteger vars
              | Real -> DefReal vars
              | Boolean -> DefBoolean vars
@@ -79,7 +79,7 @@ let pp_vs_to_symbs fmt vs =
   VS.iter
     (fun vi ->
        pp_define_symbolic fmt
-         (match symb_type_of_ciltyp vi.vtype with
+         (match type_of_ciltyp vi.vtype with
           | Integer -> DefInteger [vi]
           | Boolean -> DefBoolean [vi]
           | Real -> DefReal [vi]

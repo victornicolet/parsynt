@@ -1,10 +1,10 @@
-Example name		# Join synth.	# Tbb compiled	# Proof checks
-sum			yes    		no     		yes
-min			yes		no		no
-max			yes		no		no
+Example name		# Join synth.	# Tbb		# Proof checks
+sum			yes    		y     		yes
+min			yes		y		no
+max			yes		y		no
 average			no		no		no
-hamming			yes		no		no
-length			yes		no		no
+hamming			yes		y		no
+length			yes		y		no
 2nd-min			t-o		no		no
 2nd-max			yes		no		no
 mps			yes		no		no
@@ -33,8 +33,6 @@ General :
 
 Synthesizing the join :
 - average : this "not an application" error appears again. Racket is unable to use the parameter n.
-- dropwhile : generates a (??) expression that cannot be parsed. (Lexer.Error)
-- balanced-parenthesis : generates a (??) expression that cannot be parsed. (Lexer.Error)
 - 0star1star : solution uses the opertor ~ for not. Should add a clause to parse it a not.
 - 0after1 : || does not appear in the parsed solution. & used instead of &&.
 

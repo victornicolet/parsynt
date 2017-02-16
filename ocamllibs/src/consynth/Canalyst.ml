@@ -134,7 +134,7 @@ let func2sketch funcreps =
           (fun vid cilc m ->
              let expect_type =
                try
-                 (T.symb_type_of_ciltyp
+                 (T.type_of_ciltyp
                     ((VSOps.find_by_id vid var_set).Cil.vtype))
                with Not_found ->
                  T.Bottom

@@ -170,10 +170,6 @@
 
 (define-synthax BoolExprCompar
   ([(BoolExprCompar x ... d) (choose
-                               ((BasicUnopsBool 0)
-                               ((ComparisonOps 0)
-                                (NumExprBasic x ... 1)
-                                (NumExprBasic x ... 1)))
                                ((ComparisonOps 0)
                                 (NumExprBasic x ... 1)
                                 (NumExprBasic x ... 1)))]))

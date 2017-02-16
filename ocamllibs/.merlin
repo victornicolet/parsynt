@@ -3,6 +3,7 @@ B _build/test
 B _build/src/consynth
 B _build/src/codegen
 B _build/src/conf
+B _build/src/utils
 B _build/src/rosetteInterface
 S src
 S test
@@ -10,5 +11,6 @@ S src/rosetteInterface
 S src/consynth
 S src/codegen
 S src/conf
+S src/utils
 S ./
-PKG cil core extlib getopt parser Z3
+PKG cil core extlib getopt

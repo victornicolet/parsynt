@@ -23,6 +23,8 @@ let keywords =
      "delay", DELAY;
      "force", FORCE;
      "not", NOT;
+     "min", MIN;
+     "max", MAX;
     ]
 
 let keyword_tbl = Hashtbl.create 256
@@ -40,31 +42,33 @@ let float = digit* frac? exp?
 let int = '-'? ['0'-'9'] ['0'-'9']*
 
 rule token = parse
-    id as id   { try Hashtbl.find keyword_tbl id with Not_found -> ID id }
-  | "("            { LPAREN }
-  | ")"            { RPAREN }
-  | "+"            { PLUS }
-  | "\""           { STRING (String.concat "" (string lexbuf)) }
-  | "-"            { MINUS }
-  | "*"            { MUL }
-  | "/"            { DIV }
-  | "%"            { MOD }
-  | "&&"            { AND }
-  | "||"            { OR }
-  | "="            { EQ }
-  | "!="           { NEQ }
-  | "<"            { LT }
-  | "<="           { LEQ }
-  | ">"            { GT }
-  | ">="           { GEQ }
-  | "#t"           { TRUE }
-  | "#f"           { FALSE }
-  | int as int     { INT (int_of_string int) }
-  | float as float { FLOAT (float_of_string float)}
-  | ws             { token lexbuf }
-  | ";"            { comment lexbuf }
-  | eof            { EOF }
-  | _              { raise (LexError ("Unexpected char: "^(Lexing.lexeme lexbuf))) }
+    id as id	{ try Hashtbl.find keyword_tbl id with Not_found -> ID id }
+  | "("               { LPAREN }
+  | ")"               { RPAREN }
+  | "+"               { PLUS }
+  | "\""              { STRING (String.concat "" (string lexbuf)) }
+  | "-"               { MINUS }
+  | "*"               { MUL }
+  | "/"               { DIV }
+  | "~"		      { NOT }
+  | "%"               { MOD }
+  | "??"	      { CONST_CHOICE }
+  | "&&"              { AND }
+  | "||"              { OR }
+  | "="               { EQ }
+  | "!="              { NEQ }
+  | "<"               { LT }
+  | "<="              { LEQ }
+  | ">"               { GT }
+  | ">="              { GEQ }
+  | "#t"              { TRUE }
+  | "#f"              { FALSE }
+  | int as int        { INT (int_of_string int) }
+  | float as float    { FLOAT (float_of_string float)}
+  | ws                { token lexbuf }
+  | ";"               { comment lexbuf }
+  | eof               { EOF }
+  | _                 { raise (LexError ("Unexpected char: "^(Lexing.lexeme lexbuf))) }
 
 and string = parse
     "\\\\"           { "\\" :: (string lexbuf) }

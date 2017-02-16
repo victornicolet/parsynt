@@ -25,9 +25,17 @@ Library conf
   BuildTools : ocamlbuild
   Install : false
 
+Library mutils
+  Path: src/utils
+  CompiledObject:best
+  Modules: Utils
+  BuildTools: ocamlbuild
+  Install : false
+  BuildDepends: cil, extlib, conf
+
 Library rosetteInterface
   Path: src/rosetteInterface
-  BuildDepends: conf, extlib
+  BuildDepends: conf, extlib, mutils
   CompiledObject: best
   Modules: Local
   BuildTools : ocamlbuild
@@ -37,13 +45,13 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, extlib, conf
+  BuildDepends: cil, rosetteInterface, extlib, conf, mutils
 
 Library codegen
   Path: src/codegen
   Modules: Codegen
   CompiledObject: best
-  BuildDepends: consynth, cil, rosetteInterface, extlib, conf
+  BuildDepends: consynth, cil, rosetteInterface, extlib, conf, mutils
 
 Executable test_main
   Path: test
@@ -58,14 +66,14 @@ Executable examples
   MainIs: Examples.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, consynth, rosetteInterface, getopt
+  BuildDepends: cil, consynth, rosetteInterface, getopt, mutils
 
 Executable test_scheme_parsing
   Path: test
   MainIs : TestSchemeParsing.ml
   Compiledobject: best
   Install : false
-  BuildDepends: cil, consynth, rosetteInterface
+  BuildDepends: cil, consynth, rosetteInterface, mutils
 
 Executable Parsy
   Path: ./
@@ -73,7 +81,7 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, getopt, codegen
+  BuildDepends: consynth, getopt, codegen, mutils
 
 Document consynth
  Title: Consynth Library Doc
