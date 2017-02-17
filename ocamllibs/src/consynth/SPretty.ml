@@ -218,8 +218,16 @@ let rec pp_constants ?(for_dafny=false) ppf =
 
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
-  | Infnty -> fprintf ppf "+inf.0"
-  | NInfnty -> fprintf ppf "-inf.0"
+  | Infnty ->
+    if for_dafny then
+      fprintf ppf "%s" (Conf.get_conf_string "dafny_max_seq_fun")
+    else
+      fprintf ppf "+inf.0"
+  | NInfnty ->
+    if for_dafny then
+      fprintf ppf "%s" (Conf.get_conf_string "dafny_min_seq_fun")
+    else
+      fprintf ppf "-inf.0"
   | Pi -> fprintf ppf "pi"
   | Sqrt2 -> fprintf ppf "(sqrt 2)"
   | Ln2 -> fprintf ppf "(log 2)"

@@ -570,6 +570,16 @@ let type_of_unop_args =
 (** ---------------------------- 3 - RECURSORS -------------------------------*)
 
 
+type 'a recursor=
+  {
+    join : 'a -> 'a -> 'a;
+    init : 'a;
+    case : skExpr -> bool;
+    on_case : (skExpr -> 'a) -> skExpr -> 'a;
+    on_const : constants -> 'a;
+    on_var : skLVar -> 'a;
+  }
+
 (** Helper for recursion in expressions
     @param join join two return values, the join operation must be associtaive
     to avoid unexpected behaviour.
@@ -630,6 +640,20 @@ let rec_expr
         (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
   in
   recurse_aux expre
+
+let rec_expr2 (r : 'a recursor) =
+  rec_expr r.join r.init r.case r.on_case r.on_const r.on_var
+
+let rec rec_let (r : 'a recursor) sklet =
+  match sklet with
+  | SkLetIn (ve_list, letin) ->
+    let letin_res = rec_let r letin in
+    List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
+      letin_res ve_list
+
+  | SkLetExpr ve_list ->
+    List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
+      r.init ve_list
 
 (** Another recursion helper : a syntax tree tranformer *)
 let transform_expr

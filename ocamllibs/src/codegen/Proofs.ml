@@ -20,7 +20,7 @@ type _ dafny_basic_type =
 let rec string_of_dt : type a. a dafny_basic_type -> string =
   function
   | Sequence t -> (fprintf str_formatter
-                    "seq<%s>" (string_of_dt t);
+                     "seq<%s>" (string_of_dt t);
                    flush_str_formatter ())
   | Int -> "int"
   | Real -> "real"
@@ -56,9 +56,11 @@ type proofVariable =
     name : string;
     in_type : symbolic_type;
     out_type : symbolic_type;
-    empty_value : constants;
+    empty_value : skExpr;
     function_expr : skExpr;
     join_expr : skExpr;
+    mutable base_case : int;
+    mutable inspected : bool;
     mutable requires :
       ((Format.formatter -> (string * string)-> unit) * int) list;
     mutable depends : proofVariable list;
@@ -122,7 +124,7 @@ let pp_dfy fmt (s, e, for_join) =
 let pp_function_body fmt (pfv, s) =
   fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
                else @;%a@;@]"
-    s (pp_constants ~for_dafny:true) pfv.empty_value
+    s (pp_c_expr ~for_dafny:true) pfv.empty_value
     pp_dfy (s, pfv.function_expr, false)
 
 let pp_function fmt (pfv, s) =
@@ -146,7 +148,21 @@ let pp_join fmt pfv =
     pp_dfy ("", pfv.join_expr, true)
 
 (** Print the lemma ensuring we have an homomorphism *)
+(* Require clauses *)
 
+let pp_require_min_length i fmt sl =
+  fprintf fmt "requires %a"
+    (pp_print_list
+       ~pp_sep:(fun fmt () -> fprintf fmt " && ")
+       (fun fmt (seq_name, i) -> fprintf fmt "|%s| >= %i" seq_name i)) sl
+
+let pp_requires fmt (s,t, reqs) =
+  if reqs = [] then ()
+  else
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
+      (fun fmt (p, _) -> p fmt (s, t)) fmt reqs
+
+(* Assertions *)
 let pp_assertion_emptylist fmt (s, t) =
   (* assert(s + [] == s); *)
   fprintf fmt "@[assert(%s + [] == %s);@]" s s
@@ -156,9 +172,6 @@ let pp_assertion_concat fmt (s,t) =
   (* {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;} *)
   fprintf fmt "@[assert(%s + %s[..|%s|-1]) + [%s[|%s|-1]] == %s + %s;@]"
     s t t t t s t
-
-let pp_require_min_length i fmt (s, t) =
-  fprintf fmt "requires |%s| >= %i && |%s| >= %i" s i t i
 
 let pp_func_of_concat fmt (pfv, s, t) =
   fprintf fmt "%s(%s + %s)" pfv.name s t
@@ -183,12 +196,6 @@ let pp_depend_lemmas fmt (pfv, s, t) =
         hom_prefix dep_pfv.name s t t)
     fmt
     (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
-
-let pp_requires fmt (s,t, reqs) =
-  if reqs = [] then ()
-  else
-    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
-      (fun fmt (p, _) -> p fmt (s, t)) fmt reqs
 
 let pp_hom fmt pfv s t =
   fprintf fmt "@\n\
@@ -241,13 +248,25 @@ let find_exprs vi solved_sketch =
 
 (**
    Rebuild max/min for a nicer syntax, but then we need to
-    introduce the fitting definitions
+    introduce the fitting definitions.
+   Also replace the uses of min_int and max_int with the
+   functions defined on sequences.
 *)
 let use_min = ref false
 let use_max = ref false
+let use_min_int = ref false
+let use_max_int = ref false
+let maxdef_avail = ref false
+let mindef_avail = ref false
+
 let clear_uses () =
-  use_min := false;
-  use_max := false
+  _boff use_min;
+  _boff use_max;
+  _boff use_min_int;
+  _boff use_max_int;
+  _boff maxdef_avail;
+  _boff mindef_avail
+
 
 let rebuild_min_max =
   let filter =
@@ -271,14 +290,63 @@ let rebuild_min_max =
   transform_expr filter transform identity identity
 
 
+(* Returns true if any of the max_int or min_int constants
+   are used. *)
+let rec uses_const lim  =
+  rec_expr2
+    {
+      join = (fun u1 u2 -> u1 || u2);
+      init = false;
+      case = (fun e -> false);
+      on_case = identity;
+      on_const =
+        (fun c ->
+           match c with
+           | c when c = lim -> true
+           | _ -> false);
+      on_var = (fun v -> false);
+    }
+
+let set_int_limit_uses e =
+  if uses_const Infnty e then _bon use_max_int;
+  if uses_const NInfnty e then  _bon use_min_int
+
+
+(** Pretty print definitions. The name of the functions are set using
+    the Conf module. *)
 let pp_min_def fmt =
+  _bon mindef_avail;
   fprintf fmt "function %s(x: int, y: int): int { if x > y then y else x}@.@."
     (Conf.get_conf_string "dafny_min_fun")
 
 
 let pp_max_def fmt =
+  _bon maxdef_avail;
   fprintf fmt "function %s(x: int, y: int): int { if x > y then x else y}@.@."
     (Conf.get_conf_string "dafny_max_fun")
+
+let pp_max_int_def fmt =
+  maxdef_avail -? pp_max_def fmt;
+  fprintf fmt "@[<v 2>function %s(s : seq<int>) : int @\n\
+               requires |s| >= 1@]@."
+    (Conf.get_conf_string "dafny_max_seq_fun");
+  fprintf fmt "@[<v 2>{@\n\
+               if |s| == 1 then s[0]@;else@;%s(%s(s[..|s|-1]), s[|s|-1])@]\
+               }"
+    (Conf.get_conf_string "dafny_max_fun")
+    (Conf.get_conf_string "dafny_max_seq_fun")
+
+let pp_min_int_def fmt =
+  mindef_avail -? pp_min_def fmt;
+  fprintf fmt "@[<v 2>function %s(s : seq<int>) : int @\n\
+               requires |s| >= 1@]@."
+    (Conf.get_conf_string "dafny_min_seq_fun");
+  fprintf fmt "@[<v 2>{@\n\
+               if |s| == 1 then s[0]@;else@;%s(%s(s[..|s|-1]), s[|s|-1])@]\
+               }"
+    (Conf.get_conf_string "dafny_min_fun")
+    (Conf.get_conf_string "dafny_min_seq_fun")
+
 (**
    Generate the proof variables : one proof variable per state variables, and
     for each proof variable we will print a function, a join and the proof that
@@ -289,8 +357,8 @@ let gen_proof_vars sketch =
   let array_of_sketch =
     let arrays =
       VS.filter
-      (fun vi -> CilTools.is_like_array vi)
-      sketch.scontext.all_vars
+        (fun vi -> CilTools.is_like_array vi)
+        sketch.scontext.all_vars
     in
     if VS.cardinal arrays > 1 then
       failwith "Cannot generate proofs for multiple arrays."
@@ -308,20 +376,31 @@ let gen_proof_vars sketch =
   VS.iter
     (fun vi ->
        let function_expr, join_expr = find_exprs vi sketch in
+       let join_expr = rebuild_min_max join_expr in
+       set_int_limit_uses function_expr;
+       set_int_limit_uses join_expr;
+       set_int_limit_uses (get_init_value sketch vi);
        let pfv_name = String.capitalize vi.vname in
+       let pfv_base_case =
+         if uses_const NInfnty function_expr ||
+            uses_const Infnty function_expr
+         then 1 else 0
+       in
        incr pfv_id;
        IH.add vi_to_proofVars vi.vid
          {
-         name = pfv_name;
-         in_type = array_type (type_of_var (SkVarinfo array_of_sketch));
-         out_type = type_of function_expr;
-         empty_value = force_constant (get_init_value sketch vi);
-         function_expr = rebuild_min_max function_expr;
-         requires = special_req vi;
-         join_expr = rebuild_min_max join_expr;
-         join_depends = [];
-         depends = [];
-       }
+           inspected = false;
+           name = pfv_name;
+           in_type = array_type (type_of_var (SkVarinfo array_of_sketch));
+           out_type = type_of function_expr;
+           base_case = pfv_base_case;
+           empty_value = get_init_value sketch vi;
+           function_expr = rebuild_min_max function_expr;
+           requires = special_req vi;
+           join_expr = join_expr;
+           join_depends = [];
+           depends = [];
+         }
     )
     sketch.scontext.state_vars;
   (* Now the hash table contains the proof variables, we can compute
@@ -346,12 +425,13 @@ let gen_proof_vars sketch =
               (used_in_skexpr pfv.join_expr))
            []
        in
-       let update_requires old_req depend_set =
-         List.fold_left
-           (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
-           old_req depend_set
+       let update_requires depend_set =
+         (* Add requires clauses due to dependencies. *)
+           List.fold_left
+             (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
+             pfv.requires depend_set
        in
-       pfv.requires <- update_requires pfv.requires depend_set;
+       pfv.requires <- update_requires depend_set;
        pfv.depends <- depend_set;
        pfv.join_depends <- join_depend_set;) vi_to_proofVars
 
@@ -360,6 +440,8 @@ let pp_all_and_clear fmt =
   let s = "s" in let t = "t" in
   if !use_max then pp_max_def fmt;
   if !use_min then pp_min_def fmt;
+  if !use_max_int then pp_max_int_def fmt;
+  if !use_min_int then pp_min_int_def fmt;
   IH.iter (fun vid pfv -> pp_function fmt (pfv,s)) vi_to_proofVars;
   IH.iter (fun vid pfv -> pp_join fmt pfv) vi_to_proofVars;
   IH.iter (fun vid pfv -> pp_hom fmt pfv s t) vi_to_proofVars;

@@ -96,6 +96,15 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
 let fst (a,b)  = a
 let snd (a,b) = b
 
+(* Mutable conditionals for actions. *)
+let _brev b = b := not !b
+let _boff b = b := false
+let _bon b = b := true
+(* If flag true then do nothing, else do and set flag to true. *)
+let (-?) b f = if !b then () else (_bon b; f)
+(* If flag true then do and set flag to false, else do nothing *)
+let (+?) b f = if !b then (_boff b; f) else ()
+
 
 let bool_of_int64 i = i = 1L
 
