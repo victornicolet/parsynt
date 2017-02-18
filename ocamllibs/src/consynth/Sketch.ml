@@ -24,6 +24,12 @@ let auxiliary_vars : Cil.varinfo IH.t = IH.create 10
 
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 
+
+(* Current bitwidth setting *)
+let pp_current_bitwidth fmt func_expr =
+  F.fprintf fmt "@.(current-bitwidth %s)@.@."
+    (if analyze_optype_l func_expr = NonLinear then "5" else "#f")
+
 (******************************************************************************)
 
 (**
@@ -439,6 +445,7 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   let st0 = init_state_name in
   (** SPretty configuration for the current sketch *)
   SPretty.state_struct_name := main_struct_name;
+  pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt read_vars;
   pp_force_newline fmt ();
   pp_state_definition fmt main_struct;

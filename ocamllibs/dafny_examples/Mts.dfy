@@ -1,7 +1,9 @@
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
+function DfMin(x: int, y: int): int { if x > y then y else x}
+
 function Aux_1(s: seq<int>): int
-{ if s == [] then  1 else  (s[|s|-1] + Aux_1(s[..|s|-1])) 
+{ if s == [] then  0 else  (s[|s|-1] + Aux_1(s[..|s|-1])) 
 }
 
 function Mts___0(s: seq<int>): int
@@ -10,12 +12,12 @@ function Mts___0(s: seq<int>): int
 
 function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 {
-  ((8124 + rightAux_1) + (-8125 + leftAux_1))
+  (rightAux_1 + leftAux_1)
 }
 
 function Mts___0Join(leftAux_1 : int, leftMts___0 : int, rightAux_1 : int, rightMts___0 : int): int
 {
-  DfMax(rightMts___0, (leftMts___0 + (rightAux_1 - 1)))
+  DfMax(rightMts___0, (leftMts___0 + DfMin(rightAux_1, rightAux_1)))
 }
 
 

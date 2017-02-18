@@ -13,7 +13,7 @@ mss			yes		no		no
 mps-p			no		no		no
 mts-p			no		no		no
 poly			yes		no		no
-atoi			t-o		no		no
+atoi			yes		no		no
 is-sorted		yes		no		no
 dropwhile		yes		no		no
 balanced-parenthesis	yes		no		no

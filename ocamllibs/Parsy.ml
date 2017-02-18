@@ -33,7 +33,15 @@ let options = [
 let solution_found lp_name parsed (sketch : sketch_rep) solved =
   printf "@.%sSOLUTION for %s %s:@.%a"
     (color "green") lp_name default Ast.pp_expr_list parsed;
-  let sol_info = Codegen.get_solved_sketch_info parsed in
+  let sol_info =
+    try
+      Codegen.get_solved_sketch_info parsed
+    with _ ->
+      (printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
+               of the solved sketch of %s.@."
+         (color "red") default sketch.loop_name;
+       failwith "Couldn't retrieve solution from parsed ast.")
+  in
   (** Simplify the solution using Z3 *)
   (* let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
   let translated_join_body =
@@ -111,7 +119,17 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
         end
       else
         (* A solution has been found *)
-        solution_found lp_name parsed sketch solved, unsolved
+        begin
+          try
+            solution_found lp_name parsed sketch solved, unsolved
+          with Failure s ->
+            printf "@.@[%sFAILED%s : solution found, but couldn't interpret it@\n\
+                    for %s%s%s.@\n\
+                    %sFailure%s : %s@.@]"
+              (color "red") default (color "red") lp_name default (color "red")
+              default s;
+            (solved, unsolved)
+        end
     with Failure s ->
       begin
         printf "@.%sFAILED to find a solution for %s%s.@.Failure : %s@."

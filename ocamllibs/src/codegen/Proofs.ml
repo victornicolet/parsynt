@@ -62,7 +62,7 @@ type proofVariable =
     mutable base_case : int;
     mutable inspected : bool;
     mutable requires :
-      ((Format.formatter -> (string * string)-> unit) * int) list;
+      ((Format.formatter -> unit) * int) list;
     mutable depends : proofVariable list;
     mutable join_depends : proofVariable list;
   }
@@ -150,7 +150,7 @@ let pp_join fmt pfv =
 (** Print the lemma ensuring we have an homomorphism *)
 (* Require clauses *)
 
-let pp_require_min_length i fmt sl =
+let pp_require_min_length fmt sl =
   fprintf fmt "requires %a"
     (pp_print_list
        ~pp_sep:(fun fmt () -> fprintf fmt " && ")
@@ -160,7 +160,7 @@ let pp_requires fmt (s,t, reqs) =
   if reqs = [] then ()
   else
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
-      (fun fmt (p, _) -> p fmt (s, t)) fmt reqs
+      (fun fmt (p, _) -> p fmt) fmt reqs
 
 (* Assertions *)
 let pp_assertion_emptylist fmt (s, t) =
@@ -367,7 +367,8 @@ let gen_proof_vars sketch =
   in
   let special_req vi =
     if SketchJoin.is_left_aux vi.vid || SketchJoin.is_right_aux vi.vid then
-      [pp_require_min_length 1, vi.vid]
+      [(fun fmt ->  pp_require_min_length fmt [("s",1); ("t", 1)]),
+       vi.vid]
     else []
   in
   let pfv_id = ref 0 in

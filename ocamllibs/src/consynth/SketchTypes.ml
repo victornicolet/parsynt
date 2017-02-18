@@ -797,26 +797,32 @@ let rec sk_uses vs expr =
     try VS.mem (check_option (vi_of v)) vs with Not_found -> false
   in rec_expr join false case case_handler const_handler var_handler expr
 
-let analyze_optype (e : skExpr) : operator_type =
-  let join = join_optypes in
-  rec_expr
-    join
-    NotNum                      (* Initialization *)
-    (fun e ->
-       match e with
-       | SkUnop (op, e) -> true
-       | SkBinop (op, e1, e2) -> true
-       | _ -> false)            (* Filter *)
-    (fun f e ->
+(** Opperator complexity of a function or an expression *)
+let optype_rec =
+  { join = join_optypes;
+    init = NotNum;
+    case =
+      (fun e ->
+        match e with
+        | SkUnop (op, e) -> true
+        | SkBinop (op, e1, e2) -> true
+        | _ -> false);
+    on_case =
+          (fun f e ->
        match e with
        | SkUnop (op, e) ->
-         join (optype_of_unop op) (f e)
+         join_optypes (optype_of_unop op) (f e)
        | SkBinop (op, e1, e2) ->
-         join (join (optype_of_binop op) (f e1)) (f e2)
-       | _ -> NotNum)
-    (fun _ -> NotNum)
-    (fun _ -> NotNum)
-    e
+         join_optypes (join_optypes (optype_of_binop op) (f e1)) (f e2)
+       | _ -> NotNum);
+    on_const = (fun _ -> NotNum);
+    on_var = (fun _ -> NotNum);}
+
+
+let analyze_optype (e : skExpr) : operator_type = rec_expr2 optype_rec e
+
+let analyze_optype_l (l : sklet) : operator_type = rec_let optype_rec l
+
 
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
@@ -1109,6 +1115,8 @@ let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
             | _ ->
               (None, Some (to_fun_app e arglist)))
          | _ ->
+           Ast.pp_expr std_formatter e;
+           flush_all ();
            failwith "TODO")
 
 
