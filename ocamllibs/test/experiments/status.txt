@@ -23,7 +23,8 @@ line-sight		yes		no		no
 0after1			yes		no		no
 max-blockno1		t-o		no		no
 
-Problems :
+
+16:09-18/02/2017 : ALL correct example pass join generation.
 
 General :
 - mts-p and mps-p 's joins we proposed previously are not correct. I don't know why the solver
