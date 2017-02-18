@@ -23,13 +23,17 @@ function SumJoin(leftSum : int, rightSum : int): int
 }
 
 
+lemma BaseCaseMps(s : seq<int>)
+  ensures Mps(s) == MpsJoin(Mps(s), Sum(s), Mps([]), Sum([]))
+  {}
+
 lemma HomMps(s : seq<int>, t : seq<int>)
-  
-               ensures Mps(s + t) == MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t))
+  ensures Mps(s + t) == MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t))
   {
     if t == [] 
     {
     assert(s + [] == s);
+    BaseCaseMps(s);
     } else {
     calc{
     Mps(s + t);
@@ -42,13 +46,17 @@ lemma HomMps(s : seq<int>, t : seq<int>)
   } // End else.
 } // End lemma.
 
+lemma BaseCaseSum(s : seq<int>)
+  ensures Sum(s) == SumJoin(Sum(s), Sum([]))
+  {}
+
 lemma HomSum(s : seq<int>, t : seq<int>)
-  
-               ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
+  ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
   {
     if t == [] 
     {
     assert(s + [] == s);
+    BaseCaseSum(s);
     } else {
     calc{
     Sum(s + t);

@@ -808,6 +808,23 @@ let rec replace_expression ?(in_subscripts = false)
   in
   transform_expr case case_handler const_handler var_handler exp
 
+
+let rec apply_substutions subs e =
+  let case e =
+    match e with
+    | SkVar (SkVarinfo vi) -> true
+    | _ -> false
+  in
+  let case_handler rfunc e =
+    match e with
+    | SkVar (SkVarinfo vi) ->
+      (try IM.find vi.Cil.vid subs with Not_found -> e)
+    | _ -> rfunc e
+  in
+  let const_handler c = c in
+  let var_handler v = v in
+  transform_expr case case_handler const_handler var_handler e
+
 let rec replace_expression_in_subscripts
     ~to_replace:tr ~by:b ~ine:exp=
   let case e = false in
@@ -1221,7 +1238,43 @@ and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
 
 
 
-let translate_join i_all_vs i_st_vs = ();;
+let force_flat vs sklet =
+  let rec force_aux sklet subs =
+    match sklet with
+    | SkLetIn (ve_list, letin) ->
+      force_aux letin
+        (List.fold_left
+           (fun new_subs (v,e) ->
+              try
+                let vi = co (vi_of v)  in
+                IM.add vi.Cil.vid (apply_substutions subs e) new_subs
+              with Failure s -> new_subs)
+           subs ve_list)
+
+    | SkLetExpr ve_list ->
+      let final_subs =
+        (List.fold_left
+           (fun new_subs (v,e) ->
+              try
+                let vi = co (vi_of v)  in
+                IM.add vi.Cil.vid (apply_substutions subs e) new_subs
+              with Failure s -> new_subs)
+           subs ve_list)
+      in
+      SkLetExpr
+        (IM.fold
+           (fun vid e ve_list ->
+              ve_list@[(SkVarinfo (VSOps.find_by_id vid vs), e)])
+        final_subs [])
+  in
+  let start_sub =
+    VS.fold
+      (fun vi subs -> IM.add vi.Cil.vid (SkVar (SkVarinfo vi)) subs)
+      vs
+      IM.empty
+  in
+  force_aux sklet start_sub
+
 
 
 (** ------------------------ 5 -  EXPRESSION SET ----------------------------*)

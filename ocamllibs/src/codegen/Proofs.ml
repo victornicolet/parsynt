@@ -180,6 +180,8 @@ let pp_assertion_concat fmt (s,t) =
 let pp_func_of_concat fmt (pfv, s, t) =
   fprintf fmt "%s(%s + %s)" pfv.name s t
 
+let pp_func_of_single_list fmt (pfv, s) =
+  fprintf fmt "%s(%s)" pfv.name s
 
 let pp_joined_res fmt (pfv, s, t) =
   let print_args fmt seqname =
@@ -193,6 +195,26 @@ let pp_joined_res fmt (pfv, s, t) =
     (pfv.name^join_suffix)
     print_args s print_args t
 
+let pp_joined_empty fmt (pfv, s) =
+  let print_args fmt seqname =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+      (fun fmt pfv -> fprintf fmt "%s(%s)" pfv.name seqname)
+      fmt
+      pfv.join_depends
+  in
+  let print_inits fmt s =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+      (fun fmt pfv -> fprintf fmt "%s(%s)" pfv.name "[]")
+      fmt
+      pfv.join_depends
+  in
+  fprintf fmt "%s(%a, %a)"
+    (pfv.name^join_suffix)
+    print_args s print_inits s
+
+
 let pp_depend_lemmas fmt (pfv, s, t) =
   pp_print_list
     ~pp_sep:(fun fmt () -> fprintf fmt "")
@@ -202,24 +224,37 @@ let pp_depend_lemmas fmt (pfv, s, t) =
     (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
 
 let pp_hom fmt pfv s t =
-  fprintf fmt "@\n\
-               @[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
-               @[%a@]
-               @[ensures %a == %a@]@\n\
-               @[<v 2>{@\n\
-               if %s == [] @;{@;%a@\n\
-               } else {@;\
-               calc{@\n%a;@\n\
-               @[<hv 2>=={@;%a%a@;}@]@\n%a;\
-               @\n} // End calc.\
-               @]@\n} // End else.\
-               @]@\n} // End lemma.\
-               @\n"
+  (** Print the base case lemma *)
+  fprintf fmt
+    "@\n\
+     @[<v 2>lemma BaseCase%s(%s : seq<%a>)@\n\
+     ensures %a == %a@\n\
+     {}@."
+    pfv.name s pp_converted_stype pfv.in_type
+    pp_func_of_single_list (pfv, s)
+    pp_joined_empty (pfv, s);
+  (* Print the main lemma *)
+    fprintf fmt
+    "@\n\
+     @[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
+     @[%a@]\
+     @[ensures %a == %a@]@\n\
+     @[<v 2>{@\n\
+     if %s == [] @;{@;%a@\n\
+     BaseCase%s(%s);@\n\
+     } else {@;\
+     calc{@\n%a;@\n\
+     @[<hv 2>=={@;%a%a@;}@]@\n%a;\
+     @\n} // End calc.\
+     @]@\n} // End else.\
+     @]@\n} // End lemma.\
+     @\n"
     hom_prefix pfv.name s pp_converted_stype pfv.in_type t
     pp_converted_stype pfv.in_type
     pp_requires (s, t, pfv.requires)
     pp_func_of_concat (pfv, s, t) pp_joined_res (pfv, s, t)
     t pp_assertion_emptylist (s,t)
+    pfv.name s
     pp_func_of_concat (pfv, s, t)
     (* Use hommorphisms lemmas + default assertion *)
     pp_depend_lemmas (pfv, s, t) pp_assertion_concat (s,t)
@@ -247,8 +282,14 @@ let find_exprs vi solved_sketch =
     | SkLetExpr ve_list ->
       ret_binding vi ve_list
   in
-  check_option (find_binding vi (sk_for_c solved_sketch.loop_body)),
-  check_option (find_binding vi (sk_for_c solved_sketch.join_solution))
+  (try
+    check_option (find_binding vi
+                    (force_flat solved_sketch.scontext.state_vars
+                       (sk_for_c solved_sketch.loop_body)))
+  with Failure s -> failwith "Failed to find expressions."),
+    check_option (find_binding vi (sk_for_c solved_sketch.join_solution))
+
+
 
 (**
    Rebuild max/min for a nicer syntax, but then we need to
