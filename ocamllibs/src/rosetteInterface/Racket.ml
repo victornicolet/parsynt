@@ -35,8 +35,8 @@ let pp_comment fmt str =
   Format.fprintf fmt ";;%s@." str
 
 let pp_body_app fmt (body_name, s, from, to_n) =
-  Format.fprintf fmt "@[<hov 2>(%s %s %i %i)@]"
-    body_name s from to_n
+  Format.fprintf fmt "@[<hov 2>(%s (%s %i %i) %i %i)@]"
+    body_name s from to_n from to_n
 
 
 (** 4 - Grammar macros parameters *)

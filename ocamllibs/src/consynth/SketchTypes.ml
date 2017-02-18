@@ -808,6 +808,26 @@ let rec replace_expression ?(in_subscripts = false)
   in
   transform_expr case case_handler const_handler var_handler exp
 
+let rec replace_expression_in_subscripts
+    ~to_replace:tr ~by:b ~ine:exp=
+  let case e = false in
+  let case_handler rfunc e = e in
+  let const_handler c = c in
+  let var_handler v =
+      match v with
+      | SkArray (v, e) ->
+        SkArray (v, replace_expression ~in_subscripts:true ~to_replace:tr ~by:b ~ine:e)
+      | _ -> v
+  in
+  transform_expr case case_handler const_handler var_handler exp
+
+let replace_all_subs ~tr:el ~by:oe ~ine:e =
+  List.fold_left2
+    (fun ne tr b ->
+       replace_expression_in_subscripts
+         ~to_replace:tr ~by:b ~ine:ne)
+    e el oe
+
 let rec sk_uses vs expr =
   let join a b = a || b in
   let case e = false in

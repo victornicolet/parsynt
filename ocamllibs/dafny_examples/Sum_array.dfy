@@ -4,7 +4,7 @@ function Sum(s: seq<int>): int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  ((2 + leftSum) + (-2 + rightSum))
+  ((leftSum - -1) + (rightSum - 1))
 }
 
 

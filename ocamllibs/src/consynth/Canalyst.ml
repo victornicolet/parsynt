@@ -180,9 +180,7 @@ let func2sketch funcreps =
              | _ -> failwith "Unsupported intialization.")
           reach_consts IM.empty
       in
-      let max_m_sizes =
-        IM.fold (fun k i m -> max i m) m_sizes 0
-      in
+      let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
       printf "@.Max dependency length : %i@." max_m_sizes;
       {
         id = !no_sketches;

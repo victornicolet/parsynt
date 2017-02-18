@@ -340,15 +340,21 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
   (** Pretty print the initial states, with reaching constants and holes
       for the auxiliaries discovered *)
   Format.fprintf fmt
-    "@[(define %s (%s %a))@]@."
+    "@[(define (%s %s %s) (%s %a))@]@."
     st0
+    "_begin_" "end"
     main_struct_name
     (fun fmt li ->
        (ppli fmt ~sep:" "
           (fun fmt (vid, vi) ->
              (if IM.mem vid reach_consts
               then
-                pp_skexpr fmt (IM.find vid reach_consts)
+                pp_skexpr fmt
+                  (replace_all_subs
+                     ~tr:[SkConst (CInt 0); SkConst (CInt64 0L)]
+                     ~by:[SkVar (SkVarinfo {vi with vname = "_begin_"});
+                          SkVar (SkVarinfo {vi with vname = "_begin_"})]
+                     ~ine:(IM.find vid reach_consts))
               else
                 (if IH.mem auxiliary_vars vid
                  then
@@ -374,14 +380,17 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     @param i_m The splitting index for this instance.
     @param i_end The end index for this instance.
 *)
-let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
-  Format.fprintf fmt
-    "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
-    main_struct_name
-    pp_body_app (body_name, s0, i_st, i_end)
-    join_name
-    pp_body_app (body_name, s0, i_st, i_m)
-    pp_body_app (body_name, init_state_name, i_m, i_end)
+let pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len =
+  if i_m - i_st > min_dep_len && i_end - i_m > min_dep_len then
+    Format.fprintf fmt
+      "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
+      main_struct_name
+      pp_body_app (body_name, s0, i_st, i_end)
+      join_name
+      pp_body_app (body_name, s0, i_st, i_m)
+      pp_body_app (body_name, init_state_name, i_m, i_end)
+  else
+    ()
 
 (** Pretty print the whole body of the synthesis problem. (The set of
     verification conditions is hardcoded here now, we have to change that).
@@ -390,7 +399,7 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) =
     @param symbolic_variable_names The list of symbolic variable names that will
     have a universal quantifier over.
 *)
-let pp_synth_body fmt (s0, state_vars, defined_input_vars) =
+let pp_synth_body fmt (s0, state_vars, defined_input_vars, min_dep_len) =
   Format.fprintf fmt
     "@[<hov 2>#:forall @[<hov 2>(list %a)@]@]@\n"
     pp_defined_input defined_input_vars;
@@ -398,17 +407,17 @@ let pp_synth_body fmt (s0, state_vars, defined_input_vars) =
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-          pp_verification_condition fmt (s0, i_st, i_m, i_end)))
+          pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len))
     Conf.verification_parameters
 
 
 (** Pretty-print a synthesis problem wrapped in a defintion for further
     access to the solved problem
 *)
-let pp_synth fmt s0 state_vars read_vars =
+let pp_synth fmt s0 state_vars read_vars min_dep_len =
   Format.fprintf fmt
     "@[<hov 2>(define odot (synthesize@;%a))@.@."
-    pp_synth_body (s0, state_vars, read_vars)
+    pp_synth_body (s0, state_vars, read_vars, min_dep_len)
 
 (** Main interface to print the sketch of the whole problem.
     @param fmt A Format.formatter
@@ -430,6 +439,7 @@ let pp_synth fmt s0 state_vars read_vars =
 *)
 let pp_rosette_sketch fmt (sketch : sketch_rep) =
   clear_special_consts ();
+  let min_dep_len = IM.fold (fun k i m -> max i m) sketch.min_input_size 0 in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
   (** Read variables : force read /\ state = empty *)
@@ -458,4 +468,4 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_force_newline fmt ();
-  pp_synth fmt st0 state_vars read_vars;
+  pp_synth fmt st0 state_vars read_vars min_dep_len
