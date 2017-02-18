@@ -2,6 +2,7 @@
 open Ast
 
 %}
+%token QUOTE
 %token CONST_CHOICE
 %token DEFINE
 %token DEFINEREC
@@ -76,6 +77,7 @@ expr   : INT       { Int_e $1 }
        | STRING    { Str_e $1 }
        | TRUE      { Bool_e true }
        | FALSE     { Bool_e false }
+       | QUOTE expr { $2 }
        | LPAREN CONST_CHOICE RPAREN		{ Id_e "??" }
        | LPAREN DELAY expr RPAREN           	{ Delayed_e $3 }
        | LPAREN FORCE expr RPAREN           	{ Forced_e $3 }

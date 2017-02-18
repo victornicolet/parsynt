@@ -5,7 +5,7 @@
       (define form_list  (generate-forms odot))
       (map
        (lambda (forms)
-         (displayln (syntax->datum forms) output-file))
+         (println (syntax->datum forms) output-file))
        form_list))
     (print "unsat" output-file))
 (close-output-port output-file)

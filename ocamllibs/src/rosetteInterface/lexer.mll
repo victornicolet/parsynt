@@ -43,6 +43,7 @@ let int = '-'? ['0'-'9'] ['0'-'9']*
 
 rule token = parse
     id as id	{ try Hashtbl.find keyword_tbl id with Not_found -> ID id }
+  | "'"	  	      { QUOTE }
   | "("               { LPAREN }
   | ")"               { RPAREN }
   | "+"               { PLUS }
