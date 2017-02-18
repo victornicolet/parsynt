@@ -112,13 +112,29 @@ let string_of_unsafe_unop =
   | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
   | Exp -> "exp" | Sqrt -> "sqrt"
 
+exception Not_prefix
 
-let string_of_symb_unop =
+let string_of_symb_unop ?(fd = false) =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
-  | Not -> "not" | Add1 -> "add1" | Sub1 -> "sub1"| Abs -> "abs"
-  | Floor -> "floor" | Ceiling -> "ceiling"  | Truncate -> "truncate"
-  | Round -> "round" | Neg -> "-" | Sgn -> "sgn"
+  | Not -> if fd then "!" else "not"
+  | Add1 -> if fd then "1 +" else "add1"
+  | Sub1 -> if fd then "1 +" else "sub1"
+  | Abs -> if fd then raise Not_prefix else "abs"
+  | Floor -> if fd then raise Not_prefix else "floor"
+  | Ceiling -> if fd then raise Not_prefix else "ceiling"
+  | Truncate -> if fd then raise Not_prefix else "truncate"
+  | Round -> if fd then raise Not_prefix else "round"
+  | Neg -> "-"
+  | Sgn -> if fd then raise Not_prefix else "sgn"
+
+let string_of_unop_func ?(fd = false) op =
+  try
+    ignore(string_of_symb_unop ~fd:fd op);
+    None
+  with Not_prefix ->
+    Some (string_of_symb_unop ~fd:false op)
+
 
 let ostring_of_baseSymbolicType =
   function
@@ -591,9 +607,27 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
   | SkVar v -> pp_c_var fmt v
   | SkConst c -> pp_constants ~for_dafny:for_dafny fmt c
 
+
+  (* Unary operators : some of the operators defined are not
+     C operators (or Dafny ones). We have to replace them by functions. *)
   | SkUnop (op, e1) ->
-    fprintf fmt "@[%s %a]@" (string_of_symb_unop op)
-      (pp_c_expr ~for_dafny:for_dafny) e1
+    if for_dafny then
+      begin
+        try
+          fprintf fmt "@[(%s %a)@]" (string_of_symb_unop ~fd:true op)
+            (pp_c_expr ~for_dafny:for_dafny) e1
+        with Not_prefix ->
+          fprintf fmt "@[(%s(%a)@]"
+            (check_option (string_of_unop_func ~fd:true op))
+            (pp_c_expr ~for_dafny:for_dafny) e1
+      end
+    else
+      fprintf fmt "@[(%s %a)@]" (string_of_symb_unop op)
+        (pp_c_expr ~for_dafny:for_dafny) e1
+
+
+  (* Binary operators : some of the binary operators defined
+     are not C operators, so we need to define them *)
 
   | SkBinop (op, e1, e2) ->
     if is_op_c_fun op then
