@@ -439,6 +439,8 @@ end
    the reaching definitions (variables defined in) and the set of variables that
    are used after the loop
 *)
+exception Skip_action
+
 let add_def_info cl vid vid2const def_id =
   try
     let stmt =
@@ -446,7 +448,7 @@ let add_def_info cl vid vid2const def_id =
     in
     if Cloop.contains_stmt cl stmt.sid
     (** Default action if the stmt is in the loop *)
-    then raise Not_found
+    then raise Skip_action
     (**
         Handle only the case where the statement is
         outside the loop.
@@ -455,8 +457,8 @@ let add_def_info cl vid vid2const def_id =
       match reduce_def_to_const vid stmt with
       | Some const ->
         IM.add vid const vid2const
-      | None -> raise Not_found
-  with Not_found ->
+      | None -> raise Skip_action
+  with Skip_action ->
     vid2const
 
 let analyze_definitions cl (x : IOS.t IH.t) =

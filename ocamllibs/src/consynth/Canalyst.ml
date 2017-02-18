@@ -141,7 +141,9 @@ let func2sketch funcreps =
              in
              match Sketch.Body.conv_init_expr expect_type cilc with
              | Some e -> IM.add vid e m
-             | None -> m )
+             | None ->
+               eprintf "@.Warning : initial value %s not valid.@."
+                  (CilTools.psprint80 Cil.dn_exp cilc); m )
           reach_consts IM.empty
       in
       let sketch_obj =
@@ -161,6 +163,27 @@ let func2sketch funcreps =
       (** Clean the variables sets : keep only variables used in the
           loop body *)
       let bound_in_sklet, used_vars_set = used_in_sklet loop_body in
+      (* Input size from reaching definitions, min_int dependencies,
+         etc. *)
+      let m_sizes =
+        (* Scan the intial definitions of the state variables *)
+        IM.fold
+          (fun k i_def m_s ->
+             match i_def with
+             | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
+             | SkConst c -> IM.add k 1 m_s
+             | SkVar v ->
+               (match v with
+                | SkVarinfo vi -> IM.add k 0 m_s
+                | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
+                | _ -> raise Tuple_fail)
+             | _ -> failwith "Unsupported intialization.")
+          reach_consts IM.empty
+      in
+      let max_m_sizes =
+        IM.fold (fun k i m -> max i m) m_sizes 0
+      in
+      printf "@.Max dependency length : %i@." max_m_sizes;
       {
         id = !no_sketches;
         host_function = host_function;
@@ -173,6 +196,7 @@ let func2sketch funcreps =
             all_vars = var_set;
             costly_exprs = ES.empty;
           };
+        min_input_size = m_sizes;
         loop_body = loop_body;
         join_body = join_body;
         join_solution = SkLetExpr ([]);

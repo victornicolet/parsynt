@@ -473,7 +473,7 @@ class sketch_builder
     Translates a Cil.exp into a SketchTypes.skExpr
 *)
 
-let conv_init_expr expected_type (cil_exp : Cil.exp) =
+let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
   match cil_exp with
   | Cil.Const c -> Some (convert_const expected_type c)
   | Cil.Lval (h, o) ->
@@ -481,7 +481,19 @@ let conv_init_expr expected_type (cil_exp : Cil.exp) =
      | Cil.Var vi ->
        (match c_constant vi.Cil.vname with
         | Some skconst -> Some (SkConst skconst)
-        | None -> None)
+        | None ->
+          match o with
+          | Cil.Index (e, o) ->
+            begin
+              match conv_init_expr Integer e with
+              | Some se -> Some (SkVar (SkArray (SkVarinfo vi, se)))
+              | None -> None
+            end
+          | _ -> None)
+     | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
+       (match conv_init_expr Integer e with
+        | Some e' -> Some (SkVar (SkArray ((SkVarinfo vi), e')))
+        | _ -> None)
      | _ -> None)
   | _ -> None
 

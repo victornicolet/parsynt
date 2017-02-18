@@ -7,7 +7,7 @@ open Ast
    1 - Expressions & functions.
    2-  Symbolic types, operators, helper functions.
    3 - Recursors.
-   4 - Scheme & sketch trasnformers.
+   4 - Scheme & sketch transformers.
    5 - Expression sets.
    6 - Index variables management.
    7 - Typing expressions.
@@ -24,6 +24,8 @@ type operator_type =
   | Basic                       (* Airthmetic and min/max *)
   | NonLinear                   (* Non-linear operators *)
   | NotNum                        (* Not a numeral operator *)
+
+exception Tuple_fail            (* Tuples are not supported for the moment. *)
 
 type hole_type = symbolic_type * operator_type
 
@@ -465,6 +467,24 @@ let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
 
 let is_reserved_name s = not (uninterpeted s)
 
+
+(** Get the dependency length of an array variable. We assume very
+    simple offset expressions.*)
+
+let rec skArray_dep_len e =
+  match e with
+  | SkVar v ->
+    (match v with SkVarinfo vi -> 1
+                | SkArray (v, e') -> skArray_dep_len e'
+                | _  -> raise Tuple_fail)
+
+  | SkConst (CInt i) -> i + 1
+  | SkConst (CInt64 i) -> (Int64.to_int i) + 1
+  | SkBinop (op, e1, e2) when op = Plus || op = Minus ->
+    skArray_dep_len e1 + skArray_dep_len e2
+  | _ ->
+    eprintf "ERROR : cannot guess min array lenght of expression.@.";
+    failwith "Unsupported array offset expression."
 
 (** Remove interpreted symbols from a set of vars *)
 let remove_reserved_vars vs =
@@ -1329,7 +1349,6 @@ let rec join_types t1 t2 =
                 "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
               Format.flush_str_formatter () )
 
-
 let type_of_unop t =
   let type_of_unsafe_unop t =
     function
@@ -1465,6 +1484,7 @@ type sketch_rep =
     loop_name : string;
     ro_vars_ids : int list;
     scontext : context;
+    min_input_size : int IM.t;
     loop_body : sklet;
     join_body : sklet;
     join_solution : sklet;

@@ -256,18 +256,18 @@ let search_loop_exits loop_statement body =
   List.fold_left  aux ([],[]) body
 
 
-(** Reduction to constants *)
-let reduce_expr e =
-  match e with
-  | Const c -> Some e
-  | Lval (h, o) ->
+let rec valid_init_expr cil_exp =
+  match cil_exp with
+  | Cil.Const c ->  true
+  | Cil.Lval (h, o) ->
     (match h with
-     | Cil.Var vi ->
-       (match Conf.is_builtin_var vi.Cil.vname with
-        | true -> Some e
-        | false -> None)
-     | _ -> None)
-  | _ -> None
+     | Cil.Var vi -> true
+     | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
+       valid_init_expr e
+     | _ -> false)
+  | _ -> false
+
+
 
 let reduce_def_to_const vid stmt =
   let aux_for_instr vid instr =
@@ -275,7 +275,7 @@ let reduce_def_to_const vid stmt =
     | Set (lv, e, _) ->
        let vi = VS.max_elt (basic lv) in
        if vi.vid = vid
-       then reduce_expr e
+       then (if valid_init_expr e then Some e else None)
        else None
     | _ -> None
   in
