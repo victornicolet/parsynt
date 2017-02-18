@@ -256,19 +256,28 @@ let search_loop_exits loop_statement body =
   List.fold_left  aux ([],[]) body
 
 
+exception Init_with_temp of varinfo
+
 let rec valid_init_expr cil_exp =
   match cil_exp with
   | Cil.Const c ->  true
   | Cil.Lval (h, o) ->
     (match h with
-     | Cil.Var vi -> true
+     | Cil.Var vi ->
+       if vi.vistmp then
+         raise (Init_with_temp vi)
+       else true
+
      | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
        valid_init_expr e
+
      | _ -> false)
+
   | _ -> false
 
 
 
+(* Can raise Init_with_temp *)
 let reduce_def_to_const vid stmt =
   let aux_for_instr vid instr =
     match instr with

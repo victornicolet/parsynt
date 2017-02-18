@@ -5,13 +5,13 @@ max			yes		y		no
 average			no		no		no
 hamming			yes		y		no
 length			yes		y		no
-2nd-min			t-o		no		no
+2nd-min			yes		no		no
 2nd-max			yes		no		no
 mps			yes		no		no
 mts			yes		no		no
 mss			yes		no		no
-mps-p			no		no		no
-mts-p			no		no		no
+mps-p			t-o		no		no
+mts-p			t-o		no		no
 poly			yes		no		no
 atoi			yes		no		no
 is-sorted		yes		no		no
@@ -33,8 +33,8 @@ General :
 
 Synthesizing the join :
 - average : this "not an application" error appears again. Racket is unable to use the parameter n.
-- 0star1star : solution uses the opertor ~ for not. Should add a clause to parse it a not.
-- 0after1 : || does not appear in the parsed solution. & used instead of &&.
+- 0star1star : bullshit solution
+- 0after1 : without z3, fails to recognize a correct auxliary.
 
 Compiling the TBB implementation:
 - need to add the structure for the example.

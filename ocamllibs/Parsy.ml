@@ -90,7 +90,8 @@ let solution_found lp_name parsed (sketch : sketch_rep) solved =
         Sketch.Join.auxiliary_variables IM.empty
   in
   {sketch with
-   join_solution = translated_join_body;
+   join_solution =
+     ExpressionReduction.simplify_reduce translated_join_body sketch.scontext;
    init_values = remap_init_values sol_info.Codegen.init_values}::solved
 
 let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
@@ -123,8 +124,9 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
           try
             solution_found lp_name parsed sketch solved, unsolved
           with Failure s ->
-            printf "@.@[%sFAILED%s : solution found, but couldn't interpret it@\n\
-                    for %s%s%s.@\n\
+            printf "@.@[%sFAILED%s :\
+                    solution found, but couldn't interpret it for@\n\
+                    %s%s%s.@\n\
                     %sFailure%s : %s@.@]"
               (color "red") default (color "red") lp_name default (color "red")
               default s;

@@ -3,7 +3,27 @@ open Ast
 
 %}
 %token QUOTE
+
 %token CONST_CHOICE
+%token CHOOSE
+%token SCALAR
+
+%token ARITHBINOPS
+%token BASICUNOPSUM
+%token SCALAROPS
+%token COMPARISONOPS
+%token BASICBINOPSNUM
+%token NLBINOPSNUM
+%token BINOPSBOOL
+
+%token NUMEXPRARITH
+%token NUMEXPRNL
+%token NUMEXPRBASIC
+%token BOOLEXPR
+%token BOOLEXPRCOMPAR
+%token NUMITE
+%token SCALAREXPR
+
 %token DEFINE
 %token DEFINEREC
 %token LAMBDA
@@ -58,6 +78,9 @@ main: seq EOF           { $1 }
 seq   : expr seq   { $1 :: $2 }
       | expr        { [$1] }
 
+seq0  : expr seq0   { $1 }
+      | expr        { $1 }
+
 idseq  : ID                { [$1] }
        | LPAREN ids RPAREN { $2 }
 
@@ -93,9 +116,25 @@ expr   : INT       { Int_e $1 }
        | LPAREN LIST seq RPAREN             	{ List.fold_right (fun x a -> Cons_e (x, a)) $3 Nil_e }
        | LPAREN LIST RPAREN                 	{ Nil_e }
        | LPAREN RPAREN                      	{ Nil_e }
-       | NIL                                	{ Nil_e }
+       | LPAREN CHOOSE seq0 RPAREN		{ $3 }
+       | LPAREN NUMEXPRARITH seq0 RPAREN	{ $3 }
+       | LPAREN NUMEXPRNL seq0 RPAREN		{ $3 }
+       | LPAREN NUMEXPRBASIC seq0 RPAREN	{ $3 }
+       | LPAREN BOOLEXPR seq0 RPAREN		{ $3 }
+       | LPAREN BOOLEXPRCOMPAR seq0 RPAREN	{ $3 }
+       | LPAREN NUMITE seq0 RPAREN  		{ $3 }
+       | LPAREN SCALAREXPR seq0 RPAREN		{ $3 }
+       | LPAREN SCALAR seq0 RPAREN		{ $3 }
+       | LPAREN NUMEXPRARITH RPAREN		{ Int_e 0 }
+       | LPAREN NUMEXPRNL RPAREN		{ Int_e 0 }
+       | LPAREN NUMEXPRBASIC RPAREN		{ Int_e 0 }
+       | LPAREN BOOLEXPR RPAREN			{ Bool_e true }
+       | LPAREN BOOLEXPRCOMPAR RPAREN		{ Bool_e true }
+       | LPAREN NUMITE RPAREN  			{ Int_e 0 }
+       | LPAREN SCALAREXPR RPAREN		{ Int_e 0 }
+       | CONST_CHOICE  	    			{ Nil_e }
        | LPAREN CONS expr expr RPAREN       	{ Cons_e ($3, $4) }
-
+       | NIL                                	{ Nil_e }
 
 binop : PLUS       { Plus }
       | MINUS      { Minus }
@@ -112,6 +151,14 @@ binop : PLUS       { Plus }
       | OR         { Or }
       | MIN 	   { Min }
       | MAX	   { Max }
+      | ARITHBINOPS				{ Plus }
+      | BASICUNOPSUM				{ Minus }
+      | SCALAROPS				{ Minus }
+      | COMPARISONOPS				{ Lt }
+      | BASICBINOPSNUM				{ Plus }
+      | NLBINOPSNUM				{ Mul }
+      | BINOPSBOOL				{ And }
+
 
 unop : NOT         { Not }
      | CAR         { Car }

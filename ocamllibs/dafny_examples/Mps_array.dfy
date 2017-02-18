@@ -14,12 +14,12 @@ function Mps(s: seq<int>): int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  ((leftSum - 1) + (rightSum - -1))
+  (rightSum + leftSum)
 }
 
 function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
 {
-  DfMax(((leftMps - 1) + 1), (rightMps + leftSum))
+  DfMax(((leftMps - 1) + (2 - 1)), (leftSum + rightMps))
 }
 
 

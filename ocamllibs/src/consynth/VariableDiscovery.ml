@@ -12,7 +12,8 @@ open SketchTypes
 let debug = ref false
 let debug_dev = ref true
 
-let max_exec_no = ref 4
+let max_exec_no =
+  ref (int_of_string (Conf.get_conf_string "variable_discovery_max_unfoldings"))
 
 let discovered_aux_alltime = IH.create 10
 let discovered_aux = IH.create 10

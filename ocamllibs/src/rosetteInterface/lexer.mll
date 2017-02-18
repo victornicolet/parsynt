@@ -25,6 +25,22 @@ let keywords =
      "not", NOT;
      "min", MIN;
      "max", MAX;
+     "(ArithBinops 0)", ARITHBINOPS;
+     "(BasicUnopsNum 0)", BASICUNOPSUM;
+     "(ScalarOps 0)", SCALAROPS;
+     "(ComparisonOps 0)" , COMPARISONOPS;
+     "(BasicBinopsNum 0)" , BASICBINOPSNUM;
+     "(NLBinopsNum 0)" , NLBINOPSNUM;
+     "(BinopsBool 0)" , BINOPSBOOL;
+     "NumExprArith" , NUMEXPRARITH;
+     "NumExprNL" , NUMEXPRNL;
+     "NumExprBasic" , NUMEXPRBASIC;
+     "BoolExpr" , BOOLEXPR;
+     "BoolExprCompar" , BOOLEXPRCOMPAR;
+     "NumIte" , NUMITE;
+     "ScalarExpr" , SCALAREXPR;
+     "choose" , CHOOSE;
+     "Scalar", SCALAR;
     ]
 
 let keyword_tbl = Hashtbl.create 256

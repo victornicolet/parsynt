@@ -61,6 +61,10 @@ let reduce_cost ctx expr =
 
           else
             SkBinop (op2, x', y')
+
+        | c, SkBinop (Or, a , b) when op2 = And ->
+          SkBinop (Or, SkBinop (And, c, a), SkBinop (And, c, b))
+
         (* Distributivity with ternary expressions *)
         | SkQuestion (cond, a, b), c ->
           let ca = cost ctx a in
@@ -202,6 +206,13 @@ let reduce_full ?(limit = 10) ctx expr =
   let r2 = rules_AC r0 in
   r2
 
+let rec simplify_reduce sklet ctx =
+  match sklet with
+  | SkLetIn (ve_list, letin) ->
+    SkLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
+             simplify_reduce letin ctx)
+  | SkLetExpr ve_list ->
+    SkLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
 
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =

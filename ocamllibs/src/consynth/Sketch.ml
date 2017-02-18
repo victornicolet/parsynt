@@ -350,11 +350,13 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
              (if IM.mem vid reach_consts
               then
                 pp_skexpr fmt
-                  (replace_all_subs
-                     ~tr:[SkConst (CInt 0); SkConst (CInt64 0L)]
-                     ~by:[SkVar (SkVarinfo {vi with vname = "_begin_"});
-                          SkVar (SkVarinfo {vi with vname = "_begin_"})]
-                     ~ine:(IM.find vid reach_consts))
+                  (try
+                     replace_all_subs
+                       ~tr:[SkConst (CInt 0); SkConst (CInt64 0L)]
+                       ~by:[SkVar (SkVarinfo {vi with vname = "_begin_"});
+                            SkVar (SkVarinfo {vi with vname = "_begin_"})]
+                       ~ine:(IM.find vid reach_consts)
+                  with _ -> IM.find vid reach_consts)
               else
                 (if IH.mem auxiliary_vars vid
                  then

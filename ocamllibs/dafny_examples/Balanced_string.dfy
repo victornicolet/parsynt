@@ -23,12 +23,12 @@ function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : 
 
 function BalJoin(leftAux_3 : int, leftCnt : int, leftBal : bool, rightAux_3 : int, rightCnt : int, rightBal : bool): bool
 {
-  (leftBal && (((leftCnt + 1) + if rightBal then 0 else -6) > (-6 - rightAux_3)))
+  (((if (! true) then rightAux_3 else rightAux_3 + (leftCnt - 1)) >= -1) && leftBal)
 }
 
 function CntJoin(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
 {
-  ((leftCnt + 1) + if true then (-1 + rightCnt) else rightAux_3)
+  (if true then (rightCnt + 1) else rightAux_3 + (leftCnt - 1))
 }
 
 

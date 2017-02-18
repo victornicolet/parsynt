@@ -62,6 +62,7 @@ module Cloop = struct
     sid: int;
     (** The original statement of the loop *)
     mutable old_loop_stmt : Cil.stmt;
+    mutable old_loop_analyzed : bool;
     mutable old_loop_sids : Cil.stmt IH.t;
     (** Modified body of the loop *)
     mutable new_body : Cil.stmt list;
@@ -106,6 +107,7 @@ module Cloop = struct
       (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
       old_loop_stmt = lstm;
+      old_loop_analyzed = false;
       old_loop_sids = IH.create 10;
       new_body = [];
       loop_igu = None;
@@ -260,7 +262,8 @@ module Cloop = struct
     nested_in || called_in
 
   (** Returns true if the loop contains a statements of id sid *)
-  let contains_stmt l sid = IH.mem l.old_loop_sids sid
+  let contains_stmt l sid =
+    IH.mem l.old_loop_sids sid
 
   let isForLoop l = match l.loop_igu with Some s -> true | None -> false
 
@@ -381,6 +384,7 @@ class loopAnalysis (tl : Cloop.t) = object
   inherit nopCilVisitor
 
   method vstmt (s : Cil.stmt) =
+    tl.Cloop.old_loop_analyzed <- true;
     IH.add tl.Cloop.old_loop_sids s.sid s;
     match s.skind with
     | Loop _ ->
@@ -441,7 +445,9 @@ end
 *)
 exception Skip_action
 
-let add_def_info cl vid vid2const def_id =
+
+let rec add_def_info cl vid vid2const def_id =
+  if not cl.Cloop.old_loop_analyzed then failwith "Uninitalized information.";
   try
     let stmt =
       IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
@@ -454,12 +460,13 @@ let add_def_info cl vid vid2const def_id =
         outside the loop.
     *)
     else
-      match reduce_def_to_const vid stmt with
-      | Some const ->
-        IM.add vid const vid2const
-      | None -> raise Skip_action
-  with Skip_action ->
-    vid2const
+      try
+        match reduce_def_to_const vid stmt with
+        | Some const -> IM.add vid const vid2const
+        | None -> raise Skip_action
+      with Init_with_temp vi ->
+        IM.add vid (Cil.Lval (Var vi, NoOffset)) vid2const
+  with Skip_action -> vid2const
 
 let analyze_definitions cl (x : IOS.t IH.t) =
   IH.fold
@@ -473,8 +480,16 @@ let analyze_definitions cl (x : IOS.t IH.t) =
           ioset vid2const))
     x IM.empty
 
+let remove_temps (map : exp IM.t) =
+  IM.map
+    (fun e ->
+       match e with
+       | Lval (Var vi, NoOffset) when vi.vistmp ->
+         IM.find vi.vid map
+       | _ -> e) map
 
 let analyse_loop_context clp =
+  ignore(visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop_stmt);
   let sid = clp.Cloop.sid in
   let fst_stmt_sid = (List.nth clp.Cloop.new_body 0).sid in
   (** Definitions reaching the loop statement *)
@@ -484,7 +499,8 @@ let analyse_loop_context clp =
     with
     | Some x ->
       begin
-        let vid2const_map = analyze_definitions clp (IHTools.convert x) in
+        let vid2const_map =
+          remove_temps (analyze_definitions clp (IHTools.convert x)) in
         Cloop.add_constant_in clp vid2const_map;
         x
       end
@@ -529,9 +545,7 @@ let analyse_loop_context clp =
     end
   else
     begin
-      Cloop.setDefinedInVars clp (IHTools.convert rds) livevars;
-      (** Visit the loop statement and compute some information *)
-      visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop_stmt
+      Cloop.setDefinedInVars clp (IHTools.convert rds) livevars
     end
 
 (******************************************************************************)

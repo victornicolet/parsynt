@@ -14,6 +14,7 @@ module Cloop : sig
   type t = {
     sid: int;
     mutable old_loop_stmt : Cil.stmt;
+    mutable old_loop_analyzed : bool;
     mutable old_loop_sids : Cil.stmt IH.t;
     mutable new_body : Cil.stmt list;
     mutable loop_igu : forIGU option;

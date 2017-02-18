@@ -12,12 +12,12 @@ function Mts___0(s: seq<int>): int
 
 function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 {
-  (rightAux_1 + leftAux_1)
+  (leftAux_1 + rightAux_1)
 }
 
 function Mts___0Join(leftAux_1 : int, leftMts___0 : int, rightAux_1 : int, rightMts___0 : int): int
 {
-  DfMax(rightMts___0, (leftMts___0 + DfMin(rightAux_1, rightAux_1)))
+  DfMax(((rightAux_1 + DfMin(0, 0)) + leftMts___0), rightMts___0)
 }
 
 

@@ -142,8 +142,10 @@ let func2sketch funcreps =
              match Sketch.Body.conv_init_expr expect_type cilc with
              | Some e -> IM.add vid e m
              | None ->
-               eprintf "@.Warning : initial value %s not valid.@."
-                  (CilTools.psprint80 Cil.dn_exp cilc); m )
+               eprintf "@.Warning : initial value %s for %s not valid.@."
+                 (CilTools.psprint80 Cil.dn_exp cilc)
+                 (VSOps.find_by_id vid var_set).Cil.vname;
+               m)
           reach_consts IM.empty
       in
       let sketch_obj =

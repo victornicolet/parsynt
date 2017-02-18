@@ -31,3 +31,4 @@ tbb_iterator_name,_r_
 tbb_iterator_type_name,__iterator_type__
 tbb_iterator_type,long
 tbb_right_state_name,x
+variable_discovery_max_unfoldings,3
