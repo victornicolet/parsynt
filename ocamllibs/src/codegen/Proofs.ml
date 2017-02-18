@@ -53,6 +53,7 @@ let filename_of_solution sol = String.capitalize sol.loop_name
 
 type proofVariable =
   {
+    pid : int;
     name : string;
     in_type : symbolic_type;
     out_type : symbolic_type;
@@ -69,10 +70,13 @@ type proofVariable =
 
 let vi_to_proofVars = IH.create 10
 let input_seq_vi = ref None
+let in_order = ref []
 
 let clear () =
   input_seq_vi := None;
-  IH.clear vi_to_proofVars
+  IH.clear vi_to_proofVars;
+  in_order := []
+
 
 let pp_dfy fmt (s, e, for_join) =
   (** Simple solution to go from the variables to
@@ -390,6 +394,7 @@ let gen_proof_vars sketch =
        incr pfv_id;
        IH.add vi_to_proofVars vi.vid
          {
+           pid = vi.vid;
            inspected = false;
            name = pfv_name;
            in_type = array_type (type_of_var (SkVarinfo array_of_sketch));
@@ -408,8 +413,8 @@ let gen_proof_vars sketch =
      the dependencies.
      We also need to update requirements accordingly.
   *)
-  IH.iter
-    (fun vid pfv ->
+  let pfv_list = IHTools.key_list vi_to_proofVars in
+  let update_deps_pfv vid pfv =
        let depend_set =
          VS.fold
            (fun vi dep_list ->
@@ -426,15 +431,39 @@ let gen_proof_vars sketch =
               (used_in_skexpr pfv.join_expr))
            []
        in
-       let update_requires depend_set =
-         (* Add requires clauses due to dependencies. *)
-           List.fold_left
-             (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
-             pfv.requires depend_set
-       in
-       pfv.requires <- update_requires depend_set;
        pfv.depends <- depend_set;
-       pfv.join_depends <- join_depend_set;) vi_to_proofVars
+       pfv.join_depends <- join_depend_set
+  in
+
+  (* Compute order according to dependencies *)
+  let dep_order_list =
+    List.fold_left
+      (fun vi_list vid ->
+         if List.mem vid vi_list then
+           vi_list
+         else
+           let dep_set = (IH.find vi_to_proofVars vid).depends in
+           let id_dep_set = List.map (fun pfv -> pfv.pid) dep_set in
+           vi_list@id_dep_set@[vid])
+      []
+      pfv_list
+  in
+  let update_requires_pfv vid pfv =
+    let update_requires depend_set =
+      List.fold_left
+        (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
+        pfv.requires depend_set
+    in
+    pfv.requires <- update_requires pfv.depends;
+  in
+  List.iter
+    (fun vid -> update_deps_pfv vid (IH.find vi_to_proofVars vid))
+    pfv_list;
+  List.iter
+    (fun vid -> update_requires_pfv vid (IH.find vi_to_proofVars vid))
+    dep_order_list;
+  in_order := dep_order_list
+
 
 
 let pp_all_and_clear fmt =
@@ -443,8 +472,14 @@ let pp_all_and_clear fmt =
   if !use_min then pp_min_def fmt;
   if !use_max_int then pp_max_int_def fmt;
   if !use_min_int then pp_min_int_def fmt;
-  IH.iter (fun vid pfv -> pp_function fmt (pfv,s)) vi_to_proofVars;
-  IH.iter (fun vid pfv -> pp_join fmt pfv) vi_to_proofVars;
-  IH.iter (fun vid pfv -> pp_hom fmt pfv s t) vi_to_proofVars;
+  let iter_pfv (pfun: int -> proofVariable -> unit) =
+    List.iter
+      (fun vid -> pfun vid (IH.find vi_to_proofVars vid))
+      !in_order
+  in
+  (* Print all function *)
+  iter_pfv (fun vid pfv -> pp_function fmt (pfv,s));
+  iter_pfv (fun vid pfv -> pp_join fmt pfv);
+  iter_pfv (fun vid pfv -> pp_hom fmt pfv s t);
   clear_uses ();
   clear ()

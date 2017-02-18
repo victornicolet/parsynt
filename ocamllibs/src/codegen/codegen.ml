@@ -60,7 +60,7 @@ let identify_join_func e =
 let get_values_init e =
   match e with
   | Def_e (id_list, body) ->
-    if List.length id_list = 1 &&
+    if List.length id_list = 3 &&
        (List.hd id_list = Cf.get_conf_string "rosette_initial_state_name")
     then
       (match body with

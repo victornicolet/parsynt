@@ -7,8 +7,8 @@ hamming			yes		y		no
 length			yes		y		no
 2nd-min			yes		no		no
 2nd-max			yes		no		no
-mps			yes		no		no
-mts			yes		no		no
+mps			yes		yes		no
+mts			yes		yes		no
 mss			yes		no		no
 mps-p			t-o		no		no
 mts-p			t-o		no		no
@@ -34,8 +34,6 @@ General :
 
 Synthesizing the join :
 - average : this "not an application" error appears again. Racket is unable to use the parameter n.
-- 0star1star : bullshit solution
-- 0after1 : without z3, fails to recognize a correct auxliary.
 
 Compiling the TBB implementation:
 - need to add the structure for the example.

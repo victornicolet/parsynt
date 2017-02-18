@@ -581,6 +581,9 @@ module IHTools = struct
     Inthash.iter (IH.add ih) inthash;
     ih
 
+  let key_list ih = IH.fold (fun k _ l -> k::l) ih []
+
+
   (**
       Add al the key-value bindings of to_add to add_to only
       if the key is not present in add_to.
