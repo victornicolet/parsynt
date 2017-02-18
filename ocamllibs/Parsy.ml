@@ -27,8 +27,7 @@ let options = [
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
   ( 'o', "output-folder", None,
-    Some (fun o_folder -> Conf.output_dir := o_folder));
-]
+    Some (fun o_folder -> Conf.output_dir := o_folder))]
 
 let solution_found lp_name parsed (sketch : sketch_rep) solved =
   printf "@.%sSOLUTION for %s %s:@.%a"
@@ -160,6 +159,7 @@ let tbb_test_filename (solution : sketch_rep) =
 
 let output_tbb_test (solution : sketch_rep) =
   let tbb_file_oc =  open_out (tbb_test_filename solution) in
+  printf "New file: %s.@." (tbb_test_filename solution);
   let tbb_file_out_fmt = Format.make_formatter
       (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
   let tbb_class_summary = Tbb.make_tbb_class solution in
@@ -187,6 +187,7 @@ let dafny_proof_filename (sol : sketch_rep) =
     failwith "Failed to create directory for Dafny proof output."
 
 let output_dafny_proof (solution : sketch_rep) =
+  printf "New file: %s.@." (dafny_proof_filename solution);
   let dafny_file_oc = open_out (dafny_proof_filename solution) in
   let dafny_file_out_fmt =
     Format.make_formatter (output dafny_file_oc) (fun () -> flush dafny_file_oc)
@@ -281,7 +282,11 @@ let main () =
 
      )
      finally_solved);
+  printf "@.%s%sGenerating implementations for solved examples..%s@."
+    (color "black") (color "b-green") default;
   output_tbb_tests finally_solved;
+    printf "@.%s%sGenerating proofs for solved examples..%s@."
+    (color "black") (color "b-green") default;
   output_dafny_proofs finally_solved;
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;

@@ -272,6 +272,7 @@ let clear_uses () =
   _boff mindef_avail
 
 
+
 let rebuild_min_max =
   let filter =
     function
@@ -367,7 +368,11 @@ let gen_proof_vars sketch =
     if VS.cardinal arrays > 1 then
       failwith "Cannot generate proofs for multiple arrays."
     else
-      VS.max_elt arrays
+      try
+        VS.max_elt arrays
+      with Not_found ->
+        (makeVarinfo false "_unused_seq_var_"
+           (TArray ((TInt ((IInt), []), None, []))))
   in
   let special_req vi =
     if SketchJoin.is_left_aux vi.vid || SketchJoin.is_right_aux vi.vid then

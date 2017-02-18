@@ -4,11 +4,11 @@ min			yes		y		no
 max			yes		y		no
 average			no		no		no
 hamming			yes		y		no
-length			yes		y		no
+length			yes		y		yes
 2nd-min			yes		no		no
 2nd-max			yes		no		no
-mps			yes		yes		no
-mts			yes		yes		no
+mps			yes		no		yes
+mts			yes		no		yes
 mss			yes		no		no
 mps-p			t-o		no		no
 mts-p			t-o		no		no
