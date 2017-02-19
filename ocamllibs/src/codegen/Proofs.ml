@@ -84,11 +84,13 @@ type proofVariable =
     pid : int;
     name : string;
     sequence : varinfo;
+    ivars : VS.t;
     in_vars : varinfo list;
     out_type : symbolic_type;
     empty_value : skExpr;
     function_expr : skExpr;
     join_expr : skExpr;
+    mutable uses_pos : bool;
     mutable base_case : int;
     mutable inspected : bool;
     mutable requires :
@@ -107,7 +109,7 @@ let clear () =
   in_order := []
 
 
-let pp_dfy fmt (seq, e, for_join, r) =
+let pp_dfy fmt (ivars, seq, e, for_join, r) =
   (** Simple solution to go from the variables to
       functions of sequences : replace the variable
       names *)
@@ -142,7 +144,12 @@ let pp_dfy fmt (seq, e, for_join, r) =
              (if r
              then SkVarinfo
                  {vi with vname = right_state_input_prefix^vi.vname}
-             else v)
+             else
+               (if VS.mem vi ivars then
+                  let name = (Conf.get_conf_string "dafny_length_fun")^
+                             "("^seq^")" in
+                  SkVarinfo {vi with vname = name}
+               else v))
            end
 
          | SkArray (v, e) ->
@@ -172,7 +179,7 @@ let pp_function_body fmt pfv =
   fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
                else @;%a@;@]"
     pfv.sequence.vname (pp_c_expr ~for_dafny:true) pfv.empty_value
-    pp_dfy (pfv.sequence.vname , pfv.function_expr, false, false)
+    pp_dfy (pfv.ivars, pfv.sequence.vname , pfv.function_expr, false, false)
 
 let pp_function fmt pfv =
   fprintf fmt "@[function %s(%a): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
@@ -192,13 +199,13 @@ let pp_join fmt pfv =
   in
   fprintf fmt "@[function %s%s(%a, %a): %a@]@\n@[<v 2>{@\n%a@]@\n}@\n@\n"
     pfv.name join_suffix pp_args "left" pp_args "right" pp_converted_stype pfv.out_type
-    pp_dfy ("", pfv.join_expr, true, true)
+    pp_dfy (pfv.ivars, "", pfv.join_expr, true, true)
 
 (** Print the lemma ensuring we have an homomorphism *)
 (* Require clauses *)
 
 let pp_require_min_length fmt sl =
-  fprintf fmt "requires %a"
+  fprintf fmt "requires %a@\n"
     (pp_print_list
        ~pp_sep:(fun fmt () -> fprintf fmt " && ")
        (fun fmt (seq_name, i) -> fprintf fmt "|%s| >= %i" seq_name i)) sl
@@ -206,13 +213,31 @@ let pp_require_min_length fmt sl =
 let pp_requires fmt pfv =
   if pfv.requires = [] then ()
   else
-    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
       (fun fmt (p, _) -> p fmt) fmt pfv.requires
 
 (* Assertions *)
-let pp_assertion_emptylist fmt pfv =
+let pp_assertion_base_case fmt pfv =
   (* assert(s + [] == s); *)
-  fprintf fmt "@[assert(%s + [] == %s);@]" pfv.sequence.vname pfv.sequence.vname
+  if pfv.base_case = 0 then
+    fprintf fmt "@[assert(%s + [] == %s);@]"
+      pfv.sequence.vname pfv.sequence.vname
+  else
+    begin
+      if pfv.base_case = 1 then
+        fprintf fmt "@[assert(%s + %s == %s + [%s[0]]);@]"
+          pfv.sequence.vname
+          (_R_ pfv.sequence.vname)
+          pfv.sequence.vname
+          (_R_ pfv.sequence.vname)
+      else
+        fprintf fmt "@[assert(%s + %s == %s + %s[..%i]);@]"
+          pfv.sequence.vname
+          (_R_ pfv.sequence.vname)
+          pfv.sequence.vname
+          (_R_ pfv.sequence.vname)
+          pfv.base_case
+    end
 
 
 let pp_assertion_concat fmt pfv =
@@ -241,7 +266,7 @@ let pp_joined_res fmt pfv =
     print_args pfv.sequence.vname
     print_args (right_state_input_prefix^pfv.sequence.vname)
 
-let pp_joined_empty fmt pfv =
+let pp_joined_base_case fmt pfv =
   let print_args fmt seqname =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
@@ -252,7 +277,16 @@ let pp_joined_empty fmt pfv =
   let print_inits fmt s =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
-      (fun fmt pfv -> fprintf fmt "%s(%s)" pfv.name "[]")
+      (fun fmt pfv_ ->
+         fprintf fmt "%s(%s)" pfv_.name
+           (if pfv.base_case = 0 then "[]"
+            else
+              (if pfv.base_case = 1
+               then
+                 "["^(_R_ pfv.sequence.vname)^"[0]]"
+               else
+                 (_R_ pfv.sequence.vname)^"[.."^
+                  (string_of_int pfv.base_case)^"]")))
       fmt
       pfv.join_depends
   in
@@ -270,16 +304,32 @@ let pp_depend_lemmas fmt pfv =
     fmt
     (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
 
+let pp_base_case_cond fmt pfv =
+  if pfv.base_case = 0 then
+    fprintf fmt "%s == []" (_R_ pfv.sequence.vname)
+  else
+    fprintf fmt "|%s| == %i" (_R_ pfv.sequence.vname)
+      pfv.base_case
+
 let pp_hom fmt pfv =
   (** Print the base case lemma *)
   fprintf fmt
     "@\n\
      @[<v 2>lemma BaseCase%s(%a)@\n\
+     %a
      ensures %a == %a@\n\
      {}@."
-    pfv.name pp_input_params pfv.in_vars
+    pfv.name
+    (fun fmt pfv ->
+       if pfv.base_case = 0 then
+         pp_input_params fmt pfv.in_vars
+       else
+         fprintf fmt "%a, %a"
+           pp_input_params pfv.in_vars
+           pp_input_params_prefix pfv.in_vars) pfv
+    pp_requires pfv
     pp_func_of_single_list pfv
-    pp_joined_empty pfv;
+    pp_joined_base_case pfv;
   (* Print the main lemma *)
     fprintf fmt
     "@\n\
@@ -287,8 +337,8 @@ let pp_hom fmt pfv =
      @[%a@]\
      @[ensures %a == %a@]@\n\
      @[<v 2>{@\n\
-     if %s == [] @;{@;%a@\n\
-     BaseCase%s(%s);@\n\
+     if %a @;{@;%a@\n\
+     BaseCase%s(%a);@\n\
      } else {@;\
      calc{@\n%a;@\n\
      @[<hv 2>=={@;%a%a@;}@]@\n%a;\
@@ -300,14 +350,21 @@ let pp_hom fmt pfv =
     pp_input_params_prefix pfv.in_vars
     pp_requires pfv
     pp_func_of_concat pfv pp_joined_res pfv
-    (_R_ pfv.sequence.vname)
-    pp_assertion_emptylist pfv
-    pfv.name pfv.sequence.vname
+    pp_base_case_cond pfv
+    pp_assertion_base_case pfv
+    pfv.name
+    (fun fmt pfv ->
+       if pfv.base_case = 0
+       then
+         fprintf fmt "%s" pfv.sequence.vname
+       else
+         fprintf fmt "%s, %s"
+           pfv.sequence.vname
+           (_R_ pfv.sequence.vname)) pfv
     pp_func_of_concat pfv
     (* Use hommorphisms lemmas + default assertion *)
     pp_depend_lemmas pfv pp_assertion_concat pfv
     pp_joined_res pfv
-
 
 
 
@@ -352,6 +409,8 @@ let use_min_int = ref false
 let use_max_int = ref false
 let maxdef_avail = ref false
 let mindef_avail = ref false
+let need_hom_length = ref false
+let length_hom_printed = ref false
 
 let clear_uses () =
   _boff use_min;
@@ -359,8 +418,9 @@ let clear_uses () =
   _boff use_min_int;
   _boff use_max_int;
   _boff maxdef_avail;
-  _boff mindef_avail
-
+  _boff mindef_avail;
+  _boff need_hom_length;
+  _boff length_hom_printed
 
 
 let rebuild_min_max =
@@ -397,18 +457,51 @@ let rec uses_const lim  =
       on_const =
         (fun c ->
            match c with
-           | c when c = lim -> true
+           | c when List.mem c lim -> true
            | _ -> false);
       on_var = (fun v -> false);
     }
 
 let set_int_limit_uses e =
-  if uses_const Infnty e then _bon use_max_int;
-  if uses_const NInfnty e then  _bon use_min_int
+  if uses_const [Infnty] e then _bon use_max_int;
+  if uses_const [NInfnty] e then  _bon use_min_int
 
 
 (** Pretty print definitions. The name of the functions are set using
     the Conf module. *)
+let pp_length_def fmt () =
+  fprintf fmt
+    "function %s(s: seq<int>): int@\n\
+     {if s == [] then 0 else %s(s[..|s|-1]) + 1}@.@."
+    (Conf.get_conf_string "dafny_length_fun")
+    (Conf.get_conf_string "dafny_length_fun")
+
+let pp_hom_length fmt () =
+  if !length_hom_printed then ()
+  else
+    begin
+      _bon length_hom_printed;
+      let fname = (Conf.get_conf_string "dafny_length_fun") in
+      fprintf fmt
+        "function %sJoin(a: int, b: int): int@\n\
+         { a + b }@." fname;
+      fprintf fmt
+        "lemma Hom%s(s: seq<int>, t: seq<int>)@\n\
+         ensures %s(s + t) == %sJoin(%s(s), %s(t))@\n\
+         @[<v 2>{@\n\
+	 if t == [] {@\n\
+	 assert(s + t == s);@]@\n\
+	} else @[<v 1>{@\n\
+	 calc {@\n\
+	 %s(s + t);@\n\
+	 == {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;}@\n\
+         %sJoin(%s(s), %s(t));@\n\
+	 }@\n\
+	 }@]@\n\
+         }@\n@."
+        fname fname fname fname fname fname fname fname fname
+    end
+
 let pp_min_def fmt =
   _bon mindef_avail;
   fprintf fmt "function %s(x: int, y: int): int { if x > y then y else x}@.@."
@@ -464,9 +557,10 @@ let gen_proof_vars sketch =
         (makeVarinfo false (Conf.get_conf_string "dafny_seq_placeholder")
            (TArray ((TInt ((IInt), []), None, []))))
   in
-  let special_req vi =
+  let special_req vi ars =
     if SketchJoin.is_left_aux vi.vid || SketchJoin.is_right_aux vi.vid then
-      [(fun fmt ->  pp_require_min_length fmt [("s",1); ("t", 1)]),
+      [(fun fmt ->  pp_require_min_length fmt [(ars.vname ,1);
+                                               (_R_ ars.vname, 1)]),
        vi.vid]
     else []
   in
@@ -477,7 +571,9 @@ let gen_proof_vars sketch =
     (fun vi ->
        let function_expr, join_expr = find_exprs vi sketch in
        let in_vars =
-         VS.diff (used_in_skexpr function_expr) sketch.scontext.state_vars
+         VS.diff (used_in_skexpr function_expr)
+           (VS.union sketch.scontext.state_vars
+              sketch.scontext.index_vars)
        in
        let input_vars =
          if VS.cardinal in_vars >= 1 then
@@ -490,10 +586,27 @@ let gen_proof_vars sketch =
        set_int_limit_uses (get_init_value sketch vi);
        let pfv_name = String.capitalize vi.vname in
        let pfv_base_case =
-         if uses_const NInfnty function_expr ||
-            uses_const Infnty function_expr
+         if (SketchJoin.is_left_aux vi.vid
+             || SketchJoin.is_right_aux vi.vid
+             || uses_const [NInfnty; Infnty] function_expr)
          then 1 else 0
        in
+       let uses_pos =
+         let recursor = {
+           join = (fun a b -> a || b);
+           init = false;
+           case = (fun e -> false);
+           on_case = (fun f e -> false);
+           on_const = (fun c -> true);
+           on_var =
+             (fun v ->
+                match v with
+                | SkVarinfo vi when VS.mem vi sketch.scontext.index_vars -> true
+                | _ -> false)
+         } in
+         rec_expr2 recursor function_expr
+       in
+       if uses_pos then _bon need_hom_length;
        incr pfv_id;
        IH.add vi_to_proofVars vi.vid
          {
@@ -501,12 +614,14 @@ let gen_proof_vars sketch =
            inspected = false;
            name = pfv_name;
            sequence = array_of_sketch;
+           ivars = sketch.scontext.index_vars;
            in_vars =  input_vars;
+           uses_pos = uses_pos;
            out_type = type_of function_expr;
            base_case = pfv_base_case;
            empty_value = get_init_value sketch vi;
            function_expr = rebuild_min_max function_expr;
-           requires = special_req vi;
+           requires = special_req vi array_of_sketch;
            join_expr = join_expr;
            join_depends = [];
            depends = [];
@@ -548,17 +663,19 @@ let gen_proof_vars sketch =
          else
            let dep_set = (IH.find vi_to_proofVars vid).depends in
            let id_dep_set = List.map (fun pfv -> pfv.pid) dep_set in
-           vi_list@id_dep_set@[vid])
+           id_dep_set@[vid]@vi_list)
       []
       pfv_list
   in
   let update_requires_pfv vid pfv =
     let update_requires depend_set =
       List.fold_left
-        (fun new_reqs pfv_dep -> new_reqs@pfv_dep.requires)
+        (fun new_reqs pfv_dep ->
+           pfv.base_case <- max pfv.base_case pfv_dep.base_case;
+           new_reqs@pfv_dep.requires)
         pfv.requires depend_set
     in
-    pfv.requires <- update_requires pfv.depends;
+    pfv.requires <- update_requires pfv.join_depends;
   in
   List.iter
     (fun vid -> update_deps_pfv vid (IH.find vi_to_proofVars vid))
@@ -571,6 +688,7 @@ let gen_proof_vars sketch =
 
 
 let pp_all_and_clear fmt =
+  pp_length_def fmt ();
   if !use_max then pp_max_def fmt;
   if !use_min then pp_min_def fmt;
   if !use_max_int then pp_max_int_def fmt;
@@ -580,6 +698,8 @@ let pp_all_and_clear fmt =
       (fun vid -> pfun vid (IH.find vi_to_proofVars vid))
       !in_order
   in
+  iter_pfv (fun vid pfv ->
+      if pfv.uses_pos then pp_hom_length fmt ());
   (* Print all function *)
   iter_pfv (fun vid pfv -> pp_function fmt pfv);
   iter_pfv (fun vid pfv -> pp_join fmt pfv);

@@ -15,7 +15,7 @@ poly			yes		no		no
 atoi			yes		no		no
 is-sorted		yes		no		no
 dropwhile		yes		no		no
-balanced-parenthesis	yes		no		no
+balanced-parenthesis	yes		no		no?
 0star1star		yes		no		no
 count-1s		yes		no		no
 line-sight		yes		no		no
