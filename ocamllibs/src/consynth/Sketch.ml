@@ -28,7 +28,7 @@ let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 (* Current bitwidth setting *)
 let pp_current_bitwidth fmt func_expr =
   F.fprintf fmt "@.(current-bitwidth %s)@.@."
-    (if analyze_optype_l func_expr = NonLinear then "5" else "#f")
+    (if analyze_optype_l func_expr = NonLinear then "6" else "#f")
 
 (******************************************************************************)
 

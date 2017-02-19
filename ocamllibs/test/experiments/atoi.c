@@ -1,4 +1,4 @@
-int myAtoi(int *str, int n)
+int example_atoi(int *str, int n)
 {
     int res = 0;
 

@@ -1237,21 +1237,22 @@ and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
   SkApp (Bottom, Some fun_vi, args)
 
 
-
 let force_flat vs sklet =
   let rec force_aux sklet subs =
     match sklet with
     | SkLetIn (ve_list, letin) ->
+      let subs_copy = subs in
       force_aux letin
         (List.fold_left
            (fun new_subs (v,e) ->
               try
                 let vi = co (vi_of v)  in
-                IM.add vi.Cil.vid (apply_substutions subs e) new_subs
+                IM.add vi.Cil.vid (apply_substutions subs_copy e) new_subs
               with Failure s -> new_subs)
            subs ve_list)
 
     | SkLetExpr ve_list ->
+      let subs_copy = subs in
       let final_subs =
         (List.fold_left
            (fun new_subs (v,e) ->
@@ -1259,7 +1260,7 @@ let force_flat vs sklet =
                 let vi = co (vi_of v)  in
                 IM.add vi.Cil.vid (apply_substutions subs e) new_subs
               with Failure s -> new_subs)
-           subs ve_list)
+           subs_copy ve_list)
       in
       SkLetExpr
         (IM.fold

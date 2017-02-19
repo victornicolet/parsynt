@@ -40,7 +40,35 @@ let rec dfy_type_of_symb_type : symbolic_type -> type_simple dafny_basic_type =
   | _ -> Bottom
 
 let pp_converted_stype fmt stype =
-  pp_dfy_typ fmt (dfy_type_of_symb_type stype)
+  match stype with
+  | Vector (t, _) ->
+    pp_dfy_typ fmt (Sequence (dfy_type_of_symb_type t))
+  | _ ->
+    pp_dfy_typ fmt (dfy_type_of_symb_type stype)
+
+let pp_input_params fmt varinfo_list =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt ",@;")
+    (fun fmt vi -> fprintf fmt "%s : %a"
+        vi.vname pp_converted_stype
+        (type_of_ciltyp vi.vtype))
+    fmt
+    varinfo_list
+
+let right_state_input_prefix = (Conf.get_conf_string "dafny_right_prefix")
+let _R_ s = right_state_input_prefix^s
+
+let pp_input_params_prefix fmt varinfo_list =
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt ",@;")
+    (fun fmt vi -> fprintf fmt "%s%s : %a"
+        right_state_input_prefix
+        vi.vname pp_converted_stype
+        (type_of_ciltyp vi.vtype))
+    fmt
+    varinfo_list
+
+
 (* Conf variables :
    - Suffix for the Join : dafny_join_suffix
    - Prefix for the homorphism : dafny_hom_prefix
@@ -55,7 +83,8 @@ type proofVariable =
   {
     pid : int;
     name : string;
-    in_type : symbolic_type;
+    sequence : varinfo;
+    in_vars : varinfo list;
     out_type : symbolic_type;
     empty_value : skExpr;
     function_expr : skExpr;
@@ -78,7 +107,7 @@ let clear () =
   in_order := []
 
 
-let pp_dfy fmt (s, e, for_join) =
+let pp_dfy fmt (seq, e, for_join, r) =
   (** Simple solution to go from the variables to
       functions of sequences : replace the variable
       names *)
@@ -91,20 +120,30 @@ let pp_dfy fmt (s, e, for_join) =
       (fun v ->
          match v with
          | SkVarinfo vi ->
-           let pfv = IH.find vi_to_proofVars vi.vid in
-           if for_join then
-             let _, _, is_from_right_state = is_right_state_varname vi.vname in
-             if is_from_right_state then
-               SkVarinfo {vi with vname = "right"^pfv.name}
-             else
-               SkVarinfo {vi with vname = "left"^pfv.name}
-           else
-             (** Replace by a recursive call *)
-             let seq_arg =
-               fprintf str_formatter "%s(%s[..|%s|-1])" pfv.name s s;
-               flush_str_formatter ()
+           begin
+           try
+             let pfv =
+               IH.find vi_to_proofVars vi.vid
              in
-             SkVarinfo {vi with vname = seq_arg}
+             if for_join then
+               let _, _, is_from_right_state = is_right_state_varname vi.vname in
+               if is_from_right_state then
+                 SkVarinfo {vi with vname = "right"^pfv.name}
+               else
+                 SkVarinfo {vi with vname = "left"^pfv.name}
+             else
+               (** Replace by a recursive call *)
+               let seq_arg =
+                 fprintf str_formatter "%s(%s[..|%s|-1])" pfv.name seq seq;
+                 flush_str_formatter ()
+               in
+               SkVarinfo {vi with vname = seq_arg}
+           with Not_found ->
+             (if r
+             then SkVarinfo
+                 {vi with vname = right_state_input_prefix^vi.vname}
+             else v)
+           end
 
          | SkArray (v, e) ->
            let input_i = check_option (vi_of v) in
@@ -114,9 +153,13 @@ let pp_dfy fmt (s, e, for_join) =
            begin
              match e with
              | SkVar (SkVarinfo i_vi) when is_left_index_vi i_vi ->
-               SkVarinfo {input_i with vname = "s[0]"}
+               let name = seq^"[0]" in
+               SkVarinfo {input_i with vname = name}
+
              | SkVar (SkVarinfo i_vi) ->
-               SkVarinfo {input_i with vname = "s[|s|-1]"}
+               let name = seq^"[|"^seq^"|-1]" in
+               SkVarinfo {input_i with vname = name}
+
              | _ -> failwith "Cannot generate proofs whith complex indexes."
            end
          | _ -> failwith "Cannot generate proofs for tuples")
@@ -125,16 +168,16 @@ let pp_dfy fmt (s, e, for_join) =
   (pp_c_expr ~for_dafny:true) fmt (replace_varnames e)
 (** Print the function corresponding to one variable. *)
 
-let pp_function_body fmt (pfv, s) =
+let pp_function_body fmt pfv =
   fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
                else @;%a@;@]"
-    s (pp_c_expr ~for_dafny:true) pfv.empty_value
-    pp_dfy (s, pfv.function_expr, false)
+    pfv.sequence.vname (pp_c_expr ~for_dafny:true) pfv.empty_value
+    pp_dfy (pfv.sequence.vname , pfv.function_expr, false, false)
 
-let pp_function fmt (pfv, s) =
-  fprintf fmt "@[function %s(%s: seq<%a>): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
-    pfv.name s pp_converted_stype pfv.in_type pp_converted_stype pfv.out_type
-    pp_function_body (pfv, s)
+let pp_function fmt pfv =
+  fprintf fmt "@[function %s(%a): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
+    pfv.name pp_input_params pfv.in_vars pp_converted_stype pfv.out_type
+    pp_function_body pfv
 
 
 (** Print the join corresponding to a variable.*)
@@ -149,7 +192,7 @@ let pp_join fmt pfv =
   in
   fprintf fmt "@[function %s%s(%a, %a): %a@]@\n@[<v 2>{@\n%a@]@\n}@\n@\n"
     pfv.name join_suffix pp_args "left" pp_args "right" pp_converted_stype pfv.out_type
-    pp_dfy ("", pfv.join_expr, true)
+    pp_dfy ("", pfv.join_expr, true, true)
 
 (** Print the lemma ensuring we have an homomorphism *)
 (* Require clauses *)
@@ -160,30 +203,32 @@ let pp_require_min_length fmt sl =
        ~pp_sep:(fun fmt () -> fprintf fmt " && ")
        (fun fmt (seq_name, i) -> fprintf fmt "|%s| >= %i" seq_name i)) sl
 
-let pp_requires fmt (s,t, reqs) =
-  if reqs = [] then ()
+let pp_requires fmt pfv =
+  if pfv.requires = [] then ()
   else
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@\n")
-      (fun fmt (p, _) -> p fmt) fmt reqs
+      (fun fmt (p, _) -> p fmt) fmt pfv.requires
 
 (* Assertions *)
-let pp_assertion_emptylist fmt (s, t) =
+let pp_assertion_emptylist fmt pfv =
   (* assert(s + [] == s); *)
-  fprintf fmt "@[assert(%s + [] == %s);@]" s s
+  fprintf fmt "@[assert(%s + [] == %s);@]" pfv.sequence.vname pfv.sequence.vname
 
 
-let pp_assertion_concat fmt (s,t) =
+let pp_assertion_concat fmt pfv =
+  let s = pfv.sequence.vname in let t = _R_ pfv.sequence.vname in
   (* {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;} *)
   fprintf fmt "@[assert(%s + %s[..|%s|-1]) + [%s[|%s|-1]] == %s + %s;@]"
     s t t t t s t
 
-let pp_func_of_concat fmt (pfv, s, t) =
-  fprintf fmt "%s(%s + %s)" pfv.name s t
+let pp_func_of_concat fmt pfv =
+  fprintf fmt "%s(%s + %s%s)" pfv.name pfv.sequence.vname
+    right_state_input_prefix pfv.sequence.vname
 
-let pp_func_of_single_list fmt (pfv, s) =
-  fprintf fmt "%s(%s)" pfv.name s
+let pp_func_of_single_list fmt pfv =
+  fprintf fmt "%s(%s)" pfv.name pfv.sequence.vname
 
-let pp_joined_res fmt (pfv, s, t) =
+let pp_joined_res fmt pfv =
   let print_args fmt seqname =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
@@ -193,9 +238,10 @@ let pp_joined_res fmt (pfv, s, t) =
   in
   fprintf fmt "%s(%a, %a)"
     (pfv.name^join_suffix)
-    print_args s print_args t
+    print_args pfv.sequence.vname
+    print_args (right_state_input_prefix^pfv.sequence.vname)
 
-let pp_joined_empty fmt (pfv, s) =
+let pp_joined_empty fmt pfv =
   let print_args fmt seqname =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
@@ -212,10 +258,11 @@ let pp_joined_empty fmt (pfv, s) =
   in
   fprintf fmt "%s(%a, %a)"
     (pfv.name^join_suffix)
-    print_args s print_inits s
+    print_args pfv.sequence.vname print_inits pfv.sequence.vname
 
 
-let pp_depend_lemmas fmt (pfv, s, t) =
+let pp_depend_lemmas fmt pfv =
+  let s = pfv.sequence.vname in let t = _R_ pfv.sequence.vname in
   pp_print_list
     ~pp_sep:(fun fmt () -> fprintf fmt "")
     (fun fmt dep_pfv -> fprintf fmt "%s%s(%s, %s[..|%s| - 1]);@;"
@@ -223,20 +270,20 @@ let pp_depend_lemmas fmt (pfv, s, t) =
     fmt
     (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
 
-let pp_hom fmt pfv s t =
+let pp_hom fmt pfv =
   (** Print the base case lemma *)
   fprintf fmt
     "@\n\
-     @[<v 2>lemma BaseCase%s(%s : seq<%a>)@\n\
+     @[<v 2>lemma BaseCase%s(%a)@\n\
      ensures %a == %a@\n\
      {}@."
-    pfv.name s pp_converted_stype pfv.in_type
-    pp_func_of_single_list (pfv, s)
-    pp_joined_empty (pfv, s);
+    pfv.name pp_input_params pfv.in_vars
+    pp_func_of_single_list pfv
+    pp_joined_empty pfv;
   (* Print the main lemma *)
     fprintf fmt
     "@\n\
-     @[<v 2>lemma %s%s(%s : seq<%a>, %s : seq<%a>)@\n\
+     @[<v 2>lemma %s%s(%a, %a)@\n\
      @[%a@]\
      @[ensures %a == %a@]@\n\
      @[<v 2>{@\n\
@@ -249,16 +296,17 @@ let pp_hom fmt pfv s t =
      @]@\n} // End else.\
      @]@\n} // End lemma.\
      @\n"
-    hom_prefix pfv.name s pp_converted_stype pfv.in_type t
-    pp_converted_stype pfv.in_type
-    pp_requires (s, t, pfv.requires)
-    pp_func_of_concat (pfv, s, t) pp_joined_res (pfv, s, t)
-    t pp_assertion_emptylist (s,t)
-    pfv.name s
-    pp_func_of_concat (pfv, s, t)
+    hom_prefix pfv.name  pp_input_params pfv.in_vars
+    pp_input_params_prefix pfv.in_vars
+    pp_requires pfv
+    pp_func_of_concat pfv pp_joined_res pfv
+    (_R_ pfv.sequence.vname)
+    pp_assertion_emptylist pfv
+    pfv.name pfv.sequence.vname
+    pp_func_of_concat pfv
     (* Use hommorphisms lemmas + default assertion *)
-    pp_depend_lemmas (pfv, s, t) pp_assertion_concat (s,t)
-    pp_joined_res (pfv, s, t)
+    pp_depend_lemmas pfv pp_assertion_concat pfv
+    pp_joined_res pfv
 
 
 
@@ -282,11 +330,12 @@ let find_exprs vi solved_sketch =
     | SkLetExpr ve_list ->
       ret_binding vi ve_list
   in
+  let flat_function =
+    force_flat solved_sketch.scontext.state_vars solved_sketch.loop_body
+  in
   (try
-    check_option (find_binding vi
-                    (force_flat solved_sketch.scontext.state_vars
-                       (sk_for_c solved_sketch.loop_body)))
-  with Failure s -> failwith "Failed to find expressions."),
+    check_option (find_binding vi flat_function)
+   with Failure s -> failwith "Failed to find expressions."),
     check_option (find_binding vi (sk_for_c solved_sketch.join_solution))
 
 
@@ -412,7 +461,7 @@ let gen_proof_vars sketch =
       try
         VS.max_elt arrays
       with Not_found ->
-        (makeVarinfo false "_unused_seq_var_"
+        (makeVarinfo false (Conf.get_conf_string "dafny_seq_placeholder")
            (TArray ((TInt ((IInt), []), None, []))))
   in
   let special_req vi =
@@ -427,6 +476,14 @@ let gen_proof_vars sketch =
   VS.iter
     (fun vi ->
        let function_expr, join_expr = find_exprs vi sketch in
+       let in_vars =
+         VS.diff (used_in_skexpr function_expr) sketch.scontext.state_vars
+       in
+       let input_vars =
+         if VS.cardinal in_vars >= 1 then
+           VSOps.varlist in_vars else
+           [array_of_sketch]
+       in
        let join_expr = rebuild_min_max join_expr in
        set_int_limit_uses function_expr;
        set_int_limit_uses join_expr;
@@ -443,7 +500,8 @@ let gen_proof_vars sketch =
            pid = vi.vid;
            inspected = false;
            name = pfv_name;
-           in_type = array_type (type_of_var (SkVarinfo array_of_sketch));
+           sequence = array_of_sketch;
+           in_vars =  input_vars;
            out_type = type_of function_expr;
            base_case = pfv_base_case;
            empty_value = get_init_value sketch vi;
@@ -513,7 +571,6 @@ let gen_proof_vars sketch =
 
 
 let pp_all_and_clear fmt =
-  let s = "s" in let t = "t" in
   if !use_max then pp_max_def fmt;
   if !use_min then pp_min_def fmt;
   if !use_max_int then pp_max_int_def fmt;
@@ -524,8 +581,8 @@ let pp_all_and_clear fmt =
       !in_order
   in
   (* Print all function *)
-  iter_pfv (fun vid pfv -> pp_function fmt (pfv,s));
+  iter_pfv (fun vid pfv -> pp_function fmt pfv);
   iter_pfv (fun vid pfv -> pp_join fmt pfv);
-  iter_pfv (fun vid pfv -> pp_hom fmt pfv s t);
+  iter_pfv (fun vid pfv -> pp_hom fmt pfv);
   clear_uses ();
   clear ()

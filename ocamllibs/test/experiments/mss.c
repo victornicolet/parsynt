@@ -1,7 +1,7 @@
 #include "stdio.h"
 
 
-int mss_array(int* a, int n) {
+int example_mss (int* a, int n) {
   int mts = 0;
   int sum = 0;
   int mps = 0;

@@ -1,4 +1,4 @@
-int length (int *a, int n) {
+int example_length (int *a, int n) {
   int length = 0;
 
   for (int i = 0; i < n; i++) {

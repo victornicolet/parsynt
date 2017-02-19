@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-int mps_array(int* a, int n) {
+int example_mps(int* a, int n) {
   int sum = 0;
   int mps = 0;
   for(int i = 0; i < n; i++) {

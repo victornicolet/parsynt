@@ -2,6 +2,7 @@ Setting name,Setting value
 class_member_appendix,my_
 class_name_appendix,Parallel
 dafny_examples_folder,dafny_examples/
+dafny_right_prefix,R_
 dafny_join_suffix,Join
 dafny_hom_prefix,Hom
 dafny_hom_empty_assert,assert(s + [] == s);
@@ -9,6 +10,7 @@ dafny_max_fun,DfMax
 dafny_min_fun,DfMin
 dafny_min_seq_fun,DfMinSeq
 dafny_max_seq_fun,DfMaxSeq
+dafny_seq_placeholder,dafny_seq_
 debug_sketch,false
 loop_finite_limit,10
 rosette_base_init_values,0 1 #t #f

@@ -1,11 +1,11 @@
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
-function Mts___0(s: seq<int>): int
-{ if s == [] then  0 else  DfMax(0, (Mts___0(s[..|s|-1]) + s[|s|-1])) 
+function Mts___0(a : seq<int>): int
+{ if a == [] then  0 else  DfMax(0, (Mts___0(a[..|a|-1]) + a[|a|-1])) 
 }
 
-function Aux_1(s: seq<int>): int
-{ if s == [] then  1 else  (s[|s|-1] + Aux_1(s[..|s|-1])) 
+function Aux_1(a : seq<int>): int
+{ if a == [] then  1 else  (a[|a|-1] + Aux_1(a[..|a|-1])) 
 }
 
 function Mts___0Join(leftAux_1 : int, leftMts___0 : int, rightAux_1 : int, rightMts___0 : int): int
@@ -15,41 +15,49 @@ function Mts___0Join(leftAux_1 : int, leftMts___0 : int, rightAux_1 : int, right
 
 function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 {
-  ((leftAux_1 - 1) + rightAux_1)
+  ((rightAux_1 - 1) + leftAux_1)
 }
 
 
-lemma HomMts___0(s : seq<int>, t : seq<int>)
-  
-               ensures Mts___0(s + t) == Mts___0Join(Aux_1(s), Mts___0(s), Aux_1(t), Mts___0(t))
+lemma BaseCaseMts___0(a : seq<int>)
+  ensures Mts___0(a) == Mts___0Join(Aux_1(a), Mts___0(a), Aux_1([]), Mts___0([]))
+  {}
+
+lemma HomMts___0(a : seq<int>, R_a : seq<int>)
+  ensures Mts___0(a + R_a) == Mts___0Join(Aux_1(a), Mts___0(a), Aux_1(R_a), Mts___0(R_a))
   {
-    if t == [] 
+    if R_a == [] 
     {
-    assert(s + [] == s);
+    assert(a + [] == a);
+    BaseCaseMts___0(a);
     } else {
     calc{
-    Mts___0(s + t);
+    Mts___0(a + R_a);
     =={
-      HomAux_1(s, t[..|t| - 1]);
-      assert(s + t[..|t|-1]) + [t[|t|-1]] == s + t;
+      HomAux_1(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    Mts___0Join(Aux_1(s), Mts___0(s), Aux_1(t), Mts___0(t));
+    Mts___0Join(Aux_1(a), Mts___0(a), Aux_1(R_a), Mts___0(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
 
-lemma HomAux_1(s : seq<int>, t : seq<int>)
-  
-               ensures Aux_1(s + t) == Aux_1Join(Aux_1(s), Aux_1(t))
+lemma BaseCaseAux_1(a : seq<int>)
+  ensures Aux_1(a) == Aux_1Join(Aux_1(a), Aux_1([]))
+  {}
+
+lemma HomAux_1(a : seq<int>, R_a : seq<int>)
+  ensures Aux_1(a + R_a) == Aux_1Join(Aux_1(a), Aux_1(R_a))
   {
-    if t == [] 
+    if R_a == [] 
     {
-    assert(s + [] == s);
+    assert(a + [] == a);
+    BaseCaseAux_1(a);
     } else {
     calc{
-    Aux_1(s + t);
-    =={ assert(s + t[..|t|-1]) + [t[|t|-1]] == s + t; }
-    Aux_1Join(Aux_1(s), Aux_1(t));
+    Aux_1(a + R_a);
+    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
+    Aux_1Join(Aux_1(a), Aux_1(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

@@ -1,4 +1,4 @@
-_Bool balanced_string (_Bool *a, int n) {
+_Bool example_balanced_parenthesis (_Bool *a, int n) {
   _Bool bal = 1;
   int cnt = 0;
   for (int i = 0; i < n; i++) {

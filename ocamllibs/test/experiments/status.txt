@@ -1,15 +1,14 @@
 Example name		# Join synth.	# Tbb		# Proof checks
 sum			yes    		y     		yes
-min			yes		y		no
-max			yes		y		no
+min			yes		y		yes
+max			yes		y		yes
 average			no		no		no
-hamming			yes		y		no
+hamming			yes		y		no (not supported)
 length			yes		y		yes
-2nd-min			yes		no		no
-2nd-max			yes		no		no
+2nd-min			yes		no		yes
 mps			yes		no		yes
 mts			yes		no		yes
-mss			yes		no		no
+mss			yes		no		yes
 mps-p			t-o		no		no
 mts-p			t-o		no		no
 poly			yes		no		no

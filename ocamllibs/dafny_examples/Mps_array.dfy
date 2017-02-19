@@ -1,67 +1,67 @@
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
-function Mps(s: seq<int>): int
-{ if s == [] then
+function Mps(a : seq<int>): int
+{ if a == [] then
     0
    else 
-   DfMax((Sum(s[..|s|-1]) + s[|s|-1]), Mps(s[..|s|-1]))
+   DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Mps(a[..|a|-1]))
    
 }
 
-function Sum(s: seq<int>): int
-{ if s == [] then  0 else  (Sum(s[..|s|-1]) + s[|s|-1]) 
+function Sum(a : seq<int>): int
+{ if a == [] then  0 else  (Sum(a[..|a|-1]) + a[|a|-1]) 
 }
 
 function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
 {
-  DfMax(((leftMps - rightMps) + rightMps), (rightMps + leftSum))
+  DfMax((leftSum + rightMps), leftMps)
 }
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  ((rightSum + 1) + (leftSum - 1))
+  (rightSum + leftSum)
 }
 
 
-lemma BaseCaseMps(s : seq<int>)
-  ensures Mps(s) == MpsJoin(Mps(s), Sum(s), Mps([]), Sum([]))
+lemma BaseCaseMps(a : seq<int>)
+  ensures Mps(a) == MpsJoin(Mps(a), Sum(a), Mps([]), Sum([]))
   {}
 
-lemma HomMps(s : seq<int>, t : seq<int>)
-  ensures Mps(s + t) == MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t))
+lemma HomMps(a : seq<int>, R_a : seq<int>)
+  ensures Mps(a + R_a) == MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a))
   {
-    if t == [] 
+    if R_a == [] 
     {
-    assert(s + [] == s);
-    BaseCaseMps(s);
+    assert(a + [] == a);
+    BaseCaseMps(a);
     } else {
     calc{
-    Mps(s + t);
+    Mps(a + R_a);
     =={
-      HomSum(s, t[..|t| - 1]);
-      assert(s + t[..|t|-1]) + [t[|t|-1]] == s + t;
+      HomSum(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    MpsJoin(Mps(s), Sum(s), Mps(t), Sum(t));
+    MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
 
-lemma BaseCaseSum(s : seq<int>)
-  ensures Sum(s) == SumJoin(Sum(s), Sum([]))
+lemma BaseCaseSum(a : seq<int>)
+  ensures Sum(a) == SumJoin(Sum(a), Sum([]))
   {}
 
-lemma HomSum(s : seq<int>, t : seq<int>)
-  ensures Sum(s + t) == SumJoin(Sum(s), Sum(t))
+lemma HomSum(a : seq<int>, R_a : seq<int>)
+  ensures Sum(a + R_a) == SumJoin(Sum(a), Sum(R_a))
   {
-    if t == [] 
+    if R_a == [] 
     {
-    assert(s + [] == s);
-    BaseCaseSum(s);
+    assert(a + [] == a);
+    BaseCaseSum(a);
     } else {
     calc{
-    Sum(s + t);
-    =={ assert(s + t[..|t|-1]) + [t[|t|-1]] == s + t; }
-    SumJoin(Sum(s), Sum(t));
+    Sum(a + R_a);
+    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
+    SumJoin(Sum(a), Sum(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

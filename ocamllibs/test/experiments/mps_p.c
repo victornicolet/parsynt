@@ -1,4 +1,4 @@
-int mps_with_pos (int *a, int n) {
+int example_mps_p (int *a, int n) {
   int mps = 0;
   int pos = 0;
   int sum = 0;
