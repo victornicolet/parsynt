@@ -90,8 +90,10 @@ type proofVariable =
     empty_value : skExpr;
     function_expr : skExpr;
     join_expr : skExpr;
+    mutable needs_base_case : bool;
     mutable uses_pos : bool;
     mutable base_case : int;
+    mutable func_base_case : int;
     mutable inspected : bool;
     mutable requires :
       ((Format.formatter -> unit) * int) list;
@@ -175,15 +177,43 @@ let pp_dfy fmt (ivars, seq, e, for_join, r) =
   (pp_c_expr ~for_dafny:true) fmt (replace_varnames e)
 (** Print the function corresponding to one variable. *)
 
+let pp_base_case_cond fmt pfv =
+  if pfv.base_case = 0 then
+    fprintf fmt "%s == []" (_R_ pfv.sequence.vname)
+  else
+    fprintf fmt "|%s| == %i" (_R_ pfv.sequence.vname)
+      pfv.base_case
+
+let pp_func_base_case_cond fmt pfv =
+  if pfv.func_base_case = 0 then
+    fprintf fmt "%s == []" pfv.sequence.vname
+  else
+    fprintf fmt "|%s| == %i" pfv.sequence.vname
+      pfv.base_case
+
+let pp_requires_fun fmt pfv =
+  if pfv.func_base_case > 0 then
+    fprintf fmt "@\nrequires |%s| >= %i"
+    pfv.sequence.vname pfv.func_base_case
+
+let pp_init_value fmt pfv =
+  if pfv.func_base_case = 1 then
+    fprintf fmt "%s[0]" pfv.sequence.vname
+  else
+    (pp_c_expr ~for_dafny:true fmt pfv.empty_value)
+
 let pp_function_body fmt pfv =
-  fprintf fmt "@[<hv 2> if %s == [] then@; %a@;\
+  fprintf fmt "@[<hv 2> if %a then@; %a@;\
                else @;%a@;@]"
-    pfv.sequence.vname (pp_c_expr ~for_dafny:true) pfv.empty_value
+    pp_func_base_case_cond pfv
+    pp_init_value pfv
     pp_dfy (pfv.ivars, pfv.sequence.vname , pfv.function_expr, false, false)
 
 let pp_function fmt pfv =
-  fprintf fmt "@[function %s(%a): %a@]@\n@[<v 2>{%a@]@\n}@\n@\n"
+  fprintf fmt "@[function %s(%a): %a@]%a@\n@[<v 2>{%a@]@\n}@\n@\n"
     pfv.name pp_input_params pfv.in_vars pp_converted_stype pfv.out_type
+    (* Some functoin might need requires statements *)
+    pp_requires_fun pfv
     pp_function_body pfv
 
 
@@ -219,12 +249,12 @@ let pp_requires fmt pfv =
 (* Assertions *)
 let pp_assertion_base_case fmt pfv =
   (* assert(s + [] == s); *)
-  if pfv.base_case = 0 then
+  if pfv.func_base_case = 0 then
     fprintf fmt "@[assert(%s + [] == %s);@]"
       pfv.sequence.vname pfv.sequence.vname
   else
     begin
-      if pfv.base_case = 1 then
+      if pfv.func_base_case = 1 then
         fprintf fmt "@[assert(%s + %s == %s + [%s[0]]);@]"
           pfv.sequence.vname
           (_R_ pfv.sequence.vname)
@@ -302,34 +332,35 @@ let pp_depend_lemmas fmt pfv =
     (fun fmt dep_pfv -> fprintf fmt "%s%s(%s, %s[..|%s| - 1]);@;"
         hom_prefix dep_pfv.name s t t)
     fmt
-    (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.join_depends)
+    (List.filter (fun dep_pfv -> dep_pfv != pfv) pfv.depends)
 
 let pp_base_case_cond fmt pfv =
-  if pfv.base_case = 0 then
+  if pfv.func_base_case = 0 then
     fprintf fmt "%s == []" (_R_ pfv.sequence.vname)
   else
     fprintf fmt "|%s| == %i" (_R_ pfv.sequence.vname)
-      pfv.base_case
+      pfv.func_base_case
 
 let pp_hom fmt pfv =
   (** Print the base case lemma *)
-  fprintf fmt
-    "@\n\
-     @[<v 2>lemma BaseCase%s(%a)@\n\
-     %a
-     ensures %a == %a@\n\
-     {}@."
-    pfv.name
-    (fun fmt pfv ->
-       if pfv.base_case = 0 then
-         pp_input_params fmt pfv.in_vars
-       else
-         fprintf fmt "%a, %a"
-           pp_input_params pfv.in_vars
-           pp_input_params_prefix pfv.in_vars) pfv
-    pp_requires pfv
-    pp_func_of_single_list pfv
-    pp_joined_base_case pfv;
+  (if pfv.needs_base_case then
+     fprintf fmt
+       "@\n\
+        @[<v 2>lemma BaseCase%s(%a)@\n\
+        %a\
+        ensures %a == %a@\n\
+        {}@."
+       pfv.name
+       (fun fmt pfv ->
+          if pfv.base_case = 0 then
+            pp_input_params fmt pfv.in_vars
+          else
+            fprintf fmt "%a, %a"
+              pp_input_params pfv.in_vars
+              pp_input_params_prefix pfv.in_vars) pfv
+       pp_requires pfv
+       pp_func_of_single_list pfv
+       pp_joined_base_case pfv);
   (* Print the main lemma *)
     fprintf fmt
     "@\n\
@@ -338,7 +369,7 @@ let pp_hom fmt pfv =
      @[ensures %a == %a@]@\n\
      @[<v 2>{@\n\
      if %a @;{@;%a@\n\
-     BaseCase%s(%a);@\n\
+     %a
      } else {@;\
      calc{@\n%a;@\n\
      @[<hv 2>=={@;%a%a@;}@]@\n%a;\
@@ -352,15 +383,18 @@ let pp_hom fmt pfv =
     pp_func_of_concat pfv pp_joined_res pfv
     pp_base_case_cond pfv
     pp_assertion_base_case pfv
-    pfv.name
     (fun fmt pfv ->
-       if pfv.base_case = 0
-       then
-         fprintf fmt "%s" pfv.sequence.vname
-       else
-         fprintf fmt "%s, %s"
-           pfv.sequence.vname
-           (_R_ pfv.sequence.vname)) pfv
+       if pfv.needs_base_case then
+         fprintf fmt "BaseCase%s(%a);@\n"
+           pfv.name
+           (fun fmt pfv ->
+              if pfv.base_case = 0
+              then
+                fprintf fmt "%s" pfv.sequence.vname
+              else
+                fprintf fmt "%s, %s"
+                  pfv.sequence.vname
+                  (_R_ pfv.sequence.vname)) pfv) pfv
     pp_func_of_concat pfv
     (* Use hommorphisms lemmas + default assertion *)
     pp_depend_lemmas pfv pp_assertion_concat pfv
@@ -619,6 +653,8 @@ let gen_proof_vars sketch =
            uses_pos = uses_pos;
            out_type = type_of function_expr;
            base_case = pfv_base_case;
+           func_base_case = pfv_base_case;
+           needs_base_case = false;
            empty_value = get_init_value sketch vi;
            function_expr = rebuild_min_max function_expr;
            requires = special_req vi array_of_sketch;
@@ -669,6 +705,9 @@ let gen_proof_vars sketch =
   in
   let update_requires_pfv vid pfv =
     let update_requires depend_set =
+      List.iter
+        (fun pfv_dep -> pfv_dep.needs_base_case <- true)
+        pfv.depends;
       List.fold_left
         (fun new_reqs pfv_dep ->
            pfv.base_case <- max pfv.base_case pfv_dep.base_case;
