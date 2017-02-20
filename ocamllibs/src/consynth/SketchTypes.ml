@@ -675,6 +675,21 @@ let rec rec_let (r : 'a recursor) sklet =
     List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
       r.init ve_list
 
+
+let uses_max_min l =
+  let recursor =
+    { join = (fun a b -> a || b);
+      init = false;
+      case = (fun e ->
+          match e with SkBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+      on_case = (fun f e ->
+          match e with SkBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+      on_const = (fun e -> false);
+      on_var = (fun e -> true);
+    }
+  in
+  rec_let recursor l
+
 (** Another recursion helper : a syntax tree tranformer *)
 let transform_expr
     (case : skExpr -> bool)
@@ -1558,7 +1573,7 @@ type sketch_rep =
     loop_name : string;
     ro_vars_ids : int list;
     scontext : context;
-    min_input_size : int IM.t;
+    min_input_size : int;
     loop_body : sklet;
     join_body : sklet;
     join_solution : sklet;

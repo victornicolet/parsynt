@@ -597,7 +597,7 @@ let rec  merge_cond vs c let_if let_else pre_substs =
        IM.merge
          (fun vid if_expr_o else_expr_o ->
             let cur_var = Var (VSOps.find_by_id vid vs) in
-            let mod_cond = apply_subs c pre_substs in
+            let mod_cond = c in
             match if_expr_o, else_expr_o with
             | Some if_expr, Some else_expr ->
               Some (FQuestion (mod_cond, if_expr, else_expr))
@@ -681,7 +681,7 @@ and red vs let_form substs =
        LetRec (igu, redd_body, reduce vs  cont, loc)
 
   | LetCond (e, bif, belse, cont, loc) ->
-    let ce =  apply_subs e substs in
+    let ce = e  in
     let red_if = reduce vs  bif in
     let red_else = reduce vs belse in
     let merged, nsubs, olde_o = merge_cond vs ce red_if red_else substs in
@@ -772,6 +772,7 @@ let eliminate_temporaries allvs vs let_form =
       begin
         if VS.mem vi vs then
           let new_cont, fsubs = elim_let_aux letcont subs in
+          (* ELiminate the variable assigned from the current subs *)
           Let (vi, n_expr, new_cont , id, loc), fsubs
         else
           let new_subs = add_sub vi.vid n_expr subs in

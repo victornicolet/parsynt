@@ -175,7 +175,7 @@ let func2sketch funcreps =
              | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
              | SkConst c -> IM.add k 1 m_s
              | SkVar v ->
-               (match v with
+              (match v with
                 | SkVarinfo vi -> IM.add k 0 m_s
                 | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
                 | _ -> raise Tuple_fail)
@@ -183,6 +183,9 @@ let func2sketch funcreps =
           reach_consts IM.empty
       in
       let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
+      let max_m_sizes = max max_m_sizes
+          (if uses_max_min loop_body then 1 else 0)
+      in
       printf "@.Max dependency length : %i@." max_m_sizes;
       {
         id = !no_sketches;
@@ -196,7 +199,7 @@ let func2sketch funcreps =
             all_vars = var_set;
             costly_exprs = ES.empty;
           };
-        min_input_size = m_sizes;
+        min_input_size = max_m_sizes;
         loop_body = loop_body;
         join_body = join_body;
         join_solution = SkLetExpr ([]);

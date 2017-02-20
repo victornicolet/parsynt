@@ -643,7 +643,7 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
 
   | SkQuestion (c, e1, e2) ->
     (if for_dafny then
-       fprintf fmt "@[<hov 2>if %a then@;%a else@;%a@]"
+       fprintf fmt "@[<hov 2>(if %a then@;%a else@;%a)@]"
      else
        fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]")
       (pp_c_expr ~for_dafny:for_dafny) c (pp_c_expr ~for_dafny:for_dafny) e1

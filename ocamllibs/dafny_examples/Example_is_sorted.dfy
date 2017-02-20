@@ -25,7 +25,7 @@ function Aux_0Join(leftAux_0 : int, rightAux_0 : int): int
 
 function IssJoin(leftAux_0 : int, leftPrev : int, leftIss : bool, rightAux_0 : int, rightPrev : int, rightIss : bool): bool
 {
-  (((-2 - leftPrev) >= (-1 - rightAux_0)) && (rightIss && leftIss))
+  (((1 - leftPrev) >= (2 - rightAux_0)) && (rightIss && leftIss))
 }
 
 function PrevJoin(leftPrev : int, rightPrev : int): int

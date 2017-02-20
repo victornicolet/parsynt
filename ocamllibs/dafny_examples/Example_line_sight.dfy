@@ -23,7 +23,7 @@ function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 
 function AmaxJoin(leftAmax : int, rightAmax : int): int
 {
-  DfMax((rightAmax + DfMax(0, 0)), (leftAmax + 0))
+  DfMax(rightAmax, leftAmax)
 }
 
 function VisibleJoin(leftAux_1 : int, leftAmax : int, rightAux_1 : int, rightAmax : int): bool

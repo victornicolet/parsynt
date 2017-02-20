@@ -441,7 +441,7 @@ let pp_synth fmt s0 state_vars read_vars min_dep_len =
 *)
 let pp_rosette_sketch fmt (sketch : sketch_rep) =
   clear_special_consts ();
-  let min_dep_len = IM.fold (fun k i m -> max i m) sketch.min_input_size 0 in
+  let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
   (** Read variables : force read /\ state = empty *)

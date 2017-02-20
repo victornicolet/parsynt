@@ -2,15 +2,22 @@
 
 Run ```./setup.sh``` in the base folder. You will need an active internet connection because the script will try to install missing packages and components.
 
-REMARK : we use Ocaml's OPAM package manager, so you should have the environment variables correctly set if you have already installed it. Otherwise, you will be asked during the installation of OPAM is you want it to write into your ```.profile```. We assume the environment has access to OPAM's binaries, so please agree.
+We tested the tool on Ubuntu 16.04, if you don't have Ubuntu, please use a virtual machine running Ubuntu on it.
+You can also install the required packages manually (look at the script and requirements below) if you wish to use a different distribution.
+
+However, you should stil run the script at the end to setup the tool!
+
+### REMARK : we use Ocaml's OPAM package manager, so you should have the environment variables correctly set if you have already installed it. Otherwise, you will be asked during the installation of OPAM is you want it to write into your ```.profile```. We assume the environment has access to OPAM's binaries, so please agree.
 
 ## Using the tool
 
 When ```setup.sh``` succeeds, you have a link to an executable in the base folder. Try the tool on a file ```example.c``` :
 
-```./Parsynth example.c```
+```./Parsynth c_examples/<example_name.c>```
 
 The tool will search for all the innermost for loops and try to find a divide-and-conquer parallelization for them. If it succeeds, it will produce a TBB implementation in ```tbb_examples/<name of the function where the loop appears>.cpp``` and a proof to be checked by Dafny in ```dafny_examples/<name of the function where the loop appears>.dfy```.
+
+To check the proofs, the user might want to install the Dafny Proof checker.
 
 # Requirements
 
@@ -73,3 +80,14 @@ The compilation and execution of the Ocaml executable relies on some project str
 ```cd parsynth_racket```
 
 ```raco pkg install```
+
+# Source code
+
+## Solving the sketch using Rosette
+
+The sketch of the join is written in Racket and we use Rosette to solve it. The grammar for the completions of the holes of the sketch is defined in the library in ```parsynth_racket```.
+
+## The tool is written in Ocaml
+
+The Ocaml source is in ```ocamllibs/src``` organized into different libraries. If you want to look at the source, see ```Canalyst.ml``` first, as it describes the transformations of the code to generate a sketch (translation to a functional form, creating the holes and the sketch structure).
+The generation of auxiliary material (proof and TBB implementation) is in ```codegen/```.

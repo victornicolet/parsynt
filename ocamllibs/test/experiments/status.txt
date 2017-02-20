@@ -9,8 +9,8 @@ length			yes		y		yes
 mps			yes		no		yes
 mts			yes		no		yes
 mss			yes		no		yes
-mps-p			t-o		no		no
-mts-p			t-o		no		no
+mps-p			yes		no		no
+mts-p			yes		no		no
 poly			yes		no		no
 atoi			yes		no		no
 is-sorted		yes		no		no
@@ -24,19 +24,3 @@ max-blockno1		t-o		no		no
 
 
 16:09-18/02/2017 : ALL correct example pass join generation.
-
-General :
-- mts-p and mps-p 's joins we proposed previously are not correct. I don't know why the solver
-  was able to solve the problem before. But we have to express this problem in a different
-  manner. The problem is, if the mps sets back to 0 the position is changed, but the prefix is actually
-  the current prefix (not very well explained but.. )
-
-Synthesizing the join :
-- average : this "not an application" error appears again. Racket is unable to use the parameter n.
-
-Compiling the TBB implementation:
-- need to add the structure for the example.
-
-Compiling the proof:
-- check dependencies to order homomorphisms proofs / functions / joins.
-- "requires" dependency collection does not work yet ...

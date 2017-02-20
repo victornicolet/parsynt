@@ -30,24 +30,24 @@ function Cnt(a : seq<bool>): int
 { if a == [] then
     0
    else 
-   (Cnt(a[..|a|-1]) + if (a[|a|-1] && (! F(a[..|a|-1]))) then 1 else 0)
+   (Cnt(a[..|a|-1]) + (if (a[|a|-1] && (! F(a[..|a|-1]))) then 1 else 0))
    
 }
 
 function Aux_0Join(leftAux_0 : bool, rightAux_0 : bool): bool
 {
-  leftAux_0
+  (leftAux_0 || leftAux_0)
 }
 
 function FJoin(leftF : bool, rightF : bool): bool
 {
-  (rightF && rightF)
+  (rightF || rightF)
 }
 
 function CntJoin(leftAux_0 : bool, leftCnt : int, leftF : bool, rightAux_0 : bool, rightCnt : int, rightF : bool): int
 {
-  if (leftF && rightAux_0) then (rightCnt + (leftCnt + -1)) else
-    (rightCnt + leftCnt)
+  ((if ((leftF || leftF) && (rightAux_0 && rightAux_0)) then
+     (rightCnt + -2) else (rightCnt + -1)) + (leftCnt + 1))
 }
 
 

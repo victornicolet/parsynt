@@ -19,17 +19,17 @@ function Res(a : seq<bool>): bool
 
 function Aux_2Join(leftAux_2 : bool, leftRes : bool, rightAux_2 : bool, rightRes : bool): bool
 {
-  (leftAux_2 || (rightRes || rightAux_2))
+  (leftRes || (leftAux_2 || (rightRes || rightAux_2)))
 }
 
-function Seen1Join(leftSeen1 : bool, rightSeen1 : bool): bool
+function Seen1Join(leftRes : bool, leftSeen1 : bool, rightRes : bool, rightSeen1 : bool): bool
 {
-  ((rightSeen1 && rightSeen1) || (rightSeen1 || leftSeen1))
+  (rightRes || (rightSeen1 || (rightRes || leftSeen1)))
 }
 
 function ResJoin(leftAux_2 : bool, leftRes : bool, leftSeen1 : bool, rightAux_2 : bool, rightRes : bool, rightSeen1 : bool): bool
 {
-  (((rightRes || leftSeen1) && (rightAux_2 && rightAux_2)) || (leftRes && leftSeen1))
+  ((rightAux_2 && leftSeen1) || (leftRes || rightRes))
 }
 
 
@@ -55,11 +55,11 @@ lemma HomAux_2(a : seq<bool>, R_a : seq<bool>)
 } // End lemma.
 
 lemma BaseCaseSeen1(a : seq<bool>)
-  ensures Seen1(a) == Seen1Join(Seen1(a), Seen1([]))
+  ensures Seen1(a) == Seen1Join(Res(a), Seen1(a), Res([]), Seen1([]))
   {}
 
 lemma HomSeen1(a : seq<bool>, R_a : seq<bool>)
-  ensures Seen1(a + R_a) == Seen1Join(Seen1(a), Seen1(R_a))
+  ensures Seen1(a + R_a) == Seen1Join(Res(a), Seen1(a), Res(R_a), Seen1(R_a))
   {
     if R_a == [] 
     {
@@ -70,7 +70,7 @@ lemma HomSeen1(a : seq<bool>, R_a : seq<bool>)
     calc{
     Seen1(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    Seen1Join(Seen1(a), Seen1(R_a));
+    Seen1Join(Res(a), Seen1(a), Res(R_a), Seen1(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
