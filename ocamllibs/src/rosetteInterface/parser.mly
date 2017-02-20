@@ -136,7 +136,11 @@ expr   : INT       { Int_e $1 }
        | LPAREN CONS expr expr RPAREN       	{ Cons_e ($3, $4) }
        | NIL                                	{ Nil_e }
 
-binop : PLUS       { Plus }
+binopseq0 : binop binopseq0 {$1}
+	  | binop {$1}
+
+binop : LPAREN CHOOSE binopseq0 RPAREN { $3 }
+      | PLUS       { Plus }
       | MINUS      { Minus }
       | MUL        { Mul }
       | DIV        { Div }

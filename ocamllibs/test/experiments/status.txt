@@ -18,8 +18,8 @@ dropwhile		yes		no		no
 balanced-parenthesis	yes		no		no?
 0star1star		yes		no		no
 count-1s		yes		no		no
-line-sight		yes		no		no
-0after1			yes		no		no
+line-sight		yes		no		yes
+0after1			yes		no		yes
 max-blockno1		t-o		no		no
 
 

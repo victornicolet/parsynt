@@ -383,7 +383,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     @param i_end The end index for this instance.
 *)
 let pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len =
-  if i_m - i_st > min_dep_len && i_end - i_m > min_dep_len then
+  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
       "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
       main_struct_name

@@ -18,7 +18,6 @@ ocamllibs/_build
 ocamllibs/_build/_digests
 ocamllibs/_build/_log
 ocamllibs/tbb_examples/*.cpp
-ocamllibs/dafny_examples/*.dfy
 ocamllibs/dafny_examples/*.dll
 ocamllibs/dafny_examples/*.mdb
 ocamllibs/dump
