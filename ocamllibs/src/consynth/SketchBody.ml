@@ -224,18 +224,35 @@ class sketch_builder
     (all_vs : VS.t)
     (stv : VS.t)
     (func : letin)
-    figu =
+    _figu =
   object (self)
     val mutable all_vars = all_vs
     val mutable state_vars = stv
     val mutable func = func
-    val mutable figu = figu
+    val mutable figu = _figu
     val mutable sketch = None
+    val mutable global_bound =
+      let _, (_, guard, _) = _figu in
+      match guard with
+      | FBinop (Lt, _, Var vn) -> Some vn
+      | FBinop (Le, _, Var vn) -> Some vn
+      | FBinop (Gt, Var vn, _) -> Some vn
+      | FBinop (Ge, Var vn, _) -> Some vn
+      | _ -> None
+    val mutable uses_global_bound = false
+
+    method is_global_bound vi =
+      match global_bound with
+      | Some vn -> vi = vn
+      | None -> false
 
     method build =
       let rec convert (cur_v : skLVar)  =
         function
-        | Var vi -> mkVarExpr vi
+        | Var vi ->
+          (if self#is_global_bound vi then uses_global_bound <- true
+          else ());
+          mkVarExpr vi
 
         (** TODO : array -> region *)
         | Array (vi, el) ->
@@ -466,6 +483,7 @@ class sketch_builder
                       (index, (iletin, gskexpr, uletin)));
 
     method get_sketch = sketch
+    method get_uses_global_bounds = uses_global_bound
   end
 
 (** Defines the kind of constants we can accept a initialization

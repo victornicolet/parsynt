@@ -130,17 +130,6 @@ and symbolic_type =
 
 and symb_unop =
     | Not | Add1 | Sub1
-    (**
-       From C++11 : 4 different ops.
-       value   round   floor   ceil    trunc
-       -----   -----   -----   ----    -----
-       2.3     2.0     2.0     3.0     2.0
-       3.8     4.0     3.0     4.0     3.0
-       5.5     6.0     5.0     6.0     5.0
-       -2.3    -2.0    -3.0    -2.0    -2.0
-       -3.8    -4.0    -4.0    -3.0    -3.0
-       -5.5    -6.0    -6.0    -5.0    -5.0
-    *)
     | Abs | Floor | Ceiling | Truncate | Round
     | Neg
     (** Misc*)
@@ -1379,6 +1368,14 @@ let is_right_index_vi i =
     false)
   with Failure s -> if s = "found" then true else false
 
+
+(* Extract boundary varibles "n" from sketch information *)
+let rec get_loop_bound_var (se : skExpr) : skExpr option =
+  match se with
+  | SkBinop (Lt, _, en) -> Some en
+  | SkBinop (Le, _, ene) -> Some ene
+  | _ -> None
+
 (* ------------------------ 7- TYPING EXPRESSIONS ----------------------------*)
 
 let rec pp_typ fmt t =
@@ -1574,6 +1571,7 @@ type sketch_rep =
     ro_vars_ids : int list;
     scontext : context;
     min_input_size : int;
+    uses_global_bound : bool;
     loop_body : sklet;
     join_body : sklet;
     join_solution : sklet;
@@ -1600,6 +1598,8 @@ let get_init_value sktch vi =
     (match scm_to_sk (IM.find vi.Cil.vid sktch.init_values) with
      | _ , Some e -> e  | _ -> raise Not_found)
 
+let get_loop_bound sktch =
+  get_loop_bound_var (get_index_guard sktch)
 
 
 (* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)

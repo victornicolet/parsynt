@@ -34,9 +34,20 @@ let pp_assignments state_struct_name state_name fmt =
 let pp_comment fmt str =
   Format.fprintf fmt ";;%s@." str
 
-let pp_body_app fmt (body_name, s, from, to_n) =
-  Format.fprintf fmt "@[<hov 2>(%s (%s %i %i) %i %i)@]"
-    body_name s from to_n from to_n
+(** Written only in the one-dimensional index case so far *)
+let pp_body_app fmt (body_name, s, bnds, from, to_n) =
+  let bnm, i_st, i_m, i_e = bnds in
+  let pp_input_state fmt () =
+    Format.fprintf fmt "(%s %i %i)" s from to_n
+  in
+  let pp_global_bounds fmt () =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      (fun fmt s -> Format.fprintf fmt "%i" i_e)
+      fmt bnm
+  in
+  Format.fprintf fmt "@[<hov 2>(%s %a %i %i %a)@]"
+    body_name pp_input_state () from to_n pp_global_bounds ()
 
 
 (** 4 - Grammar macros parameters *)

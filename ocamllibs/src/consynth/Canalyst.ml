@@ -200,6 +200,7 @@ let func2sketch funcreps =
             costly_exprs = ES.empty;
           };
         min_input_size = max_m_sizes;
+        uses_global_bound = sketch_obj#get_uses_global_bounds;
         loop_body = loop_body;
         join_body = join_body;
         join_solution = SkLetExpr ([]);

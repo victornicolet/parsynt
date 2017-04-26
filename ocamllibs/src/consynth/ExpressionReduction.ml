@@ -217,7 +217,7 @@ let rec simplify_reduce sklet ctx =
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =
   let pp_defs fmt () =
-    Sketch.pp_symbolic_definitions_of fmt all_vars
+    Sketch.pp_symbolic_definitions_of fmt [] all_vars
   in
   let pp_expr_e fmt () =
     fprintf fmt "(define e @[%a@])@." pp_skexpr e

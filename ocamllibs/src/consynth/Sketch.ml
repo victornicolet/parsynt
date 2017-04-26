@@ -80,21 +80,23 @@ let rec pp_define_symbolic fmt def =
   | DefEmpty -> ()
 
 
-let pp_vs_to_symbs fmt vs =
+let pp_vs_to_symbs fmt except vs =
   (* Populate the types *)
   VS.iter
     (fun vi ->
-       pp_define_symbolic fmt
-         (match type_of_ciltyp vi.vtype with
-          | Integer -> DefInteger [vi]
-          | Boolean -> DefBoolean [vi]
-          | Real -> DefReal [vi]
-          | Vector (v, _) -> DefArray [vi]
-          | _ ->
-            (F.eprintf "Unsupporter type for variable %s.\
-                        This might lead to errors in the sketch."
-               vi.vname;
-             DefEmpty))) vs
+       if List.mem vi except then ()
+       else
+         pp_define_symbolic fmt
+           (match type_of_ciltyp vi.vtype with
+            | Integer -> DefInteger [vi]
+            | Boolean -> DefBoolean [vi]
+            | Real -> DefReal [vi]
+            | Vector (v, _) -> DefArray [vi]
+            | _ ->
+              (F.eprintf "Unsupported type for variable %s.\
+                          This might lead to errors in the sketch."
+                 vi.vname;
+               DefEmpty))) vs
 
 
 let input_symbols_of_vs vs =
@@ -216,8 +218,8 @@ let pp_state_definition fmt main_struct =
     @param fmt A formatter.
     @param vars The set of variables whose defintion will be printed.
 *)
-let pp_symbolic_definitions_of fmt vars =
-  pp_vs_to_symbs fmt vars
+let pp_symbolic_definitions_of fmt except_vars vars =
+  pp_vs_to_symbs fmt except_vars vars
 
 (** Pretty print the body of the loop.
     @param loop_body The function representing the loop body.
@@ -243,25 +245,23 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     @param state_struct_name The name of the struct used to represent
     the state of the loop (valuation of the state variables).
 *)
-let pp_loop fmt index_set (loop_body, state_vars) state_struct_name =
+let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
   let index_list = VSOps.varlist index_set in
+  let pp_index_low_up =
+        (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+       (fun fmt vi ->
+          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
+          Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
+  in
   pp_comment fmt "Functional representation of the loop body.";
   Format.fprintf fmt
-    "@[<hov 2>(define (%s %s %a)@;\
+    "@[<hov 2>(define (%s %s %a %a)@;\
      @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
-    body_name
-    (Conf.get_conf_string "rosette_state_param_name")
-    (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-       (fun fmt vi ->
-          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
-          Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
-    index_list
-
-    (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-       (fun fmt vi ->
-          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
-          Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
-    index_list
+    body_name                   (* Name of the function *)
+    (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
+    pp_index_low_up index_list (* List of local lower and upper bounds - args *)
+    pp_string_list bnames
+    pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
     (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
     (Conf.get_conf_string "rosette_state_param_name")
 
@@ -382,15 +382,16 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     @param i_m The splitting index for this instance.
     @param i_end The end index for this instance.
 *)
-let pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len =
+let pp_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
+  let bnds = (bnm, i_st, i_m, i_end) in
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
       "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
       main_struct_name
-      pp_body_app (body_name, s0, i_st, i_end)
+      pp_body_app (body_name, s0, bnds, i_st, i_end)
       join_name
-      pp_body_app (body_name, s0, i_st, i_m)
-      pp_body_app (body_name, init_state_name, i_m, i_end)
+      pp_body_app (body_name, s0, bnds, i_st, i_m)
+      pp_body_app (body_name, init_state_name, bnds, i_m, i_end)
   else
     ()
 
@@ -401,7 +402,7 @@ let pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len =
     @param symbolic_variable_names The list of symbolic variable names that will
     have a universal quantifier over.
 *)
-let pp_synth_body fmt (s0, state_vars, defined_input_vars, min_dep_len) =
+let pp_synth_body fmt (s0, bnm, state_vars, defined_input_vars, min_dep_len) =
   Format.fprintf fmt
     "@[<hov 2>#:forall @[<hov 2>(list %a)@]@]@\n"
     pp_defined_input defined_input_vars;
@@ -409,17 +410,18 @@ let pp_synth_body fmt (s0, state_vars, defined_input_vars, min_dep_len) =
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-          pp_verification_condition fmt (s0, i_st, i_m, i_end) min_dep_len))
+          pp_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
+            min_dep_len))
     Conf.verification_parameters
 
 
 (** Pretty-print a synthesis problem wrapped in a defintion for further
     access to the solved problem
 *)
-let pp_synth fmt s0 state_vars read_vars min_dep_len =
+let pp_synth fmt s0 bnames state_vars read_vars min_dep_len =
   Format.fprintf fmt
     "@[<hov 2>(define odot (synthesize@;%a))@.@."
-    pp_synth_body (s0, state_vars, read_vars, min_dep_len)
+    pp_synth_body (s0, bnames, state_vars, read_vars, min_dep_len)
 
 (** Main interface to print the sketch of the whole problem.
     @param fmt A Format.formatter
@@ -455,14 +457,29 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
     List.map (fun vi -> vi.Cil.vname) (VSOps.varlist state_vars) in
   let main_struct = (main_struct_name, field_names) in
   let st0 = init_state_name in
+  (* Global bound name "n" *)
+  let bnd_vars =
+    List.fold_left
+      (fun name_list expr ->
+         match expr with
+         | Some (SkVar (SkVarinfo vi)) -> name_list@[vi]
+         | _ -> name_list)
+      []
+      (if sketch.uses_global_bound then
+          [(SketchTypes.get_loop_bound sketch)]
+       else [])
+  in
+  let bnames =
+    List.map (fun vi -> vi.vname) bnd_vars
+  in
   (** SPretty configuration for the current sketch *)
   SPretty.state_struct_name := main_struct_name;
   pp_current_bitwidth fmt sketch.loop_body;
-  pp_symbolic_definitions_of fmt read_vars;
+  pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_force_newline fmt ();
   pp_state_definition fmt main_struct;
   pp_force_newline fmt ();
-  pp_loop fmt idx (sketch.loop_body, state_vars) main_struct_name;
+  pp_loop fmt idx bnames (sketch.loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (sketch.join_body, state_vars);
   pp_force_newline fmt ();
@@ -470,4 +487,4 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_force_newline fmt ();
-  pp_synth fmt st0 state_vars read_vars min_dep_len
+  pp_synth fmt st0 bnames state_vars read_vars min_dep_len
