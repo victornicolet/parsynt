@@ -3,7 +3,7 @@ int example_mts_p (int *a, int n) {
   int mts = 0;
 
   for (int i = 0; i < n; i++) {
-    if (mts == 0)
+    if (mts + a[i] < 0)
       pos = i;
     mts = max (0, mts + a[i]);
   }
