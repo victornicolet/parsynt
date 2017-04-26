@@ -242,5 +242,5 @@ let find_function_with_rosette all_vars fe e =
     pp_f_sketch fmt ();
     pp_synth_prob fmt  ()
   in
-  let solution = Local.compile_and_fetch pp_all () in
+  let _, solution = Local.compile_and_fetch pp_all () in
   Ast.pp_expr_list Format.std_formatter solution

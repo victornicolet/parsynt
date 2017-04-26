@@ -31,8 +31,8 @@ function Pos(a : seq<int>): int
 { if a == [] then
     0
    else 
-   if ((Sum(a[..|a|-1]) + a[|a|-1]) > Mps(a[..|a|-1])) then DfLength(a) else
-     Pos(a[..|a|-1])
+   (if ((Sum(a[..|a|-1]) + a[|a|-1]) > Mps(a[..|a|-1])) then DfLength(a) else
+     Pos(a[..|a|-1]))
    
 }
 
@@ -42,12 +42,12 @@ function Sum(a : seq<int>): int
 
 function MpsJoin(leftSum : int, leftMps : int, rightSum : int, rightMps : int): int
 {
-  DfMax((leftSum + rightMps), leftMps)
+  DfMax((rightMps + leftSum), leftMps)
 }
 
 function PosJoin(leftSum : int, leftPos : int, leftMps : int, rightSum : int, rightPos : int, rightMps : int): int
 {
-  if ((leftSum - 1) >= (leftMps - rightMps)) then rightPos else leftPos
+  (if ((rightMps - 1) >= (leftMps - leftSum)) then rightPos else leftPos)
 }
 
 function SumJoin(leftSum : int, rightSum : int): int

@@ -14,6 +14,7 @@ module Pf = Proofs
 let debug = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
+let synthTimes = (Conf.get_conf_string "synth_times_log")
 
 let err_handler_sketch i =
   eprintf "%sError%s while running racket on sketch.@."
@@ -29,9 +30,12 @@ let options = [
   ( 'o', "output-folder", None,
     Some (fun o_folder -> Conf.output_dir := o_folder))]
 
-let solution_found lp_name parsed (sketch : sketch_rep) solved =
+let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
   printf "@.%sSOLUTION for %s %s:@.%a"
     (color "green") lp_name default Ast.pp_expr_list parsed;
+  let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
+      0o666 synthTimes in
+  Printf.fprintf oc "%s,%.3f\n" lp_name racket_elapsed;
   let sol_info =
     try
       Codegen.get_solved_sketch_info parsed
@@ -99,7 +103,7 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
     let lp_name = sketch.loop_name in
     try
       printf "@.SOLVING sketch for %s.@." lp_name;
-      let parsed =
+      let racket_elapsed, parsed =
         L.compile_and_fetch
           ~print_err_msg:err_handler_sketch C.pp_sketch sketch
       in
@@ -121,7 +125,7 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
         (* A solution has been found *)
         begin
           try
-            solution_found lp_name parsed sketch solved, unsolved
+            solution_found racket_elapsed lp_name parsed sketch solved, unsolved
           with Failure s ->
             printf "@.@[%sFAILED%s :\
                     solution found, but couldn't interpret it for@\n\

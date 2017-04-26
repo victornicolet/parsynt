@@ -12,6 +12,7 @@ let debug = ref false
 let dump_sketch = ref false
 
 let templateDir = Conf.project_dir^"/templates/"
+let synthTimes = (Conf.get_conf_string "synth_times_log")
 let dumpDir = Filename.concat Conf.project_dir "/ocamllibs/dump/"
 
 let copy_file from_filename to_filename =
@@ -81,13 +82,13 @@ let racket filename =
   let errcode = Sys.command ("racket "^filename) in
   let elapsed = (Unix.gettimeofday ()) -. start in
   Format.printf "@.Racket : executed in %.3f s@." elapsed;
-  errcode
+  errcode, elapsed
 
 let compile ?(print_err_msg = default_error) printer printer_arg =
   let solution_tmp_file = Filename.temp_file "conSynthSol" ".rkt" in
   let sketch_tmp_file = Filename.temp_file "conSynthSketch" ".rkt" in
   completeFile sketch_tmp_file solution_tmp_file printer printer_arg;
-  let errno = racket sketch_tmp_file in
+  let errno, elapsed = racket sketch_tmp_file in
   if !dump_sketch || (errno != 0 && !debug) then
     begin
       remove_in_dir dumpDir;
@@ -105,7 +106,7 @@ let compile ?(print_err_msg = default_error) printer printer_arg =
         end;
       exit 1;
     end;
-  errno, solution_tmp_file
+  errno, elapsed, solution_tmp_file
 
 let fetch_solution filename =
   let parsed =
@@ -126,7 +127,7 @@ let fetch_solution filename =
 
 
 let compile_and_fetch ?(print_err_msg = default_error) printer printer_arg =
-  let errno, filename =
+  let errno, elapsed, filename =
     compile ~print_err_msg:print_err_msg printer printer_arg
   in
-  fetch_solution filename
+  elapsed, fetch_solution filename
