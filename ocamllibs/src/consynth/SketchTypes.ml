@@ -350,6 +350,12 @@ let c_constant  ccst =
     else
       None
 
+let is_negative cst =
+  match cst with
+  | CInt i -> i< 0
+  | CInt64 i -> i < 0L
+  | CReal f -> f < 0.0
+  | _ -> false
 (**
     A function name not appearing in the cases above
     will be treated as an "uninterpreted function" by
@@ -835,10 +841,10 @@ let rec replace_expression_in_subscripts
   let case_handler rfunc e = e in
   let const_handler c = c in
   let var_handler v =
-      match v with
-      | SkArray (v, e) ->
-        SkArray (v, replace_expression ~in_subscripts:true ~to_replace:tr ~by:b ~ine:e)
-      | _ -> v
+    match v with
+    | SkArray (v, e) ->
+      SkArray (v, replace_expression ~in_subscripts:true ~to_replace:tr ~by:b ~ine:e)
+    | _ -> v
   in
   transform_expr case case_handler const_handler var_handler exp
 
@@ -864,18 +870,18 @@ let optype_rec =
     init = NotNum;
     case =
       (fun e ->
-        match e with
-        | SkUnop (op, e) -> true
-        | SkBinop (op, e1, e2) -> true
-        | _ -> false);
+         match e with
+         | SkUnop (op, e) -> true
+         | SkBinop (op, e1, e2) -> true
+         | _ -> false);
     on_case =
-          (fun f e ->
-       match e with
-       | SkUnop (op, e) ->
-         join_optypes (optype_of_unop op) (f e)
-       | SkBinop (op, e1, e2) ->
-         join_optypes (join_optypes (optype_of_binop op) (f e1)) (f e2)
-       | _ -> NotNum);
+      (fun f e ->
+         match e with
+         | SkUnop (op, e) ->
+           join_optypes (optype_of_unop op) (f e)
+         | SkBinop (op, e1, e2) ->
+           join_optypes (join_optypes (optype_of_binop op) (f e1)) (f e2)
+         | _ -> NotNum);
     on_const = (fun _ -> NotNum);
     on_var = (fun _ -> NotNum);}
 
@@ -1103,7 +1109,7 @@ let rec remove_hole_vars_sklet (sklet : sklet) : sklet =
     SkLetExpr (List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list)
   | SkLetIn (ve_list, letin) ->
     SkLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
-            remove_hole_vars_sklet letin)
+             remove_hole_vars_sklet letin)
 
 let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
   let rec translate (scm : Ast.expr) : sklet option * skExpr option =
@@ -1190,12 +1196,12 @@ let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
   let fo, eo = translate scm in
   remove_hole_vars_sklet =>> fo, remove_hole_vars =>> eo
 
-  (** Structure translation is parameterized by the current information
-      loaded in the join_info. The order had been created using the order in
-      the set of staate variables so we use the same order to re-build the
-      expressions.
-      Additionally we remove identity bindings.
-  *)
+(** Structure translation is parameterized by the current information
+    loaded in the join_info. The order had been created using the order in
+    the set of staate variables so we use the same order to re-build the
+    expressions.
+    Additionally we remove identity bindings.
+*)
 and rosette_state_struct_to_sklet scm_expr_list =
   let stv_vars_list = VSOps.varlist join_info.initial_state_vars in
   let sk_expr_list = to_expression_list scm_expr_list in
@@ -1270,7 +1276,7 @@ let force_flat vs sklet =
         (IM.fold
            (fun vid e ve_list ->
               ve_list@[(SkVarinfo (VSOps.find_by_id vid vs), e)])
-        final_subs [])
+           final_subs [])
   in
   let start_sub =
     VS.fold
@@ -1351,9 +1357,9 @@ let left_index_vi vi =
 let is_left_index_vi i =
   try
     (IH.iter
-      (fun vid (vil, _) ->
-         if i = vil then failwith "found" else ()) index_to_boundary;
-    false)
+       (fun vid (vil, _) ->
+          if i = vil then failwith "found" else ()) index_to_boundary;
+     false)
   with Failure s -> if s = "found" then true else false
 
 let right_index_vi vi =
@@ -1363,9 +1369,9 @@ let right_index_vi vi =
 let is_right_index_vi i =
   try
     (IH.iter
-      (fun vid (_, vir) ->
-         if i = vir then failwith "found" else ()) index_to_boundary;
-    false)
+       (fun vid (_, vir) ->
+          if i = vir then failwith "found" else ()) index_to_boundary;
+     false)
   with Failure s -> if s = "found" then true else false
 
 

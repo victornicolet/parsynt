@@ -57,7 +57,8 @@ let pp_initializer fmt (vi, init) =
     class_member_appendix
     vi.vname
     (match init with
-     | ConstExpr exp -> (fprintf str_formatter "%a" pp_skexpr exp;
+     | ConstExpr exp -> (fprintf str_formatter "%a"
+                           (pp_c_expr ~for_dafny:false) exp;
                          flush_str_formatter ())
      | ClassMember (vi', s) -> s^"."^vi.vname
      | LocalVar vi' -> vi'.vname)
@@ -108,7 +109,7 @@ type cpp_class_method =
 
 let pp_method fmt cmet =
   fprintf fmt "@[<hv 2>%s %s(%a)@;\
-               {@;<1>@[<v>%a@]@;}@]"
+               {@;<1>@[<v>%a@\n%a@]@;}@]"
     (* The return type of the method *)
     (Ct.psprint80 dn_type cmet.mtyp)
     (* The name of the method *)
@@ -117,6 +118,15 @@ let pp_method fmt cmet =
     (pp_print_list
        ~pp_sep:(fun fmt () ->  fprintf fmt ", ")
        pp_cpp_constr_arg) cmet.margs
+
+    (* Print the local variables's declarations *)
+    (fun fmt () ->
+       (VS.iter
+         (fun vi ->
+            fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type vi.vtype) vi.vname))
+         cmet.mlocals)
+    ()
+
     (* Print the body of the method :
        either a printer has been provided or we print the statements *)
     (fun fmt () ->
@@ -383,7 +393,14 @@ let make_tbb_class pb =
     let join_body_printer fmt () =
       printing_for_join := true;
       cpp_class_members_set := tbb_class.public_vars;
-      fprintf fmt "%a" pp_c_sklet (sk_for_c pb.join_solution);
+      (* Translate parallel assignments : for now, go with the simplest
+         solution which is using temporary variables *)
+      fprintf fmt "%a@\n" pp_c_sklet (sk_for_c pb.join_solution);
+      (* Assign local variable value to class member *)
+      VS.iter
+        (fun vi ->
+           fprintf fmt "@[my_%s = %s;@]@;" vi.vname vi.vname)
+        pb.scontext.state_vars;
       printing_for_join := false
     in
     let join_from_name = (Conf.get_conf_string "tbb_right_state_name") in
@@ -395,7 +412,7 @@ let make_tbb_class pb =
       mattributes = [];
       margs = join_args;
       mcpp = true;
-      mlocals = VS.empty;
+      mlocals = pb.scontext.state_vars;
       mbody = (mkStmt (Instr []));
       mprint = Some join_body_printer;
     }

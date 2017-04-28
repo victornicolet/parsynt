@@ -1,3 +1,6 @@
+function DfLength(s: seq<int>): int
+{if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
+
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
 function M(a : seq<int>): int
@@ -21,7 +24,8 @@ lemma HomM(a : seq<int>, R_a : seq<int>)
     {
     assert(a + [] == a);
     BaseCaseM(a);
-    } else {
+    
+     } else {
     calc{
     M(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }

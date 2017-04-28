@@ -16,10 +16,6 @@ let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 
-let err_handler_sketch i =
-  eprintf "%sError%s while running racket on sketch.@."
-    (color "red") default
-
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
   ( 'g', "debug", (set debug true), None);
@@ -30,9 +26,38 @@ let options = [
   ( 'o', "output-folder", None,
     Some (fun o_folder -> Conf.output_dir := o_folder))]
 
+
+let err_handler_sketch i =
+  eprintf "%sError%s while running racket on sketch.@."
+    (color "red") default
+
+
+let print_summary sketch =
+  printf "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
+    (color "black") (color "b-green")
+    sketch.loop_name sketch.id
+    default
+    (color "b") default
+    SPretty.pp_sklet sketch.loop_body
+    (color "b") default
+    SPretty.pp_sklet sketch.join_solution;
+  let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
+  printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
+
+
+let solution_failed ?(failure = "") sketch =
+  printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
+          of the solved sketch of %s.@."
+    (color "red") default sketch.loop_name;
+  if failure = "" then ()
+  else
+    printf "Failure: %s" failure
+
+
 let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
   printf "@.%sSOLUTION for %s %s:@.%a"
     (color "green") lp_name default Ast.pp_expr_list parsed;
+  (* Open and append to stats *)
   let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
   Printf.fprintf oc "%s,%.3f\n" lp_name racket_elapsed;
@@ -40,9 +65,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
     try
       Codegen.get_solved_sketch_info parsed
     with _ ->
-      (printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
-               of the solved sketch of %s.@."
-         (color "red") default sketch.loop_name;
+      (solution_failed sketch;
        failwith "Couldn't retrieve solution from parsed ast.")
   in
   (** Simplify the solution using Z3 *)
@@ -97,6 +120,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
      ExpressionReduction.simplify_reduce translated_join_body sketch.scontext;
    init_values = remap_init_values sol_info.Codegen.init_values}::solved
 
+
 let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
   SPretty.holes_expr_depth := expr_depth;
   let rec solve_one (solved, unsolved) sketch =
@@ -127,18 +151,12 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
           try
             solution_found racket_elapsed lp_name parsed sketch solved, unsolved
           with Failure s ->
-            printf "@.@[%sFAILED%s :\
-                    solution found, but couldn't interpret it for@\n\
-                    %s%s%s.@\n\
-                    %sFailure%s : %s@.@]"
-              (color "red") default (color "red") lp_name default (color "red")
-              default s;
+            solution_failed ~failure:s sketch;
             (solved, unsolved)
         end
     with Failure s ->
       begin
-        printf "@.%sFAILED to find a solution for %s%s.@.Failure : %s@."
-          (color "red") lp_name default s;
+        solution_failed ~failure:s sketch;
         (solved, unsolved)
       end
   in
@@ -269,27 +287,17 @@ let main () =
     else [], unsolved_with_aux
   in
   let finally_solved = solved@solved_with_aux@solved_depth_2 in
+
   (** Handle all the solutions found *)
-  (List.iter
-     (fun sketch ->
-        printf "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
-          (color "black") (color "b-green")
-          sketch.loop_name sketch.id
-          default
-          (color "b") default
-          SPretty.pp_sklet sketch.loop_body
-          (color "b") default
-          SPretty.pp_sklet sketch.join_solution;
-        let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
-        printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
+  (List.iter (fun sketch -> print_summary sketch) finally_solved);
 
-
-     )
-     finally_solved);
+  (* For each solved problem, generate a TBB implementation *)
   printf "@.%s%sGenerating implementations for solved examples..%s@."
     (color "black") (color "b-green") default;
   output_tbb_tests finally_solved;
-    printf "@.%s%sGenerating proofs for solved examples..%s@."
+
+  (* Generate a proof in Dafny. *)
+  printf "@.%s%sGenerating proofs for solved examples..%s@."
     (color "black") (color "b-green") default;
   output_dafny_proofs finally_solved;
 

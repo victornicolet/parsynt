@@ -29,12 +29,12 @@ function Mts(a : seq<int>): int
 
 function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 {
-  ((leftAux_1 + 1) + (rightAux_1 + -1))
+  ((leftAux_1 + 1) + (rightAux_1 + (-1)))
 }
 
 function MtsJoin(leftAux_1 : int, leftMts : int, rightAux_1 : int, rightMts : int): int
 {
-  DfMax((leftMts + (rightAux_1 + (-1 + 1))), rightMts)
+  DfMax((leftMts + (rightAux_1 + ((-1) + 1))), rightMts)
 }
 
 

@@ -165,7 +165,7 @@ class cil2func_printer allvs stv =
 
       | FConst c ->
         fprintf ppf "%a"
-          (pp_constants ~for_dafny:false) c
+          (pp_constants ~for_c:false ~for_dafny:false) c
 
       | FSizeof typ ->
         fprintf ppf "(sizeof %s)"

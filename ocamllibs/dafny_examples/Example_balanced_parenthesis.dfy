@@ -22,21 +22,21 @@ ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
 function Aux_3(a : seq<bool>): int
 { if a == [] then
     0
-   else
-   DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else -1)), Aux_3(a[..|a|-1]))
-
+   else 
+   DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_3(a[..|a|-1]))
+   
 }
 
 function Bal(a : seq<bool>): bool
 { if a == [] then
     true
-   else
-   (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else -1)) >= 0))
-
+   else 
+   (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) >= 0))
+   
 }
 
 function Cnt(a : seq<bool>): int
-{ if a == [] then  0 else  (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else -1))
+{ if a == [] then  0 else  (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) 
 }
 
 function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
@@ -46,7 +46,7 @@ function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : 
 
 function BalJoin(leftAux_3 : int, leftCnt : int, leftBal : bool, rightAux_3 : int, rightCnt : int, rightBal : bool): bool
 {
-  ((leftCnt + rightAux_3) > -1) && leftBal
+  (((if rightBal then (leftCnt + rightCnt) else (leftCnt + (rightAux_3 + 0))) > (-1)) && leftBal)
 }
 
 function CntJoin(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
@@ -62,11 +62,11 @@ lemma BaseCaseAux_3(a : seq<bool>)
 lemma HomAux_3(a : seq<bool>, R_a : seq<bool>)
   ensures Aux_3(a + R_a) == Aux_3Join(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a))
   {
-    if R_a == []
+    if R_a == [] 
     {
     assert(a + [] == a);
     BaseCaseAux_3(a);
-
+    
      } else {
     calc{
     Aux_3(a + R_a);
@@ -86,11 +86,11 @@ lemma BaseCaseBal(a : seq<bool>)
 lemma HomBal(a : seq<bool>, R_a : seq<bool>)
   ensures Bal(a + R_a) == BalJoin(Aux_3(a), Cnt(a), Bal(a), Aux_3(R_a), Cnt(R_a), Bal(R_a))
   {
-    if R_a == []
+    if R_a == [] 
     {
     assert(a + [] == a);
     BaseCaseBal(a);
-
+    
      } else {
     calc{
     Bal(a + R_a);
@@ -110,11 +110,11 @@ lemma BaseCaseCnt(a : seq<bool>)
 lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
   ensures Cnt(a + R_a) == CntJoin(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a))
   {
-    if R_a == []
+    if R_a == [] 
     {
     assert(a + [] == a);
     BaseCaseCnt(a);
-
+    
      } else {
     calc{
     Cnt(a + R_a);
@@ -123,3 +123,4 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
     } // End calc.
   } // End else.
 } // End lemma.
+

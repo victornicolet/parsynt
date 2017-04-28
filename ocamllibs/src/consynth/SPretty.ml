@@ -114,10 +114,10 @@ let string_of_unsafe_unop =
 
 exception Not_prefix
 
-let string_of_symb_unop ?(fd = false) =
+let string_of_symb_unop ?(fc = true) ?(fd = false) =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
-  | Not -> if fd then "!" else "not"
+  | Not -> if fd || fc then "!" else "not"
   | Add1 -> if fd then "1 +" else "add1"
   | Sub1 -> if fd then "1 +" else "sub1"
   | Abs -> if fd then raise Not_prefix else "abs"
@@ -128,12 +128,12 @@ let string_of_symb_unop ?(fd = false) =
   | Neg -> "-"
   | Sgn -> if fd then raise Not_prefix else "sgn"
 
-let string_of_unop_func ?(fd = false) op =
+let string_of_unop_func ?(fc = false) ?(fd = false) op =
   try
-    ignore(string_of_symb_unop ~fd:fd op);
+    ignore(string_of_symb_unop ~fc:fc ~fd:fd op);
     None
   with Not_prefix ->
-    Some (string_of_symb_unop ~fd:false op)
+    Some (string_of_symb_unop ~fc:false ~fd:false op)
 
 
 let ostring_of_baseSymbolicType =
@@ -204,14 +204,16 @@ and pp_symb_type_aux ppf t =
       | _ -> ()
     end
 
-let rec pp_constants ?(for_dafny=false) ppf =
+let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
+  let pp_int ppf i = fprintf ppf "%i" i in
+  let pp_float ppf f = fprintf ppf "%10.3f" f in
   function
   | CNil -> fprintf ppf "()"
-  | CInt i -> fprintf ppf "%i" i
-  | CInt64 i -> fprintf ppf "%i" (Int64.to_int i)
-  | CReal f -> fprintf ppf "%10.3f" f
+  | CInt i -> pp_int ppf i
+  | CInt64 i -> pp_int ppf (Int64.to_int i)
+  | CReal f -> pp_float ppf f
   | CBool b ->
-    if for_dafny then
+    if for_dafny || for_c then
       (if b then fprintf ppf "true" else fprintf ppf "false")
     else
       (if b then fprintf ppf "#t" else fprintf ppf "#f")
@@ -221,16 +223,16 @@ let rec pp_constants ?(for_dafny=false) ppf =
   | CString s -> fprintf ppf "%s" s
   | CUnop (op, c) ->
     fprintf ppf "(%s %a)" (string_of_symb_unop op)
-      (pp_constants ~for_dafny:for_dafny) c
+      (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
   | CBinop (op, c1, c2) ->
     if is_op_c_fun op then
       fprintf ppf "%s(%a,@; %a)" (string_of_symb_binop op)
-        (pp_constants ~for_dafny:for_dafny) c1
-        (pp_constants ~for_dafny:for_dafny) c2
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
     else
       fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
-        (pp_constants ~for_dafny:for_dafny) c1
-        (pp_constants ~for_dafny:for_dafny) c2
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
 
   | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
   | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
@@ -299,7 +301,7 @@ and pp_skexpr (ppf : Format.formatter) skexpr =
   match skexpr with
   | SkVar v -> fp ppf "%a" pp_sklvar v
 
-  | SkConst c -> fp ppf "%a" (pp_constants ~for_dafny:false) c
+  | SkConst c -> fp ppf "%a" (pp_constants ~for_c:false ~for_dafny:false) c
 
   | SkFun l -> pp_sklet ppf l
 
@@ -488,7 +490,7 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
   | SkVar v -> fp ppf "%a" cp_sklvar v
 
   | SkConst c -> fp ppf "%s%a%s" (color "cyan")
-                   (pp_constants ~for_dafny:false) c default
+                   (pp_constants ~for_c:true ~for_dafny:false) c default
 
   | SkFun l -> cp_sklet ppf l
 
@@ -605,7 +607,11 @@ let cpp_class_members_set = ref VS.empty
 let rec pp_c_expr ?(for_dafny = false) fmt e =
   match e with
   | SkVar v -> pp_c_var fmt v
-  | SkConst c -> pp_constants ~for_dafny:for_dafny fmt c
+  | SkConst c ->
+    if is_negative c then
+      fprintf fmt "(%a)" (pp_constants ~for_c:true ~for_dafny:for_dafny) c
+    else
+      pp_constants ~for_c:true ~for_dafny:for_dafny fmt c
 
 
   (* Unary operators : some of the operators defined are not
@@ -614,15 +620,15 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
     if for_dafny then
       begin
         try
-          fprintf fmt "@[(%s %a)@]" (string_of_symb_unop ~fd:true op)
+          fprintf fmt "@[(%s %a)@]" (string_of_symb_unop ~fc:true ~fd:true op)
             (pp_c_expr ~for_dafny:for_dafny) e1
         with Not_prefix ->
           fprintf fmt "@[(%s(%a)@]"
-            (check_option (string_of_unop_func ~fd:true op))
+            (check_option (string_of_unop_func ~fc:true ~fd:true op))
             (pp_c_expr ~for_dafny:for_dafny) e1
       end
     else
-      fprintf fmt "@[(%s %a)@]" (string_of_symb_unop op)
+      fprintf fmt "@[(%s %a)@]" (string_of_symb_unop ~fc:true op)
         (pp_c_expr ~for_dafny:for_dafny) e1
 
 
@@ -657,16 +663,16 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
   | SkHoleL ((t, _), v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
-                                 pp_c_var v pp_typ t
+                                 (pp_c_var ~rhs:true) v pp_typ t
   | SkHoleR ((t, _), _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_skexpr e
 
-and pp_c_var fmt v =
+and pp_c_var ?(rhs = true) fmt v =
   match v with
   | SkVarinfo v ->
     let var_name =
-      if !printing_for_join then
+      if !printing_for_join && rhs then
         if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
           match is_right_state_varname v.Cil.vname with
           | real_varname, true, true ->
@@ -682,7 +688,7 @@ and pp_c_var fmt v =
     in
     fprintf fmt "%s" var_name
 
-  | SkArray (v, offset) -> fprintf fmt "%a[%a]" pp_c_var v
+  | SkArray (v, offset) -> fprintf fmt "%a[%a]" (pp_c_var ~rhs:rhs) v
                              (pp_c_expr ~for_dafny:false) offset
   | SkTuple vs -> fprintf fmt "(<TUPLE>)"
 
@@ -690,7 +696,8 @@ and pp_c_expr_list fmt el =
   PpHelper.ppli fmt ~sep:" " pp_c_expr el
 
 let pp_c_assignment fmt (v, e) =
-  fprintf fmt "@[<hov 2> %a = %a;@]" pp_c_var v (pp_c_expr ~for_dafny:false) e
+  fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
+    v (pp_c_expr ~for_dafny:false) e
 
 let pp_c_assignment_list =
   pp_print_list

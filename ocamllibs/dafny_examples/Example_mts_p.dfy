@@ -20,12 +20,12 @@ ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
 }
 
 function Aux_1(a : seq<int>): int
-{ if a == [] then  0 else  (a[|a|-1] + Aux_1(a[..|a|-1])) 
+{ if a == [] then  1 else  (a[|a|-1] + Aux_1(a[..|a|-1])) 
 }
 
 function Pos(a : seq<int>): int
 { if a == [] then
-    0
+    (-1)
    else 
    (if ((Mts(a[..|a|-1]) + a[|a|-1]) < 0) then DfLength(a) else
      Pos(a[..|a|-1]))
@@ -38,18 +38,18 @@ function Mts(a : seq<int>): int
 
 function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
 {
-  (leftAux_1 + rightAux_1)
+  ((leftAux_1 - 1) + rightAux_1)
 }
 
 function PosJoin(leftAux_1 : int, leftMts : int, leftPos : int, rightAux_1 : int, rightMts : int, rightPos : int): int
 {
-  (if (((rightMts - rightPos) + (rightPos - leftMts)) > rightAux_1) then
+  (if (((1102 - leftMts) + rightMts) >= (rightAux_1 - (-1102))) then
     rightPos else leftPos)
 }
 
 function MtsJoin(leftAux_1 : int, leftMts : int, rightAux_1 : int, rightMts : int): int
 {
-  DfMax(((leftMts - 1) + (rightAux_1 + 1)), rightMts)
+  DfMax(((leftMts - 1) + rightAux_1), rightMts)
 }
 
 

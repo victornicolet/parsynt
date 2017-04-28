@@ -1,3 +1,6 @@
+function DfLength(s: seq<int>): int
+{if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
+
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
 function M(a : seq<int>): int
@@ -6,7 +9,7 @@ function M(a : seq<int>): int
 
 function MJoin(leftM : int, rightM : int): int
 {
-  DfMax((0 - rightM), DfMax(leftM, rightM))
+  DfMax(rightM, DfMax(leftM, 0))
 }
 
 
@@ -21,7 +24,8 @@ lemma HomM(a : seq<int>, R_a : seq<int>)
     {
     assert(a + [] == a);
     BaseCaseM(a);
-    } else {
+    
+     } else {
     calc{
     M(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
