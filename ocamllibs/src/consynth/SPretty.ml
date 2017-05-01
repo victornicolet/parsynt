@@ -700,18 +700,29 @@ let pp_c_assignment fmt (v, e) =
   fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
     v (pp_c_expr ~for_dafny:false) e
 
-let pp_c_assignment_list =
+let pp_c_assignment_list p_id_asgn_list fmt ve_list =
+  let filtered_ve_list =
+    List.filter
+      (fun (v,e) ->
+         match e with
+         | SkVar v' when v = v' -> false
+         | _ -> true)
+      ve_list
+  in
   pp_print_list
     ~pp_sep:(fun fmt () -> fprintf fmt "@;")
     pp_c_assignment
+    fmt
+    (if p_id_asgn_list then ve_list else filtered_ve_list)
 
-let rec pp_c_sklet fmt sklet =
+let rec pp_c_sklet ?(p_id_assign = true) fmt sklet =
   match sklet with
   | SkLetExpr assgn_list ->
-    fprintf fmt "@[%a@]" pp_c_assignment_list assgn_list
+    fprintf fmt "@[%a@]" (pp_c_assignment_list p_id_assign) assgn_list
   | SkLetIn (assgn_list, sklet') ->
     fprintf fmt "@[%a@;%a@]"
-      pp_c_assignment_list assgn_list pp_c_sklet sklet'
+      (pp_c_assignment_list p_id_assign) assgn_list
+      (pp_c_sklet ~p_id_assign:p_id_assign) sklet'
 
 
 let print_c_let = pp_c_sklet std_formatter

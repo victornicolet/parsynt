@@ -35,7 +35,9 @@ let processFile fileName =
   Cabs2cil.doCollapseCallCast := true;
   (* Some declarations are found in another file,
      like __max_integer__, true, false, ... *)
-  let decl_header = parseOneFile (Conf.project_dir^"/templates/decl_header.h") in
+  let decl_header =
+    parseOneFile (Conf.project_dir^"/templates/decl_header.h")
+  in
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
   Cfg.computeFileCFG cfile;
   (*  Deadcodeelim.dce cfile; *)

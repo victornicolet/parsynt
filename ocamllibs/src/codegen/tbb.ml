@@ -398,7 +398,7 @@ let make_tbb_class pb =
     let operator_body_printer fmt ()  =
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
         (fun fmt () ->
-           fprintf fmt "@[%a@]@;" pp_c_sklet
+           fprintf fmt "@[%a@]@;" (pp_c_sklet ~p_id_assign:false)
              (rename_bounds sk_for_c pb.loop_body))
     in
     let operator_arg =
@@ -426,7 +426,8 @@ let make_tbb_class pb =
       cpp_class_members_set := tbb_class.public_vars;
       (* Translate parallel assignments : for now, go with the simplest
          solution which is using temporary variables *)
-      fprintf fmt "%a@\n" pp_c_sklet (sk_for_c pb.join_solution);
+      fprintf fmt "%a@\n" (pp_c_sklet ~p_id_assign:true)
+        (sk_for_c pb.join_solution);
       (* Assign local variable value to class member *)
       VS.iter
         (fun vi ->
