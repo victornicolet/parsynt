@@ -959,17 +959,20 @@ let rec complete_final_state stv func =
   | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
 
 
-let used_in_skexpr =
+let rec used_in_skexpr e =
   let join = VS.union in
   let init = VS.empty in
   let case e = false in
   let case_h f e = VS.empty in
-  let var_handler v =
-    let vi = vi_of v in
-    match vi with | Some vi -> VS.singleton vi | _ -> VS.empty
+  let rec var_handler v =
+    match v with
+    | SkVarinfo vi -> VS.singleton vi
+    | SkArray (v0, e) ->
+      VS.union (var_handler v0) (used_in_skexpr e)
+    | _ -> VS.empty
   in
   let const_handler c= VS.empty in
-  rec_expr join init case case_h const_handler var_handler
+  rec_expr join init case case_h const_handler var_handler e
 
 
 let rec used_in_sklet =

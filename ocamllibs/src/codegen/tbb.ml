@@ -207,7 +207,7 @@ let iterator_c_typ = TInt (ILong,[])
     need to be renamed by appending the class_member_appendix prefix.
 *)
 
-let rename_bounds sktch =
+let rename_bounds =
   let rec rename_in_expr e =
     let rename_index_vi skv =
       match skv with
@@ -228,6 +228,40 @@ let rename_bounds sktch =
         on_var = rename_index_vi } e
   in
   transform_exprs rename_in_expr
+
+(** In the loop body of the operator, some assignments might be repeptitive, due
+    to the introduction of auxliiaries. Remove them from the body and return
+    them in a separate list to be printed out of the loop. *)
+let remove_constant_assignments sktch sklet =
+  let is_constant_assignment v e =
+    let used_vars = used_in_skexpr e in
+    (* The expression doesn't use state variables or an index *)
+    VS.is_empty
+      (VS.union
+         (VS.inter sktch.scontext.state_vars used_vars)
+         (VS.inter sktch.scontext.index_vars used_vars))
+  in
+  let rem_from_ve_list ve_list =
+    List.fold_left
+      (fun (ve_l, c_a) (v, e) ->
+         if is_constant_assignment v e then ve_l, c_a@[(v,e)]
+         else ve_l@[(v,e)], c_a)
+      ([], [])
+      ve_list
+  in
+  let rec aux sklet c_a =
+    match sklet with
+    | SkLetExpr ve_list ->
+      let ve_list0, c_a0 = rem_from_ve_list ve_list in
+      SkLetExpr ve_list0, c_a@c_a0
+
+    | SkLetIn (ve_list, letin) ->
+      let ve_list0, c_a0 = rem_from_ve_list ve_list in
+      let letin0, c_a1 = aux letin (c_a@c_a0) in
+      SkLetIn (ve_list0, letin0), c_a1
+  in
+  aux sklet []
+
 
 (* Print the includes, the namepace and the type declaration necessary
    before actually declaring the class representing the problem *)
@@ -250,7 +284,12 @@ let private_vars_of_sketch sketch =
   VS.diff (VS.diff sketch.scontext.used_vars sketch.scontext.state_vars)
     sketch.scontext.index_vars
 
-let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
+let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
+  let pp_c_a fmt c_as =
+    if List.length c_as = 0 then ()
+    else
+      fprintf fmt "%a@\n" (pp_c_assignment_list false) c_as
+  in
   (* Local versions of the class's variables *)
   VS.iter
     (fun vi ->
@@ -274,6 +313,8 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
     b.vname iterator_name b.vname b.vname
     e.vname iterator_name e.vname e.vname
   ;
+  (* Constant assignments *)
+  pp_c_a fmt constant_assignments;
   (* Main loop *)
   fprintf fmt
     "@[<hv 2>for (%s %s = %s.begin(); %s!= %s.end(); ++%s) {@;%a@;}@]@;"
@@ -396,10 +437,15 @@ let make_tbb_class pb =
   (** TBB uses a method operator() that implements the loop body *)
   let tbb_operator =
     let operator_body_printer fmt ()  =
+      let mod_loop_body, constant_assignments =
+        remove_constant_assignments pb pb.loop_body
+      in
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
+        constant_assignments
         (fun fmt () ->
-           fprintf fmt "@[%a@]@;" (pp_c_sklet ~p_id_assign:false)
-             (rename_bounds sk_for_c pb.loop_body))
+           fprintf fmt "@[%a@]@;"
+             (pp_c_sklet ~p_id_assign:false)
+             (rename_bounds (sk_for_c mod_loop_body)))
     in
     let operator_arg =
       (fprintf str_formatter "const blocked_range<%s>& %s"

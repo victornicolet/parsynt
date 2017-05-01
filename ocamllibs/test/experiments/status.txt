@@ -1,26 +1,34 @@
-Example name		# Join synth.	# Tbb		# Proof checks
+# Join synth.	# Tbb		# Proof checks
 sum			yes    		y     		yes
 min			yes		y		yes
 max			yes		y		yes
 average			no		no		no
 hamming			yes		y		no (not supported)
-length			yes		y		yes
-2nd-min			yes		no		yes
-mps			yes		no		yes
-mts			yes		no		yes
-mss			yes		no		yes
-mps-p			yes		no		no
-mts-p			yes		no		no
-poly			yes		no		no
-atoi			yes		no		no
-is-sorted		yes		no		no
-dropwhile		yes		no		no
-balanced-parenthesis	yes		no		no?
-0star1star		yes		no		no
-count-1s		yes		no		no
-line-sight		yes		no		yes
-0after1			yes		no		yes
+length			yes		y*		yes
+2nd-min			yes		y		yes
+mps			yes		y		yes
+mts			yes		y		yes
+mss			yes		y		yes
+mps-p			yes		y*		no
+mts-p			yes		y*		no
+poly			yes		y		no
+atoi			yes*		y*		no
+is-sorted		yes		y		no
+dropwhile		yes		y		no
+balanced-parenthesis	yes		y		no?
+0star1star		yes		y		no
+count-1s		yes		y		no
+line-sight		yes		y		yes
+0after1			yes		y		yes
 max-blockno1		t-o		no		no
 
 
 16:09-18/02/2017 : ALL correct example pass join generation.
+
+TODO: identify use of loop bounds "n" (average example)
+TODO: examples y*
+	for examples involving a position, the type of the position
+      is (int) and not (__iterator_type__). It will cause problems
+      at run time but it compiles.
+      --> variable that can have a value equal to the iterator must have
+      a type (__iterator_type__).

@@ -1,7 +1,7 @@
 function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
-function Aux_0(a : seq<int>): int
+function Aux_0(a : seq<int>, i_begin_ : int): int
 requires |a| >= 1
 { if |a| == 1 then  a[0] else  a[0] 
 }
@@ -34,7 +34,9 @@ function PrevJoin(leftPrev : int, rightPrev : int): int
 }
 
 
-lemma HomAux_0(a : seq<int>, R_a : seq<int>)
+lemma HomAux_0(a : seq<int>,
+  i_begin_ : int, R_a : seq<int>,
+  R_i_begin_ : int)
   requires |a| >= 1 && |R_a| >= 1
    requires |a| >= 1 && |R_a| >= 1
   ensures Aux_0(a + R_a) == Aux_0Join(Aux_0(a), Aux_0(R_a))
