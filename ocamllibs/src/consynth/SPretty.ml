@@ -673,7 +673,8 @@ and pp_c_var ?(rhs = true) fmt v =
   | SkVarinfo v ->
     let var_name =
       if !printing_for_join && rhs then
-        if VSOps.has_vid v.Cil.vid !cpp_class_members_set then
+        if (VSOps.has_vid v.Cil.vid !cpp_class_members_set) ||
+           (is_left_index_vi v) || (is_right_index_vi v) then
           match is_right_state_varname v.Cil.vname with
           | real_varname, true, true ->
             (rs_prefix^"my_"^real_varname)

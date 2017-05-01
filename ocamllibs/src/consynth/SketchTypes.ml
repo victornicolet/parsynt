@@ -686,6 +686,14 @@ let uses_max_min l =
   rec_let recursor l
 
 (** Another recursion helper : a syntax tree tranformer *)
+type  ast_transformer =
+  {
+    case : skExpr -> bool;
+    on_case : (skExpr -> skExpr) -> skExpr -> skExpr;
+    on_const : constants -> constants;
+    on_var : skLVar -> skLVar;
+  }
+
 let transform_expr
     (case : skExpr -> bool)
     (case_handler : (skExpr -> skExpr) -> skExpr -> skExpr)
@@ -743,6 +751,12 @@ let rec transform_exprs (transformer : skExpr -> skExpr) =
   | SkLetIn (ve_list, letin) ->
     SkLetIn ((List.map (fun (v, e) -> (v, transformer e)) ve_list),
              transform_exprs transformer letin)
+
+let transform_expr2 tr =
+  transform_expr tr.case tr.on_case tr.on_const tr.on_var
+
+let transform_let tr =
+  transform_exprs (transform_expr2 tr)
 
 (** Transformation with extra boolean argument *)
 let transform_expr_flag
@@ -1375,7 +1389,7 @@ let is_right_index_vi i =
   with Failure s -> if s = "found" then true else false
 
 
-(* Extract boundary varibles "n" from sketch information *)
+(* Extract boundary variables "n" from sketch information *)
 let rec get_loop_bound_var (se : skExpr) : skExpr option =
   match se with
   | SkBinop (Lt, _, en) -> Some en

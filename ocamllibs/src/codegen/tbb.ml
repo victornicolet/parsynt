@@ -9,6 +9,7 @@ open Utils
 module Ct = CilTools
 
 let class_member_appendix = Conf.get_conf_string "class_member_appendix"
+
 (** Class constructor argument *)
 type cpp_include =
   | IncludeLocal of string
@@ -122,8 +123,8 @@ let pp_method fmt cmet =
     (* Print the local variables's declarations *)
     (fun fmt () ->
        (VS.iter
-         (fun vi ->
-            fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type vi.vtype) vi.vname))
+          (fun vi ->
+             fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type vi.vtype) vi.vname))
          cmet.mlocals)
     ()
 
@@ -164,8 +165,8 @@ let makeEmptyClass class_name =
 let pp_class fmt cls =
   let pp_members fmt vs =
     VS.iter
-      (fun vi -> fprintf fmt "@[%s my_%s;@]@;"
-          (Ct.psprint80 Cil.dn_type vi.vtype) vi.vname)
+      (fun vi -> fprintf fmt "@[%s %s%s;@]@;"
+          (Ct.psprint80 Cil.dn_type vi.vtype) class_member_appendix vi.vname)
       vs
   in
   let pp_class_body fmt cls =
@@ -201,6 +202,33 @@ let iterator_name = Conf.get_conf_string "tbb_iterator_name"
 (** The iterator has type long *)
 let iterator_c_typ = TInt (ILong,[])
 
+(**
+   In the "operator()" definition, the _begin_ and _end_ indexes
+    need to be renamed by appending the class_member_appendix prefix.
+*)
+
+let rename_bounds sktch =
+  let rec rename_in_expr e =
+    let rename_index_vi skv =
+      match skv with
+      | SkVarinfo vi ->
+        begin
+          if is_left_index_vi vi || is_right_index_vi vi then
+            SkVarinfo {vi with vname = class_member_appendix^vi.vname}
+          else
+            SkVarinfo vi
+        end
+      | SkArray (v, e) -> SkArray (v, rename_in_expr e)
+      | _ -> skv
+    in
+    SketchTypes.transform_expr2
+      { case = (fun e -> false);
+        on_case = (fun f e -> e);
+        on_const = (fun c -> c);
+        on_var = rename_index_vi } e
+  in
+  transform_exprs rename_in_expr
+
 (* Print the includes, the namepace and the type declaration necessary
    before actually declaring the class representing the problem *)
 let fprint_test_prelude fmt pb_header_filename =
@@ -226,13 +254,15 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
   (* Local versions of the class's variables *)
   VS.iter
     (fun vi ->
-       fprintf fmt "%s %s = my_%s;@\n"
-         (Ct.psprint80 dn_type vi.vtype) vi.vname vi.vname)
+       fprintf fmt "%s %s = %s%s;@\n"
+         (Ct.psprint80 dn_type vi.vtype)
+         vi.vname
+         class_member_appendix vi.vname)
     (VS.union pb.scontext.used_vars pb.scontext.state_vars);
   fprintf fmt "@\n";
   (* Index bounds must be prefixed by "my_" *)
-  let b, e = {b with vname = "my_"^b.vname},
-             {e with vname = "my_"^e.vname}
+  let b, e = {b with vname = class_member_appendix^b.vname},
+             {e with vname = class_member_appendix^e.vname}
   in
   (* Bounds intialization *)
   fprintf fmt
@@ -254,7 +284,7 @@ let pp_operator_body fmt (pb : sketch_rep) (i, b, e) ppbody =
   (* Update class vars that need it *)
   VS.iter
     (fun vi ->
-       fprintf fmt "@[my_%s = %s;@]@;" vi.vname vi.vname)
+       fprintf fmt "@[%s%s = %s;@]@;" class_member_appendix vi.vname vi.vname)
     pb.scontext.state_vars
 
 
@@ -285,14 +315,14 @@ let make_tbb_class pb =
       (VSOps.of_varlist [begin_index_var; end_index_var]);
   let bounds_initial_values =
     IM.add begin_index_var.vid
-         (SkConst
-            (CInt64 (Int64.of_string
-                       (Conf.get_conf_string "tbb_begin_index_value"))))
+      (SkConst
+         (CInt64 (Int64.of_string
+                    (Conf.get_conf_string "tbb_begin_index_value"))))
       (IM.add end_index_var.vid
-            (SkConst
-               (CInt64
-                  (Int64.of_string
-                     (Conf.get_conf_string "tbb_end_index_value")))) IM.empty)
+         (SkConst
+            (CInt64
+               (Int64.of_string
+                  (Conf.get_conf_string "tbb_end_index_value")))) IM.empty)
   in
   let public_vars_inits =
     let maybe_inits =
@@ -311,7 +341,7 @@ let make_tbb_class pb =
          | None ->
            failwith (fprintf str_formatter
                        "No initiallization found for %s." vi.vname;
-                    flush_str_formatter ()))
+                     flush_str_formatter ()))
       maybe_inits
   in
   let tbb_cstr_copy =
@@ -343,32 +373,33 @@ let make_tbb_class pb =
       (mkStmt (Instr []))
       copy_cstr_initializers
   in
-    let tbb_cstr_init =
-      let private_vars_args =
-        VS.fold (fun vi argslist -> argslist@[FormalArg vi])
-          tbb_class.private_vars []
+  let tbb_cstr_init =
+    let private_vars_args =
+      VS.fold (fun vi argslist -> argslist@[FormalArg vi])
+        tbb_class.private_vars []
+    in
+    let init_cstr_intializers =
+      let private_vars_inits =
+        List.map (fun vi -> (vi, LocalVar vi))
+          (VSOps.varlist tbb_class.private_vars)
       in
-      let init_cstr_intializers =
-        let private_vars_inits =
-          List.map (fun vi -> (vi, LocalVar vi))
-            (VSOps.varlist tbb_class.private_vars)
-        in
-        private_vars_inits @ public_vars_inits
-      in
-      makeConstructor
-        class_name
-        tbb_class.ctype
-        0
-        private_vars_args
-        (mkStmt (Instr []))
-        init_cstr_intializers
+      private_vars_inits @ public_vars_inits
+    in
+    makeConstructor
+      class_name
+      tbb_class.ctype
+      0
+      private_vars_args
+      (mkStmt (Instr []))
+      init_cstr_intializers
   in
   (** TBB uses a method operator() that implements the loop body *)
   let tbb_operator =
     let operator_body_printer fmt ()  =
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
         (fun fmt () ->
-           fprintf fmt "@[%a@]@;" pp_c_sklet (sk_for_c pb.loop_body))
+           fprintf fmt "@[%a@]@;" pp_c_sklet
+             (rename_bounds sk_for_c pb.loop_body))
     in
     let operator_arg =
       (fprintf str_formatter "const blocked_range<%s>& %s"
@@ -399,7 +430,8 @@ let make_tbb_class pb =
       (* Assign local variable value to class member *)
       VS.iter
         (fun vi ->
-           fprintf fmt "@[my_%s = %s;@]@;" vi.vname vi.vname)
+           fprintf fmt "@[%s%s = %s;@]@;"
+             class_member_appendix vi.vname vi.vname)
         pb.scontext.state_vars;
       printing_for_join := false
     in
@@ -446,29 +478,47 @@ let fprint_implementations fmt pb tbb_class =
       (Ct.psprint80 dn_exp (IH.find Findloops.funcRetExprs pb.host_function.svar.vid))
     with Not_found -> "/* DON't KNOW WHAT TO RETURN */"
   in
+  (* Print the parallel version of the loop *)
   fprintf fmt
     "@[<v 2>%s %s::parallel_apply() const {@\n\
-    %s %s(%a);@\n\
-    parallel_reduce(blocked_range<%s>(0,n,%s), %s);@\n\
-    return %s.%s;@\n@]@\n}@\n"
-      return_type test_cname
-      tbb_class.cname class_var
-      (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ")
-         pp_constr_arg_in_app) cstr_args
-      iterator_type_name
-      (Conf.get_conf_string "tbb_chunk_size")
-      class_var class_var class_field;
+     %s %s(%a);@\n\
+     parallel_reduce(blocked_range<%s>(0,n,%s), %s);@\n\
+     return %s.%s;@\n@]@\n}@\n"
+    (* Return type of the function *)
+    return_type
+    (* Name of the examples and name of the current C++ class *)
+    test_cname
+    (* Name of the class containg the parallel implementation *)
+    tbb_class.cname
+    (* Name of the instance of the class *)
+    class_var
+    (* Arguments of the base constructor of the parallel class *)
+    (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+       pp_constr_arg_in_app) cstr_args
+    (* Other parameters *)
+    iterator_type_name
+    (Conf.get_conf_string "tbb_chunk_size")
+    class_var class_var class_field;
+
+  (** Print the sequential version of the function *)
   fprintf fmt
     "@[<v 2>%s %s::sequential_apply() const {@\n\
      %a@\n\
      \* FILL THE BLOCK HERE *\;@\n\
      return %s;@\n@]@\n}@\n"
-    return_type test_cname
+    (* Return type of the function *)
+    return_type
+    (* Name of the example and name of the class *)
+    test_cname
+    (* Assign local copy for all variables *)
     (fun fmt () ->
        VS.iter
          (fun vi ->
-            fprintf fmt "%s %s = my_%s;@\n"
-              (Ct.psprint80 dn_type vi.vtype) vi.vname vi.vname)
+            fprintf fmt "%s %s = %s%s;@\n"
+              (Ct.psprint80 dn_type vi.vtype)
+              vi.vname
+              class_member_appendix
+              vi.vname)
          pb.scontext.all_vars) ()
     "sum"
 

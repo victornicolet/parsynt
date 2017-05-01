@@ -12,7 +12,6 @@ let debug = ref false
 let dump_sketch = ref false
 
 let templateDir = Conf.project_dir^"/templates/"
-let synthTimes = (Conf.get_conf_string "synth_times_log")
 let dumpDir = Filename.concat Conf.project_dir "/ocamllibs/dump/"
 
 let copy_file from_filename to_filename =
