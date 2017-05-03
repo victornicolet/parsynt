@@ -9,8 +9,8 @@ length			yes		y*		yes
 mps			yes		y		yes
 mts			yes		y		yes
 mss			yes		y		yes
-mps-p			yes		y*		no
-mts-p			yes		y*		no
+mps-p			yes		y*		yes
+mts-p			yes		y*		yes
 poly			yes		y		no
 atoi			yes*		y*		no
 is-sorted		yes		y		no

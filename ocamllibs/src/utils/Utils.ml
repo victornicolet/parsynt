@@ -109,7 +109,7 @@ let (+?) b f = if !b then (_boff b; f) else ()
 let bool_of_int64 i = i = 1L
 
 let str_contains str sub = ExtLib.String.exists str sub;;
-
+let str_begins_with sub str = ExtLib.String.starts_with str sub;;
 (** Lists *)
 module ListTools = struct
   (** a -- b -- > list of integers from a to b *)

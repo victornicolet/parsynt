@@ -52,8 +52,6 @@ function CntJoin(leftAux_0 : bool, leftCnt : int, leftF : bool, rightAux_0 : boo
 
 
 lemma HomAux_0(a : seq<bool>, R_a : seq<bool>)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
   ensures Aux_0(a + R_a) == Aux_0Join(Aux_0(a), Aux_0(R_a))
   {
     if |R_a| == 1 
@@ -91,15 +89,10 @@ lemma HomF(a : seq<bool>, R_a : seq<bool>)
 } // End lemma.
 
 lemma BaseCaseCnt(a : seq<bool>, R_a : seq<bool>)
-  requires |a| >= 1 && |R_a| >= 1
-  
-  requires |a| >= 1 && |R_a| >= 1
   ensures Cnt(a) == CntJoin(Aux_0(a), Cnt(a), F(a), Aux_0([R_a[0]]), Cnt([R_a[0]]), F([R_a[0]]))
   {}
 
 lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
   ensures Cnt(a + R_a) == CntJoin(Aux_0(a), Cnt(a), F(a), Aux_0(R_a), Cnt(R_a), F(R_a))
   {
     if R_a == [] 

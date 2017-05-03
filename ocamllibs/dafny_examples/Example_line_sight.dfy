@@ -33,8 +33,6 @@ function VisibleJoin(leftAux_1 : int, leftAmax : int, rightAux_1 : int, rightAma
 
 
 lemma HomAux_1(a : seq<int>, R_a : seq<int>)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
   ensures Aux_1(a + R_a) == Aux_1Join(Aux_1(a), Aux_1(R_a))
   {
     if |R_a| == 1 
@@ -72,8 +70,6 @@ lemma HomAmax(a : seq<int>, R_a : seq<int>)
 } // End lemma.
 
 lemma HomVisible(a : seq<int>, R_a : seq<int>)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
   ensures Visible(a + R_a) == VisibleJoin(Aux_1(a), Amax(a), Aux_1(R_a), Amax(R_a))
   {
     if R_a == [] 

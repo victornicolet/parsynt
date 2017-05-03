@@ -41,10 +41,10 @@ function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
   ((leftAux_1 - 1) + rightAux_1)
 }
 
-function PosJoin(leftAux_1 : int, leftMts : int, leftPos : int, rightAux_1 : int, rightMts : int, rightPos : int): int
+function PosJoin(leftAux_1 : int, leftMts : int, leftPos : int, leftDfLength : int, rightAux_1 : int, rightMts : int, rightPos : int, rightDfLength : int): int
 {
   (if (((1102 - leftMts) + rightMts) >= (rightAux_1 - (-1102))) then
-    rightPos else leftPos)
+    (rightPos + leftDfLength) else leftPos)
 }
 
 function MtsJoin(leftAux_1 : int, leftMts : int, rightAux_1 : int, rightMts : int): int
@@ -75,11 +75,11 @@ lemma HomAux_1(a : seq<int>, R_a : seq<int>)
 } // End lemma.
 
 lemma BaseCasePos(a : seq<int>)
-  ensures Pos(a) == PosJoin(Aux_1(a), Mts(a), Pos(a), Aux_1([]), Mts([]), Pos([]))
+  ensures Pos(a) == PosJoin(Aux_1(a), Mts(a), Pos(a), DfLength(a), Aux_1([]), Mts([]), Pos([]), DfLength([]))
   {}
 
 lemma HomPos(a : seq<int>, R_a : seq<int>)
-  ensures Pos(a + R_a) == PosJoin(Aux_1(a), Mts(a), Pos(a), Aux_1(R_a), Mts(R_a), Pos(R_a))
+  ensures Pos(a + R_a) == PosJoin(Aux_1(a), Mts(a), Pos(a), DfLength(a), Aux_1(R_a), Mts(R_a), Pos(R_a), DfLength(R_a))
   {
     if R_a == [] 
     {
@@ -90,10 +90,12 @@ lemma HomPos(a : seq<int>, R_a : seq<int>)
     calc{
     Pos(a + R_a);
     =={
+      HomAux_1(a, R_a[..|R_a| - 1]);
       HomMts(a, R_a[..|R_a| - 1]);
+      HomDfLength(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    PosJoin(Aux_1(a), Mts(a), Pos(a), Aux_1(R_a), Mts(R_a), Pos(R_a));
+    PosJoin(Aux_1(a), Mts(a), Pos(a), DfLength(a), Aux_1(R_a), Mts(R_a), Pos(R_a), DfLength(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
@@ -113,7 +115,10 @@ lemma HomMts(a : seq<int>, R_a : seq<int>)
      } else {
     calc{
     Mts(a + R_a);
-    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
+    =={
+      HomAux_1(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      }
     MtsJoin(Aux_1(a), Mts(a), Aux_1(R_a), Mts(R_a));
     } // End calc.
   } // End else.

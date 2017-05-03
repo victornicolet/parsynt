@@ -1,7 +1,7 @@
 function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
-function Aux_0(a : seq<int>, i_begin_ : int): int
+function Aux_0(a : seq<int>): int
 requires |a| >= 1
 { if |a| == 1 then  a[0] else  a[0] 
 }
@@ -34,11 +34,7 @@ function PrevJoin(leftPrev : int, rightPrev : int): int
 }
 
 
-lemma HomAux_0(a : seq<int>,
-  i_begin_ : int, R_a : seq<int>,
-  R_i_begin_ : int)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
+lemma HomAux_0(a : seq<int>, R_a : seq<int>)
   ensures Aux_0(a + R_a) == Aux_0Join(Aux_0(a), Aux_0(R_a))
   {
     if |R_a| == 1 
@@ -55,15 +51,10 @@ lemma HomAux_0(a : seq<int>,
 } // End lemma.
 
 lemma BaseCaseIss(a : seq<int>, R_a : seq<int>)
-  requires |a| >= 1 && |R_a| >= 1
-  
-  requires |a| >= 1 && |R_a| >= 1
   ensures Iss(a) == IssJoin(Aux_0(a), Prev(a), Iss(a), Aux_0([R_a[0]]), Prev([R_a[0]]), Iss([R_a[0]]))
   {}
 
 lemma HomIss(a : seq<int>, R_a : seq<int>)
-  requires |a| >= 1 && |R_a| >= 1
-   requires |a| >= 1 && |R_a| >= 1
   ensures Iss(a + R_a) == IssJoin(Aux_0(a), Prev(a), Iss(a), Aux_0(R_a), Prev(R_a), Iss(R_a))
   {
     if R_a == [] 

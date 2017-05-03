@@ -37,8 +37,6 @@ function BnJoin(leftAux_1 : bool, leftBn : bool, leftAn : bool, rightAux_1 : boo
 
 
 lemma HomAux_1(ar : seq<bool>, R_ar : seq<bool>)
-  requires |ar| >= 1 && |R_ar| >= 1
-   requires |ar| >= 1 && |R_ar| >= 1
   ensures Aux_1(ar + R_ar) == Aux_1Join(Aux_1(ar), Aux_1(R_ar))
   {
     if |R_ar| == 1 
@@ -76,15 +74,10 @@ lemma HomAn(ar : seq<bool>, R_ar : seq<bool>)
 } // End lemma.
 
 lemma BaseCaseBn(ar : seq<bool>, R_ar : seq<bool>)
-  requires |ar| >= 1 && |R_ar| >= 1
-  
-  requires |ar| >= 1 && |R_ar| >= 1
   ensures Bn(ar) == BnJoin(Aux_1(ar), Bn(ar), An(ar), Aux_1([R_ar[0]]), Bn([R_ar[0]]), An([R_ar[0]]))
   {}
 
 lemma HomBn(ar : seq<bool>, R_ar : seq<bool>)
-  requires |ar| >= 1 && |R_ar| >= 1
-   requires |ar| >= 1 && |R_ar| >= 1
   ensures Bn(ar + R_ar) == BnJoin(Aux_1(ar), Bn(ar), An(ar), Aux_1(R_ar), Bn(R_ar), An(R_ar))
   {
     if R_ar == [] 

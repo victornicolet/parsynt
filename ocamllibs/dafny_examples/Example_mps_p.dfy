@@ -45,9 +45,10 @@ function MpsJoin(leftSum : int, leftMps : int, rightSum : int, rightMps : int): 
   DfMax((rightMps + leftSum), leftMps)
 }
 
-function PosJoin(leftSum : int, leftPos : int, leftMps : int, rightSum : int, rightPos : int, rightMps : int): int
+function PosJoin(leftSum : int, leftPos : int, leftMps : int, leftDfLength : int, rightSum : int, rightPos : int, rightMps : int, rightDfLength : int): int
 {
-  (if ((rightMps - 1) >= (leftMps - leftSum)) then rightPos else leftPos)
+  (if ((rightMps - 1) >= (leftMps - leftSum)) then
+    (rightPos + leftDfLength) else leftPos)
 }
 
 function SumJoin(leftSum : int, rightSum : int): int
@@ -81,11 +82,11 @@ lemma HomMps(a : seq<int>, R_a : seq<int>)
 } // End lemma.
 
 lemma BaseCasePos(a : seq<int>)
-  ensures Pos(a) == PosJoin(Sum(a), Pos(a), Mps(a), Sum([]), Pos([]), Mps([]))
+  ensures Pos(a) == PosJoin(Sum(a), Pos(a), Mps(a), DfLength(a), Sum([]), Pos([]), Mps([]), DfLength([]))
   {}
 
 lemma HomPos(a : seq<int>, R_a : seq<int>)
-  ensures Pos(a + R_a) == PosJoin(Sum(a), Pos(a), Mps(a), Sum(R_a), Pos(R_a), Mps(R_a))
+  ensures Pos(a + R_a) == PosJoin(Sum(a), Pos(a), Mps(a), DfLength(a), Sum(R_a), Pos(R_a), Mps(R_a), DfLength(R_a))
   {
     if R_a == [] 
     {
@@ -98,9 +99,10 @@ lemma HomPos(a : seq<int>, R_a : seq<int>)
     =={
       HomSum(a, R_a[..|R_a| - 1]);
       HomMps(a, R_a[..|R_a| - 1]);
+      HomDfLength(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    PosJoin(Sum(a), Pos(a), Mps(a), Sum(R_a), Pos(R_a), Mps(R_a));
+    PosJoin(Sum(a), Pos(a), Mps(a), DfLength(a), Sum(R_a), Pos(R_a), Mps(R_a), DfLength(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
