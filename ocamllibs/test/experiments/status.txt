@@ -9,16 +9,16 @@ length			yes		y*		yes
 mps			yes		y		yes
 mts			yes		y		yes
 mss			yes		y		yes
-mps-p			yes		y*		yes
-mts-p			yes		y*		yes
+mps_p			yes		y*		yes
+mts_p			yes		y*		yes
 poly			yes		y		no
-atoi			yes*		y*		no
-is-sorted		yes		y		no
-dropwhile		yes		y		no
-balanced-parenthesis	yes		y		no?
-0star1star		yes		y		no
-count-1s		yes		y		no
-line-sight		yes		y		yes
+atoi			yes*		y*		yes
+is-sorted		yes		y		no - 10 verified, 16 errors
+dropwhile		yes		y		no - 13 verified, 3 errors
+balanced_parenthesis	yes		y		yes
+0star1star		yes		y		t-o
+count_1s		yes		y		t-o
+line_sight		yes		y		t-o
 0after1			yes		y		yes
 max-blockno1		t-o		no		no
 

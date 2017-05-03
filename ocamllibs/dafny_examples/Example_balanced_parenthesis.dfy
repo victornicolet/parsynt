@@ -3,25 +3,9 @@ function DfLength(s: seq<int>): int
 
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
-function DfLengthJoin(a: int, b: int): int
-{ a + b }
-lemma HomDfLength(s: seq<int>, t: seq<int>)
-ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
-{
-  if t == [] {
-  assert(s + t == s);
-} else {
-        calc {
-        DfLength(s + t);
-        == {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;}
-        DfLengthJoin(DfLength(s), DfLength(t));
-        }
-        }
-}
-
 function Aux_3(a : seq<bool>): int
 { if a == [] then
-    0
+    1
    else 
    DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_3(a[..|a|-1]))
    
@@ -41,17 +25,17 @@ function Cnt(a : seq<bool>): int
 
 function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
 {
-  DfMin((leftCnt + rightAux_3), leftAux_3)
+  DfMin((rightAux_3 + leftCnt), leftAux_3)
 }
 
 function BalJoin(leftAux_3 : int, leftCnt : int, leftBal : bool, rightAux_3 : int, rightCnt : int, rightBal : bool): bool
 {
-  (((if rightBal then (leftCnt + rightCnt) else (leftCnt + (rightAux_3 + 0))) > (-1)) && leftBal)
+  ((((rightAux_3 - 2) + leftCnt) > (-3)) && leftBal)
 }
 
-function CntJoin(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
+function CntJoin(leftCnt : int, rightCnt : int): int
 {
-  ((if true then (rightCnt - 1) else rightAux_3) + (leftCnt + 1))
+  (rightCnt + leftCnt)
 }
 
 
@@ -95,6 +79,7 @@ lemma HomBal(a : seq<bool>, R_a : seq<bool>)
     calc{
     Bal(a + R_a);
     =={
+      HomAux_3(a, R_a[..|R_a| - 1]);
       HomCnt(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
@@ -104,11 +89,11 @@ lemma HomBal(a : seq<bool>, R_a : seq<bool>)
 } // End lemma.
 
 lemma BaseCaseCnt(a : seq<bool>)
-  ensures Cnt(a) == CntJoin(Aux_3(a), Cnt(a), Aux_3([]), Cnt([]))
+  ensures Cnt(a) == CntJoin(Cnt(a), Cnt([]))
   {}
 
 lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
-  ensures Cnt(a + R_a) == CntJoin(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a))
+  ensures Cnt(a + R_a) == CntJoin(Cnt(a), Cnt(R_a))
   {
     if R_a == [] 
     {
@@ -119,7 +104,7 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
     calc{
     Cnt(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    CntJoin(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a));
+    CntJoin(Cnt(a), Cnt(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

@@ -3,22 +3,6 @@ function DfLength(s: seq<int>): int
 
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
-function DfLengthJoin(a: int, b: int): int
-{ a + b }
-lemma HomDfLength(s: seq<int>, t: seq<int>)
-ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
-{
-  if t == [] {
-  assert(s + t == s);
-} else {
-        calc {
-        DfLength(s + t);
-        == {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;}
-        DfLengthJoin(DfLength(s), DfLength(t));
-        }
-        }
-}
-
 function Aux_1(a : seq<int>): int
 { if a == [] then  0 else  (a[|a|-1] + Aux_1(a[..|a|-1])) 
 }
@@ -74,7 +58,10 @@ lemma HomMts(a : seq<int>, R_a : seq<int>)
      } else {
     calc{
     Mts(a + R_a);
-    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
+    =={
+      HomAux_1(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      }
     MtsJoin(Aux_1(a), Mts(a), Aux_1(R_a), Mts(R_a));
     } // End calc.
   } // End else.

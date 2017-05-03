@@ -26,13 +26,13 @@ function Aux_1Join(leftAux_1 : bool, rightAux_1 : bool): bool
 
 function AnJoin(leftBn : bool, leftAn : bool, rightBn : bool, rightAn : bool): bool
 {
-  (rightBn && (leftAn && rightAn))
+  (leftAn && (rightAn && rightBn))
 }
 
 function BnJoin(leftAux_1 : bool, leftBn : bool, leftAn : bool, rightAux_1 : bool, rightBn : bool, rightAn : bool): bool
 {
-  (if (! rightAux_1) then (rightBn && leftBn) else
-    ((leftAn || leftAn) && ((rightBn || rightBn) && rightBn)))
+  (if rightAux_1 then (leftAn && rightBn) else
+    ((rightBn || rightAux_1) && ((! rightAn) && leftBn)))
 }
 
 
@@ -67,7 +67,10 @@ lemma HomAn(ar : seq<bool>, R_ar : seq<bool>)
      } else {
     calc{
     An(ar + R_ar);
-    =={ assert(ar + R_ar[..|R_ar|-1]) + [R_ar[|R_ar|-1]] == ar + R_ar; }
+    =={
+      HomBn(ar, R_ar[..|R_ar| - 1]);
+      assert(ar + R_ar[..|R_ar|-1]) + [R_ar[|R_ar|-1]] == ar + R_ar;
+      }
     AnJoin(Bn(ar), An(ar), Bn(R_ar), An(R_ar));
     } // End calc.
   } // End else.
@@ -89,6 +92,7 @@ lemma HomBn(ar : seq<bool>, R_ar : seq<bool>)
     calc{
     Bn(ar + R_ar);
     =={
+      HomAux_1(ar, R_ar[..|R_ar| - 1]);
       HomAn(ar, R_ar[..|R_ar| - 1]);
       assert(ar + R_ar[..|R_ar|-1]) + [R_ar[|R_ar|-1]] == ar + R_ar;
       }

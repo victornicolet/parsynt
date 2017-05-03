@@ -3,22 +3,6 @@ function DfLength(s: seq<int>): int
 
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
-function DfLengthJoin(a: int, b: int): int
-{ a + b }
-lemma HomDfLength(s: seq<int>, t: seq<int>)
-ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
-{
-  if t == [] {
-  assert(s + t == s);
-} else {
-        calc {
-        DfLength(s + t);
-        == {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;}
-        DfLengthJoin(DfLength(s), DfLength(t));
-        }
-        }
-}
-
 function Aux_2(str : seq<int>): int
 { if str == [] then  1 else  (10 * Aux_2(str[..|str|-1])) 
 }
@@ -77,6 +61,7 @@ lemma HomRes(str : seq<int>, R_str : seq<int>)
     calc{
     Res(str + R_str);
     =={
+      HomAux_2(str, R_str[..|R_str| - 1]);
       assert(str + R_str[..|R_str|-1]) + [R_str[|R_str|-1]] == str + R_str;
       }
     ResJoin(Aux_2(str), Res(str), Aux_2(R_str), Res(R_str));

@@ -1,22 +1,6 @@
 function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
-function DfLengthJoin(a: int, b: int): int
-{ a + b }
-lemma HomDfLength(s: seq<int>, t: seq<int>)
-ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
-{
-  if t == [] {
-  assert(s + t == s);
-} else {
-        calc {
-        DfLength(s + t);
-        == {assert (s + t[..|t|-1]) + [t[|t|-1]] == s + t;}
-        DfLengthJoin(DfLength(s), DfLength(t));
-        }
-        }
-}
-
 function Aux_0(a : seq<bool>): bool
 requires |a| >= 1
 { if |a| == 1 then  a[0] else  a[0] 
@@ -36,18 +20,18 @@ function Cnt(a : seq<bool>): int
 
 function Aux_0Join(leftAux_0 : bool, rightAux_0 : bool): bool
 {
-  (leftAux_0 || leftAux_0)
+  leftAux_0
 }
 
 function FJoin(leftF : bool, rightF : bool): bool
 {
-  (rightF || rightF)
+  rightF
 }
 
 function CntJoin(leftAux_0 : bool, leftCnt : int, leftF : bool, rightAux_0 : bool, rightCnt : int, rightF : bool): int
 {
-  ((if ((leftF || leftF) && (rightAux_0 && rightAux_0)) then
-     (rightCnt + (-2)) else (rightCnt + (-1))) + (leftCnt + 1))
+  (if (rightAux_0 && (leftF && true)) then ((rightCnt - 1) + leftCnt) else
+    (rightCnt + leftCnt))
 }
 
 
@@ -104,6 +88,7 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
     calc{
     Cnt(a + R_a);
     =={
+      HomAux_0(a, R_a[..|R_a| - 1]);
       HomF(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }

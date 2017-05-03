@@ -28,7 +28,7 @@ function AmaxJoin(leftAmax : int, rightAmax : int): int
 
 function VisibleJoin(leftAux_1 : int, leftAmax : int, rightAux_1 : int, rightAmax : int): bool
 {
-  (DfMax(leftAmax, rightAmax) == rightAux_1)
+  (DfMax(rightAmax, leftAmax) == (rightAux_1 - 0))
 }
 
 
@@ -80,6 +80,7 @@ lemma HomVisible(a : seq<int>, R_a : seq<int>)
     calc{
     Visible(a + R_a);
     =={
+      HomAux_1(a, R_a[..|R_a| - 1]);
       HomAmax(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
