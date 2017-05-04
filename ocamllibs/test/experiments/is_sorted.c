@@ -2,7 +2,7 @@ static const int __MIN_INT_ = -9999;
 
 _Bool example_is_sorted (int *a, int n) {
   _Bool iss = 1;
-  int prev = _min_int_;
+  int prev = __MIN_INT_;
 
   for (int i = 0; i < n; i ++) {
     iss = iss && (prev < a[i]);

@@ -500,6 +500,8 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
        (match c_constant vi.Cil.vname with
         | Some skconst -> Some (SkConst skconst)
         | None ->
+          Format.printf "@;Warning: dangerous intialization %s.@."
+            (CilTools.psprint80 Cil.dn_exp cil_exp);
           match o with
           | Cil.Index (e, o) ->
             begin

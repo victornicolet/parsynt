@@ -13,7 +13,7 @@ mps_p			yes		y*		yes
 mts_p			yes		y*		yes
 poly			yes		y		no
 atoi			yes*		y*		yes
-is-sorted		yes		y		no - 10 verified, 16 errors
+is-sorted		yes		y		yes
 dropwhile		yes		y		no - 13 verified, 3 errors
 balanced_parenthesis	yes		y		yes
 0star1star		yes		y		t-o
