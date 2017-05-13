@@ -18,21 +18,21 @@ ensures DfLength(s + t) == DfLengthJoin(DfLength(s), DfLength(t))
 }
 
 function Pos(a : seq<int>): int
-{ if a == [] then
+{
+  if a == [] then
     0
-   else 
-   (if ((! (a[|a|-1] == 0)) && First_pos(a[..|a|-1])) then DfLength(a) else
-     Pos(a[..|a|-1]))
-   
+    else
+    (if ((! (a[|a|-1] == 0)) && First_pos(a[..|a|-1])) then DfLength(a) else
+      Pos(a[..|a|-1]))
 }
 
 function First_pos(a : seq<int>): bool
-{ if a == [] then
+{
+  if a == [] then
     true
-   else 
-   (if ((! (a[|a|-1] == 0)) && First_pos(a[..|a|-1])) then false else
-     First_pos(a[..|a|-1]))
-   
+    else
+    (if ((! (a[|a|-1] == 0)) && First_pos(a[..|a|-1])) then false else
+      First_pos(a[..|a|-1]))
 }
 
 function PosJoin(leftFirst_pos : bool, leftPos : int, leftDfLength : int, rightFirst_pos : bool, rightPos : int, rightDfLength : int): int

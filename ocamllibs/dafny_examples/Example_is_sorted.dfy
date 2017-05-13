@@ -47,6 +47,11 @@ function PrevJoin(leftPrev : int, rightPrev : int): int
 }
 
 
+lemma BaseCaseAux_0(a : seq<int>, R_a : seq<int>)
+  requires |a| >= 1 && |R_a| >= 1
+  ensures Aux_0(a + [R_a[0]]) == Aux_0Join(Aux_0(a), Aux_0([R_a[0]]))
+  {}
+
 lemma HomAux_0(a : seq<int>, R_a : seq<int>)
   requires |a| >= 1 && |R_a| >= 1
   ensures Aux_0(a + R_a) == Aux_0Join(Aux_0(a), Aux_0(R_a))
@@ -54,6 +59,7 @@ lemma HomAux_0(a : seq<int>, R_a : seq<int>)
     if |R_a| == 1 
     {
     assert(a + R_a == a + [R_a[0]]);
+    BaseCaseAux_0(a, R_a);
     
      } else {
     calc{

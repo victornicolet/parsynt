@@ -3,18 +3,8 @@ open Format
 open Utils
 open SketchTypes
 open SPretty
+open Dafny
 
-
-
-type type_simple
-type type_composed
-
-type _ dafny_basic_type =
-  | Int : type_simple dafny_basic_type
-  | Real: type_simple dafny_basic_type
-  | Bool: type_simple dafny_basic_type
-  | Bottom : type_simple dafny_basic_type
-  | Sequence: type_simple dafny_basic_type -> type_composed dafny_basic_type
 
 
 let rec string_of_dt : type a. a dafny_basic_type -> string =
@@ -92,11 +82,10 @@ type proofVariable =
     join_expr : skExpr;
     mutable needs_base_case : bool;
     mutable pos_var : proofVariable option;
-    mutable base_case : int;
     mutable inspected : bool;
     mutable func_requires : int;
     mutable func_requires_for_deps : int;
-    mutable hom_requires : int * int;
+    mutable hom_requires : int;
     mutable depends : proofVariable list;
     mutable join_depends : proofVariable list;
   }
@@ -220,14 +209,6 @@ let pp_dfy fmt
   in
   (pp_c_expr ~for_dafny:true) fmt (add_pos_offset (replace_varnames e))
 (** Print the function corresponding to one variable. *)
-
-let pp_base_case_cond fmt pfv =
-  if pfv.base_case = 0 then
-    fprintf fmt "%s == []" (_R_ pfv.sequence.vname)
-  else
-    fprintf fmt "|%s| == %i" (_R_ pfv.sequence.vname)
-      pfv.base_case
-
 let pp_func_base_case_cond fmt pfv =
   if pfv.func_requires_for_deps <= 0 then
     fprintf fmt "%s == []" pfv.sequence.vname
@@ -291,31 +272,31 @@ let pp_require_min_length fmt sl =
 
 let pp_requires fmt pfv =
   match pfv.hom_requires with
-  | (0, 0) -> ()
-  | (l, r) ->
+  | 0 -> ()
+  | i ->
     fprintf fmt "requires |%s| >= %i && |%s| >= %i@\n"
-      pfv.sequence.vname l (_R_ pfv.sequence.vname) r
+      pfv.sequence.vname i (_R_ pfv.sequence.vname) i
 
 let pp_requires_basecase fmt pfv =
   match pfv.hom_requires with
-  | (0, 0) -> ()
-  | (l, r) ->
-    if pfv.func_requires_for_deps >= 1 then
+  | 0 -> ()
+  | l ->
+    if pfv.hom_requires >= 1 then
       fprintf fmt "requires |%s| >= %i && |%s| >= %i@\n"
-        pfv.sequence.vname l (_R_ pfv.sequence.vname) r
+        pfv.sequence.vname l (_R_ pfv.sequence.vname) l
     else
       fprintf fmt "requires |%s| >= %i@\n"
         pfv.sequence.vname l
 
 (* Assertions *)
-let pp_assertion_base_case fmt pfv =
+let pp_hom_base_case_assertion fmt pfv =
   (* assert(s + [] == s); *)
-  if pfv.func_requires_for_deps = 0 then
+  if pfv.hom_requires = 0 then
     fprintf fmt "@[assert(%s + [] == %s);@]"
       pfv.sequence.vname pfv.sequence.vname
   else
     begin
-      if pfv.func_requires_for_deps = 1 then
+      if pfv.hom_requires = 1 then
         fprintf fmt "@[assert(%s + %s == %s + [%s[0]]);@]"
           pfv.sequence.vname
           (_R_ pfv.sequence.vname)
@@ -327,7 +308,7 @@ let pp_assertion_base_case fmt pfv =
           (_R_ pfv.sequence.vname)
           pfv.sequence.vname
           (_R_ pfv.sequence.vname)
-          pfv.base_case
+          pfv.hom_requires
     end
 
 
@@ -343,11 +324,11 @@ let pp_func_of_concat fmt pfv =
 let pp_func_of_concat_base_case fmt pfv =
   fprintf fmt "%s(%s + %a)" pfv.name pfv.sequence.vname
     (fun fmt pfv ->
-       if pfv.func_requires_for_deps = 1 then
+       if pfv.hom_requires = 1 then
          fprintf fmt "[%s[0]]" (_R_ pfv.sequence.vname)
        else
          fprintf fmt "%s[..%i]" (_R_ pfv.sequence.vname)
-           pfv.func_requires_for_deps) pfv
+           pfv.hom_requires) pfv
 
 let pp_func_of_single_list fmt pfv =
   fprintf fmt "%s(%s)" pfv.name pfv.sequence.vname
@@ -378,14 +359,14 @@ let pp_joined_base_case fmt pfv =
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt pfv_ ->
          fprintf fmt "%s(%s)" pfv_.name
-           (if pfv.base_case = 0 then "[]"
+           (if pfv.hom_requires = 0 then "[]"
             else
-              (if pfv.base_case = 1
+              (if pfv.hom_requires = 1
                then
                  "["^(_R_ pfv.sequence.vname)^"[0]]"
                else
                  (_R_ pfv.sequence.vname)^"[.."^
-                 (string_of_int pfv.base_case)^"]")))
+                 (string_of_int pfv.hom_requires)^"]")))
       fmt
       (get_join_args pfv)
   in
@@ -403,12 +384,12 @@ let pp_depend_lemmas fmt pfv =
     fmt
     (List.filter (fun dep_pfv -> dep_pfv != pfv) (get_join_args pfv))
 
-let pp_base_case_cond fmt pfv =
-  if pfv.func_requires_for_deps = 0 then
+let pp_hom_base_case_cond fmt pfv =
+  if pfv.hom_requires = 0 then
     fprintf fmt "%s == []" (_R_ pfv.sequence.vname)
   else
     fprintf fmt "|%s| == %i" (_R_ pfv.sequence.vname)
-      pfv.func_requires_for_deps
+      pfv.hom_requires
 
 let pp_hom fmt pfv =
   (** Print the base case lemma *)
@@ -421,14 +402,14 @@ let pp_hom fmt pfv =
         {}@."
        pfv.name
        (fun fmt pfv ->
-          if pfv.base_case = 0 then
+          if pfv.hom_requires = 0 then
             pp_input_params fmt pfv.in_vars
           else
             fprintf fmt "%a, %a"
               pp_input_params pfv.in_vars
               pp_input_params_prefix pfv.in_vars) pfv
        pp_requires_basecase pfv
-       (if let l,r = pfv.hom_requires in l <= 0 && r <= 0
+       (if pfv.hom_requires <= 0
         then pp_func_of_single_list
         else pp_func_of_concat_base_case) pfv
        pp_joined_base_case pfv);
@@ -448,21 +429,22 @@ let pp_hom fmt pfv =
      @]@\n} // End else.\
      @]@\n} // End lemma.\
      @\n"
-    hom_prefix pfv.name  pp_input_params pfv.in_vars
+    hom_prefix pfv.name
+    pp_input_params pfv.in_vars
     pp_input_params_prefix pfv.in_vars
     (* Might requires some hypothesis if the function is undefined for small
        sequences *)
     pp_requires pfv
     (* Ensures function of concatenated lists equals the results of the join *)
     pp_func_of_concat pfv pp_joined_res pfv
-    pp_base_case_cond pfv
-    pp_assertion_base_case pfv
+    pp_hom_base_case_cond pfv
+    pp_hom_base_case_assertion pfv
     (fun fmt pfv ->
        if pfv.needs_base_case then
          fprintf fmt "BaseCase%s(%a);@\n"
            pfv.name
            (fun fmt pfv ->
-              if pfv.base_case = 0
+              if pfv.hom_requires = 0
               then
                 fprintf fmt "%s" pfv.sequence.vname
               else
@@ -577,6 +559,30 @@ let set_int_limit_uses e =
 
 (** Pretty print definitions. The name of the functions are set using
     the Conf module. *)
+
+let length_def =
+  let length_fun_name = Conf.get_conf_string "dafny_length_fun" in
+  let _len = length_fun_name, Int in
+  let _s = "s", Sequence Int in
+  let len_fun =
+    let len_fun_expr = DfIte (DfBinop (DfEqS, DfVar _s, DfEmpty),
+                              DfInt 0,
+                              DfFuncall (_len, [seq_minus_last _s])) in
+    DfFundec (_len,[_s], len_fun_expr) in
+  let len_join =
+    let len_l, len_r = ("a", Int), ("b", Int) in
+    let len_join_expr = DfBinop (DfPlus, DfVar len_l, DfVar len_r) in
+    DfJoin (_len, [len_l; len_r], len_join_expr)
+  in
+  let len_hom =
+    let r, s = ("r", Sequence Int), ("s", Sequence Int) in
+    let len_hom_expr = DfEmpty
+    in
+    DfHom (_len, [r; s], len_hom_expr)
+  in
+  ()
+
+
 let pp_length_def fmt () =
   fprintf fmt
     "function %s(s: seq<int>): int@\n\
@@ -680,13 +686,12 @@ let gen_proof_vars sketch =
       in_vars =  [];
       pos_var = None;
       out_type = Integer;
-      base_case = 0;
       needs_base_case = false;
       empty_value = SkConst (CInt 0);
       function_expr = g;
       func_requires = 0;
       func_requires_for_deps = 0;
-      hom_requires = (0,0);
+      hom_requires = 0;
       join_expr = g;
       join_depends = [];
       depends = [];
@@ -763,13 +768,12 @@ let gen_proof_vars sketch =
            in_vars =  input_vars;
            pos_var = if uses_pos then Some index_pfv else None;
            out_type = type_of function_expr;
-           base_case = pfv_elim_non_empty;
            needs_base_case = false;
            empty_value = init_va;
            function_expr = rebuild_min_max function_expr;
            func_requires = pfv_elim_non_empty;
            func_requires_for_deps = 0;
-           hom_requires = (0,0);
+           hom_requires = 0;
            join_expr = join_expr;
            join_depends = [];
            depends = [];
@@ -815,20 +819,7 @@ let gen_proof_vars sketch =
       []
       pfv_list
   in
-  let update_requires_pfv vid pfv =
-    let updated_hom_requires depend_set =
-      List.iter
-        (fun pfv_dep -> pfv_dep.needs_base_case <- true)
-        pfv.depends;
-      List.fold_left
-        (fun (l, r) pfv_dep ->
-           pfv.base_case <- max pfv.base_case pfv_dep.base_case;
-           let l_dep, r_dep = pfv_dep.hom_requires in
-           if l_dep > 0 || r_dep > 0 then
-             (max l (l_dep + 1), max r (r_dep + 1))
-           else (0, 0))
-        pfv.hom_requires depend_set
-    in
+  let update_requires_funcs_pfv vid pfv =
     let updated_func_requires_deps depend_set =
       List.fold_left
         (fun r pfv_dep ->
@@ -837,17 +828,26 @@ let gen_proof_vars sketch =
         pfv.func_requires depend_set
     in
     pfv.func_requires_for_deps <- updated_func_requires_deps pfv.depends;
-    (* Homorphism lemma requirements should at least meet the function's
-       requirements in terms of input sequence length. *)
-    pfv.hom_requires <- (let r, l = updated_hom_requires pfv.join_depends in
-                         let fr = pfv.func_requires_for_deps in
-                         (max r fr, max l fr))
+  in
+  let update_requires_homs_pfv vid pfv =
+    let updated_hr depend_set =
+      List.fold_left
+        (fun hr pfv_dep ->
+           let r_dep = pfv_dep.func_requires_for_deps in
+           if r_dep > 0 then max hr r_dep else hr)
+        pfv.func_requires depend_set
+    in
+    pfv.hom_requires <- updated_hr pfv.join_depends;
+    pfv.needs_base_case <- pfv.hom_requires > 0;
   in
   List.iter
     (fun vid -> update_deps_pfv vid (IH.find vi_to_proofVars vid))
     pfv_list;
   List.iter
-    (fun vid -> update_requires_pfv vid (IH.find vi_to_proofVars vid))
+    (fun vid -> update_requires_funcs_pfv vid (IH.find vi_to_proofVars vid))
+    dep_order_list;
+  List.iter
+    (fun vid -> update_requires_homs_pfv vid (IH.find vi_to_proofVars vid))
     dep_order_list;
   in_order := dep_order_list
 
