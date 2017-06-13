@@ -5,7 +5,7 @@ open VariableAnalysis
 open Findloops
 open Findloops.Cloop
 open LoopsHelper
-open PpHelper
+open Utils.PpTools
 
 module IM = Utils.IM
 module Ct = CilTools

@@ -1,6 +1,7 @@
 open Format
 open SketchTypes
 open SPretty
+open Utils
 
 (* Defintiion of a subset of the Dafny language for a cleaner management of
    the proof generation. *)
@@ -102,6 +103,24 @@ let rec pp_dfexpr : type a. formatter -> a dfExpr -> unit =
      | DfAssert e ->
        fprintf fmt "assert(%a)" pp_dfexpr e
      | DfSkExpr e -> pp_skexpr fmt e)
+
+and pp_dfProgram : type a. formatter -> a dfProgram -> unit =
+  (fun fmt ->
+     function
+     | DfFundec ((fname, ty) , func_args, func_body) ->
+       fprintf fmt "%s(%a):%a@\n@[<hov 2>{@\n%a@]@\n}"
+         (* Name of the function *)
+         fname
+         (* Arguments of the function: usually, just a list *)
+         (fun fmt () -> ()) ()
+         (fun fmt () -> ()) ()
+         (fun fmt () -> ()) ()
+
+
+     | DfJoin ((fname, ty), join_args, join_body) ->
+       fprintf fmt "%sJoin" fname
+     | DfHom ((fname, ty), hom_args, hom_body) ->
+       fprintf fmt "Hom%s" fname)
 
 let seq_minus_last s =
   DfSubSeq (s, DfBinop (DfMinus, DfLen (DfVar s), DfInt 1))

@@ -1,13 +1,13 @@
 open Cil
-open Utils
 open Format
 open SPretty
 open ExpressionReduction
 open SymbExe
-open PpHelper
 open VUtils
 open Expressions
 open SketchTypes
+open Utils
+open Utils.PpTools
 
 let debug = ref false
 let debug_dev = ref true
@@ -180,7 +180,7 @@ let add_new_aux aux_to_add (aux_vs, aux_exprs) =
   else
     begin
       printf "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
-        (color "b-green") (color "black") default
+        (color "b-green") (color "black") color_default
         aux_to_add.avarinfo.vname
         cp_skexpr aux_to_add.aexpr cp_skexpr aux_to_add.afunc;
       (VS.add aux_to_add.avarinfo aux_vs,
@@ -378,7 +378,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
             then
               begin
                 printf "@.%s%s Candidate increments some auxiliary.%s@."
-                (color "black") (color "b-green") default;
+                (color "black") (color "b-green") color_default;
               (* A subexpression of the expression is an auxiliary variable *)
               let corresponding_functions =
                 match_increment aux_vs current_expr ef_list
@@ -469,7 +469,7 @@ let discover_for_id sketch varid =
     (color "black")
     (color "b-blue")
     (VSOps.find_by_id varid ctx.state_vars).vname
-    default;
+    color_default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
   let init_exprs = create_symbol_map ctx.state_vars in
   let init_i = { context = ctx;
@@ -485,7 +485,7 @@ let discover_for_id sketch varid =
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
     printf "@.%s%s-------------------- UNFOLDING %i ----------------%s@."
-    (color "black") (color "b-blue") i default;
+    (color "black") (color "b-blue") i color_default;
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
@@ -568,7 +568,7 @@ let discover_for_id sketch varid =
       printf "@.DISCOVER for variable %s finished.@."
         (VSOps.find_by_id varid ctx.state_vars).vname;
     end;
-  printf "@.%sNEW VARIABLES :%s@." (color "b") default;
+  printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
   VS.iter
     (fun vi ->
        printf "@.(%i : %s) = (%a,@; %a)@." vi.C.vid vi.C.vname

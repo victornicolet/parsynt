@@ -1,7 +1,7 @@
 open Sketch
-open PpHelper
 open Format
 open Utils
+open Utils.PpTools
 open SError
 open SketchTypes
 open SymbExe
@@ -113,7 +113,7 @@ let cil2func loops =
        if !verbose then
          let printer = new Cil2Func.cil2func_printer vars stv in
          (printf "@.%s[test for loop %i in %s failed]%s@."
-            (color "red") cl.Cl.sid cl.Cl.host_function.C.vname default;);
+            (color "red") cl.Cl.sid cl.Cl.host_function.C.vname color_default;);
          printer#printlet func;
          printf "@.";
        else ();

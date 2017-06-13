@@ -46,11 +46,11 @@ lemma HomAux_0(a : seq<bool>, R_a : seq<bool>)
   requires |a| >= 1 && |R_a| >= 1
   ensures Aux_0(a + R_a) == Aux_0Join(Aux_0(a), Aux_0(R_a))
   {
-    if |R_a| == 1
+    if |R_a| == 1 
     {
     assert(a + R_a == a + [R_a[0]]);
     BaseCaseAux_0(a, R_a);
-
+    
      } else {
     calc{
     Aux_0(a + R_a);
@@ -60,14 +60,13 @@ lemma HomAux_0(a : seq<bool>, R_a : seq<bool>)
   } // End else.
 } // End lemma.
 
-
 lemma HomF(a : seq<bool>, R_a : seq<bool>)
-	requires |R_a| >= 1
   ensures F(a + R_a) == FJoin(F(a), F(R_a))
   {
-    if |R_a| == 1
+    if R_a == [] 
     {
-			assert(a + R_a == a + [R_a[0]]);
+    assert(a + [] == a);
+    
      } else {
     calc{
     F(a + R_a);
@@ -86,11 +85,11 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
   requires |a| >= 1 && |R_a| >= 1
   ensures Cnt(a + R_a) == CntJoin(Aux_0(a), Cnt(a), F(a), Aux_0(R_a), Cnt(R_a), F(R_a))
   {
-    if |R_a| == 1
+    if |R_a| == 1 
     {
     assert(a + R_a == a + [R_a[0]]);
     BaseCaseCnt(a, R_a);
-
+    
      } else {
     calc{
     Cnt(a + R_a);
@@ -103,3 +102,4 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
     } // End calc.
   } // End else.
 } // End lemma.
+

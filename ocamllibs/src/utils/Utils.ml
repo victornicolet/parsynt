@@ -59,10 +59,10 @@ let ih_join_left (newh : ('a * 'b option) IH.t)
     (h1 : 'a IH.t)  (h2 : 'b IH.t) : unit =
   IH.iter
     (fun k v1 ->
-      try
-        let v2 = IH.find h2 k in
-        IH.add newh k (v1, Some v2)
-      with Not_found -> IH.add newh k (v1, None)) h1
+       try
+         let v2 = IH.find h2 k in
+         IH.add newh k (v1, Some v2)
+       with Not_found -> IH.add newh k (v1, None)) h1
 
 let identity x = x
 let identity2 x y = y
@@ -149,8 +149,8 @@ module ListTools = struct
 
   let foldl_union2 f l =
     List.fold_left (fun (acc1, acc2) a ->
-	  let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
-	  (VS.empty, VS.empty) l
+	let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
+      (VS.empty, VS.empty) l
 
   let pair a_li b_li =
     List.fold_left2
@@ -163,7 +163,7 @@ module ListTools = struct
   let outer_join_lists (a, b) =
     List.fold_left
       (fun li i ->
-        if List.mem i li then li else i::li) a b
+         if List.mem i li then li else i::li) a b
 
   let last list =
     List.nth list ((List.length list) - 1)
@@ -186,7 +186,7 @@ let last_instr instr_stmt =
   match instr_stmt.skind with
   | Instr il -> ListTools.last il
   | _ -> raise
-     (Failure "last_instr expected a statement of instruction list kind" )
+           (Failure "last_instr expected a statement of instruction list kind" )
 
 (** Simple function to check if the argument is {e Some a}.
     @param ao some argument of type 'a option
@@ -220,14 +220,14 @@ let get_fun cf fname =
   let auxoptn cfile =
     Cil.foldGlobals cfile
       (fun fdeco g ->
-        match g with
-        | GFun (f, loc) ->
+         match g with
+         | GFun (f, loc) ->
            begin
              if f.svar.vname = fname
              then xorOpt fdeco (Some f)
              else fdeco
            end
-        | _ -> fdeco )
+         | _ -> fdeco )
       None
   in
   try auxoptn cf
@@ -271,12 +271,12 @@ module CilTools = struct
     | _ -> false
 
   let add_stmt block stmt =
-	{ block with bstmts = block.bstmts @ stmt }
+    { block with bstmts = block.bstmts @ stmt }
 
   let add_instr stmt instr =
     match stmt.skind with
     | Instr il ->
-          {stmt with skind = Instr (il @ instr)}
+      {stmt with skind = Instr (il @ instr)}
     | _ ->
       eprintf "Instruction not added to non-instruction list statement.";
       failwith "add_instr"
@@ -319,7 +319,7 @@ module CilTools = struct
   let simple_fun_type rettype_name args_typ_names =
     TFun (simple_type rettype_name,
           Some (List.map (fun s -> ("x", simple_type s, [])) args_typ_names),
-         false, [])
+          false, [])
 
   let fun_ret_type tfunc =
     match tfunc with
@@ -370,13 +370,13 @@ module VSOps = struct
   let rec sovi (instr : Cil.instr) : VS.t =
     match instr with
     | Set (lval, exp, loc) ->
-       let vs_ls = sovv lval in
-       let vs_exp = sove exp in
-       VS.union vs_exp vs_ls
+      let vs_ls = sovv lval in
+      let vs_exp = sove exp in
+      VS.union vs_exp vs_ls
     | Call (lvo, ef, elist, _) ->
-       let vs_ls = maybe_apply_default sovv lvo VS.empty in
-       let vs_el = ListTools.foldl_union sove elist in
-       VS.union vs_ls vs_el
+      let vs_ls = maybe_apply_default sovv lvo VS.empty in
+      let vs_el = ListTools.foldl_union sove elist in
+      VS.union vs_ls vs_el
     | _ -> VS.empty
 
   and sove (expr : Cil.exp) : VS.t =
@@ -391,7 +391,7 @@ module VSOps = struct
     match v with
     | Var x, _ -> VS.singleton x
     | Mem e, offs -> VS.union (sove e)
-       (if onlyNoOffset then VS.empty else (sovoff offs))
+                       (if onlyNoOffset then VS.empty else (sovoff offs))
 
   and sovoff (off : Cil.offset) : VS.t =
     match off with
@@ -426,7 +426,7 @@ module VSOps = struct
     match host  with
     | Var vi -> has_vid vi.vid vs
     | _-> VS.cardinal
-       (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
+            (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
 
   (** Get-element functions*)
 
@@ -462,7 +462,7 @@ module VSOps = struct
     List.fold_left (fun vs elt -> VS.union vs (f elt)) VS.empty li
 
   let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
-      VS.t =
+    VS.t =
     let vs = VS.empty in
     IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
 
@@ -472,26 +472,26 @@ module VSOps = struct
   let vs_with_suffix vs suffix =
     VS.fold
       (fun var new_vs ->
-        VS.add (CilTools.gen_var_with_suffix var suffix) new_vs)
+         VS.add (CilTools.gen_var_with_suffix var suffix) new_vs)
       vs
       VS.empty
 
   let vs_with_prefix vs prefix =
     VS.fold
       (fun var new_vs ->
-        VS.add (CilTools.gen_var_with_prefix var prefix) new_vs)
+         VS.add (CilTools.gen_var_with_prefix var prefix) new_vs)
       vs
       VS.empty
 
   (** Pretty printing variable set *)
 
   let pp_var_names fmt (vs : VS.t) =
-     let vi_list = varlist vs in
-     pp_print_list
-       ~pp_sep:(fun fmt () -> fprintf fmt " ")
-       (fun fmt vi -> fprintf fmt "%s" vi.Cil.vname)
-       fmt
-       vi_list
+    let vi_list = varlist vs in
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt " ")
+      (fun fmt vi -> fprintf fmt "%s" vi.Cil.vname)
+      fmt
+      vi_list
 
   let to_string vs =
     (pp_var_names Format.str_formatter vs ; flush_str_formatter ())
@@ -685,6 +685,97 @@ module IMTools = struct
     in
     im1_in_im2, im2_in_im1, im1_only, im2_only
 
+end
+
+module PpTools = struct
+  let colorPrefix = "\x1b"
+
+  let colormap =
+    List.fold_left2
+      (fun m k v -> SM.add k (colorPrefix^v) m)
+      SM.empty
+      ["black"; "red"; "green"; "yellow"; "blue"; "violet"; "cyan"; "white";
+       "i"; "u"; "b"; "grey";
+       "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan"; "b-white"]
+      ["[30m"; "[31m"; "[32m"; "[33m"; "[34m"; "[35m"; "[36m"; "[37m";
+       "[3m"; "[4m"; "[1m"; "[2m";
+       "[100m"; "[101m"; "[102m"; "[103m";"[104m"; "[105m"; "[106m"; "[107m"]
+
+  let color cname =
+    try
+      SM.find cname colormap
+    with Not_found -> colorPrefix^"[0m"
+
+  let color_default = colorPrefix^"[0m"
+
+  let pp_newline fmt () = fprintf fmt "@."
+
+  (** List printing *)
+
+  let rec ppli
+      (ppf : formatter)
+      ?(sep = ";")
+      (pfun : formatter -> 'a -> unit) : 'a list -> unit =
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "%s" sep) pfun ppf
+
+  let pp_int_list ppf =
+    ppli ppf
+      ~sep:":"
+      (fun ppf i -> fprintf ppf "%i" i)
+
+  let print_int_list = pp_int_list std_formatter
+
+  let pp_string_list fmt =
+    ppli fmt ~sep:" " (fun fmt s -> fprintf fmt "%s" s)
+
+  let pp_comma_sep_list pf fmt =
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ") pf fmt
+
+
+  (** Map printing *)
+  let ppimap
+      (pelt : formatter -> 'a -> unit)
+      (ppf : formatter) : 'a IM.t -> unit =
+    IM.iter
+      (fun i a ->
+         fprintf ppf "@[<hov 2> %i -> %a@]@;" i pelt a)
+
+  let ppifmap
+      (pi : formatter -> int -> unit)
+      (pelt : formatter -> 'a -> unit)
+      (ppf : formatter) : 'a IM.t -> unit =
+    IM.iter
+      (fun i a ->
+         fprintf ppf "@[<hov 2> %a <- %a@]@;" pi i pelt a)
+
+
+  let string_of_loc (loc : Cil.location) =
+    sprintf "<#line %i in %s, byte %i>" loc.Cil.line loc.Cil.file loc.Cil.byte
+
+  let loc_of_string loca =
+    let regexp =
+      Str.regexp "<#line \\([0-9]+\\) in \\([0-9A-Za-z\\._-]+\\), byte \\([0-9]+>\\)"
+    in
+    try
+      ignore(Str.search_forward regexp loca 0);
+      let line = int_of_string (Str.matched_group 0 loca) in
+      let file_name = Str.matched_group 1 loca in
+      let byte =  int_of_string (Str.matched_group 2 loca) in
+      Some { Cil.line = line; file = file_name; Cil.byte = byte }
+    with Not_found -> None
+
+
+  (** Hastable printing *)
+  let pp_hash fmt print_elt htbl =
+    let pp_elts fmt () =
+      IH.iter (fun k elt -> fprintf fmt "(%i:%a)@;" k print_elt elt) htbl
+    in
+    fprintf fmt "@[<hv 2><HashTable:@;%a>@]" pp_elts ()
+
+  (**TODO : replace characters that are setting color back to default in incoming
+     string *)
+  let printerr s =
+    Format.fprintf err_formatter "%s%s%s" (color "red") s color_default
 end
 
 module SMTools = struct

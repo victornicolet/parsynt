@@ -1,10 +1,10 @@
 open Format
 open Cil
 
-open PpHelper
 open SketchTypes
 open SPretty
 open Utils
+open Utils.PpTools
 
 module Ct = CilTools
 

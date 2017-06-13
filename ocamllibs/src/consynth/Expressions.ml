@@ -1,11 +1,9 @@
 open Cil
 open Format
-open PpHelper
 open SPretty
 open SketchTypes
 open TestUtils
 open Utils
-
 
 (** Hashtable string -> 'a *)
 

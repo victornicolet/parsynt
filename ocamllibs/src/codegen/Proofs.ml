@@ -560,7 +560,7 @@ let set_int_limit_uses e =
 (** Pretty print definitions. The name of the functions are set using
     the Conf module. *)
 
-let length_def =
+let length_def fmt =
   let length_fun_name = Conf.get_conf_string "dafny_length_fun" in
   let _len = length_fun_name, Int in
   let _s = "s", Sequence Int in
@@ -580,7 +580,9 @@ let length_def =
     in
     DfHom (_len, [r; s], len_hom_expr)
   in
-  ()
+  pp_dfProgram fmt len_fun;
+  pp_dfProgram fmt len_join;
+  pp_dfProgram fmt len_hom
 
 
 let pp_length_def fmt () =
@@ -780,6 +782,7 @@ let gen_proof_vars sketch =
          }
     )
     sketch.scontext.state_vars;
+
   (* Now the hash table contains the proof variables, we can compute
      the dependencies.
      We also need to update requirements accordingly.

@@ -3,7 +3,7 @@ open Format
 open Findloops
 open Utils
 open Utils.CilTools
-open PpHelper
+open Utils.PpTools
 open SketchTypes
 open SPretty
 open SError
@@ -81,39 +81,39 @@ class cil2func_printer allvs stv =
 
       | Let (vi, expr, letn, id, loc) ->
         fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s"
-          (color "red") default vi.vname self#pp_expr expr
-          (color "red") default
+          (color "red") color_default vi.vname self#pp_expr expr
+          (color "red") color_default
           (self#pp_letin ~wloc:wloc) letn
           (if wloc then string_of_loc loc else "")
 
       | LetRec ((i, g , u), let1, letcont, loc) ->
         fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]%s"
-          (color "red") default
+          (color "red") color_default
           (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
           (psprint80 Cil.dn_instr u)
           (self#pp_letin ~wloc:wloc) let1
-          (color "red") default
+          (color "red") color_default
           (self#pp_letin ~wloc:wloc) letcont
           (if wloc then string_of_loc loc else "")
 
       | LetCond (exp, letif, letelse, letcont, loc) ->
         fprintf ppf
           "@[<v>@[<hv 2>%sif%s %a@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
-          (color "red") default
+          (color "red") color_default
           self#pp_expr exp
-          (color "red") default
+          (color "red") color_default
           (self#pp_letin ~wloc:wloc) letif
-          (color "red") default
+          (color "red") color_default
           (self#pp_letin ~wloc:wloc)  letelse
-          (color "red") default
+          (color "red") color_default
           (self#pp_letin ~wloc:wloc) letcont
           (if wloc then string_of_loc loc else "")
 
     method pp_expr ppf =
       function
-      | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname default
+      | Var vi -> fprintf ppf "%s%s%s" (color "yellow") vi.vname color_default
 
-      | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname default
+      | Array (a, el) -> fprintf ppf "%s%s%s%a" (color "yellow") a.vname color_default
                            (pp_print_list
                               (fun ppf e -> fprintf ppf"[%a]" self#pp_expr e))
                            el
@@ -150,7 +150,7 @@ class cil2func_printer allvs stv =
           (color "blue")
           (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
           (psprint80 Cil.dn_instr u)
-          default self#pp_expr expr
+          color_default self#pp_expr expr
 
       | FBinop (op, e1, e2) ->
         fprintf ppf "%s %a %a"

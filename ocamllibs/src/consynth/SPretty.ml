@@ -1,5 +1,4 @@
 open SketchTypes
-open PpHelper
 open Format
 open Utils
 open Racket
@@ -143,8 +142,10 @@ let ostring_of_baseSymbolicType =
   | Boolean -> Some "boolean?"
   | _ -> None
 
+open Utils.PpTools
+
 let rec pp_symb_type ppf t =
-  fprintf ppf "%s%a%s" (color "blue") pp_symb_type_aux t default
+  fprintf ppf "%s%a%s" (color "blue") pp_symb_type_aux t color_default
 and pp_symb_type_aux ppf t =
   match ostring_of_baseSymbolicType t with
   | Some s -> fprintf ppf "%s" s
@@ -424,7 +425,7 @@ let pp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
     pp_print_list ~pp_sep:sep pp_skexpr fmt elt_list
 
 let pp_expr_list fmt el =
-  PpHelper.ppli fmt ~sep:" " pp_skexpr el
+  ppli fmt ~sep:" " pp_skexpr el
 
 
 (**
@@ -443,22 +444,22 @@ and cp_sklet ppf =
   function
   | SkLetExpr el ->
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
-      (color "red") default
+      (color "red") color_default
       (color "b")
       !state_struct_name
-      default
+      color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
              cp_skexpr e)) el
-      (color "red") default
+      (color "red") color_default
 
   | SkLetIn (el, l) ->
     fprintf ppf "%s(%slet%s @[<hov 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
       (* Opening parenthesis *)
       (color "red")
       (* Let keyword *)
-      (color "b")  default
+      (color "b")  color_default
       (fun ppf el ->
          (pp_print_list
             (fun ppf (v, e) ->
@@ -466,19 +467,19 @@ and cp_sklet ppf =
                  cp_sklvar v cp_skexpr e) ppf el)) el
       cp_sklet l
       (* Closing parenthesis *)
-      (color "red") default
+      (color "red") color_default
 
 and cp_sklvar (ppf : Format.formatter) sklvar =
   match sklvar with
   | SkVarinfo v ->
-    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname default
+    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname color_default
 
   | SkArray (v, offset) ->
     let offset_str =
       fprintf str_formatter "%a" pp_skexpr offset;
       flush_str_formatter ()
     in
-    fprintf ppf "%a[%s%s%s]" cp_sklvar v (color "i") offset_str default
+    fprintf ppf "%a[%s%s%s]" cp_sklvar v (color "i") offset_str color_default
 
 
   | SkTuple vs ->
@@ -490,7 +491,7 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
   | SkVar v -> fp ppf "%a" cp_sklvar v
 
   | SkConst c -> fp ppf "%s%a%s" (color "cyan")
-                   (pp_constants ~for_c:true ~for_dafny:false) c default
+                   (pp_constants ~for_c:true ~for_dafny:false) c color_default
 
   | SkFun l -> cp_sklet ppf l
 
@@ -500,16 +501,16 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
       | Some vi -> vi.Cil.vname
       | None -> "()"
     in
-    fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname default
+    fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname color_default
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
 
   | SkHoleR (t, _) ->
     fp ppf "%s%a%s"
-      (color "grey") hole_type_expr t default
+      (color "grey") hole_type_expr t color_default
 
   | SkHoleL (t, v, _) ->
     fp ppf "%s %a %s"
-      (color "grey") hole_type_expr t default
+      (color "grey") hole_type_expr t color_default
 
   | SkAddrof e -> fp ppf "(AddrOf )"
 
@@ -521,24 +522,24 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
 
   | SkBinop (op, e1, e2) ->
     fp ppf "@[<hov 2>(%s%s%s@;%a@;%a)@]"
-      (color "b") (string_of_symb_binop op) default
+      (color "b") (string_of_symb_binop op) color_default
       cp_skexpr e1 cp_skexpr e2
 
   | SkUnop (op, e) ->
     fp ppf "@[<hov 1>(%s%s%s %a)@]"
-      (color "b") (string_of_symb_unop op) default cp_skexpr e
+      (color "b") (string_of_symb_unop op) color_default cp_skexpr e
 
   | SkCond (c, e1, e2) ->
     fp ppf "@[<hov 1> (%sif%s@;%a@;%a@;%a)@]"
-      (color "b") default
+      (color "b") color_default
       cp_skexpr c cp_sklet e1 cp_sklet e2
 
   | SkQuestion (c, e1, e2) ->
     fp ppf "@[<hov 2>((%a)%s? %s%a%s %s%a)@]"
       cp_skexpr c
-      (color "b") default
+      (color "b") color_default
       cp_skexpr e1
-      (color "b") default
+      (color "b") color_default
       cp_skexpr e2
 
   | SkRec ((i, g, u), e) ->
@@ -592,7 +593,7 @@ let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
     pp_print_list ~pp_sep:sep cp_skexpr fmt elt_list
 
 let cp_expr_list fmt el =
-  PpHelper.ppli fmt ~sep:" " cp_skexpr el
+  ppli fmt ~sep:" " cp_skexpr el
 
 
 
@@ -694,7 +695,7 @@ and pp_c_var ?(rhs = true) fmt v =
   | SkTuple vs -> fprintf fmt "(<TUPLE>)"
 
 and pp_c_expr_list fmt el =
-  PpHelper.ppli fmt ~sep:" " pp_c_expr el
+  ppli fmt ~sep:" " pp_c_expr el
 
 let pp_c_assignment fmt (v, e) =
   fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)

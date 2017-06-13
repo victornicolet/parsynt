@@ -48,17 +48,12 @@ function First_posJoin(leftFirst_pos : bool, leftPos : int, rightFirst_pos : boo
 }
 
 
-lemma BaseCasePos(a : seq<int>)
-  ensures Pos(a) == PosJoin(First_pos(a), Pos(a), DfLength(a), First_pos([]), Pos([]), DfLength([]))
-  {}
-
 lemma HomPos(a : seq<int>, R_a : seq<int>)
   ensures Pos(a + R_a) == PosJoin(First_pos(a), Pos(a), DfLength(a), First_pos(R_a), Pos(R_a), DfLength(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
-    BaseCasePos(a);
     
      } else {
     calc{
@@ -73,17 +68,12 @@ lemma HomPos(a : seq<int>, R_a : seq<int>)
   } // End else.
 } // End lemma.
 
-lemma BaseCaseFirst_pos(a : seq<int>)
-  ensures First_pos(a) == First_posJoin(First_pos(a), Pos(a), First_pos([]), Pos([]))
-  {}
-
 lemma HomFirst_pos(a : seq<int>, R_a : seq<int>)
   ensures First_pos(a + R_a) == First_posJoin(First_pos(a), Pos(a), First_pos(R_a), Pos(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
-    BaseCaseFirst_pos(a);
     
      } else {
     calc{

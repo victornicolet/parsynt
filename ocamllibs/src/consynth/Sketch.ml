@@ -2,7 +2,7 @@ open Utils
 open Conf
 open SketchTypes
 open SPretty
-open PpHelper
+open Utils.PpTools
 open Cil2Func
 open Racket
 open Cil
@@ -209,7 +209,7 @@ let handle_special_consts fmt input_vars reach_consts =
 *)
 let pp_state_definition fmt main_struct =
   pp_struct_defintion fmt main_struct;
-  pp_force_newline fmt ();
+  pp_newline fmt ();
   pp_struct_equality fmt main_struct
 
 (** Given a set of variables, pretty print their definitions and return
@@ -367,7 +367,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                      F.eprintf
                        "@.%sERROR : \
                         Variable %s should be initialized or auxiliary.%s@."
-                       (color "red") vi.Cil.vname default;
+                       (color "red") vi.Cil.vname color_default;
                      failwith "Unexpected variable."
                    end))))
          li)
@@ -476,15 +476,15 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   SPretty.state_struct_name := main_struct_name;
   pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
-  pp_force_newline fmt ();
+  pp_newline fmt ();
   pp_state_definition fmt main_struct;
-  pp_force_newline fmt ();
+  pp_newline fmt ();
   pp_loop fmt idx bnames (sketch.loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (sketch.join_body, state_vars);
-  pp_force_newline fmt ();
+  pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
-  pp_force_newline fmt ();
+  pp_newline fmt ();
   pp_synth fmt st0 bnames state_vars read_vars min_dep_len

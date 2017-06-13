@@ -1,7 +1,7 @@
 open Str
 open Format
-open PpHelper
 open Utils
+open Utils.PpTools
 open Getopt
 open SketchTypes
 open Cil
@@ -29,17 +29,17 @@ let options = [
 
 let err_handler_sketch i =
   eprintf "%sError%s while running racket on sketch.@."
-    (color "red") default
+    (color "red") color_default
 
 
 let print_summary sketch =
   printf "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
     (color "black") (color "b-green")
     sketch.loop_name sketch.id
-    default
-    (color "b") default
+    color_default
+    (color "b") color_default
     SPretty.pp_sklet sketch.loop_body
-    (color "b") default
+    (color "b") color_default
     SPretty.pp_sklet sketch.join_solution;
   let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
   printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
@@ -48,7 +48,7 @@ let print_summary sketch =
 let solution_failed ?(failure = "") sketch =
   printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
           of the solved sketch of %s.@."
-    (color "red") default sketch.loop_name;
+    (color "red") color_default sketch.loop_name;
   if failure = "" then ()
   else
     printf "Failure: %s" failure
@@ -56,7 +56,7 @@ let solution_failed ?(failure = "") sketch =
 
 let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
   printf "@.%sSOLUTION for %s %s:@.%a"
-    (color "green") lp_name default Ast.pp_expr_list parsed;
+    (color "green") lp_name color_default Ast.pp_expr_list parsed;
   (* Open and append to stats *)
   let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
@@ -136,7 +136,7 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
         begin
           printf
             "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
-            (color "orange") default lp_name;
+            (color "orange") color_default lp_name;
           if !SPretty.skipped_non_linear_operator then
             (** Try with non-linear operators. *)
             (SPretty.reinit ~ed:expr_depth ~use_nl:true;
@@ -229,7 +229,7 @@ let main () =
   if Array.length Sys.argv < 2 then
     begin
       eprintf "%sUsage : ./Parsy.native [filename] .. options%s@."
-        (color "red") default;
+        (color "red") color_default;
       flush_all ();
       exit 1;
     end;
@@ -252,12 +252,12 @@ let main () =
   printf "Parsing C program ...\t\t\t\t";
   let c_program = C.processFile filename in
   printf "%sDONE%s@.@.C program -> functional representation ...\t"
-    (color "green") default;
+    (color "green") color_default;
   let functions = C.cil2func c_program in
   printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
-    (color "green") default;
+    (color "green") color_default;
   let sketch_list = Canalyst.func2sketch functions in
-  printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") default;
+  printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") color_default;
   (** Try to solve the sketches without adding auxiliary variables *)
   let solved, unsolved =
     if !skip_first_solve then ([], sketch_list)
@@ -267,7 +267,7 @@ let main () =
   (** Now discover auxiliary variables *)
   if List.length unsolved > 0 then
     printf "%sDONE%s@.@.Finding auxiliary variables ...@.@."
-      (color "green") default;
+      (color "green") color_default;
 
   let with_auxiliaries =
     List.map
@@ -293,16 +293,16 @@ let main () =
 
   (* For each solved problem, generate a TBB implementation *)
   printf "@.%s%sGenerating implementations for solved examples..%s@."
-    (color "black") (color "b-green") default;
+    (color "black") (color "b-green") color_default;
   output_tbb_tests finally_solved;
 
   (* Generate a proof in Dafny. *)
   printf "@.%s%sGenerating proofs for solved examples..%s@."
-    (color "black") (color "b-green") default;
+    (color "black") (color "b-green") color_default;
   output_dafny_proofs finally_solved;
 
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")
-    !elapsed_time default;;
+    !elapsed_time color_default;;
 
 main ();

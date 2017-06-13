@@ -189,7 +189,7 @@ let reduction_with_warning ctx expr =
       Format.fprintf Format.std_formatter
         "%sWarning%s : expression @;%a@; unchanged after \
          reduction with state %a @; and expressions %a @."
-        (PpHelper.color "red") PpHelper.default
+        (PpTools.color "red") PpTools.color_default
         SPretty.pp_skexpr reduced_expression
         VSOps.pvs ctx.state_vars
         (fun fmt a -> SPretty.pp_expr_set fmt a) ctx.costly_exprs

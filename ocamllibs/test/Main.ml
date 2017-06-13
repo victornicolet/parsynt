@@ -1,11 +1,11 @@
 open Cil
 open Canalyst
 open Format
-open PpHelper
 open Findloops
 open Utils
 open Getopt
 open TestUtils
+open Utils.PpTools
 
 module C2F = Cil2Func
 

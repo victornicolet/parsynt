@@ -67,9 +67,9 @@ and exec_var exec_info v =
           (Format.eprintf "@.%sERROR%s \
                            I was searching for an expression for variable \
                            id %s%i%s in map %a@."
-             (PpHelper.color "red") PpHelper.default
-             (PpHelper.color "red") vi.vid  PpHelper.default
-             (fun fmt map -> PpHelper.ppimap SPretty.pp_skexpr fmt map)
+             (PpTools.color "red") PpTools.color_default
+             (PpTools.color "red") vi.vid  PpTools.color_default
+             (fun fmt map -> PpTools.ppimap SPretty.pp_skexpr fmt map)
              exec_info.state_exprs);
           exception_on_variable "Expression not found for state variable" v
       else
