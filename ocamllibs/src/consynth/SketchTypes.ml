@@ -671,8 +671,7 @@ let rec rec_let (r : 'a recursor) sklet =
       r.init ve_list
 
 
-let uses_max_min l =
-  let recursor =
+let max_min_test =
     { join = (fun a b -> a || b);
       init = false;
       case = (fun e ->
@@ -682,8 +681,7 @@ let uses_max_min l =
       on_const = (fun e -> false);
       on_var = (fun e -> true);
     }
-  in
-  rec_let recursor l
+
 
 (** Another recursion helper : a syntax tree tranformer *)
 type  ast_transformer =
@@ -1398,6 +1396,17 @@ let rec get_loop_bound_var (se : skExpr) : skExpr option =
   | SkBinop (Lt, _, en) -> Some en
   | SkBinop (Le, _, ene) -> Some ene
   | _ -> None
+
+
+(** Really not here to last ... must find a better way to differentiate
+    the expressions. *)
+let is_prefix_or_suffix vi expr =
+  match expr with
+  | SkVar (SkArray (_, _)) -> true
+  | _ -> false
+
+
+
 
 (* ------------------------ 7- TYPING EXPRESSIONS ----------------------------*)
 

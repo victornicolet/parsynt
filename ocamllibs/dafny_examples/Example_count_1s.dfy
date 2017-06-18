@@ -60,12 +60,19 @@ lemma HomAux_0(a : seq<bool>, R_a : seq<bool>)
   } // End else.
 } // End lemma.
 
+lemma BaseCaseF(a : seq<bool>, R_a : seq<bool>)
+  requires |a| >= 1 && |R_a| >= 1
+  ensures F(a + [R_a[0]]) == FJoin(F(a), F([R_a[0]]))
+  {}
+
 lemma HomF(a : seq<bool>, R_a : seq<bool>)
+  requires |a| >= 1 && |R_a| >= 1
   ensures F(a + R_a) == FJoin(F(a), F(R_a))
   {
-    if R_a == [] 
+    if |R_a| == 1 
     {
-    assert(a + [] == a);
+    assert(a + R_a == a + [R_a[0]]);
+    BaseCaseF(a, R_a);
     
      } else {
     calc{

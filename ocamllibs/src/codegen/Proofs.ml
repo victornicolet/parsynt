@@ -90,6 +90,12 @@ type proofVariable =
     mutable join_depends : proofVariable list;
   }
 
+let update_hom_requires pfv req =
+  pfv.hom_requires <- max pfv.hom_requires req
+
+let update_needs_base_case pfv nbc =
+  pfv.needs_base_case <- pfv.needs_base_case || nbc
+
 let vi_to_proofVars = IH.create 10
 let input_seq_vi = ref None
 let in_order = ref []
@@ -527,9 +533,9 @@ let rebuild_min_max =
       let e1o = rfunc e1 in
       let e2o = rfunc e2 in
       if op = Lt then
-        (use_min := true; SkBinop (Min, e1o, e2o))
+        (_bon use_min; SkBinop (Min, e1o, e2o))
       else
-        (use_max := true; SkBinop (Max, e1o, e2o))
+        (_bon use_max; SkBinop (Max, e1o, e2o))
     | _ -> e
   in
   transform_expr filter transform identity identity
@@ -656,6 +662,7 @@ let pp_min_int_def fmt =
     for each proof variable we will print a function, a join and the proof that
     the restriction is an homorphism
 *)
+
 let gen_proof_vars sketch =
   clear_uses ();
   let array_of_sketch =
@@ -770,12 +777,12 @@ let gen_proof_vars sketch =
            in_vars =  input_vars;
            pos_var = if uses_pos then Some index_pfv else None;
            out_type = type_of function_expr;
-           needs_base_case = false;
+           needs_base_case = rec_expr2 max_min_test function_expr;
            empty_value = init_va;
            function_expr = rebuild_min_max function_expr;
            func_requires = pfv_elim_non_empty;
            func_requires_for_deps = 0;
-           hom_requires = 0;
+           hom_requires = if is_prefix_or_suffix vi function_expr then 1 else 0;
            join_expr = join_expr;
            join_depends = [];
            depends = [];
@@ -840,8 +847,8 @@ let gen_proof_vars sketch =
            if r_dep > 0 then max hr r_dep else hr)
         pfv.func_requires depend_set
     in
-    pfv.hom_requires <- updated_hr pfv.join_depends;
-    pfv.needs_base_case <- pfv.hom_requires > 0;
+    update_hom_requires pfv (updated_hr pfv.join_depends);
+    update_needs_base_case pfv (pfv.hom_requires > 0);
   in
   List.iter
     (fun vid -> update_deps_pfv vid (IH.find vi_to_proofVars vid))

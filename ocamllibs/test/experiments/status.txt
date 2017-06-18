@@ -16,9 +16,9 @@ atoi			yes*		y*		yes
 is-sorted		yes		y		yes
 dropwhile		yes		y		no - 13 verified, 3 errors
 balanced_parenthesis	yes		y		yes
-0star1star		yes		y		no - 1 error, but join is correct !
-count_1s		yes		y		t-o
-line_sight		yes		y		t-o
+0star1star		yes		y		nearly - just problem with mutual recursion and min dep
+count_1s		yes		y		yes
+line_sight		yes		y		yes
 0after1			yes		y		yes
 max-blockno1		t-o		no		no
 

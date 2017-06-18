@@ -58,12 +58,17 @@ lemma HomAux_1(a : seq<int>, R_a : seq<int>)
   } // End else.
 } // End lemma.
 
+lemma BaseCaseAmax(a : seq<int>)
+  ensures Amax(a) == AmaxJoin(Amax(a), Amax([]))
+  {}
+
 lemma HomAmax(a : seq<int>, R_a : seq<int>)
   ensures Amax(a + R_a) == AmaxJoin(Amax(a), Amax(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
+    BaseCaseAmax(a);
     
      } else {
     calc{
