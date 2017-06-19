@@ -96,6 +96,9 @@ let update_hom_requires pfv req =
 let update_needs_base_case pfv nbc =
   pfv.needs_base_case <- pfv.needs_base_case || nbc
 
+let update_func_requires_for_deps pfv fnr =
+  pfv.func_requires_for_deps <- max pfv.func_requires_for_deps fnr
+
 let vi_to_proofVars = IH.create 10
 let input_seq_vi = ref None
 let in_order = ref []
@@ -837,7 +840,7 @@ let gen_proof_vars sketch =
            if r_dep > 0 then max r r_dep else r)
         pfv.func_requires depend_set
     in
-    pfv.func_requires_for_deps <- updated_func_requires_deps pfv.depends;
+    update_func_requires_for_deps pfv (updated_func_requires_deps pfv.depends);
   in
   let update_requires_homs_pfv vid pfv =
     let updated_hr depend_set =
@@ -850,6 +853,17 @@ let gen_proof_vars sketch =
     update_hom_requires pfv (updated_hr pfv.join_depends);
     update_needs_base_case pfv (pfv.hom_requires > 0);
   in
+  (** Do not miss dependencies incurred by mutual recursion *)
+  let update_hom_req_from_hom vid pfv =
+      let updated_hr depset =
+        List.fold_left
+          (fun hr pfv_deps ->
+             if pfv_deps.hom_requires > 0
+             then max hr pfv_deps.hom_requires else hr)
+          pfv.func_requires depset
+      in
+      update_hom_requires pfv (updated_hr pfv.join_depends)
+  in
   List.iter
     (fun vid -> update_deps_pfv vid (IH.find vi_to_proofVars vid))
     pfv_list;
@@ -858,6 +872,9 @@ let gen_proof_vars sketch =
     dep_order_list;
   List.iter
     (fun vid -> update_requires_homs_pfv vid (IH.find vi_to_proofVars vid))
+    dep_order_list;
+  List.iter
+    (fun vid -> update_hom_req_from_hom vid (IH.find vi_to_proofVars vid))
     dep_order_list;
   in_order := dep_order_list
 

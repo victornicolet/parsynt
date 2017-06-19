@@ -42,7 +42,8 @@ Most of the functionalities are written in OCaml : input C code parsing, code tr
 We use a custom version of [Cil](https://github.com/cil-project/cil) that marks the temporary variables it introduces. You can download it [here](https://github.com/victornicolet/alt-cil) and follow the installation instructions. **Don't use opam to install cil!** You should also remove or set a specific environment for this project if you are already using Cil.
 
 ### Other packages
-The installation script uses ocamlfind to look for packages and tries to install them with [opam](https://opam.ocaml.org/). If you don't wish to use opam, please install all the packages manually, and make sure ```ocamlfind``` can find them.
+The installation script uses ocamlfind to look for packages and tries to install them with [opam](https://opam.ocaml.org/). Also, please make sure ```opam``` is correctly configured (try to find the packages you installed through ```opam``` using ```ocamlfind```).
+If you don't wish to use opam, please install all the packages manually, and make sure ```ocamlfind``` can find them.
 
 - Project management : oasis.
 

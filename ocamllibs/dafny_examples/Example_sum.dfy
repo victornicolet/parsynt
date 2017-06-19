@@ -12,12 +12,17 @@ function SumJoin(leftSum : int, rightSum : int): int
 }
 
 
+lemma BaseCaseSum(a : seq<int>)
+  ensures Sum(a) == SumJoin(Sum(a), Sum([]))
+  {}
+
 lemma HomSum(a : seq<int>, R_a : seq<int>)
   ensures Sum(a + R_a) == SumJoin(Sum(a), Sum(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
+    BaseCaseSum(a);
     
      } else {
     calc{

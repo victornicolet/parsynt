@@ -18,7 +18,8 @@ sep () {
 }
 
 
-#Check for Racket installation
+# 1 - Check for Racket installation
+
 sep "Checking Racket installation ..."
 
 
@@ -34,6 +35,7 @@ then
 fi
 
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
+
 if [[ $(bc <<< "$RACKET_VERSION > 6.5") ]]
 then
     msg_success "Racket $RACKET_VERSION is installed."
@@ -110,7 +112,8 @@ fi
 msg_success "All Racket components present."
 
 
-# Ocaml componenets
+
+# 2 - Ocaml componenets
 sep "Checking Ocaml components."
 
 # Ocaml version (and if Ocaml is present)
@@ -143,7 +146,7 @@ then
     opam config setup -a
     if [ $? -eq 0 ]; then
 	msg_success "Opam installed"
-	msg_success "If the scripts fails, check Opam is configured : opam config setup -a"
+	msg_success "If the script fails, check Opam is configured : opam config setup -a"
     fi
 else
     msg_success "opam $OPAM_VERSION is installed."
@@ -216,7 +219,7 @@ do
     PKG_SRC=$(ocamlfind query $OCAML_REQ_PACKAGE)
     if [[ -z $PKG_SRC ]]
     then
-       	msg_fail "Couldn't find $OCAML_REQ_PACKAGE"
+       	msg_fail "Couldn't find $OCAML_REQ_PACKAGE (ocamlfind)."
 	opam_install $OCAML_REQ_PACKAGE
     else
 	msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
@@ -273,7 +276,8 @@ if [ $? -eq 0 ]; then
     msg_success "Successfully compiled sources! Let us finish with a small test..."
 else
     msg_fail "Try reloading .profile or restarting the computer"
-    echo "If it fails again, contact victor.nicolet@polytechnique.edu"
+    echo "If it fails again, contact victorn@cs.toronto.edu."
+    exit
 fi
 cd ..
 
