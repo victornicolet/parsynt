@@ -1,5 +1,4 @@
 module Canalyst = Canalyst
-module PpHelper = PpHelper
 module SketchTypes = SketchTypes
 module SketchJoin = SketchJoin
 module SketchBody = SketchBody
