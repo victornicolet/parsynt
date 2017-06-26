@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This shell script installs all the requirements needed to compile the
+# executable Parsynth on a system using the aptitude package manager.
+
 # Pretty-printing helper
 
 msg_fail () {
@@ -152,7 +155,7 @@ else
     msg_success "opam $OPAM_VERSION is installed."
 fi
 
-eval "opam config env"
+eval $(opam config env)
 
 # Install oasis
 oasis version
@@ -269,8 +272,9 @@ cd ocamllibs
 oasis setup -setup-update dynamic
 #cd ..
 msg_success "Makefiles created, trying make in ocamllib"
-#cd ./consynth
-make $1
+make
+cd ..
+
 
 if [ $? -eq 0 ]; then
     msg_success "Successfully compiled sources! Let us finish with a small test..."
@@ -279,20 +283,9 @@ else
     echo "If it fails again, contact victorn@cs.toronto.edu."
     exit
 fi
-cd ..
 
-#Copy experiments in c_examples
-cp -r ocamllibs/test/experiments c_examples
-#Add links to binaries in base dir
-ln -sf ocamllibs/Parsy.native Parsynth
-ln -sf ocamllibs/templates/
-ln -sf ocamllibs/conf
-ln -sf ocamllibs/tbb_examples/
-ln -sf ocamllibs/dafny_examples/
-ln -sf ocamllibs/conf.csv
-ln -sf ocamllibs/src/conf/verification.params
-mkdir ocamllibs/dump/
+make links
 
 sep "Testing with simple example Sum."
 
-eval "./Parsynth c_examples/experiments/sum.c"
+make test
