@@ -29,24 +29,6 @@ let options = [
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
-let err_handler_sketch i =
-  eprintf "%sError%s while running racket on sketch.@."
-    (color "red") color_default
-
-
-let print_summary sketch =
-  printf "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
-    (color "black") (color "b-green")
-    sketch.loop_name sketch.id
-    color_default
-    (color "b") color_default
-    SPretty.pp_sklet sketch.loop_body
-    (color "b") color_default
-    SPretty.pp_sklet sketch.join_solution;
-  let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
-  printf "@.%a@." CilTools.fpps cbody
-
-
 let solution_failed ?(failure = "") sketch =
   printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
           of the solved sketch of %s.@."
@@ -134,7 +116,7 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
       printf "@.SOLVING sketch for %s.@." lp_name;
       let racket_elapsed, parsed =
         L.compile_and_fetch
-          ~print_err_msg:err_handler_sketch C.pp_sketch sketch
+          ~print_err_msg:Racket.err_handler_sketch C.pp_sketch sketch
       in
       if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
         (* We get an "unsat" answer : add loop to auxliary discovery *)
@@ -274,7 +256,7 @@ let main () =
   let finally_solved = solved@solved_with_aux@solved_depth_2 in
 
   (** Handle all the solutions found *)
-  (List.iter (fun sketch -> print_summary sketch) finally_solved);
+  (List.iter (fun sketch -> SPretty.pp_sketch_rep std_formatter sketch) finally_solved);
 
   (* For each solved problem, generate a TBB implementation *)
   printf "@.%s%sGenerating implementations for solved examples..%s@."

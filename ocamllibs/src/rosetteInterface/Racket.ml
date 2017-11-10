@@ -2,8 +2,15 @@ open Format
 open RUtils
 open Ast
 open Utils
+open Utils.PpTools
 
 type racket_struct = string * (string list)
+
+
+let err_handler_sketch i =
+  eprintf "%sError%s while running racket on sketch.@."
+    (color "red") color_default
+
 
 (** Functions to print Racket constructs *)
 

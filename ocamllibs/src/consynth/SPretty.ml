@@ -728,3 +728,15 @@ let rec pp_c_sklet ?(p_id_assign = true) fmt sklet =
 
 let print_c_let = pp_c_sklet std_formatter
 let print_c_expr = pp_c_expr std_formatter
+
+let pp_sketch_rep fmt sketch =
+  fprintf fmt "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
+    (color "black") (color "b-green")
+    sketch.loop_name sketch.id
+    color_default
+    (color "b") color_default
+    pp_sklet sketch.loop_body
+    (color "b") color_default
+    pp_sklet sketch.join_solution;
+  let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
+  printf "@.%a@." CilTools.fpps cbody
