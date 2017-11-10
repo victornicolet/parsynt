@@ -4,23 +4,24 @@ function DfLength(s: seq<int>): int
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
 function Aux_3(a : seq<bool>): int
-{ if a == [] then
+{
+  if a == [] then
     1
-   else 
-   DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_3(a[..|a|-1]))
-   
+    else
+    DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_3(a[..|a|-1]))
 }
 
 function Bal(a : seq<bool>): bool
-{ if a == [] then
+{
+  if a == [] then
     true
-   else 
-   (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) >= 0))
-   
+    else
+    (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) >= 0))
 }
 
 function Cnt(a : seq<bool>): int
-{ if a == [] then  0 else  (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) 
+{
+  if a == [] then 0 else (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1)))
 }
 
 function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int

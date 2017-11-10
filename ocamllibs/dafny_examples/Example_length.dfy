@@ -2,16 +2,13 @@ function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
 function Length(dafny_seq_ : seq<int>): int
-{ if dafny_seq_ == [] then
-    0
-   else 
-   (Length(dafny_seq_[..|dafny_seq_|-1]) + 1)
-   
+{
+  if dafny_seq_ == [] then 0 else (Length(dafny_seq_[..|dafny_seq_|-1]) + 1)
 }
 
 function LengthJoin(leftLength : int, rightLength : int): int
 {
-  ((rightLength - 1) + (leftLength - (-1)))
+  ((rightLength - 1) + (leftLength + 1))
 }
 
 

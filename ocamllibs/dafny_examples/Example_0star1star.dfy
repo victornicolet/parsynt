@@ -34,7 +34,7 @@ function AnJoin(leftBn : bool, leftAn : bool, rightBn : bool, rightAn : bool): b
 function BnJoin(leftAux_1 : bool, leftBn : bool, leftAn : bool, rightAux_1 : bool, rightBn : bool, rightAn : bool): bool
 {
   (if rightAux_1 then (leftAn && rightBn) else
-    ((rightBn || rightAux_1) && (leftBn)))
+    ((rightBn || rightAux_1) && ((! rightAn) && leftBn)))
 }
 
 
@@ -47,11 +47,11 @@ lemma HomAux_1(ar : seq<bool>, R_ar : seq<bool>)
   requires |ar| >= 1 && |R_ar| >= 1
   ensures Aux_1(ar + R_ar) == Aux_1Join(Aux_1(ar), Aux_1(R_ar))
   {
-    if |R_ar| == 1
+    if |R_ar| == 1 
     {
     assert(ar + R_ar == ar + [R_ar[0]]);
     BaseCaseAux_1(ar, R_ar);
-
+    
      } else {
     calc{
     Aux_1(ar + R_ar);
@@ -70,11 +70,11 @@ lemma HomAn(ar : seq<bool>, R_ar : seq<bool>)
   requires |ar| >= 1 && |R_ar| >= 1
   ensures An(ar + R_ar) == AnJoin(Bn(ar), An(ar), Bn(R_ar), An(R_ar))
   {
-    if |R_ar| == 1
+    if |R_ar| == 1 
     {
     assert(ar + R_ar == ar + [R_ar[0]]);
     BaseCaseAn(ar, R_ar);
-
+    
      } else {
     calc{
     An(ar + R_ar);
@@ -96,11 +96,11 @@ lemma HomBn(ar : seq<bool>, R_ar : seq<bool>)
   requires |ar| >= 1 && |R_ar| >= 1
   ensures Bn(ar + R_ar) == BnJoin(Aux_1(ar), Bn(ar), An(ar), Aux_1(R_ar), Bn(R_ar), An(R_ar))
   {
-    if |R_ar| == 1
+    if |R_ar| == 1 
     {
     assert(ar + R_ar == ar + [R_ar[0]]);
     BaseCaseBn(ar, R_ar);
-
+    
      } else {
     calc{
     Bn(ar + R_ar);
@@ -113,3 +113,4 @@ lemma HomBn(ar : seq<bool>, R_ar : seq<bool>)
     } // End calc.
   } // End else.
 } // End lemma.
+

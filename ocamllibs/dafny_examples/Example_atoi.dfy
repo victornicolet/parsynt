@@ -1,19 +1,19 @@
 function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
-function DfMin(x: int, y: int): int { if x > y then y else x}
-
 function Aux_2(str : seq<int>): int
-{ if str == [] then  1 else  (10 * Aux_2(str[..|str|-1])) 
+{
+  if str == [] then 1 else (10 * Aux_2(str[..|str|-1]))
 }
 
 function Res(str : seq<int>): int
-{ if str == [] then  0 else  ((Res(str[..|str|-1]) * 10) + str[|str|-1]) 
+{
+  if str == [] then 0 else ((Res(str[..|str|-1]) * 10) + str[|str|-1])
 }
 
 function Aux_2Join(leftAux_2 : int, rightAux_2 : int): int
 {
-  (DfMin(leftAux_2, (-28)) * rightAux_2)
+  (leftAux_2 * rightAux_2)
 }
 
 function ResJoin(leftAux_2 : int, leftRes : int, rightAux_2 : int, rightRes : int): int

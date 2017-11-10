@@ -4,7 +4,8 @@ function DfLength(s: seq<int>): int
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
 function M(a : seq<int>): int
-{ if a == [] then  0 else  DfMin(M(a[..|a|-1]), a[|a|-1]) 
+{
+  if a == [] then 0 else DfMin(M(a[..|a|-1]), a[|a|-1])
 }
 
 function MJoin(leftM : int, rightM : int): int

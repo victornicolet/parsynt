@@ -4,25 +4,23 @@ function DfLength(s: seq<int>): int
 function DfMax(x: int, y: int): int { if x > y then x else y}
 
 function Sum(a : seq<int>): int
-{ if a == [] then  0 else  (Sum(a[..|a|-1]) + a[|a|-1]) 
+{
+  if a == [] then 0 else (Sum(a[..|a|-1]) + a[|a|-1])
 }
 
 function Mps(a : seq<int>): int
-{ if a == [] then
-    0
-   else 
-   DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Mps(a[..|a|-1]))
-   
+{
+  if a == [] then 0 else DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Mps(a[..|a|-1]))
 }
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  ((rightSum - (-2514)) + (leftSum + (-2514)))
+  (rightSum + leftSum)
 }
 
 function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
 {
-  DfMax(((rightMps - 0) + leftSum), DfMax(leftMps, 0))
+  DfMax((leftSum + rightMps), (leftMps + 0))
 }
 
 

@@ -2,20 +2,21 @@ function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
 function Res(coeffs : seq<int>): int
-{ if coeffs == [] then
+{
+  if coeffs == [] then
     0
-   else 
-   (Res(coeffs[..|coeffs|-1]) + (Factor(coeffs[..|coeffs|-1]) * coeffs[|coeffs|-1]))
-   
+    else
+    (Res(coeffs[..|coeffs|-1]) + (Factor(coeffs[..|coeffs|-1]) * coeffs[|coeffs|-1]))
 }
 
 function Factor(x : int): int
-{ if coeffs == [] then  1 else  (x * Factor(coeffs[..|coeffs|-1])) 
+{
+  if coeffs == [] then 1 else (x * Factor(coeffs[..|coeffs|-1]))
 }
 
 function ResJoin(leftFactor : int, leftRes : int, rightFactor : int, rightRes : int): int
 {
-  (((leftFactor + 1) * rightRes) + (leftRes - rightRes))
+  (((leftFactor - 1) * rightRes) + (leftRes + rightRes))
 }
 
 function FactorJoin(leftFactor : int, rightFactor : int): int

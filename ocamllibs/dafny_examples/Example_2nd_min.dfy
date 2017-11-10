@@ -6,15 +6,13 @@ function DfMax(x: int, y: int): int { if x > y then x else y}
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
 function M(a : seq<int>): int
-{ if a == [] then  0 else  DfMin(M(a[..|a|-1]), a[|a|-1]) 
+{
+  if a == [] then 0 else DfMin(M(a[..|a|-1]), a[|a|-1])
 }
 
 function M2(a : seq<int>): int
-{ if a == [] then
-    0
-   else 
-   DfMin(M2(a[..|a|-1]), DfMax(M(a[..|a|-1]), a[|a|-1]))
-   
+{
+  if a == [] then 0 else DfMin(M2(a[..|a|-1]), DfMax(M(a[..|a|-1]), a[|a|-1]))
 }
 
 function MJoin(leftM : int, rightM : int): int
@@ -24,7 +22,7 @@ function MJoin(leftM : int, rightM : int): int
 
 function M2Join(leftM2 : int, leftM : int, rightM2 : int, rightM : int): int
 {
-  DfMin(DfMax(DfMin(rightM2, leftM), rightM), leftM2)
+  DfMin(DfMax((rightM + DfMin(0, 0)), leftM), DfMin(rightM2, leftM2))
 }
 
 
