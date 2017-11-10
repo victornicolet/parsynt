@@ -263,6 +263,17 @@ module CilTools = struct
   let ppbk blk = List.iter pps blk.bstmts
   let ppofs offs = print_endline (psprint80 (Cil.d_offset Pretty.nil) offs)
 
+
+  let fppe fmt e = fprintf fmt "%s" (psprint80 Cil.dn_exp e)
+  let fppt fmt t = fprintf fmt "%s" (psprint80 Cil.d_type t)
+  let fpps fmt s = fprintf fmt "%s" (psprint80 Cil.dn_stmt s)
+  let fplv fmt lv = fprintf fmt "%s" (psprint80 Cil.dn_lval lv)
+  let fppv fmt v = fprintf fmt "%s" v.vname
+  let fppi fmt i = fprintf fmt "%s" (psprint80 Cil.dn_instr i)
+  let fppbk fmt blk = List.iter (fpps fmt) blk.bstmts
+  let fppofs fmt offs = fprintf fmt "%s" (psprint80 (Cil.d_offset Pretty.nil) offs)
+
+
   let is_cil_temp vi =
     false
 

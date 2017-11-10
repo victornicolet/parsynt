@@ -29,11 +29,13 @@ exception Tuple_fail            (* Tuples are not supported for the moment. *)
 
 type hole_type = symbolic_type * operator_type
 
+(* Type for let-expressions *)
 and sklet =
   | SkLetExpr of (skLVar * skExpr) list
   (**  (let ([var expr]) let)*)
   | SkLetIn of (skLVar * skExpr) list * sklet
 
+(* Type for variables *)
 and skLVar =
   | SkVarinfo of Cil.varinfo
   (** Access to an array cell *)
@@ -41,6 +43,7 @@ and skLVar =
   (** Records : usefule to represent the state *)
   | SkTuple of VS.t
 
+(* Type for expressions *)
 and skExpr =
   | SkVar of skLVar
   | SkConst of constants
@@ -128,6 +131,7 @@ and symbolic_type =
   Operators : Cil operators and C function names.
 *)
 
+(* Unary operators - available in Rosette *)
 and symb_unop =
     | Not | Add1 | Sub1
     | Abs | Floor | Ceiling | Truncate | Round
@@ -136,6 +140,7 @@ and symb_unop =
     | Sgn
     | UnsafeUnop of symb_unsafe_unop
 
+(* Binary operators available in Rosette *)
 and symb_binop =
     (** Booleans*)
     | And | Nand | Or | Nor | Implies | Xor
@@ -151,7 +156,7 @@ and symb_binop =
     | UnsafeBinop of symb_unsafe_binop
 
 (**
-   Some racket function that are otherwise unsafe
+   Some racket functions that are otherwise unsafe
    to use in Racket, but we might still need them.
 *)
 and symb_unsafe_unop =
@@ -186,12 +191,14 @@ and constants =
   | Sqrt2
   | Ln2 | Ln10 | E
 
+(* Given a cil operator, return an unary symb operator and a type *)
 let symb_unop_of_cil =
   function
   | Cil.LNot -> Not, Bottom
   | Cil.BNot -> Not, Boolean
   | Cil.Neg -> Neg, Num
 
+(* Given a cil operator, return a binary symb operator and a type *)
 let symb_binop_of_cil =
   function
   | Cil.IndexPI -> Plus, Num
@@ -210,9 +217,8 @@ let symb_binop_of_cil =
   | Cil.Eq -> Eq, Num | Cil.Ne -> Neq, Num
   | Cil.Shiftlt -> ShiftL, Bitvector 0 | Cil.Shiftrt -> ShiftR, Bitvector 0
 
-(* number?, real?, integer?, zero?, positive?, negative?, even?, odd?, *)
-(* inexact->exact, exact->inexact, quotient , sgn *)
 
+(* Return the type associated to a binary operator. *)
 let optype_of_binop =
   function
   | Expt | Times | Div -> NonLinear
@@ -220,6 +226,7 @@ let optype_of_binop =
   | Plus | Minus -> Arith
   | _ -> NotNum
 
+(* Return the type associated to a unary operator. *)
 let optype_of_unop =
   function
   | Truncate | Round | UnsafeUnop _
@@ -227,6 +234,9 @@ let optype_of_unop =
   | Add1 | Sub1 | Neg -> Arith
   | Sgn | Not -> NotNum
 
+(* Join two operator types. Numeral operator types can be ordered,
+   Basic < Arith < NonLinear
+*)
 let join_optypes opt1 opt2 =
   match opt1, opt2 with
   | NonLinear, _ | _, NonLinear -> NonLinear
@@ -234,18 +244,20 @@ let join_optypes opt1 opt2 =
   | Arith, _ | _, Arith -> Arith
   | _, _ -> NotNum        (* Join *)
 
-
+(* Returns true if the symb operator is a function we have to define in C *)
 let is_op_c_fun op =
   match op with
   | Max | Min -> true
   | _ -> false
 
-(** Identity function *)
+(** The identity function in the functional representation of the sketch. *)
 let identity_sk =
   SkLetExpr ([])
 
 
-(** C Standard Library function names -> Rosette supported functions *)
+(** Translate C Standard Library function names in
+    functions supported by Rosette
+*)
 let symb_unop_of_fname =
   function
   | "floor" | "floorf" | "floorl" -> Some Floor
@@ -282,6 +294,7 @@ let symb_binop_of_fname : string -> symb_binop option =
   | "isunordered" -> Some Neq
   | _ -> None
 
+(* Some operators are unsafe to use in Rosette. *)
 let unsafe_unops_of_fname =
   function
   | "sin" -> Some Sin
@@ -310,10 +323,14 @@ let is_comparison_op =
     Mathematical constants defined in GNU-GCC math.h.
    + other custom constants defined in the decl_header.c
 
-   ****   ****   ****   ****   ****   ****   ****
     TODO : integrate log/ln/pow function, not in
     rosette/safe AFAIK.
 *)
+
+(* Some predefined constatns in C can be translated to expressions
+   in the sketch functional represenation.out_newline.
+*)
+
 let c_constant  ccst =
   match ccst with
   | s when Conf.is_builtin_var s ->
@@ -350,19 +367,20 @@ let c_constant  ccst =
     else
       None
 
+(* Returns true if a constant is negative. *)
 let is_negative cst =
   match cst with
   | CInt i -> i< 0
   | CInt64 i -> i < 0L
   | CReal f -> f < 0.0
   | _ -> false
+
+
+
 (**
     A function name not appearing in the cases above
     will be treated as an "uninterpreted function" by
     default.
-    TODO :
-    -> Unless it is a user-specified function that can
-    be interpreted easily (ex : custom max)
 *)
 
 let uninterpeted fname =
@@ -393,12 +411,15 @@ let uninterpeted fname =
   in
   not_in_safe && not_in_unsafe
 
-
+(* Remove interpreted symbols, i.e remove the variables
+   that have a name that is a function.
+*)
 let remove_interpreted_symbols (vars : VS.t) =
   VS.filter
     (fun v -> uninterpeted v.Cil.vname)
     vars
 
+(* Returns true if the expression is a function name. *)
 let is_exp_function ef =
   match ef with
   | Cil.Lval (Cil.Var vi, _) ->
@@ -407,6 +428,7 @@ let is_exp_function ef =
     uninterpeted fname, Some vi, ty
 
   | _ -> false,  None , Cil.typeOf ef
+
 
 (**
    Generate a SkVar expression from a varinfo, with possible offsets
@@ -419,11 +441,19 @@ let mkVar ?(offsets = []) vi =
     (SkVarinfo vi)
     offsets
 
+(**
+   Create an expression from a varinfo and offsets, possibly returning
+   a constant if the name of the variable is a predefined constant.
+*)
 let mkVarExpr ?(offsets = []) vi =
   match c_constant vi.Cil.vname with
   | Some c -> SkConst c
   | None -> SkVar (mkVar ~offsets:offsets vi)
 
+(*
+   In the join solution we need to differentiate left/right states. Right state
+   variables are prefix with the "rosette_join_right_state_prefix" parameter.
+ *)
 let rs_prefix = (Conf.get_conf_string "rosette_join_right_state_prefix")
 
 let is_right_state_varname s =
@@ -438,7 +468,7 @@ let is_right_state_varname s =
                  over '.'" s; flush_str_formatter ())
 
 
-
+(* Compare variables by comparing the variable id of their varinfo. *)
 let rec cmpVar sklvar1 sklvar2 =
   match sklvar1, sklvar2 with
   | SkVarinfo vi, SkVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
@@ -450,6 +480,7 @@ let rec cmpVar sklvar1 sklvar2 =
   | _ , SkArray _ -> -1
 
 
+(* Get the varinfo of a variable. *)
 let rec vi_of sklv =
   match sklv with
   | SkVarinfo vi' -> Some vi'
@@ -478,7 +509,7 @@ let rec skArray_dep_len e =
   | SkBinop (op, e1, e2) when op = Plus || op = Minus ->
     skArray_dep_len e1 + skArray_dep_len e2
   | _ ->
-    eprintf "ERROR : cannot guess min array lenght of expression.@.";
+    eprintf "ERROR : cannot guess min array length of expression.@.";
     failwith "Unsupported array offset expression."
 
 (** Remove interpreted symbols from a set of vars *)

@@ -899,3 +899,14 @@ let pp_all_and_clear fmt =
   iter_pfv (fun vid pfv -> pp_hom fmt pfv);
   clear_uses ();
   clear ()
+
+let output_dafny_proof filename (solution : sketch_rep) =
+  printf "New file: %s.@." (filename solution);
+  let dafny_file_oc = open_out (filename solution) in
+  let dafny_file_out_fmt =
+    Format.make_formatter (output dafny_file_oc) (fun () -> flush dafny_file_oc)
+  in
+  gen_proof_vars solution;
+  pp_all_and_clear dafny_file_out_fmt;
+  fprintf dafny_file_out_fmt "@.";
+  close_out dafny_file_oc

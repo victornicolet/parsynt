@@ -15,6 +15,7 @@ let debug = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
+let use_z3 = ref false
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
@@ -24,7 +25,8 @@ let options = [
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
   ( 'o', "output-folder", None,
-    Some (fun o_folder -> Conf.output_dir := o_folder))]
+    Some (fun o_folder -> Conf.output_dir := o_folder));
+  ( 'z', "use-z3", (set use_z3 true), None)]
 
 
 let err_handler_sketch i =
@@ -42,7 +44,7 @@ let print_summary sketch =
     (color "b") color_default
     SPretty.pp_sklet sketch.join_solution;
   let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
-  printf "@.%s@." (CilTools.psprint80 Cil.dn_stmt cbody)
+  printf "@.%a@." CilTools.fpps cbody
 
 
 let solution_failed ?(failure = "") sketch =
@@ -69,18 +71,21 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
        failwith "Couldn't retrieve solution from parsed ast.")
   in
   (** Simplify the solution using Z3 *)
-  (* let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
   let translated_join_body =
     SketchTypes.init_scm_translate
       sketch.scontext.all_vars sketch.scontext.state_vars;
     match scm_to_sk sol_info.Codegen.join_body with
     | Some sklet, _ ->
-      (* (try (z3t#simplify_let c_style_solution) *)
-      (*  with Failure s -> *)
-      (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
-      (*     eprintf "MESSAGE: %s@\n" s; *)
-      (*     c_style_solution)) *)
-      sklet
+      if !use_z3 then
+        (* (try *)
+        (*    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
+        (*    (z3t#simplify_let c_style_solution) *)
+        (*  with Failure s -> *)
+        (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
+        (*     eprintf "MESSAGE: %s@\n" s; *)
+        (*     c_style_solution)) *)
+        print_endline "Z3 expression simplifcation in progress";
+        sklet
 
     | None, Some expr ->
       (eprintf "Failed in translation, we got an expression %a for the join."
@@ -178,18 +183,8 @@ let tbb_test_filename (solution : sketch_rep) =
   else
     failwith "Failed to create directory for tbb example output."
 
-
-let output_tbb_test (solution : sketch_rep) =
-  let tbb_file_oc =  open_out (tbb_test_filename solution) in
-  printf "New file: %s.@." (tbb_test_filename solution);
-  let tbb_file_out_fmt = Format.make_formatter
-      (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
-  let tbb_class_summary = Tbb.make_tbb_class solution in
-  Tbb.fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
-  close_out tbb_file_oc
-
 let output_tbb_tests (solutions : sketch_rep list) =
-  List.iter output_tbb_test solutions
+  List.iter (Tbb.output_tbb_test tbb_test_filename) solutions
 
 
 (** Generating Dafny proofs *)
@@ -208,19 +203,9 @@ let dafny_proof_filename (sol : sketch_rep) =
   else
     failwith "Failed to create directory for Dafny proof output."
 
-let output_dafny_proof (solution : sketch_rep) =
-  printf "New file: %s.@." (dafny_proof_filename solution);
-  let dafny_file_oc = open_out (dafny_proof_filename solution) in
-  let dafny_file_out_fmt =
-    Format.make_formatter (output dafny_file_oc) (fun () -> flush dafny_file_oc)
-  in
-  Pf.gen_proof_vars solution;
-  Pf.pp_all_and_clear dafny_file_out_fmt;
-  fprintf dafny_file_out_fmt "@.";
-  close_out dafny_file_oc
 
 let output_dafny_proofs (sols : sketch_rep list) : unit =
-  List.iter output_dafny_proof sols
+  List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
 
 (** --------------------------------------------------------------------------*)
 

@@ -577,3 +577,13 @@ let fprint_tbb_class fmt pb tbb_class =
   pp_class fmt tbb_class;
   fprint_sep fmt;
   fprint_implementations fmt pb tbb_class
+
+
+let output_tbb_test filename (solution : sketch_rep) =
+  let tbb_file_oc =  open_out (filename solution) in
+  printf "New file: %s.@." (filename solution);
+  let tbb_file_out_fmt = Format.make_formatter
+      (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
+  let tbb_class_summary = make_tbb_class solution in
+  fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
+  close_out tbb_file_oc
