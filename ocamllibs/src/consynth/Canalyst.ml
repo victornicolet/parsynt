@@ -104,12 +104,12 @@ let cil2func loops =
            skip_exn "Couldn't use index form in loop.";
        in
        let loop_ident = new_loop_ident cl.Cl.host_function.C.vname in
-       let stmt = C.mkBlock(cl.Cl.new_body) in
+       let stmt = C.mkBlock(Cl.new_body cl) in
        let r, w = cl.Cl.rwset in
-       let vars = remove_reserved_vars (Cl.getAllVars cl) in
-       let stv = Cl.getStateVars cl in
+       let vars = remove_reserved_vars (Cl.all_vars cl) in
+       let stv = Cl.state cl in
        let func, figu = Cil2Func.cil2func (VS.union vars w) stv stmt (i,g,u) in
-       let reaching_consts = cl.Cl.constant_in in
+       let reaching_consts = cl.Cl.reaching_constant_definitions in
        if !verbose then
          let printer = new Cil2Func.cil2func_printer vars stv in
          (printf "@.%s[test for loop %i in %s failed]%s@."
@@ -118,7 +118,7 @@ let cil2func loops =
          printf "@.";
        else ();
        (loop_ident,
-        Cl.getParentFundec cl,
+        Cl.parent_fundec cl,
         VSOps.vids_of_vs r, stv, vars,
         func, figu,
         reaching_consts))

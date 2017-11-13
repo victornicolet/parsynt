@@ -24,8 +24,24 @@ module IOS = Reachingdefs.IOS
 (**
     Map of Cil reaching definitions, maps each variable id
     to a set of definition ids that reach the statement.
+   From Cil's documentation:
+   The third member is a mapping from variable IDs to Sets of integer options.
+   If the set contains Some(i), then the definition of that variable with ID i
+   reaches that statement. If the set contains None, then there is a path to
+   that statement on which there is no definition of that variable. Also, if
+   the variable ID is unmapped at a statement, then no definition of that
+   variable reaches that statement.
 *)
-type defsMap = (VS.elt * (IOS.t option))  IH.t
+type defsTable = (VS.elt * (IOS.t option))  IH.t
+
+(** Some useful function to deal with reaching definitions *)
+let rds_defined_vars_set (defstbl : defsTable) = VSOps.vs_of_defsMap defstbl
+
+let rds_reaching_defs_map (defstbl : defsTable) =
+  IH.fold (fun vid (vi, opsid) dm ->
+      match opsid with
+      | Some ioset -> IM.add vid (purify ioset) dm
+      | None -> dm) defstbl IM.empty
 
 (**
     The for loop statement can be strored as a triplet of
@@ -56,16 +72,27 @@ let sprint_igu ((init, guard, update) : forIGU) : string =
     (Ct.psprint80 Cil.d_instr update)
 
 
+type loop_rep = {
+  mutable lstmt : Cil.stmt;
+  mutable lanalyzed : bool;
+  mutable lsids : Cil.stmt IH.t;
+}
+
+let create_empty_rep () = {
+  lstmt = Cil.mkEmptyStmt ();
+  lanalyzed = false;
+  lsids = IH.create 1;
+}
+
+
 module Cloop = struct
   type t = {
     (** Each loop has a statement id in a Cil program *)
     sid: int;
     (** The original statement of the loop *)
-    mutable old_loop_stmt : Cil.stmt;
-    mutable old_loop_analyzed : bool;
-    mutable old_loop_sids : Cil.stmt IH.t;
-    (** Modified body of the loop *)
-    mutable new_body : Cil.stmt list;
+    mutable old_loop : loop_rep;
+    (** Modified loop *)
+    mutable new_loop : loop_rep;
     (** If it is a for loop the init-guard-update can be summarized*)
     mutable loop_igu : forIGU option;
     (** The file in which the loop appears *)
@@ -76,22 +103,13 @@ module Cloop = struct
     (** A loop appears in the body of a parent function declared globally *)
     mutable host_function : varinfo;
     (** The set of function called in a loop body *)
-    mutable called_functions : varinfo list;
-    (**
-        If a variable is defined as a constant / single var
-       when entering the loop, this
-        constant added to the mapping.
-    *)
-    mutable constant_in : Cil.exp IM.t;
+    mutable called_functions : VS.t;
     (** Cil's reaching definitions information *)
-    mutable defined_in : defsMap;
+    mutable reaching_definitions : defsTable;
+    mutable reaching_constant_definitions : Cil.exp IM.t;
     (** The variables used after exiting the loop *)
-    mutable used_out : varinfo list;
-    (** A map of variable ids to integers, to determine if the variable is in
-        the read or write set. The read write set also contains temporary
-        variables, therefore we do not directly define the write set as the
-        state.
-    *)
+    mutable live_variables : VS.t;
+    (** Read - write set. *)
     mutable rwset : VS.t * VS.t;
     (**
         Some variables too keep track of the state of the work done on the loop.
@@ -103,22 +121,25 @@ module Cloop = struct
     mutable has_breaks : bool;
   }
 
+
   let create (lstm : Cil.stmt)
       (parent : Cil.varinfo) (f : Cil.file) : t =
     { sid = lstm.sid;
-      old_loop_stmt = lstm;
-      old_loop_analyzed = false;
-      old_loop_sids = IH.create 10;
-      new_body = [];
+      old_loop = {
+        lstmt = lstm;
+        lanalyzed = false;
+        lsids = IH.create 10;
+      };
+      new_loop = create_empty_rep ();
       loop_igu = None;
       parent_file = f;
       parent_loops = [];
       inner_loops = [];
       host_function = parent;
-      called_functions = [];
-      constant_in = IM.empty;
-      defined_in = IH.create 32;
-      used_out = [];
+      called_functions = VS.empty;
+      reaching_definitions = IH.create 32;
+      reaching_constant_definitions = IM.empty;
+      live_variables = VS.empty;
       rwset = VS.empty , VS.empty;
       has_breaks = false;
     }
@@ -128,86 +149,32 @@ module Cloop = struct
   let state l = let _ , st = l.rwset in st
   (** Parent function *)
 
-  let setParent l par = l.host_function <- par
+  let set_parent_func l par = l.host_function <- par
 
-  let getParent l = l.host_function
+  let get_parent_func l = l.host_function
 
-  let getParentFundec l =
+  let parent_fundec l =
     check_option
       (get_fun l.parent_file l.host_function.vname)
 
-  (** Defined variables at the loop statement*)
-  let string_of_defvars l =
-    let setname = "Variables defined at the entry of the loop:\n{" in
-    let str = IH.fold
-        (fun k (vi, dio) s -> let vS = s^" "^vi.vname in
-          match dio with
-          | Some mapping -> vS^"[defs]"
-          | None -> vS)
-        l.defined_in setname in
-    str^"}"
-
-
-  (**
-     Setting the defined-In variables il also needed to access variable
-     information in further steps. If a varaible is not "defined in" then
-     we cannot access it, considering also the fact that the Cil representation
-     puts all the local variable declarations in the function body at the top
-     of the function, so we don't have any local variable declaration in the
-     loop body.
-  *)
-  let setDefinedInVars l reachdefs liveset =
-    let vid2v = ih_of_vs liveset in
-    let r, w = l.rwset in
-    let rw = VS.union r w in
-    IH.iter
-      (fun k ios ->
-         try
-           IH.add vid2v k (VSOps.find_by_id k rw)
-         with Not_found -> ()) reachdefs;
-    ih_join_left l.defined_in vid2v reachdefs
-
-  let getDefinedInVars l = l.defined_in
-
   let add_constant_in l vid2const_map =
-    l.constant_in <- IMTools.add_all l.constant_in vid2const_map
-  (**
-     Once the defined vars are set we can have variable information directly
-     from within the Cloop module.
-  *)
+    l.reaching_constant_definitions <-
+      IMTools.add_all l.reaching_constant_definitions vid2const_map
 
-  let getVarinfo  ?(varname = "") l vid =
-    try
-      match IH.find l.defined_in vid with
-      | (vi, _) -> vi
-    with
-      Not_found ->
-      begin
-        if IH.length l.defined_in < 1
-        then
-          raise
-            (Failure
-               "The defined_in are empty. Perhaps you \
-                forgot initializing them ?")
-        else
-          raise
-            (Failure
-               (Printf.sprintf
-                  "Failed in getVarinfo. The variable %s with id %i \
-                   is not defined at the beginning of the loop.\n"
-                  varname
-                  vid))
-      end
-  (**
-     Set read/write set ifnormation. The set of defined-in variables should
-     be comnputed before in order to associate variable IDs with variable
-     names.
-  *)
-  let setRW ?(checkDefinedIn = false) l (uses, defs) =
+  (* Get the variable from the reaching definitions *)
+  let get_varinfo  ?(varname = "") l vid =
+    VS.max_elt
+      (VS.filter
+         (fun vi ->
+            (vid = vi.vid && (varname = "" ||  vi.vname = varname)))
+         (rds_defined_vars_set l.reaching_definitions))
+
+
+  let set_rw ?(checkDefinedIn = false) l (uses, defs) =
     VS.iter
       (fun v ->
          let vi = try
-             getVarinfo ~varname:v.vname l v.vid
+             get_varinfo ~varname:v.vname l v.vid
            with Failure s ->
              begin
                if checkDefinedIn
@@ -227,53 +194,54 @@ module Cloop = struct
     flush_str_formatter ()
 
 
+  let set_live_vars clp livevars = clp.live_variables <- livevars
   (**
       Append a parent loop to the list of parent loops.
       The AST is visited top-down, so the list should contains
       parent loops for outermost to innermost.
   *)
-  let addParentLoop l  parentSid =
+  let add_parent_loop l  parentSid =
     l.parent_loops <- appendC l.parent_loops parentSid
 
-  let addChild l child =
-    l.inner_loops <- appendC l.inner_loops child.old_loop_stmt
+  let add_child_loop l child =
+    l.inner_loops <- appendC l.inner_loops child.old_loop.lstmt
 
-  let addCalledFunc l vi =
-    l.called_functions <- appendC l.called_functions vi
+  let add_callee l vi =
+    l.called_functions <- VS.add vi l.called_functions
 
   (** The loops contains either a break, a continue or a goto statement *)
   let setBreak l =
     l.has_breaks <- true
 
   (** Quick info *)
-  let getAllVars l =
-    VSOps.vs_of_defsMap l.defined_in
+  let all_vars l =
+    rds_defined_vars_set l.reaching_definitions
 
-  let getStateVars l =
-    let _, w = l.rwset in
-    let vars = getAllVars l in
-    VS.filter (fun v -> not v.vistmp && VS.mem v vars) w
+  let new_body l = Ct.loop_bstmt l.new_loop.lstmt
+  let old_body l = Ct.loop_bstmt l.old_loop.lstmt
 
   (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
-    let n_in = List.mem l1.old_loop_stmt l2.inner_loops in
+    let n_in = List.mem l1.old_loop.lstmt l2.inner_loops in
     let nested_in = n_in || List.mem l2.sid l1.parent_loops in
-    let called_in = List.mem l1.host_function l2.called_functions  in
+    let called_in =
+      List.mem l1.host_function (VSOps.varlist l2.called_functions)
+    in
     nested_in || called_in
 
   (** Returns true if the loop contains a statements of id sid *)
   let contains_stmt l sid =
-    IH.mem l.old_loop_sids sid
+    IH.mem l.old_loop.lsids sid
 
-  let isForLoop l = match l.loop_igu with Some s -> true | None -> false
+  let is_for_loop l = match l.loop_igu with Some s -> true | None -> false
 
-  let string_of_cloop (cl : t) =
+  let __str__ (cl : t) =
     let sid = string_of_int cl.sid in
     let pfun = cl.host_function.vname in
     let cfuns = String.concat ", "
-        (List.map (fun y -> y.vname) cl.called_functions) in
-    let defvarS = string_of_defvars cl in
-    let oigu = if isForLoop cl
+        (VSOps.vsmap (fun y -> y.vname) cl.called_functions) in
+    let defvarS = "<WIP>" in
+    let oigu = if is_for_loop cl
       then "\n"^(sprint_igu (check_option cl.loop_igu))
       else ""
     in
@@ -283,11 +251,12 @@ module Cloop = struct
 end
 
 (******************************************************************************)
+
 (** Each loop is stored according to the statement id *)
 let fileName = ref ""
 let programLoops = IH.create 10
 let programFuncs = ref SM.empty
-let funcRetExprs= IH.create 10
+let return_exprs= IH.create 10
 
 let clearLoops () =
   IH.clear programLoops
@@ -340,7 +309,7 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
           if check_igu figu then
             begin
               cloop.Cloop.loop_igu <- Some figu;
-              cloop.Cloop.new_body <- stmts;
+              cloop.Cloop.new_loop.lstmt <- mkStmt(Block(mkBlock(stmts)));
             end
           else ()
         | _ -> ()
@@ -356,7 +325,7 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
 
     | Return (maybe_exp, _) ->
       (match maybe_exp with
-      | Some exp -> IH.add funcRetExprs topFunc.vid exp
+      | Some exp -> IH.add return_exprs topFunc.vid exp
       | None -> ());
       SkipChildren
 
@@ -384,28 +353,28 @@ class loopAnalysis (tl : Cloop.t) = object
   inherit nopCilVisitor
 
   method vstmt (s : Cil.stmt) =
-    tl.Cloop.old_loop_analyzed <- true;
-    IH.add tl.Cloop.old_loop_sids s.sid s;
+    tl.Cloop.old_loop.lanalyzed <- true;
+    IH.add tl.Cloop.old_loop.lsids s.sid s;
     match s.skind with
     | Loop _ ->
       if Cloop.id tl != s.sid then
         (** The inspected loop is nested in the current loop *)
         begin
           let child_loop = IH.find programLoops s.sid in
-          Cloop.addParentLoop child_loop (Cloop.id tl);
-          Cloop.addChild tl child_loop;
+          Cloop.add_parent_loop child_loop (Cloop.id tl);
+          Cloop.add_child_loop tl child_loop;
           let (i, g, u) = check_option (child_loop.Cloop.loop_igu) in
           (** Remove init statements of inner loop present in outer loop *)
           let new_statements =
             rem_loop_init
-              tl.Cloop.new_body [] i child_loop.Cloop.old_loop_stmt in
-          tl.Cloop.new_body <- new_statements;
+              tl.Cloop.new_loop.lstmt [] i child_loop.Cloop.old_loop.lstmt in
+          tl.Cloop.new_loop.lstmt <- new_statements;
           DoChildren
         end
       else
         DoChildren
 
-    | Block _ | If _ | TryFinally _ | TryExcept _
+    | Block _ | If _ | TryFinally _ | TryExcept _   | Instr _
     | Goto _ | ComputedGoto _ | Break _ -> DoChildren
     | Switch _ ->
       raise
@@ -419,15 +388,13 @@ class loopAnalysis (tl : Cloop.t) = object
     | Continue _ | Return _->
       Cloop.setBreak tl;
       SkipChildren
-    | Instr _ ->
-      DoChildren
 
   method vinst (i : Cil.instr) : Cil.instr list Cil.visitAction =
     match i with
     | Call (lval_opt, ef, elist, _)  ->
       begin
         match ef with
-        | Lval (Var vi, _) -> Cloop.addCalledFunc tl vi
+        | Lval (Var vi, _) -> Cloop.add_callee tl vi
         | _ -> ()
       end;
       SkipChildren
@@ -447,7 +414,7 @@ exception Skip_action
 
 
 let rec add_def_info cl vid vid2const def_id =
-  if not cl.Cloop.old_loop_analyzed then failwith "Uninitalized information.";
+  if not cl.Cloop.old_loop.lanalyzed then failwith "Uninitalized information.";
   try
     let stmt =
       IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
@@ -489,14 +456,12 @@ let remove_temps (map : exp IM.t) =
        | _ -> e) map
 
 let analyse_loop_context clp =
-  ignore(visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop_stmt);
+  ignore(visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop.lstmt);
   let sid = clp.Cloop.sid in
-  let fst_stmt_sid = (List.nth clp.Cloop.new_body 0).sid in
+  let fst_stmt_sid = (List.nth (Cloop.new_body clp) 0).sid in
   (** Definitions reaching the loop statement *)
   let rds =
-    match (Ct.simplify_rds
-             (Reachingdefs.getRDs sid))
-    with
+    match (Ct.simplify_rds (Reachingdefs.getRDs sid)) with
     | Some x ->
       begin
         let vid2const_map =
@@ -511,7 +476,7 @@ let analyse_loop_context clp =
             "Error : analyse_loop_context - no reaching defs \
              in (sid : %i):\n %s\n"
             sid
-            (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
+            (Ct.psprint80 d_stmt clp.Cloop.old_loop.lstmt);
           flush_all ();
         end;
       Inthash.create 2
@@ -538,41 +503,23 @@ let analyse_loop_context clp =
           eprintf
             "analyse_loop_context - no live variables in (sid : %i):\n %s\n"
             sid
-            (Ct.psprint80 d_stmt clp.Cloop.old_loop_stmt);
+            (Ct.psprint80 d_stmt clp.Cloop.old_loop.lstmt);
           flush_all ();
         end;
       raise (Failure "analyse_loop_context : no live variables.");
     end
   else
     begin
-      Cloop.setDefinedInVars clp (IHTools.convert rds) livevars
+      Cloop.set_live_vars clp livevars
     end
 
 (******************************************************************************)
-(**
-   Once we have the information of the loop-nesting, we have to remove
-   the termination condition of the inner loops in the outer loops, to
-   do so we simply replace the body of the loop by what has already
-   been computed.
-   Must be executed from the bottom up in the inner-loops tree.
-*)
-let replace_inner_loops cl =
-  let replace_matching_body stmt =
-    {stmt with skind =
-                 match stmt.skind with
-                 | Loop (b, x, y ,loc) ->
-                   let cl = IH.find programLoops stmt.sid in
-                   Loop (mkBlock cl.Cloop.new_body, x, y, loc)
-                 | _ -> stmt.skind}
-  in
-  let nstmts = List.map replace_matching_body cl.Cloop.new_body in
-  cl.Cloop.new_body <- nstmts
-
+(* Set the erad-write set info of the loop body *)
 let set_rw_info cl =
-  let new_body_block = mkBlock(cl.Cloop.new_body) in
+  let new_body_block = mkBlock(Cloop.new_body cl) in
   let r = read new_body_block in
   let w = write new_body_block in
-  Cloop.setRW cl (r , w) ~checkDefinedIn:false
+  Cloop.set_rw cl (r , w) ~checkDefinedIn:false
 
 
 (******************************************************************************)
@@ -597,7 +544,7 @@ let processFile cfile =
   let visited_funcs =
     IH.fold
       (fun k cl visited_fids ->
-         let fdc = Cloop.getParentFundec cl in
+         let fdc = Cloop.parent_fundec cl in
          let vis_fids =
            if List.mem fdc.svar.vid visited_fids
 	   then visited_fids
@@ -613,6 +560,7 @@ let processFile cfile =
          vis_fids)
       programLoops []
   in
+
   (**
       Clean loops from innermost loop bodies to outermost
       ones. Add transformed body read/write information.
@@ -626,7 +574,7 @@ let processFile cfile =
          List.map
            (fun stm -> IH.find programLoops stm.sid)
            cl.Cloop.inner_loops)
-      (fun cl -> replace_inner_loops cl)
+      (fun cl -> ())
   in
   IH.clear programLoops;
   IHTools.add_list programLoops Cloop.id clean_loops;
@@ -655,5 +603,5 @@ let processedLoops () =
 let clear () =
   fileName := "";
   clearLoops ();
-  IH.clear funcRetExprs;
+  IH.clear return_exprs;
   programFuncs := SM.empty

@@ -5,6 +5,7 @@ open Printf
 open Format
 
 module S = Str
+module IOS = Reachingdefs.IOS
 
 (** Set modules **)
 module IntHash =
@@ -30,6 +31,12 @@ module IS = Set.Make (struct
     type t = int
     let compare = Pervasives.compare
   end)
+
+let purify ioset =
+  IOS.fold (fun io is ->
+      match io with
+      | Some i -> IS.add i is
+      | None -> is) ioset IS.empty
 
 module SM = Map.Make (String)
 module VS = Usedef.VS
@@ -281,8 +288,20 @@ module CilTools = struct
     | Const (CInt64 (0L, _, _)) -> true
     | _ -> false
 
+
   let add_stmt block stmt =
     { block with bstmts = block.bstmts @ stmt }
+
+  let add_loop_stmt loop stmt =
+    match loop.skind with
+    | Loop(b, x, y, z) ->
+      {loop with skind = Loop(add_stmt b stmt, x, y ,z)}
+    | _ -> loop
+
+  let loop_bstmt loop =
+    match loop.skind with
+    | Loop(b, _, _ ,_ ) -> b.bstmts
+    | _ -> failwith "loop_bstmt takes only loops as arg"
 
   let add_instr stmt instr =
     match stmt.skind with
@@ -293,7 +312,8 @@ module CilTools = struct
       failwith "add_instr"
 
 
-
+  (* Reaching definitions are a triple where the first
+     two elements are not useful to us.p*)
   let simplify_rds rdef =
     match rdef with
     | Some (_,_, setXhash) -> Some setXhash
@@ -424,6 +444,9 @@ module VSOps = struct
 
   let of_varlist (l : VS.elt list) =
     VS.of_list l
+
+  let vsmap f (vs : VS.t) =
+    map f (varlist vs)
 
   let namelist (vs : VS.t) =
     List.map (fun vi -> vi.vname) (varlist vs)
@@ -586,7 +609,7 @@ module CS = struct
 end
 
 module IHTools = struct
-
+  (* Converts Inthash.t to IH.t. Yes, it's different. *)
   let convert inthash =
     let ih = IH.create 10 in
     Inthash.iter (IH.add ih) inthash;

@@ -135,13 +135,13 @@ let accept (lid : int) (loop : Cloop.t)  =
     (** If the state of the loop is empty, not need to parallelize it *)
     (not (VS.is_empty state)) &&
     (** Verify that there is no aliasing in state variables *)
-    (let loop_body = mkBlock(loop.new_body) in
+    (let loop_body = mkBlock(Cloop.new_body loop) in
      VS.is_empty (VS.inter (aliased loop_body) state))
 
 
 let transform (lid, loop) =
   let subscripts_map =
-    extract_subscripts (mkBlock loop.new_body) loop.rwset in
+    extract_subscripts (mkBlock (Cloop.new_body loop)) loop.rwset in
   loop
 
 
