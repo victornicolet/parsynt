@@ -84,6 +84,13 @@ let create_empty_rep () = {
   lsids = IH.create 1;
 }
 
+let update_loop_body rep block =
+  let new_loop = Ct.replace_loop_block rep.lstmt block in
+  {
+    lstmt = new_loop;
+    lsids = Ct.collect_sids new_loop;
+    lanalyzed = false;
+  }
 
 module Cloop = struct
   type t = {
@@ -111,6 +118,7 @@ module Cloop = struct
     mutable live_variables : VS.t;
     (** Read - write set. *)
     mutable rwset : VS.t * VS.t;
+    mutable tmps : VS.t;
     (**
         Some variables too keep track of the state of the work done on the loop.
         - is the loop in normal form : the loop is in normal form when the outer
@@ -128,7 +136,7 @@ module Cloop = struct
       old_loop = {
         lstmt = lstm;
         lanalyzed = false;
-        lsids = IH.create 10;
+        lsids = Ct.collect_sids lstm;
       };
       new_loop = create_empty_rep ();
       loop_igu = None;
@@ -141,12 +149,12 @@ module Cloop = struct
       reaching_constant_definitions = IM.empty;
       live_variables = VS.empty;
       rwset = VS.empty , VS.empty;
+      tmps = VS.empty;
       has_breaks = false;
     }
 
   let id l = l.sid
 
-  let state l = let _ , st = l.rwset in st
   (** Parent function *)
 
   let set_parent_func l par = l.host_function <- par
@@ -170,19 +178,24 @@ module Cloop = struct
          (rds_defined_vars_set l.reaching_definitions))
 
 
+  (* Access the state, and update it *)
+  let state l =
+    let rt , st = l.rwset in
+    let nst = VS.filter (fun vi -> not vi.vistmp) st in
+    l.tmps <- VS.filter (fun vi -> vi.vistmp) st;
+    l.rwset <- (rt, nst);
+    nst
+
+
   let set_rw ?(checkDefinedIn = false) l (uses, defs) =
-    VS.iter
-      (fun v ->
-         let vi = try
-             get_varinfo ~varname:v.vname l v.vid
-           with Failure s ->
-             begin
-               if checkDefinedIn
-               then raise (Failure s)
-               else v
-             end
-         in ignore(vi))
-      uses;
+    if checkDefinedIn then
+        VS.iter
+        (fun v ->  try
+            ignore(get_varinfo ~varname:v.vname l v.vid)
+          with Failure s ->
+            failwith "Variable not defined in")
+        uses;
+    l.tmps <- VS.filter (fun vi -> vi.vistmp) (VS.union uses defs);
     l.rwset <- (uses, defs)
 
 
@@ -210,15 +223,19 @@ module Cloop = struct
     l.called_functions <- VS.add vi l.called_functions
 
   (** The loops contains either a break, a continue or a goto statement *)
-  let setBreak l =
+  let set_break l =
     l.has_breaks <- true
 
   (** Quick info *)
   let all_vars l =
     rds_defined_vars_set l.reaching_definitions
 
-  let new_body l = Ct.loop_bstmt l.new_loop.lstmt
-  let old_body l = Ct.loop_bstmt l.old_loop.lstmt
+  (* Loop bodies *)
+  let new_body l = Ct.extract_block l.new_loop.lstmt
+  let old_body l = Ct.extract_block l.old_loop.lstmt
+
+  let update_new_loop_block l block =
+    l.new_loop <- update_loop_body l.new_loop block
 
   (** Returns true if l2 contains the loop l1 *)
   let contains l1 l2 =
@@ -252,39 +269,46 @@ end
 
 (******************************************************************************)
 
-(** Each loop is stored according to the statement id *)
+(** Each loop is stored with the statement id *)
 let fileName = ref ""
-let programLoops = IH.create 10
-let programFuncs = ref SM.empty
+(* All the loops in the program file *)
+let program_loops = IH.create 10
+(* All the functions in the program file *)
+let program_funcs = ref SM.empty
+(* Hash : function id -> return expressions *)
 let return_exprs= IH.create 10
 
 let clearLoops () =
-  IH.clear programLoops
+  IH.clear program_loops
 
-let addLoop (loop : Cloop.t) : unit =
-  IH.add programLoops loop.Cloop.sid loop
+(* Add a loop to the program *)
+let add_loop (loop : Cloop.t) : unit =
+  IH.add program_loops loop.Cloop.sid loop
 
-let hasLoop (loop : Cloop.t) : bool =
-  IH.mem programLoops loop.Cloop.sid
+(* Returns true if the loop belongs to the program analyzed *)
+let has_loop (loop : Cloop.t) : bool =
+  IH.mem program_loops loop.Cloop.sid
 
-let getFuncWithLoops () : Cil.fundec list =
+(* Returns the list of functions containing loops *)
+let get_function_with_loops () : Cil.fundec list =
   IH.fold
     (fun k v l ->
        let f =
          try
-           SM.find v.Cloop.host_function.vname !programFuncs
+           SM.find v.Cloop.host_function.vname !program_funcs
          with Not_found -> raise (Failure "x")
        in
        f::l)
-    programLoops []
+    program_loops []
 
+(* Add a function in the map program_funcs *)
 let addGlobalFunc (fd : Cil.fundec) =
-  programFuncs := SM.add fd.svar.vname fd !programFuncs
+  program_funcs := SM.add fd.svar.vname fd !program_funcs
 
 let getGlobalFuncVS () =
   VS.of_list
     (List.map (fun (a,b) -> b)
-       (SM.bindings (SM.map (fun fd -> fd.svar) !programFuncs)))
+       (SM.bindings (SM.map (fun fd -> fd.svar) !program_funcs)))
 
 
 
@@ -296,26 +320,34 @@ let getGlobalFuncVS () =
     graph, we store the loop locations, with the containing functions
 *)
 
-class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
+class loop_finder (top_func : Cil.varinfo) (f : Cil.file) = object
   inherit nopCilVisitor
   method vstmt (s : stmt)  =
     match s.skind with
     | Loop (b, loc, o1, o2) ->
-      let cloop = (Cloop.create s topFunc f) in
+      let cloop = (Cloop.create s top_func f) in
       let igu, stmts = get_loop_IGU s in
+      let new_loop =
+        Ct.replace_loop_block cloop.Cloop.old_loop.lstmt (mkBlock(stmts)) in
       begin
         match igu with
         | Some figu ->
           if check_igu figu then
             begin
               cloop.Cloop.loop_igu <- Some figu;
-              cloop.Cloop.new_loop.lstmt <- mkStmt(Block(mkBlock(stmts)));
+              cloop.Cloop.new_loop <-
+                {
+                  lstmt = new_loop;
+                  lsids = Ct.collect_sids new_loop;
+                  lanalyzed = true;
+                }
             end
           else ()
         | _ -> ()
       end;
-      addLoop cloop;
+      add_loop cloop;
       DoChildren
+
     | Block _ | If _ | TryFinally _ | TryExcept _ ->
       DoChildren
     | Switch _ ->
@@ -325,7 +357,7 @@ class loop_finder (topFunc : Cil.varinfo) (f : Cil.file) = object
 
     | Return (maybe_exp, _) ->
       (match maybe_exp with
-      | Some exp -> IH.add return_exprs topFunc.vid exp
+      | Some exp -> IH.add return_exprs top_func.vid exp
       | None -> ());
       SkipChildren
 
@@ -360,15 +392,19 @@ class loopAnalysis (tl : Cloop.t) = object
       if Cloop.id tl != s.sid then
         (** The inspected loop is nested in the current loop *)
         begin
-          let child_loop = IH.find programLoops s.sid in
+          let child_loop = IH.find program_loops s.sid in
           Cloop.add_parent_loop child_loop (Cloop.id tl);
           Cloop.add_child_loop tl child_loop;
-          let (i, g, u) = check_option (child_loop.Cloop.loop_igu) in
+          let (index, g, u) = check_option (child_loop.Cloop.loop_igu) in
           (** Remove init statements of inner loop present in outer loop *)
           let new_statements =
             rem_loop_init
-              tl.Cloop.new_loop.lstmt [] i child_loop.Cloop.old_loop.lstmt in
-          tl.Cloop.new_loop.lstmt <- new_statements;
+              (Ct.extract_block tl.Cloop.new_loop.lstmt)
+              []
+              index
+              child_loop.Cloop.old_loop.lstmt
+          in
+          Cloop.update_new_loop_block tl  new_statements;
           DoChildren
         end
       else
@@ -386,7 +422,7 @@ class loopAnalysis (tl : Cloop.t) = object
        and the loops will not be parallelized.
     *)
     | Continue _ | Return _->
-      Cloop.setBreak tl;
+      Cloop.set_break tl;
       SkipChildren
 
   method vinst (i : Cil.instr) : Cil.instr list Cil.visitAction =
@@ -458,7 +494,7 @@ let remove_temps (map : exp IM.t) =
 let analyse_loop_context clp =
   ignore(visitCilStmt (new loopAnalysis clp) clp.Cloop.old_loop.lstmt);
   let sid = clp.Cloop.sid in
-  let fst_stmt_sid = (List.nth (Cloop.new_body clp) 0).sid in
+  let fst_stmt_sid = (List.nth (Cloop.new_body clp).bstmts 0).sid in
   (** Definitions reaching the loop statement *)
   let rds =
     match (Ct.simplify_rds (Reachingdefs.getRDs sid)) with
@@ -514,11 +550,11 @@ let analyse_loop_context clp =
     end
 
 (******************************************************************************)
-(* Set the erad-write set info of the loop body *)
+(* Set the read-write set info of the loop body *)
 let set_rw_info cl =
-  let new_body_block = mkBlock(Cloop.new_body cl) in
-  let r = read new_body_block in
-  let w = write new_body_block in
+  let new_body_block = Cloop.new_body cl in
+  let r = va_read new_body_block in
+  let w = va_write new_body_block in
   Cloop.set_rw cl (r , w) ~checkDefinedIn:false
 
 
@@ -532,10 +568,12 @@ let set_rw_info cl =
 *)
 
 let processFile cfile =
-  printf "Start@.";
   fileName := cfile.fileName;
   (** Locate the loops in the file *)
-  iterGlobals cfile (global_filter_only_func (fun fd -> find_loops fd cfile));
+  (try
+    iterGlobals cfile (global_filter_only_func (fun fd -> find_loops fd cfile))
+  with Not_found ->
+    raise (Failure ("Not_found in iterGLobals to find loops")));
   (**
      Visit each function containing a loop, but compute cil information
      like Reaching defintions and live variables each time the function
@@ -558,32 +596,31 @@ let processFile cfile =
          set_rw_info cl;
          ignore(analyse_loop_context cl);
          vis_fids)
-      programLoops []
+      program_loops []
   in
-
   (**
       Clean loops from innermost loop bodies to outermost
       ones. Add transformed body read/write information.
   *)
   let clean_loops =
     IHTools.iter_bottom_up
-      programLoops
+      program_loops
       (** Is a leaf if it has no nested loops *)
       (fun cl -> List.length cl.Cloop.parent_loops = 0)
       (fun cl ->
          List.map
-           (fun stm -> IH.find programLoops stm.sid)
+           (fun stm -> IH.find program_loops stm.sid)
            cl.Cloop.inner_loops)
       (fun cl -> ())
   in
-  IH.clear programLoops;
-  IHTools.add_list programLoops Cloop.id clean_loops;
+  IH.clear program_loops;
+  IHTools.add_list program_loops Cloop.id clean_loops;
   let loopmap =
     IH.fold
       (fun k cl m -> IM.add k cl m)
-      programLoops
+      program_loops
       IM.empty in
-  IH.clear programLoops;
+  IH.clear program_loops;
   loopmap, visited_funcs
 
 
@@ -598,10 +635,10 @@ let processedLoops () =
   if (!fileName = "") then
     raise (Failure "No file processed, no loop data !")
   else
-    programLoops
+    program_loops
 
 let clear () =
   fileName := "";
   clearLoops ();
   IH.clear return_exprs;
-  programFuncs := SM.empty
+  program_funcs := SM.empty

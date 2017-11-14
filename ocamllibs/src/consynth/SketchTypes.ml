@@ -16,6 +16,9 @@ open Ast
 
 let use_unsafe_operations = ref false
 
+exception BadType of string
+
+let failontype s = raise (BadType s)
 
 (** ------------------- 1 - EXPRESSIONS & FUNCTIONS---------------------------*)
 (** Internal type for building sketches *)
@@ -1471,9 +1474,10 @@ let rec is_subtype t tmax =
   | Num, Real | Real, Num -> true
   | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
   | _, _ ->
-    failwith (Format.fprintf Format.str_formatter
-                "Cannot join these types %a %a" pp_typ t pp_typ tmax;
-              Format.flush_str_formatter () )
+    failontype (Format.fprintf str_formatter
+                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
+                flush_str_formatter ())
+
 
 let rec res_type t =
   match t with
@@ -1483,7 +1487,7 @@ let rec res_type t =
 let array_type t =
   match t with
   | Vector (t, _) -> t
-  | _ -> raise (Invalid_argument "Array type must be applied to array types.")
+  | _ -> failontype "Array type must be applied to array types."
 
 let rec join_types t1 t2 =
   match t1, t2 with
@@ -1494,9 +1498,9 @@ let rec join_types t1 t2 =
   | Integer, Num | Num, Integer -> Num
   | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
   | _, _ ->
-    failwith (Format.fprintf Format.str_formatter
+    failontype (Format.fprintf Format.str_formatter
                 "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
-              Format.flush_str_formatter () )
+                Format.flush_str_formatter () )
 
 let type_of_unop t =
   let type_of_unsafe_unop t =

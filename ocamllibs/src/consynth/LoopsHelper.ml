@@ -82,8 +82,7 @@ let is_empty_state (r, w) =
     original program, where the init statement is in the for statement.
 *)
 
-let rec rem_loop_init (bdy : stmt) nbdy (init : instr) (inner : stmt)
-  : stmt =
+let rec rem_loop_init (bdy : block) nbdy (init : instr) (inner : stmt) : block =
   let rem_instr stmt =
     let stmtskind =
       if List.mem inner stmt.succs
@@ -101,10 +100,7 @@ let rec rem_loop_init (bdy : stmt) nbdy (init : instr) (inner : stmt)
     in
     {stmt with skind = stmtskind}
   in
-  match bdy.skind with
-  | Block b ->
-    { bdy with skind = Block { b with bstmts = List.map rem_instr b.bstmts }}
-  | _ -> failwith "Body should be a block"
+  { bdy with bstmts = List.map rem_instr bdy.bstmts }
 
 (** Extracting the termination condition of the loop *)
 let get_loop_condition b =

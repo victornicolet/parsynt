@@ -12,6 +12,7 @@ module C = Canalyst
 module Pf = Proofs
 
 let debug = ref false
+let verbose = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
@@ -23,7 +24,8 @@ let options = [
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
-  ( 'v', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
+  ( 'v', "verbose", (set verbose true), None);
+  ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
   ( 'o', "output-folder", None,
     Some (fun o_folder -> Conf.output_dir := o_folder));
   ( 'z', "use-z3", (set use_z3 true), None)]
@@ -39,8 +41,9 @@ let solution_failed ?(failure = "") sketch =
 
 
 let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
-  printf "@.%sSOLUTION for %s %s:@.%a"
-    (color "green") lp_name color_default Ast.pp_expr_list parsed;
+  if !debug then
+    printf "@.%sSOLUTION for %s %s:@.%a"
+      (color "green") lp_name color_default Ast.pp_expr_list parsed;
   (* Open and append to stats *)
   let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
@@ -202,18 +205,24 @@ let main () =
     end;
   L.debug := !debug;
   let filename = Array.get Sys.argv 1 in
-  if !debug = true then
+
+  if !debug then
     begin
       SError.logfile := "log"^(string_of_float (Sys.time ()))^filename;
-      printf "Logging in %s" !SError.logfile;
+      printf "Logging in %s@." !SError.logfile;
       (** Set all the debug flags to true *)
       Cil2Func.debug := true;
       Sketch.debug := true;
       Sketch.Body.debug := true;
       Sketch.Join.debug := true;
       VariableDiscovery.debug := true;
-    end
-  else ();
+    end;
+
+  if !verbose then
+    begin
+      Findloops.verbose := true;
+      Canalyst.verbose := true;
+    end;
 
   elapsed_time := Unix.gettimeofday ();
   printf "Parsing C program ...\t\t\t\t";

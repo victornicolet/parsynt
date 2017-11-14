@@ -6,10 +6,11 @@ open SError
 open SketchTypes
 open SymbExe
 open VariableDiscovery
+open Findloops
 
 module E = Errormsg
 module C = Cil
-module Cl = Findloops.Cloop
+module Cl = Cloop
 module A = AnalyzeLoops
 
 let debug = ref false
@@ -44,6 +45,12 @@ let processFile fileName =
   Findloops.debug := !debug;
   Findloops.verbose := !verbose;
   let loops, _ = Findloops.processFile cfile in
+  if !verbose then
+    begin
+      printf "Input loops@.";
+      IM.iter
+        (fun lid cl -> CilTools.pps cl.Cl.new_loop.lstmt) loops;
+    end;
   loops
 
 
@@ -63,7 +70,8 @@ type func_info =
   string * Cil.fundec * int list * VS.t * VS.t *
   Cil2Func.letin * figu * (Cil.constant Utils.IM.t)
 
-(** Sketch info type :
+(**
+   Sketch info type :
     - subset of read variables
     - subset of written variables,
     - set of variables in the function
@@ -88,12 +96,15 @@ let rec new_loop_ident fun_name =
     (loop_idents := fun_name::(!loop_idents);
      fun_name)
 
-(** From cil loop bodies to intermediary function representation.
-        This step only translates the control-flow of the input C program,
-        the expressions will be translated later *)
+(**
+   From cil loop bodies to intermediary function representation.
+   This step only translates the control-flow of the input C program,
+   the expressions will be translated later.
+*)
 let cil2func loops =
   Cil2Func.init loops;
   let sorted_lps = A.transform_and_sort loops in
+
   List.map
     (fun cl ->
        (** Index *)
@@ -104,14 +115,18 @@ let cil2func loops =
            skip_exn "Couldn't use index form in loop.";
        in
        let loop_ident = new_loop_ident cl.Cl.host_function.C.vname in
-       let stmt = C.mkBlock(Cl.new_body cl) in
+       let stmt = Cl.new_body cl in
        let r, w = cl.Cl.rwset in
        let vars = remove_reserved_vars (Cl.all_vars cl) in
        let stv = Cl.state cl in
-       let func, figu = Cil2Func.cil2func (VS.union vars w) stv stmt (i,g,u) in
+       if !verbose then
+         printf "@.Identified state variables: %a@." VSOps.pvs stv;
+       let func, figu =
+         Cil2Func.cil2func (VS.union vars w) stv cl.Cl.tmps stmt (i,g,u)
+       in
        let reaching_consts = cl.Cl.reaching_constant_definitions in
        if !verbose then
-         let printer = new Cil2Func.cil2func_printer vars stv in
+         let printer = new Cil2Func.cil2func_printer vars stv cl.Cl.tmps in
          (printf "@.%s[test for loop %i in %s failed]%s@."
             (color "red") cl.Cl.sid cl.Cl.host_function.C.vname color_default;);
          printer#printlet func;
@@ -177,7 +192,7 @@ let func2sketch funcreps =
              | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
              | SkConst c -> IM.add k 1 m_s
              | SkVar v ->
-              (match v with
+               (match v with
                 | SkVarinfo vi -> IM.add k 0 m_s
                 | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
                 | _ -> raise Tuple_fail)
@@ -188,7 +203,8 @@ let func2sketch funcreps =
       let max_m_sizes = max max_m_sizes
           (if rec_let max_min_test loop_body then 1 else 0)
       in
-      printf "@.Max dependency length : %i@." max_m_sizes;
+      (if !debug then
+         printf "@.Max dependency length : %i@." max_m_sizes);
       {
         id = !no_sketches;
         host_function = host_function;

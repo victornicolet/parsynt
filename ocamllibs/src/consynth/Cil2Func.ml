@@ -62,9 +62,9 @@ and substitutions = expr IM.t
 
 (** Pretty-printing functions *)
 (** A pretty-printing class initialized with all the necessary info *)
-class cil2func_printer allvs stv =
+class cil2func_printer allvs stv tmps =
   object (self)
-    val allvs = allvs
+    val allvs = VS.union allvs tmps
     val stv = stv
 
     method pp_letin ?(wloc = false) ppf letin =
@@ -76,11 +76,14 @@ class cil2func_printer allvs stv =
         else
           fprintf ppf "@[{%a}@]"
             (ppifmap
-               (fun fmt i -> fprintf fmt "%s" (VSOps.find_by_id i allvs).vname)
+               (fun fmt i -> fprintf fmt "%s"
+                   (try VSOps.find_by_id i (VS.union allvs stv)
+                    with Not_found ->
+                      eprintf "Variable not found@."; raise Not_found).vname)
                self#pp_expr) expr_map
 
       | Let (vi, expr, letn, id, loc) ->
-        fprintf ppf "@[%slet%s %s = %a@]@[%sin%s  %a @]%s"
+        fprintf ppf "@[<hov 2>%slet%s@ %s =@ %a@ %sin%s@ %a@]%s"
           (color "red") color_default vi.vname self#pp_expr expr
           (color "red") color_default
           (self#pp_letin ~wloc:wloc) letn
@@ -98,7 +101,8 @@ class cil2func_printer allvs stv =
 
       | LetCond (exp, letif, letelse, letcont, loc) ->
         fprintf ppf
-          "@[<v>@[<hv 2>%sif%s %a@ %sthen%s %a@ %selse%s %a@ %sendif%s@]@;%a@]%s"
+          "@[<v>@[<hov 4>%sif%s %a %sthen%s@ %a@]@ @[<hov 4>%selse%s %a@]\
+           @ @[%sendif%s@]@ %a%s@]"
           (color "red") color_default
           self#pp_expr exp
           (color "red") color_default
@@ -129,21 +133,20 @@ class cil2func_printer allvs stv =
             (psprint80 Cil.dn_exp e)
 
         else
-          fprintf ppf "%s [%a]"
+          fprintf ppf "@[<v 2>%s @[[%a]@]@]@;"
             (psprint80 Cil.dn_exp e)
             (ppifmap
                (fun fmt i ->
-                  try
-                    fprintf fmt "%s" (VSOps.find_by_id i allvs).vname
+                  try fprintf fmt "%s" (VSOps.find_by_id i allvs).vname
                   with Not_found ->
                     eprintf "Variable id %i not found.@." i;
-                    raise Not_found
-               )
-               self#pp_expr) subs
+                    raise Not_found)
+               self#pp_expr)
+            subs
 
       | FQuestion (c, a, b) ->
-        fprintf ppf "(%a ? %a : %a)"
-           self#pp_expr c self#pp_expr a self#pp_expr b
+        fprintf ppf "@[<hov 2>(%a@ ?@ %a :@ %a)@]"
+          self#pp_expr c self#pp_expr a self#pp_expr b
 
       | FRec ((i, g, u), expr) ->
         fprintf ppf "%s(%s;%s;%s)%s { %a }"
@@ -194,14 +197,27 @@ class cil2func_printer allvs stv =
       | FStartOf _ -> fprintf ppf ""
 
 
-    method printlet ?(wloc=false) letform =
-      self#pp_letin ~wloc:wloc std_formatter letform
 
-    method eprintlet ?(wloc=false) letform =
-      self#pp_letin ~wloc:wloc err_formatter letform
+    method fprintlet ppf ?(wloc=false) letform =
+      self#pp_letin ~wloc:wloc ppf letform
+
+    method printlet ?(wloc=false) =
+      self#fprintlet std_formatter ~wloc:wloc
+
+    method eprintlet ?(wloc=false) =
+      self#fprintlet err_formatter ~wloc:wloc
 
     method sprintlet ?(wloc=false) letform =
-      self#pp_letin ~wloc:wloc str_formatter letform ; flush_str_formatter ()
+      self#fprintlet str_formatter ~wloc:wloc  letform ; flush_str_formatter ()
+
+    method printsubs subs = self#fprintsubs std_formatter subs
+
+    method fprintsubs ppf subs =
+      fprintf ppf "@[<v 2>%a @]"
+        (fun fmt subs -> IM.iter
+            (fun vid expr -> fprintf ppf "(%i <- %a)@;"
+                vid self#pp_expr expr) subs) subs
+
   end
 
 
@@ -215,32 +231,32 @@ class cil2func_printer allvs stv =
 let rec wf_letin vs =
   function
   | State emap ->
-     (IM.fold
+    (IM.fold
        (fun k v ok -> ok && (VSOps.has_vid k vs)) emap true)
 
   | Let (vi, expr, letin, id, loc) -> wf_letin vs letin
 
   | LetCond (c, let_if, let_else, let_cont, loc) ->
-     wf_letin vs let_if && wf_letin vs let_else && wf_letin vs let_cont
+    wf_letin vs let_if && wf_letin vs let_else && wf_letin vs let_cont
 
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     wf_letin vs let_body && wf_letin vs let_cont
+    wf_letin vs let_body && wf_letin vs let_cont
 
 let rec transform_topdown funct letin =
   let letin' = funct letin in
   match letin' with
   | Let (vi, expr, cont, id, loc) ->
-     Let (vi, expr, transform_topdown funct cont, id, loc)
+    Let (vi, expr, transform_topdown funct cont, id, loc)
 
   | LetCond (c, let_if, let_else, let_cont, loc) ->
-     LetCond (c, transform_topdown funct let_if,
-              transform_topdown funct let_else,
-              transform_topdown funct let_cont,
-              loc)
+    LetCond (c, transform_topdown funct let_if,
+             transform_topdown funct let_else,
+             transform_topdown funct let_cont,
+             loc)
 
   | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     LetRec ((i, g, u), transform_topdown funct let_body,
-             transform_topdown funct let_cont, loc)
+    LetRec ((i, g, u), transform_topdown funct let_body,
+            transform_topdown funct let_cont, loc)
 
   | _ -> letin'
 
@@ -248,17 +264,17 @@ let rec transform_bottomup funct letin =
   let applied_in =
     match letin with
     | Let (vi, expr, letin, id, loc) ->
-       Let (vi, expr, transform_bottomup funct letin, id, loc)
+      Let (vi, expr, transform_bottomup funct letin, id, loc)
 
     | LetCond (c, let_if, let_else, let_cont, loc) ->
-       LetCond (c, transform_bottomup funct let_if,
-                transform_bottomup funct let_else,
-                transform_bottomup funct let_cont,
-                loc)
+      LetCond (c, transform_bottomup funct let_if,
+               transform_bottomup funct let_else,
+               transform_bottomup funct let_cont,
+               loc)
 
     | LetRec ((i, g, u), let_body, let_cont, loc) ->
-       LetRec ((i, g, u), transform_bottomup funct let_body,
-               transform_bottomup funct let_cont, loc)
+      LetRec ((i, g, u), transform_bottomup funct let_body,
+              transform_bottomup funct let_cont, loc)
 
     | _ -> funct letin
   in
@@ -274,81 +290,81 @@ let container e = Container (e, IM.empty)
 let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
   match exp with
   | Container (e, subs) ->
-     let in_e = VSOps.sove e in
-     let in_subs =
-       IM.fold (fun k e vs -> VS.union vs (used_vars_expr e)) subs VS.empty in
-     VS.union in_e in_subs
+    let in_e = VSOps.sove e in
+    let in_subs =
+      IM.fold (fun k e vs -> VS.union vs (used_vars_expr e)) subs VS.empty in
+    VS.union in_e in_subs
 
   | Var vi -> VS.singleton vi
 
   | Array (vi, subs) ->
-     let in_subs =
-       (if onlyNoOffset then
+    let in_subs =
+      (if onlyNoOffset then
          VS.empty
        else
          List.fold_left
            (fun vs e -> VS.union vs (used_vars_expr e))
            VS.empty subs)
-     in
-     VS.add vi in_subs
+    in
+    VS.add vi in_subs
 
   | FQuestion (c, e, e') ->
-     let vc = used_vars_expr ~onlyNoOffset:onlyNoOffset c in
-     let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
-     let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
-     VS.union ve (VS.union ve' vc)
+    let vc = used_vars_expr ~onlyNoOffset:onlyNoOffset c in
+    let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
+    let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
+    VS.union ve (VS.union ve' vc)
 
   | FAlignofE e
   | FSizeofE e
   | FCastE (_, e)
   | FUnop (_, e)
   | FRec (_, e) ->
-     used_vars_expr ~onlyNoOffset:onlyNoOffset e
+    used_vars_expr ~onlyNoOffset:onlyNoOffset e
 
   | FBinop (op, e', e) ->
-     let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
-     let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
-     VS.union ve ve'
+    let ve = used_vars_expr ~onlyNoOffset:onlyNoOffset e in
+    let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
+    VS.union ve ve'
 
   | _ -> VS.empty
 
 let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
   match letform with
   | State substitutions ->
-     IM.fold (fun k e vs -> VS.union vs (used_vars_expr e))
-       substitutions VS.empty
+    IM.fold (fun k e vs -> VS.union vs (used_vars_expr e))
+      substitutions VS.empty
 
   | Let (vi, e, cont, id, loc) ->
-     VS.union (used_vars_expr e) (used_vars_letin cont)
+    VS.union (used_vars_expr e) (used_vars_letin cont)
 
   | LetCond (c, let_if, let_else, cont, loc) ->
-     VSOps.unions
-       [(used_vars_expr c);
-        (used_vars_letin let_if);
-        (used_vars_letin let_else);
-        (used_vars_letin cont)]
+    VSOps.unions
+      [(used_vars_expr c);
+       (used_vars_letin let_if);
+       (used_vars_letin let_else);
+       (used_vars_letin cont)]
 
   | LetRec (igu, let_body, cont, loc) ->
-     VS.union (used_vars_letin let_body) (used_vars_letin cont)
+    VS.union (used_vars_letin let_body) (used_vars_letin cont)
 
 
 let rec is_not_identity_substitution vid expr =
   match expr with
   | Var (vi) -> vi.vid != vid
   | Container (e, subs) ->
-     ((IM.fold
-         (fun k v a -> (is_not_identity_substitution k v) || a)
-         subs true)
-      ||
-        ((VS.max_elt (VSOps.sove e)).vid != vid))
+    ((IM.fold
+        (fun k v a -> (is_not_identity_substitution k v) || a)
+        subs true)
+     ||
+     ((VS.max_elt (VSOps.sove e)).vid != vid))
   | _ -> true
 
 let is_empty_state state =
   match state with
   | State emap ->
-     (IM.is_empty emap) ||
-       (IM.is_empty
-          (IM.filter is_not_identity_substitution emap))
+    (IM.is_empty emap) ||
+    (IM.is_empty
+       (IM.filter is_not_identity_substitution emap))
 
   | _ -> false
 
@@ -357,23 +373,23 @@ let remove_identity_subs substs =
 
 let rec update_subs vse old_subs new_subs =
   (** First apply the new subs in the old subs *)
-    let old_subs_updated =
-      IM.mapi
-        (fun k e ->
-           let used_in_e = used_vars_expr e in
-           VS.fold
-             (fun used_var expr ->
-                if IM.mem used_var.vid new_subs
-                then apply_subs expr new_subs else expr)
-             used_in_e e)
-        old_subs
-    in
-    (** Now add the new substitutions to the old map *)
-    IM.fold
-      (fun k e upd_subs ->
-         if IM.mem k new_subs && VSOps.has_vid k vse
-         then IM.add k (IM.find k new_subs) upd_subs
-         else upd_subs) new_subs old_subs_updated
+  let old_subs_updated =
+    IM.mapi
+      (fun k e ->
+         let used_in_e = used_vars_expr e in
+         VS.fold
+           (fun used_var expr ->
+              if IM.mem used_var.vid new_subs
+              then apply_subs expr new_subs else expr)
+           used_in_e e)
+      old_subs
+  in
+  (** Now add the new substitutions to the old map *)
+  IM.fold
+    (fun k e upd_subs ->
+       if IM.mem k new_subs && VSOps.has_vid k vse
+       then IM.add k (IM.find k new_subs) upd_subs
+       else upd_subs) new_subs old_subs_updated
 
 
 
@@ -381,16 +397,17 @@ let rec update_subs vse old_subs new_subs =
 and apply_subs expr subs =
   match expr with
   | Var vi ->
-     (try IM.find vi.vid subs with Not_found -> expr)
+    if !debug then printf "@.Substitute (%i : %s)?@." vi.vid vi.vname;
+    (try IM.find vi.vid subs with Not_found -> expr)
 
   | Array (vi, el) ->
-     let vi_sub =
-       (try
-          let _ = IM.find vi.vid subs in
-          raise (Failure (sprintf "Substitution for an array \
- violating one-assignment hypothesis : %s ." vi.vname))
-        with Not_found -> vi) in
-     Array (vi_sub, List.map (fun x -> apply_subs x subs) el)
+    let vi_sub =
+      (try
+         let _ = IM.find vi.vid subs in
+         raise (Failure (sprintf "Substitution for an array \
+                                  violating one-assignment hypothesis : %s ." vi.vname))
+       with Not_found -> vi) in
+    Array (vi_sub, List.map (fun x -> apply_subs x subs) el)
 
   | Container (e, subs') ->
     (** Update the previously existing substitutions *)
@@ -398,13 +415,13 @@ and apply_subs expr subs =
     Container (e, update_subs vse subs' subs)
 
   | FunApp (ef, el) ->
-     FunApp (ef, List.map (fun e -> apply_subs e subs) el)
+    FunApp (ef, List.map (fun e -> apply_subs e subs) el)
 
   | FQuestion (e, e1, e2) ->
-     FQuestion (apply_subs e subs, apply_subs e1 subs, apply_subs e2 subs)
+    FQuestion (apply_subs e subs, apply_subs e1 subs, apply_subs e2 subs)
 
   | FRec (igu, e) ->
-     FRec (igu, apply_subs e subs)
+    FRec (igu, apply_subs e subs)
 
   | _ -> failwith "Cannot apply substitutions for this expressions."
 
@@ -438,20 +455,20 @@ let bound_state_vars vs lf =
 *)
 
 let rec let_add old_let new_let =
- match old_let with
+  match old_let with
   | State subs ->
-     if IM.is_empty subs then
-       new_let
-     else
-       failwith "Substitutions should be empty while bulding let-forms."
+    if IM.is_empty subs then
+      new_let
+    else
+      failwith "Substitutions should be empty while bulding let-forms."
   | Let (v, e, olet, id, lc) ->
-     Let (v, e, let_add olet new_let, id, lc)
+    Let (v, e, let_add olet new_let, id, lc)
 
   | LetCond (e, bif, belse, cont, lc) ->
-     LetCond (e, bif, belse, let_add cont new_let, lc)
+    LetCond (e, bif, belse, let_add cont new_let, lc)
 
   | LetRec (igu, letform, let_cont, lc) ->
-     LetRec (igu, letform, let_add let_cont new_let, lc)
+    LetRec (igu, letform, let_add let_cont new_let, lc)
 
 let rec do_il vs il =
   List.fold_left (do_i vs) (empty_state vs) il
@@ -593,29 +610,29 @@ let rec  merge_cond vs c let_if let_else pre_substs =
   match let_if, let_else with
 
   | State subs_if , State subs_else ->
-     let new_subs =
-       IM.merge
-         (fun vid if_expr_o else_expr_o ->
-            let cur_var = Var (VSOps.find_by_id vid vs) in
-            let mod_cond = c in
-            match if_expr_o, else_expr_o with
-            | Some if_expr, Some else_expr ->
-              Some (FQuestion (mod_cond, if_expr, else_expr))
+    let new_subs =
+      IM.merge
+        (fun vid if_expr_o else_expr_o ->
+           let cur_var = Var (VSOps.find_by_id vid vs) in
+           let mod_cond = c in
+           match if_expr_o, else_expr_o with
+           | Some if_expr, Some else_expr ->
+             Some (FQuestion (mod_cond, if_expr, else_expr))
 
-            | Some if_expr, None ->
-              Some
-                (FQuestion
-                   (mod_cond, if_expr, cur_var))
+           | Some if_expr, None ->
+             Some
+               (FQuestion
+                  (mod_cond, if_expr, cur_var))
 
-            | None, Some else_expr->
-              Some
-                (FQuestion
-                   (mod_cond, cur_var, else_expr))
-            | None, None -> None)
-         subs_if
-         subs_else
-     in
-     merge_substs vs pre_substs new_subs
+           | None, Some else_expr->
+             Some
+               (FQuestion
+                  (mod_cond, cur_var, else_expr))
+           | None, None -> None)
+        subs_if
+        subs_else
+    in
+    merge_substs vs pre_substs new_subs
   | _ -> false, pre_substs, None
 
 
@@ -630,19 +647,19 @@ let rec  merge_cond vs c let_if let_else pre_substs =
    loops for each written variable when not too expensive.
 *)
 
-and convert_loop vs let_body igu let_cont loc =
+and convert_loop vs tmps let_body igu let_cont loc =
   match let_body with
   | State subs ->
-     let subs' = remove_identity_subs subs in
-     if (IM.cardinal subs') = 1
-     then
-       let vid, expr = IM.max_binding subs' in
-       let rec_expr = FRec (igu, expr) in
-       let id = gen_id () in
-       add_uses id (used_vars_expr rec_expr);
-       true,  Let (VSOps.find_by_id vid vs, rec_expr, let_cont, id, loc)
-     else
-       false, let_body
+    let subs' = remove_identity_subs subs in
+    if (IM.cardinal subs') = 1
+    then
+      let vid, expr = IM.max_binding subs' in
+      let rec_expr = FRec (igu, expr) in
+      let id = gen_id () in
+      add_uses id (used_vars_expr rec_expr);
+      true,  Let (VSOps.find_by_id vid vs, rec_expr, let_cont, id, loc)
+    else
+      false, let_body
 
   | _ -> false, let_body
 
@@ -656,45 +673,45 @@ and convert_loop vs let_body igu let_cont loc =
    from variable ids to expressions with conditionals inside.
 *)
 
-and red vs let_form substs =
+and red vs tmps let_form substs =
   match let_form with
   | State emap ->
-     let id_list = VSOps.vids_of_vs vs in
-     let final_state_exprs =
-       IM.filter (fun k v -> List.mem k id_list) substs
-     in
-     State final_state_exprs
+    let id_list = VSOps.vids_of_vs vs in
+    let final_state_exprs =
+      IM.filter (fun k v -> List.mem k id_list) substs
+    in
+    State final_state_exprs
 
   | Let (vi, expr, cont, id, _) ->
     let nexpr = apply_subs expr substs in
     let nsubs = IM.add vi.vid nexpr substs in
-    red vs cont nsubs
+    red vs tmps cont nsubs
 
   | LetRec (igu, body, cont, loc) ->
-     let redd_body = reduce vs body in
-     let redd_cont = reduce vs cont in
-     let converted, conversion =
-       convert_loop vs redd_body igu redd_cont loc in
-     if converted then
-       conversion
-     else
-       LetRec (igu, redd_body, reduce vs  cont, loc)
+    let redd_body = reduce vs tmps body in
+    let redd_cont = reduce vs tmps cont in
+    let converted, conversion =
+      convert_loop vs tmps redd_body igu redd_cont loc in
+    if converted then
+      conversion
+    else
+      LetRec (igu, redd_body, reduce vs tmps cont, loc)
 
   | LetCond (e, bif, belse, cont, loc) ->
     let ce = e  in
-    let red_if = reduce vs  bif in
-    let red_else = reduce vs belse in
+    let red_if = reduce vs tmps bif in
+    let red_else = reduce vs tmps  belse in
     let merged, nsubs, olde_o = merge_cond vs ce red_if red_else substs in
     if merged
     then
       match olde_o with
-      | Some olde -> let_add2 olde (red vs cont nsubs) vs
-      | None -> red vs cont nsubs
+      | Some olde -> let_add2 olde (red vs tmps cont nsubs) vs
+      | None -> red vs tmps cont nsubs
     else
       LetCond (ce,
-               red vs bif substs,
-               red vs belse substs,
-               red vs cont substs, loc)
+               red vs tmps bif substs,
+               red vs tmps belse substs,
+               red vs tmps cont substs, loc)
 
 and clean vs let_form =
   match let_form with
@@ -711,8 +728,8 @@ and clean vs let_form =
   | LetRec (figu, lbody, lcont, loc) ->
     LetRec (figu, clean vs lbody, clean vs lcont, loc)
 
-and reduce vs let_form =
-  let reduced_form = red vs let_form IM.empty in
+and reduce vs tmps let_form =
+  let reduced_form = red vs tmps let_form IM.empty in
   clean vs reduced_form
 
 (** We want to write only in state variables. This step eliminates
@@ -730,20 +747,20 @@ let merge_cond_subst allvs vs c subs_if subs_else =
     try
       IM.add vid (Var (VSOps.find_by_id vid allvs)) subs
     with Not_found ->
-         (eprintf "Failed to build identity substitution in \
-                  branch for variable id %i@." vid;
-          raise Not_found)
+      (eprintf "Failed to build identity substitution in \
+                branch for variable id %i@." vid;
+       raise Not_found)
   in
   let if_in_else, else_in_if =
     if IM.cardinal if_only > 0|| IM.cardinal else_only > 0 then
 
       (IM.fold
-        (fun vid e iie -> add_iden_sub vid iie)
-        else_only if_in_else,
+         (fun vid e iie -> add_iden_sub vid iie)
+         else_only if_in_else,
 
-      IM.fold
-        (fun vid e eii -> add_iden_sub vid eii)
-        if_only else_in_if)
+       IM.fold
+         (fun vid e eii -> add_iden_sub vid eii)
+         if_only else_in_if)
 
     else
       if_in_else, else_in_if
@@ -758,23 +775,47 @@ let merge_cond_subst allvs vs c subs_if subs_else =
        FQuestion (c, v, v')) ifmap
 
 
+(**
+   vid -> n_expr is a new substitution for subs. Update all the substitutions
+   first, by performing the substituion vid -> n_expr in each of the
+   substitutions, and then add the substitution to the set.
+*)
 let add_sub vid n_expr subs =
   IM.add vid n_expr
     (IM.map
        (fun e -> apply_subs e (IM.singleton vid n_expr)) subs)
 
-
-let eliminate_temporaries allvs vs let_form =
+(**
+   Eliminate CIL's introduced temporaries. A temporary is a variable that is
+   written but is not in the state (it has been filtered out of the state).
+   The elimination is performed on the non-reduced form by keeping a mapping of
+   the substitutions f temporaries to expressions while descending in the
+   AST of the function.
+*)
+let eliminate_temporaries allvs vs tmps let_form =
+  let debug_counter = ref 0 in
+  let cfprinter = new cil2func_printer allvs vs tmps in
   let rec elim_let_aux let_form subs =
+    if !debug then
+      begin
+        printf "@.------STEP %i-------@.\
+               Substitutions: %a@.@[<v 4> Function:@ %a@]@." !debug_counter
+        cfprinter#fprintsubs subs
+        (cfprinter#fprintlet ~wloc:false) let_form;
+        incr debug_counter;
+      end;
     match let_form with
     | Let (vi, expr, letcont, id, loc) ->
       let n_expr = apply_subs expr subs in
       begin
         if VS.mem vi vs then
+          (* vi is not a temporary, but a state variable. *)
           let new_cont, fsubs = elim_let_aux letcont subs in
-          (* ELiminate the variable assigned from the current subs *)
+          (* Eliminate the variable assigned from the current subs. *)
           Let (vi, n_expr, new_cont , id, loc), fsubs
+
         else
+          (* vi is a temporary variable. *)
           let new_subs = add_sub vi.vid n_expr subs in
           elim_let_aux letcont new_subs
       end
@@ -808,12 +849,12 @@ let eliminate_temporaries allvs vs let_form =
   else
     failwith "Ill formed let-bindings"
 
-    (**
-       MAIN ENTRY POINT
-    *)
+(**
+   MAIN ENTRY POINT
+*)
 let init map_loops = loops := map_loops;;
 
-let cil2func allvs statevs block (i,g,u) =
+let cil2func allvs statevs tmps block (i,g,u) =
   (**
       We need the other loops in case of nested loops to avoid
       recomputing the for statement in the inner loops.
@@ -823,20 +864,20 @@ let cil2func allvs statevs block (i,g,u) =
       if IM.cardinal !loops = 0 then
         failwith "You forgot to initialize the set of loops in Cil2Func ?";
       if !debug then eprintf "-- Cil --> Functional --";
-      let printer = new cil2func_printer statevs statevs in
+      let printer = new cil2func_printer statevs statevs tmps in
       let let_expression_0 = (do_b statevs block) in
       let let_expression =
-        eliminate_temporaries allvs statevs let_expression_0
+        eliminate_temporaries allvs statevs tmps let_expression_0
       in
       let index = index_of_igu (i,g,u) in
       let init_f = do_il statevs [i] in
       let update_f = do_il statevs [u] in
       let guard_e = Container (g, IM.empty) in
       let func, figu =
-        reduce statevs let_expression, (index, (init_f, guard_e, update_f))
+        reduce statevs tmps let_expression, (index, (init_f, guard_e, update_f))
       in
       if !debug then
-        printf "CIL --> FUNCTION transformation result:@.\
+        printf "@.CIL --> FUNCTION transformation result:@.\
                 - Before reduction:@.%a@.\
                 - Eliminate temporaries:@.%a@.\
                 - After reduction:@.%a@."

@@ -289,6 +289,14 @@ module CilTools = struct
     | _ -> false
 
 
+  let add_instr stmt instr =
+    match stmt.skind with
+    | Instr il ->
+      {stmt with skind = Instr (il @ instr)}
+    | _ ->
+      eprintf "Instruction not added to non-instruction list statement.";
+      failwith "add_instr"
+
   let add_stmt block stmt =
     { block with bstmts = block.bstmts @ stmt }
 
@@ -298,18 +306,22 @@ module CilTools = struct
       {loop with skind = Loop(add_stmt b stmt, x, y ,z)}
     | _ -> loop
 
-  let loop_bstmt loop =
+  let extract_block loop : block =
     match loop.skind with
-    | Loop(b, _, _ ,_ ) -> b.bstmts
-    | _ -> failwith "loop_bstmt takes only loops as arg"
-
-  let add_instr stmt instr =
-    match stmt.skind with
-    | Instr il ->
-      {stmt with skind = Instr (il @ instr)}
+    | Loop(b, _, _ ,_ ) -> b
+    | Block b -> b
     | _ ->
-      eprintf "Instruction not added to non-instruction list statement.";
-      failwith "add_instr"
+      failwith "loop_bstmt takes only loops as arg"
+
+
+  let make_block_stmt stmts =
+    mkStmt(Block(mkBlock(stmts)))
+
+  let replace_loop_block loop nb =
+    match loop.skind with
+    | Loop(b, loc, os, os') ->
+      {loop with skind = Loop(nb, loc, os, os')}
+    | _ -> failwith "Not a loop in replace loop stmts."
 
 
   (* Reaching definitions are a triple where the first
@@ -392,6 +404,20 @@ module CilTools = struct
   let change_var_typ vi new_typ =
     { vi with vtype = new_typ }
 
+  (* Get all the children statement ids of a statement *)
+  class statementIdsCollector hashids = object
+    inherit nopCilVisitor
+    val mutable stmt_ids = IS.empty
+    method vstmt (s: stmt) =
+      IH.add hashids s.sid s;
+      DoChildren
+  end
+
+  let collect_sids stmt =
+    let hashid = IH.create 10 in
+    let visitor = new statementIdsCollector hashid in
+    ignore(visitCilStmt visitor stmt);
+    hashid
 end
 (**
     Extract the variables used in statements/expressions/instructions/..
@@ -535,9 +561,9 @@ module VSOps = struct
       VS.iter
         (fun vi ->
            if vi.vistmp then
-             Format.fprintf ppf "@[(%i : %s (tmp))@] @;" vi.vid vi.vname
+             Format.fprintf ppf "@[(%i : %s (-tmp-))@]@" vi.vid vi.vname
            else
-             Format.fprintf ppf "@[(%i : %s)@] @;" vi.vid vi.vname)
+             Format.fprintf ppf "@[(%i : %s)@]@;" vi.vid vi.vname)
         vs
     else
       Format.fprintf ppf "%s@;" "{empty}"

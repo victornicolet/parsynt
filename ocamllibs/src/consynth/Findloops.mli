@@ -31,13 +31,15 @@ module Cloop : sig
     mutable reaching_constant_definitions : Cil.exp IM.t;
     mutable live_variables : VS.t;
     mutable rwset : Utils.VS.t * Utils.VS.t;
+    mutable tmps : Utils.VS.t;
     mutable has_breaks : bool;
   }
 
   val all_vars : t -> VS.t
   val create: Cil.stmt -> Cil.varinfo -> Cil.file -> t
-  val new_body: t -> Cil.stmt list
+  val new_body: t -> Cil.block
   val parent_fundec : t -> Cil.fundec
+  val old_body: t -> Cil.block
   val state : t -> VS.t
   val __str__: t -> String.t
 end
