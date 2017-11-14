@@ -6,6 +6,8 @@ open Utils.PpTools
 
 type racket_struct = string * (string list)
 
+let silent_racket_command_string target =
+  "racket "^target^"> /dev/null"
 
 let err_handler_sketch i =
   eprintf "%sError%s while running racket on sketch.@."

@@ -41,7 +41,7 @@ let solution_failed ?(failure = "") sketch =
 
 
 let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
-  if !debug then
+  if !verbose then
     printf "@.%sSOLUTION for %s %s:@.%a"
       (color "green") lp_name color_default Ast.pp_expr_list parsed;
   (* Open and append to stats *)
@@ -116,7 +116,8 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
   let rec solve_one (solved, unsolved) sketch =
     let lp_name = sketch.loop_name in
     try
-      printf "@.SOLVING sketch for %s.@." lp_name;
+      if !verbose then
+        printf "@.SOLVING sketch for %s.@." lp_name;
       let racket_elapsed, parsed =
         L.compile_and_fetch
           ~print_err_msg:Racket.err_handler_sketch C.pp_sketch sketch
@@ -153,43 +154,47 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
   List.fold_left solve_one ([], []) sketch_list
 
 (** Generating a TBB implementation of the parallel solution discovered *)
-let tbb_test_filename (solution : sketch_rep) =
-  let folder_name =
-    (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
-  in
-  let errco =
-    if Sys.file_exists folder_name then
-      0
-    else
-      Sys.command ("mkdir "^folder_name)
-  in
-  if errco = 0 then
-    folder_name^(Tbb.pbname_of_sketch solution)^".cpp"
-  else
-    failwith "Failed to create directory for tbb example output."
-
 let output_tbb_tests (solutions : sketch_rep list) =
+  let tbb_test_filename (solution : sketch_rep) =
+    let folder_name =
+      (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
+    in
+    let errco =
+      if Sys.file_exists folder_name then
+        0
+      else
+        Sys.command ("mkdir "^folder_name)
+    in
+    if errco = 0 then
+      folder_name^(Tbb.pbname_of_sketch solution)^".cpp"
+    else
+      failwith "Failed to create directory for tbb example output."
+  in
+  printf "@.%s%sGenerating implementations for solved examples..%s@."
+    (color "black") (color "b-green") color_default;
   List.iter (Tbb.output_tbb_test tbb_test_filename) solutions
 
 
 (** Generating Dafny proofs *)
-let dafny_proof_filename (sol : sketch_rep) =
-    let folder_name =
-    (!Conf.output_dir)^"/"^(Conf.get_conf_string "dafny_examples_folder")
-  in
-  let errco =
-    if Sys.file_exists folder_name then
-      0
-    else
-      Sys.command ("mkdir "^folder_name)
-  in
-  if errco = 0 then
-    folder_name^(Pf.filename_of_solution sol)^".dfy"
-  else
-    failwith "Failed to create directory for Dafny proof output."
-
-
 let output_dafny_proofs (sols : sketch_rep list) : unit =
+  let dafny_proof_filename (sol : sketch_rep) =
+    let folder_name =
+      (!Conf.output_dir)^"/"^(Conf.get_conf_string "dafny_examples_folder")
+    in
+    let errco =
+      if Sys.file_exists folder_name then
+        0
+      else
+        Sys.command ("mkdir "^folder_name)
+    in
+    if errco = 0 then
+      folder_name^(Pf.filename_of_solution sol)^".dfy"
+    else
+      failwith "Failed to create directory for Dafny proof output."
+
+  in
+  printf "@.%s%sGenerating proofs for solved examples..%s@."
+    (color "black") (color "b-green") color_default;
   List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
 
 (** --------------------------------------------------------------------------*)
@@ -262,21 +267,15 @@ let main () =
       solve ~expr_depth:2 unsolved_with_aux
     else [], unsolved_with_aux
   in
+  (* All the sketches that have been solved, including with auxiliaries *)
   let finally_solved = solved@solved_with_aux@solved_depth_2 in
-
   (** Handle all the solutions found *)
   (List.iter (fun sketch -> SPretty.pp_sketch_rep std_formatter sketch) finally_solved);
-
   (* For each solved problem, generate a TBB implementation *)
-  printf "@.%s%sGenerating implementations for solved examples..%s@."
-    (color "black") (color "b-green") color_default;
   output_tbb_tests finally_solved;
-
   (* Generate a proof in Dafny. *)
-  printf "@.%s%sGenerating proofs for solved examples..%s@."
-    (color "black") (color "b-green") color_default;
   output_dafny_proofs finally_solved;
-
+  (* Total elapsed_time  *)
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")
     !elapsed_time color_default;;

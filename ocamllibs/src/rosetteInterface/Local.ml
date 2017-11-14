@@ -78,7 +78,7 @@ let default_error i =
 
 let racket filename =
   let start = Unix.gettimeofday () in
-  let errcode = Sys.command ("racket "^filename) in
+  let errcode = Sys.command (Racket.silent_racket_command_string filename) in
   let elapsed = (Unix.gettimeofday ()) -. start in
   Format.printf "@.Racket : executed in %.3f s@." elapsed;
   errcode, elapsed
