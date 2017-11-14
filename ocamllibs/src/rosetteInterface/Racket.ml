@@ -251,6 +251,8 @@ and partial_eval_arith e =
                Some (apply_float op i1 i2)
              | Bool_e i1, Bool_e i2 ->
                Some (apply_bool op i1 i2)
+             | Int_e i1, v | v, Int_e i1 ->
+               if i1 = 0 then Some v else None
              | _, _ -> None)
            | Unop_e (op, e0) -> None
            | _ -> None);
@@ -260,7 +262,12 @@ and partial_eval_arith e =
   in
   transform arith_t e
 
-(*** MAIN FUNCTION *)
-let parse_scm s =
+(**
+   parse_scm: parses a String in scheme and performs some simplification
+   using clean, partial evaluation of arithmetic and partial evaluation.
+   This is only basic simplification, the rest will be done in the normalized
+   sk form.
+ *)
+let simplify_parse_scm s =
   List.map (clean --> partial_eval_arith --> partial_eval)
     (Parser.main Lexer.token (Lexing.from_string s))

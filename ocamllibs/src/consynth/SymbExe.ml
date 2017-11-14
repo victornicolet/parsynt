@@ -1,10 +1,12 @@
 open Utils
 open Cil
 open SError
+open Expressions
 
 module T = SketchTypes
 module Ct = CilTools
 module ES = T.ES
+
 
 let debug = ref false
 
@@ -179,3 +181,12 @@ let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
   let em, es = unfold IM.empty exec_info inp_func in
   em,es
+
+
+(** Partial evaluation of expressions. *)
+let partial_eval ctx expr =
+  let flat_expr = flatten_AC expr in
+  let rec peval_flat flat_expr =
+
+  in
+  rebuild_tree_AC ctx (peval_flat flat_expr)

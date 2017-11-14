@@ -276,7 +276,7 @@ let cost ctx expr =
 
 
 (* AC rules *)
-
+(* Rebuild an expression from its flattened expression. *)
 let rec rebuild_tree_AC ctx =
   let rebuild_case expr =
     match expr with
@@ -306,7 +306,7 @@ let rec rebuild_tree_AC ctx =
   transform_expr rebuild_case rebuild_flat_expr identity identity
 
 
-(** SPecial rules, tranformations. *)
+(** Special rules, tranformations. *)
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
     it returns *)
@@ -543,7 +543,7 @@ let __transform_conj_comps__ top_op el =
           in
           hdexpr::(regroup new_tl)
 
-        | _ -> failwith "Unexpeted case in regroup el"
+        | _ -> failwith "Unexpected case in regroup el"
       end
 
     | [] -> []

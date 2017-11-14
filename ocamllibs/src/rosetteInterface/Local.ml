@@ -110,7 +110,7 @@ let compile ?(print_err_msg = default_error) printer printer_arg =
 let fetch_solution filename =
   let parsed =
     try
-      parse_scm (Std.input_file filename)
+      simplify_parse_scm (Std.input_file filename)
     with e ->
       (let err_code = Sys.command ("cat "^filename) in
        Format.printf "@.cat %s : %i@." filename err_code;

@@ -319,8 +319,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
          (* We keep the expressions such that applying the function associated
             to the auxiliary yields the current matched expression *)
          if !debug_dev then
-           printf "Increment %a == %a ? %B@."
-             cp_skexpr fe' cp_skexpr ne (fe' @= ne);
+           printf "Increment:@ @[%a@]@ %s==%s@ @[%a@] ? %s%B%s@."
+             cp_skexpr fe' (color "red") color_default cp_skexpr ne
+             (color "green") (fe' @= ne) color_default;
          fe' @= ne)
   in
   let update_aux (aux_vs, aux_exprs) (new_aux_vs, new_aux_exprs)

@@ -483,7 +483,7 @@ and cp_sklvar (ppf : Format.formatter) sklvar =
 
 
   | SkTuple vs ->
-    fprintf ppf "(%a)" VSOps.pvs vs
+    fprintf ppf "@[<v 2>(%a)@]" VSOps.pvs vs
 
 and cp_skexpr (ppf : Format.formatter) skexpr =
   let fp = Format.fprintf in
@@ -501,7 +501,7 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
       | Some vi -> vi.Cil.vname
       | None -> "()"
     in
-    fp ppf "@[<hov 1>(%s%s%s %a)@]" (color "u") funname color_default
+    fp ppf "@[<hov 2>(%s%s%s %a)@]" (color "u") funname color_default
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_skexpr) argl
 
   | SkHoleR (t, _) ->
@@ -521,7 +521,7 @@ and cp_skexpr (ppf : Format.formatter) skexpr =
   | SkAlignofE e -> fp ppf "(AlignOfE %a)" cp_skexpr e
 
   | SkBinop (op, e1, e2) ->
-    fp ppf "@[<hov 2>(%s%s%s@;%a@;%a)@]"
+    fp ppf "@[<hov 2>(%s%s%s@ %a@ %a)@]"
       (color "b") (string_of_symb_binop op) color_default
       cp_skexpr e1 cp_skexpr e2
 
