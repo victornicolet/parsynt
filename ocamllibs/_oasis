@@ -67,12 +67,3 @@ Executable Parsy
   Install: false
   Build: true
   BuildDepends: consynth, getopt, codegen, mutils
-
-Document consynth
- Title: Consynth Library Doc
- Authors: Victor Nicolet
- Type: ocamlbuild (0.4)
- BuildTools: ocamldoc
- XOcamlBuildLibraries : consynth
- XOCamlbuildPath: src
- XOCamlbuildExtraArgs: "-docflags '-html -all-params -colorize-code -short-functors -charset utf-8'"

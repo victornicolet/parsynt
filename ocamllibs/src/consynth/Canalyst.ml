@@ -12,6 +12,7 @@ module E = Errormsg
 module C = Cil
 module Cl = Cloop
 module A = AnalyzeLoops
+(* module Z3E = Z3engine *)
 
 let debug = ref false
 let verbose = ref false

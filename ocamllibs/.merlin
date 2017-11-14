@@ -13,4 +13,4 @@ S src/codegen
 S src/conf
 S src/utils
 S ./
-PKG cil core extlib getopt
+PKG cil core extlib getopt Z3

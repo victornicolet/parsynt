@@ -15,6 +15,7 @@ module C2F = Cil2Func
 (* module TGDef = TGenDefs *)
 (*module TSbx = TSymbExe *)
 module TScm = TestSchemeParsing;;
+(* module T3 = TZ3;;x *)
 
 TScm.main ();;
 (* module TDis = TDiscovery *)
@@ -67,4 +68,4 @@ let options = [
 (* printf "%s& %s@." (CilTools.psprint80 dn_type test_varinfo.vtype) *)
 (*   test_varinfo.vname; *)
 
-open TestSchemeParsing
+open TestSchemeParsing;;

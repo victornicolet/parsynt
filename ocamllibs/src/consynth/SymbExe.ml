@@ -33,8 +33,8 @@ let rec unfold new_exprs exec_info func =
       let nexpr, n_rexprs = unfold_expr exec_info expr in
       if !debug then
         (Format.fprintf Format.std_formatter "Set of read exprs : %a@."
-       (fun fmt a -> SPretty.pp_expr_set fmt a)
-       (T.ES.union n_rexprs read_exprs))
+           (fun fmt a -> SPretty.pp_expr_set fmt a)
+           (T.ES.union n_rexprs read_exprs))
       else
         ();
       IM.add vid nexpr new_exprs, T.ES.union n_rexprs read_exprs
@@ -50,8 +50,8 @@ let rec unfold new_exprs exec_info func =
     let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
     unfold new_exprs
       {exec_info with
-          state_exprs = IMTools.update_all exec_info.state_exprs new_exprs;
-          inputs = ES.union new_reads exec_info.inputs} let_cont
+       state_exprs = IMTools.update_all exec_info.state_exprs new_exprs;
+       inputs = ES.union new_reads exec_info.inputs} let_cont
 
 
 
@@ -83,9 +83,10 @@ and exec_var exec_info v =
             with Not_found ->
               exception_on_variable "Expression not found for index" v
           else
-            (** It is a scalar input variable, we have to check if this
-                 variable has been used previously, if not we create a
-                 new variable for this use.
+            (**
+               It is a scalar input variable, we have to check if this
+               variable has been used previously, if not we create a
+               new variable for this use.
             *)
             T.SkVar v, ES.singleton (T.SkVar v)
         end
@@ -181,12 +182,3 @@ let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
   let em, es = unfold IM.empty exec_info inp_func in
   em,es
-
-
-(** Partial evaluation of expressions. *)
-let partial_eval ctx expr =
-  let flat_expr = flatten_AC expr in
-  let rec peval_flat flat_expr =
-
-  in
-  rebuild_tree_AC ctx (peval_flat flat_expr)
