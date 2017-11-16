@@ -1,5 +1,5 @@
 %{
-open Ast
+open RAst
 
 %}
 %token QUOTE
@@ -65,9 +65,9 @@ open Ast
 %token <string> STRING
 %token EOF
 
-%type <Ast.expr list> main
-%type <Ast.expr list> seq
-%type <Ast.expr> expr
+%type <RAst.expr list> main
+%type <RAst.expr list> seq
+%type <RAst.expr> expr
 
 %start main
 

@@ -4,10 +4,10 @@ B _build/src/consynth
 B _build/src/codegen
 B _build/src/conf
 B _build/src/utils
-B _build/src/rosetteInterface
+B _build/src/sygus
 S src
 S test
-S src/rosetteInterface
+S src/sygus
 S src/consynth
 S src/codegen
 S src/conf

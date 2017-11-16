@@ -1,7 +1,7 @@
 open Utils
 open Format
 open Findloops
-open Ast
+open RAst
 
 (**
    1 - Expressions & functions.
@@ -1035,13 +1035,13 @@ and used_in_assignments ve_list =
 let errmsg_unexpected_sklet unex_let =
   (fprintf str_formatter "Expected a translated expression,\
                           received for tranlsation @; %a @."
-     Ast.pp_expr unex_let;
+     RAst.pp_expr unex_let;
    flush_str_formatter ())
 
 let errmsg_unexpected_expr ex_type unex_expr =
   (fprintf str_formatter "Expected a %s ,\
                           received for tranlsation @; %a @."
-     ex_type Ast.pp_expr unex_expr;
+     ex_type RAst.pp_expr unex_expr;
    flush_str_formatter ())
 
 
@@ -1054,7 +1054,7 @@ type join_translation_info = {
   initial_state_left: Cil.varinfo IH.t;
 }
 
-let get_binop_of_scm (op : Ast.op) =
+let get_binop_of_scm (op : RAst.op) =
   match op with
   | Plus -> Plus
   | Minus -> Minus
@@ -1074,7 +1074,7 @@ let get_binop_of_scm (op : Ast.op) =
   | Not -> failwith "Scm to sk : Not is not a binary operator !"
   | _ -> failwith "Car, cdr, Null and Load are not yet supported"
 
-let get_unop_of_scm  (op : Ast.op)=
+let get_unop_of_scm  (op : RAst.op)=
   match op with
   | Not -> Not
   | _ -> failwith "Scheme unary operator not supported"
@@ -1160,8 +1160,8 @@ let rec remove_hole_vars_sklet (sklet : sklet) : sklet =
     SkLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
              remove_hole_vars_sklet letin)
 
-let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
-  let rec translate (scm : Ast.expr) : sklet option * skExpr option =
+let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
+  let rec translate (scm : RAst.expr) : sklet option * skExpr option =
     try
       match scm with
       | Int_e i -> None, Some (SkConst (CInt i))
@@ -1231,7 +1231,7 @@ let rec scm_to_sk (scm : Ast.expr) : sklet option * skExpr option =
             | _ ->
               (None, Some (to_fun_app e arglist)))
          | _ ->
-           Ast.pp_expr std_formatter e;
+           RAst.pp_expr std_formatter e;
            flush_all ();
            failwith "TODO")
 
@@ -1642,7 +1642,7 @@ type sketch_rep =
     loop_body : sklet;
     join_body : sklet;
     join_solution : sklet;
-    init_values : Ast.expr IM.t;
+    init_values : RAst.expr IM.t;
     sketch_igu : sigu;
     reaching_consts : skExpr IM.t
   }

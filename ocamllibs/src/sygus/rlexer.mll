@@ -1,5 +1,5 @@
 {
-open Parser
+open Rparser
 exception LexError of string
 open Conf
 

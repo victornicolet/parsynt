@@ -43,7 +43,7 @@ let solution_failed ?(failure = "") sketch =
 let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
   if !verbose then
     printf "@.%sSOLUTION for %s %s:@.%a"
-      (color "green") lp_name color_default Ast.pp_expr_list parsed;
+      (color "green") lp_name color_default RAst.pp_expr_list parsed;
   (* Open and append to stats *)
   let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
@@ -99,10 +99,10 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
         (fun vid vi map ->
            IM.add vid
              (match type_of_ciltyp vi.vtype with
-              | Integer -> Ast.Int_e 0
-              | Boolean -> Ast.Bool_e true
-              | Real -> Ast.Int_e 1
-              | _ -> Ast.Nil_e) map)
+              | Integer -> RAst.Int_e 0
+              | Boolean -> RAst.Bool_e true
+              | Real -> RAst.Int_e 1
+              | _ -> RAst.Nil_e) map)
         Sketch.Join.auxiliary_variables IM.empty
   in
   {sketch with
@@ -122,7 +122,7 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
         L.compile_and_fetch
           ~print_err_msg:Racket.err_handler_sketch C.pp_sketch sketch
       in
-      if List.exists (fun e -> (Ast.Str_e "unsat") = e) parsed then
+      if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
         (* We get an "unsat" answer : add loop to auxliary discovery *)
         begin
           printf

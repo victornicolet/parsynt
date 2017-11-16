@@ -1,7 +1,9 @@
 open Str
 open Printf
-open Parser
+open Rparser
 open Racket
+open Synthlib2ast
+open Syparser
 (**
     Locally, solving sketches is done by writing to files,
     executing a compiled racket program and then retrieving the result
@@ -115,8 +117,8 @@ let fetch_solution filename =
       (let err_code = Sys.command ("cat "^filename) in
        Format.printf "@.cat %s : %i@." filename err_code;
        match e with
-       | Parser.Error -> raise e
-       | Lexer.LexError s ->
+       | Rparser.Error -> raise e
+       | Rlexer.LexError s ->
          eprintf "%s" s; raise e
        | _ -> raise e)
 

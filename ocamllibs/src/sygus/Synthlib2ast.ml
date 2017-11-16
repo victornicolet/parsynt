@@ -9,8 +9,8 @@ type syLiteral =
   | SyInt of int
   | SyReal of float
   | SyBool of bool
-  | SyBitVector of int list
-  | SyEnum of symbol list
+  | SyBitVector of int
+  | SyEnum of symbol * symbol
 
 
 type syLogic =
@@ -22,6 +22,7 @@ type syLogic =
 type sySort =
   | SyIntSort | SyBoolSort | SyRealSort
   | SyBitVecSort of int
+  | SyArraySort of sySort * sySort
   | SyEnumSort of symbol list
   | SyIdSort of symbol
 
@@ -32,7 +33,7 @@ type syTerm =
   | SyLet of (symbol * sySort * syTerm) list * syTerm
 
 type syGTerm =
-  | SyGApp of symbol * syTerm list
+  | SyGApp of symbol * syGTerm list
   | SyGLiteral of syLiteral
   | SyGId of symbol
   | SyGLet of (symbol * sySort * syGTerm) list * syGTerm
@@ -47,11 +48,12 @@ type syCmd =
   | SySortDefCmd of symbol * sySort
   | SyVarDeclCmd of symbol * sySort
   | SyFunDeclCmd of symbol * sySort list * sySort
-  | SyFunDefCmd of symbol * (symbol * sySort) list * sySort * syTerm
-  | SynthFunCmd of symbol * (symbol * sySort) list * sySort * syNTDef
+  | SyFunDefCmd of symbol * (symbol
+                             * sySort) list * sySort * syTerm
+  | SynthFunCmd of symbol * (symbol * sySort) list * sySort * syNTDef list
   | SyConstraintCmd of syTerm
   | SyCheckSynthCmd
-  | SySetOptsCmdi of (symbol * syLiteral) list
+  | SySetOptsCmd of (symbol * syLiteral) list
 
 type sygusFile =
   | SyCommandsWithLogic of syLogic * (syCmd list)
@@ -61,7 +63,7 @@ let pp_space_sep_list printer=
   (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@ ")
      (fun fmt symb -> fprintf fmt "%a" printer symb))
 
-let sypp_sort fmt (sort : sySort) =
+let rec sypp_sort fmt (sort : sySort) =
   match sort with
   | SyIntSort -> fprintf fmt "Int"
   | SyBoolSort -> fprintf fmt "Bool"
@@ -70,6 +72,7 @@ let sypp_sort fmt (sort : sySort) =
   | SyEnumSort sl -> fprintf fmt "(Enum (%a))"
                        (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@ ")
                           (fun fmt symb -> fprintf fmt "%s" symb)) sl
+  | SyArraySort (a, i) -> fprintf fmt "(Array %a %a)" sypp_sort a sypp_sort i
   | SyIdSort s -> fprintf fmt "%s" s
 
 
@@ -85,16 +88,17 @@ let sypp_lit fmt (literal: syLiteral) =
   | SyInt i -> fprintf fmt "%i" i
   | SyBool b -> fprintf fmt "%B" b
   | SyReal f -> fprintf fmt "%f" f
-  | SyEnum e ->
-    fprintf fmt "%a" (pp_space_sep_list (fun fmt s -> fprintf fmt "%s" s)) e
+  | SyEnum (n, m) ->
+    fprintf fmt "%s::%s" n m
   | SyBitVector v ->
-    fprintf fmt "#b%a" (pp_space_sep_list (fun fmt i -> fprintf fmt "%i" i)) v
+    fprintf fmt "#b%i" v
 
 
-let rec sypp_letlist =
+let rec sypp_letlist fmt list =
   pp_space_sep_list
     (fun fmt (symb, sort, term) ->
        fprintf fmt "@[(%s %a@ %a)@]" symb sypp_sort sort sypp_term term)
+    fmt list
 
 and sypp_term fmt (term: syTerm) =
   match term with
@@ -108,15 +112,16 @@ and sypp_term fmt (term: syTerm) =
     fprintf fmt "@[<hov 2>(let (%a)@; %a)@]"
       sypp_letlist letlist sypp_term scope
 
-let rec sypp_gletlist =
+let rec sypp_gletlist fmt list =
   pp_space_sep_list
     (fun fmt (symb, sort, term) ->
        fprintf fmt "@[(%s %a@ %a)@]" symb sypp_sort sort sypp_gterm term)
+    fmt list
 
 and sypp_gterm fmt (term: syGTerm) =
   match term with
   | SyGApp (symb, args) ->
-    fprintf fmt "@[(%s %a)@]" symb (pp_space_sep_list sypp_term) args
+    fprintf fmt "@[(%s %a)@]" symb (pp_space_sep_list sypp_gterm) args
   | SyGLiteral lit ->
     fprintf fmt "%a" sypp_lit lit
   | SyGId id ->
@@ -152,12 +157,13 @@ let sypp_command fmt (command : syCmd) =
       symbol sypp_argslist argslist sypp_sort sort sypp_term term
   | SynthFunCmd (symbol, argslist, sort, ntdef) ->
     fprintf fmt "@[<v 2>(synth-fun %s @[<v>(%a)@]@ %a@ (%a))@]"
-      symbol sypp_argslist argslist sypp_sort sort sypp_ntdef ntdef
+      symbol sypp_argslist argslist sypp_sort sort
+      (pp_space_sep_list sypp_ntdef) ntdef
   | SyConstraintCmd term ->
     fprintf fmt "@[<v 2>(constraint %a)@]" sypp_term term
   | SyCheckSynthCmd ->
     fprintf fmt "(check-synth)"
-  | SySetOptsCmdi slylist ->
+  | SySetOptsCmd slylist ->
     fprintf fmt "@[<v 2>(set-options @[(%a)@])@]"
       (pp_space_sep_list
          (fun fmt (s,ly) -> fprintf fmt "(%s %a)@;" s sypp_lit ly)) slylist
@@ -181,3 +187,11 @@ let sypp_sygus fmt (syfile : sygusFile) =
     fprintf fmt "%a@.%a" sypp_logic logic sypp_commands commands
   | SyCommands commands ->
     fprintf fmt "%a@." sypp_commands commands
+
+
+(* -------------------------------------------------------------------------- *)
+let which_logic s =
+  match s with
+  | "LIA" -> SyLIA | "Arrays" -> SyArrays | "BV" -> SyBV | "Reals" -> SyReals
+  (* Default Linear Integer Arithmetic *)
+  | _ -> SyLIA

@@ -1,6 +1,6 @@
 open Format
 open RUtils
-open Ast
+open RAst
 open Utils
 open Utils.PpTools
 
@@ -113,7 +113,7 @@ let operator_choice_type s =
                  (List.filter (fun (t, s') -> s = s') operator_choice_assoc)))
   with Failure s -> None
 
-let unsolved_hole (expr : Ast.expr) =
+let unsolved_hole (expr : RAst.expr) =
   match expr with
   (* (HoleName args hole-depth) *)
   | Apply_e (Id_e s, arglist) ->
@@ -130,10 +130,10 @@ let unsolved_hole (expr : Ast.expr) =
 
 
 let repl_unsolved_hole
-    (e : Ast.expr)
+    (e : RAst.expr)
     (hi : (rosette_hole_type option *
           rosette_operator_choice option)
-          * Ast.expr list) : Ast.expr =
+          * RAst.expr list) : RAst.expr =
   match hi with
   | (Some ht, _), arglist ->
     (match ht with
@@ -153,7 +153,7 @@ let repl_unsolved_hole
   | _ -> e
 
 
-let rec clean (expr : Ast.expr) =
+let rec clean (expr : RAst.expr) =
   match (repl_unsolved_hole expr (unsolved_hole expr)) with
   | Binop_e (op, e1, e2) -> Binop_e (op, clean e1, clean e2)
   | Unop_e (op, e1) -> Unop_e (op, clean e1)
@@ -270,4 +270,4 @@ and partial_eval_arith e =
  *)
 let simplify_parse_scm s =
   List.map (clean --> partial_eval_arith --> partial_eval)
-    (Parser.main Lexer.token (Lexing.from_string s))
+    (Rparser.main Rlexer.token (Lexing.from_string s))

@@ -1,4 +1,4 @@
-open Ast
+open RAst
 open ExtString
 open SketchTypes
 open Format
@@ -28,7 +28,7 @@ let is_struct_assgn (id,e) =
      | _ -> false)
   | _ -> false
 
-let rec rem_struct_assigns (e : Ast.expr) =
+let rec rem_struct_assigns (e : RAst.expr) =
   match e with
   | Let_e (assgn_list, e')
   | Letrec_e (assgn_list, e') ->
@@ -74,10 +74,10 @@ let get_values_init e =
 
 
 type solved_sketch_info =
-  { join_body : Ast.expr;
-    init_values : Ast.expr list option;}
+  { join_body : RAst.expr;
+    init_values : RAst.expr list option;}
 
-let get_solved_sketch_info (el : Ast.expr list) =
+let get_solved_sketch_info (el : RAst.expr list) =
   let join_body =
     try
       (match List.find identify_join_func el with
