@@ -33,8 +33,8 @@ Library mutils
   Install : false
   BuildDepends: cil, extlib, conf
 
-Library rosetteInterface
-  Path: src/rosetteInterface
+Library sygus
+  Path: src/sygus
   BuildDepends: conf, extlib, mutils
   CompiledObject: best
   Modules: Local
@@ -45,20 +45,20 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, rosetteInterface, extlib, conf, mutils
+  BuildDepends: cil, sygus, extlib, conf, mutils
 
 Library codegen
   Path: src/codegen
   Modules: Codegen
   CompiledObject: best
-  BuildDepends: consynth, cil, rosetteInterface, extlib, conf, mutils
+  BuildDepends: consynth, cil, sygus, extlib, conf, mutils
 
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, rosetteInterface, consynth, conf, codegen
+  BuildDepends: cil, getopt, sygus, consynth, conf, codegen
 
 Executable Parsy
   Path: ./
