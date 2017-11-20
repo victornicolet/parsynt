@@ -3,6 +3,7 @@ open Printf
 open Rparser
 open Racket
 open Synthlib2ast
+open Synthlib
 open Syparser
 (**
     Locally, solving sketches is done by writing to files,

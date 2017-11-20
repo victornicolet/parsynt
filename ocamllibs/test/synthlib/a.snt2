@@ -1,0 +1,4 @@
+;; Minimal example
+(set-logic LIA)
+(declare-var x Int)
+(declare-var y Int)

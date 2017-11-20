@@ -68,4 +68,5 @@ let options = [
 (* printf "%s& %s@." (CilTools.psprint80 dn_type test_varinfo.vtype) *)
 (*   test_varinfo.vname; *)
 
-open TestSchemeParsing;;
+(* open TestSchemeParsing;; *)
+open TestSynthlib

@@ -836,6 +836,11 @@ module PpTools = struct
      string *)
   let printerr s =
     Format.fprintf err_formatter "%s%s%s" (color "red") s color_default
+
+  let print_err_std s =
+    Format.fprintf std_formatter "%s!%s %s%s%s"
+      (color "b-red") color_default
+      (color "red") s color_default
 end
 
 module SMTools = struct

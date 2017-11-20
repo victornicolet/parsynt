@@ -29,95 +29,92 @@
 %token EOF
 
 %token DOUBLECOLON
-%token LPAREN
-%token RPAREN
+%token LPR
+%token RPR
 
 %token <string> SYMBOL
 %token <string> QUOTED
 %token <int> INT
 %token <float> REAL
-%token <int> BITVECTOR
+%token <string> BITVECTOR
 
 %type <Synthlib2ast.sygusFile> file
 
 %start file
 
 %%
-file : setlogic cmds EOF					{ SyCommandsWithLogic($1, $2) }
-     | cmds EOF      		  				{ SyCommands($1) }
+file : l=setlogic c=cmds EOF					{ SyCommandsWithLogic(l, c) }
+     | c=cmds EOF      		  				{ SyCommands(c) }
 
-setlogic : LPAREN SETLOGIC SYMBOL RPAREN 			{ which_logic($3) }
+setlogic : LPR SETLOGIC SYMBOL RPR 				{ which_logic($3) }
 
 cmds : 	   	  	   	 				{ [] }
-     | cmd 	  	   	 				{ [$1] }
      | cmd cmds							{ $1 :: $2 }
 
-cmd : LPAREN DEFSORT SYMBOL sort RPAREN				{ SySortDefCmd($3, $4) }
-    | LPAREN DECLVAR SYMBOL sort RPAREN				{ SyVarDeclCmd($3, $4) }
-    | LPAREN DECLFUN SYMBOL LPAREN sorts RPAREN sort RPAREN	{ SyFunDeclCmd($3, $5, $7) }
-    | LPAREN DEFFUN SYMBOL LPAREN args RPAREN sort term RPAREN	{ SyFunDefCmd($3, $5, $7, $8) }
-    | LPAREN SYNTHFUN SYMBOL LPAREN args RPAREN sort LPAREN ntdefs RPAREN RPAREN
-      	     	      	     	    	       	     	    	{ SynthFunCmd($3, $5, $7, $9) }
-    | LPAREN CONSTRAINT term RPAREN				{ SyConstraintCmd($3) }
-    | LPAREN SETOPTIONS syoptions RPAREN			{ SySetOptsCmd($3) }
-    | CHECKSYNTH						{ SyCheckSynthCmd }
+cmd : LPR DEFSORT id=SYMBOL s=sort RPR
+                                                                { SySortDefCmd(id, s) }
+    | LPR; DECLVAR; id=SYMBOL s=sort RPR			{ SyVarDeclCmd(id, s) }
+    | LPR DECLFUN id=SYMBOL LPR a=sorts RPR s=sort RPR		{ SyFunDeclCmd(id, a, s) }
+    | LPR DEFFUN id=SYMBOL LPR a=args RPR s=sort t=term RPR	{ SyFunDefCmd(id, a,s,t) }
+    | LPR SYNTHFUN id=SYMBOL LPR a=args RPR s=sort LPR n=ntdefs RPR RPR
+      	     	      	     	    	       	     	    	{ SynthFunCmd(id, a, s, n) }
+    | LPR CONSTRAINT t=term RPR				        { SyConstraintCmd(t) }
+    | LPR SETOPTIONS o=syoptions RPR				{ SySetOptsCmd(o) }
+    | LPR CHECKSYNTH RPR					{ SyCheckSynthCmd }
 
 sorts : 	   	  	   	 			{ [] }
-      | sort 							{[$1]}
       | sort sorts 						{ $1 :: $2 }
 
 sort : BOOLSORT							{ SyBoolSort }
      | INTSORT							{ SyIntSort }
      | REALSORT							{ SyRealSort }
-     | LPAREN ARRAYSORT sort sort RPAREN			{ SyArraySort($3, $4) }
-     | LPAREN ENUMSORT LPAREN symbols RPAREN RPAREN		{ SyEnumSort($4) }
-     | LPAREN BITVECSORT INT RPAREN				{ SyBitVecSort($3) }
-     | symbol 		    					{ SyIdSort($1) }
+     | LPR ARRAYSORT s1=sort s2=sort RPR			{ SyArraySort(s1, s2) }
+     | LPR ENUMSORT LPR s=symbols RPR RPR			{ SyEnumSort(s) }
+     | LPR BITVECSORT k=INT RPR					{ SyBitVecSort(k) }
+     | s=SYMBOL 		    				{ SyIdSort(s) }
 
-ntdef : LPAREN SYMBOL sort LPAREN gterms RPAREN RPAREN		{ ($2, $3, $5) }
+ntdef : LPR id=SYMBOL s=sort LPR t=gterms RPR RPR		{ (id, s, t) }
 
 ntdefs : ntdef 							{ [$1] }
        | ntdef ntdefs 						{ $1 :: $2 }
 
 
 terms : 	   	  	   	 			{ [] }
-      | term 							{ [$1] }
       | term terms 						{ $1 :: $2 }
 
 
-term : LPAREN SYMBOL terms RPAREN				{ SyApp($2, $3) }
-     | literal	     	   					{ SyLiteral($1) }
-     | SYMBOL							{ SyId($1) }
+term : LPR f=SYMBOL x=terms RPR					{ SyApp(f, x) }
+     | l=literal	     	   				{ SyLiteral(l) }
+     | s=SYMBOL							{ SyId(s) }
      | letterm							{ $1 }
 
 gterms : 	   	  	   	 			{ [] }
-      | gterm 							{ [$1] }
       | gterm gterms 						{ $1 :: $2 }
 
 
-gterm : LPAREN SYMBOL gterms RPAREN				{ SyGApp($2, $3) }
-     | literal	     	   					{ SyGLiteral($1) }
-     | SYMBOL							{ SyGId($1) }
-     | letgterm							{ $1 }
-     | LPAREN CONSTANT sort RPAREN				{ SyGConstant($3) }
-     | LPAREN VARIABLE sort RPAREN				{ SyGVariable($3) }
-     | LPAREN LOCALVARIABLE sort RPAREN				{ SyGLocalVariable($3) }
-     | LPAREN INPUTVARIABLE sort RPAREN				{ SyGInputVariable($3) }
+gterm : LPR f=SYMBOL x=gterms RPR				{ SyGApp(f, x) }
+     | l=literal	     	   				{ SyGLiteral(l) }
+     | s=SYMBOL							{ SyGId(s) }
+     | l=letgterm						{ l }
+     | LPR CONSTANT s=sort RPR					{ SyGConstant(s) }
+     | LPR VARIABLE s=sort RPR					{ SyGVariable(s) }
+     | LPR LOCALVARIABLE s=sort RPR				{ SyGLocalVariable(s) }
+     | LPR INPUTVARIABLE s=sort RPR				{ SyGInputVariable(s) }
 
 
-letgterm : LPAREN LET LPAREN gbindings RPAREN gterm LPAREN 	{ SyGLet($4, $6) }
+letgterm : LPR LET LPR b=gbindings RPR t=gterm LPR 		{ SyGLet(b, t) }
 
-letterm : LPAREN LET LPAREN bindings RPAREN term LPAREN 	{ SyLet($4, $6) }
+letterm : LPR LET LPR b=bindings RPR t=term LPR 		{ SyLet(b, t) }
 
 bindings : binding   	    	     	    	 		{ [$1] }
 	 | binding bindings					{ $1 :: $2 }
 
-binding : LPAREN SYMBOL sort term RPAREN			{($2, $3, $4)}
+binding : LPR id=SYMBOL s=sort t=term RPR			{(id, s, t)}
 
 gbindings : gbinding   	    	     	    	 		{ [$1] }
 	 | gbinding gbindings					{ $1 :: $2 }
 
-gbinding : LPAREN SYMBOL sort gterm RPAREN			{($2, $3, $4)}
+gbinding : LPR id=SYMBOL s=sort t=gterm RPR			{(id, s, t)}
 
 
 literal : QUOTED						{ SyString $1 }
@@ -130,19 +127,15 @@ literal : QUOTED						{ SyString $1 }
 
 
 syoptions : 	   	  	   	 			{ [] }
-	| syoption 						{ [$1] }
 	| syoption syoptions 					{ $1 :: $2 }
 
-syoption : LPAREN SYMBOL literal RPAREN				{ ($2, $3) }
+syoption : LPR SYMBOL literal RPR				{ ($2, $3) }
 
 args : 	   	  	   	 				{ [] }
-     | arg 							{ [$1] }
      | arg args 						{ $1 :: $2 }
 
-arg : LPAREN SYMBOL sort RPAREN					{ ($2, $3) }
+arg : LPR id=SYMBOL s=sort RPR					{ (id, s) }
 
 
-symbols : symbol						{ [$1] }
-	| symbol symbols 					{ $1 :: $2 }
-
-symbol: SYMBOL 	 						{$1}
+symbols : SYMBOL						{ [$1] }
+	| SYMBOL symbols 					{ $1 :: $2 }

@@ -9,7 +9,7 @@ type syLiteral =
   | SyInt of int
   | SyReal of float
   | SyBool of bool
-  | SyBitVector of int
+  | SyBitVector of string
   | SyEnum of symbol * symbol
 
 
@@ -91,7 +91,7 @@ let sypp_lit fmt (literal: syLiteral) =
   | SyEnum (n, m) ->
     fprintf fmt "%s::%s" n m
   | SyBitVector v ->
-    fprintf fmt "#b%i" v
+    fprintf fmt "#b%s" v
 
 
 let rec sypp_letlist fmt list =
@@ -184,7 +184,7 @@ let sypp_logic fmt (logic : syLogic) =
 let sypp_sygus fmt (syfile : sygusFile) =
   match syfile with
   | SyCommandsWithLogic (logic, commands) ->
-    fprintf fmt "%a@.%a" sypp_logic logic sypp_commands commands
+    fprintf fmt "%a@.%a@." sypp_logic logic sypp_commands commands
   | SyCommands commands ->
     fprintf fmt "%a@." sypp_commands commands
 
