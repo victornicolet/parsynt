@@ -5,18 +5,18 @@
 ;; Define its sort (type) and the sort of its variables
 (synth-fun max2 ((x Int) (y Int)) Int
 
-;; Define the grammar for allowed expressions for max2
-((Start Int (x y 0 1
-             (+ Start Start)
-             (- Start Start)
-             (ite StartBool Start Start)))
+	   ;; Define the grammar for allowed expressions for max2
+	   ((Start Int (x y 0 1
+			  (+ Start Start)
+			  (- Start Start)
+			  (ite StartBool Start Start)))
 
- (StartBool Bool ((and StartBool StartBool)
-                  (or StartBool StartBool)
-                  (not StartBool)
-                  (<= Start Start)
-                  (= Start Start)
-                  (>= Start Start)))))
+	    (StartBool Bool ((and StartBool StartBool)
+			     (or StartBool StartBool)
+			     (not StartBool)
+			     (<= Start Start)
+			     (= Start Start)
+			     (>= Start Start)))))
 
 (declare-var x Int)
 (declare-var y Int)

@@ -25,6 +25,7 @@ let init () =
 let clear () =
   IH.clear discovered_aux;
   IH.clear discovered_aux_alltime
+
 (**
    Entry point : check that the function is a candidate for
     function discovery.
