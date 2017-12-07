@@ -167,7 +167,7 @@ module Cloop = struct
 
   let add_constant_in l vid2const_map =
     l.reaching_constant_definitions <-
-      IMTools.add_all l.reaching_constant_definitions vid2const_map
+      IM.add_all l.reaching_constant_definitions vid2const_map
 
   (* Get the variable from the reaching definitions *)
   let get_varinfo  ?(varname = "") l vid =

@@ -3,32 +3,37 @@ function DfLength(s: seq<int>): int
 
 function Sum(a : seq<int>): int
 {
-  if a == [] then 0 else (Sum(a[..|a|-1]) + a[|a|-1])
+  if dafny_seq_ == [] then
+    0
+    else
+    (Sum(dafny_seq_[..|dafny_seq_|-1]) + dafny_seq_[|dafny_seq_|-1])
 }
 
-function SumJoin(leftSum : int, rightSum : int): int
+function SumJoin(, ): int
 {
-  (rightSum + (leftSum + ((-4) + 4)))
+  ((-4) + (4 + (R_x.sum + R_l.sum)))
 }
 
 
 lemma BaseCaseSum(a : seq<int>)
-  ensures Sum(a) == SumJoin(Sum(a), Sum([]))
+  ensures Sum(dafny_seq_) == SumJoin(, )
   {}
 
 lemma HomSum(a : seq<int>, R_a : seq<int>)
-  ensures Sum(a + R_a) == SumJoin(Sum(a), Sum(R_a))
+  ensures Sum(dafny_seq_ + R_dafny_seq_) == SumJoin(, )
   {
-    if R_a == [] 
+    if R_dafny_seq_ == [] 
     {
-    assert(a + [] == a);
-    BaseCaseSum(a);
+    assert(dafny_seq_ + [] == dafny_seq_);
+    BaseCaseSum(dafny_seq_);
     
      } else {
     calc{
-    Sum(a + R_a);
-    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    SumJoin(Sum(a), Sum(R_a));
+    Sum(dafny_seq_ + R_dafny_seq_);
+    =={
+      assert(dafny_seq_ + R_dafny_seq_[..|R_dafny_seq_|-1]) + [R_dafny_seq_[|R_dafny_seq_|-1]] == dafny_seq_ + R_dafny_seq_;
+      }
+    SumJoin(, );
     } // End calc.
   } // End else.
 } // End lemma.

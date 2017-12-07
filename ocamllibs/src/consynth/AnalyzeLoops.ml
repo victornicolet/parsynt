@@ -1,6 +1,5 @@
 open Cil
 open Utils
-open Utils.IMTools
 open VariableAnalysis
 open Findloops
 open Findloops.Cloop

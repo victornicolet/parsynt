@@ -28,7 +28,7 @@ type exec_info =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-
+val create_symbol_map : Utils.VS.t -> T.skExpr IM.t
 val unfold : T.skExpr IM.t -> exec_info -> T.sklet-> T.skExpr IM.t * T.ES.t
 val unfold_expr : exec_info -> T.skExpr -> T.skExpr * T.ES.t
 val unfold_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t * T.ES.t

@@ -583,12 +583,12 @@ let merge_substs vs old_subs new_subs : bool * expr IM.t * letin option =
   if
     (* Check if the variables that are assigned in old_subs
        are used in new_subs *)
-    (IMTools.is_disjoint ~non_empty:is_not_identity_substitution
+    (IM.is_disjoint ~non_empty:is_not_identity_substitution
        old_subs new_subs) &&
     not (IM.exists (fun k v -> VSOps.has_vid k used_in_new_subs)
            old_subs)
   then
-    true, (IMTools.add_all old_subs new_subs), None
+    true, (IM.add_all old_subs new_subs), None
   else true, new_subs, Some (State old_subs)
 
 (**
@@ -741,7 +741,7 @@ let merge_cond_subst allvs vs c subs_if subs_else =
   (* if_in_else : substitutions in if when there is a substitution in else
      else_in_if : sub in else when there exists a sub in if *)
   let if_in_else, else_in_if, if_only, else_only =
-    IMTools.disjoint_sets subs_if subs_else in
+    IM.disjoint_sets subs_if subs_else in
   (* Join the expressions for variables in the intersection *)
   let add_iden_sub vid subs =
     try
@@ -766,8 +766,8 @@ let merge_cond_subst allvs vs c subs_if subs_else =
       if_in_else, else_in_if
   in
   let ifmap, elsemap =
-    IMTools.add_all if_in_else if_only,
-    IMTools.add_all else_in_if else_only
+    IM.add_all if_in_else if_only,
+    IM.add_all else_in_if else_only
   in
   IM.mapi
     (fun k v ->

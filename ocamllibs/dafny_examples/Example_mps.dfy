@@ -5,66 +5,73 @@ function DfMax(x: int, y: int): int { if x > y then x else y}
 
 function Sum(a : seq<int>): int
 {
-  if a == [] then 0 else (Sum(a[..|a|-1]) + a[|a|-1])
+  if dafny_seq_ == [] then
+    0
+    else
+    (Sum(dafny_seq_[..|dafny_seq_|-1]) + dafny_seq_[|dafny_seq_|-1])
 }
 
 function Mps(a : seq<int>): int
 {
-  if a == [] then 0 else DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Mps(a[..|a|-1]))
+  if dafny_seq_ == [] then
+    0
+    else
+    DfMax((Sum(dafny_seq_[..|dafny_seq_|-1]) + dafny_seq_[|dafny_seq_|-1]), Mps(dafny_seq_[..|dafny_seq_|-1]))
 }
 
-function SumJoin(leftSum : int, rightSum : int): int
+function SumJoin(, ): int
 {
-  (rightSum + leftSum)
+  (R_x.sum + R_l.sum)
 }
 
-function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
+function MpsJoin(, ): int
 {
-  DfMax((leftSum + rightMps), (leftMps + 0))
+  DfMax((R_l.sum + R_x.mps), R_l.mps)
 }
 
 
 lemma BaseCaseSum(a : seq<int>)
-  ensures Sum(a) == SumJoin(Sum(a), Sum([]))
+  ensures Sum(dafny_seq_) == SumJoin(, )
   {}
 
 lemma HomSum(a : seq<int>, R_a : seq<int>)
-  ensures Sum(a + R_a) == SumJoin(Sum(a), Sum(R_a))
+  ensures Sum(dafny_seq_ + R_dafny_seq_) == SumJoin(, )
   {
-    if R_a == [] 
+    if R_dafny_seq_ == [] 
     {
-    assert(a + [] == a);
-    BaseCaseSum(a);
+    assert(dafny_seq_ + [] == dafny_seq_);
+    BaseCaseSum(dafny_seq_);
     
      } else {
     calc{
-    Sum(a + R_a);
-    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    SumJoin(Sum(a), Sum(R_a));
+    Sum(dafny_seq_ + R_dafny_seq_);
+    =={
+      assert(dafny_seq_ + R_dafny_seq_[..|R_dafny_seq_|-1]) + [R_dafny_seq_[|R_dafny_seq_|-1]] == dafny_seq_ + R_dafny_seq_;
+      }
+    SumJoin(, );
     } // End calc.
   } // End else.
 } // End lemma.
 
 lemma BaseCaseMps(a : seq<int>)
-  ensures Mps(a) == MpsJoin(Mps(a), Sum(a), Mps([]), Sum([]))
+  ensures Mps(dafny_seq_) == MpsJoin(, )
   {}
 
 lemma HomMps(a : seq<int>, R_a : seq<int>)
-  ensures Mps(a + R_a) == MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a))
+  ensures Mps(dafny_seq_ + R_dafny_seq_) == MpsJoin(, )
   {
-    if R_a == [] 
+    if R_dafny_seq_ == [] 
     {
-    assert(a + [] == a);
-    BaseCaseMps(a);
+    assert(dafny_seq_ + [] == dafny_seq_);
+    BaseCaseMps(dafny_seq_);
     
      } else {
     calc{
-    Mps(a + R_a);
+    Mps(dafny_seq_ + R_dafny_seq_);
     =={
-      HomSum(a, R_a[..|R_a| - 1]);
-      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      assert(dafny_seq_ + R_dafny_seq_[..|R_dafny_seq_|-1]) + [R_dafny_seq_[|R_dafny_seq_|-1]] == dafny_seq_ + R_dafny_seq_;
       }
-    MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a));
+    MpsJoin(, );
     } // End calc.
   } // End else.
 } // End lemma.

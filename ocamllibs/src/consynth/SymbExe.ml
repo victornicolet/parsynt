@@ -16,6 +16,12 @@ type exec_info =
     index_exprs : T.skExpr IM.t;
     inputs : T.ES.t  }
 
+(** Create a mapping from variable ids to variable expressions to start the
+    algorithm *)
+let create_symbol_map vs=
+  VS.fold
+    (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
+
 
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for exec_once *)
@@ -50,7 +56,7 @@ let rec unfold new_exprs exec_info func =
     let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
     unfold new_exprs
       {exec_info with
-       state_exprs = IMTools.update_all exec_info.state_exprs new_exprs;
+       state_exprs = IM.update_all exec_info.state_exprs new_exprs;
        inputs = ES.union new_reads exec_info.inputs} let_cont
 
 
@@ -160,7 +166,7 @@ and unfold_expr exec_info expr =
   | T.SkAddrofLabel _ | _ ->
     failwith "Unsupported expression in variable discovery algorithm"
 
-(** exec_once : simulate the applciation of a function body to a set of
+(** unfold_once : simulate the applciation of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
     variables.
     @raise {e Not_found} if an elemt is missing at some stage of the
@@ -180,5 +186,4 @@ and unfold_expr exec_info expr =
 *)
 let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
-  let em, es = unfold IM.empty exec_info inp_func in
-  em,es
+  unfold IM.empty exec_info inp_func

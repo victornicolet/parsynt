@@ -5,7 +5,7 @@ open Utils.PpTools
 open Getopt
 open SketchTypes
 open Cil
-
+open FpExact
 
 module L = Local
 module C = Canalyst
@@ -17,17 +17,19 @@ let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 let use_z3 = ref false
+let exact_fp = ref false
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
-  ( 'g', "debug", (set debug true), None);
+  ( 'e', "exact-fp", (set exact_fp true), None);
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
-  ( 's', "debug-sketch", (set Sketch.debug true), None);
+  ( 'g', "debug", (set debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
+  ( 'o', "output-folder", None,
+      Some (fun o_folder -> Conf.output_dir := o_folder));
+  ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'v', "verbose", (set verbose true), None);
   ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
-  ( 'o', "output-folder", None,
-    Some (fun o_folder -> Conf.output_dir := o_folder));
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
@@ -273,6 +275,9 @@ let main () =
   (List.iter (fun sketch -> SPretty.pp_sketch_rep std_formatter sketch) finally_solved);
   (* For each solved problem, generate a TBB implementation *)
   output_tbb_tests finally_solved;
+  (* If exact_fp is set, generate the exact floating point parallel
+     implementation *)
+  if !exact_fp then (List.iter fpexp_header finally_solved);
   (* Generate a proof in Dafny. *)
   output_dafny_proofs finally_solved;
   (* Total elapsed_time  *)

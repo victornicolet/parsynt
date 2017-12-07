@@ -158,11 +158,6 @@ let rank_by_use uses_map =
     (fun (vi, use_num) (vi', use_num')-> compare use_num use_num')
     num_uses_list
 
-(** Create a mapping from variable ids to variable expressions to start the
-    algorithm *)
-let create_symbol_map vs=
-  VS.fold
-    (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
 
 let add_new_aux aux_to_add (aux_vs, aux_exprs) =
   let same_expr_and_func =

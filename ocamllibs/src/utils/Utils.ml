@@ -40,7 +40,6 @@ let purify ioset =
 
 module SM = Map.Make (String)
 module VS = Usedef.VS
-module IM = Map.Make(struct type t = int let compare = compare end)
 
 module SH = Hashtbl.Make (struct
     type t = String.t
@@ -477,6 +476,11 @@ module VSOps = struct
   let namelist (vs : VS.t) =
     List.map (fun vi -> vi.vname) (varlist vs)
 
+  let vids_of_vs (vs : VS.t) : int list =
+    List.map (fun vi -> vi.vid) (VS.elements vs)
+
+  let vidset_of_vs vs =
+    IS.of_list (vids_of_vs vs)
   (** Member testing functions *)
 
   let has_vid (id : int) (vs : VS.t) =
@@ -509,9 +513,6 @@ module VSOps = struct
 
   let subset_of_list (li : int list) (vs : VS.t) =
     VS.filter (fun vi -> List.mem vi.vid li) vs
-
-  let vids_of_vs (vs : VS.t) : int list =
-    List.map (fun vi -> vi.vid) (VS.elements vs)
 
   (** Set construction functions *)
 
@@ -680,37 +681,42 @@ module IHTools = struct
 
 end
 
-module IMTools = struct
+module IntegerMap = Map.Make(struct type t = int let compare = compare end)
+module IM = struct
+  include IntegerMap
+
+  let keyset imt =
+    IS.of_list (List.map (fun (a,b) -> a) (IntegerMap.bindings imt))
 
   let add_all add_to to_add =
-    IM.fold
+    IntegerMap.fold
       (fun k v mp ->
-         if IM.mem k add_to then mp else
-           IM.add k v mp)
+         if IntegerMap.mem k add_to then mp else
+           IntegerMap.add k v mp)
       to_add add_to
 
   let update_all add_to to_add =
-    IM.fold
-      (fun k v mp -> IM.add k v mp)
+    IntegerMap.fold
+      (fun k v mp -> IntegerMap.add k v mp)
       to_add add_to
 
 
   let inter a b =
-    IM.fold
+    IntegerMap.fold
       (fun k v mp ->
-         if IM.mem k a
-         then IM.add k v b
+         if IntegerMap.mem k a
+         then IntegerMap.add k v b
          else mp)
       b
-      IM.empty
+      IntegerMap.empty
 
   let is_disjoint ?(non_empty = (fun k v -> true)) a b=
     try
-      IM.fold
+      IntegerMap.fold
         (fun k v bol ->
            if non_empty k v
            then
-             (if IM.mem k a
+             (if IntegerMap.mem k a
               then failwith "iom"
               else bol)
            else bol)
@@ -720,28 +726,28 @@ module IMTools = struct
 
   let disjoint_sets im1 im2 =
     let im1_in_im2 =
-      IM.fold
+      IntegerMap.fold
         (fun k v map ->
-           if IM.mem k im2 then IM.add k v map else map)
-        im1 IM.empty
+           if IntegerMap.mem k im2 then IntegerMap.add k v map else map)
+        im1 IntegerMap.empty
     in
     let im2_in_im1 =
-      IM.fold
+      IntegerMap.fold
         (fun k v map ->
-           if IM.mem k im1 then IM.add k v map else map)
-        im2 IM.empty
+           if IntegerMap.mem k im1 then IntegerMap.add k v map else map)
+        im2 IntegerMap.empty
     in
     let im1_only =
-      IM.fold
+      IntegerMap.fold
         (fun k v map ->
-           if IM.mem k im2 then map else IM.add k v map)
-        im1 IM.empty
+           if IntegerMap.mem k im2 then map else IntegerMap.add k v map)
+        im1 IntegerMap.empty
     in
     let im2_only =
-      IM.fold
+      IntegerMap.fold
         (fun k v map ->
-           if IM.mem k im1 then map else IM.add k v map)
-        im2 IM.empty
+           if IntegerMap.mem k im1 then map else IntegerMap.add k v map)
+        im2 IntegerMap.empty
     in
     im1_in_im2, im2_in_im1, im1_only, im2_only
 
