@@ -49,6 +49,7 @@ z3-master/
 
 #Temporary dump files
 ocamllibs/dump/conSynth*
+./synth_times.csv
 
 # Example selection
 # Examples are selected when setup.sh is run. Don't add examples here,

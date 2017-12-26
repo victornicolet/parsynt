@@ -1,7 +1,7 @@
 open Format
 open Utils
 open SPretty
-open PpHelper
+open PpTools
 
 module C = Canalyst
 module C2F = Cil2Func
@@ -9,12 +9,14 @@ module S = Sketch
 
 
 let test loopsm =
-  printf "%s--------TEST Func ---> Sketch%s@." (color "red") default;
+  printf "%s--------TEST Func ---> Sketch%s@." (color "red") color_default;
   SM.iter
     (fun fname vals ->
        let vs, igu, func = vals in
-       let body_form, sigu = S.Body.build vs func igu in
-       printf"%s%s%s : @; %a@." (color "green") fname default
+       let builder = new S.Body.sketch_builder vs vs func igu in
+       builder#build;
+       let body_form, sigu = check_option builder#get_sketch in
+       printf"%s%s%s : @; %a@." (color "green") fname color_default
          pp_sklet body_form;
        let join = S.Join.build vs body_form in
        printf"Join : @; %a@."

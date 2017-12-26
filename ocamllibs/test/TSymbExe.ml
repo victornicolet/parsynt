@@ -5,32 +5,41 @@ open TestUtils
 open SPretty
 open ExpressionReduction
 open VariableDiscovery
-
-module T = SketchTypes
-
+open SketchTypes
 
 let x, y, z, a, b, c, a_n =
-  T.SkVarinfo (make_int_varinfo "x"),
-  T.SkVarinfo (make_int_varinfo ~init:one "y"),
-  T.SkVarinfo (make_int_varinfo "z"),
-  T.SkVarinfo (make_int_varinfo "a"),
-  T.SkVarinfo (make_bool_varinfo ~init:cil_false "b"),
-  T.SkVarinfo (make_bool_varinfo "c"),
-  T.SkVarinfo (make_int_array_varinfo "a_n")
+  (make_int_varinfo "x"),
+  (make_int_varinfo ~init:one "y"),
+  (make_int_varinfo "z"),
+  (make_int_varinfo "a"),
+  (make_bool_varinfo ~init:cil_false "b"),
+  (make_bool_varinfo "c"),
+  (make_int_array_varinfo "a_n")
 
 let index_var = make_int_varinfo "i"
-let index_expr = T.mkVarExpr index_var
-let array = T.SkArray (a_n, index_expr)
+let index_expr = mkVarExpr index_var
+let array = SkArray (SkVarinfo a_n, index_expr)
 
-let a_vi = check_option (vi_of_var a)
-let stv = VS.singleton a_vi
-let init_exprs = IM.singleton a_vi.vid (T.mkVarExpr a_vi)
+let allvs  = VS.of_list [x; y; z; a; b; c; a_n; index_var]
 
+let stv = VS.singleton a
+
+let sctx : context =
+    { state_vars = stv;
+      index_vars = VS.singleton index_var;
+      all_vars = allvs;
+      used_vars = allvs;
+      costly_exprs = ES.empty;
+    }
+
+let init_exprs = IM.singleton a.vid (T.mkVarExpr a)
+
+let skv_a = SkVarinfo a
 let sum_array =
-  (T.SkLetIn ([a,
+  (T.SkLetIn ([skv_a,
                T.SkBinop(T.Max,
                          sk_zero,
-                         T.SkBinop (T.Plus, T.SkVar a, T.SkVar array))],
+                         T.SkBinop (T.Plus, T.SkVar skv_a, T.SkVar array))],
              sk_tail_state))
 
 
@@ -40,26 +49,29 @@ let index_map3 = increment_all_indexes index_map2
 (** Apply the functions to states *)
 let index_set = VS.singleton index_var
 
-let r0 = { state_set = stv; state_exprs = init_exprs;
-           index_set = index_set; index_exprs = index_map1;
+let r0 : exec_info = { context = sctx;
+           state_exprs = init_exprs;
+           index_exprs = index_map1;
            inputs = SketchTypes.ES.empty
          }
 
 let r1_array = GenVars.init () ;
-  let sexprs, rexprs = exec_once r0 sum_array in
+  let sexprs, rexprs = unfold_once r0 sum_array in
   { r0 with state_exprs = sexprs;
             inputs = rexprs;
             index_exprs = index_map2 }
 
 let r2_array =
   let r2ae, r2ar =
-    exec_once {r1_array with inputs = SketchTypes.ES.empty} sum_array
+    unfold_once {r1_array with inputs = SketchTypes.ES.empty} sum_array
   in
   { r1_array with state_exprs = r2ae;
                                inputs = r2ar;
                                index_exprs = index_map3 }
 
-let reduced_r2_array = IM.map (reduce_full stv SketchTypes.ES.empty)
+
+
+let reduced_r2_array = IM.map (reduce_full sctx)
     r2_array.state_exprs
 
 let print_exprs str exprs =

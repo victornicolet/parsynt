@@ -1,10 +1,11 @@
 open Cil
 open Findloops.Cloop
 open Format
-open PpHelper
 open TestUtils
 open Utils
 open SketchTypes
+
+open PpTools
 
 module C = Canalyst
 module C2F = Cil2Func
@@ -172,11 +173,11 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
 let cnt_pass = ref 0
 let cnt_fail = ref 0
 
-let test () =
+let _test () =
   let filename = "test/test-cil2func.c" in
-  printf "%s-- test Cil -> Func  -- %s\n" (color "red") default;
+  printf "%s-- test Cil -> Func  -- %s\n" (color "red") color_default;
   let loops = C.processFile filename in
-  printf "%s Functional rep. %s\n" (color "blue") default;
+  printf "%s Functional rep. %s\n" (color "blue") color_default;
   C2F.init loops;
 (*C2F.debug := true;*)
   IM.fold
@@ -187,11 +188,13 @@ let test () =
          with Failure s ->
            failwith ("test failure"^s)
        in
-       let allvars = getAllVars cl in
-       let stmt = mkBlock(cl.new_body) in
+       let allvars = all_vars cl in
+       let stmt = new_body cl in
        let _, w = cl.rwset in
-       let stv = getStateVars cl in
-       let func, figu = C2F.cil2func  (VS.union allvars w) stv stmt igu in
+       let stv = state cl in
+       let func, figu =
+         C2F.cil2func allvars (VS.union allvars w) stv stmt igu
+       in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
        let so = new Sketch.Body.sketch_builder allvars
          stv func figu in
@@ -203,15 +206,15 @@ let test () =
          begin
            incr cnt_pass;
            (printf "%s%s :\t\t passed.%s@."
-              (color "green") fname default)
+              (color "green") fname color_default)
          end
        else
          begin
            incr cnt_fail;
            (printf "%s[test for loop %i in %s failed]%s@."
-              (color "red") cl.sid fname default;);
-           printf "All variables :%a@." VSOps.pvs (VS.union allvars w);
-           printf "State variables : %a@." VSOps.pvs stv;
+              (color "red") cl.sid fname color_default;);
+           printf "All variables :%a@." VS.pvs (VS.union allvars w);
+           printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
            SPretty.printSklet sketch;
            printf "@.";
@@ -220,10 +223,11 @@ let test () =
     )
     loops
     SM.empty
-;;
 
-test ();;
-(if !cnt_fail = 0 then
-   printf "@.%sALL %i TESTS PASSED.%s@." (color "green") !cnt_pass default
- else
-   printf "@.%i tests passed, %i tests failed.@." !cnt_pass !cnt_fail);;
+
+let test () =
+  ignore(_test ());
+  (if !cnt_fail = 0 then
+     printf "@.%sALL %i TESTS PASSED.%s@." (color "green") !cnt_pass color_default
+   else
+     printf "@.%i tests passed, %i tests failed.@." !cnt_pass !cnt_fail);;

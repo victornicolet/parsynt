@@ -9,15 +9,18 @@ open Utils.PpTools
 
 module C2F = Cil2Func
 
-(** Different test modules *)
-(* module TC2F = TCil2Func *)
-(* module TF2S = TFunc2Sketch *)
-(* module TGDef = TGenDefs *)
-(*module TSbx = TSymbExe *)
-module TScm = TestSchemeParsing;;
-(* module T3 = TZ3;;x *)
 
-TScm.main ();;
+
+(** Different test modules *)
+module TC2F = TCil2Func
+module TF2S = TFunc2Sketch
+module TGDef = TGenDefs
+module TSbx = TSymbExe
+module TScm = TestSchemeParsing
+module TNL = TestNestedLoops;;
+(* module T3 = TZ3;; *)
+
+(* TScm.main ();; *)
 (* module TDis = TDiscovery *)
 (* module TExpr = TExpressions *)
 
@@ -69,4 +72,4 @@ let options = [
 (*   test_varinfo.vname; *)
 
 (* open TestSchemeParsing;; *)
-open TestSynthlib
+(* open TestSynthlib *)

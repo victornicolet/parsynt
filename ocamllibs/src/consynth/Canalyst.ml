@@ -16,7 +16,9 @@ module A = AnalyzeLoops
 
 let debug = ref false
 let verbose = ref false
-
+(* Do not remove dead code, some of this
+   dead code is useful in the examples *)
+let elim_dead_code = ref false
 
 
 let parseOneFile (fname : string) : C.file =
@@ -42,7 +44,7 @@ let processFile fileName =
   in
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
   Cfg.computeFileCFG cfile;
-  (*  Deadcodeelim.dce cfile; *)
+  if !elim_dead_code then  Deadcodeelim.dce cfile;
   Findloops.debug := !debug;
   Findloops.verbose := !verbose;
   let loops, _ = Findloops.processFile cfile in
