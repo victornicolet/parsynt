@@ -92,7 +92,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
         (fun map vid ast_expr ->
            IM.add vid ast_expr map)
         IM.empty
-        (VSOps.vids_of_vs sketch.scontext.state_vars) expr_list
+        (VS.vids_of_vs sketch.scontext.state_vars) expr_list
     | None ->
       (** If auxliaries have been created, the sketch has been solved
           without having to assign them a specific value. We can

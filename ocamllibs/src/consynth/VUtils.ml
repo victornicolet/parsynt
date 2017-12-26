@@ -93,7 +93,7 @@ let compose xinfo f aux_vs aux_ef =
                   final value of the auxiliary depends only on its
                   "final expression"
               *)
-              let cur_vi = (VSOps.find_by_id aux_vid aux_vs) in
+              let cur_vi = (VS.find_by_id aux_vid aux_vs) in
               let v = (T.SkVarinfo cur_vi) in
               let new_const_exprs =
                 const_exprs@
@@ -162,9 +162,9 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
          (* Replace auxiliary recursive call by state_expr *)
          let e_rep =
            replace_expression ~in_subscripts:false
-             ~to_replace:(SkVar (SkVarinfo (VSOps.find_by_id aux_id aux_vs)))
+             ~to_replace:(SkVar (SkVarinfo (VS.find_by_id aux_id aux_vs)))
              ~by:(SkVar (SkVarinfo
-                           (VSOps.find_by_id i xinfo.context.state_vars)))
+                           (VS.find_by_id i xinfo.context.state_vars)))
              ~ine:func_expr
          in
          e_rep @= e) exprs
@@ -191,7 +191,7 @@ let reduction_with_warning ctx expr =
          reduction with state %a @; and expressions %a @."
         (PpTools.color "red") PpTools.color_default
         SPretty.pp_skexpr reduced_expression
-        VSOps.pvs ctx.state_vars
+        VS.pvs ctx.state_vars
         (fun fmt a -> SPretty.pp_expr_set fmt a) ctx.costly_exprs
     end
   else ();
@@ -207,11 +207,11 @@ let reset_index_expressions xinfo aux =
              ~to_replace:idx_expr
              ~by:(T.SkVar
                 (T.SkVarinfo
-                   (VSOps.find_by_id idx_id xinfo.context.index_vars)))
+                   (VS.find_by_id idx_id xinfo.context.index_vars)))
              ~ine:e
          with Not_found ->
            Format.eprintf "@.Index with id %i not found in %a.@."
-             idx_id VSOps.pvs xinfo.context.index_vars;
+             idx_id VS.pvs xinfo.context.index_vars;
            raise Not_found
       )
       xinfo.index_exprs
@@ -220,7 +220,7 @@ let reset_index_expressions xinfo aux =
 let replace_available_vars xinfo xinfo_aux ce =
    IM.fold
       (fun vid e ce ->
-         let vi = VSOps.find_by_id vid xinfo.context.state_vars in
+         let vi = VS.find_by_id vid xinfo.context.state_vars in
          replace_AC
            xinfo_aux.context
            ~to_replace:(T.SkVar (T.SkVarinfo vi))

@@ -728,7 +728,7 @@ let gen_proof_vars sketch =
        in
        let input_vars =
          if VS.cardinal in_vars >= 1 then
-           VSOps.varlist in_vars else
+           VS.varlist in_vars else
            [array_of_sketch]
        in
        (* Replace ternary expressions that correspond to a min/max *)

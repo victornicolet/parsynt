@@ -67,7 +67,7 @@ let rec instr_eq instr instr' =
   | _ , _ -> false
 
 and lval_eq lval lval' =
-  VS.equal (VSOps.sovv lval) (VSOps.sovv lval')
+  VS.equal (VS.sovv lval) (VS.sovv lval')
 
 and expr_eq e e'=
   e = e'

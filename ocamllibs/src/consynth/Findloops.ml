@@ -35,12 +35,12 @@ module IOS = Reachingdefs.IOS
 type defsTable = (VS.elt * (IOS.t option))  IH.t
 
 (** Some useful function to deal with reaching definitions *)
-let rds_defined_vars_set (defstbl : defsTable) = VSOps.vs_of_defsMap defstbl
+let rds_defined_vars_set (defstbl : defsTable) = VS.vs_of_defsMap defstbl
 
 let rds_reaching_defs_map (defstbl : defsTable) =
   IH.fold (fun vid (vi, opsid) dm ->
       match opsid with
-      | Some ioset -> IM.add vid (purify ioset) dm
+      | Some ioset -> IM.add vid (IS.purified ioset) dm
       | None -> dm) defstbl IM.empty
 
 (**
@@ -57,8 +57,8 @@ type forIGU = LoopsHelper.forIGU
 
 let index_of_igu ((init, guard, update) : forIGU) : VS.t =
   VS.inter
-    (VS.inter (VSOps.sovi init) (VSOps.sove guard))
-    (VSOps.sovi update)
+    (VS.inter (VS.sovi init) (VS.sove guard))
+    (VS.sovi update)
 
 let check_igu ((init, guard, update) : forIGU) : bool =
   let i = index_of_igu (init, guard, update) in
@@ -203,7 +203,7 @@ module Cloop = struct
     let r, w = cl.rwset in
     let fmt = str_formatter in
     fprintf fmt "Read variables : %a@.Write variables: %a@."
-      VSOps.pp_var_names r VSOps.pp_var_names w;
+      VS.pp_var_names r VS.pp_var_names w;
     flush_str_formatter ()
 
 
@@ -242,7 +242,7 @@ module Cloop = struct
     let n_in = List.mem l1.old_loop.lstmt l2.inner_loops in
     let nested_in = n_in || List.mem l2.sid l1.parent_loops in
     let called_in =
-      List.mem l1.host_function (VSOps.varlist l2.called_functions)
+      List.mem l1.host_function (VS.varlist l2.called_functions)
     in
     nested_in || called_in
 
@@ -256,7 +256,7 @@ module Cloop = struct
     let sid = string_of_int cl.sid in
     let pfun = cl.host_function.vname in
     let cfuns = String.concat ", "
-        (VSOps.vsmap (fun y -> y.vname) cl.called_functions) in
+        (VS.vsmap (fun y -> y.vname) cl.called_functions) in
     let defvarS = "<WIP>" in
     let oigu = if is_for_loop cl
       then "\n"^(sprint_igu (check_option cl.loop_igu))
@@ -525,7 +525,7 @@ let analyse_loop_context clp =
   in
   if !debug then
     begin
-      printf "@.Live variables : %a@." VSOps.pvs livevars;
+      printf "@.Live variables : %a@." VS.pvs livevars;
       printf "Keys in reaching defs :";
       IH.iter
         (fun i _ -> printf " %i " i) (IHTools.convert rds);

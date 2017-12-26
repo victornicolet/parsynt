@@ -427,8 +427,8 @@ class sketch_builder
               (fun k e ->
                  let cur_v =
                    try
-                     SkVarinfo (VSOps.find_by_id k state_vars)
-                   with Not_found -> SkVarinfo (VSOps.find_by_id k all_vars)
+                     SkVarinfo (VS.find_by_id k state_vars)
+                   with Not_found -> SkVarinfo (VS.find_by_id k all_vars)
                  in
                  (cur_v, convert cur_v e))
               subs

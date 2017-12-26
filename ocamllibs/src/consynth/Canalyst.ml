@@ -121,7 +121,7 @@ let cil2func loops =
        let vars = remove_reserved_vars (Cl.all_vars cl) in
        let stv = Cl.state cl in
        if !verbose then
-         printf "@.Identified state variables: %a@." VSOps.pvs stv;
+         printf "@.Identified state variables: %a@." VS.pvs stv;
        let func, figu =
          Cil2Func.cil2func (VS.union vars w) stv cl.Cl.tmps stmt (i,g,u)
        in
@@ -135,7 +135,7 @@ let cil2func loops =
        else ();
        (loop_ident,
         Cl.parent_fundec cl,
-        VSOps.vids_of_vs r, stv, vars,
+        VS.vids_of_vs r, stv, vars,
         func, figu,
         reaching_consts))
     sorted_lps
@@ -153,7 +153,7 @@ let func2sketch funcreps =
              let expect_type =
                try
                  (T.type_of_ciltyp
-                    ((VSOps.find_by_id vid var_set).Cil.vtype))
+                    ((VS.find_by_id vid var_set).Cil.vtype))
                with Not_found ->
                  T.Bottom
              in
@@ -162,7 +162,7 @@ let func2sketch funcreps =
              | None ->
                eprintf "@.Warning : initial value %s for %s not valid.@."
                  (CilTools.psprint80 Cil.dn_exp cilc)
-                 (VSOps.find_by_id vid var_set).Cil.vname;
+                 (VS.find_by_id vid var_set).Cil.vname;
                m)
           reach_consts IM.empty
       in

@@ -68,7 +68,7 @@ and exec_var exec_info v =
   | T.SkVarinfo vi ->
     begin
       (* Is the variable a state variable ?*)
-      if VSOps.has_vid vi.vid exec_info.context.T.state_vars then
+      if VS.has_vid vi.vid exec_info.context.T.state_vars then
         try
           IM.find vi.vid exec_info.state_exprs, ES.empty
         with Not_found ->
@@ -83,7 +83,7 @@ and exec_var exec_info v =
       else
         begin
           (* Is the variable an index variable ? *)
-          if VSOps.has_vid vi.vid exec_info.context.T.index_vars then
+          if VS.has_vid vi.vid exec_info.context.T.index_vars then
             try
               IM.find vi.vid exec_info.index_exprs, ES.empty
             with Not_found ->

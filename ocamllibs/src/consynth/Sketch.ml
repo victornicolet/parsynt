@@ -9,7 +9,6 @@ open Cil
 
 open Utils.ListTools
 
-module VS = VS
 module SM = Map.Make (String)
 module Ct = CilTools
 module F = Format
@@ -230,7 +229,7 @@ let pp_symbolic_definitions_of fmt except_vars vars =
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
   let state_arg_name = "__s" in
-  let field_names = VSOps.namelist state_vars in
+  let field_names = VS.namelist state_vars in
   Format.fprintf fmt "@[<hov 2>(lambda (%s i)@;(let@;(%a)@;%a))@]"
     state_arg_name
     (pp_assignments state_struct_name state_arg_name)
@@ -246,7 +245,7 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     the state of the loop (valuation of the state variables).
 *)
 let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
-  let index_list = VSOps.varlist index_set in
+  let index_list = VS.varlist index_set in
   let pp_index_low_up =
         (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
@@ -277,13 +276,13 @@ let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
-  let left_state_vars = VSOps.vs_with_prefix state_vars
+  let left_state_vars = VS.vs_with_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
-  let right_state_vars = VSOps.vs_with_prefix state_vars
+  let right_state_vars = VS.vs_with_prefix state_vars
       (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let lvar_names = VSOps.namelist left_state_vars in
-  let rvar_names = VSOps.namelist right_state_vars in
-  let field_names = VSOps.namelist state_vars in
+  let lvar_names = VS.namelist left_state_vars in
+  let rvar_names = VS.namelist right_state_vars in
+  let field_names = VS.namelist state_vars in
   printing_sketch := true;
   Format.fprintf fmt
     "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
@@ -332,7 +331,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     ident_state_name main_struct_name
-    s0_sketch_printer (VSOps.varlist state_vars);
+    s0_sketch_printer (VS.varlist state_vars);
 
   (** Handle special constants such as Infnty and NInfnty to create the
       necessary assertions and symbolic variables *)
@@ -371,7 +370,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                      failwith "Unexpected variable."
                    end))))
          li)
-    (VSOps.bindings state_vars)
+    (VS.bindings state_vars)
 
 
 (** Pretty print one verification condition, the loop
@@ -454,7 +453,7 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
   in
   let idx = sketch.scontext.index_vars in
   let field_names =
-    List.map (fun vi -> vi.Cil.vname) (VSOps.varlist state_vars) in
+    List.map (fun vi -> vi.Cil.vname) (VS.varlist state_vars) in
   let main_struct = (main_struct_name, field_names) in
   let st0 = init_state_name in
   (* Global bound name "n" *)

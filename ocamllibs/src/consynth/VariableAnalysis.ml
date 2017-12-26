@@ -1,11 +1,11 @@
 open Utils
 open Cil
 open List
-open VSOps
+open VS
 
 let un = VS.union
 let empty = VS.empty
-let uns = VSOps.unions
+let uns = VS.unions
 
 (** Read set of a block/stmt/instr/expression *)
 

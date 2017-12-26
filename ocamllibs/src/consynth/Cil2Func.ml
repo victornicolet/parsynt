@@ -72,12 +72,12 @@ class cil2func_printer allvs stv tmps =
       | State expr_map ->
         if IM.is_empty expr_map then
           fprintf ppf "@[{%a}@]"
-            VSOps.pvs stv
+            VS.pvs stv
         else
           fprintf ppf "@[{%a}@]"
             (ppifmap
                (fun fmt i -> fprintf fmt "%s"
-                   (try VSOps.find_by_id i (VS.union allvs stv)
+                   (try VS.find_by_id i (VS.union allvs stv)
                     with Not_found ->
                       eprintf "Variable not found@."; raise Not_found).vname)
                self#pp_expr) expr_map
@@ -137,7 +137,7 @@ class cil2func_printer allvs stv tmps =
             (psprint80 Cil.dn_exp e)
             (ppifmap
                (fun fmt i ->
-                  try fprintf fmt "%s" (VSOps.find_by_id i allvs).vname
+                  try fprintf fmt "%s" (VS.find_by_id i allvs).vname
                   with Not_found ->
                     eprintf "Variable id %i not found.@." i;
                     raise Not_found)
@@ -232,7 +232,7 @@ let rec wf_letin vs =
   function
   | State emap ->
     (IM.fold
-       (fun k v ok -> ok && (VSOps.has_vid k vs)) emap true)
+       (fun k v ok -> ok && (VS.has_vid k vs)) emap true)
 
   | Let (vi, expr, letin, id, loc) -> wf_letin vs letin
 
@@ -290,7 +290,7 @@ let container e = Container (e, IM.empty)
 let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
   match exp with
   | Container (e, subs) ->
-    let in_e = VSOps.sove e in
+    let in_e = VS.sove e in
     let in_subs =
       IM.fold (fun k e vs -> VS.union vs (used_vars_expr e)) subs VS.empty in
     VS.union in_e in_subs
@@ -338,7 +338,7 @@ let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
     VS.union (used_vars_expr e) (used_vars_letin cont)
 
   | LetCond (c, let_if, let_else, cont, loc) ->
-    VSOps.unions
+    VS.unions
       [(used_vars_expr c);
        (used_vars_letin let_if);
        (used_vars_letin let_else);
@@ -356,7 +356,7 @@ let rec is_not_identity_substitution vid expr =
         (fun k v a -> (is_not_identity_substitution k v) || a)
         subs true)
      ||
-     ((VS.max_elt (VSOps.sove e)).vid != vid))
+     ((VS.max_elt (VS.sove e)).vid != vid))
   | _ -> true
 
 let is_empty_state state =
@@ -387,7 +387,7 @@ let rec update_subs vse old_subs new_subs =
   (** Now add the new substitutions to the old map *)
   IM.fold
     (fun k e upd_subs ->
-       if IM.mem k new_subs && VSOps.has_vid k vse
+       if IM.mem k new_subs && VS.has_vid k vse
        then IM.add k (IM.find k new_subs) upd_subs
        else upd_subs) new_subs old_subs_updated
 
@@ -411,7 +411,7 @@ and apply_subs expr subs =
 
   | Container (e, subs') ->
     (** Update the previously existing substitutions *)
-    let vse = VSOps.sove e in
+    let vse = VS.sove e in
     Container (e, update_subs vse subs' subs)
 
   | FunApp (ef, el) ->
@@ -434,7 +434,7 @@ let bound_state_vars vs lf =
       IM.fold
         (fun k _ acc ->
            try
-             let vi = VSOps.find_by_id k vs in
+             let vi = VS.find_by_id k vs in
              VS.add vi acc
            with Not_found -> acc) substitutions bv
 
@@ -475,7 +475,7 @@ let rec do_il vs il =
 
 and do_i vs let_form =
   let from_lval lv expre loc =
-    let vset = VSOps.sovv ~onlyNoOffset:true lv in
+    let vset = VS.sovv ~onlyNoOffset:true lv in
     if VS.cardinal vset = 1 then
       let id = gen_id () in
       add_uses id (used_vars_expr expre);
@@ -551,7 +551,7 @@ let let_add2 old_let new_let vs =
         let let_head =
           IM.fold
             (fun i e let_head ->
-               (Let (VSOps.find_by_id i vs, e, let_head, stmt_id, def_loc)))
+               (Let (VS.find_by_id i vs, e, let_head, stmt_id, def_loc)))
             subs
             (State IM.empty)
         in
@@ -585,7 +585,7 @@ let merge_substs vs old_subs new_subs : bool * expr IM.t * letin option =
        are used in new_subs *)
     (IM.is_disjoint ~non_empty:is_not_identity_substitution
        old_subs new_subs) &&
-    not (IM.exists (fun k v -> VSOps.has_vid k used_in_new_subs)
+    not (IM.exists (fun k v -> VS.has_vid k used_in_new_subs)
            old_subs)
   then
     true, (IM.add_all old_subs new_subs), None
@@ -613,7 +613,7 @@ let rec  merge_cond vs c let_if let_else pre_substs =
     let new_subs =
       IM.merge
         (fun vid if_expr_o else_expr_o ->
-           let cur_var = Var (VSOps.find_by_id vid vs) in
+           let cur_var = Var (VS.find_by_id vid vs) in
            let mod_cond = c in
            match if_expr_o, else_expr_o with
            | Some if_expr, Some else_expr ->
@@ -657,7 +657,7 @@ and convert_loop vs tmps let_body igu let_cont loc =
       let rec_expr = FRec (igu, expr) in
       let id = gen_id () in
       add_uses id (used_vars_expr rec_expr);
-      true,  Let (VSOps.find_by_id vid vs, rec_expr, let_cont, id, loc)
+      true,  Let (VS.find_by_id vid vs, rec_expr, let_cont, id, loc)
     else
       false, let_body
 
@@ -676,7 +676,7 @@ and convert_loop vs tmps let_body igu let_cont loc =
 and red vs tmps let_form substs =
   match let_form with
   | State emap ->
-    let id_list = VSOps.vids_of_vs vs in
+    let id_list = VS.vids_of_vs vs in
     let final_state_exprs =
       IM.filter (fun k v -> List.mem k id_list) substs
     in
@@ -716,7 +716,7 @@ and red vs tmps let_form substs =
 and clean vs let_form =
   match let_form with
   | State emap ->
-    State (IM.filter (fun k e -> VSOps.has_vid k vs) emap)
+    State (IM.filter (fun k e -> VS.has_vid k vs) emap)
 
   | Let (v, e, c, id, loc) ->
     if VS.mem v vs then Let(v, e, clean vs c, id, loc) else
@@ -745,7 +745,7 @@ let merge_cond_subst allvs vs c subs_if subs_else =
   (* Join the expressions for variables in the intersection *)
   let add_iden_sub vid subs =
     try
-      IM.add vid (Var (VSOps.find_by_id vid allvs)) subs
+      IM.add vid (Var (VS.find_by_id vid allvs)) subs
     with Not_found ->
       (eprintf "Failed to build identity substitution in \
                 branch for variable id %i@." vid;

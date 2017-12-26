@@ -1111,7 +1111,7 @@ let scm_register s =
       begin
         let newly_used_vi =
           try
-            VSOps.find_by_name pure_varname join_info.initial_vars
+            VS.find_by_name pure_varname join_info.initial_vars
           with
           | Not_found ->
             Cil.makeVarinfo false pure_varname (Cil.TVoid [])
@@ -1252,7 +1252,7 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
     Additionally we remove identity bindings.
 *)
 and rosette_state_struct_to_sklet scm_expr_list =
-  let stv_vars_list = VSOps.varlist join_info.initial_state_vars in
+  let stv_vars_list = VS.varlist join_info.initial_state_vars in
   let sk_expr_list = to_expression_list scm_expr_list in
   try
     SkLetExpr (ListTools.pair (List.map (fun vi -> SkVarinfo vi) stv_vars_list)
@@ -1324,7 +1324,7 @@ let force_flat vs sklet =
       SkLetExpr
         (IM.fold
            (fun vid e ve_list ->
-              ve_list@[(SkVarinfo (VSOps.find_by_id vid vs), e)])
+              ve_list@[(SkVarinfo (VS.find_by_id vid vs), e)])
            final_subs [])
   in
   let start_sub =
@@ -1758,10 +1758,10 @@ let rec pass_sequentialize sklet =
     (* in *)
     (** We need to implement here the algorithm described in :
         http://gallium.inria.fr/~xleroy/publi/parallel-move.pdf *)
-    let statement_order = VSOps.vids_of_vs modified_vars in
+    let statement_order = VS.vids_of_vs modified_vars in
     List.fold_left
       (fun let_bindings vid ->
-         SkLetIn ([SkVarinfo (VSOps.find_by_id vid modified_vars),
+         SkLetIn ([SkVarinfo (VS.find_by_id vid modified_vars),
                    IM.find vid vid_to_expr], let_bindings))
       let_queue statement_order
       (** Analyze dependencies to produce bindings ordered such that

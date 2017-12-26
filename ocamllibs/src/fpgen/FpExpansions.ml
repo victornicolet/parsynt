@@ -3,6 +3,8 @@ open SketchTypes
 open SymbExe
 open Utils
 
+open FpNames
+
 module Ppt = Utils.PpTools
 module C = Cil
 
@@ -28,8 +30,13 @@ type fpexpansion_header = {
    Evaluate the expression assigned to a variable. If the top operator of the
    resulting expression is an addition then we need a superaccumulator and a
    cache for it.
+   @param sketch the representation of the function. This should be a solved
+                 sketch, meaning that the join solution is not empty.
+   @returns A pair, the first element are the variables that need
+            superaccumulators and the second element are the variables
+            that need a cache (a floating point expansion).
 *)
-let needs_superacc (sketch : sketch_rep) =
+let needs_extension (sketch : sketch_rep) =
   (* Which are the variables who need superaccumulators? *)
   let is_accumulated i (expr : skExpr) : bool =
     match expr with
@@ -48,9 +55,10 @@ let needs_superacc (sketch : sketch_rep) =
          (not (IM.mem i acc_map) &&
           (not (IS.is_empty
                   (IS.inter
-                     (VSOps.vidset_of_vs (used_in_skexpr expr))
+                     (VS.vidset_of_vs (used_in_skexpr expr))
                      (IM.keyset acc_map))
-                  )))) expr_map
+               ))))
+      expr_map
   in
   let ctx = sketch.scontext in
   let func = sketch.loop_body in
@@ -72,8 +80,12 @@ let needs_superacc (sketch : sketch_rep) =
       (Ppt.color "red") Ppt.color_default
       (Ppt.ppimap SPretty.pp_skexpr) acc_map;
   (* -------------------------- *)
-  let needs_cache = which_cached acc_map expr_map in
-  ()
+  let needs_superacc = IM.keyset acc_map in
+  let needs_cache =
+    IS.union (IM.keyset (which_cached acc_map expr_map)) needs_superacc
+  in
+  (VS.subset_of_list (IS.elements needs_superacc) sketch.scontext.state_vars,
+   VS.subset_of_list (IS.elements needs_cache) sketch.scontext.state_vars)
 
 
 
@@ -89,4 +101,5 @@ let gen_header (sketch : sketch_rep) =
       (Ppt.color "red") Ppt.color_default
       sketch.loop_name sketch.id sketch.host_function.C.svar.C.vname;
   (* -------------------------- *)
-  needs_superacc sketch
+  let needs_superacc, needs_cache =  needs_extension sketch in
+  ( )

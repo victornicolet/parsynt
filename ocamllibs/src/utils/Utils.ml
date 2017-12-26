@@ -26,20 +26,38 @@ struct
 
 end
 
+(* Set of integers *)
+module IS =
+struct
+  include Set.Make (struct
+      type t = int
+      let compare = Pervasives.compare
+    end)
 
-module IS = Set.Make (struct
-    type t = int
-    let compare = Pervasives.compare
-  end)
 
-let purify ioset =
-  IOS.fold (fun io is ->
-      match io with
-      | Some i -> IS.add i is
-      | None -> is) ioset IS.empty
+  let purified ioset =
+    IOS.fold (fun io is ->
+        match io with
+        | Some i -> add i is
+        | None -> is) ioset empty
+end
 
-module SM = Map.Make (String)
-module VS = Usedef.VS
+module SM = struct
+  include Map.Make(String)
+  let update map key nval update =
+    try
+      let pval = find key map in
+      add key (update pval nval) map
+    with Not_found ->
+      add key nval map
+
+  let from_bindings (b : (string * 'a) list) : 'a t =
+    List.fold_left
+      (fun smap (k,v) -> add k v smap) empty b
+end
+
+
+module VSo = Usedef.VS
 
 module SH = Hashtbl.Make (struct
     type t = String.t
@@ -51,7 +69,7 @@ module SH = Hashtbl.Make (struct
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
   let ihs = IH.create 10 in
-  VS.iter (fun v -> IH.add ihs v.vid v) vset;
+  VSo.iter (fun v -> IH.add ihs v.vid v) vset;
   ihs
 
 (**
@@ -151,12 +169,12 @@ module ListTools = struct
 
 
   let foldl_union f l =
-    List.fold_left (fun set a -> VS.union set (f a)) VS.empty l
+    List.fold_left (fun set a -> VSo.union set (f a)) VSo.empty l
 
   let foldl_union2 f l =
     List.fold_left (fun (acc1, acc2) a ->
-	let s1, s2 = f a in (VS.union acc1 s1 , VS.union acc2 s2))
-      (VS.empty, VS.empty) l
+	let s1, s2 = f a in (VSo.union acc1 s1 , VSo.union acc2 s2))
+      (VSo.empty, VSo.empty) l
 
   let pair a_li b_li =
     List.fold_left2
@@ -422,131 +440,132 @@ end
     Extract the variables used in statements/expressions/instructions/..
     Used variables can be on either side of an assignment.
 *)
-module VSOps = struct
-  let rec sovi (instr : Cil.instr) : VS.t =
+module VS = struct
+  include VSo
+  let rec sovi (instr : Cil.instr) : t =
     match instr with
     | Set (lval, exp, loc) ->
       let vs_ls = sovv lval in
       let vs_exp = sove exp in
-      VS.union vs_exp vs_ls
+      union vs_exp vs_ls
     | Call (lvo, ef, elist, _) ->
-      let vs_ls = maybe_apply_default sovv lvo VS.empty in
+      let vs_ls = maybe_apply_default sovv lvo empty in
       let vs_el = ListTools.foldl_union sove elist in
-      VS.union vs_ls vs_el
-    | _ -> VS.empty
+      union vs_ls vs_el
+    | _ -> empty
 
-  and sove (expr : Cil.exp) : VS.t =
+  and sove (expr : Cil.exp) : t =
     match expr with
     | BinOp (_, e1, e2, _)
-    | Question (_, e1, e2, _) -> VS.union (sove e1) (sove e2)
+    | Question (_, e1, e2, _) -> union (sove e1) (sove e2)
     | SizeOfE e | AlignOfE e | UnOp (_, e, _) | CastE (_, e) -> sove e
     | AddrOf v  | StartOf v | Lval v -> sovv v
-    | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> VS.empty
+    | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> empty
 
-  and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : VS.t =
+  and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : t =
     match v with
-    | Var x, _ -> VS.singleton x
-    | Mem e, offs -> VS.union (sove e)
-                       (if onlyNoOffset then VS.empty else (sovoff offs))
+    | Var x, _ -> singleton x
+    | Mem e, offs -> union (sove e)
+                       (if onlyNoOffset then empty else (sovoff offs))
 
-  and sovoff (off : Cil.offset) : VS.t =
+  and sovoff (off : Cil.offset) : t =
     match off with
-    | NoOffset -> VS.empty
-    | Index (e, offs) -> VS.union (sove e) (sovoff offs)
-    | Field _ -> VS.empty
+    | NoOffset -> empty
+    | Index (e, offs) -> union (sove e) (sovoff offs)
+    | Field _ -> empty
 
   (** List to set and inverse functions *)
 
-  let bindings (vs : VS.t) =
-    VS.fold (fun v l -> l@[(v.vid, v)]) vs []
+  let bindings (vs : t) =
+    fold (fun v l -> l@[(v.vid, v)]) vs []
 
-  let of_bindings (l : (int * VS.elt) list) : VS.t =
-    List.fold_left (fun vs (k, v) -> VS.add v vs) VS.empty l
+  let of_bindings (l : (int * elt) list) : t =
+    List.fold_left (fun vs (k, v) -> add v vs) empty l
 
 
-  let varlist (vs : VS.t) =
-    VS.elements vs
+  let varlist (vs : t) =
+    elements vs
 
-  let of_varlist (l : VS.elt list) =
-    VS.of_list l
+  let of_varlist (l : elt list) =
+    of_list l
 
-  let vsmap f (vs : VS.t) =
+  let vsmap f (vs : t) =
     map f (varlist vs)
 
-  let namelist (vs : VS.t) =
+  let namelist (vs : t) =
     List.map (fun vi -> vi.vname) (varlist vs)
 
-  let vids_of_vs (vs : VS.t) : int list =
-    List.map (fun vi -> vi.vid) (VS.elements vs)
+  let vids_of_vs (vs : t) : int list =
+    List.map (fun vi -> vi.vid) (elements vs)
 
   let vidset_of_vs vs =
     IS.of_list (vids_of_vs vs)
   (** Member testing functions *)
 
-  let has_vid (id : int) (vs : VS.t) =
-    VS.exists (fun vi -> vi.vid = id) vs
+  let has_vid (id : int) (vs : t) =
+    exists (fun vi -> vi.vid = id) vs
 
-  let has_lval ((host,offset): lval) (vs: VS.t) =
+  let has_lval ((host,offset): lval) (vs: t) =
     match host  with
     | Var vi -> has_vid vi.vid vs
-    | _-> VS.cardinal
-            (VS.inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
+    | _-> cardinal
+            (inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
 
   (** Get-element functions*)
 
-  let find_by_id (id: int) (vs : VS.t) =
+  let find_by_id (id: int) (vs : t) =
     if has_vid id vs then
-      VS.min_elt (VS.filter (fun vi -> vi.vid = id) vs)
+      min_elt (filter (fun vi -> vi.vid = id) vs)
     else
       raise Not_found
 
-  let find_by_name (name : string) (vs : VS.t) =
-    let matchings = VS.filter (fun vi -> vi.vname = name) vs in
-    match VS.cardinal matchings with
+  let find_by_name (name : string) (vs : t) =
+    let matchings = filter (fun vi -> vi.vname = name) vs in
+    match cardinal matchings with
     | 0 -> raise Not_found
-    | 1 -> VS.min_elt matchings
+    | 1 -> min_elt matchings
     | _ -> raise
              (Failure
                 (Format.fprintf str_formatter
                    "More than one variable named %s" name;
                  Format.flush_str_formatter ()))
 
-  let subset_of_list (li : int list) (vs : VS.t) =
-    VS.filter (fun vi -> List.mem vi.vid li) vs
+  let subset_of_list (li : int list) (vs : t) =
+    filter (fun vi -> List.mem vi.vid li) vs
 
   (** Set construction functions *)
 
-  let unions (vsl : VS.t list) : VS.t =
-    List.fold_left VS.union VS.empty vsl
+  let unions (vsl : t list) : t =
+    List.fold_left union empty vsl
 
   let union_map li f =
-    List.fold_left (fun vs elt -> VS.union vs (f elt)) VS.empty li
+    List.fold_left (fun vs elt -> union vs (f elt)) empty li
 
   let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
-    VS.t =
-    let vs = VS.empty in
-    IH.fold (fun k (vi, rdo) vst -> VS.add vi vst) dm vs
+    t =
+    let vs = empty in
+    IH.fold (fun k (vi, rdo) vst -> add vi vst) dm vs
 
   let vs_of_inthash ih =
-    IH.fold (fun i vi set -> VS.add vi set) ih VS.empty
+    IH.fold (fun i vi set -> add vi set) ih empty
 
   let vs_with_suffix vs suffix =
-    VS.fold
+    fold
       (fun var new_vs ->
-         VS.add (CilTools.gen_var_with_suffix var suffix) new_vs)
+         add (CilTools.gen_var_with_suffix var suffix) new_vs)
       vs
-      VS.empty
+      empty
 
   let vs_with_prefix vs prefix =
-    VS.fold
+    fold
       (fun var new_vs ->
-         VS.add (CilTools.gen_var_with_prefix var prefix) new_vs)
+         add (CilTools.gen_var_with_prefix var prefix) new_vs)
       vs
-      VS.empty
+      empty
 
   (** Pretty printing variable set *)
 
-  let pp_var_names fmt (vs : VS.t) =
+  let pp_var_names fmt (vs : t) =
     let vi_list = varlist vs in
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt " ")
@@ -557,9 +576,9 @@ module VSOps = struct
   let to_string vs =
     (pp_var_names Format.str_formatter vs ; flush_str_formatter ())
 
-  let pvs ppf (vs: VS.t) =
-    if VS.cardinal vs > 0 then
-      VS.iter
+  let pvs ppf (vs: t) =
+    if cardinal vs > 0 then
+      iter
         (fun vi ->
            if vi.vistmp then
              Format.fprintf ppf "@[(%i : %s (-tmp-))@]@" vi.vid vi.vname
@@ -847,17 +866,4 @@ module PpTools = struct
     Format.fprintf std_formatter "%s!%s %s%s%s"
       (color "b-red") color_default
       (color "red") s color_default
-end
-
-module SMTools = struct
-  let update map key nval update =
-    try
-      let pval = SM.find key map in
-      SM.add key (update pval nval) map
-    with Not_found ->
-      SM.add key nval map
-
-  let from_bindings (b : (string * 'a) list) : 'a SM.t =
-    List.fold_left
-      (fun smap (k,v) -> SM.add k v smap) SM.empty b
 end

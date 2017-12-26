@@ -353,7 +353,7 @@ let make_tbb_class pb =
   tbb_class.private_vars <- private_vars_of_sketch pb;
   tbb_class.public_vars <-
     VS.union pb.scontext.state_vars
-      (VSOps.of_varlist [begin_index_var; end_index_var]);
+      (VS.of_varlist [begin_index_var; end_index_var]);
   let bounds_initial_values =
     IM.add begin_index_var.vid
       (SkConst
@@ -373,7 +373,7 @@ let make_tbb_class pb =
            with Not_found ->
            try vi, Some (IM.find vi.vid bounds_initial_values)
            with Not_found -> vi, None)
-        (VSOps.varlist tbb_class.public_vars)
+        (VS.varlist tbb_class.public_vars)
     in
     List.map
       (fun (vi, maybe_init) ->
@@ -402,7 +402,7 @@ let make_tbb_class pb =
     let copy_cstr_initializers =
       let private_vars_inits =
         List.map (fun vi -> (vi, ClassMember (vi, copy_from_name)))
-          (VSOps.varlist tbb_class.private_vars)
+          (VS.varlist tbb_class.private_vars)
       in
       private_vars_inits @ public_vars_inits
     in
@@ -422,7 +422,7 @@ let make_tbb_class pb =
     let init_cstr_intializers =
       let private_vars_inits =
         List.map (fun vi -> (vi, LocalVar vi))
-          (VSOps.varlist tbb_class.private_vars)
+          (VS.varlist tbb_class.private_vars)
       in
       private_vars_inits @ public_vars_inits
     in

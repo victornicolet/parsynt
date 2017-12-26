@@ -331,7 +331,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
       if i > 0 then
         IM.fold
           (fun vid e ce ->
-             let vi = VSOps.find_by_id vid xinfo.context.state_vars in
+             let vi = VS.find_by_id vid xinfo.context.state_vars in
              replace_AC
                xinfo_aux.context
                ~to_replace:(accumulated_subexpression vi e)
@@ -364,7 +364,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
         | (vid, aux):: _ ->
           assert (aux.aexpr @= current_expr);
           (* The expression is exactly the expression of a aux *)
-          let vi = VSOps.find_by_id vid aux_vs in
+          let vi = VS.find_by_id vid aux_vs in
           (VS.add vi new_aux_vs,
            IM.add vid aux new_aux_exprs)
 
@@ -465,7 +465,7 @@ let discover_for_id sketch varid =
   printf "@.%s%s---------------- UNFOLDINGS for %s ----------------%s@."
     (color "black")
     (color "b-blue")
-    (VSOps.find_by_id varid ctx.state_vars).vname
+    (VS.find_by_id varid ctx.state_vars).vname
     color_default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
   let init_exprs = create_symbol_map ctx.state_vars in
@@ -563,7 +563,7 @@ let discover_for_id sketch varid =
   if !debug then
     begin
       printf "@.DISCOVER for variable %s finished.@."
-        (VSOps.find_by_id varid ctx.state_vars).vname;
+        (VS.find_by_id varid ctx.state_vars).vname;
     end;
   printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
   VS.iter
