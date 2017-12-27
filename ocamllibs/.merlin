@@ -6,9 +6,11 @@ B _build/src/fpgen
 B _build/src/conf
 B _build/src/utils
 B _build/src/sygus
+B _build/src/rawc
 S src
 S test
 S src/sygus
+S src/rawc
 S src/consynth
 S src/codegen
 S src/fpgen

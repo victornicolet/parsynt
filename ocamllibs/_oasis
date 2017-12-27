@@ -33,6 +33,14 @@ Library mutils
   Install : false
   BuildDepends: cil, extlib, conf
 
+Library rawc
+  Path: src/rawc
+  CompiledObject:best
+  Modules: Rawc
+  BuildTools: ocamlbuild
+  Install : false
+  BuildDepends: extlib, conf, mutils
+
 Library sygus
   Path: src/sygus
   BuildDepends: conf, extlib, mutils
@@ -45,7 +53,7 @@ Library consynth
   Path: src/consynth
   Modules: Consynth
   CompiledObject: best
-  BuildDepends: cil, sygus, extlib, conf, mutils
+  BuildDepends: cil, sygus, extlib, conf, mutils, rawc
 
 Library codegen
   Path: src/codegen

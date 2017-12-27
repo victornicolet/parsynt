@@ -6,6 +6,7 @@ open Getopt
 open SketchTypes
 open Cil
 open FpExact
+open Rawc
 
 module L = Local
 module C = Canalyst
