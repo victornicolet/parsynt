@@ -80,9 +80,12 @@ let is_empty_state (r, w) =
     When a loop contains an inner loop, we want to remove the index
     initialization from the body of the outer loop to reflect the
     original program, where the init statement is in the for statement.
+   @param bdy : the block to be modified.
+   @param init : the init statement to remove.
+   @param inner : the loop statement of the inner loop.
 *)
 
-let rec rem_loop_init (bdy : block) nbdy (init : instr) (inner : stmt) : block =
+let rec rem_loop_init (bdy : block) (init : instr) (inner : stmt) : block =
   let rem_instr stmt =
     let stmtskind =
       if List.mem inner stmt.succs
@@ -189,7 +192,7 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
        try
          let body_copy = Cil.mkBlock bdy.bstmts in
          (**
-             Identify the termiation condition and remove the break
+             Identify the termination condition and remove the break
              statement associated to it.
          *)
          let term_expr_o, rem = get_loop_condition body_copy in
@@ -199,7 +202,13 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
            | None ->
               raise (Failure "couldn't get the termination condition.")
          in
-         let init = last_instr (List.nth loop_stmt.preds 1) in
+         let init =
+           if List.length loop_stmt.preds < 2 then
+             ( Format.printf "Did you compute the CFG information before \
+                       calling get_loop_IGU?@.";
+               None)
+           else
+             Some (last_instr (List.nth loop_stmt.preds 1)) in
          (** Removing the last instruction **should** remove the index update *)
          let update, newbody =
            match  rem_last_instr rem with
@@ -214,7 +223,7 @@ let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
            | None, None ->
               raise (Failure "failed to find last statement in body.")
          in
-         Some (init, (Ct.neg_exp term_expr), update), newbody
+         Some (check_option init, (Ct.neg_exp term_expr), update), newbody
        with Failure s ->
 		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
      end

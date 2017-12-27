@@ -226,8 +226,9 @@ let _test () =
 
 
 let test () =
-  ignore(_test ());
+  let loops = _test () in
   (if !cnt_fail = 0 then
      printf "@.%sALL %i TESTS PASSED.%s@." (color "green") !cnt_pass color_default
    else
-     printf "@.%i tests passed, %i tests failed.@." !cnt_pass !cnt_fail);;
+     printf "@.%i tests passed, %i tests failed.@." !cnt_pass !cnt_fail);
+  loops

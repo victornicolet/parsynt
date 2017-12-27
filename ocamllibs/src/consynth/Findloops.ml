@@ -66,10 +66,10 @@ let check_igu ((init, guard, update) : forIGU) : bool =
 
 
 let sprint_igu ((init, guard, update) : forIGU) : string =
-  sprintf "for(%s; %s; %s)"
-    (Ct.psprint80 Cil.d_instr init)
-    (Ct.psprint80 Cil.d_exp guard)
-    (Ct.psprint80 Cil.d_instr update)
+  sprintf "for(%s %s; %s)"
+    (Ct.psprint80 Cil.dn_instr init)
+    (Ct.psprint80 Cil.dn_exp guard)
+    (Ct.psprint80 Cil.dn_instr update)
 
 
 type loop_rep = {
@@ -381,30 +381,29 @@ let find_loops fd f : unit =
     - functions used
     - presence of break/gotos statements in cf *)
 
-class loopAnalysis (tl : Cloop.t) = object
+class loopAnalysis (this_loop : Cloop.t) = object
   inherit nopCilVisitor
 
   method vstmt (s : Cil.stmt) =
-    tl.Cloop.old_loop.lanalyzed <- true;
-    IH.add tl.Cloop.old_loop.lsids s.sid s;
+    this_loop.Cloop.old_loop.lanalyzed <- true;
+    IH.add this_loop.Cloop.old_loop.lsids s.sid s;
     match s.skind with
     | Loop _ ->
-      if Cloop.id tl != s.sid then
+      if Cloop.id this_loop != s.sid then
         (** The inspected loop is nested in the current loop *)
         begin
           let child_loop = IH.find program_loops s.sid in
-          Cloop.add_parent_loop child_loop (Cloop.id tl);
-          Cloop.add_child_loop tl child_loop;
+          Cloop.add_parent_loop child_loop (Cloop.id this_loop);
+          Cloop.add_child_loop this_loop child_loop;
           let (index, g, u) = check_option (child_loop.Cloop.loop_igu) in
           (** Remove init statements of inner loop present in outer loop *)
           let new_statements =
             rem_loop_init
-              (Ct.extract_block tl.Cloop.new_loop.lstmt)
-              []
+              (Cloop.new_body this_loop)
               index
               child_loop.Cloop.old_loop.lstmt
           in
-          Cloop.update_new_loop_block tl  new_statements;
+          Cloop.update_new_loop_block this_loop new_statements;
           DoChildren
         end
       else
@@ -422,7 +421,7 @@ class loopAnalysis (tl : Cloop.t) = object
        and the loops will not be parallelized.
     *)
     | Continue _ | Return _->
-      Cloop.set_break tl;
+      Cloop.set_break this_loop;
       SkipChildren
 
   method vinst (i : Cil.instr) : Cil.instr list Cil.visitAction =
@@ -430,7 +429,7 @@ class loopAnalysis (tl : Cloop.t) = object
     | Call (lval_opt, ef, elist, _)  ->
       begin
         match ef with
-        | Lval (Var vi, _) -> Cloop.add_callee tl vi
+        | Lval (Var vi, _) -> Cloop.add_callee this_loop vi
         | _ -> ()
       end;
       SkipChildren
@@ -483,6 +482,7 @@ let analyze_definitions cl (x : IOS.t IH.t) =
           ioset vid2const))
     x IM.empty
 
+(* Remove temporary variables introduced by Cil. *)
 let remove_temps (map : exp IM.t) =
   IM.map
     (fun e ->

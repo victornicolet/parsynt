@@ -280,10 +280,10 @@ module CilTools = struct
   let psprint80 f x = Pretty.sprint 80 (f () x)
   let ppe e = print_endline (psprint80 Cil.dn_exp e)
   let ppt t = print_endline (psprint80 Cil.d_type t)
-  let pps s = print_endline ("Statement : "^(psprint80 Cil.dn_stmt s))
+  let pps s = print_endline (psprint80 Cil.dn_stmt s)
   let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
   let ppv v = print_endline v.vname
-  let ppi i = print_endline ("Instruction : "^(psprint80 Cil.dn_instr i))
+  let ppi i = print_endline ("[instr] "^(psprint80 Cil.dn_instr i))
   let ppbk blk = List.iter pps blk.bstmts
   let ppofs offs = print_endline (psprint80 (Cil.d_offset Pretty.nil) offs)
 
