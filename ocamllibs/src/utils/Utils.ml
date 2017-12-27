@@ -3,68 +3,11 @@ open Pretty
 open List
 open Printf
 open Format
+open Sets
 
-module S = Str
-module IOS = Reachingdefs.IOS
-
-(** Set modules **)
-module IntHash =
-struct
-  type t = int
-  let equal i j = i=j
-  let hash i = i land max_int
-end
-
-module IntHashTbl = Hashtbl.Make(IntHash)
-
-module IH =
-struct
-  include IntHashTbl
-
-  let copy_into to_copy into_copy =
-    IntHashTbl.iter (IntHashTbl.add into_copy) to_copy
-
-end
-
-(* Set of integers *)
-module IS =
-struct
-  include Set.Make (struct
-      type t = int
-      let compare = Pervasives.compare
-    end)
-
-
-  let purified ioset =
-    IOS.fold (fun io is ->
-        match io with
-        | Some i -> add i is
-        | None -> is) ioset empty
-end
-
-module SM = struct
-  include Map.Make(String)
-  let update map key nval update =
-    try
-      let pval = find key map in
-      add key (update pval nval) map
-    with Not_found ->
-      add key nval map
-
-  let from_bindings (b : (string * 'a) list) : 'a t =
-    List.fold_left
-      (fun smap (k,v) -> add k v smap) empty b
-end
-
-
-module VSo = Usedef.VS
-
-module SH = Hashtbl.Make (struct
-    type t = String.t
-    type key = String.t
-    let equal s1 s2 = s1 = s2
-    let hash s = Hashtbl.hash s
-  end)
+module IH = Sets.IH
+module IS = Sets.IS
+module SM = Sets.SM
 
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
@@ -276,170 +219,11 @@ let appendC l a =
 
 (** Cil specific utility functions *)
 (** Pretty printing shortcuts *)
-module CilTools = struct
-  let psprint80 f x = Pretty.sprint 80 (f () x)
-  let ppe e = print_endline (psprint80 Cil.dn_exp e)
-  let ppt t = print_endline (psprint80 Cil.d_type t)
-  let pps s = print_endline (psprint80 Cil.dn_stmt s)
-  let pplv lv = print_endline (psprint80 Cil.dn_lval lv)
-  let ppv v = print_endline v.vname
-  let ppi i = print_endline ("[instr] "^(psprint80 Cil.dn_instr i))
-  let ppbk blk = List.iter pps blk.bstmts
-  let ppofs offs = print_endline (psprint80 (Cil.d_offset Pretty.nil) offs)
-
-
-  let fppe fmt e = fprintf fmt "%s" (psprint80 Cil.dn_exp e)
-  let fppt fmt t = fprintf fmt "%s" (psprint80 Cil.d_type t)
-  let fpps fmt s = fprintf fmt "%s" (psprint80 Cil.dn_stmt s)
-  let fplv fmt lv = fprintf fmt "%s" (psprint80 Cil.dn_lval lv)
-  let fppv fmt v = fprintf fmt "%s" v.vname
-  let fppi fmt i = fprintf fmt "%s" (psprint80 Cil.dn_instr i)
-  let fppbk fmt blk = List.iter (fpps fmt) blk.bstmts
-  let fppofs fmt offs = fprintf fmt "%s" (psprint80 (Cil.d_offset Pretty.nil) offs)
-
-
-  let is_cil_temp vi =
-    false
-
-  let is_literal_zero = function
-    | Const (CInt64 (0L, _, _)) -> true
-    | _ -> false
-
-
-  let add_instr stmt instr =
-    match stmt.skind with
-    | Instr il ->
-      {stmt with skind = Instr (il @ instr)}
-    | _ ->
-      eprintf "Instruction not added to non-instruction list statement.";
-      failwith "add_instr"
-
-  let add_stmt block stmt =
-    { block with bstmts = block.bstmts @ stmt }
-
-  let add_loop_stmt loop stmt =
-    match loop.skind with
-    | Loop(b, x, y, z) ->
-      {loop with skind = Loop(add_stmt b stmt, x, y ,z)}
-    | _ -> loop
-
-  let extract_block loop : block =
-    match loop.skind with
-    | Loop(b, _, _ ,_ ) -> b
-    | Block b -> b
-    | _ ->
-      failwith "loop_bstmt takes only loops as arg"
-
-
-  let make_block_stmt stmts =
-    mkStmt(Block(mkBlock(stmts)))
-
-  let replace_loop_block loop nb =
-    match loop.skind with
-    | Loop(b, loc, os, os') ->
-      {loop with skind = Loop(nb, loc, os, os')}
-    | _ -> failwith "Not a loop in replace loop stmts."
-
-
-  (* Reaching definitions are a triple where the first
-     two elements are not useful to us.p*)
-  let simplify_rds rdef =
-    match rdef with
-    | Some (_,_, setXhash) -> Some setXhash
-    | None -> None
-
-
-  let neg_exp (exp : Cil.exp) =
-    match exp with
-    | UnOp (LNot, b, _) -> b
-    | UnOp (Neg, x, _) -> x
-    | _ -> UnOp (LNot, exp, TInt (IBool, []))
-
-  let is_like_array (vi : Cil.varinfo) =
-    match vi.vtype with
-    | TPtr _ | TArray _ -> true
-    | _ -> false
-
-  let is_like_bool =
-    function
-    | IBool -> true
-    | _ -> false
-
-  type simple_types =
-    | BOOL
-    | INT
-    | FLOAT
-
-  let simple_type typename =
-    match typename with
-    | INT -> TInt (IInt, [])
-    | BOOL -> TInt (IBool, [])
-    | FLOAT -> TFloat (FFloat, [])
-
-  let simple_fun_type rettype_name args_typ_names =
-    TFun (simple_type rettype_name,
-          Some (List.map (fun s -> ("x", simple_type s, [])) args_typ_names),
-          false, [])
-
-  let fun_ret_type tfunc =
-    match tfunc with
-    | TFun (ret_typ, _, _, _) -> Some ret_typ
-    | _ -> None
-
-  let rec is_of_bool_type vitype =
-    match vitype with
-    | TInt (ityp, _) -> is_like_bool ityp
-    | f ->
-      (match fun_ret_type f with
-       | Some ftyp -> is_of_bool_type ftyp
-       | None -> false )
-
-  let is_of_real_type vitype =
-    match vitype with
-    | TFloat _ -> true
-    | f -> (match fun_ret_type f with Some (TFloat _) -> true | _-> false)
-
-  let rec is_of_int_type vitype =
-    match vitype with
-    | TInt _ -> not (is_of_bool_type vitype)
-    | f -> (match fun_ret_type f with Some x -> is_of_real_type x
-                                    | None -> false)
-
-  let combine_expression_option op e1 e2 t=
-    match e1, e2 with
-    | Some e1, Some e2 -> Some (BinOp (op, e1, e2, t))
-    | Some e1, None -> Some e1
-    | None, Some e2 -> Some e2
-    | None, None -> None
-
-  let gen_var_with_suffix vi suffix =
-    {vi with vname = vi.vname^suffix}
-
-  let gen_var_with_prefix vi prefix =
-    {vi with vname = prefix^vi.vname}
-
-  let change_var_typ vi new_typ =
-    { vi with vtype = new_typ }
-
-  (* Get all the children statement ids of a statement *)
-  class statementIdsCollector hashids = object
-    inherit nopCilVisitor
-    val mutable stmt_ids = IS.empty
-    method vstmt (s: stmt) =
-      IH.add hashids s.sid s;
-      DoChildren
-  end
-
-  let collect_sids stmt =
-    let hashid = IH.create 10 in
-    let visitor = new statementIdsCollector hashid in
-    ignore(visitCilStmt visitor stmt);
-    hashid
-end
-(**
-    Extract the variables used in statements/expressions/instructions/..
-    Used variables can be on either side of an assignment.
-*)
+module CilTools = CilTop
+  (**
+      Extract the variables used in statements/expressions/instructions/..
+      Used variables can be on either side of an assignment.
+  *)
 module VS = struct
   include VSo
   let rec sovi (instr : Cil.instr) : t =
@@ -867,3 +651,35 @@ module PpTools = struct
       (color "b-red") color_default
       (color "red") s color_default
 end
+
+
+let list_array_map f l =
+  Array.to_list (Array.map f (Array.of_list l))
+
+let rec count_map f l ctr =
+  match l with
+  | [] -> []
+  | [x] -> [f x]
+  | [x;y] ->
+    (* order matters! *)
+    let x' = f x in
+    let y' = f y in
+    [x'; y']
+  | [x;y;z] ->
+    let x' = f x in
+    let y' = f y in
+    let z' = f z in
+    [x'; y'; z']
+  | x :: y :: z :: w :: tl ->
+    let x' = f x in
+    let y' = f y in
+    let z' = f z in
+    let w' = f w in
+    x' :: y' :: z' :: w' ::
+    (if ctr > 500 then list_array_map f tl
+     else count_map f tl (ctr + 1))
+
+let list_map f l = count_map f l 0
+
+let equals x1 x2 : bool =
+  (compare x1 x2) = 0

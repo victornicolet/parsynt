@@ -2,6 +2,7 @@ open Utils
 open Format
 open Findloops
 open RAst
+open Sets
 
 (**
    1 - Expressions & functions.

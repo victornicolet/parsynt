@@ -1,10 +1,11 @@
 open SketchTypes
 open Utils
 open SPretty
+module IH = Sets.IH
 
 let debug = ref false
 
-let auxiliary_variables : Cil.varinfo Utils.IH.t = IH.create 10
+let auxiliary_variables : Cil.varinfo IH.t = IH.create 10
 
 let cur_left_auxiliaries = ref VS.empty
 let cur_right_auxiliaries = ref VS.empty

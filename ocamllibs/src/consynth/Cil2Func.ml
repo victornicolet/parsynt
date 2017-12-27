@@ -7,6 +7,7 @@ open Utils.PpTools
 open SketchTypes
 open SPretty
 open SError
+open Sets
 
 (**
    Implementation of a simple CPS comversion from the
