@@ -1,5 +1,5 @@
 open Cil
-open Findloops.Cloop
+open Loops
 open Format
 open TestUtils
 open Utils
@@ -176,7 +176,7 @@ let cnt_fail = ref 0
 let _test () =
   let filename = "test/test-cil2func.c" in
   printf "%s-- test Cil -> Func  -- %s\n" (color "red") color_default;
-  let loops = C.processFile filename in
+  let cfile, loops = C.processFile filename in
   printf "%s Functional rep. %s\n" (color "blue") color_default;
   C2F.init loops;
 (*C2F.debug := true;*)
@@ -184,23 +184,22 @@ let _test () =
     (fun k cl ->
        let igu =
          try
-           check_option cl.loop_igu
+           check_option cl.ligu
          with Failure s ->
            failwith ("test failure"^s)
        in
-       let allvars = all_vars cl in
-       let stmt = new_body cl in
-       let _, w = cl.rwset in
-       let stv = state cl in
+       let allvars = cl.lvariables.all_vars in
+       let stmt = loop_body cl in
+       let _, stv = loop_rwset cl in
        let func, figu =
-         C2F.cil2func allvars (VS.union allvars w) stv stmt igu
+         C2F.cil2func allvars allvars stv stmt igu
        in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
        let so = new Sketch.Body.sketch_builder allvars
          stv func figu in
        so#build;
        let sketch, sigu = check_option so#get_sketch in
-       let fname = cl.host_function.vname in
+       let fname = cl.lcontext.host_function.vname in
        if wf_test_case fname func sketch then
 
          begin
@@ -212,8 +211,8 @@ let _test () =
          begin
            incr cnt_fail;
            (printf "%s[test for loop %i in %s failed]%s@."
-              (color "red") cl.sid fname color_default;);
-           printf "All variables :%a@." VS.pvs (VS.union allvars w);
+              (color "red") cl.lid fname color_default;);
+           printf "All variables :%a@." VS.pvs allvars;
            printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
            SPretty.printSklet sketch;

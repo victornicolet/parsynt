@@ -228,16 +228,16 @@ let main () =
 
   if !verbose then
     begin
-      Findloops.verbose := true;
+      Loops.verbose := true;
       Canalyst.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();
   printf "Parsing C program ...\t\t\t\t";
-  let c_program = C.processFile filename in
+  let c_file, loops = C.processFile filename in
   printf "%sDONE%s@.@.C program -> functional representation ...\t"
     (color "green") color_default;
-  let functions = C.cil2func c_program in
+  let functions = C.cil2func c_file loops in
   printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
     (color "green") color_default;
   let sketch_list = Canalyst.func2sketch functions in

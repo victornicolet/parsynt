@@ -1,7 +1,7 @@
 open Cil
 open Canalyst
 open Format
-open Findloops
+open Loops
 open Utils
 open Getopt
 open TestUtils
@@ -38,15 +38,17 @@ let options = [
 let testProcessFile () =
   let filename = "test/"^(!filename) in
   printf "-- test processing file -- \n";
-  let loops = Canalyst.processFile filename in
+  let cfile, loops = Canalyst.processFile filename in
   printf "-- finished --\n";
   printf "%s Functional rep. %s\n" (color "blue") color_default;
   IM.iter
     (fun k cl ->
-       let stmt = Cloop.new_body cl in
-       let igu = check_option cl.Cloop.loop_igu in
-       let r, stv = cl.Cloop.rwset in
-       let _ = C2F.cil2func r  r stv stmt igu in
+       let stmt = loop_body cl in
+       let igu = check_option cl.ligu in
+       let r, stv = loop_rwset cl in
+       let alls = cl.lvariables.all_vars in
+       let tmps = cl.lvariables.tmp_vars in
+       let _ = C2F.cil2func alls stv tmps stmt igu in
        ())
     loops;;
 

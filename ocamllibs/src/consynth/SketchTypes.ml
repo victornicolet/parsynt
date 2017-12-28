@@ -1,6 +1,6 @@
 open Utils
 open Format
-open Findloops
+open Loops
 open RAst
 open Sets
 
@@ -52,7 +52,7 @@ and skExpr =
   | SkVar of skLVar
   | SkConst of constants
   | SkFun of sklet
-  | SkRec of  forIGU * sklet
+  | SkRec of  igu * sklet
   | SkCond of skExpr * sklet * sklet
   | SkBinop of symb_binop * skExpr * skExpr
   | SkUnop of symb_unop * skExpr

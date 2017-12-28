@@ -13,6 +13,9 @@ int main(int argc, char** argv) {
       }
       m1 = m3 + m1 * a[j];
     }
+    for(k = 0; k < n; k++){
+      m3 = m3 * a[j];
+    }
     m2 = max(m1, m2);
     m1 = 1;
   }

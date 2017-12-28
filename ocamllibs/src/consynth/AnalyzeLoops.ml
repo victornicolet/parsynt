@@ -1,10 +1,9 @@
 open Cil
 open Utils
 open VariableAnalysis
-open Findloops
-open Findloops.Cloop
 open LoopsHelper
 open Utils.PpTools
+open Loops
 
 module IM = Utils.IM
 module Ct = CilTools
@@ -127,20 +126,18 @@ let extract_subscripts (loop_body : block) ((r, w) : VS.t * VS.t) =
    - no variable aliasing
    - no loop exit in the new_body
 *)
-let accept (lid : int) (loop : Cloop.t)  =
-  let _, state = loop.rwset in
-  (**  Don't accept loops with breaks/exits in its body *)
-  (not loop.has_breaks) &&
-    (** If the state of the loop is empty, not need to parallelize it *)
-    (not (VS.is_empty state)) &&
-    (** Verify that there is no aliasing in state variables *)
-    (let loop_body = Cloop.new_body loop in
-     VS.is_empty (VS.inter (aliased loop_body) state))
+let accept (lid : int) (loop : loop_info)  =
+  let state = loop.lvariables.state_vars in
+  (** If the state of the loop is empty, not need to parallelize it *)
+  (not (VS.is_empty state)) &&
+  (** Verify that there is no aliasing in state variables *)
+  (let loop_body = loop_body loop in
+   VS.is_empty (VS.inter (aliased loop_body) state))
 
 
 let transform (lid, loop) =
   let subscripts_map =
-    extract_subscripts (Cloop.new_body loop) loop.rwset in
+    extract_subscripts (loop_body loop) (loop_rwset loop) in
   loop
 
 
@@ -148,24 +145,24 @@ let transform (lid, loop) =
     If (loop1 <= loop2) we will try to parallelize loop1 first because
     it is a simpler task (we order loops by their 'complexity')
 *)
-let compare_cl ((lid1, loop1) : int * Cloop.t) (lid2, loop2) =
-  if List.mem loop1.sid loop2.parent_loops
+let compare_cl ((lid1, loop1) : int * loop_info) (lid2, loop2) =
+  if loop1.lid = loop2.lcontext.parent_loop_id
   then -1
   else
     begin
-      if List.mem loop2.sid loop1.parent_loops
+      if loop2.lid = loop1.lcontext.parent_loop_id
       then 1
       else
         begin
-          if (VS.cardinal (state loop1)) <=
-            (VS.cardinal (state loop2))
+          if (VS.cardinal (loop1.lvariables.state_vars)) <=
+            (VS.cardinal (loop2.lvariables.state_vars))
           then 1
           else compare lid1 lid2
         end
     end
 
 
-let transform_and_sort (loop_map : Cloop.t IM.t) =
+let transform_and_sort (loop_map : loop_info IM.t) =
   List.map transform
     (List.sort compare_cl
        (IM.bindings (IM.filter accept loop_map)))

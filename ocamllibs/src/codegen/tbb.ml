@@ -523,7 +523,7 @@ let fprint_implementations fmt pb tbb_class =
   let class_field =
     try
       (Ct.psprint80 dn_exp
-         (IH.find Findloops.return_exprs pb.host_function.svar.vid))
+         (IH.find Loops.return_exprs pb.host_function.svar.vid))
     with Not_found -> "/* DON't KNOW WHAT TO RETURN */"
   in
   (* Print the parallel version of the loop *)

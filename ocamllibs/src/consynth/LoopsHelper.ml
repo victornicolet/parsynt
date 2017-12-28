@@ -9,7 +9,7 @@ module E = Errormsg
 
 let debug = ref false
 
-type forIGU = (Cil.instr * Cil.exp * Cil.instr)
+type igu = (Cil.instr * Cil.exp * Cil.instr)
 
 type loop_info = {
   lid : int;
@@ -72,6 +72,10 @@ and lval_eq lval lval' =
 and expr_eq e e'=
   e = e'
 
+let instr_in instrlist instr =
+  List.exists (instr_eq instr) instrlist
+
+
 (** Is the read-write set empty *)
 let is_empty_state (r, w) =
   VS.is_empty w
@@ -85,25 +89,27 @@ let is_empty_state (r, w) =
    @param inner : the loop statement of the inner loop.
 *)
 
-let rec rem_loop_init (bdy : block) (init : instr) (inner : stmt) : block =
-  let rem_instr stmt =
-    let stmtskind =
-      if List.mem inner stmt.succs
+let rec rem_loop_init (bdy : block) inners :
+  block =
+  let rem_instr (init, inner) stmt =
+    let stmtkind =
+      if List.mem inner.sid (List.map (fun stmt -> stmt.sid) stmt.succs)
       then
         begin
+          Format.printf "In succs.@.";
           match stmt.skind with
           | Instr il ->
              Instr (
                List.filter
-                 (fun instr -> not (instr_eq instr init)) il)
+                 (fun instr -> not (instr_eq init instr)) il)
           | _ -> stmt.skind
         end
       else
         stmt.skind
     in
-    {stmt with skind = stmtskind}
+    {stmt with skind = stmtkind}
   in
-  { bdy with bstmts = List.map rem_instr bdy.bstmts }
+  { bdy with bstmts = List.map (List.fold_right rem_instr inners) bdy.bstmts }
 
 (** Extracting the termination condition of the loop *)
 let get_loop_condition b =
@@ -185,7 +191,7 @@ let get_loop_condition b =
 
 
 (** Get the initiatlization, termination and update in a*)
-let get_loop_IGU loop_stmt : (forIGU option * Cil.stmt list) =
+let get_loop_IGU loop_stmt : (igu option * Cil.stmt list) =
   match loop_stmt.skind with
   | Loop (bdy, _, _, _) ->
      begin

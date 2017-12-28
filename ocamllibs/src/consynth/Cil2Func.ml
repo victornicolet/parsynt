@@ -1,6 +1,6 @@
 open Cil
 open Format
-open Findloops
+open Loops
 open Utils
 open Utils.CilTools
 open Utils.PpTools
@@ -31,7 +31,7 @@ let gen_id () = incr __letin_index; !__letin_index
 type letin =
   | State of (expr IM.t)
   | Let of varinfo * expr * letin * int * location
-  | LetRec of forIGU * letin * letin * location
+  | LetRec of igu * letin * letin * location
   | LetCond of expr * letin * letin * letin * location
 
 and expr =
@@ -40,7 +40,7 @@ and expr =
   | Container of exp * substitutions
   | FunApp of exp * (expr list)
   | FQuestion of expr * expr * expr
-  | FRec of forIGU * expr
+  | FRec of igu * expr
   (** Types for translated expressions *)
   | FBinop of symb_binop * expr * expr
   | FUnop of symb_unop * expr
@@ -519,7 +519,7 @@ and do_s vs let_form s =
     let block_loop = do_b vs b in
     let igu =
       try
-        check_option ((IM.find s.sid !loops).Cloop.loop_igu)
+        check_option ((IM.find s.sid !loops).ligu)
       with
         Not_found ->
         failwith (sprintf "Couldn't find loop %i." s.sid)

@@ -6,11 +6,11 @@ open SError
 open SketchTypes
 open SymbExe
 open VariableDiscovery
-open Findloops
+open Loops
 
 module E = Errormsg
 module C = Cil
-module Cl = Cloop
+(* module Cl = Cloop *)
 module A = AnalyzeLoops
 (* module Z3E = Z3engine *)
 
@@ -45,17 +45,21 @@ let processFile fileName =
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
   Cfg.computeFileCFG cfile;
   if !elim_dead_code then  Deadcodeelim.dce cfile;
-  Findloops.debug := !debug;
-  Findloops.verbose := !verbose;
-  let loops, _ = Findloops.processFile cfile in
+  Loops.debug := !debug;
+  Loops.verbose := !verbose;
+  process_file cfile;
+  let loops = get_loops () in
   if !verbose then
     begin
       printf "Input loops@.";
-      IM.iter
-        (fun lid cl -> CilTools.pps cl.Cl.new_loop.lstmt) loops;
+      IH.iter
+        (fun lid cl -> CilTools.pps cl.lstmt) loops;
     end;
-  loops
-
+  cfile,
+  IH.fold
+    (fun k cl m -> IM.add k cl m)
+    loops
+    IM.empty
 
 (**
    Returns a tuple with :
@@ -104,7 +108,7 @@ let rec new_loop_ident fun_name =
    This step only translates the control-flow of the input C program,
    the expressions will be translated later.
 *)
-let cil2func loops =
+let cil2func cfile loops =
   Cil2Func.init loops;
   let sorted_lps = A.transform_and_sort loops in
 
@@ -113,30 +117,33 @@ let cil2func loops =
        (** Index *)
        let i,g,u =
          try
-           check_option cl.Cl.loop_igu
+           check_option cl.ligu
          with Failure s ->
            skip_exn "Couldn't use index form in loop.";
        in
-       let loop_ident = new_loop_ident cl.Cl.host_function.C.vname in
-       let stmt = Cl.new_body cl in
-       let r, w = cl.Cl.rwset in
-       let vars = remove_reserved_vars (Cl.all_vars cl) in
-       let stv = Cl.state cl in
+       let loop_ident = new_loop_ident cl.lcontext.host_function.C.vname in
+       let stmt = (loop_body cl) in
+       let r, w = cl.lvariables.used_vars, cl.lvariables.state_vars in
+       let vars = remove_reserved_vars cl.lvariables.all_vars in
+       let stv = w in
        if !verbose then
          printf "@.Identified state variables: %a@." VS.pvs stv;
        let func, figu =
-         Cil2Func.cil2func (VS.union vars w) stv cl.Cl.tmps stmt (i,g,u)
+         Cil2Func.cil2func (VS.union vars w) stv cl.lvariables.tmp_vars stmt (i,g,u)
        in
-       let reaching_consts = cl.Cl.reaching_constant_definitions in
+       let reaching_consts = cl.lcontext.reaching_constants in
        if !verbose then
-         let printer = new Cil2Func.cil2func_printer vars stv cl.Cl.tmps in
+         let printer =
+           new Cil2Func.cil2func_printer vars stv cl.lvariables.tmp_vars
+         in
          (printf "@.%s[test for loop %i in %s failed]%s@."
-            (color "red") cl.Cl.sid cl.Cl.host_function.C.vname color_default;);
+            (color "red") cl.lid cl.lcontext.host_function.C.vname
+            color_default;);
          printer#printlet func;
          printf "@.";
        else ();
        (loop_ident,
-        Cl.parent_fundec cl,
+        parent_fundec cfile cl,
         VS.vids_of_vs r, stv, vars,
         func, figu,
         reaching_consts))
