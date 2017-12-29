@@ -45,10 +45,7 @@ let testProcessFile () =
     (fun k cl ->
        let stmt = loop_body cl in
        let igu = check_option cl.ligu in
-       let r, stv = loop_rwset cl in
-       let alls = cl.lvariables.all_vars in
-       let tmps = cl.lvariables.tmp_vars in
-       let _ = C2F.cil2func alls stv tmps stmt igu in
+       let _ = C2F.cil2func cl.lvariables stmt igu in
        ())
     loops;;
 

@@ -102,12 +102,13 @@ type variables =
   }
 
 let pp_variables fmt (v: variables) =
-  fprintf fmt "@[<v>-State: %a@;-Index: %a@;-Used: %a@;-All: %a-Tmp: %a@]"
+  fprintf fmt "@[<v>-State: %a@;-Index: %a@;-Used: %a@;-All: %a%a@]"
     VS.pp_var_names v.state_vars
     VS.pp_var_names v.index_vars
     VS.pp_var_names v.used_vars
     VS.pp_var_names v.all_vars
-    VS.pp_var_names v.tmp_vars
+    (fun fmt vs -> if VS.is_empty vs then ()
+        else VS.pp_var_names fmt vs) v.tmp_vars
 
 let empty_variables () =
   {

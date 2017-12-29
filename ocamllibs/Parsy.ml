@@ -240,7 +240,7 @@ let main () =
   let functions = C.cil2func c_file loops in
   printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
     (color "green") color_default;
-  let sketch_list = Canalyst.func2sketch functions in
+  let sketch_list = Canalyst.func2sketch c_file functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") color_default;
   (** Try to solve the sketches without adding auxiliary variables *)
   let solved, unsolved =

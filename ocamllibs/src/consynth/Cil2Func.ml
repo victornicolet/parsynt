@@ -8,6 +8,7 @@ open SketchTypes
 open SPretty
 open SError
 open Sets
+open Loops
 
 (**
    Implementation of a simple CPS comversion from the
@@ -63,10 +64,10 @@ and substitutions = expr IM.t
 
 (** Pretty-printing functions *)
 (** A pretty-printing class initialized with all the necessary info *)
-class cil2func_printer allvs stv tmps =
+class cil2func_printer variables =
   object (self)
-    val allvs = VS.union allvs tmps
-    val stv = stv
+    val allvs = VS.union variables.all_vars variables.tmp_vars
+    val stv = variables.state_vars
 
     method pp_letin ?(wloc = false) ppf letin =
       match letin with
@@ -284,7 +285,7 @@ let rec transform_bottomup funct letin =
 
 (** Helpers *)
 
-let empty_state vs = State IM.empty
+let empty_state () = State IM.empty
 
 let container e = Container (e, IM.empty)
 
@@ -472,7 +473,7 @@ let rec let_add old_let new_let =
     LetRec (igu, letform, let_add let_cont new_let, lc)
 
 let rec do_il vs il =
-  List.fold_left (do_i vs) (empty_state vs) il
+  List.fold_left (do_i vs) (empty_state ()) il
 
 and do_i vs let_form =
   let from_lval lv expre loc =
@@ -481,7 +482,7 @@ and do_i vs let_form =
       let id = gen_id () in
       add_uses id (used_vars_expr expre);
       let lh_var = VS.max_elt vset in
-      let_add let_form (Let (lh_var, expre, (empty_state vs), id, loc))
+      let_add let_form (Let (lh_var, expre, (empty_state ()), id, loc))
     else
       raise (Failure "do_il : set with left-hand side variables amount != 1")
   in
@@ -500,7 +501,7 @@ and do_i vs let_form =
   | _ -> failwith "Cil instruction form not supported."
 
 and do_b vs b =
-  List.fold_left (do_s vs) (empty_state vs) b.bstmts
+  List.fold_left (do_s vs) (empty_state ()) b.bstmts
 
 and do_s vs let_form s =
   match s.skind with
@@ -512,7 +513,7 @@ and do_s vs let_form s =
     let ce = Container (e, IM.empty) in
     let block_then = do_b vs b1 in
     let block_else = do_b vs b2 in
-    let if_fun = LetCond (ce, block_then, block_else, empty_state vs, loc) in
+    let if_fun = LetCond (ce, block_then, block_else, empty_state (), loc) in
     let_add let_form if_fun
 
   | Loop (b, loc,_,_) ->
@@ -524,7 +525,7 @@ and do_s vs let_form s =
         Not_found ->
         failwith (sprintf "Couldn't find loop %i." s.sid)
     in
-    let loop_fun = LetRec (igu, block_loop, empty_state vs, loc) in
+    let loop_fun = LetRec (igu, block_loop, empty_state (), loc) in
     let_add let_form loop_fun
 
   | Block b ->
@@ -793,9 +794,12 @@ let add_sub vid n_expr subs =
    the substitutions f temporaries to expressions while descending in the
    AST of the function.
 *)
-let eliminate_temporaries allvs vs tmps let_form =
+let eliminate_temporaries variables let_form =
+  let vs, allvs, tmp =
+    variables.state_vars, variables.all_vars, variables.tmp_vars
+  in
   let debug_counter = ref 0 in
-  let cfprinter = new cil2func_printer allvs vs tmps in
+  let cfprinter = new cil2func_printer variables in
   let rec elim_let_aux let_form subs =
     if !debug then
       begin
@@ -850,12 +854,19 @@ let eliminate_temporaries allvs vs tmps let_form =
   else
     failwith "Ill formed let-bindings"
 
+
+let unwrap_consts =
+  IM.map
+    (fun cexp ->
+      match cexp with
+      | Const c -> c
+      | _ ->  failwith "Cil2Func.ml : unwrap consts : not a const")
 (**
    MAIN ENTRY POINT
 *)
 let init map_loops = loops := map_loops;;
 
-let cil2func allvs statevs tmps block (i,g,u) =
+let cil2func (variables : Loops.variables) block (i,g,u) =
   (**
       We need the other loops in case of nested loops to avoid
       recomputing the for statement in the inner loops.
@@ -865,10 +876,12 @@ let cil2func allvs statevs tmps block (i,g,u) =
       if IM.cardinal !loops = 0 then
         failwith "You forgot to initialize the set of loops in Cil2Func ?";
       if !debug then eprintf "-- Cil --> Functional --";
-      let printer = new cil2func_printer statevs statevs tmps in
+      let statevs = variables.state_vars in
+      let tmps = variables.tmp_vars in
+      let printer = new cil2func_printer variables in
       let let_expression_0 = (do_b statevs block) in
       let let_expression =
-        eliminate_temporaries allvs statevs tmps let_expression_0
+        eliminate_temporaries variables let_expression_0
       in
       let index = index_of_igu (i,g,u) in
       let init_f = do_il statevs [i] in
@@ -886,6 +899,6 @@ let cil2func allvs statevs tmps block (i,g,u) =
           (printer#pp_letin ~wloc:false) let_expression
           (printer#pp_letin ~wloc:false) func;
 
-      func, figu
+      func, Some figu
     end
   with Failure s -> fail_functional_conversion s

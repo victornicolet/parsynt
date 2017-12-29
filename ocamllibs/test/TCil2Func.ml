@@ -192,11 +192,11 @@ let _test () =
        let stmt = loop_body cl in
        let _, stv = loop_rwset cl in
        let func, figu =
-         C2F.cil2func allvars allvars stv stmt igu
+         C2F.cil2func cl.lvariables stmt igu
        in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
        let so = new Sketch.Body.sketch_builder allvars
-         stv func figu in
+         stv func (check_option figu) in
        so#build;
        let sketch, sigu = check_option so#get_sketch in
        let fname = cl.lcontext.host_function.vname in

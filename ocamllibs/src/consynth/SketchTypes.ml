@@ -1636,7 +1636,6 @@ type sketch_rep =
     id : int;
     host_function : Cil.fundec;
     loop_name : string;
-    ro_vars_ids : int list;
     scontext : context;
     min_input_size : int;
     uses_global_bound : bool;

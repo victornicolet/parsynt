@@ -130,6 +130,7 @@ let accept (lid : int) (loop : loop_info)  =
   let state = loop.lvariables.state_vars in
   (** If the state of the loop is empty, not need to parallelize it *)
   (not (VS.is_empty state)) &&
+  (is_some loop.ligu) &&
   (** Verify that there is no aliasing in state variables *)
   (let loop_body = loop_body loop in
    VS.is_empty (VS.inter (aliased loop_body) state))
