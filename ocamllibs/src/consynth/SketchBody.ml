@@ -445,7 +445,11 @@ class sketch_builder
           SkLetExpr complete_state
 
         | Let (v, e, cont, i, loc) ->
-          let cur_v = SkVarinfo v in
+          let cur_v =
+            match v with
+            | LhVar vi -> SkVarinfo vi
+            | LhTuple vil -> SkTuple vil
+          in
           SkLetIn ([(cur_v, convert cur_v e)], convert_letin cont)
 
         | LetRec (igu, let_body, let_cont, loc) ->

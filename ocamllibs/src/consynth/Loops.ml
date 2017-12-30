@@ -282,7 +282,9 @@ class replaceInners (pl : loop_info) = object
   method vstmt (s : stmt) =
     if List.mem s.sid (List.map (fun l -> l.lid) pl.inner_loops)
     then
-      let loopname = "_loop_"^(string_of_int s.sid) in
+      let loopname =
+        Conf.inner_loop_func_name pl.lcontext.host_function.vname s.sid
+      in
       let loop_f =
         Lval (Var (makeVarinfo false loopname (TInt(IInt, []))), NoOffset)
       in

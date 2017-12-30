@@ -7,6 +7,7 @@ open Project_dir
    2 - Builtin variables.
    3 - Verification conditions settings.
    4 - Synthesis parameters (grammar macros names, ...)
+   5 - Naming conventions.
 *)
 
 let verbose = ref false
@@ -119,3 +120,11 @@ let verification_parameters =
     | End_of_file -> close_in ic; !list
   with
   | e -> raise e;;
+
+
+(* 5 - Naming conventions *)
+let inner_loop_func_name func lid =
+  "__loop_"^func^"_"^(string_of_int lid)
+
+let is_inner_loop_func_name name =
+  String.sub name 0 7  = "__loop_"

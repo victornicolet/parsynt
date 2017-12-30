@@ -97,10 +97,11 @@ type func_info =
     lid : int;
     loop_name : string;
     lvariables : variables;
-    mutable reaching_consts : Cil.exp Utils.IM.t
+    mutable reaching_consts : Cil.exp Utils.IM.t;
+    mutable inner_funcs : func_info list;
   }
 
-let init_func_info linfo =
+let rec init_func_info linfo =
   {
     host_function = linfo.lcontext.host_function;
     func = Cil2Func.empty_state ();
@@ -109,7 +110,7 @@ let init_func_info linfo =
     loop_name = new_loop_ident linfo.lcontext.host_function.C.vname;
     lvariables = linfo.lvariables;
     reaching_consts = IM.empty;
-
+    inner_funcs = List.map init_func_info linfo.inner_loops;
   }
 (**
    Sketch info type :
@@ -130,7 +131,7 @@ type sigu = VS.t * (sklet * skExpr * sklet)
 let cil2func cfile loops =
   Cil2Func.init loops;
   let sorted_lps = A.transform_and_sort loops in
-  let translate_loop loop =
+  let rec translate_loop loop =
     let finfo = init_func_info loop in
     let stmt = (loop_body loop) in
     if !verbose then
@@ -146,7 +147,7 @@ let cil2func cfile loops =
     finfo.reaching_consts <- loop.lcontext.reaching_constants;
     finfo.func <- func;
     finfo.figu <- figu;
-
+    finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
     if !verbose then
       let printer =
         new Cil2Func.cil2func_printer loop.lvariables
@@ -169,94 +170,95 @@ let cil2func cfile loops =
 let no_sketches = ref 0;;
 
 let func2sketch cfile funcreps =
-  List.map
-    (fun func_info ->
-       let var_set = func_info.lvariables.all_vars in
-       let state_vars = func_info.lvariables.state_vars in
-       let figu =
-         match func_info.figu with
-         | Some f -> f
-         | None -> failwith "Bad for loop"
-       in
-       let s_reach_consts =
-         IM.fold
-           (fun vid cilc m ->
-              let expect_type =
-                try
-                  (T.type_of_ciltyp
-                     ((VS.find_by_id vid var_set).Cil.vtype))
-                with Not_found ->
-                  T.Bottom
-              in
-              match Sketch.Body.conv_init_expr expect_type cilc with
-              | Some e -> IM.add vid e m
-              | None ->
-                eprintf "@.Warning : initial value %s for %s not valid.@."
-                  (CilTools.psprint80 Cil.dn_exp cilc)
-                  (VS.find_by_id vid var_set).Cil.vname;
-                m)
-           func_info.reaching_consts IM.empty
-       in
-       let sketch_obj =
-         new Sketch.Body.sketch_builder var_set state_vars
-           func_info.func figu
-       in
-       sketch_obj#build;
-       let loop_body, sigu =
-         match sketch_obj#get_sketch with
-         | Some (a,b) -> a,b
-         | None -> failwith "Failed in sketch building."
-       in
-       let index_set, _ = sigu in
-       IH.clear SketchJoin.auxiliary_variables;
-       let join_body = Sketch.Join.build state_vars loop_body in
-       incr no_sketches;
-       create_boundary_variables index_set;
-       (* Input size from reaching definitions, min_int dependencies,
-          etc. *)
-       let m_sizes =
-         (* Scan the intial definitions of the state variables *)
-         IM.fold
-           (fun k i_def m_s ->
-              match i_def with
-              | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
-              | SkConst c -> IM.add k 1 m_s
-              | SkVar v ->
-                (match v with
-                 | SkVarinfo vi -> IM.add k 0 m_s
-                 | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
-                 | _ -> raise Tuple_fail)
-              | _ -> failwith "Unsupported intialization.")
-           s_reach_consts IM.empty
-       in
-       let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
-       let max_m_sizes = max max_m_sizes
-           (if rec_let max_min_test loop_body then 1 else 0)
-       in
-       (if !debug then
-          printf "@.Max dependency length : %i@." max_m_sizes);
-       {
-         id = !no_sketches;
-         host_function = (check_option
-                            (get_fun cfile func_info.host_function.Cil.vname));
-         loop_name = func_info.loop_name;
-         scontext =
-           { state_vars = state_vars;
-             index_vars = index_set;
-             used_vars = func_info.lvariables.used_vars;
-             all_vars = func_info.lvariables.all_vars;
-             costly_exprs = ES.empty;
-           };
-         min_input_size = max_m_sizes;
-         uses_global_bound = sketch_obj#get_uses_global_bounds;
-         loop_body = loop_body;
-         join_body = join_body;
-         join_solution = SkLetExpr ([]);
-         init_values = IM.empty;
-         sketch_igu = sigu;
-         reaching_consts = s_reach_consts;
-       })
-    funcreps
+  let rec  transform_func func_info =
+    let var_set = func_info.lvariables.all_vars in
+    let state_vars = func_info.lvariables.state_vars in
+    let figu =
+      match func_info.figu with
+      | Some f -> f
+      | None -> failwith "Bad for loop"
+    in
+    let s_reach_consts =
+      IM.fold
+        (fun vid cilc m ->
+           let expect_type =
+             try
+               (T.type_of_ciltyp
+                  ((VS.find_by_id vid var_set).Cil.vtype))
+             with Not_found ->
+               T.Bottom
+           in
+           match Sketch.Body.conv_init_expr expect_type cilc with
+           | Some e -> IM.add vid e m
+           | None ->
+             eprintf "@.Warning : initial value %s for %s not valid.@."
+               (CilTools.psprint80 Cil.dn_exp cilc)
+               (VS.find_by_id vid var_set).Cil.vname;
+             m)
+        func_info.reaching_consts IM.empty
+    in
+    let sketch_obj =
+      new Sketch.Body.sketch_builder var_set state_vars
+        func_info.func figu
+    in
+    sketch_obj#build;
+    let loop_body, sigu =
+      match sketch_obj#get_sketch with
+      | Some (a,b) -> a,b
+      | None -> failwith "Failed in sketch building."
+    in
+    let index_set, _ = sigu in
+    IH.clear SketchJoin.auxiliary_variables;
+    let join_body = Sketch.Join.build state_vars loop_body in
+    incr no_sketches;
+    create_boundary_variables index_set;
+    (* Input size from reaching definitions, min_int dependencies,
+       etc. *)
+    let m_sizes =
+      (* Scan the intial definitions of the state variables *)
+      IM.fold
+        (fun k i_def m_s ->
+           match i_def with
+           | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
+           | SkConst c -> IM.add k 1 m_s
+           | SkVar v ->
+             (match v with
+              | SkVarinfo vi -> IM.add k 0 m_s
+              | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
+              | _ -> raise Tuple_fail)
+           | _ -> failwith "Unsupported intialization.")
+        s_reach_consts IM.empty
+    in
+    let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
+    let max_m_sizes = max max_m_sizes
+        (if rec_let max_min_test loop_body then 1 else 0)
+    in
+    (if !debug then
+       printf "@.Max dependency length : %i@." max_m_sizes);
+    {
+      id = !no_sketches;
+      host_function = (check_option
+                         (get_fun cfile func_info.host_function.Cil.vname));
+      loop_name = func_info.loop_name;
+      scontext =
+        { state_vars = state_vars;
+          index_vars = index_set;
+          used_vars = func_info.lvariables.used_vars;
+          all_vars = func_info.lvariables.all_vars;
+          costly_exprs = ES.empty;
+        };
+      min_input_size = max_m_sizes;
+      uses_global_bound = sketch_obj#get_uses_global_bounds;
+      loop_body = loop_body;
+      join_body = join_body;
+      join_solution = SkLetExpr ([]);
+      init_values = IM.empty;
+      sketch_igu = sigu;
+      reaching_consts = s_reach_consts;
+      nested_functions = List.map transform_func func_info.inner_funcs;
+    }
+  in
+  List.map transform_func funcreps
 
 let find_new_variables sketch_rep =
   let new_sketch = discover sketch_rep in

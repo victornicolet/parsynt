@@ -1644,7 +1644,8 @@ type sketch_rep =
     join_solution : sklet;
     init_values : RAst.expr IM.t;
     sketch_igu : sigu;
-    reaching_consts : skExpr IM.t
+    reaching_consts : skExpr IM.t;
+    nested_functions : sketch_rep list;
   }
 
 let get_index_init sktch =

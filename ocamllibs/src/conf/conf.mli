@@ -12,3 +12,6 @@ val is_builtin_var: string -> bool
 val get_builtin: string -> builtins
 (** Verification parameters *)
 val verification_parameters : (int * int * int) list
+(* Naming conventions *)
+val inner_loop_func_name : string -> int -> string
+val is_inner_loop_func_name : string -> bool

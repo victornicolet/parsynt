@@ -23,3 +23,12 @@ let test () =
     loop_infos;
   printf "%s%sNEW IMPLEMENTATION: OK %s@." (color "b-green") (color "black")
     color_default;
+  Cil2Func.debug := true;
+  let func_infos = Canalyst.cil2func cfile (IM.of_ih loop_infos) in
+  List.iter
+    (fun (finfo : func_info) ->
+       let printer = new Cil2Func.cil2func_printer finfo.lvariables in
+       printer#fprintlet std_formatter finfo.func
+    ) func_infos;
+  let unsolved_sketches = Canalyst.func2sketch cfile func_infos in
+  List.iter (SPretty.pp_sketch_rep std_formatter) unsolved_sketches;

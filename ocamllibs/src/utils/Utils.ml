@@ -554,6 +554,7 @@ module IM = struct
     in
     im1_in_im2, im2_in_im1, im1_only, im2_only
 
+  let of_ih ih = IH.fold (fun k l m -> IntegerMap.add k l m) ih IntegerMap.empty
 end
 
 module PpTools = struct
