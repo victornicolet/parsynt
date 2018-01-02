@@ -245,6 +245,13 @@ let func2sketch cfile funcreps =
   in
   List.map transform_func funcreps
 
+
+(**
+   Finds auxiliary variables necessary to parallelize the function.
+   @param sketch_rep the problem representation.
+   @return a new problem represention where the function and the variables
+   have been modified.
+*)
 let find_new_variables sketch_rep =
   let new_sketch = discover sketch_rep in
   (** Apply some optimization to reduce the size of the function *)
