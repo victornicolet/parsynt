@@ -566,10 +566,14 @@ module PpTools = struct
       SM.empty
       ["black"; "red"; "green"; "yellow"; "blue"; "violet"; "cyan"; "white";
        "i"; "u"; "b"; "grey";
-       "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan"; "b-white"]
+       "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan";
+       "b-white"; "b-lightgray"; "b-brown";
+       "hi-underlined"; "hi-blinking"; "hi-inverted"; "hi-concealed"]
       ["[30m"; "[31m"; "[32m"; "[33m"; "[34m"; "[35m"; "[36m"; "[37m";
        "[3m"; "[4m"; "[1m"; "[2m";
-       "[100m"; "[101m"; "[102m"; "[103m";"[104m"; "[105m"; "[106m"; "[107m"]
+       "[100m"; "[101m"; "[102m"; "[103m";"[104m"; "[105m"; "[106m"; "[107m";
+       "[47m"; "[43m";
+       "[4m"; "[5m"; "[7m"; "[8m"]
 
   let color cname =
     try
@@ -601,6 +605,9 @@ module PpTools = struct
   let pp_comma_sep_list pf fmt =
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ") pf fmt
 
+  let pp_sep_nl fmt () = fprintf fmt "@."
+  let pp_sep_comma fmt () = fprintf fmt ", "
+  let pp_sep_brk fmt () = fprintf fmt "@;"
 
   (** Map printing *)
   let ppimap

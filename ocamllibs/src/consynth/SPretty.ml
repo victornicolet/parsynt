@@ -3,6 +3,7 @@ open Format
 open Utils
 open Racket
 
+
 module Ct = Utils.CilTools
 module VS = Utils.VS
 
@@ -729,14 +730,27 @@ let rec pp_c_sklet ?(p_id_assign = true) fmt sklet =
 let print_c_let = pp_c_sklet std_formatter
 let print_c_expr = pp_c_expr std_formatter
 
-let pp_sketch_rep fmt sketch =
-  fprintf fmt "@.%s%sSummary for %s (%i) :%s@.\t%sLoop body :%s@.%a@.\t%sJoin:%s@.%a@."
+let rec pp_sketch_rep fmt sketch =
+  fprintf fmt "@[<v 2>%s%sSummary for %s (%i) :%s@;\
+               %sLoop body :%s@;%a@;\
+               %sJoin:%s@;%a\n @;\
+               %s%a%s@]"
     (color "black") (color "b-green")
     sketch.loop_name sketch.id
     color_default
     (color "b") color_default
     pp_sklet sketch.loop_body
     (color "b") color_default
-    pp_sklet sketch.join_solution;
-  let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
-  printf "@.%a@." CilTools.fpps cbody
+    pp_sklet sketch.join_solution
+    (color "b-lightgray")
+    (fun fmt () ->
+       if List.length sketch.inner_functions > 0 then
+         fprintf fmt "@[<v 2>%sInner functions:%s\n@;%a@]"
+           (color "b-blue") color_default
+           (pp_print_list ~pp_sep:pp_sep_brk pp_sketch_rep)
+           sketch.inner_functions
+       else
+         ()) ()
+  color_default;
+  (* let fd, cbody = sklet_to_stmts sketch.host_function sketch.loop_body in
+   * printf "@.%a@." CilTools.fpps cbody *)

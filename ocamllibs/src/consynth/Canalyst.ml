@@ -61,22 +61,6 @@ let processFile fileName =
     loops
     IM.empty
 
-(** Create unique identifiers for each loop - each problem we
-    have to solve *)
-let loop_idents_index = ref 0
-
-let loop_idents = ref []
-
-let rec new_loop_ident fun_name =
-  if List.mem fun_name !loop_idents then
-    (let new_ident = fun_name ^ "_" ^ (string_of_int !loop_idents_index) in
-     incr loop_idents_index;
-     new_loop_ident new_ident)
-  else
-    (loop_idents := fun_name::(!loop_idents);
-     fun_name)
-
-
 (**
    Returns a tuple with :
    - list of variables ids that a read in the loop.
@@ -107,7 +91,8 @@ let rec init_func_info linfo =
     func = Cil2Func.empty_state ();
     figu = None;
     lid = linfo.lid;
-    loop_name = new_loop_ident linfo.lcontext.host_function.C.vname;
+    loop_name = Conf.inner_loop_func_name linfo.lcontext.host_function.Cil.vname
+        linfo.lid;
     lvariables = linfo.lvariables;
     reaching_consts = IM.empty;
     inner_funcs = List.map init_func_info linfo.inner_loops;
@@ -255,7 +240,7 @@ let func2sketch cfile funcreps =
       init_values = IM.empty;
       sketch_igu = sigu;
       reaching_consts = s_reach_consts;
-      nested_functions = List.map transform_func func_info.inner_funcs;
+      inner_functions = List.map transform_func func_info.inner_funcs;
     }
   in
   List.map transform_func funcreps
