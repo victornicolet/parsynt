@@ -3,7 +3,7 @@ open Loops
 open Format
 open TestUtils
 open Utils
-open SketchTypes
+open FuncTypes
 
 open PpTools
 
@@ -24,7 +24,7 @@ let wf_single_subst func =
      end
   | _ -> false
 
-let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
+let wf_test_case fname (func : C2F.letin) (sketch : fnlet) =
   match fname with
   (** Merge two if branches to form a ternary expression *)
   | "test_merge_ifs" ->
@@ -43,8 +43,8 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
     in
     let sketch_ok =
       match sketch with
-      | SkLetExpr ([_, SkQuestion(SkBinop(Lt, _, _), SkBinop(Minus, _, _),
-                                 SkBinop(Plus, _, _))]) -> true
+      | FnLetExpr ([_, FnQuestion(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
+                                 FnBinop(Plus, _, _))]) -> true
       | _ -> false
     in
     sketch_ok && nb_subs_ok
@@ -53,14 +53,14 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
   | "test_simple_loop" ->
     (wf_single_subst func) &&
     (match sketch with
-     | SkLetExpr ([_, SkBinop(Plus, SkBinop(Plus, _, _), _)]) -> true
+     | FnLetExpr ([_, FnBinop(Plus, FnBinop(Plus, _, _), _)]) -> true
      | _ -> false)
 
 
   (** A loop with more local variables than state variables. *)
   | "test_detect_state" ->
     (match sketch with
-     | SkLetExpr li ->
+     | FnLetExpr li ->
        (List.length li = 2)
      | _ -> false)
 
@@ -84,13 +84,13 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
       have been broken into conditionals by cil. *)
   | "test_rebuild_and" ->
     (match sketch with
-     | SkLetExpr ([(_, SkBinop(And, _, _))]) -> true
+     | FnLetExpr ([(_, FnBinop(And, _, _))]) -> true
      | _ -> false)
 
   (** Same thing for disjunctions. *)
   | "test_rebuild_or" ->
     (match sketch with
-     | SkLetExpr ([(_, SkBinop(Or, _, _))]) -> true
+     | FnLetExpr ([(_, FnBinop(Or, _, _))]) -> true
      | _ -> false)
 
 
@@ -98,10 +98,10 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
 
   | "test_balanced_bool" ->
     (match sketch with
-     | SkLetIn ([_, SkQuestion(SkVar(SkArray(_, _)),
-                             SkBinop(Plus, _, _),
-                             SkBinop(Minus, _, _))],
-                SkLetExpr([(_, SkQuestion(SkBinop(And, _, _),
+     | FnLetIn ([_, FnQuestion(FnVar(FnArray(_, _)),
+                             FnBinop(Plus, _, _),
+                             FnBinop(Minus, _, _))],
+                FnLetExpr([(_, FnQuestion(FnBinop(And, _, _),
                                           sk_one, sk_zero));
                           (_,_);(_,_)])) -> true
      | _ -> false)
@@ -110,58 +110,58 @@ let wf_test_case fname (func : C2F.letin) (sketch : sklet) =
    that the and is rebuilt *)
   | "test_and_in_if" ->
     (match sketch with
-     | SkLetExpr([(_, SkBinop(And, _, SkBinop(Ge, cnte, sk_zero)));
+     | FnLetExpr([(_, FnBinop(And, _, FnBinop(Ge, cnte, sk_zero)));
                   (_, cnte2)]) ->
        (cnte = cnte2) &&
          (match cnte with
-            SkBinop(Plus,
+            FnBinop(Plus,
                     _,
-                    SkQuestion(SkVar(SkArray _), SkConst _,
-                              SkConst _)) -> true
+                    FnQuestion(FnVar(FnArray _), FnConst _,
+                              FnConst _)) -> true
            |_ -> false)
      |_ -> false)
 
   (** The is_sorted example *)
   | "test_is_sorted" ->
     (match sketch with
-     | SkLetExpr([(_, SkBinop(And, _, SkBinop(Lt, _, aref)));(_, aref2)]) ->
-       (aref = aref2) && (match aref with | SkVar(SkArray (_, _)) -> true
+     | FnLetExpr([(_, FnBinop(And, _, FnBinop(Lt, _, aref)));(_, aref2)]) ->
+       (aref = aref2) && (match aref with | FnVar(FnArray (_, _)) -> true
                                           | _ ->false)
      | _ -> false)
 
   (** The drop-while example *)
   | "test_drop_while_pos_int" ->
     (match sketch with
-     | SkLetExpr ([(_, SkQuestion(SkBinop(And,
-                                          SkUnop(Not, SkBinop(Eq, _, _)),_),
+     | FnLetExpr ([(_, FnQuestion(FnBinop(And,
+                                          FnUnop(Not, FnBinop(Eq, _, _)),_),
                                   _, _));
-                   (_, SkQuestion(SkUnop(Not, _), _, _))]) -> true
+                   (_, FnQuestion(FnUnop(Not, _), _, _))]) -> true
      | _ -> false)
 
   | "test_alternating_sequence" ->
     (match sketch with
-     | SkLetExpr ([(_, SkVar (SkArray(_, _)));
-                    (_ , SkBinop(And,
-                                 SkVar(_),
-                                 SkQuestion(SkVar(_),_,_)))])-> true
+     | FnLetExpr ([(_, FnVar (FnArray(_, _)));
+                    (_ , FnBinop(And,
+                                 FnVar(_),
+                                 FnQuestion(FnVar(_),_,_)))])-> true
      | _ -> false)
 
 
   | "test_atoi" ->
     (match sketch with
-     | SkLetExpr([(_, SkBinop(Plus,
-                              SkBinop(Times, _, _),
+     | FnLetExpr([(_, FnBinop(Plus,
+                              FnBinop(Times, _, _),
                               _))]) -> true
      | _ -> false)
 
   | "test_s01" ->
     (match sketch with
-     | SkLetExpr([(s, (SkBinop (Or, SkVar s1, _)));
-                  (r, SkBinop(Or, SkBinop(And, SkVar s2, SkUnop(Not, _)),
-                              SkVar r1))])
-     | SkLetExpr([(s, (SkBinop (Or, SkVar s1, _)));
-                  (r, SkBinop(Or, SkVar s2,
-                              SkBinop(And, SkUnop(Not, _), SkVar r1)))]) ->
+     | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
+                  (r, FnBinop(Or, FnBinop(And, FnVar s2, FnUnop(Not, _)),
+                              FnVar r1))])
+     | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
+                  (r, FnBinop(Or, FnVar s2,
+                              FnBinop(And, FnUnop(Not, _), FnVar r1)))]) ->
                 s = s1 && s2 = s && r = r1
      | _ -> false)
 
@@ -215,7 +215,7 @@ let _test () =
            printf "All variables :%a@." VS.pvs allvars;
            printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
-           SPretty.printSklet sketch;
+           FPretty.printFnlet sketch;
            printf "@.";
          end;
        SM.add fname (stv, figu,func)

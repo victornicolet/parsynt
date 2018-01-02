@@ -2,8 +2,8 @@ open Sketch
 open Format
 open Utils
 open Utils.PpTools
-open SError
-open SketchTypes
+open FError
+open FuncTypes
 open SymbExe
 open VariableDiscovery
 open Loops
@@ -106,7 +106,7 @@ let rec init_func_info linfo =
     - init, guard and update of the enclosing loop
     - sketch of the join.
 *)
-type sigu = VS.t * (sklet * skExpr * sklet)
+type sigu = VS.t * (fnlet * fnExpr * fnlet)
 
 (**
    From cil loop bodies to intermediary function representation.
@@ -168,10 +168,10 @@ let func2sketch cfile funcreps =
         (fun vid cilc m ->
            let expect_type =
              try
-               (T.type_of_ciltyp
+               (type_of_ciltyp
                   ((VS.find_by_id vid var_set).Cil.vtype))
              with Not_found ->
-               T.Bottom
+               Bottom
            in
            match Sketch.Body.conv_init_expr expect_type cilc with
            | Some e -> IM.add vid e m
@@ -204,12 +204,12 @@ let func2sketch cfile funcreps =
       IM.fold
         (fun k i_def m_s ->
            match i_def with
-           | SkConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
-           | SkConst c -> IM.add k 1 m_s
-           | SkVar v ->
+           | FnConst c when c != Infnty && c != NInfnty -> IM.add k 0 m_s
+           | FnConst c -> IM.add k 1 m_s
+           | FnVar v ->
              (match v with
-              | SkVarinfo vi -> IM.add k 0 m_s
-              | SkArray (v, e) -> IM.add k (skArray_dep_len e) m_s
+              | FnVarinfo vi -> IM.add k 0 m_s
+              | FnArray (v, e) -> IM.add k (fnArray_dep_len e) m_s
               | _ -> raise Tuple_fail)
            | _ -> failwith "Unsupported intialization.")
         s_reach_consts IM.empty
@@ -236,9 +236,9 @@ let func2sketch cfile funcreps =
       uses_global_bound = sketch_obj#get_uses_global_bounds;
       loop_body = loop_body;
       join_body = join_body;
-      join_solution = SkLetExpr ([]);
+      join_solution = FnLetExpr ([]);
       init_values = IM.empty;
-      sketch_igu = sigu;
+      func_igu = sigu;
       reaching_consts = s_reach_consts;
       inner_functions = List.map transform_func func_info.inner_funcs;
     }
@@ -257,13 +257,13 @@ let find_new_variables sketch_rep =
   (** Apply some optimization to reduce the size of the function *)
   let nlb_opt = Sketch.Body.optims new_sketch.loop_body in
   let new_loop_body =
-    T.complete_final_state new_sketch.scontext.state_vars nlb_opt
+    complete_final_state new_sketch.scontext.state_vars nlb_opt
   in
   IH.copy_into VariableDiscovery.discovered_aux_alltime
     SketchJoin.auxiliary_variables;
 
   let join_body =
-    T.complete_final_state new_sketch.scontext.state_vars
+    complete_final_state new_sketch.scontext.state_vars
       (Sketch.Join.build new_sketch.scontext.state_vars nlb_opt)
   in
   {

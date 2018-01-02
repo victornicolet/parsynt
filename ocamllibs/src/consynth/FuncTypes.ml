@@ -8,7 +8,7 @@ open Sets
    1 - Expressions & functions.
    2-  Symbolic types, operators, helper functions.
    3 - Recursors.
-   4 - Scheme & sketch transformers.
+   4 - Scheme & func transformers.
    5 - Expression sets.
    6 - Index variables management.
    7 - Typing expressions.
@@ -22,7 +22,7 @@ exception BadType of string
 let failontype s = raise (BadType s)
 
 (** ------------------- 1 - EXPRESSIONS & FUNCTIONS---------------------------*)
-(** Internal type for building sketches *)
+(** Internal type for building funces *)
 type operator_type =
   | Arith                       (* Arithmetic only *)
   | Basic                       (* Airthmetic and min/max *)
@@ -34,43 +34,43 @@ exception Tuple_fail            (* Tuples are not supported for the moment. *)
 type hole_type = symbolic_type * operator_type
 
 (* Type for let-expressions *)
-and sklet =
-  | SkLetExpr of (skLVar * skExpr) list
+and fnlet =
+  | FnLetExpr of (fnLVar * fnExpr) list
   (**  (let ([var expr]) let)*)
-  | SkLetIn of (skLVar * skExpr) list * sklet
+  | FnLetIn of (fnLVar * fnExpr) list * fnlet
 
 (* Type for variables *)
-and skLVar =
-  | SkVarinfo of Cil.varinfo
+and fnLVar =
+  | FnVarinfo of Cil.varinfo
   (** Access to an array cell *)
-  | SkArray of skLVar * skExpr
+  | FnArray of fnLVar * fnExpr
   (** Records : usefule to represent the state *)
-  | SkTuple of VS.t
+  | FnTuple of VS.t
 
 (* Type for expressions *)
-and skExpr =
-  | SkVar of skLVar
-  | SkConst of constants
-  | SkFun of sklet
-  | SkRec of  igu * sklet
-  | SkCond of skExpr * sklet * sklet
-  | SkBinop of symb_binop * skExpr * skExpr
-  | SkUnop of symb_unop * skExpr
-  | SkApp of symbolic_type * (Cil.varinfo option) * (skExpr list)
-  | SkQuestion of skExpr * skExpr * skExpr
-  | SkHoleL of hole_type * skLVar * CS.t
-  | SkHoleR of hole_type * CS.t
+and fnExpr =
+  | FnVar of fnLVar
+  | FnConst of constants
+  | FnFun of fnlet
+  | FnRec of  igu * fnlet
+  | FnCond of fnExpr * fnlet * fnlet
+  | FnBinop of symb_binop * fnExpr * fnExpr
+  | FnUnop of symb_unop * fnExpr
+  | FnApp of symbolic_type * (Cil.varinfo option) * (fnExpr list)
+  | FnQuestion of fnExpr * fnExpr * fnExpr
+  | FnHoleL of hole_type * fnLVar * CS.t
+  | FnHoleR of hole_type * CS.t
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
-  | SkSizeof of symbolic_type
-  | SkSizeofE of skExpr
-  | SkSizeofStr of string
-  | SkAlignof of symbolic_type
-  | SkAlignofE of skExpr
-  | SkCastE of symbolic_type * skExpr
-  | SkAddrof of skExpr
-  | SkAddrofLabel of Cil.stmt ref
-  | SkStartOf of skExpr
+  | FnSizeof of symbolic_type
+  | FnSizeofE of fnExpr
+  | FnSizeofStr of string
+  | FnAlignof of symbolic_type
+  | FnAlignofE of fnExpr
+  | FnCastE of symbolic_type * fnExpr
+  | FnAddrof of fnExpr
+  | FnAddrofLabel of Cil.stmt ref
+  | FnStartOf of fnExpr
 
 (** Structure types for Rosette sketches *)
 
@@ -254,9 +254,9 @@ let is_op_c_fun op =
   | Max | Min -> true
   | _ -> false
 
-(** The identity function in the functional representation of the sketch. *)
-let identity_sk =
-  SkLetExpr ([])
+(** The identity function in the functional representation of the func. *)
+let identity_fn =
+  FnLetExpr ([])
 
 
 (** Translate C Standard Library function names in
@@ -332,7 +332,7 @@ let is_comparison_op =
 *)
 
 (* Some predefined constatns in C can be translated to expressions
-   in the sketch functional represenation.out_newline.
+   in the func functional represenation.out_newline.
 *)
 
 let c_constant  ccst =
@@ -435,14 +435,14 @@ let is_exp_function ef =
 
 
 (**
-   Generate a SkVar expression from a varinfo, with possible offsets
+   Generate a FnVar expression from a varinfo, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined
    constant.
 *)
 let mkVar ?(offsets = []) vi =
   List.fold_left
-    (fun sklvar offset -> SkArray (sklvar, offset))
-    (SkVarinfo vi)
+    (fun fnlvar offset -> FnArray (fnlvar, offset))
+    (FnVarinfo vi)
     offsets
 
 (**
@@ -451,8 +451,8 @@ let mkVar ?(offsets = []) vi =
 *)
 let mkVarExpr ?(offsets = []) vi =
   match c_constant vi.Cil.vname with
-  | Some c -> SkConst c
-  | None -> SkVar (mkVar ~offsets:offsets vi)
+  | Some c -> FnConst c
+  | None -> FnVar (mkVar ~offsets:offsets vi)
 
 (*
    In the join solution we need to differentiate left/right states. Right state
@@ -473,26 +473,26 @@ let is_right_state_varname s =
 
 
 (* Compare variables by comparing the variable id of their varinfo. *)
-let rec cmpVar sklvar1 sklvar2 =
-  match sklvar1, sklvar2 with
-  | SkVarinfo vi, SkVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
-  | SkArray (sklv1, _), SkArray (sklv2, _) ->
-    cmpVar sklv1 sklv2
-  | SkVarinfo _, SkTuple _ -> -1
-  | SkTuple _ , _ -> 1
-  | SkArray _ , _ -> 1
-  | _ , SkArray _ -> -1
+let rec cmpVar fnlvar1 fnlvar2 =
+  match fnlvar1, fnlvar2 with
+  | FnVarinfo vi, FnVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
+  | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
+    cmpVar fnlv1 fnlv2
+  | FnVarinfo _, FnTuple _ -> -1
+  | FnTuple _ , _ -> 1
+  | FnArray _ , _ -> 1
+  | _ , FnArray _ -> -1
 
 
 (* Get the varinfo of a variable. *)
-let rec vi_of sklv =
-  match sklv with
-  | SkVarinfo vi' -> Some vi'
-  | SkArray (sklv', _) -> vi_of sklv'
-  | SkTuple _ -> None
+let rec vi_of fnlv =
+  match fnlv with
+  | FnVarinfo vi' -> Some vi'
+  | FnArray (fnlv', _) -> vi_of fnlv'
+  | FnTuple _ -> None
 
 
-let is_vi sklv vi = maybe_apply_default (fun x -> vi = x) (vi_of sklv) false
+let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
 
 
 let is_reserved_name s = not (uninterpeted s)
@@ -501,17 +501,17 @@ let is_reserved_name s = not (uninterpeted s)
 (** Get the dependency length of an array variable. We assume very
     simple offset expressions.*)
 
-let rec skArray_dep_len e =
+let rec fnArray_dep_len e =
   match e with
-  | SkVar v ->
-    (match v with SkVarinfo vi -> 1
-                | SkArray (v, e') -> skArray_dep_len e'
+  | FnVar v ->
+    (match v with FnVarinfo vi -> 1
+                | FnArray (v, e') -> fnArray_dep_len e'
                 | _  -> raise Tuple_fail)
 
-  | SkConst (CInt i) -> i + 1
-  | SkConst (CInt64 i) -> (Int64.to_int i) + 1
-  | SkBinop (op, e1, e2) when op = Plus || op = Minus ->
-    skArray_dep_len e1 + skArray_dep_len e2
+  | FnConst (CInt i) -> i + 1
+  | FnConst (CInt64 i) -> (Int64.to_int i) + 1
+  | FnBinop (op, e1, e2) when op = Plus || op = Minus ->
+    fnArray_dep_len e1 + fnArray_dep_len e2
   | _ ->
     eprintf "ERROR : cannot guess min array length of expression.@.";
     failwith "Unsupported array offset expression."
@@ -528,7 +528,7 @@ let remove_reserved_vars vs =
 (** When an expression is supposed to be a constant *)
 let force_constant expr =
   match expr with
-  | SkConst c -> c
+  | FnConst c -> c
   | _ -> failwith "Force_constant failure."
 
 
@@ -536,14 +536,14 @@ let mkOp ?(t = Unit) vi argl =
   let fname = vi.Cil.vname in
   match symb_unop_of_fname fname with
   | Some unop ->
-    SkUnop (unop, List.hd argl)
+    FnUnop (unop, List.hd argl)
   | None ->
     begin
       match symb_binop_of_fname fname with
       | Some binop ->
-        SkBinop (binop, List.hd argl, List.nth argl 2)
+        FnBinop (binop, List.hd argl, List.nth argl 2)
       | None ->
-        SkApp (t, Some vi, argl)
+        FnApp (t, Some vi, argl)
     end
 
 
@@ -624,10 +624,10 @@ type 'a recursor=
   {
     join : 'a -> 'a -> 'a;
     init : 'a;
-    case : skExpr -> bool;
-    on_case : (skExpr -> 'a) -> skExpr -> 'a;
+    case : fnExpr -> bool;
+    on_case : (fnExpr -> 'a) -> fnExpr -> 'a;
     on_const : constants -> 'a;
-    on_var : skLVar -> 'a;
+    on_var : fnLVar -> 'a;
   }
 
 (** Helper for recursion in expressions
@@ -643,48 +643,48 @@ type 'a recursor=
 let rec_expr
     (join : 'a -> 'a -> 'a)
     (init : 'a)
-    (case : skExpr -> bool)
-    (case_handler : (skExpr -> 'a) -> skExpr -> 'a)
+    (case : fnExpr -> bool)
+    (case_handler : (fnExpr -> 'a) -> fnExpr -> 'a)
     (const_handler: constants -> 'a)
-    (var_handler : skLVar -> 'a)
-    (expre : skExpr) : 'a =
+    (var_handler : fnLVar -> 'a)
+    (expre : fnExpr) : 'a =
 
   let rec recurse_aux =
     function
     | e when case e -> case_handler recurse_aux e
-    | SkVar v -> var_handler v
-    | SkConst c -> const_handler c
+    | FnVar v -> var_handler v
+    | FnConst c -> const_handler c
 
-    | SkBinop (_, e1, e2) ->
+    | FnBinop (_, e1, e2) ->
       join (recurse_aux e1) (recurse_aux e2)
 
-    | SkCastE (_, e)
-    | SkAlignofE e
-    | SkAddrof e
-    | SkSizeofE e | SkStartOf e
-    | SkUnop (_, e) -> recurse_aux e
+    | FnCastE (_, e)
+    | FnAlignofE e
+    | FnAddrof e
+    | FnSizeofE e | FnStartOf e
+    | FnUnop (_, e) -> recurse_aux e
 
-    | SkQuestion (c, e1, e2) ->
+    | FnQuestion (c, e1, e2) ->
       join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
 
-    | SkApp (_, _, el) ->
+    | FnApp (_, _, el) ->
       List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
-    | SkFun letin
-    | SkRec (_, letin) -> recurse_letin letin
+    | FnFun letin
+    | FnRec (_, letin) -> recurse_letin letin
 
-    | SkCond (c, l1, l2) ->
+    | FnCond (c, l1, l2) ->
       join (recurse_aux c) (join (recurse_letin l1) (recurse_letin l2))
 
     | _ -> init
 
   and recurse_letin =
     function
-    | SkLetExpr velist ->
+    | FnLetExpr velist ->
       List.fold_left (fun acc (v, e) -> join acc (recurse_aux e))
         init velist
 
-    | SkLetIn (velist, letin) ->
+    | FnLetIn (velist, letin) ->
       let in_letin = recurse_letin letin in
       List.fold_left
         (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
@@ -694,14 +694,14 @@ let rec_expr
 let rec_expr2 (r : 'a recursor) =
   rec_expr r.join r.init r.case r.on_case r.on_const r.on_var
 
-let rec rec_let (r : 'a recursor) sklet =
-  match sklet with
-  | SkLetIn (ve_list, letin) ->
+let rec rec_let (r : 'a recursor) fnlet =
+  match fnlet with
+  | FnLetIn (ve_list, letin) ->
     let letin_res = rec_let r letin in
     List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
       letin_res ve_list
 
-  | SkLetExpr ve_list ->
+  | FnLetExpr ve_list ->
     List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
       r.init ve_list
 
@@ -710,9 +710,9 @@ let max_min_test =
     { join = (fun a b -> a || b);
       init = false;
       case = (fun e ->
-          match e with SkBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+          match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
       on_case = (fun f e ->
-          match e with SkBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+          match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
       on_const = (fun e -> false);
       on_var = (fun e -> true);
     }
@@ -721,68 +721,68 @@ let max_min_test =
 (** Another recursion helper : a syntax tree tranformer *)
 type  ast_transformer =
   {
-    case : skExpr -> bool;
-    on_case : (skExpr -> skExpr) -> skExpr -> skExpr;
+    case : fnExpr -> bool;
+    on_case : (fnExpr -> fnExpr) -> fnExpr -> fnExpr;
     on_const : constants -> constants;
-    on_var : skLVar -> skLVar;
+    on_var : fnLVar -> fnLVar;
   }
 
 let transform_expr
-    (case : skExpr -> bool)
-    (case_handler : (skExpr -> skExpr) -> skExpr -> skExpr)
+    (case : fnExpr -> bool)
+    (case_handler : (fnExpr -> fnExpr) -> fnExpr -> fnExpr)
     (const_handler: constants -> constants)
-    (var_handler : skLVar -> skLVar)
-    (expre : skExpr) : 'a =
+    (var_handler : fnLVar -> fnLVar)
+    (expre : fnExpr) : 'a =
 
   let rec recurse_aux =
     function
     | e when case e ->
       case_handler recurse_aux e
 
-    | SkVar v -> SkVar (var_handler v)
-    | SkConst c -> SkConst (const_handler c)
+    | FnVar v -> FnVar (var_handler v)
+    | FnConst c -> FnConst (const_handler c)
 
-    | SkBinop (op, e1, e2) ->
-      SkBinop (op, (recurse_aux e1), (recurse_aux e2))
+    | FnBinop (op, e1, e2) ->
+      FnBinop (op, (recurse_aux e1), (recurse_aux e2))
 
-    | SkCastE (t, e) -> SkCastE (t, recurse_aux e)
-    | SkAlignofE e -> SkAlignofE (recurse_aux e)
-    | SkAddrof e -> SkAddrof (recurse_aux e)
-    | SkSizeofE e -> SkSizeofE (recurse_aux e)
-    | SkStartOf e -> SkStartOf (recurse_aux e)
-    | SkUnop (op, e) -> SkUnop (op, recurse_aux e)
+    | FnCastE (t, e) -> FnCastE (t, recurse_aux e)
+    | FnAlignofE e -> FnAlignofE (recurse_aux e)
+    | FnAddrof e -> FnAddrof (recurse_aux e)
+    | FnSizeofE e -> FnSizeofE (recurse_aux e)
+    | FnStartOf e -> FnStartOf (recurse_aux e)
+    | FnUnop (op, e) -> FnUnop (op, recurse_aux e)
 
-    | SkQuestion (c, e1, e2) ->
-      SkQuestion (recurse_aux c, recurse_aux e1, recurse_aux e2)
+    | FnQuestion (c, e1, e2) ->
+      FnQuestion (recurse_aux c, recurse_aux e1, recurse_aux e2)
 
-    | SkApp (a, b, el) ->
-      SkApp (a, b, List.map (fun e -> recurse_aux e) el)
+    | FnApp (a, b, el) ->
+      FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
-    | SkFun letin -> SkFun (recurse_letin letin)
-    | SkRec (igu, letin) -> SkRec (igu, recurse_letin letin)
+    | FnFun letin -> FnFun (recurse_letin letin)
+    | FnRec (igu, letin) -> FnRec (igu, recurse_letin letin)
 
-    | SkCond (c, l1, l2) ->
-      SkCond (recurse_aux c, recurse_letin l1, recurse_letin l2)
+    | FnCond (c, l1, l2) ->
+      FnCond (recurse_aux c, recurse_letin l1, recurse_letin l2)
 
     | e -> e
 
   and recurse_letin =
     function
-    | SkLetExpr velist ->
-      SkLetExpr (List.map (fun (v, e) -> (v, recurse_aux e)) velist)
+    | FnLetExpr velist ->
+      FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux e)) velist)
 
-    | SkLetIn (velist, letin) ->
+    | FnLetIn (velist, letin) ->
       let in_letin = recurse_letin letin in
-      SkLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_letin)
+      FnLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_letin)
   in
   recurse_aux expre
 
-let rec transform_exprs (transformer : skExpr -> skExpr) =
+let rec transform_exprs (transformer : fnExpr -> fnExpr) =
   function
-  | SkLetExpr ve_list ->
-    SkLetExpr (List.map (fun (v, e) -> (v, transformer e)) ve_list)
-  | SkLetIn (ve_list, letin) ->
-    SkLetIn ((List.map (fun (v, e) -> (v, transformer e)) ve_list),
+  | FnLetExpr ve_list ->
+    FnLetExpr (List.map (fun (v, e) -> (v, transformer e)) ve_list)
+  | FnLetIn (ve_list, letin) ->
+    FnLetIn ((List.map (fun (v, e) -> (v, transformer e)) ve_list),
              transform_exprs transformer letin)
 
 let transform_expr2 tr =
@@ -794,52 +794,52 @@ let transform_let tr =
 (** Transformation with extra boolean argument *)
 let transform_expr_flag
     (top : bool)
-    (case : bool -> skExpr -> bool)
-    (case_handler : bool-> (bool -> skExpr -> skExpr) -> skExpr -> skExpr)
+    (case : bool -> fnExpr -> bool)
+    (case_handler : bool-> (bool -> fnExpr -> fnExpr) -> fnExpr -> fnExpr)
     (const_handler: bool -> constants -> constants)
-    (var_handler : bool ->skLVar -> skLVar)
-    (expre : skExpr) : 'a =
+    (var_handler : bool ->fnLVar -> fnLVar)
+    (expre : fnExpr) : 'a =
 
   let rec recurse_aux flag =
     function
     | e when case flag e ->
       case_handler flag recurse_aux e
 
-    | SkVar v -> SkVar(var_handler flag v)
-    | SkConst c -> SkConst (const_handler flag c)
+    | FnVar v -> FnVar(var_handler flag v)
+    | FnConst c -> FnConst (const_handler flag c)
 
-    | SkBinop (op, e1, e2) ->
-      SkBinop (op, (recurse_aux flag e1), (recurse_aux flag e2))
+    | FnBinop (op, e1, e2) ->
+      FnBinop (op, (recurse_aux flag e1), (recurse_aux flag e2))
 
-    | SkCastE (t, e) -> SkCastE (t, recurse_aux flag e)
-    | SkAlignofE e -> SkAlignofE (recurse_aux flag e)
-    | SkAddrof e -> SkAddrof (recurse_aux flag e)
-    | SkSizeofE e -> SkSizeofE (recurse_aux flag e)
-    | SkStartOf e -> SkStartOf (recurse_aux flag e)
-    | SkUnop (op, e) -> SkUnop (op, recurse_aux flag e)
+    | FnCastE (t, e) -> FnCastE (t, recurse_aux flag e)
+    | FnAlignofE e -> FnAlignofE (recurse_aux flag e)
+    | FnAddrof e -> FnAddrof (recurse_aux flag e)
+    | FnSizeofE e -> FnSizeofE (recurse_aux flag e)
+    | FnStartOf e -> FnStartOf (recurse_aux flag e)
+    | FnUnop (op, e) -> FnUnop (op, recurse_aux flag e)
 
-    | SkQuestion (c, e1, e2) ->
-      SkQuestion (recurse_aux flag c, recurse_aux flag e1, recurse_aux flag e2)
+    | FnQuestion (c, e1, e2) ->
+      FnQuestion (recurse_aux flag c, recurse_aux flag e1, recurse_aux flag e2)
 
-    | SkApp (a, b, el) ->
-      SkApp (a, b, List.map (fun e -> recurse_aux flag e) el)
+    | FnApp (a, b, el) ->
+      FnApp (a, b, List.map (fun e -> recurse_aux flag e) el)
 
-    | SkFun letin -> SkFun (recurse_letin flag letin)
-    | SkRec (igu, letin) -> SkRec (igu, recurse_letin flag letin)
+    | FnFun letin -> FnFun (recurse_letin flag letin)
+    | FnRec (igu, letin) -> FnRec (igu, recurse_letin flag letin)
 
-    | SkCond (c, l1, l2) ->
-      SkCond (recurse_aux flag c, recurse_letin flag l1, recurse_letin flag l2)
+    | FnCond (c, l1, l2) ->
+      FnCond (recurse_aux flag c, recurse_letin flag l1, recurse_letin flag l2)
 
     | e -> e
 
   and recurse_letin flag =
     function
-    | SkLetExpr velist ->
-      SkLetExpr (List.map (fun (v, e) -> (v, recurse_aux flag e)) velist)
+    | FnLetExpr velist ->
+      FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux flag e)) velist)
 
-    | SkLetIn (velist, letin) ->
+    | FnLetIn (velist, letin) ->
       let in_letin = recurse_letin flag letin in
-      SkLetIn (List.map (fun (v, e) ->
+      FnLetIn (List.map (fun (v, e) ->
           (v, (recurse_aux flag e))) velist, in_letin)
   in
   recurse_aux top expre
@@ -855,8 +855,8 @@ let rec replace_expression ?(in_subscripts = false)
   let var_handler v =
     if in_subscripts then
       match v with
-      | SkArray (v, e) ->
-        SkArray (v,
+      | FnArray (v, e) ->
+        FnArray (v,
                  replace_expression ~in_subscripts:true ~to_replace:tr ~by:b
                    ~ine:e)
       | _ -> v
@@ -869,12 +869,12 @@ let rec replace_expression ?(in_subscripts = false)
 let rec apply_substutions subs e =
   let case e =
     match e with
-    | SkVar (SkVarinfo vi) -> true
+    | FnVar (FnVarinfo vi) -> true
     | _ -> false
   in
   let case_handler rfunc e =
     match e with
-    | SkVar (SkVarinfo vi) ->
+    | FnVar (FnVarinfo vi) ->
       (try IM.find vi.Cil.vid subs with Not_found -> e)
     | _ -> rfunc e
   in
@@ -889,8 +889,8 @@ let rec replace_expression_in_subscripts
   let const_handler c = c in
   let var_handler v =
     match v with
-    | SkArray (v, e) ->
-      SkArray (v, replace_expression ~in_subscripts:true ~to_replace:tr ~by:b ~ine:e)
+    | FnArray (v, e) ->
+      FnArray (v, replace_expression ~in_subscripts:true ~to_replace:tr ~by:b ~ine:e)
     | _ -> v
   in
   transform_expr case case_handler const_handler var_handler exp
@@ -902,7 +902,7 @@ let replace_all_subs ~tr:el ~by:oe ~ine:e =
          ~to_replace:tr ~by:b ~ine:ne)
     e el oe
 
-let rec sk_uses vs expr =
+let rec fn_uses vs expr =
   let join a b = a || b in
   let case e = false in
   let case_handler f e =  false in
@@ -918,54 +918,54 @@ let optype_rec =
     case =
       (fun e ->
          match e with
-         | SkUnop (op, e) -> true
-         | SkBinop (op, e1, e2) -> true
+         | FnUnop (op, e) -> true
+         | FnBinop (op, e1, e2) -> true
          | _ -> false);
     on_case =
       (fun f e ->
          match e with
-         | SkUnop (op, e) ->
+         | FnUnop (op, e) ->
            join_optypes (optype_of_unop op) (f e)
-         | SkBinop (op, e1, e2) ->
+         | FnBinop (op, e1, e2) ->
            join_optypes (join_optypes (optype_of_binop op) (f e1)) (f e2)
          | _ -> NotNum);
     on_const = (fun _ -> NotNum);
     on_var = (fun _ -> NotNum);}
 
 
-let analyze_optype (e : skExpr) : operator_type = rec_expr2 optype_rec e
+let analyze_optype (e : fnExpr) : operator_type = rec_expr2 optype_rec e
 
-let analyze_optype_l (l : sklet) : operator_type = rec_let optype_rec l
+let analyze_optype_l (l : fnlet) : operator_type = rec_let optype_rec l
 
 
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
   let aux_rem_from_list el =
     List.filter
-      (fun (v,e) -> not (e = SkVar v)) el
+      (fun (v,e) -> not (e = FnVar v)) el
   in
   match func with
-  | SkLetExpr el -> SkLetExpr (aux_rem_from_list el)
-  | SkLetIn (el, c) -> SkLetIn (aux_rem_from_list el, remove_id_binding c)
+  | FnLetExpr el -> FnLetExpr (aux_rem_from_list el)
+  | FnLetIn (el, c) -> FnLetIn (aux_rem_from_list el, remove_id_binding c)
 
 let rec compose func1 func2 =
   match func1 with
-  | SkLetExpr el -> SkLetIn (el, func2)
-  | SkLetIn (el, c) -> SkLetIn (el, compose c func2)
+  | FnLetExpr el -> FnLetIn (el, func2)
+  | FnLetIn (el, c) -> FnLetIn (el, compose c func2)
 
 let compose_head assignments func =
   match assignments with
   | [] -> func
-  | _ -> SkLetIn (assignments, func)
+  | _ -> FnLetIn (assignments, func)
 
 let rec compose_tail assignments func =
   match assignments with
   | [] -> func
   | _ ->
     match func with
-    | SkLetExpr el ->
-      SkLetIn (el, SkLetExpr assignments)
-    | SkLetIn (el, l) -> SkLetIn (el, compose_tail assignments l)
+    | FnLetExpr el ->
+      FnLetIn (el, FnLetExpr assignments)
+    | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
 
 let complete_with_state stv el =
   (* Map the final expressions *)
@@ -988,33 +988,33 @@ let complete_with_state stv el =
 
 let rec complete_final_state stv func =
   match func with
-  | SkLetExpr el -> SkLetExpr (complete_with_state stv el)
-  | SkLetIn (el, l) -> SkLetIn (el, complete_final_state stv l)
+  | FnLetExpr el -> FnLetExpr (complete_with_state stv el)
+  | FnLetIn (el, l) -> FnLetIn (el, complete_final_state stv l)
 
 
-let rec used_in_skexpr e =
+let rec used_in_fnexpr e =
   let join = VS.union in
   let init = VS.empty in
   let case e = false in
   let case_h f e = VS.empty in
   let rec var_handler v =
     match v with
-    | SkVarinfo vi -> VS.singleton vi
-    | SkArray (v0, e) ->
-      VS.union (var_handler v0) (used_in_skexpr e)
+    | FnVarinfo vi -> VS.singleton vi
+    | FnArray (v0, e) ->
+      VS.union (var_handler v0) (used_in_fnexpr e)
     | _ -> VS.empty
   in
   let const_handler c= VS.empty in
   rec_expr join init case case_h const_handler var_handler e
 
 
-let rec used_in_sklet =
+let rec used_in_fnlet =
   function
-  | SkLetIn (ve_list, letin) ->
-    let bs1, us1 = (used_in_sklet letin) in
+  | FnLetIn (ve_list, letin) ->
+    let bs1, us1 = (used_in_fnlet letin) in
     let bs2, us2 = (used_in_assignments ve_list) in
     (VS.union bs1 bs2, VS.union us1 us2)
-  | SkLetExpr ve_list ->
+  | FnLetExpr ve_list ->
     used_in_assignments ve_list
 
 and used_in_assignments ve_list =
@@ -1024,16 +1024,16 @@ and used_in_assignments ve_list =
           (match vi_of v with
            | Some vi -> VS.singleton vi
            | None -> VS.empty),
-        VS.union use_set (used_in_skexpr e)))
+        VS.union use_set (used_in_fnexpr e)))
     (VS.empty, VS.empty) ve_list
 
 
-(** ------------------------ 4 - SCHEME <-> SKETCH -------------------------- *)
-(** Translate basic scheme to the Sketch expressions
+(** ------------------------ 4 - SCHEME <-> FUNC -------------------------- *)
+(** Translate basic scheme to the Func expressions
     @param env a mapping from variable ids to varinfos.
 *)
 
-let errmsg_unexpected_sklet unex_let =
+let errmsg_unexpected_fnlet unex_let =
   (fprintf str_formatter "Expected a translated expression,\
                           received for tranlsation @; %a @."
      RAst.pp_expr unex_let;
@@ -1072,7 +1072,7 @@ let get_binop_of_scm (op : RAst.op) =
   | Or -> Or
   | Min -> Min
   | Max -> Max
-  | Not -> failwith "Scm to sk : Not is not a binary operator !"
+  | Not -> failwith "Scm to fn : Not is not a binary operator !"
   | _ -> failwith "Car, cdr, Null and Load are not yet supported"
 
 let get_unop_of_scm  (op : RAst.op)=
@@ -1127,64 +1127,64 @@ let hole_var_name = "??_hole"
 let hole_var = Cil.makeVarinfo false hole_var_name (Cil.TVoid [])
 
 
-let remove_hole_vars (expr: skExpr) : skExpr =
+let remove_hole_vars (expr: fnExpr) : fnExpr =
   let rec aux_rem_h t e =
     match e with
-    | SkVar (SkVarinfo v) when v = hole_var ->
+    | FnVar (FnVarinfo v) when v = hole_var ->
       (match t with
-       | Num -> SkConst (CInt 0)
-       | _ -> SkConst (CBool true))
+       | Num -> FnConst (CInt 0)
+       | _ -> FnConst (CBool true))
 
-    | SkBinop (op, e1, e2) ->
+    | FnBinop (op, e1, e2) ->
       let tdown = type_of_binop_args op in
-      SkBinop (op, aux_rem_h tdown e1, aux_rem_h tdown e2)
+      FnBinop (op, aux_rem_h tdown e1, aux_rem_h tdown e2)
 
-    | SkUnop (op, e0) ->
+    | FnUnop (op, e0) ->
       let tdown = type_of_unop_args op in
-      SkUnop (op, aux_rem_h tdown e0)
+      FnUnop (op, aux_rem_h tdown e0)
 
-    | SkQuestion (c, e1, e2) ->
-      SkQuestion (aux_rem_h Boolean c, aux_rem_h t e1, aux_rem_h t e2)
+    | FnQuestion (c, e1, e2) ->
+      FnQuestion (aux_rem_h Boolean c, aux_rem_h t e1, aux_rem_h t e2)
 
-    | SkApp (t, vo, el) ->
-      SkApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
+    | FnApp (t, vo, el) ->
+      FnApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
 
     | _ -> e
   in
   aux_rem_h Unit expr
 
-let rec remove_hole_vars_sklet (sklet : sklet) : sklet =
-  match sklet with
-  | SkLetExpr ve_list ->
-    SkLetExpr (List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list)
-  | SkLetIn (ve_list, letin) ->
-    SkLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
-             remove_hole_vars_sklet letin)
+let rec remove_hole_vars_fnlet (fnlet : fnlet) : fnlet =
+  match fnlet with
+  | FnLetExpr ve_list ->
+    FnLetExpr (List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list)
+  | FnLetIn (ve_list, letin) ->
+    FnLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
+             remove_hole_vars_fnlet letin)
 
-let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
-  let rec translate (scm : RAst.expr) : sklet option * skExpr option =
+let rec scm_to_fn (scm : RAst.expr) : fnlet option * fnExpr option =
+  let rec translate (scm : RAst.expr) : fnlet option * fnExpr option =
     try
       match scm with
-      | Int_e i -> None, Some (SkConst (CInt i))
-      | Float_e f -> None, Some (SkConst (CReal f))
-      | Str_e s -> None, Some (SkConst (CString s))
-      | Bool_e b -> None, Some (SkConst (CBool b))
+      | Int_e i -> None, Some (FnConst (CInt i))
+      | Float_e f -> None, Some (FnConst (CReal f))
+      | Str_e s -> None, Some (FnConst (CString s))
+      | Bool_e b -> None, Some (FnConst (CBool b))
       | Id_e id ->
         (match id with
-         | "??" -> None, Some (SkVar (SkVarinfo hole_var))
+         | "??" -> None, Some (FnVar (FnVarinfo hole_var))
          | _ ->
            (let vi = scm_register id in
-            None, Some (SkVar (SkVarinfo vi))))
-      | Nil_e -> None, Some (SkConst (CNil))
+            None, Some (FnVar (FnVarinfo vi))))
+      | Nil_e -> None, Some (FnConst (CNil))
 
       | Binop_e (op, e1, e2) ->
         let _, e1' = translate  e1 in
         let _, e2' = translate  e2 in
-        None, Some (SkBinop (get_binop_of_scm op, co e1', co e2'))
+        None, Some (FnBinop (get_binop_of_scm op, co e1', co e2'))
 
       | Unop_e (op, e) ->
         let _, e' = translate  e in
-        None, Some (SkUnop (get_unop_of_scm op, co e'))
+        None, Some (FnUnop (get_unop_of_scm op, co e'))
 
       | Cons_e (x, y)-> failwith "Cons not supported"
 
@@ -1194,11 +1194,11 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
             (fun (ids, e) ->
                let _, exp = translate e in
                let vi = scm_register ids in
-               (SkVarinfo vi), co exp)
+               (FnVarinfo vi), co exp)
             bindings
         in
-        let sk_let, _ = translate  e2 in
-        Some (SkLetIn (bds, co sk_let)), None
+        let fn_let, _ = translate  e2 in
+        Some (FnLetIn (bds, co fn_let)), None
 
       | If_e (c, e1, e2) ->
         let _, cond = translate  c in
@@ -1206,11 +1206,11 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
         let le2, ex2 = translate  e2 in
         begin
           if is_some ex1 && is_some ex2 then
-            None, Some (SkQuestion (co cond, co ex1, co ex2))
+            None, Some (FnQuestion (co cond, co ex1, co ex2))
           else
             begin
               try
-                None, Some (SkCond (co cond, co le1, co le2))
+                None, Some (FnCond (co cond, co le1, co le2))
               with Failure s ->
                 failwith (s^"\nUnexpected form in conditional.")
             end
@@ -1221,10 +1221,10 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
          | Id_e s ->
            (match s with
             | "vector-ref" ->
-              (None, Some (SkVar (to_array_var arglist)))
+              (None, Some (FnVar (to_array_var arglist)))
 
             | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
-              (Some (rosette_state_struct_to_sklet arglist), None)
+              (Some (rosette_state_struct_to_fnlet arglist), None)
 
             | "identity" ->
               translate (arglist >> 0)
@@ -1244,7 +1244,7 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
       failwith "Variable name not found in current environment."
   in
   let fo, eo = translate scm in
-  remove_hole_vars_sklet =>> fo, remove_hole_vars =>> eo
+  remove_hole_vars_fnlet =>> fo, remove_hole_vars =>> eo
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in
@@ -1252,28 +1252,28 @@ let rec scm_to_sk (scm : RAst.expr) : sklet option * skExpr option =
     expressions.
     Additionally we remove identity bindings.
 *)
-and rosette_state_struct_to_sklet scm_expr_list =
+and rosette_state_struct_to_fnlet scm_expr_list =
   let stv_vars_list = VS.varlist join_info.initial_state_vars in
-  let sk_expr_list = to_expression_list scm_expr_list in
+  let fn_expr_list = to_expression_list scm_expr_list in
   try
-    SkLetExpr (ListTools.pair (List.map (fun vi -> SkVarinfo vi) stv_vars_list)
-                 sk_expr_list)
+    FnLetExpr (ListTools.pair (List.map (fun vi -> FnVarinfo vi) stv_vars_list)
+                 fn_expr_list)
   with Invalid_argument s ->
     eprintf "FAILURE :@\n\
              Failed to translate state in list of bindings, got %i state \
              variables and state was %i long.@\n\
-             ---> Did you initialize the join_info before using scm_to_sk ?"
+             ---> Did you initialize the join_info before using scm_to_fn ?"
       (VS.cardinal join_info.initial_state_vars)
-      (List.length sk_expr_list);
-    failwith "Failure in rosette_state_struct_to_sklet."
+      (List.length fn_expr_list);
+    failwith "Failure in rosette_state_struct_to_fnlet."
 
 and to_expression_list scm_expr_list =
   List.map
     (fun scm_expr ->
-       match scm_to_sk scm_expr with
-       | None, Some sk_expr -> sk_expr
-       | Some sklet, None->
-         raise (Failure (errmsg_unexpected_sklet scm_expr))
+       match scm_to_fn scm_expr with
+       | None, Some fn_expr -> fn_expr
+       | Some fnlet, None->
+         raise (Failure (errmsg_unexpected_fnlet scm_expr))
        | _ ->
          failwith "Unexpected case.") scm_expr_list
 
@@ -1294,13 +1294,13 @@ and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
     | _ -> raise (Failure (errmsg_unexpected_expr "identifier" fun_expr))
   in
   let args = to_expression_list scm_expr_list in
-  SkApp (Bottom, Some fun_vi, args)
+  FnApp (Bottom, Some fun_vi, args)
 
 
-let force_flat vs sklet =
-  let rec force_aux sklet subs =
-    match sklet with
-    | SkLetIn (ve_list, letin) ->
+let force_flat vs fnlet =
+  let rec force_aux fnlet subs =
+    match fnlet with
+    | FnLetIn (ve_list, letin) ->
       let subs_copy = subs in
       force_aux letin
         (List.fold_left
@@ -1311,7 +1311,7 @@ let force_flat vs sklet =
               with Failure s -> new_subs)
            subs ve_list)
 
-    | SkLetExpr ve_list ->
+    | FnLetExpr ve_list ->
       let subs_copy = subs in
       let final_subs =
         (List.fold_left
@@ -1322,19 +1322,19 @@ let force_flat vs sklet =
               with Failure s -> new_subs)
            subs_copy ve_list)
       in
-      SkLetExpr
+      FnLetExpr
         (IM.fold
            (fun vid e ve_list ->
-              ve_list@[(SkVarinfo (VS.find_by_id vid vs), e)])
+              ve_list@[(FnVarinfo (VS.find_by_id vid vs), e)])
            final_subs [])
   in
   let start_sub =
     VS.fold
-      (fun vi subs -> IM.add vi.Cil.vid (SkVar (SkVarinfo vi)) subs)
+      (fun vi subs -> IM.add vi.Cil.vid (FnVar (FnVarinfo vi)) subs)
       vs
       IM.empty
   in
-  force_aux sklet start_sub
+  force_aux fnlet start_sub
 
 
 
@@ -1343,7 +1343,7 @@ let force_flat vs sklet =
 module ES = Set.Make (
   struct
     let compare = Pervasives.compare
-    type t = skExpr
+    type t = fnExpr
   end)
 
 
@@ -1425,11 +1425,11 @@ let is_right_index_vi i =
   with Failure s -> if s = "found" then true else false
 
 
-(* Extract boundary variables "n" from sketch information *)
-let rec get_loop_bound_var (se : skExpr) : skExpr option =
+(* Extract boundary variables "n" from func information *)
+let rec get_loop_bound_var (se : fnExpr) : fnExpr option =
   match se with
-  | SkBinop (Lt, _, en) -> Some en
-  | SkBinop (Le, _, ene) -> Some ene
+  | FnBinop (Lt, _, en) -> Some en
+  | FnBinop (Le, _, ene) -> Some ene
   | _ -> None
 
 
@@ -1437,7 +1437,7 @@ let rec get_loop_bound_var (se : skExpr) : skExpr option =
     the expressions. *)
 let is_prefix_or_suffix vi expr =
   match expr with
-  | SkVar (SkArray (_, _)) -> true
+  | FnVar (FnArray (_, _)) -> true
   | _ -> false
 
 
@@ -1555,8 +1555,8 @@ let rec type_of_const c =
   | CReal _ -> Real
   | CInt _ | CInt64 _ -> Integer
   | CBox b -> Box (type_of_cilconst b)
-  | CUnop (op, c) -> type_of (SkUnop (op, SkConst c))
-  | CBinop (op, c, c') -> type_of (SkBinop (op, SkConst c, SkConst c'))
+  | CUnop (op, c) -> type_of (FnUnop (op, FnConst c))
+  | CBinop (op, c, c') -> type_of (FnBinop (op, FnConst c, FnConst c'))
   | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
   | CUnsafeBinop (op, c, c') -> join_types (type_of_const c) (type_of_const c')
   | CUnsafeUnop (op, c) -> (type_of_const c)
@@ -1564,8 +1564,8 @@ let rec type_of_const c =
 
 and type_of_var v =
   match v with
-  | SkVarinfo vi -> type_of_ciltyp vi.Cil.vtype
-  | SkArray (v, e) ->
+  | FnVarinfo vi -> type_of_ciltyp vi.Cil.vtype
+  | FnArray (v, e) ->
     (** We only consider integer indexes for now *)
     (** Return the type of the array cells *)
     begin
@@ -1576,7 +1576,7 @@ and type_of_var v =
                   "Unexpected type %a for variable in array access."
                   pp_typ t ; Format.flush_str_formatter ())
     end
-  | SkTuple vs ->
+  | FnTuple vs ->
     let tl =
       VS.fold (fun vi tl -> tl@[type_of_ciltyp vi.Cil.vtype]) vs []
     in
@@ -1586,24 +1586,24 @@ and type_of_var v =
 
 and type_of expr =
   match expr with
-  | SkVar v -> type_of_var v
-  | SkConst c -> type_of_const c
-  | SkAddrofLabel _ | SkStartOf _
-  | SkSizeof _ | SkSizeofE _ | SkSizeofStr _
-  | SkAlignof _ | SkAlignofE _  | SkAddrof _ -> Integer
-  | SkCastE (t, e) -> t
-  | SkUnop (unop, e) ->
+  | FnVar v -> type_of_var v
+  | FnConst c -> type_of_const c
+  | FnAddrofLabel _ | FnStartOf _
+  | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
+  | FnAlignof _ | FnAlignofE _  | FnAddrof _ -> Integer
+  | FnCastE (t, e) -> t
+  | FnUnop (unop, e) ->
     (match type_of_unop (type_of e) unop with
      | Some x -> x | None -> failwith "Could not find type of expressions.")
 
-  | SkBinop (binop, e1, e2) ->
+  | FnBinop (binop, e1, e2) ->
     (match type_of_binop (type_of e1) (type_of e2) binop with
      | Some x -> x | None -> failwith "Could not find type of expressions.")
 
-  | SkQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
+  | FnQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
-  | SkApp (t, _, _) -> t
-  | SkHoleL (ht, _,  _) | SkHoleR (ht, _) ->
+  | FnApp (t, _, _) -> t
+  | FnHoleL (ht, _,  _) | FnHoleR (ht, _) ->
     (match ht with (t, ot) -> t)
 
   | _ -> failwith "Typing subfunctions not yet implemented"
@@ -1629,9 +1629,9 @@ let rec input_type_or_type =
   | t -> t
 (* ------------------------ 7- STRUCT UTILS ----------------------------*)
 
-type sigu = VS.t * (sklet * skExpr * sklet)
+type sigu = VS.t * (fnlet * fnExpr * fnlet)
 
-type sketch_rep =
+type prob_rep =
   {
     id : int;
     host_function : Cil.fundec;
@@ -1639,35 +1639,35 @@ type sketch_rep =
     scontext : context;
     min_input_size : int;
     uses_global_bound : bool;
-    loop_body : sklet;
-    join_body : sklet;
-    join_solution : sklet;
+    loop_body : fnlet;
+    join_body : fnlet;
+    join_solution : fnlet;
     init_values : RAst.expr IM.t;
-    sketch_igu : sigu;
-    reaching_consts : skExpr IM.t;
-    inner_functions : sketch_rep list;
+    func_igu : sigu;
+    reaching_consts : fnExpr IM.t;
+    inner_functions : prob_rep list;
   }
 
-let get_index_init sktch =
-  let idx, (i, g, u) = sktch.sketch_igu in i
+let get_index_init problem =
+  let idx, (i, g, u) = problem.func_igu in i
 
-let get_index_update sktch =
-  let idx, (i, g, u) = sktch.sketch_igu in u
+let get_index_update problem =
+  let idx, (i, g, u) = problem.func_igu in u
 
-let get_index_varset sktch =
-  let idx, (i, g, u) = sktch.sketch_igu in idx
+let get_index_varset problem =
+  let idx, (i, g, u) = problem.func_igu in idx
 
-let get_index_guard sktch =
-  let idx, (i, g, u) = sktch.sketch_igu in g
+let get_index_guard problem =
+  let idx, (i, g, u) = problem.func_igu in g
 
-let get_init_value sktch vi =
-  try IM.find vi.Cil.vid sktch.reaching_consts
+let get_init_value problem vi =
+  try IM.find vi.Cil.vid problem.reaching_consts
   with Not_found ->
-    (match scm_to_sk (IM.find vi.Cil.vid sktch.init_values) with
+    (match scm_to_fn (IM.find vi.Cil.vid problem.init_values) with
      | _ , Some e -> e  | _ -> raise Not_found)
 
-let get_loop_bound sktch =
-  get_loop_bound_var (get_index_guard sktch)
+let get_loop_bound problem =
+  get_loop_bound_var (get_index_guard problem)
 
 
 (* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)
@@ -1677,29 +1677,29 @@ let get_loop_bound sktch =
 let rec pass_remove_special_ops =
   let remove_in_exprs =
     transform_expr
-      (fun e -> match e with SkBinop _ -> true
-                           | SkApp _ -> true
+      (fun e -> match e with FnBinop _ -> true
+                           | FnApp _ -> true
                            | _ -> false)
       (fun rfun e ->
          match e with
-         | SkBinop (op, e1, e2) ->
+         | FnBinop (op, e1, e2) ->
            let e1' = rfun e1 in let e2' = rfun e2 in
            (match op with
             | Max ->
-              SkQuestion (SkBinop(Gt, e1', e2'), e1', e2')
+              FnQuestion (FnBinop(Gt, e1', e2'), e1', e2')
 
             | Min ->
-              SkQuestion (SkBinop(Lt, e1', e2'), e1', e2')
+              FnQuestion (FnBinop(Lt, e1', e2'), e1', e2')
 
             | Nand ->
-              SkUnop (Not, SkBinop (And, e1', e2'))
+              FnUnop (Not, FnBinop (And, e1', e2'))
 
             | Neq ->
-              SkUnop (Not, SkBinop (Eq, e1, e2))
+              FnUnop (Not, FnBinop (Eq, e1, e2))
 
-            | _ -> SkBinop (op, e1', e2'))
+            | _ -> FnBinop (op, e1', e2'))
 
-         | SkApp (st, vo, args) ->
+         | FnApp (st, vo, args) ->
            let args' = List.map rfun args in
            (if List.length args' >= 1 then
               (** Might be a binary operator ... *)
@@ -1709,30 +1709,30 @@ let rec pass_remove_special_ops =
                  (match String.lowercase var.Cil.vname with
                   | "max" ->
                     let e2 = args' >> 1 in
-                    SkQuestion (SkBinop(Gt, e1, e2), e1, e2)
+                    FnQuestion (FnBinop(Gt, e1, e2), e1, e2)
                   | "min" ->
                     let e2 = args' >> 1 in
-                    SkQuestion (SkBinop(Lt, e1, e2), e1, e2)
+                    FnQuestion (FnBinop(Lt, e1, e2), e1, e2)
                   | "add1" ->
-                    SkBinop (Plus, e1, SkConst (CInt 1))
+                    FnBinop (Plus, e1, FnConst (CInt 1))
                   | "sub1" ->
-                    SkBinop (Minus, e1, SkConst (CInt 1))
-                  | _ -> SkApp(st, vo, args'))
+                    FnBinop (Minus, e1, FnConst (CInt 1))
+                  | _ -> FnApp(st, vo, args'))
                | None ->
-                 SkApp(st, vo, args'))
+                 FnApp(st, vo, args'))
             else
-              SkApp(st, vo, args'))
+              FnApp(st, vo, args'))
 
          | _ -> failwith "Bad rec case.") identity identity
   in
   function
-  | SkLetIn (ve_list , letin) ->
-    SkLetIn (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list,
+  | FnLetIn (ve_list , letin) ->
+    FnLetIn (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list,
              pass_remove_special_ops letin)
-  | SkLetExpr ve_list ->
-    SkLetExpr (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list)
+  | FnLetExpr ve_list ->
+    FnLetExpr (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list)
 
-let rec pass_sequentialize sklet =
+let rec pass_sequentialize fnlet =
   let rec reorganize ve_list let_queue =
     (** A variable should be only bound once in a binding group, therefore
         we can identify a binding only by the variables it binds to.
@@ -1741,14 +1741,14 @@ let rec pass_sequentialize sklet =
       List.fold_left
         (fun (modified_set, expr_map, dep_graph) (v, e) ->
            match e with
-           | SkVar v' when v = v' ->
+           | FnVar v' when v = v' ->
              modified_set, expr_map, dep_graph (* Identity binding *)
            | _ ->
              let vi =
                try check_option (vi_of v)
                with Failure s ->  failwith "Non-scalar type unsupported"
              in
-             let expr_depends = used_in_skexpr e in
+             let expr_depends = used_in_fnexpr e in
              (VS.add vi modified_set,
               IM.add vi.Cil.vid e expr_map,
               IM.add vi.Cil.vid expr_depends dep_graph))
@@ -1762,7 +1762,7 @@ let rec pass_sequentialize sklet =
     let statement_order = VS.vids_of_vs modified_vars in
     List.fold_left
       (fun let_bindings vid ->
-         SkLetIn ([SkVarinfo (VS.find_by_id vid modified_vars),
+         FnLetIn ([FnVarinfo (VS.find_by_id vid modified_vars),
                    IM.find vid vid_to_expr], let_bindings))
       let_queue statement_order
       (** Analyze dependencies to produce bindings ordered such that
@@ -1773,36 +1773,36 @@ let rec pass_sequentialize sklet =
 
   let rec sequentialize_parallel_moves =
     function
-    | SkLetIn (ve_list, letin) ->
+    | FnLetIn (ve_list, letin) ->
       reorganize ve_list (pass_sequentialize letin)
-    | SkLetExpr ve_list ->
-      reorganize ve_list (SkLetExpr [])
+    | FnLetExpr ve_list ->
+      reorganize ve_list (FnLetExpr [])
   in
   let rec remove_empty_lets =
     function
-    | SkLetIn (ve_list, letin) ->
+    | FnLetIn (ve_list, letin) ->
       (match remove_empty_lets letin with
        | Some let_tail ->
          (match ve_list with
           | [] -> Some let_tail
-          | _ -> Some (SkLetIn (ve_list, let_tail)))
+          | _ -> Some (FnLetIn (ve_list, let_tail)))
        | None ->
          (match ve_list with
           | [] -> None
-          | _ -> Some (SkLetExpr ve_list)))
+          | _ -> Some (FnLetExpr ve_list)))
 
-    | SkLetExpr ve_list ->
+    | FnLetExpr ve_list ->
       (match ve_list with
        | [] -> None
-       | _ -> Some (SkLetExpr ve_list))
+       | _ -> Some (FnLetExpr ve_list))
   in
-  match remove_empty_lets (sequentialize_parallel_moves sklet) with
-  | Some sklet -> sklet
-  | None -> SkLetExpr []
+  match remove_empty_lets (sequentialize_parallel_moves fnlet) with
+  | Some fnlet -> fnlet
+  | None -> FnLetExpr []
 
 
-let sk_for_c sklet =
-  pass_sequentialize (pass_remove_special_ops sklet)
+let fn_for_c fnlet =
+  pass_sequentialize (pass_remove_special_ops fnlet)
 
 
 (* Actual CIL translation *)
@@ -1810,25 +1810,25 @@ open Cil
 open CilTools
 
 
-let deffile = { fileName = "skexpr_to_cil_translation";
+let deffile = { fileName = "fnexpr_to_cil_translation";
                 globals = [];
                 globinit = None;
                 globinitcalled = false;}
 
-let defloc = { line = 0; file = "skexpr_to_cil_translation" ; byte = 0; }
+let defloc = { line = 0; file = "fnexpr_to_cil_translation" ; byte = 0; }
 
 
-let conversion_error () = failwith "Failed to convert SkExpr to Cil expression"
+let conversion_error () = failwith "Failed to convert FnExpr to Cil expression"
 
 let makeFunCall x f args = Call (Some (Var x, NoOffset), f, args, defloc)
 
 let expr_to_cil fd temps e =
   let rec lval_or_error e =
-    (match (skexpr_to_exp e) with
+    (match (fnexpr_to_exp e) with
      | Lval (lhost, loffset) -> (lhost, loffset)
      | _ -> conversion_error ())
 
-  and skexpr_to_exp e =
+  and fnexpr_to_exp e =
     let syt = type_of e in
     let t =
       match ciltyp_of_symb_type (type_of e) with
@@ -1838,28 +1838,28 @@ let expr_to_cil fd temps e =
         failwith "Type error."
     in
     match e with
-    | SkVar v -> Lval (skvar_to_lval v)
-    | SkConst c -> constant c
-    | SkAddrof e -> AddrOf (lval_or_error e)
-    | SkAddrofLabel sref -> AddrOfLabel sref
+    | FnVar v -> Lval (fnvar_to_lval v)
+    | FnConst c -> constant c
+    | FnAddrof e -> AddrOf (lval_or_error e)
+    | FnAddrofLabel sref -> AddrOfLabel sref
     (* SizeOf operations *)
-    | SkSizeof t -> SizeOf (check_option (ciltyp_of_symb_type t))
-    | SkSizeofE e -> SizeOfE (skexpr_to_exp e)
-    | SkSizeofStr s -> SizeOfStr s
+    | FnSizeof t -> SizeOf (check_option (ciltyp_of_symb_type t))
+    | FnSizeofE e -> SizeOfE (fnexpr_to_exp e)
+    | FnSizeofStr s -> SizeOfStr s
     (* Cast operations *)
-    | SkCastE (t, e) ->
+    | FnCastE (t, e) ->
       let ct = check_option (ciltyp_of_symb_type t) in
-      CastE (ct, skexpr_to_exp e)
+      CastE (ct, fnexpr_to_exp e)
     (* ALignment operations *)
-    | SkAlignof t -> AlignOf (check_option (ciltyp_of_symb_type t))
-    | SkAlignofE e -> AlignOfE (skexpr_to_exp e)
+    | FnAlignof t -> AlignOf (check_option (ciltyp_of_symb_type t))
+    | FnAlignofE e -> AlignOfE (fnexpr_to_exp e)
     (* Start of *)
-    | SkStartOf e -> StartOf (lval_or_error e)
+    | FnStartOf e -> StartOf (lval_or_error e)
 
-    | SkQuestion (c, e1, e2) ->
-      Question (skexpr_to_exp c, skexpr_to_exp e1, skexpr_to_exp e2, t)
+    | FnQuestion (c, e1, e2) ->
+      Question (fnexpr_to_exp c, fnexpr_to_exp e1, fnexpr_to_exp e2, t)
 
-    | SkApp (st, fo, args) ->
+    | FnApp (st, fo, args) ->
       let new_temp = makeTempVar fd t in
       fd.slocals <- fd.slocals@[new_temp];
       (match fo with
@@ -1868,7 +1868,7 @@ let expr_to_cil fd temps e =
            !temps@[(makeFunCall
                       new_temp
                       (Lval (Var vi, NoOffset))
-                      (List.map skexpr_to_exp args))];
+                      (List.map fnexpr_to_exp args))];
          Lval (Var new_temp, NoOffset)
        (** Should not happen ! *)
        | None ->
@@ -1877,22 +1877,22 @@ let expr_to_cil fd temps e =
          Lval (Var new_temp, NoOffset))
 
     (* Binary operations *)
-    | SkBinop (op, e1, e2) ->
+    | FnBinop (op, e1, e2) ->
       begin
         match op with
         | Neq ->
-          UnOp (BNot, skexpr_to_exp (SkBinop (Eq, e1, e2)), t)
+          UnOp (BNot, fnexpr_to_exp (FnBinop (Eq, e1, e2)), t)
         | _ ->
           begin
             match (cil_binop_of_symb_binop op) with
             | Some bop, _ ->
-              BinOp (bop, skexpr_to_exp e1, skexpr_to_exp e2, t)
+              BinOp (bop, fnexpr_to_exp e1, fnexpr_to_exp e2, t)
             | None, Some func ->
               let new_temp = makeTempVar fd t in
               fd.slocals <- fd.slocals@[new_temp];
               temps :=
                 !temps@[(makeFunCall
-                           new_temp func [skexpr_to_exp e1; skexpr_to_exp e2])];
+                           new_temp func [fnexpr_to_exp e1; fnexpr_to_exp e2])];
               (** Replace by the temp variable, once the corresponding function
                   call to place before is "remembered" *)
               Lval (Var new_temp, NoOffset)
@@ -1901,40 +1901,40 @@ let expr_to_cil fd temps e =
           end
       end
 
-    | SkUnop (op, e1) ->
+    | FnUnop (op, e1) ->
       begin
         match op with
         | Add1->
-          skexpr_to_exp (SkBinop (Plus, e1, SkConst (CInt 1)))
+          fnexpr_to_exp (FnBinop (Plus, e1, FnConst (CInt 1)))
         | Sub1 ->
-          skexpr_to_exp (SkBinop (Minus, e1, SkConst (CInt 1)))
+          fnexpr_to_exp (FnBinop (Minus, e1, FnConst (CInt 1)))
         | _ ->
           begin
             match (cil_unop_of_symb_unop op) with
             | Some uop, _ ->
-              UnOp (uop, skexpr_to_exp e1, t)
+              UnOp (uop, fnexpr_to_exp e1, t)
             | None, Some func ->
               let new_temp = makeTempVar fd t in
               fd.slocals <- fd.slocals@[new_temp];
               temps :=
-                !temps@[(makeFunCall new_temp func [skexpr_to_exp e1])];
+                !temps@[(makeFunCall new_temp func [fnexpr_to_exp e1])];
               Lval (Var new_temp, NoOffset)
 
             | _, _ -> failwith "Unreachable match case."
           end
       end
 
-    | SkHoleL _ | SkHoleR _ -> failwith "Holes cannot be converted"
-    | SkFun _ | SkCond _ | SkRec _ -> failwith "Control flow not supported"
+    | FnHoleL _ | FnHoleR _ -> failwith "Holes cannot be converted"
+    | FnFun _ | FnCond _ | FnRec _ -> failwith "Control flow not supported"
 
-  and skvar_to_lval v =
+  and fnvar_to_lval v =
     match v with
-    | SkVarinfo v -> Var v , NoOffset
-    | SkArray (v, e) ->
-      let lh, offset = skvar_to_lval v in
-      lh , Index (skexpr_to_exp e, offset)
+    | FnVarinfo v -> Var v , NoOffset
+    | FnArray (v, e) ->
+      let lh, offset = fnvar_to_lval v in
+      lh , Index (fnexpr_to_exp e, offset)
 
-    | SkTuple _ -> failwith "Tuple not yet implemented"
+    | FnTuple _ -> failwith "Tuple not yet implemented"
 
 
   and cil_binop_of_symb_binop binop =
@@ -2008,29 +2008,29 @@ let expr_to_cil fd temps e =
                         There must be a mistake ..."
     | CBox _ -> failwith "Not yet implemented (CBox)"
     | CUnop (op, c) ->
-      skexpr_to_exp (SkUnop (op, SkConst c))
+      fnexpr_to_exp (FnUnop (op, FnConst c))
 
     | CBinop (op, c1, c2) ->
-      skexpr_to_exp (SkBinop (op, SkConst c1, SkConst c2))
+      fnexpr_to_exp (FnBinop (op, FnConst c1, FnConst c2))
 
     | _ -> failwith "Unsupported constants."
   in
-  skexpr_to_exp e
+  fnexpr_to_exp e
 
-let rec skvar_to_cil fd tmps v =
+let rec fnvar_to_cil fd tmps v =
   match v with
-  | SkVarinfo v -> Var v , NoOffset
-  | SkArray (v, e) ->
-    let lh, offset = skvar_to_cil fd tmps v in
+  | FnVarinfo v -> Var v , NoOffset
+  | FnArray (v, e) ->
+    let lh, offset = fnvar_to_cil fd tmps v in
     lh , Index (expr_to_cil fd tmps e, offset)
 
-  | SkTuple _ -> failwith "Tuple not yet implemented"
+  | FnTuple _ -> failwith "Tuple not yet implemented"
 
 
 (** Let bindings to imperative code. *)
 let sort_nb_used_vars (v1, e1) (v2, e2) =
-  let used1 = used_in_skexpr e1 in
-  let used2 = used_in_skexpr e2 in
+  let used1 = used_in_fnexpr e1 in
+  let used2 = used_in_fnexpr e2 in
   let vi1 = check_option (vi_of v1) in
   let vi2 = check_option (vi_of v2) in
   match VS.mem vi1 used2, VS.mem vi2 used1 with
@@ -2042,32 +2042,32 @@ let sort_nb_used_vars (v1, e1) (v2, e2) =
   | true, true -> 1
 
 
-let sklet_to_stmts fd sklet =
+let fnlet_to_stmts fd fnlet =
   let add_assignments =
     List.fold_left
       (fun blk (v, e) ->
          match e with
-         | SkVar v' when v' = v -> blk
+         | FnVar v' when v' = v -> blk
          | _ ->
            let tmp_asgn = ref [] in
            let new_e = expr_to_cil fd tmp_asgn e in
-           let lval_v = skvar_to_cil fd tmp_asgn v in
+           let lval_v = fnvar_to_cil fd tmp_asgn v in
            (add_instr
               blk
               ((!tmp_asgn)@[Set (lval_v, new_e, defloc)])))
   in
-  let rec translate_let sklet instr_li_stmt =
-    match sklet with
-    | SkLetIn (asgn_li, letin) ->
+  let rec translate_let fnlet instr_li_stmt =
+    match fnlet with
+    | FnLetIn (asgn_li, letin) ->
       let a_block =
         add_assignments instr_li_stmt
           (List.sort sort_nb_used_vars asgn_li)
       in
       translate_let letin a_block
-    | SkLetExpr a_list ->
+    | FnLetExpr a_list ->
       add_assignments instr_li_stmt (List.sort sort_nb_used_vars a_list)
   in
   let empty_statement = { labels = []; sid = new_sid ();
                           skind = Instr []; preds = []; succs = [] }
   in
-  fd, translate_let sklet empty_statement
+  fd, translate_let fnlet empty_statement

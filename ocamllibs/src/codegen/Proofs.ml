@@ -1,8 +1,8 @@
 open Cil
 open Format
 open Utils
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 open Dafny
 
 
@@ -77,9 +77,9 @@ type proofVariable =
     ivars : VS.t;
     in_vars : varinfo list;
     out_type : symbolic_type;
-    empty_value : skExpr;
-    function_expr : skExpr;
-    join_expr : skExpr;
+    empty_value : fnExpr;
+    function_expr : fnExpr;
+    join_expr : fnExpr;
     mutable needs_base_case : bool;
     mutable pos_var : proofVariable option;
     mutable inspected : bool;
@@ -113,7 +113,7 @@ let pp_dfy fmt
     ((parent_pfv : proofVariable), (* The proofvariable we are printing for *)
      (ivars : VS.t), (* The set of index variables *)
      (seq : string), (* The name of the current sequence *)
-     (e : skExpr), (* The expression to print *)
+     (e : fnExpr), (* The expression to print *)
      (for_join : bool), (* Are we printing an expression for the join ? *)
      (r : bool)) =
   (** Simple solution to go from the variables to
@@ -127,7 +127,7 @@ let pp_dfy fmt
         on_var = (* Transform only variables *)
           (fun v ->
              match v with
-             | SkVarinfo vi ->
+             | FnVarinfo vi ->
                begin
                  try
                    let pfv =
@@ -136,42 +136,42 @@ let pp_dfy fmt
                    if for_join then
                      let _, _, is_from_right_state = is_right_state_varname vi.vname in
                      if is_from_right_state then
-                       SkVarinfo {vi with vname = "right"^pfv.name}
+                       FnVarinfo {vi with vname = "right"^pfv.name}
                      else
-                       SkVarinfo {vi with vname = "left"^pfv.name}
+                       FnVarinfo {vi with vname = "left"^pfv.name}
                    else
                      (** Replace by a recursive call *)
                      let seq_arg =
                        fprintf str_formatter "%s(%s[..|%s|-1])" pfv.name seq seq;
                        flush_str_formatter ()
                      in
-                     SkVarinfo {vi with vname = seq_arg}
+                     FnVarinfo {vi with vname = seq_arg}
                  with Not_found ->
                    (if r
-                    then SkVarinfo
+                    then FnVarinfo
                         {vi with vname = right_state_input_prefix^vi.vname}
                     else
                       (if VS.mem vi ivars then
                          let name = (Conf.get_conf_string "dafny_length_fun")^
                                     "("^seq^")" in
-                         SkVarinfo {vi with vname = name}
+                         FnVarinfo {vi with vname = name}
                        else v))
                end
 
-             | SkArray (v, e) ->
+             | FnArray (v, e) ->
                let input_i = check_option (vi_of v) in
                (** Check the index, two cases:
                    - it is the current index.
                    - it is the beggining of the chunk. *)
                begin
                  match e with
-                 | SkVar (SkVarinfo i_vi) when is_left_index_vi i_vi ->
+                 | FnVar (FnVarinfo i_vi) when is_left_index_vi i_vi ->
                    let name = seq^"[0]" in
-                   SkVarinfo {input_i with vname = name}
+                   FnVarinfo {input_i with vname = name}
 
-                 | SkVar (SkVarinfo i_vi) ->
+                 | FnVar (FnVarinfo i_vi) ->
                    let name = seq^"[|"^seq^"|-1]" in
-                   SkVarinfo {input_i with vname = name}
+                   FnVarinfo {input_i with vname = name}
 
                  | _ -> failwith "Cannot generate proofs whith complex indexes."
                end
@@ -183,20 +183,20 @@ let pp_dfy fmt
       let var_with_offset cur_pfv vi =
         let pos_var = check_option cur_pfv.pos_var in
         if str_begins_with "right" vi.vname then
-          SkBinop
-            (Plus, SkVar (SkVarinfo vi),
-             SkVar (SkVarinfo {vi with
+          FnBinop
+            (Plus, FnVar (FnVarinfo vi),
+             FnVar (FnVarinfo {vi with
                                vname = "left"^pos_var.name}))
         else
-          SkVar (SkVarinfo vi)
+          FnVar (FnVarinfo vi)
       in
       let transf =
         { case =
-            (fun e -> match e with SkVar (SkVarinfo vi) -> true | _ -> false);
+            (fun e -> match e with FnVar (FnVarinfo vi) -> true | _ -> false);
           on_case =
             (fun f e ->
                match e with
-               | SkVar (SkVarinfo vi) ->
+               | FnVar (FnVarinfo vi) ->
                  begin
                    try
                      let pfv =
@@ -474,16 +474,16 @@ let find_exprs vi solved_sketch =
   let rec ret_binding vi ve_list =
     match ve_list with
     | (v, e)::tl ->
-      if v = SkVarinfo vi then Some e else (ret_binding vi tl)
+      if v = FnVarinfo vi then Some e else (ret_binding vi tl)
     | [] -> None
   in
   let rec find_binding vi sklet =
     match sklet with
-    | SkLetIn (ve_list, letin) ->
+    | FnLetIn (ve_list, letin) ->
       (match ret_binding vi ve_list with
        | Some e -> Some e
        | None -> find_binding vi letin)
-    | SkLetExpr ve_list ->
+    | FnLetExpr ve_list ->
       ret_binding vi ve_list
   in
   let flat_function =
@@ -492,7 +492,7 @@ let find_exprs vi solved_sketch =
   (try
      check_option (find_binding vi flat_function)
    with Failure s -> failwith "Failed to find expressions."),
-  check_option (find_binding vi (sk_for_c solved_sketch.join_solution))
+  check_option (find_binding vi (fn_for_c solved_sketch.join_solution))
 
 
 
@@ -525,20 +525,20 @@ let clear_uses () =
 let rebuild_min_max =
   let filter =
     function
-    | SkQuestion (SkBinop (op, e1, e2), e1', e2')
+    | FnQuestion (FnBinop (op, e1, e2), e1', e2')
       when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) -> true
     | _ -> false
   in
   let transform rfunc e =
     match e with
-    | SkQuestion (SkBinop (op, e1, e2), e1', e2')
+    | FnQuestion (FnBinop (op, e1, e2), e1', e2')
       when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) ->
       let e1o = rfunc e1 in
       let e2o = rfunc e2 in
       if op = Lt then
-        (_bon use_min; SkBinop (Min, e1o, e2o))
+        (_bon use_min; FnBinop (Min, e1o, e2o))
       else
-        (_bon use_max; SkBinop (Max, e1o, e2o))
+        (_bon use_max; FnBinop (Max, e1o, e2o))
     | _ -> e
   in
   transform_expr filter transform identity identity
@@ -686,7 +686,7 @@ let gen_proof_vars sketch =
   (* Create a proofVariable for the index, that will be used in state variables
      that depend on position *)
   let index_pfv =
-    let v, (i, g, u) = sketch.sketch_igu in
+    let v, (i, g, u) = sketch.func_igu in
     let index_vi = VS.min_elt sketch.scontext.index_vars in
     let index_name = Conf.get_conf_string "dafny_length_fun" in
     {
@@ -699,7 +699,7 @@ let gen_proof_vars sketch =
       pos_var = None;
       out_type = Integer;
       needs_base_case = false;
-      empty_value = SkConst (CInt 0);
+      empty_value = FnConst (CInt 0);
       function_expr = g;
       func_requires = 0;
       func_requires_for_deps = 0;
@@ -722,7 +722,7 @@ let gen_proof_vars sketch =
        let in_vars =
          VS.filter
            (fun vi -> not (is_left_index_vi vi || is_right_index_vi vi))
-           (VS.diff (used_in_skexpr function_expr)
+           (VS.diff (used_in_fnexpr function_expr)
               (VS.union sketch.scontext.state_vars
                  sketch.scontext.index_vars))
        in
@@ -753,17 +753,17 @@ let gen_proof_vars sketch =
          let recursor = {
            join = (fun a b -> a || b);
            init = false;
-           case = (fun e -> match e with SkQuestion _ -> true | _ -> false);
+           case = (fun e -> match e with FnQuestion _ -> true | _ -> false);
            on_case =
              (fun f e ->
                 match e with
-                | SkQuestion (c, e1, e2) -> f e1 || f e2
+                | FnQuestion (c, e1, e2) -> f e1 || f e2
                 | _ -> false);
            on_const = (fun c -> false);
            on_var =
              (fun v ->
                 match v with
-                | SkVarinfo vi when VS.mem vi sketch.scontext.index_vars -> true
+                | FnVarinfo vi when VS.mem vi sketch.scontext.index_vars -> true
                 | _ -> false)
          } in
          rec_expr2 recursor function_expr
@@ -804,7 +804,7 @@ let gen_proof_vars sketch =
         (fun vi dep_list ->
            (IH.find vi_to_proofVars vi.vid)::dep_list)
         (VS.inter sketch.scontext.state_vars
-           (used_in_skexpr pfv.function_expr))
+           (used_in_fnexpr pfv.function_expr))
         []
     in
     let join_depend_set =
@@ -812,7 +812,7 @@ let gen_proof_vars sketch =
         (fun vi dep_list ->
            (IH.find vi_to_proofVars vi.vid)::dep_list)
         (VS.inter sketch.scontext.state_vars
-           (used_in_skexpr pfv.join_expr))
+           (used_in_fnexpr pfv.join_expr))
         []
     in
     pfv.depends <- depend_set;
@@ -900,7 +900,7 @@ let pp_all_and_clear fmt =
   clear_uses ();
   clear ()
 
-let output_dafny_proof filename (solution : sketch_rep) =
+let output_dafny_proof filename (solution : prob_rep) =
   printf "New file: %s.@." (filename solution);
   let dafny_file_oc = open_out (filename solution) in
   let dafny_file_out_fmt =

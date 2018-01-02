@@ -1,6 +1,6 @@
 open Format
 open Utils
-open SPretty
+open FPretty
 open PpTools
 
 module C = Canalyst
@@ -17,9 +17,9 @@ let test loopsm =
        builder#build;
        let body_form, sigu = check_option builder#get_sketch in
        printf"%s%s%s : @; %a@." (color "green") fname color_default
-         pp_sklet body_form;
+         pp_fnlet body_form;
        let join = S.Join.build vs body_form in
        printf"Join : @; %a@."
-         pp_sklet join
+         pp_fnlet join
     )
     loopsm

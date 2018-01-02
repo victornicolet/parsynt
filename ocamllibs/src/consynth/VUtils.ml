@@ -1,7 +1,7 @@
 open Format
 open Utils
-open SPretty
-open SketchTypes
+open FPretty
+open FuncTypes
 open SymbExe
 open Expressions
 open ExpressionReduction
@@ -13,8 +13,8 @@ module C = Cil
 type auxiliary =
   {
     avarinfo : C.varinfo;
-    aexpr : skExpr;
-    afunc : skExpr;
+    aexpr : fnExpr;
+    afunc : fnExpr;
     depends : VS.t;
   }
 
@@ -38,10 +38,10 @@ let compose xinfo f aux_vs aux_ef =
   let replace_index_uses index_set =
     VS.fold
       (fun index expr ->
-         (T.replace_expression
+         (replace_expression
             ~in_subscripts:true
-            ~to_replace:(T.mkVarExpr index)
-            ~by:(T.mkVarExpr (index_set index))
+            ~to_replace:(mkVarExpr index)
+            ~by:(mkVarExpr (index_set index))
             ~ine:expr))
   in
   let new_func, const_exprs =
@@ -60,18 +60,18 @@ let compose xinfo f aux_vs aux_ef =
                 Analyse expressions to respect dependencies.
             *)
             match aux.afunc with
-            | T.SkVar (T.SkVarinfo v) when v.Cil.vid = aux_vid ->
+            | FnVar (FnVarinfo v) when v.Cil.vid = aux_vid ->
               (* Replace index by "start index" variable *)
               let aux_expression =
                 add_left_auxiliary v;
-                replace_index_uses T.left_index_vi xinfo.context.index_vars aux.aexpr
+                replace_index_uses left_index_vi xinfo.context.index_vars aux.aexpr
               in
               (** If the only the "start index" appears, or the aux variable's
                   expression is only a function of the index/input variable, it
                   can be removed from the loop *)
               if
                 begin
-                  let used_vars = used_in_skexpr aux_expression in
+                  let used_vars = used_in_fnexpr aux_expression in
                   let not_read_vars =
                     VS.diff used_vars
                       (VS.diff xinfo.context.all_vars new_ctx.state_vars)
@@ -82,11 +82,11 @@ let compose xinfo f aux_vs aux_ef =
                   VS.cardinal not_read_not_index = 0
                 end
               then
-                head_assgn_list@[(T.SkVarinfo v, aux_expression)],
+                head_assgn_list@[(FnVarinfo v, aux_expression)],
                 tail_assgn_list,
-                const_exprs@[T.SkVarinfo v, aux_expression]
+                const_exprs@[FnVarinfo v, aux_expression]
               else
-                head_assgn_list@[(T.SkVarinfo v, aux_expression)],
+                head_assgn_list@[(FnVarinfo v, aux_expression)],
                 tail_assgn_list, const_exprs
             | _ ->
               (** If the function depends only on index and read variables, the
@@ -94,12 +94,12 @@ let compose xinfo f aux_vs aux_ef =
                   "final expression"
               *)
               let cur_vi = (VS.find_by_id aux_vid aux_vs) in
-              let v = (T.SkVarinfo cur_vi) in
+              let v = (FnVarinfo cur_vi) in
               let new_const_exprs =
                 const_exprs@
                 (if
                   begin
-                    let used_vars = used_in_skexpr aux.afunc in
+                    let used_vars = used_in_fnexpr aux.afunc in
                     let not_read_vars =
                       VS.diff used_vars
                         (VS.diff xinfo.context.all_vars xinfo.context.state_vars)
@@ -134,9 +134,9 @@ let compose xinfo f aux_vs aux_ef =
          aux_ef ([], [], []))
     in
     let f = complete_final_state new_ctx.state_vars
-        (T.compose_tail tail_assgn clean_f)
+        (compose_tail tail_assgn clean_f)
     in
-    (T.compose_head head_assgn f), const_exprs
+    (compose_head head_assgn f), const_exprs
   in
   (new_ctx, new_func, const_exprs)
 
@@ -162,8 +162,8 @@ let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
          (* Replace auxiliary recursive call by state_expr *)
          let e_rep =
            replace_expression ~in_subscripts:false
-             ~to_replace:(SkVar (SkVarinfo (VS.find_by_id aux_id aux_vs)))
-             ~by:(SkVar (SkVarinfo
+             ~to_replace:(FnVar (FnVarinfo (VS.find_by_id aux_id aux_vs)))
+             ~by:(FnVar (FnVarinfo
                            (VS.find_by_id i xinfo.context.state_vars)))
              ~ine:func_expr
          in
@@ -190,9 +190,9 @@ let reduction_with_warning ctx expr =
         "%sWarning%s : expression @;%a@; unchanged after \
          reduction with state %a @; and expressions %a @."
         (PpTools.color "red") PpTools.color_default
-        SPretty.pp_skexpr reduced_expression
+        FPretty.pp_fnexpr reduced_expression
         VS.pvs ctx.state_vars
-        (fun fmt a -> SPretty.pp_expr_set fmt a) ctx.costly_exprs
+        (fun fmt a -> FPretty.pp_expr_set fmt a) ctx.costly_exprs
     end
   else ();
   reduced_expression
@@ -203,10 +203,10 @@ let reset_index_expressions xinfo aux =
       (fun idx_id idx_expr e ->
          try
            (* Replace the index expressions by the index itself *)
-           T.replace_expression ~in_subscripts:true
+           replace_expression ~in_subscripts:true
              ~to_replace:idx_expr
-             ~by:(T.SkVar
-                (T.SkVarinfo
+             ~by:(FnVar
+                (FnVarinfo
                    (VS.find_by_id idx_id xinfo.context.index_vars)))
              ~ine:e
          with Not_found ->
@@ -223,7 +223,7 @@ let replace_available_vars xinfo xinfo_aux ce =
          let vi = VS.find_by_id vid xinfo.context.state_vars in
          replace_AC
            xinfo_aux.context
-           ~to_replace:(T.SkVar (T.SkVarinfo vi))
+           ~to_replace:(FnVar (FnVarinfo vi))
            ~by:(accumulated_subexpression vi e)
            ~ine:ce)
       xinfo_aux.state_exprs

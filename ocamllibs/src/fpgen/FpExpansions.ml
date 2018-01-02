@@ -1,5 +1,5 @@
 open Format
-open SketchTypes
+open FuncTypes
 open SymbExe
 open Utils
 
@@ -36,14 +36,14 @@ type fpexpansion_header = {
             superaccumulators and the second element are the variables
             that need a cache (a floating point expansion).
 *)
-let needs_extension (sketch : sketch_rep) =
+let needs_extension sketch =
   (* Which are the variables who need superaccumulators? *)
-  let is_accumulated i (expr : skExpr) : bool =
+  let is_accumulated i (expr : fnExpr) : bool =
     match expr with
-    | SkBinop(Plus, _, _) -> true
+    | FnBinop(Plus, _, _) -> true
     | _ -> false
   in
-  let which_accumulators (exprmap : skExpr IM.t) =
+  let which_accumulators (exprmap : fnExpr IM.t) =
     IM.filter is_accumulated exprmap
   in
   (* Which are the variables who need caching? *)
@@ -55,7 +55,7 @@ let needs_extension (sketch : sketch_rep) =
          (not (IM.mem i acc_map) &&
           (not (IS.is_empty
                   (IS.inter
-                     (VS.vidset_of_vs (used_in_skexpr expr))
+                     (VS.vidset_of_vs (used_in_fnexpr expr))
                      (IM.keyset acc_map))
                ))))
       expr_map
@@ -70,7 +70,7 @@ let needs_extension (sketch : sketch_rep) =
   let init_i = { context = ctx;
                  state_exprs = create_symbol_map ctx.state_vars;
                  index_exprs = create_symbol_map ctx.index_vars;
-                 inputs = T.ES.empty }
+                 inputs = ES.empty }
   in
   let expr_map, _ = unfold_once init_i func in
   let acc_map = which_accumulators expr_map in
@@ -78,7 +78,7 @@ let needs_extension (sketch : sketch_rep) =
   if !debug then
     printf "%sDEBUG%s: expressions accumulated:@.%a@."
       (Ppt.color "red") Ppt.color_default
-      (Ppt.ppimap SPretty.pp_skexpr) acc_map;
+      (Ppt.ppimap FPretty.pp_fnexpr) acc_map;
   (* -------------------------- *)
   let needs_superacc = IM.keyset acc_map in
   let needs_cache =
@@ -94,7 +94,7 @@ let needs_extension (sketch : sketch_rep) =
  *  MAIN ENTRY POINT - Generate the structure that represents
  *  the header file for the floating point expansion.
  *)
-let gen_header (sketch : sketch_rep) =
+let gen_header sketch =
   (* ----------- DEBUG -------- *)
   if !debug then
     printf "@.%sDEBUG%s: Generating header for %s(%i) in %s@."

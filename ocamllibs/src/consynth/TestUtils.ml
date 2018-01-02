@@ -1,7 +1,7 @@
 open Utils
 open Cil
 
-open SketchTypes
+open FuncTypes
 
 
 let zero = Const (CInt64 (0L, IInt, None))
@@ -10,10 +10,10 @@ let cil_true = Const (CInt64 (1L, IBool, None))
 let cil_false = Const (CInt64 (0L, IBool, None))
 let singl_init x = SingleInit x
 
-let sk_zero = SkConst (CInt 0)
-let sk_one = SkConst (CInt 1)
-let sk_true = SkConst (CBool true)
-let sk_false = SkConst (CBool false)
+let sk_zero = FnConst (CInt 0)
+let sk_one = FnConst (CInt 1)
+let sk_true = FnConst (CBool true)
+let sk_false = FnConst (CBool false)
 
 let cil_int = TInt (IInt, [])
 let cil_bool = TInt (IBool, [])
@@ -36,8 +36,8 @@ let make_bool_array_varinfo vname =
 let cil_exp_of_vi vi =
   Lval (Var vi, NoOffset)
 
-let var v = SkVarinfo v
-let evar v = SkVar (var v)
+let var v = FnVarinfo v
+let evar v = FnVar (var v)
 
 let make_var ?(offsets = []) typ vname =
   match typ with
@@ -57,29 +57,29 @@ let make_var ?(offsets = []) typ vname =
 
 let rec vi_of_var =
   function
-  | SkVarinfo vi -> Some vi
-  | SkArray (v, _) -> vi_of_var v
-  | SkTuple vs -> None
+  | FnVarinfo vi -> Some vi
+  | FnArray (v, _) -> vi_of_var v
+  | FnTuple vs -> None
 
-(* Sketch type expression *)
+(* Fnetch type expression *)
 let sk_tail_state =
-  SkLetExpr ([])
+  FnLetExpr ([])
 
 let increment_all_indexes index_exprs =
   IM.fold
     (fun vid expr ->
-       IM.add vid (SkBinop (Plus, expr, sk_one))
+       IM.add vid (FnBinop (Plus, expr, sk_one))
     )
     index_exprs
     IM.empty
 
 let _s vil = VS.of_list vil
-let ( $ ) vi e = SkVar (SkArray ((SkVarinfo vi), e))
-let _b e1 op e2 = SkBinop (op, e1, e2)
-let _u op e1 = SkUnop (op, e1)
-let _Q c e1 e2 = SkQuestion (c, e1, e2)
-let _let el = SkLetExpr el
-let _letin el l = SkLetIn (el, l)
+let ( $ ) vi e = FnVar (FnArray ((FnVarinfo vi), e))
+let _b e1 op e2 = FnBinop (op, e1, e2)
+let _u op e1 = FnUnop (op, e1)
+let _Q c e1 e2 = FnQuestion (c, e1, e2)
+let _let el = FnLetExpr el
+let _letin el l = FnLetIn (el, l)
 
 
 let make_empty_fundec () =
@@ -104,7 +104,7 @@ class variableManager vi_list =
     val vs = VS.of_list vi_list
     method add vi = vi_map <- (SM.add vi.vname vi vi_map)
     method vi name = SM.find name vi_map
-    method var name = SkVarinfo (SM.find name vi_map)
-    method expr name = SkVar (SkVarinfo (SM.find name vi_map))
+    method var name = FnVarinfo (SM.find name vi_map)
+    method expr name = FnVar (FnVarinfo (SM.find name vi_map))
     method get_vs = vs
   end

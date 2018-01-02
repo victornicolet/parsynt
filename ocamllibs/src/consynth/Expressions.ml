@@ -1,7 +1,7 @@
 open Cil
 open Format
-open SPretty
-open SketchTypes
+open FPretty
+open FuncTypes
 open TestUtils
 open Utils
 
@@ -136,23 +136,23 @@ let apply_left_identity op t e = e
 let rec flatten_AC expr =
   let rec flatten cur_op expr =
     match expr with
-    | SkBinop (op, e1, e2) when op = cur_op ->
+    | FnBinop (op, e1, e2) when op = cur_op ->
       (flatten cur_op e1)@(flatten cur_op e2)
     | e -> [flatten_AC e]
   in
   let filter_exprs e =
       match e with
-        | SkBinop (op, e1, e2)
+        | FnBinop (op, e1, e2)
           when is_associative op && is_commutative op -> true
         | _ -> false
   in
   let flatten_expr rfunc e =
     match e with
-    | SkBinop (op, e1, e2) when is_associative op && is_commutative op ->
+    | FnBinop (op, e1, e2) when is_associative op && is_commutative op ->
       let operands = (flatten op e1)@(flatten op e2) in
       assert (List.length operands > 0);
       let func_vi = get_AC_op op in
-      SkApp (Integer, Some func_vi, operands)
+      FnApp (Integer, Some func_vi, operands)
     | _ -> rfunc e
   in
   transform_expr filter_exprs flatten_expr identity identity expr
@@ -165,17 +165,17 @@ let rec flatten_AC expr =
 let ( @= ) e1 e2 =
   let rec aux_eq e1 e2=
   match e1, e2 with
-  | SkBinop (op1, e11, e12), SkBinop (op2, e21, e22) ->
+  | FnBinop (op1, e11, e12), FnBinop (op2, e21, e22) ->
     let strict_equal = op1 = op2 && aux_eq e11 e21 && aux_eq e12 e22 in
     let comm_eq = op1 = op2 && is_commutative op1 &&
                   aux_eq e11 e22 && aux_eq e12 e21
     in
     strict_equal || comm_eq
 
-  | SkUnop (op1, e11), SkUnop (op2, e21) ->
+  | FnUnop (op1, e11), FnUnop (op2, e21) ->
     op1 = op2 && aux_eq e11 e21
 
-  | SkApp (t1, Some v1, el1), SkApp (t2, Some v2, el2) ->
+  | FnApp (t1, Some v1, el1), FnApp (t2, Some v2, el2) ->
     if v1 = v2 then
       try
         let op = op_from_name v1.vname in
@@ -196,7 +196,7 @@ let ( @= ) e1 e2 =
     else
       false
 
-  | SkQuestion (c1, e11, e12), SkQuestion (c2, e21, e22) ->
+  | FnQuestion (c1, e11, e12), FnQuestion (c2, e21, e22) ->
     aux_eq c1 c2 && aux_eq e11 e21 && aux_eq e12 e22
 
   | _, _ -> e1 = e2
@@ -254,7 +254,7 @@ let rec depth_cost ctx expr =
 
 and depth_c_func ctx func =
   match func with
-  | SkLetIn (velist, l') ->
+  | FnLetIn (velist, l') ->
     let dl', cl' = depth_c_func ctx l' in
     let max_de, sum_c =
       (List.fold_left
@@ -262,7 +262,7 @@ and depth_c_func ctx func =
          (0, 0)
          (List.map (fun (v, e) -> depth_cost ctx e) velist)) in
     ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
-  | SkLetExpr velist ->
+  | FnLetExpr velist ->
     (List.fold_left
        (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
        (0, 0)
@@ -280,13 +280,13 @@ let cost ctx expr =
 let rec rebuild_tree_AC ctx =
   let rebuild_case expr =
     match expr with
-    | SkApp (t, Some f, el) ->
+    | FnApp (t, Some f, el) ->
       SH.mem named_AC_ops f.vname
     | _ -> false
   in
   let rebuild_flat_expr rfunc e =
     match e with
-    | SkApp (t, Some f, el) ->
+    | FnApp (t, Some f, el) ->
       begin
         let op = op_from_name f.vname in
         let el' = List.map rfunc el in
@@ -296,7 +296,7 @@ let rec rebuild_tree_AC ctx =
         match el_ordered with
         | hd :: tl ->
           List.fold_left
-            (fun tree e -> SkBinop (op, e, tree))
+            (fun tree e -> FnBinop (op, e, tree))
             hd tl
         | [] -> failwith "Unexpected length for list in AC conversion"
       end
@@ -314,15 +314,15 @@ let extract_operand_lists el =
   List.fold_left
     (fun (l1, l2) e ->
        match e with
-       | SkBinop (_, e1, e2) -> (l1@[e1], l2@[e2])
+       | FnBinop (_, e1, e2) -> (l1@[e1], l2@[e2])
        | _ -> l1, l2)
     ([], []) el
 
 let __factorize__ ctx top_op el =
   let el = List.map (rebuild_tree_AC ctx) el in
   let el_binops, el_no_binops =
-    List.partition (function | SkVar v -> true
-                             | SkBinop (_, _, _) -> true
+    List.partition (function | FnVar v -> true
+                             | FnBinop (_, _, _) -> true
                              | _ -> false) el
   in
   let rec regroup el =
@@ -330,7 +330,7 @@ let __factorize__ ctx top_op el =
     | hd :: tl ->
       begin (** begin match list *)
         match hd with
-        | SkBinop (op, e1, e2) ->
+        | FnBinop (op, e1, e2) ->
           let ce1 = cost ctx e1 in
           let ce2 = cost ctx e2 in
 
@@ -340,16 +340,16 @@ let __factorize__ ctx top_op el =
               List.partition
                 (fun e ->
                    match e with
-                   | SkBinop (op', e1', ee) when op' = op && e1' @= e1 ->
+                   | FnBinop (op', e1', ee) when op' = op && e1' @= e1 ->
                      true
                    | _ -> false) tl
             in
             let _, sim_exprs_snd = extract_operand_lists sim_exprs in
             let new_exprs =
-              SkBinop
+              FnBinop
                 (op,
                  e1,
-                 SkApp (type_of e2, Some (get_AC_op top_op), e2::sim_exprs_snd))
+                 FnApp (type_of e2, Some (get_AC_op top_op), e2::sim_exprs_snd))
             in
             new_exprs::(regroup rtl)
 
@@ -362,7 +362,7 @@ let __factorize__ ctx top_op el =
                   List.partition
                     (fun e ->
                        match e with
-                       | SkBinop (op', ee, e2') when
+                       | FnBinop (op', ee, e2') when
                            op' = op && e2' @= e2 -> true
                        | _ -> false) tl
                 in
@@ -372,9 +372,9 @@ let __factorize__ ctx top_op el =
                 (* Build the new expression by lifting e2 on top at the
                    right of the operator *)
                 let new_exprs =
-                  SkBinop
+                  FnBinop
                     (op,
-                     SkApp (type_of e1, Some (get_AC_op top_op), e1::sim_exprs_fst),
+                     FnApp (type_of e1, Some (get_AC_op top_op), e1::sim_exprs_fst),
                      e2)
                 in
                 new_exprs::(regroup rtl)
@@ -393,7 +393,7 @@ let __factorize__ ctx top_op el =
          List.map
            (fun e ->
               match e with
-              | SkVar v -> apply_right_identity op (type_of e) e
+              | FnVar v -> apply_right_identity op (type_of e) e
               | _ -> e)
            el_binops)
       operators_with_identities
@@ -404,7 +404,7 @@ let __factorize__ ctx top_op el =
          List.map
            (fun e ->
               match e with
-              | SkVar v -> apply_left_identity op (type_of e) e
+              | FnVar v -> apply_left_identity op (type_of e) e
               | _ -> e)
            el_binops)
       operators_with_identities
@@ -422,16 +422,16 @@ let __factorize__ ctx top_op el =
 let factorize ctx =
   let case e =
     match e with
-    | SkApp (_, Some opvar, _) ->
+    | FnApp (_, Some opvar, _) ->
       (try ignore(op_from_name opvar.vname); true with Not_found -> false)
     | _ -> false
   in
   let fact rfunc e =
     match e with
-    | SkApp (t, Some opvar, el) ->
+    | FnApp (t, Some opvar, el) ->
       let op = op_from_name opvar.vname in
       let fact_el = List.map rfunc (__factorize__ ctx op el) in
-      SkApp (t, Some opvar, fact_el)
+      FnApp (t, Some opvar, fact_el)
 
     | _ -> failwith "factorize_all : bad case"
   in
@@ -442,7 +442,7 @@ let factorize ctx =
 let transform_all_comparisons expr =
   let case e =
     match e with
-    | SkBinop (cop, _, _) ->
+    | FnBinop (cop, _, _) ->
       (match cop with
        | Lt | Le -> true
        | _ -> false)
@@ -450,10 +450,10 @@ let transform_all_comparisons expr =
   in
   let transformer rfunc e =
     match e with
-    | SkBinop (cop, e1, e2) ->
+    | FnBinop (cop, e1, e2) ->
       (match cop with
-       | Lt -> SkBinop (Gt, rfunc e1, rfunc e2)
-       | Le -> SkBinop (Ge, rfunc e1, rfunc e2)
+       | Lt -> FnBinop (Gt, rfunc e1, rfunc e2)
+       | Le -> FnBinop (Ge, rfunc e1, rfunc e2)
        | _ -> failwith "Not a special recursive case")
     | _ -> failwith "Not a special recursive case"
   in
@@ -465,7 +465,7 @@ let __transform_conj_comps__ top_op el =
     List.partition
       (fun e ->
          match e with
-         | SkBinop (op, _, _) -> List.mem op comparison_operators
+         | FnBinop (op, _, _) -> List.mem op comparison_operators
          | _ -> false) el
   in
   let build_comp_conj
@@ -476,15 +476,15 @@ let __transform_conj_comps__ top_op el =
       let _, right_op_list = extract_operand_lists exprs in
       match top_op, op with
       | Or, Lt | Or, Le | And, Gt | And, Ge  ->
-        SkBinop(op,
+        FnBinop(op,
                 common_expr,
-                SkApp (type_of common_expr, Some (get_AC_op Max),
+                FnApp (type_of common_expr, Some (get_AC_op Max),
                        right_op_list))
 
       | And, Lt | And, Le | Or, Gt | Or, Ge ->
-        SkBinop(op,
+        FnBinop(op,
                 common_expr,
-                SkApp (type_of common_expr, Some (get_AC_op Min),
+                FnApp (type_of common_expr, Some (get_AC_op Min),
                        right_op_list))
 
       | _ , _ -> failwith "Unexpected match case in build_comp_conj"
@@ -492,14 +492,14 @@ let __transform_conj_comps__ top_op el =
       let left_op_list, _ = extract_operand_lists exprs in
       match top_op, op with
       | Or, Lt | Or, Le | And, Gt | And, Ge  ->
-          SkBinop(op,
-                  SkApp (type_of common_expr, Some (get_AC_op Min),
+          FnBinop(op,
+                  FnApp (type_of common_expr, Some (get_AC_op Min),
                          left_op_list),
                   common_expr)
 
       | And, Lt | And, Le | Or, Gt | Or, Ge ->
-        SkBinop(op,
-                SkApp (type_of common_expr, Some (get_AC_op Max),
+        FnBinop(op,
+                FnApp (type_of common_expr, Some (get_AC_op Max),
                        left_op_list),
                 common_expr)
 
@@ -510,12 +510,12 @@ let __transform_conj_comps__ top_op el =
     | hd :: tl ->
       begin
         match hd with
-        | SkBinop (op, e1, e2) ->
+        | FnBinop (op, e1, e2) ->
           let left_common, left_tl_rest =
             List.partition
               (fun e ->
                  match e with
-                 | SkBinop (op', e1', e2') -> op' = op && e1 @= e1'
+                 | FnBinop (op', e1', e2') -> op' = op && e1 @= e1'
                  | _ -> false)
               tl
           in
@@ -523,7 +523,7 @@ let __transform_conj_comps__ top_op el =
             List.partition
               (fun e ->
                  match e with
-                 | SkBinop (op', e1', e2') -> op' = op && e2 @= e2'
+                 | FnBinop (op', e1', e2') -> op' = op && e2 @= e2'
                  | _ -> false)
               tl
           in
@@ -554,19 +554,19 @@ let __transform_conj_comps__ top_op el =
 let transform_conj_comps e =
   let case e =
     match e with
-    | SkApp (_, Some vi, _) when vi.vname = "and" || vi.vname = "or" -> true
+    | FnApp (_, Some vi, _) when vi.vname = "and" || vi.vname = "or" -> true
     | _ -> false
   in
   let transf rfunc e =
     match e with
-    | SkApp (t, Some vi, el) ->
+    | FnApp (t, Some vi, el) ->
       let el' = List.map rfunc el in
       let op = op_from_name vi.vname in
       let new_el = __transform_conj_comps__  op el' in
       (match new_el with
        | [e] -> e
        | _ ->
-         SkApp (t, Some vi, new_el))
+         FnApp (t, Some vi, new_el))
 
     | _ -> failwith "Not a valid case."
   in
@@ -583,8 +583,8 @@ let apply_special_rules ctx e =
 
 let accumulated_subexpression vi e =
   match e with
-  | SkBinop (op, SkVar (SkVarinfo vi'), acc) when vi = vi' -> acc
-  | SkBinop (op, acc, SkVar (SkVarinfo vi')) when vi = vi' -> acc
+  | FnBinop (op, FnVar (FnVarinfo vi'), acc) when vi = vi' -> acc
+  | FnBinop (op, acc, FnVar (FnVarinfo vi')) when vi = vi' -> acc
   | _ -> e
 
 
@@ -595,18 +595,18 @@ let replace_AC ctx ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
   let flat_in = flatten_AC in_expr in
   let case =
     function
-    | SkApp (_, Some opvar, _) ->
+    | FnApp (_, Some opvar, _) ->
       (try ignore(op_from_name opvar.vname); true with Not_found -> false)
     | e when e @= flat_tr -> true
     | _ -> false
   in
   let handle_case rfunc =
     function
-    | SkApp (t, Some opvar, el) ->
+    | FnApp (t, Some opvar, el) ->
       let op = op_from_name opvar.vname in
       begin
         match flat_tr with
-        | SkApp (t', Some opvar', el') ->
+        | FnApp (t', Some opvar', el') ->
           let op' = op_from_name opvar'.vname in
           if op = op' then
             begin
@@ -622,16 +622,16 @@ let replace_AC ctx ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
                 List.for_all (fun e -> List.mem e common_terms) el' in
               begin
                 if common_is_el' then
-                  let raw_term = SkApp (t, Some opvar, remaining_terms@[flat_by]) in
+                  let raw_term = FnApp (t, Some opvar, remaining_terms@[flat_by]) in
                   flatten_AC (rebuild_tree_AC ctx raw_term)
                 else
-                  SkApp (t, Some opvar, List.map rfunc el)
+                  FnApp (t, Some opvar, List.map rfunc el)
               end (* END if common_is_el' *)
             end
           else
-            SkApp (t, Some opvar, List.map rfunc el)
+            FnApp (t, Some opvar, List.map rfunc el)
     (* END if op = op' *)
-    | _ -> SkApp (t, Some opvar, List.map rfunc el)
+    | _ -> FnApp (t, Some opvar, List.map rfunc el)
 end
 | e when e @= flat_tr -> flat_by
        | _ -> failwith "Unexpected case in replace_AC"

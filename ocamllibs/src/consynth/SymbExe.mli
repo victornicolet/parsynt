@@ -1,12 +1,12 @@
 open Utils
-module T = SketchTypes
+module Fn = FuncTypes
 
 type exec_info =
   {
-    context : T.context;
-    state_exprs : T.skExpr IM.t;
-    index_exprs : T.skExpr IM.t;
-    inputs : T.ES.t
+    context : Fn.context;
+    state_exprs : Fn.fnExpr IM.t;
+    index_exprs : Fn.fnExpr IM.t;
+    inputs : Fn.ES.t
   }
 
 (** exec_once : simulate the application of a function body to a set of
@@ -28,7 +28,7 @@ type exec_info =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-val create_symbol_map : Utils.VS.t -> T.skExpr IM.t
-val unfold : T.skExpr IM.t -> exec_info -> T.sklet-> T.skExpr IM.t * T.ES.t
-val unfold_expr : exec_info -> T.skExpr -> T.skExpr * T.ES.t
-val unfold_once : ?silent:bool -> exec_info -> T.sklet -> T.skExpr IM.t * T.ES.t
+val create_symbol_map : Utils.VS.t -> Fn.fnExpr IM.t
+val unfold : Fn.fnExpr IM.t -> exec_info -> Fn.fnlet-> Fn.fnExpr IM.t * Fn.ES.t
+val unfold_expr : exec_info -> Fn.fnExpr -> Fn.fnExpr * Fn.ES.t
+val unfold_once : ?silent:bool -> exec_info -> Fn.fnlet -> Fn.fnExpr IM.t * Fn.ES.t

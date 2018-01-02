@@ -1,7 +1,7 @@
 open Utils
 open Conf
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 open Utils.PpTools
 open Cil2Func
 open Racket
@@ -128,7 +128,7 @@ let base_init_value_choice reaching_consts vi =
      let e = IM.find vi.vid reaching_consts in
      F.fprintf F.str_formatter "(choose %s %a)"
        (get_conf_string "rosette_base_init_values")
-       pp_skexpr e
+       pp_fnexpr e
    with Not_found ->
      F.fprintf F.str_formatter "(choose %s)"
        (get_conf_string "rosette_base_init_values"));
@@ -190,14 +190,14 @@ let handle_special_consts fmt input_vars reach_consts =
   IM.map
     (fun expr ->
        match expr with
-       | SkConst NInfnty ->
+       | FnConst NInfnty ->
          (** Assume all numeric inputs are greater than a symbolic variable.*)
          let vi = get_or_create fmt input_vars NINFNTY in
-         SkVar (SkVarinfo vi)
+         FnVar (FnVarinfo vi)
 
-       | SkConst Infnty ->
+       | FnConst Infnty ->
          let vi = get_or_create fmt input_vars INFNTY in
-         SkVar (SkVarinfo vi)
+         FnVar (FnVarinfo vi)
 
        | _ -> expr) reach_consts
 
@@ -234,7 +234,7 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     state_arg_name
     (pp_assignments state_struct_name state_arg_name)
     (ListTools.pair field_names field_names)
-    pp_sklet loop_body
+    pp_fnlet loop_body
 
 (** Pretty print the whole loop wrapped in a Racket macro Loop and a function
     deifinition. The name of this function is set in the variable body_name of
@@ -290,7 +290,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     (ListTools.pair lvar_names field_names)
     (pp_assignments main_struct_name rstate_name)
     (ListTools.pair rvar_names field_names)
-    pp_sklet join_body;
+    pp_fnlet join_body;
   printing_sketch := false
 
 
@@ -348,12 +348,12 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
           (fun fmt (vid, vi) ->
              (if IM.mem vid reach_consts
               then
-                pp_skexpr fmt
+                pp_fnexpr fmt
                   (try
                      replace_all_subs
-                       ~tr:[SkConst (CInt 0); SkConst (CInt64 0L)]
-                       ~by:[SkVar (SkVarinfo {vi with vname = "_begin_"});
-                            SkVar (SkVarinfo {vi with vname = "_begin_"})]
+                       ~tr:[FnConst (CInt 0); FnConst (CInt64 0L)]
+                       ~by:[FnVar (FnVarinfo {vi with vname = "_begin_"});
+                            FnVar (FnVarinfo {vi with vname = "_begin_"})]
                        ~ine:(IM.find vid reach_consts)
                   with _ -> IM.find vid reach_consts)
               else
@@ -440,7 +440,7 @@ let pp_synth fmt s0 bnames state_vars read_vars min_dep_len =
     from a variable id to an expression exists, then the value of the variable
     will be set to this expression in the inital state of the loop.
 *)
-let pp_rosette_sketch fmt (sketch : sketch_rep) =
+let pp_rosette_sketch fmt (sketch : prob_rep) =
   clear_special_consts ();
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
@@ -461,18 +461,18 @@ let pp_rosette_sketch fmt (sketch : sketch_rep) =
     List.fold_left
       (fun name_list expr ->
          match expr with
-         | Some (SkVar (SkVarinfo vi)) -> name_list@[vi]
+         | Some (FnVar (FnVarinfo vi)) -> name_list@[vi]
          | _ -> name_list)
       []
       (if sketch.uses_global_bound then
-          [(SketchTypes.get_loop_bound sketch)]
+          [(get_loop_bound sketch)]
        else [])
   in
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
-  (** SPretty configuration for the current sketch *)
-  SPretty.state_struct_name := main_struct_name;
+  (** FPretty configuration for the current sketch *)
+  FPretty.state_struct_name := main_struct_name;
   pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();

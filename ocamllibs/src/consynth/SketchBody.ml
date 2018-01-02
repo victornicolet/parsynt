@@ -1,6 +1,6 @@
 open Utils
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 open Cil2Func
 open Utils.ListTools
 open VariableAnalysis
@@ -31,7 +31,7 @@ let skexpr_of_constant t c =
     | Cil.CStr s ->
       CString s
     | _ -> CBox c
-  in SkConst const
+  in FnConst const
 
 let convert_const = skexpr_of_constant
 
@@ -40,12 +40,12 @@ let remove_simple_state_rewritings (var , expr) =
   match var, expr with
   | _ -> (var, expr)
 
-let apply_remove sklet =
-  match sklet with
-  | SkLetExpr el -> sklet
-  | SkLetIn (el, cont) ->
+let apply_remove fnlet =
+  match fnlet with
+  | FnLetExpr el -> fnlet
+  | FnLetIn (el, cont) ->
     let new_rewrites = List.map remove_simple_state_rewritings el in
-    SkLetIn (new_rewrites, cont)
+    FnLetIn (new_rewrites, cont)
 
 (**
    Rebuild && expressions that have been trasnformed by CIL into
@@ -55,34 +55,34 @@ let apply_remove sklet =
 let rebuild_boolean_expressions (var, expr) =
   let to_rearrange expr =
     match expr with
-    | SkQuestion (c, e1, e2) -> true
+    | FnQuestion (c, e1, e2) -> true
     | _ -> false
   in
   let rearrange_aux rfunc expr =
     match expr with
-    | SkQuestion (c, e1, e2) ->
+    | FnQuestion (c, e1, e2) ->
       let c = rfunc c in
       let e1' = rfunc e1 in
       let e2' = rfunc e2 in
       begin
         match e1', e2' with
         (* if (a) then b else false -> a && b *)
-        | e1bis,  SkConst (CBool false)->
-          rfunc (SkBinop  (And, c, e1bis))
+        | e1bis,  FnConst (CBool false)->
+          rfunc (FnBinop  (And, c, e1bis))
 
         (* if (a) then true else b -> a || b *)
-        | SkConst (CBool true), e when type_of e = Boolean->
-          rfunc (SkBinop (Or, c, e))
+        | FnConst (CBool true), e when type_of e = Boolean->
+          rfunc (FnBinop (Or, c, e))
 
         (* if (a) then if (b) x : y else y -> if (a && b) then x else y *)
-        | SkQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
-          rfunc (SkQuestion (SkBinop (And, c, c'), e1bis, e1ter))
+        | FnQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
+          rfunc (FnQuestion (FnBinop (And, c, c'), e1bis, e1ter))
         (** Distributivity / associativity *)
         (* if (a) then (b || c) else c -> (a && b) || c) *)
-        | SkBinop (Or, a, b1), b2 when b1 = b2 ->
-          SkBinop(Or, SkBinop(And, a, c), b1)
+        | FnBinop (Or, a, b1), b2 when b1 = b2 ->
+          FnBinop(Or, FnBinop(And, a, c), b1)
 
-        | _ , _ -> SkQuestion(c, e1', e2')
+        | _ , _ -> FnQuestion(c, e1', e2')
       end
     | _ -> failwith "Unexpected case."
   in
@@ -90,12 +90,12 @@ let rebuild_boolean_expressions (var, expr) =
 
 
 (** Apply or- and and- rebuilding in expression tree *)
-let rec apply_rearrange sklet =
-  match sklet with
-  | SkLetExpr el ->
-    SkLetExpr (List.map rebuild_boolean_expressions el)
-  | SkLetIn (el, cont) ->
-    SkLetIn (List.map rebuild_boolean_expressions el,
+let rec apply_rearrange fnlet =
+  match fnlet with
+  | FnLetExpr el ->
+    FnLetExpr (List.map rebuild_boolean_expressions el)
+  | FnLetIn (el, cont) ->
+    FnLetIn (List.map rebuild_boolean_expressions el,
              apply_rearrange cont)
 
 
@@ -103,35 +103,35 @@ let rec apply_rearrange sklet =
 let force_boolean_constants (v, e) =
   let cast_bool_cst cst =
     match cst with
-    | SkConst c ->
+    | FnConst c ->
       let new_c =
         match c with
         | CInt 1 | CBool true | CInt64 1L -> CBool true
         | CInt 0 | CBool false | CInt64 0L -> CBool false
         | _ -> c
-      in SkConst new_c
+      in FnConst new_c
     | _ -> cst
   in
   let candidate flag e =
     match e with
-    | SkBinop (op, _, _) when (op = Or || op  = And) -> true
-    | SkQuestion (_, e1, e2) when (type_of e1 = Boolean) ||
+    | FnBinop (op, _, _) when (op = Or || op  = And) -> true
+    | FnQuestion (_, e1, e2) when (type_of e1 = Boolean) ||
                                   (type_of e2 = Boolean) -> true
     | _ -> flag
   in
   let force_bool flag rfunc e =
     match e with
-    | SkBinop (op, e1, e2) when (op = Or || op  = And) ->
+    | FnBinop (op, e1, e2) when (op = Or || op  = And) ->
       let e1' = rfunc true e1 in let e2' = rfunc true e2 in
-      SkBinop (op, cast_bool_cst e1', cast_bool_cst e2')
+      FnBinop (op, cast_bool_cst e1', cast_bool_cst e2')
 
-    | SkQuestion (c, e1, e2) when (type_of e1 = Boolean) ||
+    | FnQuestion (c, e1, e2) when (type_of e1 = Boolean) ||
                                   (type_of e2 = Boolean) ||
                                   flag ->
       let e1' = rfunc true e1 in
       let e2' = rfunc true e2 in
       let c' = rfunc true c in
-      SkQuestion (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
+      FnQuestion (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
 
     | _ -> rfunc false e
   in
@@ -146,41 +146,41 @@ let force_boolean_constants (v, e) =
 let transform_boolean_if_expression =
   let case e =
     match e with
-    | SkQuestion (SkConst (CBool true), _, _) -> true
-    | SkQuestion (SkConst (CBool false), _, _) -> true
-    | SkQuestion (c, SkConst (CBool true), SkConst (CBool false)) -> true
-    | SkBinop (Or, SkConst (CBool true), _)
-    | SkBinop (Or,_, SkConst (CBool true)) -> true
-    | SkBinop (Or, SkConst (CBool false), _)
-    | SkBinop (Or,_, SkConst (CBool false)) -> true
-    | SkBinop (And, SkConst (CBool true), _)
-    | SkBinop (And,_, SkConst (CBool true)) -> true
-    | SkBinop (And, SkConst (CBool false), _)
-    | SkBinop (And,_, SkConst (CBool false)) -> true
+    | FnQuestion (FnConst (CBool true), _, _) -> true
+    | FnQuestion (FnConst (CBool false), _, _) -> true
+    | FnQuestion (c, FnConst (CBool true), FnConst (CBool false)) -> true
+    | FnBinop (Or, FnConst (CBool true), _)
+    | FnBinop (Or,_, FnConst (CBool true)) -> true
+    | FnBinop (Or, FnConst (CBool false), _)
+    | FnBinop (Or,_, FnConst (CBool false)) -> true
+    | FnBinop (And, FnConst (CBool true), _)
+    | FnBinop (And,_, FnConst (CBool true)) -> true
+    | FnBinop (And, FnConst (CBool false), _)
+    | FnBinop (And,_, FnConst (CBool false)) -> true
     | _ -> false
   in
   let transform_bool rfunc e =
     match e with
     (* true ? a : b -> a *)
-    | SkQuestion (SkConst (CBool true), e1, _) -> rfunc e1
+    | FnQuestion (FnConst (CBool true), e1, _) -> rfunc e1
     (* false ? a : b -> b *)
-    | SkQuestion (SkConst (CBool false), _, e2) -> rfunc e2
+    | FnQuestion (FnConst (CBool false), _, e2) -> rfunc e2
     (* c ? true : false --> c *)
-    | SkQuestion (c, SkConst (CBool true),SkConst (CBool false)) ->
+    | FnQuestion (c, FnConst (CBool true),FnConst (CBool false)) ->
       rfunc c
     (* true || c --> true *)
-    | SkBinop (Or, SkConst (CBool true), _)
+    | FnBinop (Or, FnConst (CBool true), _)
     (* c || true --> true *)
-    | SkBinop (Or,_, SkConst (CBool true)) -> SkConst (CBool true)
+    | FnBinop (Or,_, FnConst (CBool true)) -> FnConst (CBool true)
     (* false || c --> c  and commut. *)
-    | SkBinop (Or, SkConst (CBool false), c)
-    | SkBinop (Or, c, SkConst (CBool false)) -> rfunc c
+    | FnBinop (Or, FnConst (CBool false), c)
+    | FnBinop (Or, c, FnConst (CBool false)) -> rfunc c
     (* true && c --> c and commut. *)
-    | SkBinop (And, SkConst (CBool true), c)
-    | SkBinop (And, c, SkConst (CBool true)) ->  rfunc c
+    | FnBinop (And, FnConst (CBool true), c)
+    | FnBinop (And, c, FnConst (CBool true)) ->  rfunc c
     (* false && c --> false and commut. *)
-    | SkBinop (And, SkConst (CBool false), _)
-    | SkBinop (And,_, SkConst (CBool false)) -> SkConst (CBool false)
+    | FnBinop (And, FnConst (CBool false), _)
+    | FnBinop (And,_, FnConst (CBool false)) -> FnConst (CBool false)
 
     | _ -> failwith "transform_boolean_expression : bad case"
   in
@@ -195,21 +195,21 @@ let booleanize (v, e) =
       | Boolean -> transform_boolean_if_expression e
       | _ -> e)
 
-let rec remove_boolean_ifs sklet =
-  match sklet with
-  | SkLetExpr el ->
-    SkLetExpr (List.map booleanize
+let rec remove_boolean_ifs fnlet =
+  match fnlet with
+  | FnLetExpr el ->
+    FnLetExpr (List.map booleanize
                  (List.map force_boolean_constants el))
-  | SkLetIn (el, cont) ->
-    SkLetIn (List.map booleanize
+  | FnLetIn (el, cont) ->
+    FnLetIn (List.map booleanize
                (List.map force_boolean_constants el),
              remove_boolean_ifs cont)
 
 
 (** Apply all optimizations *)
-let optims sklet =
-  let sklet' = apply_remove sklet in
-  apply_rearrange ( remove_boolean_ifs sklet')
+let optims fnlet =
+  let fnlet' = apply_remove fnlet in
+  apply_rearrange ( remove_boolean_ifs fnlet')
 
 
 
@@ -247,7 +247,7 @@ class sketch_builder
       | None -> false
 
     method build =
-      let rec convert (cur_v : skLVar)  =
+      let rec convert (cur_v : fnLVar)  =
         function
         | Var vi ->
           (if self#is_global_bound vi then uses_global_bound <- true
@@ -256,25 +256,25 @@ class sketch_builder
 
         (** TODO : array -> region *)
         | Array (vi, el) ->
-          let skexpr_list = List.map (convert cur_v) el in
-          mkVarExpr ~offsets:skexpr_list vi
+          let expr_list = List.map (convert cur_v) el in
+          mkVarExpr ~offsets:expr_list vi
 
         | FunApp (ef, arg_l) ->
           let is_c_def, vi_o, ty = is_exp_function ef in
           let sty = type_of_ciltyp ty in
           let fargs =  List.map (convert cur_v) arg_l in
           if is_c_def then
-            SkApp (sty, vi_o, fargs)
+            FnApp (sty, vi_o, fargs)
           else
             let fname = (check_option vi_o).Cil.vname in
             (match fargs with
              | [e] ->
                let unop = (check_option (symb_unop_of_fname fname)) in
-               SkUnop (unop, e)
+               FnUnop (unop, e)
              | e1::[e2] ->
                let binop = (check_option (symb_binop_of_fname fname)) in
-               SkBinop (binop, e1, e2)
-             | _ -> SkApp (sty, vi_o, fargs))
+               FnBinop (binop, e1, e2)
+             | _ -> FnApp (sty, vi_o, fargs))
 
 
         | Container (e, subs) ->
@@ -282,27 +282,27 @@ class sketch_builder
           convert_cils ~subs:converted_substitutions e
 
         | FQuestion (ec, e1, e2) ->
-          SkQuestion (convert cur_v ec,
+          FnQuestion (convert cur_v ec,
                       (convert cur_v e1),
                       (convert cur_v e2))
 
         | FRec ((i, g, u), expr) ->
-          SkRec ((i, g, u), SkLetExpr [(cur_v, convert cur_v expr)])
+          FnRec ((i, g, u), FnLetExpr [(cur_v, convert cur_v expr)])
 
         | FBinop (op, e1, e2) ->
-          SkBinop (op, convert cur_v e1, convert cur_v e2)
+          FnBinop (op, convert cur_v e1, convert cur_v e2)
 
-        | FUnop (op, e) -> SkUnop (op, convert cur_v e)
+        | FUnop (op, e) -> FnUnop (op, convert cur_v e)
 
-        | FConst c -> SkConst c
+        | FConst c -> FnConst c
 
-        | FSizeof t -> SkSizeof (type_of_ciltyp t)
-        | FSizeofE e -> SkSizeofE (convert cur_v e)
-        | FSizeofStr s -> SkSizeofStr s
-        | FAlignof t -> SkAlignof (type_of_ciltyp t)
-        | FAlignofE e -> SkAlignofE (convert cur_v e)
-        | FCastE (t, e) -> SkCastE (type_of_ciltyp t, convert cur_v e)
-        | FAddrof lval -> SkAddrof (skexpr_of_lval lval)
+        | FSizeof t -> FnSizeof (type_of_ciltyp t)
+        | FSizeofE e -> FnSizeofE (convert cur_v e)
+        | FSizeofStr s -> FnSizeofStr s
+        | FAlignof t -> FnAlignof (type_of_ciltyp t)
+        | FAlignofE e -> FnAlignofE (convert cur_v e)
+        | FCastE (t, e) -> FnCastE (type_of_ciltyp t, convert cur_v e)
+        | FAddrof lval -> FnAddrof (skexpr_of_lval lval)
         | _ -> failwith "not yet implemented"
 
 
@@ -314,61 +314,61 @@ class sketch_builder
           let skvar = skexpr_of_lval v in
           begin
             match skvar with
-            | SkVar (SkVarinfo vi) when IM.mem vi.Cil.vid subs ->
+            | FnVar (FnVarinfo vi) when IM.mem vi.Cil.vid subs ->
               IM.find vi.Cil.vid subs
             | _ -> skvar
           end
 
         | Cil.SizeOf t->
           let typ = type_of_ciltyp t in
-          SkSizeof typ
+          FnSizeof typ
 
         | Cil.SizeOfE e ->
-          SkSizeofE (convert_cils ~subs:subs e)
+          FnSizeofE (convert_cils ~subs:subs e)
 
         | Cil.SizeOfStr s ->
-          SkSizeofStr s
+          FnSizeofStr s
 
         | Cil.AlignOf t ->
-          SkAlignof (type_of_ciltyp t)
+          FnAlignof (type_of_ciltyp t)
 
         | Cil.AlignOfE e ->
-          SkAlignofE (convert_cils ~subs:subs e)
+          FnAlignofE (convert_cils ~subs:subs e)
 
         | Cil.AddrOf lv ->
-          SkAddrof (skexpr_of_lval lv)
+          FnAddrof (skexpr_of_lval lv)
 
         | Cil.AddrOfLabel stm_ref ->
-          SkAddrofLabel stm_ref
+          FnAddrofLabel stm_ref
 
         | Cil.UnOp (op, e1, t) ->
           let op', ex_ty = symb_unop_of_cil op in
-          SkUnop (op',convert_cils ~subs:subs ~expect_ty:ex_ty e1)
+          FnUnop (op',convert_cils ~subs:subs ~expect_ty:ex_ty e1)
 
         | Cil.BinOp (op, e1, e2, t) ->
           let op', ex_ty = symb_binop_of_cil op in
           (* != --->  (! (= )) *)
           if op' = Neq then
-            SkUnop(Not,
-                   SkBinop (Eq,
+            FnUnop(Not,
+                   FnBinop (Eq,
                             convert_cils ~subs:subs ~expect_ty:ex_ty e1,
                             convert_cils ~subs:subs ~expect_ty:ex_ty e2))
           else
-            SkBinop (op',
+            FnBinop (op',
                      convert_cils ~subs:subs ~expect_ty:ex_ty e1,
                      convert_cils ~subs:subs ~expect_ty:ex_ty e2)
 
         | Cil.Question (c, e1, e2, t) ->
           let c' = convert_cils ~expect_ty:Boolean c in
-          SkQuestion (c',  convert_cils ~subs:subs e1,
+          FnQuestion (c',  convert_cils ~subs:subs e1,
                       convert_cils ~subs:subs e2)
 
         | Cil.CastE (t, e) ->
           let ty = type_of_ciltyp t in
-          SkCastE (ty , convert_cils ~subs:subs ~expect_ty:ty e)
+          FnCastE (ty , convert_cils ~subs:subs ~expect_ty:ty e)
 
         | Cil.StartOf lv ->
-          SkStartOf (skexpr_of_lval lv)
+          FnStartOf (skexpr_of_lval lv)
 
 
       and convert_offset =
@@ -406,7 +406,7 @@ class sketch_builder
             match vo with
             | None ->
               (** Anonymous function with type *)
-              (fun t x -> SkApp (t, None, off_list))
+              (fun t x -> FnApp (t, None, off_list))
             | Some vi ->
               (fun t x -> x vi)
           in
@@ -419,7 +419,7 @@ class sketch_builder
 
 
       (** TODO : add the current loop index *)
-      and convert_letin letin : sklet =
+      and convert_letin letin : fnlet =
         match letin with
         | State subs  ->
           let state =
@@ -427,8 +427,8 @@ class sketch_builder
               (fun k e ->
                  let cur_v =
                    try
-                     SkVarinfo (VS.find_by_id k state_vars)
-                   with Not_found -> SkVarinfo (VS.find_by_id k all_vars)
+                     FnVarinfo (VS.find_by_id k state_vars)
+                   with Not_found -> FnVarinfo (VS.find_by_id k all_vars)
                  in
                  (cur_v, convert cur_v e))
               subs
@@ -439,38 +439,38 @@ class sketch_builder
                  l@[
                    if IM.mem state_vi.Cil.vid state
                    then IM.find state_vi.Cil.vid state
-                   else (SkVarinfo state_vi, mkVarExpr state_vi)])
+                   else (FnVarinfo state_vi, mkVarExpr state_vi)])
               state_vars []
           in
-          SkLetExpr complete_state
+          FnLetExpr complete_state
 
         | Let (v, e, cont, i, loc) ->
           let cur_v =
             match v with
-            | LhVar vi -> SkVarinfo vi
-            | LhTuple vil -> SkTuple vil
+            | LhVar vi -> FnVarinfo vi
+            | LhTuple vil -> FnTuple vil
           in
-          SkLetIn ([(cur_v, convert cur_v e)], convert_letin cont)
+          FnLetIn ([(cur_v, convert cur_v e)], convert_letin cont)
 
         | LetRec (igu, let_body, let_cont, loc) ->
           (** Tail position *)
           if is_empty_state let_cont then
-            SkLetExpr [(SkTuple state_vars,
-                        SkRec (igu, convert_letin let_body))]
+            FnLetExpr [(FnTuple state_vars,
+                        FnRec (igu, convert_letin let_body))]
           else
-            SkLetIn ([(SkTuple state_vars,
-                       SkRec (igu, convert_letin let_body))],
+            FnLetIn ([(FnTuple state_vars,
+                       FnRec (igu, convert_letin let_body))],
                      convert_letin let_cont)
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
-            SkLetExpr [(SkTuple state_vars,
-                        SkCond (convert (SkTuple stv) c,
+            FnLetExpr [(FnTuple state_vars,
+                        FnCond (convert (FnTuple stv) c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
-            SkLetIn ( [(SkTuple state_vars,
-                        SkCond (convert (SkTuple stv) c,
+            FnLetIn ( [(FnTuple state_vars,
+                        FnCond (convert (FnTuple stv) c,
                                 convert_letin let_if,
                                 convert_letin let_else))],
                       convert_letin let_cont)
@@ -482,7 +482,7 @@ class sketch_builder
       let iletin = convert_letin ilet in
       let uletin = convert_letin ulet in
       (** TODO implement records to manage index *)
-      let gskexpr = convert (SkVarinfo (VS.max_elt index)) gexpr in
+      let gskexpr = convert (FnVarinfo (VS.max_elt index)) gexpr in
       sketch <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));
 
@@ -492,7 +492,7 @@ class sketch_builder
 
 (** Defines the kind of constants we can accept a initialization
     parameters.
-    Translates a Cil.exp into a SketchTypes.skExpr
+    Translates a Cil.exp into a FnetchTypes.fnExpr
 *)
 
 let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
@@ -502,7 +502,7 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
     (match h with
      | Cil.Var vi ->
        (match c_constant vi.Cil.vname with
-        | Some skconst -> Some (SkConst skconst)
+        | Some skconst -> Some (FnConst skconst)
         | None ->
           Format.printf "@;Warning: dangerous intialization %s.@."
             (CilTools.psprint80 Cil.dn_exp cil_exp);
@@ -510,13 +510,13 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
           | Cil.Index (e, o) ->
             begin
               match conv_init_expr Integer e with
-              | Some se -> Some (SkVar (SkArray (SkVarinfo vi, se)))
+              | Some se -> Some (FnVar (FnArray (FnVarinfo vi, se)))
               | None -> None
             end
           | _ -> None)
      | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
        (match conv_init_expr Integer e with
-        | Some e' -> Some (SkVar (SkArray ((SkVarinfo vi), e')))
+        | Some e' -> Some (FnVar (FnArray ((FnVarinfo vi), e')))
         | _ -> None)
      | _ -> None)
   | _ -> None
@@ -524,21 +524,21 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
 
 (** Transform the converted sketch to a loop body and a join sketch *)
 
-let rec make_conditional_guards (initial_vs : VS.t) (letin_form : sklet) =
+let rec make_conditional_guards (initial_vs : VS.t) (letin_form : fnlet) =
   match letin_form with
-  | SkLetIn (bindings, body) ->
+  | FnLetIn (bindings, body) ->
     let new_bindings, new_state_vars = mk_cg bindings initial_vs in
     let new_body, state_vars' =
       make_conditional_guards new_state_vars body in
-    SkLetIn (new_bindings, new_body), state_vars'
+    FnLetIn (new_bindings, new_body), state_vars'
 
-  | SkLetExpr bindings ->
+  | FnLetExpr bindings ->
     let new_bindings, new_state_vars = mk_cg bindings initial_vs in
-    SkLetExpr new_bindings, new_state_vars
+    FnLetExpr new_bindings, new_state_vars
 
 and mk_cg bindings vs =
   (List.fold_left
      (fun acc binding -> acc @ [mk_cg_binding vs binding]) [] bindings), vs
 
-and mk_cg_binding vs ((var, expr) : skLVar * skExpr) =
+and mk_cg_binding vs ((var, expr) : fnLVar * fnExpr) =
   (var, expr)

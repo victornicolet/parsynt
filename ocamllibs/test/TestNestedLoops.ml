@@ -31,4 +31,4 @@ let test () =
        printer#fprintlet std_formatter finfo.func
     ) func_infos;
   let unsolved_sketches = Canalyst.func2sketch cfile func_infos in
-  List.iter (SPretty.pp_sketch_rep std_formatter) unsolved_sketches;
+  List.iter (FPretty.pp_problem_rep std_formatter) unsolved_sketches;

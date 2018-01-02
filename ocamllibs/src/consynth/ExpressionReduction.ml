@@ -1,7 +1,7 @@
 open Utils
-open SketchTypes
+open FuncTypes
 open Cil
-open SPretty
+open FPretty
 open Format
 open Expressions
 
@@ -19,15 +19,15 @@ let verbose = ref true
 let reduce_cost ctx expr =
   let reduction_cases expr =
     match expr with
-    | SkBinop (_, _, _) -> true
-    | SkQuestion (_, _,_) -> true
-    | SkUnop (_,_) -> true
+    | FnBinop (_, _, _) -> true
+    | FnQuestion (_, _,_) -> true
+    | FnUnop (_,_) -> true
     | _ -> false
   in
   (* Tranform expressions by looking at its leaves *)
   let reduce_transform rfunc expr =
     match expr with
-    | SkBinop (op2, x, y) ->
+    | FnBinop (op2, x, y) ->
       let x' = rfunc x in
       let y' = rfunc y in
       begin
@@ -35,104 +35,104 @@ let reduce_cost ctx expr =
         (** Transform comparisions with max min into conjunctions
             or disjunctions, because conj/disj. are associative *)
         (* max(a, b) > c --> a > c or b > c *)
-        | SkBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->
-          SkBinop (Or, SkBinop (op2, a, c), SkBinop (op2, b, c))
+        | FnBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->
+          FnBinop (Or, FnBinop (op2, a, c), FnBinop (op2, b, c))
         (* c > max(a, b) --> c > a and c > b *)
-        | c, SkBinop (Max, a, b) when op2 = Gt || op2 = Ge ->
-          SkBinop (And, SkBinop (op2, c, a), SkBinop (op2, c, b))
+        | c, FnBinop (Max, a, b) when op2 = Gt || op2 = Ge ->
+          FnBinop (And, FnBinop (op2, c, a), FnBinop (op2, c, b))
         (* max(a, b) < c --> a < c and b < c *)
-        | SkBinop (Max, a, b), c when op2 = Lt || op2 = Le ->
-          SkBinop (And, SkBinop (op2, a, c), SkBinop (op2, b, c))
+        | FnBinop (Max, a, b), c when op2 = Lt || op2 = Le ->
+          FnBinop (And, FnBinop (op2, a, c), FnBinop (op2, b, c))
         (* c < max(a, b) --> c < a or c < b *)
-        | c, SkBinop (Max, a, b) when op2 = Lt || op2 = Le ->
-          SkBinop (Or, SkBinop (op2, c, a), SkBinop (op2, c, b))
+        | c, FnBinop (Max, a, b) when op2 = Lt || op2 = Le ->
+          FnBinop (Or, FnBinop (op2, c, a), FnBinop (op2, c, b))
 
 
         (* Distributivity with operators *)
-        | SkBinop (op1, a, b), c ->
+        | FnBinop (op1, a, b), c ->
           let ca = cost ctx a in
           let cb = cost ctx b in
           let cc = cost ctx c in
           (* [(a + b) * c --> a*c + b*c] if no stv in c *)
           if is_right_distributive op1 op2 && ((max ca cb) >= cc)
           then
-            SkBinop (op1, (SkBinop (op2, a, c)),
-                     (SkBinop (op2, b, c)))
+            FnBinop (op1, (FnBinop (op2, a, c)),
+                     (FnBinop (op2, b, c)))
 
           else
-            SkBinop (op2, x', y')
+            FnBinop (op2, x', y')
 
-        | c, SkBinop (Or, a , b) when op2 = And ->
-          SkBinop (Or, SkBinop (And, c, a), SkBinop (And, c, b))
+        | c, FnBinop (Or, a , b) when op2 = And ->
+          FnBinop (Or, FnBinop (And, c, a), FnBinop (And, c, b))
 
         (* Distributivity with ternary expressions *)
-        | SkQuestion (cond, a, b), c ->
+        | FnQuestion (cond, a, b), c ->
           let ca = cost ctx a in
           let cb = cost ctx b in
           let cc = cost ctx c in
           if is_associative op2 &&  (max ca cb) > cc then
-            SkQuestion (cond, SkBinop (op2, a, c), SkBinop (op2, b, c))
+            FnQuestion (cond, FnBinop (op2, a, c), FnBinop (op2, b, c))
           else
-            SkBinop (op2, x', y')
+            FnBinop (op2, x', y')
 
-        | c, SkQuestion (cond, a, b) ->
+        | c, FnQuestion (cond, a, b) ->
           let ca = cost ctx a in
           let cb = cost ctx b in
           let cc = cost ctx c in
           if is_associative op2 && (max ca cb) > cc then
-            SkQuestion (cond, SkBinop (op2, c, a), SkBinop (op2, c, b))
+            FnQuestion (cond, FnBinop (op2, c, a), FnBinop (op2, c, b))
           else
-            SkBinop (op2, x', y')
+            FnBinop (op2, x', y')
 
-        | _, _ -> SkBinop (op2, x', y')
+        | _, _ -> FnBinop (op2, x', y')
       end
-    (* End SkBinop (c, x, y) case *)
+    (* End FnBinop (c, x, y) case *)
 
-    | SkQuestion (c, x, y)->
+    | FnQuestion (c, x, y)->
       let x' = rfunc x in let y' = rfunc y in
       let c = rfunc c in
       begin
         match x', y' with
-        | SkBinop (op1, x1, x2), SkBinop (op2, y1, y2)
+        | FnBinop (op1, x1, x2), FnBinop (op2, y1, y2)
           when op1 = op2 && is_associative op1 ->
           let cx1 = cost ctx x1 in
           let cx2 = cost ctx x2 in
           let cy1 = cost ctx y1 in
           let cy2 = cost ctx y2 in
           if x1 = y1 && cx1 > (max cx2 cy2) then
-            let cond = rfunc (SkQuestion (c, x2, y2)) in
-            SkBinop (op1, x1, cond)
+            let cond = rfunc (FnQuestion (c, x2, y2)) in
+            FnBinop (op1, x1, cond)
           else
             begin
               if x2 = y2 && cx2 > (max cx1 cy1) then
-                let cond = rfunc (SkQuestion (c, x1, y1)) in
-                SkBinop (op1, cond, x2)
+                let cond = rfunc (FnQuestion (c, x1, y1)) in
+                FnBinop (op1, cond, x2)
               else
-                SkQuestion (c, x', y')
+                FnQuestion (c, x', y')
             end
-        | _, _ -> SkQuestion (c, x', y')
+        | _, _ -> FnQuestion (c, x', y')
       end
-    (* End SkQuestion (c, x, y) case *)
+    (* End FnQuestion (c, x, y) case *)
     (* Distribute unary boolean not down, unary num neg down *)
-    | SkUnop (op, x) ->
+    | FnUnop (op, x) ->
       let e' = rfunc x in
       begin
       match op, e' with
-      | Not, SkBinop (And, e1, e2) ->
-        SkBinop(Or, rfunc (SkUnop (Not, e1)), rfunc (SkUnop (Not, e2)))
+      | Not, FnBinop (And, e1, e2) ->
+        FnBinop(Or, rfunc (FnUnop (Not, e1)), rfunc (FnUnop (Not, e2)))
 
-      | Not, SkBinop (Or, e1, e2) ->
-        SkBinop(And, rfunc (SkUnop (Not, e1)), rfunc (SkUnop (Not, e2)))
+      | Not, FnBinop (Or, e1, e2) ->
+        FnBinop(And, rfunc (FnUnop (Not, e1)), rfunc (FnUnop (Not, e2)))
 
-      | Neg, SkBinop (Plus, e1, e2) ->
-        SkBinop(Plus, rfunc (SkUnop (Neg, e1)), rfunc (SkUnop (Neg, e2)))
+      | Neg, FnBinop (Plus, e1, e2) ->
+        FnBinop(Plus, rfunc (FnUnop (Neg, e1)), rfunc (FnUnop (Neg, e2)))
 
-      | Neg, SkBinop (Minus, e1, e2) ->
-        SkBinop(Minus, rfunc e1, rfunc e2)
+      | Neg, FnBinop (Minus, e1, e2) ->
+        FnBinop(Minus, rfunc e1, rfunc e2)
 
-      | _, _ -> SkUnop(op, e')
+      | _, _ -> FnUnop(op, e')
       end
-      (* End SkUnop (op, e) case *)
+      (* End FnUnop (op, e) case *)
     | _ -> failwith "Unexpected case in expression transformation"
 
   (* End transform expressions *)
@@ -142,26 +142,26 @@ let reduce_cost ctx expr =
 let reduce_cost_specials ctx e=
   let red_cases e =
     match e with
-    | SkQuestion _ -> true
+    | FnQuestion _ -> true
     | _ -> false
   in
   let red_apply rfunc e =
     match e with
-    | SkQuestion (cond1, x, y) ->
+    | FnQuestion (cond1, x, y) ->
       let x' = rfunc x in
       let y' = rfunc y in
       begin
         match x', y' with
-        | SkQuestion (cond2, a, b), c ->
+        | FnQuestion (cond2, a, b), c ->
           let ca = cost ctx a in
           let cb = cost ctx b in
           let cc = cost ctx c in
           if ca > (max cb cc) then
-            SkQuestion (SkBinop (And, cond1, cond2), a,
-                        SkQuestion (SkUnop (Not, cond2), c, b))
+            FnQuestion (FnBinop (And, cond1, cond2), a,
+                        FnQuestion (FnUnop (Not, cond2), c, b))
           else
-            SkQuestion (cond1, x, y)
-        | _ ->  SkQuestion (cond1, x, y)
+            FnQuestion (cond1, x, y)
+        | _ ->  FnQuestion (cond1, x, y)
       end
     | _ -> failwith "Unexpected case in reduce_cost_specials"
   in
@@ -170,18 +170,18 @@ let reduce_cost_specials ctx e=
 let remove_double_negs ctx e=
   let red_cases e =
     match e with
-    | SkUnop _ -> true
+    | FnUnop _ -> true
     | _ -> false
   in
   let red_apply_dbn rfunc e =
     match e with
-    | SkUnop (op, e') ->
+    | FnUnop (op, e') ->
       let e'' = rfunc e' in
       begin
         match op, e'' with
-        | Not, SkUnop (op2, e0) when op2 = Not -> rfunc e0
-        | Neg, SkUnop (op2, e0) when op2 = Neg -> rfunc e0
-        | _ , _ -> SkUnop(op, e'')
+        | Not, FnUnop (op2, e0) when op2 = Not -> rfunc e0
+        | Neg, FnUnop (op2, e0) when op2 = Neg -> rfunc e0
+        | _ , _ -> FnUnop(op, e'')
       end
     | _ -> failwith "Unexpected case in reduce_cost_specials"
   in
@@ -208,11 +208,11 @@ let reduce_full ?(limit = 10) ctx expr =
 
 let rec simplify_reduce sklet ctx =
   match sklet with
-  | SkLetIn (ve_list, letin) ->
-    SkLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
+  | FnLetIn (ve_list, letin) ->
+    FnLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
              simplify_reduce letin ctx)
-  | SkLetExpr ve_list ->
-    SkLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
+  | FnLetExpr ve_list ->
+    FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
 
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =
@@ -220,10 +220,10 @@ let find_function_with_rosette all_vars fe e =
     Sketch.pp_symbolic_definitions_of fmt [] all_vars
   in
   let pp_expr_e fmt () =
-    fprintf fmt "(define e @[%a@])@." pp_skexpr e
+    fprintf fmt "(define e @[%a@])@." pp_fnexpr e
   in
   let pp_expr_fe fmt () =
-    fprintf fmt "(define fe @[%a@])@." pp_skexpr fe
+    fprintf fmt "(define fe @[%a@])@." pp_fnexpr fe
   in
   let pp_f_sketch fmt () =
     fprintf fmt "(define (f x) (bExpr %a x 2))"

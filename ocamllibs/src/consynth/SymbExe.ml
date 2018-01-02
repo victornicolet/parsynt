@@ -1,26 +1,26 @@
 open Utils
 open Cil
-open SError
+open FError
 open Expressions
 
-module T = SketchTypes
+module Fn = FuncTypes
 module Ct = CilTools
-module ES = T.ES
+module ES = Fn.ES
 
 
 let debug = ref false
 
 type exec_info =
-  { context : T.context;
-    state_exprs : T.skExpr IM.t;
-    index_exprs : T.skExpr IM.t;
-    inputs : T.ES.t  }
+  { context : Fn.context;
+    state_exprs : Fn.fnExpr IM.t;
+    index_exprs : Fn.fnExpr IM.t;
+    inputs : Fn.ES.t  }
 
 (** Create a mapping from variable ids to variable expressions to start the
     algorithm *)
 let create_symbol_map vs=
   VS.fold
-    (fun vi map -> IM.add vi.vid (T.SkVar (T.SkVarinfo vi)) map) vs IM.empty
+    (fun vi map -> IM.add vi.vid (Fn.FnVar (Fn.FnVarinfo vi)) map) vs IM.empty
 
 
 (** --------------------------------------------------------------------------*)
@@ -33,26 +33,26 @@ let rec unfold new_exprs exec_info func =
 
   and update_expressions (new_exprs, read_exprs) (var, expr) =
     match var with
-    | T.SkTuple vs -> exec_info.state_exprs, read_exprs
-    | T.SkVarinfo vi ->
+    | Fn.FnTuple vs -> exec_info.state_exprs, read_exprs
+    | Fn.FnVarinfo vi ->
       let vid = vi.vid in
       let nexpr, n_rexprs = unfold_expr exec_info expr in
       if !debug then
         (Format.fprintf Format.std_formatter "Set of read exprs : %a@."
-           (fun fmt a -> SPretty.pp_expr_set fmt a)
-           (T.ES.union n_rexprs read_exprs))
+           (fun fmt a -> FPretty.pp_expr_set fmt a)
+           (Fn.ES.union n_rexprs read_exprs))
       else
         ();
-      IM.add vid nexpr new_exprs, T.ES.union n_rexprs read_exprs
-    | T.SkArray (v, e) ->
+      IM.add vid nexpr new_exprs, Fn.ES.union n_rexprs read_exprs
+    | Fn.FnArray (v, e) ->
       exception_on_variable
         "Unsupported arrays in state variables for variable discovery algorithm."
         v
   in
   match func with
-  | T.SkLetExpr let_list ->
+  | Fn.FnLetExpr let_list ->
     apply_let_exprs new_exprs let_list exec_info
-  | T.SkLetIn (let_list, let_cont) ->
+  | Fn.FnLetIn (let_list, let_cont) ->
     let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
     unfold new_exprs
       {exec_info with
@@ -63,12 +63,12 @@ let rec unfold new_exprs exec_info func =
 
 and exec_var exec_info v =
   match v with
-  | T.SkTuple vs -> T.SkVar v, ES.empty
+  | Fn.FnTuple vs -> Fn.FnVar v, ES.empty
 
-  | T.SkVarinfo vi ->
+  | Fn.FnVarinfo vi ->
     begin
       (* Is the variable a state variable ?*)
-      if VS.has_vid vi.vid exec_info.context.T.state_vars then
+      if VS.has_vid vi.vid exec_info.context.Fn.state_vars then
         try
           IM.find vi.vid exec_info.state_exprs, ES.empty
         with Not_found ->
@@ -77,13 +77,13 @@ and exec_var exec_info v =
                            id %s%i%s in map %a@."
              (PpTools.color "red") PpTools.color_default
              (PpTools.color "red") vi.vid  PpTools.color_default
-             (fun fmt map -> PpTools.ppimap SPretty.pp_skexpr fmt map)
+             (fun fmt map -> PpTools.ppimap FPretty.pp_fnexpr fmt map)
              exec_info.state_exprs);
           exception_on_variable "Expression not found for state variable" v
       else
         begin
           (* Is the variable an index variable ? *)
-          if VS.has_vid vi.vid exec_info.context.T.index_vars then
+          if VS.has_vid vi.vid exec_info.context.Fn.index_vars then
             try
               IM.find vi.vid exec_info.index_exprs, ES.empty
             with Not_found ->
@@ -94,10 +94,10 @@ and exec_var exec_info v =
                variable has been used previously, if not we create a
                new variable for this use.
             *)
-            T.SkVar v, ES.singleton (T.SkVar v)
+            Fn.FnVar v, ES.singleton (Fn.FnVar v)
         end
     end
-  | T.SkArray (v', offset_expr) ->
+  | Fn.FnArray (v', offset_expr) ->
     (** TODO : add support for arrays in state variables. For now,
         we assume all state variables are scalars, so if we have
         an array in an expression it is necessarily an input variable.
@@ -105,13 +105,13 @@ and exec_var exec_info v =
     begin
       let new_v' =
         match exec_var exec_info v' with
-        | T.SkVar v, _-> v
+        | Fn.FnVar v, _-> v
         | bad_v, _ ->
           exception_on_expression "Unexpected variable form in exec_var" bad_v
       in
       let new_offset, new_reads = unfold_expr exec_info offset_expr in
-      T.SkVar (T.SkArray (new_v', new_offset)),
-      ES.union (ES.singleton (T.SkVar (T.SkArray (new_v', new_offset))))
+      Fn.FnVar (Fn.FnArray (new_v', new_offset)),
+      ES.union (ES.singleton (Fn.FnVar (Fn.FnArray (new_v', new_offset))))
         new_reads
     end
 
@@ -120,50 +120,50 @@ and unfold_expr exec_info expr =
   (* Where all the work is done : when encountering an expression in
        the function*)
 
-  | T.SkVar v -> exec_var exec_info v
+  | Fn.FnVar v -> exec_var exec_info v
 
-  | T.SkConst c -> expr, ES.empty
+  | Fn.FnConst c -> expr, ES.empty
 
   (* Recursive cases with only expressions as subexpressions *)
-  | T.SkFun sklet -> expr, ES.empty (* TODO recursive *)
+  | Fn.FnFun sklet -> expr, ES.empty (* TODO recursive *)
 
-  | T.SkBinop (binop, e1, e2) ->
+  | Fn.FnBinop (binop, e1, e2) ->
     let e1', r1 = unfold_expr exec_info e1 in
     let e2', r2 = unfold_expr exec_info e2 in
-    T.SkBinop (binop, e1', e2'), ES.union r1 r2
+    Fn.FnBinop (binop, e1', e2'), ES.union r1 r2
 
-  | T.SkQuestion (c, e1, e2) ->
+  | Fn.FnQuestion (c, e1, e2) ->
     let c', rc = unfold_expr exec_info c in
     let e1', r1 = unfold_expr exec_info e1 in
     let e2', r2 = unfold_expr exec_info e2 in
-    T.SkQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
+    Fn.FnQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
 
-  | T.SkUnop (unop, expr') ->
+  | Fn.FnUnop (unop, expr') ->
     let e, r = unfold_expr exec_info expr' in
-    T.SkUnop (unop, e), r
+    Fn.FnUnop (unop, e), r
 
-  | T.SkApp (sty, vi_o, elist) ->
+  | Fn.FnApp (sty, vi_o, elist) ->
     let erlist = List.map  (unfold_expr exec_info) elist in
     let elist', rlist = ListTools.unpair erlist in
-    T.SkApp (sty, vi_o, elist'),
+    Fn.FnApp (sty, vi_o, elist'),
     List.fold_left (fun r es -> ES.union r es) ES.empty rlist
 
-  | T.SkAddrof expr' | T.SkStartOf expr'
-  | T.SkAlignofE expr' | T.SkSizeofE expr' ->
+  | Fn.FnAddrof expr' | Fn.FnStartOf expr'
+  | Fn.FnAlignofE expr' | Fn.FnSizeofE expr' ->
     unfold_expr exec_info expr'
 
-  | T.SkSizeof _ | T.SkSizeofStr _ | T.SkAlignof _ ->
+  | Fn.FnSizeof _ | Fn.FnSizeofStr _ | Fn.FnAlignof _ ->
     expr, ES.empty
 
-  | T.SkCastE (sty, expr') ->
+  | Fn.FnCastE (sty, expr') ->
     let e, r = unfold_expr exec_info expr' in
-    T.SkCastE (sty, e), r
+    Fn.FnCastE (sty, e), r
 
   (* Special cases where we have irreducible conitionals and nested for
      loops*)
-  | T.SkRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
-  | T.SkCond (c, letif, letelse) -> expr, ES.empty (* TODO recursive *)
-  | T.SkAddrofLabel _ | _ ->
+  | Fn.FnRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
+  | Fn.FnCond (c, letif, letelse) -> expr, ES.empty (* TODO recursive *)
+  | Fn.FnAddrofLabel _ | _ ->
     failwith "Unsupported expression in variable discovery algorithm"
 
 (** unfold_once : simulate the applciation of a function body to a set of

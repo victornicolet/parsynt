@@ -4,9 +4,9 @@ open Loops
 open Utils
 open Utils.CilTools
 open Utils.PpTools
-open SketchTypes
-open SPretty
-open SError
+open FuncTypes
+open FPretty
+open FError
 open Sets
 open Loops
 

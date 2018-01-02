@@ -1,6 +1,6 @@
 open Format
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 open Utils
 
 (* Defintiion of a subset of the Dafny language for a cleaner management of
@@ -47,7 +47,7 @@ and 'a dfExpr =
   | DfBinop : 'a dfOp * _ dfExpr * _ dfExpr -> 'a dfExpr
   | DfUnop : 'a dfOp * _ dfExpr -> 'a dfExpr
 
-  | DfSkExpr : skExpr -> type_simple dfExpr
+  | DfSkExpr : fnExpr -> type_simple dfExpr
 
   | DfCalc : 'a dfExpr * 'a dfExpr * 'a dfExpr -> 'a dfExpr
   | DfAssert : 'a dfExpr -> 'a dfExpr
@@ -102,7 +102,7 @@ let rec pp_dfexpr : type a. formatter -> a dfExpr -> unit =
          pp_dfexpr lh pp_dfexpr asserts pp_dfexpr rh
      | DfAssert e ->
        fprintf fmt "assert(%a)" pp_dfexpr e
-     | DfSkExpr e -> pp_skexpr fmt e)
+     | DfSkExpr e -> pp_fnexpr fmt e)
 
 and pp_dfProgram : type a. formatter -> a dfProgram -> unit =
   (fun fmt ->

@@ -1,6 +1,6 @@
 open Format
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 
 
 let debug_global = ref true
@@ -20,13 +20,13 @@ let raise_on except_name msg pp_obj obj =
 
 
 let exception_on_variable msg var =
-  raise_on "variable" msg pp_sklvar var
+  raise_on "variable" msg pp_fnlvar var
 
 let exception_on_expression msg expr =
-  raise_on "expression" msg pp_skexpr expr
+  raise_on "expression" msg pp_fnexpr expr
 
 let exception_on_function msg sklet  =
-  raise_on "function" msg pp_sklet sklet
+  raise_on "function" msg pp_fnlet sklet
 
 
 exception Skip_loop of string

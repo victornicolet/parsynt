@@ -1,12 +1,12 @@
 open Utils
 open Cil
 
-module T = SketchTypes
+module Fn = FuncTypes
 module Ct = CilTools
 
 (** --------------------------------------------------------------------------*)
 (*Keep track of the generated names during symbolic execution *)
-type symbolic_input = (int * string * T.skLVar)
+type symbolic_input = (int * string * Fn.fnLVar)
 
 let scalar_default_offset = -1
 let genvars = IH.create 30
@@ -55,18 +55,18 @@ let find_from_exp vid cexp =
 
 let rec gen_var v =
   try
-    let host_vi = check_option (T.vi_of v) in
+    let host_vi = check_option (Fn.vi_of v) in
     try
       find_from_exp host_vi.vid v
     with Not_found ->
       let vname = host_vi.vname in
       let new_vi = Ct.gen_var_with_suffix host_vi (string_of_int !exec_count) in
-      let new_v = T.SkVarinfo new_vi in
+      let new_v = Fn.FnVarinfo new_vi in
       let offset =
         match v with
-        | T.SkVarinfo _ -> scalar_default_offset
-        | T.SkArray _ -> !exec_count
-        | T.SkTuple _ -> scalar_default_offset
+        | Fn.FnVarinfo _ -> scalar_default_offset
+        | Fn.FnArray _ -> !exec_count
+        | Fn.FnTuple _ -> scalar_default_offset
       in
       add_to_genvars host_vi.vid offset vname (v, new_v);
       (offset, new_vi.vname, (v,new_v))
@@ -76,18 +76,18 @@ let rec gen_var v =
          (Format.fprintf Format.str_formatter
             "%s@.Variable:%a@.Initial message: %s@."
             "Failed to find host variable in gen_var"
-            SPretty.pp_sklvar v
+            FPretty.pp_fnlvar v
             s;
           Format.flush_str_formatter ()))
 
 (* Filter out the new variable part in the variable generation output *)
 let gen_expr v =
-  let _, _, (_, ev) = gen_var v in T.SkVar ev
+  let _, _, (_, ev) = gen_var v in Fn.FnVar ev
 
 let declared_vars () =
   IH.fold
     (fun i (offset, vname, (v, new_v)) vs ->
-       let vi = T.vi_of new_v in
+       let vi = Fn.vi_of new_v in
        if is_some vi then VS.add {(check_option vi) with vname = vname} vs
        else vs)
     genvars VS.empty

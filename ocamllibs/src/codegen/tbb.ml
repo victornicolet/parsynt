@@ -1,8 +1,8 @@
 open Format
 open Cil
 
-open SketchTypes
-open SPretty
+open FuncTypes
+open FPretty
 open Utils
 open Utils.PpTools
 
@@ -49,7 +49,7 @@ let pp_constr_arg_in_app fmt =
 type cpp_constr_initializer = varinfo * init_expr
 
 and init_expr =
-  | ConstExpr of skExpr
+  | ConstExpr of fnExpr
   | ClassMember of varinfo * string
   | LocalVar of varinfo
 
@@ -211,17 +211,17 @@ let rename_bounds =
   let rec rename_in_expr e =
     let rename_index_vi skv =
       match skv with
-      | SkVarinfo vi ->
+      | FnVarinfo vi ->
         begin
           if is_left_index_vi vi || is_right_index_vi vi then
-            SkVarinfo {vi with vname = class_member_appendix^vi.vname}
+            FnVarinfo {vi with vname = class_member_appendix^vi.vname}
           else
-            SkVarinfo vi
+            FnVarinfo vi
         end
-      | SkArray (v, e) -> SkArray (v, rename_in_expr e)
+      | FnArray (v, e) -> FnArray (v, rename_in_expr e)
       | _ -> skv
     in
-    SketchTypes.transform_expr2
+    transform_expr2
       { case = (fun e -> false);
         on_case = (fun f e -> e);
         on_const = (fun c -> c);
@@ -234,7 +234,7 @@ let rename_bounds =
     them in a separate list to be printed out of the loop. *)
 let remove_constant_assignments sktch sklet =
   let is_constant_assignment v e =
-    let used_vars = used_in_skexpr e in
+    let used_vars = used_in_fnexpr e in
     (* The expression doesn't use state variables or an index *)
     VS.is_empty
       (VS.union
@@ -251,14 +251,14 @@ let remove_constant_assignments sktch sklet =
   in
   let rec aux sklet c_a =
     match sklet with
-    | SkLetExpr ve_list ->
+    | FnLetExpr ve_list ->
       let ve_list0, c_a0 = rem_from_ve_list ve_list in
-      SkLetExpr ve_list0, c_a@c_a0
+      FnLetExpr ve_list0, c_a@c_a0
 
-    | SkLetIn (ve_list, letin) ->
+    | FnLetIn (ve_list, letin) ->
       let ve_list0, c_a0 = rem_from_ve_list ve_list in
       let letin0, c_a1 = aux letin (c_a@c_a0) in
-      SkLetIn (ve_list0, letin0), c_a1
+      FnLetIn (ve_list0, letin0), c_a1
   in
   aux sklet []
 
@@ -356,11 +356,11 @@ let make_tbb_class pb =
       (VS.of_varlist [begin_index_var; end_index_var]);
   let bounds_initial_values =
     IM.add begin_index_var.vid
-      (SkConst
+      (FnConst
          (CInt64 (Int64.of_string
                     (Conf.get_conf_string "tbb_begin_index_value"))))
       (IM.add end_index_var.vid
-         (SkConst
+         (FnConst
             (CInt64
                (Int64.of_string
                   (Conf.get_conf_string "tbb_end_index_value")))) IM.empty)
@@ -444,8 +444,8 @@ let make_tbb_class pb =
         constant_assignments
         (fun fmt () ->
            fprintf fmt "@[%a@]@;"
-             (pp_c_sklet ~p_id_assign:false)
-             (rename_bounds (sk_for_c mod_loop_body)))
+             (pp_c_fnlet ~p_id_assign:false)
+             (rename_bounds (fn_for_c mod_loop_body)))
     in
     let operator_arg =
       (fprintf str_formatter "const blocked_range<%s>& %s"
@@ -472,8 +472,8 @@ let make_tbb_class pb =
       cpp_class_members_set := tbb_class.public_vars;
       (* Translate parallel assignments : for now, go with the simplest
          solution which is using temporary variables *)
-      fprintf fmt "%a@\n" (pp_c_sklet ~p_id_assign:true)
-        (sk_for_c pb.join_solution);
+      fprintf fmt "%a@\n" (pp_c_fnlet ~p_id_assign:true)
+        (fn_for_c pb.join_solution);
       (* Assign local variable value to class member *)
       VS.iter
         (fun vi ->
@@ -580,7 +580,7 @@ let fprint_tbb_class fmt pb tbb_class =
   fprint_implementations fmt pb tbb_class
 
 
-let output_tbb_test fname_of_sol (solution : sketch_rep) =
+let output_tbb_test fname_of_sol solution =
   let tbb_file_oc =  open_out (fname_of_sol solution) in
   printf "New file: %s.@." (fname_of_sol solution);
   let tbb_file_out_fmt = Format.make_formatter

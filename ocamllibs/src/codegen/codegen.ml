@@ -1,6 +1,6 @@
 open RAst
 open ExtString
-open SketchTypes
+open FuncTypes
 open Format
 
 module Tbb = Tbb

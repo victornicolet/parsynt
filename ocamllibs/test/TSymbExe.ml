@@ -2,10 +2,11 @@ open SymbExe
 open Utils
 open Cil
 open TestUtils
-open SPretty
 open ExpressionReduction
 open VariableDiscovery
-open SketchTypes
+open FPretty
+open FuncTypes
+
 
 let x, y, z, a, b, c, a_n =
   (make_int_varinfo "x"),
@@ -18,7 +19,7 @@ let x, y, z, a, b, c, a_n =
 
 let index_var = make_int_varinfo "i"
 let index_expr = mkVarExpr index_var
-let array = SkArray (SkVarinfo a_n, index_expr)
+let array = FnArray (FnVarinfo a_n, index_expr)
 
 let allvs  = VS.of_list [x; y; z; a; b; c; a_n; index_var]
 
@@ -32,14 +33,14 @@ let sctx : context =
       costly_exprs = ES.empty;
     }
 
-let init_exprs = IM.singleton a.vid (T.mkVarExpr a)
+let init_exprs = IM.singleton a.vid (mkVarExpr a)
 
-let skv_a = SkVarinfo a
+let skv_a = FnVarinfo a
 let sum_array =
-  (T.SkLetIn ([skv_a,
-               T.SkBinop(T.Max,
+  (FnLetIn ([skv_a,
+             FnBinop(Max,
                          sk_zero,
-                         T.SkBinop (T.Plus, T.SkVar skv_a, T.SkVar array))],
+                         FnBinop (Plus, FnVar skv_a, FnVar array))],
              sk_tail_state))
 
 
@@ -52,7 +53,7 @@ let index_set = VS.singleton index_var
 let r0 : exec_info = { context = sctx;
            state_exprs = init_exprs;
            index_exprs = index_map1;
-           inputs = SketchTypes.ES.empty
+           inputs = ES.empty
          }
 
 let r1_array = GenVars.init () ;
@@ -63,7 +64,7 @@ let r1_array = GenVars.init () ;
 
 let r2_array =
   let r2ae, r2ar =
-    unfold_once {r1_array with inputs = SketchTypes.ES.empty} sum_array
+    unfold_once {r1_array with inputs = ES.empty} sum_array
   in
   { r1_array with state_exprs = r2ae;
                                inputs = r2ar;
@@ -77,7 +78,7 @@ let reduced_r2_array = IM.map (reduce_full sctx)
 let print_exprs str exprs =
   Format.printf "%s :\n" str;
   IM.iter
-    (fun vid expr -> Format.printf "%i : %a\n" vid pp_skexpr expr)
+    (fun vid expr -> Format.printf "%i : %a\n" vid pp_fnexpr expr)
     exprs
 
 let test () =

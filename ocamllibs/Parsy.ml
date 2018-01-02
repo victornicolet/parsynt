@@ -3,7 +3,7 @@ open Format
 open Utils
 open Utils.PpTools
 open Getopt
-open SketchTypes
+open FuncTypes
 open Cil
 open FpExact
 
@@ -34,16 +34,16 @@ let options = [
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
-let solution_failed ?(failure = "") sketch =
+let solution_failed ?(failure = "") problem =
   printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
-          of the solved sketch of %s.@."
-    (color "red") color_default sketch.loop_name;
+          of the solved problem of %s.@."
+    (color "red") color_default problem.loop_name;
   if failure = "" then ()
   else
     printf "Failure: %s" failure
 
 
-let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
+let solution_found racket_elapsed lp_name parsed (problem : prob_rep) solved =
   if !verbose then
     printf "@.%sSOLUTION for %s %s:@.%a"
       (color "green") lp_name color_default RAst.pp_expr_list parsed;
@@ -55,14 +55,14 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
     try
       Codegen.get_solved_sketch_info parsed
     with _ ->
-      (solution_failed sketch;
+      (solution_failed problem;
        failwith "Couldn't retrieve solution from parsed ast.")
   in
   (** Simplify the solution using Z3 *)
   let translated_join_body =
-    SketchTypes.init_scm_translate
-      sketch.scontext.all_vars sketch.scontext.state_vars;
-    match scm_to_sk sol_info.Codegen.join_body with
+    init_scm_translate
+      problem.scontext.all_vars problem.scontext.state_vars;
+    match scm_to_fn sol_info.Codegen.join_body with
     | Some sklet, _ ->
       if !use_z3 then
         (* (try *)
@@ -77,7 +77,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
 
     | None, Some expr ->
       (eprintf "Failed in translation, we got an expression %a for the join."
-         SPretty.pp_skexpr expr;
+         FPretty.pp_fnexpr expr;
        failwith "Failed to translate the solution in a function in our\
                  intermediate representation.")
 
@@ -85,7 +85,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
       failwith "Failed to translate the solution in our \
                 intermediate representation."
   in
-  init_scm_translate sketch.scontext.all_vars sketch.scontext.state_vars;
+  init_scm_translate problem.scontext.all_vars problem.scontext.state_vars;
   let remap_init_values maybe_expr_list =
     match maybe_expr_list with
     | Some expr_list ->
@@ -93,7 +93,7 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
         (fun map vid ast_expr ->
            IM.add vid ast_expr map)
         IM.empty
-        (VS.vids_of_vs sketch.scontext.state_vars) expr_list
+        (VS.vids_of_vs problem.scontext.state_vars) expr_list
     | None ->
       (** If auxliaries have been created, the sketch has been solved
           without having to assign them a specific value. We can
@@ -108,22 +108,22 @@ let solution_found racket_elapsed lp_name parsed (sketch : sketch_rep) solved =
               | _ -> RAst.Nil_e) map)
         Sketch.Join.auxiliary_variables IM.empty
   in
-  {sketch with
+  {problem with
    join_solution =
-     ExpressionReduction.simplify_reduce translated_join_body sketch.scontext;
+     ExpressionReduction.simplify_reduce translated_join_body problem.scontext;
    init_values = remap_init_values sol_info.Codegen.init_values}::solved
 
 
-let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
-  SPretty.holes_expr_depth := expr_depth;
-  let rec solve_one (solved, unsolved) sketch =
-    let lp_name = sketch.loop_name in
+let solve ?(expr_depth = 1) (problem_list : prob_rep list) =
+  FPretty.holes_expr_depth := expr_depth;
+  let rec solve_one (solved, unsolved) problem =
+    let lp_name = problem.loop_name in
     try
       if !verbose then
-        printf "@.SOLVING sketch for %s.@." lp_name;
+        printf "@.SOLVING problem for %s.@." lp_name;
       let racket_elapsed, parsed =
         L.compile_and_fetch
-          ~print_err_msg:Racket.err_handler_sketch C.pp_sketch sketch
+          ~print_err_msg:Racket.err_handler_sketch C.pp_sketch problem
       in
       if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
         (* We get an "unsat" answer : add loop to auxliary discovery *)
@@ -131,34 +131,34 @@ let solve ?(expr_depth = 1) (sketch_list : sketch_rep list) =
           printf
             "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
             (color "orange") color_default lp_name;
-          if !SPretty.skipped_non_linear_operator then
+          if !FPretty.skipped_non_linear_operator then
             (** Try with non-linear operators. *)
-            (SPretty.reinit ~ed:expr_depth ~use_nl:true;
-             solve_one (solved, unsolved) sketch)
+            (FPretty.reinit ~ed:expr_depth ~use_nl:true;
+             solve_one (solved, unsolved) problem)
           else
-            (SPretty.reinit ~ed:expr_depth ~use_nl:false;
-            (solved, unsolved@[sketch]))
+            (FPretty.reinit ~ed:expr_depth ~use_nl:false;
+            (solved, unsolved@[problem]))
         end
       else
         (* A solution has been found *)
         begin
           try
-            solution_found racket_elapsed lp_name parsed sketch solved, unsolved
+            solution_found racket_elapsed lp_name parsed problem solved, unsolved
           with Failure s ->
-            solution_failed ~failure:s sketch;
+            solution_failed ~failure:s problem;
             (solved, unsolved)
         end
     with Failure s ->
       begin
-        solution_failed ~failure:s sketch;
+        solution_failed ~failure:s problem;
         (solved, unsolved)
       end
   in
-  List.fold_left solve_one ([], []) sketch_list
+  List.fold_left solve_one ([], []) problem_list
 
 (** Generating a TBB implementation of the parallel solution discovered *)
-let output_tbb_tests (solutions : sketch_rep list) =
-  let tbb_test_filename (solution : sketch_rep) =
+let output_tbb_tests (solutions : prob_rep list) =
+  let tbb_test_filename (solution : prob_rep) =
     let folder_name =
       (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
     in
@@ -179,8 +179,8 @@ let output_tbb_tests (solutions : sketch_rep list) =
 
 
 (** Generating Dafny proofs *)
-let output_dafny_proofs (sols : sketch_rep list) : unit =
-  let dafny_proof_filename (sol : sketch_rep) =
+let output_dafny_proofs (sols : prob_rep list) : unit =
+  let dafny_proof_filename (sol : prob_rep) =
     let folder_name =
       (!Conf.output_dir)^"/"^(Conf.get_conf_string "dafny_examples_folder")
     in
@@ -216,8 +216,8 @@ let main () =
 
   if !debug then
     begin
-      SError.logfile := "log"^(string_of_float (Sys.time ()))^filename;
-      printf "Logging in %s@." !SError.logfile;
+      FError.logfile := "log"^(string_of_float (Sys.time ()))^filename;
+      printf "Logging in %s@." !FError.logfile;
       (** Set all the debug flags to true *)
       Cil2Func.debug := true;
       Sketch.debug := true;
@@ -240,13 +240,13 @@ let main () =
   let functions = C.cil2func c_file loops in
   printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
     (color "green") color_default;
-  let sketch_list = Canalyst.func2sketch c_file functions in
+  let problem_list = Canalyst.func2sketch c_file functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") color_default;
   (** Try to solve the sketches without adding auxiliary variables *)
   let solved, unsolved =
-    if !skip_first_solve then ([], sketch_list)
+    if !skip_first_solve then ([], problem_list)
     else
-      solve sketch_list
+      solve problem_list
   in
   (** Now discover auxiliary variables *)
   if List.length unsolved > 0 then
@@ -255,9 +255,9 @@ let main () =
 
   let with_auxiliaries =
     List.map
-      (fun sketch ->
-         printf "Searching auxiliaries for %s ...@." sketch.loop_name;
-         Canalyst.find_new_variables sketch)
+      (fun problem ->
+         printf "Searching auxiliaries for %s ...@." problem.loop_name;
+         Canalyst.find_new_variables problem)
       unsolved
   in
   let solved_with_aux, unsolved_with_aux =
@@ -273,7 +273,7 @@ let main () =
   (* All the sketches that have been solved, including with auxiliaries *)
   let finally_solved = solved@solved_with_aux@solved_depth_2 in
   (** Handle all the solutions found *)
-  (List.iter (fun sketch -> SPretty.pp_sketch_rep std_formatter sketch) finally_solved);
+  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem) finally_solved);
   (* For each solved problem, generate a TBB implementation *)
   output_tbb_tests finally_solved;
   (* If exact_fp is set, generate the exact floating point parallel
