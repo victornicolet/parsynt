@@ -21,14 +21,23 @@ let test () =
          pp_loop std_formatter cl
        end)
     loop_infos;
-  printf "%s%sNEW IMPLEMENTATION: OK %s@." (color "b-green") (color "black")
-    color_default;
+
   Cil2Func.debug := true;
+  IHTools.add_all Cil2Func.global_loops loop_infos;
   let func_infos = Canalyst.cil2func cfile (IM.of_ih loop_infos) in
   List.iter
     (fun (finfo : func_info) ->
        let printer = new Cil2Func.cil2func_printer finfo.lvariables in
        printer#fprintlet std_formatter finfo.func
     ) func_infos;
+  printf "@.%s%sCIL --> FUNC translation: OK %s@." (color "b-green")
+    (color "black")
+    color_default;
+
   let unsolved_sketches = Canalyst.func2sketch cfile func_infos in
+
   List.iter (FPretty.pp_problem_rep std_formatter) unsolved_sketches;
+
+  printf "@.%s%sFUNC --> FUNC translation: OK %s@." (color "b-green")
+    (color "black")
+    color_default;

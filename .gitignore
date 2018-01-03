@@ -56,3 +56,6 @@ ocamllibs/dump/conSynth*
 # but add them in ocamllibs/test and then if it goes through use the
 # setup.sh script to copy it from this folder to the c_examples
 c_examples/*
+
+# Other
+\#LICENSE

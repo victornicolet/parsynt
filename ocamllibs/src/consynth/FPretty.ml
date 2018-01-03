@@ -296,7 +296,10 @@ and pp_fnlvar (ppf : Format.formatter) fnlvar =
          pp_fnlvar v offset_str)
 
   | FnTuple vs ->
-    fprintf ppf "(%a)" VS.pvs vs
+    if VS.cardinal vs > 1 then
+      fprintf ppf "(values %a)" VS.pp_var_names vs
+    else
+      fprintf ppf "%a" VS.pp_var_names vs
 
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in

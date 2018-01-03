@@ -1,3 +1,20 @@
+(**
+   This file is part of Parsynt.
+
+    Foobar is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Sketch
 open Format
 open Utils
@@ -26,7 +43,7 @@ let parseOneFile (fname : string) : C.file =
     Frontc.parse fname ()
   with
     Errormsg.Error ->
-    failwith "Error while parsing input file,\
+    failhere __FILE__ "parseOneFile" "Error while parsing input file,\
               the filename might contain errors"
 
 
@@ -161,7 +178,7 @@ let func2sketch cfile funcreps =
     let figu =
       match func_info.figu with
       | Some f -> f
-      | None -> failwith "Bad for loop"
+      | None -> failhere __FILE__ "func2sketch" "Bad for loop"
     in
     let s_reach_consts =
       IM.fold
@@ -190,7 +207,7 @@ let func2sketch cfile funcreps =
     let loop_body, sigu =
       match sketch_obj#get_sketch with
       | Some (a,b) -> a,b
-      | None -> failwith "Failed in sketch building."
+      | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
     let index_set, _ = sigu in
     IH.clear SketchJoin.auxiliary_variables;
@@ -211,7 +228,7 @@ let func2sketch cfile funcreps =
               | FnVarinfo vi -> IM.add k 0 m_s
               | FnArray (v, e) -> IM.add k (fnArray_dep_len e) m_s
               | _ -> raise Tuple_fail)
-           | _ -> failwith "Unsupported intialization.")
+           | _ -> failhere __FILE__"func2sketch" "Unsupported intialization.")
         s_reach_consts IM.empty
     in
     let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
@@ -222,8 +239,12 @@ let func2sketch cfile funcreps =
        printf "@.Max dependency length : %i@." max_m_sizes);
     {
       id = !no_sketches;
-      host_function = (check_option
-                         (get_fun cfile func_info.host_function.Cil.vname));
+      host_function =
+        (try check_option
+              (get_fun cfile func_info.host_function.Cil.vname)
+        with Failure s -> (eprintf "Failure : %s@." s;
+                           failhere __FILE__ "func2sketch"
+                             "Failed to get host function."));
       loop_name = func_info.loop_name;
       scontext =
         { state_vars = state_vars;

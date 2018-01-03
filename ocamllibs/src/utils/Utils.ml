@@ -9,6 +9,9 @@ module IH = Sets.IH
 module IS = Sets.IS
 module SM = Sets.SM
 
+
+let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
+
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
   let ihs = IH.create 10 in

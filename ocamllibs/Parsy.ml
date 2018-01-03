@@ -43,7 +43,7 @@ let solution_failed ?(failure = "") problem =
     printf "Failure: %s" failure
 
 
-let solution_found racket_elapsed lp_name parsed (problem : prob_rep) solved =
+let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
   if !verbose then
     printf "@.%sSOLUTION for %s %s:@.%a"
       (color "green") lp_name color_default RAst.pp_expr_list parsed;
@@ -94,8 +94,9 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) solved =
            IM.add vid ast_expr map)
         IM.empty
         (VS.vids_of_vs problem.scontext.state_vars) expr_list
+
     | None ->
-      (** If auxliaries have been created, the sketch has been solved
+      (** If auxiliaries have been created, the sketch has been solved
           without having to assign them a specific value. We can
           just create placeholders according to their type. *)
       IH.fold
@@ -111,50 +112,82 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) solved =
   {problem with
    join_solution =
      ExpressionReduction.simplify_reduce translated_join_body problem.scontext;
-   init_values = remap_init_values sol_info.Codegen.init_values}::solved
+   init_values = remap_init_values sol_info.Codegen.init_values}
 
 
-let solve ?(expr_depth = 1) (problem_list : prob_rep list) =
+let rec solve_one ?(expr_depth = 1) problem =
   FPretty.holes_expr_depth := expr_depth;
-  let rec solve_one (solved, unsolved) problem =
-    let lp_name = problem.loop_name in
-    try
-      if !verbose then
-        printf "@.SOLVING problem for %s.@." lp_name;
-      let racket_elapsed, parsed =
-        L.compile_and_fetch
-          ~print_err_msg:Racket.err_handler_sketch C.pp_sketch problem
-      in
-      if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
-        (* We get an "unsat" answer : add loop to auxliary discovery *)
-        begin
-          printf
-            "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
-            (color "orange") color_default lp_name;
-          if !FPretty.skipped_non_linear_operator then
-            (** Try with non-linear operators. *)
-            (FPretty.reinit ~ed:expr_depth ~use_nl:true;
-             solve_one (solved, unsolved) problem)
-          else
-            (FPretty.reinit ~ed:expr_depth ~use_nl:false;
-            (solved, unsolved@[problem]))
-        end
-      else
-        (* A solution has been found *)
-        begin
-          try
-            solution_found racket_elapsed lp_name parsed problem solved, unsolved
-          with Failure s ->
-            solution_failed ~failure:s problem;
-            (solved, unsolved)
-        end
-    with Failure s ->
+  let lp_name = problem.loop_name in
+  try
+    if !verbose then
+      printf "@.SOLVING problem for %s.@." lp_name;
+    let racket_elapsed, parsed =
+      L.compile_and_fetch
+        ~print_err_msg:Racket.err_handler_sketch C.pp_sketch problem
+    in
+    if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
+      (* We get an "unsat" answer : add loop to auxliary discovery *)
       begin
-        solution_failed ~failure:s problem;
-        (solved, unsolved)
+        printf
+          "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
+          (color "orange") color_default lp_name;
+        if !FPretty.skipped_non_linear_operator then
+          (** Try with non-linear operators. *)
+          (FPretty.reinit ~ed:expr_depth ~use_nl:true;
+           solve_one problem)
+        else
+          (FPretty.reinit ~ed:expr_depth ~use_nl:false;
+           None)
       end
+    else
+      (* A solution has been found *)
+      begin
+        try
+          Some (solution_found racket_elapsed lp_name parsed problem)
+        with Failure s ->
+          solution_failed ~failure:s problem;
+          None
+      end
+  with Failure s ->
+    begin
+      solution_failed ~failure:s problem;
+      None
+    end
+
+(* Recursively solve the inner loops using different tactics. *)
+let rec solve_inners problem =
+  if List.length problem.inner_functions = 0 then
+    problem
+  else
+    let solve_inner_problem problem = problem in
+    (* Solve the inner functions. *)
+    let inner_funcs = List.map solve_inner_problem problem.inner_functions in
+    (* Replace occurrences of the inner functions by join operator and new
+       input sequence if possible. *)
+    let _ = () in problem
+
+
+and solve_problem problem =
+  (* Try to solve the inner loops first *)
+  let problem = solve_inners problem in
+  let tactic1_sol =
+    if !skip_first_solve then None else solve_one problem
   in
-  List.fold_left solve_one ([], []) problem_list
+  match tactic1_sol with
+  | Some x -> Some x
+  | None ->
+    begin
+      printf "Searching auxiliaries for %s ...@." problem.loop_name;
+      let problem =
+        Canalyst.find_new_variables problem
+      in
+      match solve_one problem with
+      | Some x -> Some x
+      | None -> solve_one ~expr_depth:2 problem
+        (** If the problem is not solved yet, might be because expression depth
+            is too limited *)
+    end
+
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let output_tbb_tests (solutions : prob_rep list) =
@@ -243,44 +276,21 @@ let main () =
   let problem_list = Canalyst.func2sketch c_file functions in
   printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") color_default;
   (** Try to solve the sketches without adding auxiliary variables *)
-  let solved, unsolved =
-    if !skip_first_solve then ([], problem_list)
-    else
-      solve problem_list
-  in
-  (** Now discover auxiliary variables *)
-  if List.length unsolved > 0 then
-    printf "%sDONE%s@.@.Finding auxiliary variables ...@.@."
-      (color "green") color_default;
-
-  let with_auxiliaries =
-    List.map
-      (fun problem ->
-         printf "Searching auxiliaries for %s ...@." problem.loop_name;
-         Canalyst.find_new_variables problem)
-      unsolved
-  in
-  let solved_with_aux, unsolved_with_aux =
-    solve with_auxiliaries
-  in
-  (** If some sketches are not solved yet, might be because expression depth
-      is too limited *)
-  let solved_depth_2, unsolved_with_aux =
-    if List.length unsolved_with_aux > 0 then
-      solve ~expr_depth:2 unsolved_with_aux
-    else [], unsolved_with_aux
-  in
   (* All the sketches that have been solved, including with auxiliaries *)
-  let finally_solved = solved@solved_with_aux@solved_depth_2 in
+  let solved =
+    List.map check_option
+      (List.filter is_some
+         (List.map solve_problem problem_list))
+  in
   (** Handle all the solutions found *)
-  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem) finally_solved);
+  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem) solved);
   (* For each solved problem, generate a TBB implementation *)
-  output_tbb_tests finally_solved;
+  output_tbb_tests solved;
   (* If exact_fp is set, generate the exact floating point parallel
      implementation *)
-  if !exact_fp then (List.iter fpexp_header finally_solved);
+  if !exact_fp then (List.iter fpexp_header solved);
   (* Generate a proof in Dafny. *)
-  output_dafny_proofs finally_solved;
+  output_dafny_proofs solved;
   (* Total elapsed_time  *)
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

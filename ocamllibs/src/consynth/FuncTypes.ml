@@ -13,6 +13,7 @@ open Sets
    6 - Index variables management.
    7 - Typing expressions.
    8 - Structs for problem info.
+   9 - Conversion to CIL.
 *)
 
 let use_unsafe_operations = ref false
@@ -1627,7 +1628,7 @@ let rec input_type_or_type =
   function
   | Function (it, rt) -> input_type_or_type it
   | t -> t
-(* ------------------------ 7- STRUCT UTILS ----------------------------*)
+(* ------------------------ 8- STRUCT UTILS ----------------------------*)
 
 type sigu = VS.t * (fnlet * fnExpr * fnlet)
 
@@ -1670,7 +1671,7 @@ let get_loop_bound problem =
   get_loop_bound_var (get_index_guard problem)
 
 
-(* ------------------------ 7- CONVERSION TO CIL  ----------------------------*)
+(* ----------------------- 9 - CONVERSION TO CIL  ----------------------------*)
 
 (** Includes passes to transform the code into an appropriate form *)
 

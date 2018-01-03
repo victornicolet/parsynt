@@ -127,4 +127,4 @@ let inner_loop_func_name func lid =
   "__loop_"^func^"_"^(string_of_int lid)
 
 let is_inner_loop_func_name name =
-  String.sub name 0 7  = "__loop_"
+  if String.length name > 7 then String.sub name 0 7  = "__loop_" else false

@@ -80,7 +80,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t)
         let t = type_of_var sklv in
         (match t with
          | Vector (t, _) -> FnHoleR (holt t, CS.complete_right (CS.of_vs state)), 1
-         | _ -> failwith "Unexpected type in array")
+         | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
       | FnTuple vs -> FnVar (FnTuple vs), 0
     end
 
@@ -139,15 +139,25 @@ and make_assignment_list state skip =
       match e with
       | FnVar v when List.mem v skip -> (v, e)
 
-      | _ ->
-        let vi = check_option (vi_of v) in
-        if VS.mem vi !cur_left_auxiliaries ||
-           VS.mem vi !cur_right_auxiliaries  then
-          (v, FnHoleL (((type_of e), Basic), v,
-                       CS.complete_all (CS.of_vs state)))
-        else
-          (v, fst (make_hole_e ~is_final:true state e)))
+      | FnApp (st, f, args) ->
+        (v, e)
 
+      | _ ->
+        try
+          let vi = check_option (vi_of v) in
+          if VS.mem vi !cur_left_auxiliaries ||
+             VS.mem vi !cur_right_auxiliaries  then
+            (v, FnHoleL (((type_of e), Basic), v,
+                         CS.complete_all (CS.of_vs state)))
+          else
+            (v, fst (make_hole_e ~is_final:true state e))
+        with Failure s ->
+          Format.eprintf "Failure %s@." s;
+          let msg =
+            Format.sprintf "Check if %s is vi failed." (FPretty.sprintFnexpr e)
+          in
+          failhere __FILE__ "make_assignment_list"  msg
+    )
 
 and make_join ~(state : VS.t) ~(skip: fnLVar list) =
   function

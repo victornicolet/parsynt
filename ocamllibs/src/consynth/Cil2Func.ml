@@ -583,8 +583,11 @@ and do_s vs let_form s =
        try
          check_option ((IH.find global_loops s.sid).ligu)
        with
-         Not_found ->
-         failwith (sprintf "Couldn't find loop %i." s.sid)
+       | Not_found ->
+          failwith (sprintf "Couldn't find loop %i." s.sid)
+       | Failure msg ->
+          eprintf "%s" msg;
+          failwith (sprintf "Couldn't find igu for loop %i." s.sid)
      in
      let loop_fun = LetRec (igu, block_loop, empty_state (), loc) in
      let_add let_form loop_fun
@@ -746,21 +749,41 @@ and red vs tmps let_form substs =
      in
      State final_state_exprs
 
-  | Let (lhv, expr, cont, id, _) ->
+  | Let (lhv, expr, cont, id, loc) ->
+     (* Don't reduce if expr is a loop function call *)
      begin
-       match lhv with
-       | LhVar vi ->
-          let nexpr = apply_subs expr substs in
-          let nsubs = IM.add vi.vid nexpr substs in
-          red vs tmps cont nsubs
-       | LhTuple vil ->
-          let nexpr = apply_subs expr substs in
-          let nsubs =
-            VS.fold
-              (fun vi nsubs -> IM.add vi.vid nexpr nsubs)
-              vil substs
-          in
-          red vs tmps cont nsubs
+     match expr with
+     | FunApp (Lval (Var f, NoOffset), args)
+          when Conf.is_inner_loop_func_name f.vname ->
+        (match lhv with
+         | LhVar vi ->
+            let nexpr = apply_subs expr substs in
+            let nsubs = IM.add vi.vid (Var vi) substs in
+            Let(lhv, nexpr, red vs tmps cont nsubs, id, loc)
+
+         | LhTuple vil ->
+            let nexpr = apply_subs expr substs in
+            let nsubs =
+              VS.fold
+                (fun vi nsubs -> IM.add vi.vid (Var vi) nsubs)
+                vil substs
+            in
+            Let(lhv, nexpr, red vs tmps cont nsubs, id, loc))
+
+     | _ ->
+        match lhv with
+        | LhVar vi ->
+           let nexpr = apply_subs expr substs in
+           let nsubs = IM.add vi.vid nexpr substs in
+           red vs tmps cont nsubs
+        | LhTuple vil ->
+           let nexpr = apply_subs expr substs in
+           let nsubs =
+             VS.fold
+               (fun vi nsubs -> IM.add vi.vid nexpr nsubs)
+               vil substs
+           in
+           red vs tmps cont nsubs
      end
 
   | LetRec (igu, body, cont, loc) ->
@@ -795,13 +818,14 @@ and clean vs let_form =
      State (IM.filter (fun k e -> VS.has_vid k vs) emap)
 
   | Let (v, e, c, id, loc) ->
-     let packed =
+     let lhs =
        match v with LhVar vi -> VS.singleton vi | LhTuple vil -> vil
      in
-     if not (VS.is_empty (VS.diff packed vs))
+     if not (VS.is_empty (VS.diff vs lhs))
      then Let(v, e, clean vs c, id, loc)
      else
-       failwith "Func2cil : Non-state variable bound in let form."
+       (VS.ppvs (VS.diff lhs vs);
+       failwith "Cil2func : Non-state variable bound in let form.")
 
   | LetCond (ce, lif, lelse, lcont, loc) ->
      LetCond (ce, clean vs lif, clean vs lelse, clean vs lcont, loc)
@@ -904,6 +928,7 @@ let eliminate_temporaries variables let_form =
               (* vi is a temporary variable. *)
               let new_subs = add_sub vi.vid n_expr subs in
               elim_let_aux letcont new_subs
+
          | LhTuple vil ->
             let n_expr = apply_subs expr subs in
             (* No temporaries appear in tuples (cil can't have temporaries *)
@@ -973,7 +998,7 @@ inside the parent loop.
     begin
       if IH.length global_loops = 0 then
         failwith "You forgot to initialize the set of loops in Cil2Func ?";
-      if !debug then eprintf "-- Cil --> Functional --";
+      if !debug then printf "-- Cil --> Functional --";
       let statevs = variables.state_vars in
       let tmps = variables.tmp_vars in
       let printer = new cil2func_printer variables in
