@@ -238,7 +238,7 @@ let func2sketch cfile funcreps =
     (if !debug then
        printf "@.Max dependency length : %i@." max_m_sizes);
     {
-      id = !no_sketches;
+      id = func_info.lid;
       host_function =
         (try check_option
               (get_fun cfile func_info.host_function.Cil.vname)

@@ -64,7 +64,7 @@ and fnLVar =
   | FnVarinfo of Cil.varinfo
   (** Access to an array cell *)
   | FnArray of fnLVar * fnExpr
-  (** Records : usefule to represent the state *)
+  (** Records : useful to represent the state *)
   | FnTuple of VS.t
 
 (* Type for expressions *)
@@ -636,6 +636,8 @@ let type_of_unop_args =
   | Not -> Boolean
   | _ -> Num
 
+let tupletype_of_vs vs =
+  Tuple (List.map (fun vi -> type_of_ciltyp vi.Cil.vtype) (VS.varlist vs))
 
 (** ---------------------------- 3 - RECURSORS -------------------------------*)
 
@@ -1463,7 +1465,7 @@ let is_prefix_or_suffix vi expr =
 
 
 
-(* ------------------------ 7- TYPING EXPRESSIONS ----------------------------*)
+(* ----------------------- 7 - TYPING EXPRESSIONS ----------------------------*)
 
 let rec pp_typ fmt t =
   let fpf = Format.fprintf in

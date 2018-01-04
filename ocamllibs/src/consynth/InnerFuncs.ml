@@ -17,6 +17,8 @@
 
 open FuncTypes
 open Utils
+open Cil
+open Format
 
 (**
    Replaces calls to inner loop function in the outer loop
@@ -31,6 +33,74 @@ open Utils
 *)
 
 let replace_by_join problem inner_loops =
-  let replace lid in_info (lbody, ctx) = lbody, ctx
+  let inline_join in_info =
+    let join = in_info.join_solution in
+    match join with
+    | FnLetExpr bl ->
+      if List.length bl > 0 then
+        Some (FnFun join)
+      else None
+    | _ -> None
   in
-  IM.fold replace inner_loops (problem.loop_body, problem.scontext)
+  let replace (lbody, ctx) in_info =
+    let state = in_info.scontext.state_vars in
+    let new_seq_fields comp =
+      List.map
+        (fun vs -> (vs.vname, vs.vtype, None, [], locUnknown))
+        (VS.varlist state)
+    in
+    let new_seq_type =
+      TComp
+        (mkCompInfo true (Conf.seq_name in_info.loop_name) new_seq_fields [],
+         [])
+    in
+    let new_seq =
+      makeVarinfo false (Conf.seq_name in_info.loop_name) new_seq_type
+    in
+    (* In case join cannot be inlined. *)
+    let argtypes =
+      [("stv_"^in_info.loop_name, new_seq_type, []);
+       (Conf.seq_name in_info.loop_name, new_seq_type, [])]
+    in
+    let new_joinf_typ =
+      TFun (new_seq_type, Some argtypes, false, [])
+    in
+    let new_joinf =
+      makeVarinfo false (Conf.join_name in_info.loop_name) new_joinf_typ
+    in
+    let rpl_case e =
+      match e with
+      | FnApp (st, Some f, args) ->
+          (Conf.is_inner_loop_func_name f.vname &&
+           (Conf.id_of_inner_loop f.vname) = in_info.id)
+
+      | _ -> false
+    in
+    let rpl rfunc e =
+      match e with
+      | FnApp (st, Some f, args) ->
+        (match inline_join in_info with
+        | None ->
+          FnApp (tupletype_of_vs state, Some new_joinf,
+                 [FnVar(FnTuple state);FnVar(FnVarinfo(new_seq))])
+        | Some inline_join ->
+          inline_join)
+      | _ -> rfunc e
+    in
+    let rpl_transformer =
+      { case = rpl_case;
+        on_case = rpl;
+        on_const = (fun c -> c);
+        on_var = (fun v -> v);
+      }
+    in
+    (transform_let rpl_transformer lbody,
+     {ctx with all_vars = VS.add new_seq ctx.all_vars;
+               used_vars = VS.add new_seq ctx.used_vars;})
+  in
+  let newbody, newctx =
+    List.fold_left replace (problem.loop_body, problem.scontext) inner_loops
+  in
+  {problem with inner_functions = inner_loops;
+                scontext = newctx;
+                loop_body = newbody;}

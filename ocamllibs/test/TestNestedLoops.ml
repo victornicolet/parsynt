@@ -23,6 +23,8 @@ open Loops
 open Format
 open Utils
 open PpTools
+open InnerFuncs
+open FuncTypes
 
 let test_filename = Conf.project_dir ^"/ocamllibs/test/nested_loops.c"
 
@@ -60,3 +62,9 @@ let test () =
   printf "@.%s%sFUNC --> FUNC translation: OK %s@." (color "b-green")
     (color "black")
     color_default;
+
+  let transformed_inner =
+    List.map (fun pb -> replace_by_join pb pb.inner_functions) unsolved_sketches
+  in
+
+    List.iter (FPretty.pp_problem_rep std_formatter) transformed_inner;

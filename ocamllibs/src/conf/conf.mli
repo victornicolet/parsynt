@@ -34,3 +34,6 @@ val verification_parameters : (int * int * int) list
 (* Naming conventions *)
 val inner_loop_func_name : string -> int -> string
 val is_inner_loop_func_name : string -> bool
+val id_of_inner_loop: string -> int
+val join_name: string -> string
+val seq_name: string -> string

@@ -369,6 +369,7 @@ module VS = struct
       vs
       empty
 
+
   (** Pretty printing variable set *)
 
   let pp_var_names fmt (vs : t) =

@@ -147,3 +147,10 @@ let inner_loop_func_name func lid =
 
 let is_inner_loop_func_name name =
   if String.length name > 7 then String.sub name 0 7  = "__loop_" else false
+
+let id_of_inner_loop name =
+  let elts =  Str.split (Str.regexp "_") name in
+  int_of_string (List.nth elts ((List.length elts)-1))
+
+let join_name fname =   "join"^fname
+let seq_name fname =   "seq"^fname
