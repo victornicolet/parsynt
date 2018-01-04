@@ -386,7 +386,7 @@ class sketch_builder
       and skexpr_of_lval ((host, offset) : Cil.lval) =
         match convert_offset offset with
         (**
-            A null list only means there is no offset in the offset part
+            An empty list only means there is no offset in the offset part
             of the Cil.lval, but the offset might still in the expression
             if it is a Cil memory access.
         *)
@@ -396,7 +396,7 @@ class sketch_builder
             match vo with
             | Some vi ->
               mkVarExpr ~offsets:(convert_offsets ofs_li) vi
-            | None -> failwith "Is it an lval ?"
+            | None -> failhere __FILE__ "skexpr_of_lval" "Is it an lval?"
           end
 
         | new_off_list ->

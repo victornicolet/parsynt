@@ -12,3 +12,11 @@ int example_nested_sum(int** a, int n) {
   }
   return sumbis;
 }
+
+/*
+   Join found without auxiliary variable :
+
+   sum = sum-l + sum-r
+
+   in 1.692 s
+*/

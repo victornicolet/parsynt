@@ -133,6 +133,7 @@ module ListTools = struct
 
 
 
+
   let foldl_union f l =
     List.fold_left (fun set a -> VSo.union set (f a)) VSo.empty l
 
@@ -186,6 +187,8 @@ let check_option ao =
   match ao with
   | Some a -> a
   | None -> raise (Failure "check_option")
+
+let somes l = List.map check_option (List.filter is_some l)
 
 let maybe_apply (f:'a->'b) (v: 'a option) : 'b option =
   match v with

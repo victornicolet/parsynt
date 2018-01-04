@@ -179,11 +179,7 @@ let rec analyze_host host  =
         let v, o1 = analyze_host host in
         v, o1@o2
      | BinOp (op, Lval (host, offset), e2, t) ->
-        let host_varinfo_opt =
-          match analyze_host host with
-          | Some vinf , [] -> Some vinf
-          | _, _ -> None
-        in
+        let host_varinfo_opt, offsets = analyze_host host in
         let expr_op =
           match op with
           (** PlusPI and IndexPI are semantically equivalent *)
@@ -192,9 +188,11 @@ let rec analyze_host host  =
              e2
           | MinusPI ->
              UnOp (Neg, e2, t)
-          | _ -> failwith "Unexpected operator in Lval host expressions"
+          | _ -> failhere __FILE__
+                   "analyze_host"
+                   "Unexpected operator in Lval host expressions"
         in
-        host_varinfo_opt, [expr_op]
+        host_varinfo_opt, offsets@[expr_op]
 
      |_ -> None, []
 

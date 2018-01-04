@@ -17,13 +17,15 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
+open Cil
 open Str
 open Format
 open Utils
 open Utils.PpTools
 open Getopt
 open FuncTypes
-open Cil
+open InnerFuncs
+
 open FpExact
 
 
@@ -173,40 +175,50 @@ let rec solve_one ?(expr_depth = 1) problem =
       None
     end
 
-(* Recursively solve the inner loops using different tactics. *)
+
+(**
+   Recursively solve the inner loops using different tactics.
+   @param problem The problem we are currently trying to solve.
+   @return Some problem if all the inner functions can be paralleized or
+   made memoryless. None if not.
+*)
 let rec solve_inners problem =
   if List.length problem.inner_functions = 0 then
-    problem
+    Some problem
   else
-    let solve_inner_problem problem = problem in
+    let solve_inner_problem problem = solve_one problem in
     (* Solve the inner functions. *)
-    let inner_funcs = List.map solve_inner_problem problem.inner_functions in
+    let inner_funcs =
+      somes (List.map solve_inner_problem problem.inner_functions)
+    in
     (* Replace occurrences of the inner functions by join operator and new
        input sequence if possible. *)
-    let _ = () in problem
+    if List.length inner_funcs = List.length problem.inner_functions then
+      Some (replace_by_join problem inner_funcs)
+    else
+      None
 
 
 and solve_problem problem =
   (* Try to solve the inner loops first *)
-  let problem = solve_inners problem in
-  let tactic1_sol =
-    if !skip_first_solve then None else solve_one problem
-  in
-  match tactic1_sol with
-  | Some x -> Some x
-  | None ->
-    begin
-      printf "Searching auxiliaries for %s ...@." problem.loop_name;
-      let problem =
-        Canalyst.find_new_variables problem
+  let aux_solve problem =
+      let tactic1_sol =
+        if !skip_first_solve then None else solve_one problem
       in
-      match solve_one problem with
+      match tactic1_sol with
       | Some x -> Some x
-      | None -> solve_one ~expr_depth:2 problem
-        (** If the problem is not solved yet, might be because expression depth
-            is too limited *)
-    end
-
+      | None ->
+        printf "Searching auxiliaries for %s ...@." problem.loop_name;
+        let problem =
+          Canalyst.find_new_variables problem
+        in
+        match solve_one problem with
+        | Some x -> Some x
+        | None -> solve_one ~expr_depth:2 problem
+        (** If the problem is not solved yet, might be because expression
+            depth is too limited *)
+  in
+  maybe_apply aux_solve (solve_inners problem)
 
 (** Generating a TBB implementation of the parallel solution discovered *)
 let output_tbb_tests (solutions : prob_rep list) =
@@ -302,14 +314,15 @@ let main () =
          (List.map solve_problem problem_list))
   in
   (** Handle all the solutions found *)
-  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem) solved);
+  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem)
+     (somes solved));
   (* For each solved problem, generate a TBB implementation *)
-  output_tbb_tests solved;
+  output_tbb_tests (somes solved);
   (* If exact_fp is set, generate the exact floating point parallel
      implementation *)
-  if !exact_fp then (List.iter fpexp_header solved);
+  if !exact_fp then (List.iter fpexp_header (somes solved));
   (* Generate a proof in Dafny. *)
-  output_dafny_proofs solved;
+  output_dafny_proofs (somes solved);
   (* Total elapsed_time  *)
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

@@ -62,9 +62,7 @@ let replace_by_join problem inner_loops =
       [("stv_"^in_info.loop_name, new_seq_type, []);
        (Conf.seq_name in_info.loop_name, new_seq_type, [])]
     in
-    let new_joinf_typ =
-      TFun (new_seq_type, Some argtypes, false, [])
-    in
+    let new_joinf_typ = TFun (new_seq_type, Some argtypes, false, []) in
     let new_joinf =
       makeVarinfo false (Conf.join_name in_info.loop_name) new_joinf_typ
     in

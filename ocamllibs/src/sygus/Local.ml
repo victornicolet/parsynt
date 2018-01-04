@@ -24,6 +24,7 @@ open Racket
 open Synthlib2ast
 open Synthlib
 open Syparser
+open Utils
 (**
     Locally, solving sketches is done by writing to files,
     executing a compiled racket program and then retrieving the result
@@ -115,7 +116,9 @@ let compile ?(print_err_msg = default_error) printer printer_arg =
       remove_in_dir dumpDir;
       let dump_file = dumpDir^(Filename.basename sketch_tmp_file)  in
       copy_file sketch_tmp_file dump_file;
-      eprintf "Dumping sketch file in %s\n" dump_file;
+      eprintf "%sDumping sketch file in %s%s%s\n"
+        (PpTools.color "b-red") (PpTools.color "hi-underlined") dump_file
+        (PpTools.color_default);
       ignore(Sys.command ("cat "^dump_file));
     end;
   Sys.remove sketch_tmp_file;
