@@ -18,6 +18,7 @@
   *)
 
 open Cil
+open Conf
 open Str
 open Format
 open Utils
@@ -32,6 +33,7 @@ open FpExact
 module L = Local
 module C = Canalyst
 module Pf = Proofs
+
 
 let debug = ref false
 let verbose = ref false
@@ -136,15 +138,15 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
    init_values = remap_init_values sol_info.Codegen.init_values}
 
 
-let rec solve_one ?(expr_depth = 1) problem =
+let rec solve_one ?(solver = Conf.rosette) ?(expr_depth = 1) problem =
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
     if !verbose then
       printf "@.SOLVING problem for %s.@." lp_name;
     let racket_elapsed, parsed =
-      L.compile_and_fetch
-        ~print_err_msg:Racket.err_handler_sketch C.pp_sketch problem
+      L.compile_and_fetch solver
+        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch solver) problem
     in
     if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
       (* We get an "unsat" answer : add loop to auxliary discovery *)

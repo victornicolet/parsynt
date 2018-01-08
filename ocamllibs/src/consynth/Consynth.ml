@@ -1,5 +1,5 @@
 module Canalyst = Canalyst
-module SketchTypes = SketchTypes
+module FuncTypes = FuncTypes
 module SketchJoin = SketchJoin
 module SketchBody = SketchBody
 module Sketch = Sketch

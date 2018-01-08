@@ -24,6 +24,7 @@ open FuncTypes
 open SymbExe
 open VariableDiscovery
 open Loops
+open Conf
 
 module E = Errormsg
 module C = Cil
@@ -293,6 +294,12 @@ let find_new_variables sketch_rep =
     join_body = join_body;
   }
 
-let pp_sketch fmt sketch_rep =
-  IH.copy_into VariableDiscovery.discovered_aux_alltime Sketch.auxiliary_vars;
-  Sketch.pp_rosette_sketch fmt sketch_rep
+let pp_sketch solver fmt sketch_rep =
+  match solver.name with
+  | "Rosette" ->
+    begin
+      IH.copy_into VariableDiscovery.discovered_aux_alltime
+        Sketch.auxiliary_vars;
+      Sketch.pp_rosette_sketch fmt sketch_rep
+    end
+  | _ -> ()

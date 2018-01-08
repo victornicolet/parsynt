@@ -37,3 +37,7 @@ val is_inner_loop_func_name : string -> bool
 val id_of_inner_loop: string -> int
 val join_name: string -> string
 val seq_name: string -> string
+(* Solvers *)
+type solver = { name: string; extension: string; execname: string;}
+val rosette : solver
+val cvc4 : solver

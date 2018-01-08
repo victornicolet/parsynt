@@ -17,13 +17,7 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
-open Consynth
-open Cil
-open FpExpansions
-
-module F = Consynth.FuncTypes
-
-
-(* Generate header file for  corresponding floating point expansion *)
-let fpexp_header sketch = FpExpansions.gen_header sketch
-(* Generate header and source  *)
+val debug: bool ref
+val dump_sketch : bool ref
+val compile_and_fetch : ?print_err_msg:(int -> unit) -> Conf.solver ->
+  (Format.formatter -> 'a -> 'b) -> 'a -> float * RAst.expr list

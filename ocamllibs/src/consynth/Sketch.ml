@@ -17,13 +17,21 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
+(* *
+   1 - Printing sketches for Rosette (Scheme lang)
+   2 - Printing sketches for other sygus solvers (Synthlib v2)
+ *)
+
 open Utils
 open Conf
 open FuncTypes
 open FPretty
+open Format
 open Utils.PpTools
 open Cil2Func
 open Racket
+open Synthlib
+open Synthlib2ast
 open Cil
 
 open Utils.ListTools
@@ -43,19 +51,22 @@ let auxiliary_vars : Cil.varinfo IH.t = IH.create 10
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 
 
-(* Current bitwidth setting *)
-let pp_current_bitwidth fmt func_expr =
-  F.fprintf fmt "@.(current-bitwidth %s)@.@."
-    (if analyze_optype_l func_expr = NonLinear then "6" else "#f")
+
 
 (******************************************************************************)
 
-(**
+(** 1 - ROSETTE
     Compile the Rosette sketch.
     Rosette is using Racket, which is based on s-expresssions
     so we will be using the Sexplib library to convert types
     directly to s-expressions
 *)
+
+
+(* Current bitwidth setting *)
+let pp_current_bitwidth fmt func_expr =
+  F.fprintf fmt "@.(current-bitwidth %s)@.@."
+    (if analyze_optype_l func_expr = NonLinear then "6" else "#f")
 
 
 (** A symbolic definition defines a list of values of a given type,
@@ -506,3 +517,32 @@ let pp_rosette_sketch fmt (sketch : prob_rep) =
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
   pp_synth fmt st0 bnames state_vars read_vars min_dep_len
+
+
+
+(******************************************************************************)
+
+(** 1 - SYNTHLIB
+    Compile the Synthlib sketch.
+*)
+
+(** TODO
+    Returns the logic needed to solve the sketch.
+ *)
+let logic_of_pb pb = SyLIA
+
+
+(* There are no comp types in synthlib. *)
+let funcdef_body pb =
+  let ret_sort =
+    (List.map sort_of_varinfo (VS.varlist pb.scontext.state_vars))
+  in
+  let funbody = SyLiteral (SyInt 0)
+  in
+  SyFunDefCmd (pb.loop_name, [], List.hd ret_sort, funbody)
+
+let pp_synthlib_problem fmt (pb : prob_rep) =
+  (* Declare the logic to use *)
+  fprintf fmt "%a@." sypp_logic (logic_of_pb pb);
+  (* The function. *)
+  fprintf fmt "%a@." sypp_command (funcdef_body pb);

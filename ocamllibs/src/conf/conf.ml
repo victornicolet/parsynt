@@ -27,6 +27,7 @@ open Project_dir
    3 - Verification conditions settings.
    4 - Synthesis parameters (grammar macros names, ...)
    5 - Naming conventions.
+   6 - Available solvers.
 *)
 
 let verbose = ref false
@@ -154,3 +155,10 @@ let id_of_inner_loop name =
 
 let join_name fname =   "join"^fname
 let seq_name fname =   "seq"^fname
+
+
+(* 6 - Available solvers. *)
+type solver = { name: string; extension: string; execname: string;}
+
+let rosette = { name = "Rosette"; extension = ".rkt"; execname = "racket"}
+let cvc4 = { name = "CVC4"; extension = ".sl"; execname = "CVC4"}
