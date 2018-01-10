@@ -49,13 +49,24 @@ z3-master/
 
 #Temporary dump files
 ocamllibs/dump/conSynth*
-./synth_times.csv
+synth_times.csv
 
 # Example selection
 # Examples are selected when setup.sh is run. Don't add examples here,
 # but add them in ocamllibs/test and then if it goes through use the
 # setup.sh script to copy it from this folder to the c_examples
 c_examples/*
+
+#Links created during setup
+c_examples
+Parsynth
+templates
+conf
+tbb_examples
+dafny_examples
+conf.csv
+verification.params
+
 
 # Other
 \#LICENSE
