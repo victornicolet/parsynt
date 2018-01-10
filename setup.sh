@@ -252,12 +252,26 @@ then
 else
     msg_success "Cil version pinned to local repository."
 fi
+
 CIL_INSTALLED_VERSION=$(opam show cil | sed -n -e 's/^.*installed-version: //p')
+CIL_DEV_REPO=$(opam show cil | sed -n -e 's/^.*dev-repo: //p')
+
+
 if [[ -z $CIL_INSTALLED_VERSION ]]
 then
     opam install cil --verbose
 else
-    msg_success "Cil version $CIL_INSTALLED_VERSION installed."
+    if [[ "$CIL_DEV_REPO" == "https://github.com/victornicolet/alt-cil.git" ]];
+    then
+	msg_success "dev-repo of cil is $CIL_DEV_REPO."
+	msg_success "Custom Cil version $CIL_INSTALLED_VERSION installed, good."
+	echo "---> To uninstall Cil run \$opam remove cil"
+    else
+	msg_fail "Cil is installed, but we require alt-cil."
+	msg_fail "Please uninstall Cil and run this script again."
+
+	exit
+    fi
 fi
 
 
