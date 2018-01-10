@@ -39,11 +39,11 @@ fi
 
 RACKET_VERSION=$(racket -v | sed -n 's/^.*Racket v\([0-9]*.[0-9]*\).*$/\1/p')
 
-if [[ $(bc <<< "$RACKET_VERSION > 6.5") ]]
+if [[ $(bc <<< "$RACKET_VERSION > 6.8") ]]
 then
     msg_success "Racket $RACKET_VERSION is installed."
 else
-    msg_fail "Racket $RACKET_VERSION is installed, but we need at least 6.0."
+    msg_fail "Racket $RACKET_VERSION is installed, but we need at least 6.9."
     echo "Please install a more recent version of Racket."
     exit 1;
 fi
