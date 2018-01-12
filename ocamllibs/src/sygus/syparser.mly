@@ -83,10 +83,12 @@ terms : 	   	  	   	 			{ [] }
       | term terms 						{ $1 :: $2 }
 
 
-term : LPR f=SYMBOL x=terms RPR					{ SyApp(f, x) }
+term : LPR LET LPR b=bindings RPR t=term RPR			{ SyLet(b,t) }
+     | LPR f=SYMBOL x=terms RPR					{ SyApp(f, x) }
      | l=literal	     	   				{ SyLiteral(l) }
      | s=SYMBOL							{ SyId(s) }
-     | letterm							{ $1 }
+
+
 
 gterms : 	   	  	   	 			{ [] }
       | gterm gterms 						{ $1 :: $2 }
@@ -95,23 +97,19 @@ gterms : 	   	  	   	 			{ [] }
 gterm : LPR f=SYMBOL x=gterms RPR				{ SyGApp(f, x) }
      | l=literal	     	   				{ SyGLiteral(l) }
      | s=SYMBOL							{ SyGId(s) }
-     | l=letgterm						{ l }
+     | LPR LET LPR b=gbindings RPR t=gterm RPR 			{ SyGLet(b, t) }
      | LPR CONSTANT s=sort RPR					{ SyGConstant(s) }
      | LPR VARIABLE s=sort RPR					{ SyGVariable(s) }
      | LPR LOCALVARIABLE s=sort RPR				{ SyGLocalVariable(s) }
      | LPR INPUTVARIABLE s=sort RPR				{ SyGInputVariable(s) }
 
 
-letgterm : LPR LET LPR b=gbindings RPR t=gterm LPR 		{ SyGLet(b, t) }
-
-letterm : LPR LET LPR b=bindings RPR t=term LPR 		{ SyLet(b, t) }
-
-bindings : binding   	    	     	    	 		{ [$1] }
+bindings :       	    	     	    	 		{ [] }
 	 | binding bindings					{ $1 :: $2 }
 
 binding : LPR id=SYMBOL s=sort t=term RPR			{(id, s, t)}
 
-gbindings : gbinding   	    	     	    	 		{ [$1] }
+gbindings :      	    	     	    	 		{ [] }
 	 | gbinding gbindings					{ $1 :: $2 }
 
 gbinding : LPR id=SYMBOL s=sort t=gterm RPR			{(id, s, t)}

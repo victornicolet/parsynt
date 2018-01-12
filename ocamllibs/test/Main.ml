@@ -36,6 +36,7 @@ module TF2S = TFunc2Sketch
 module TGDef = TGenDefs
 module TSbx = TSymbExe
 module TScm = TestSchemeParsing
+module TSl = TestSynthlib
 module TNL = TestNestedLoops;;
 (* module T3 = TZ3;; *)
 
@@ -75,4 +76,5 @@ match !tid with
 | 0 -> ignore(TC2F.test ())
 | 1 -> testProcessFile ()
 | 2 -> TNL.test ()
+| 3 -> TSl.test ()
 | _ -> ()

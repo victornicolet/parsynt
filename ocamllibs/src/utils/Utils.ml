@@ -103,10 +103,11 @@ let str_begins_with sub str = ExtLib.String.starts_with str sub;;
 module ListTools = struct
   (** a -- b -- > list of integers from a to b *)
   let (--) i j =
-    let rec aux n acc =
-      if n < i then acc else aux (n-1) (n :: acc)
-    in aux j []
-
+    if i <= j then
+      let rec aux n acc =
+        if n < i then acc else aux (n-1) (n :: acc)
+      in aux j []
+    else []
 
   let init (len : int) (f: int -> 'a) : 'a list =
     let rec aux_init l i =

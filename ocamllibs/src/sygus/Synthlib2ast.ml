@@ -1,3 +1,22 @@
+(**
+   This file is part of Parsynt.
+
+   Author: Victor Nicolet <victorn@cs.toronto.edu>
+
+    Parsynt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+  *)
+
 open Format
 open Utils.PpTools
 
@@ -195,3 +214,16 @@ let which_logic s =
   | "LIA" -> SyLIA | "Arrays" -> SyArrays | "BV" -> SyBV | "Reals" -> SyReals
   (* Default Linear Integer Arithmetic *)
   | _ -> SyLIA
+
+
+let rec replace ~id:id  ~by:t1 ~in_term:term =
+  let _aux id' t1' t =  replace ~id:id' ~by:t1' ~in_term:t in
+  match term with
+  | SyApp (f, args) -> SyApp(f, List.map (_aux id t1) args)
+  | SyLet (bindings, term0) ->
+    SyLet(
+      List.map (fun (vb, vs, ve) -> (vb, vs, _aux id t1 ve)) bindings,
+      _aux id t1 term0)
+
+  | SyId id' when id' = id -> t1
+  | _ -> term

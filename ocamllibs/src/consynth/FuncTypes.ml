@@ -22,6 +22,8 @@ open Format
 open Loops
 open RAst
 open Sets
+open Synthlib
+open Synthlib2ast
 
 (**
    1 - Expressions & functions.
@@ -33,6 +35,7 @@ open Sets
    7 - Typing expressions.
    8 - Structs for problem info.
    9 - Conversion to CIL.
+   10 - Conversion to Synthlib.
 *)
 
 let use_unsafe_operations = ref false
@@ -53,12 +56,6 @@ exception Tuple_fail            (* Tuples are not supported for the moment. *)
 
 type hole_type = symbolic_type * operator_type
 
-(* Type for let-expressions *)
-and fnlet =
-  | FnLetExpr of (fnLVar * fnExpr) list
-  (**  (let ([var expr]) let)*)
-  | FnLetIn of (fnLVar * fnExpr) list * fnlet
-
 (* Type for variables *)
 and fnLVar =
   | FnVarinfo of Cil.varinfo
@@ -69,11 +66,13 @@ and fnLVar =
 
 (* Type for expressions *)
 and fnExpr =
+  | FnLetExpr of (fnLVar * fnExpr) list
+  | FnLetIn of (fnLVar * fnExpr) list * fnExpr
   | FnVar of fnLVar
   | FnConst of constants
-  | FnFun of fnlet
-  | FnRec of  igu * fnlet
-  | FnCond of fnExpr * fnlet * fnlet
+  | FnFun of fnExpr
+  | FnRec of  igu * fnExpr
+  | FnCond of fnExpr * fnExpr * fnExpr
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
   | FnApp of symbolic_type * (Cil.varinfo option) * (fnExpr list)
@@ -693,39 +692,28 @@ let rec_expr
       List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | FnFun letin
-    | FnRec (_, letin) -> recurse_letin letin
+    | FnRec (_, letin) -> recurse_aux letin
 
     | FnCond (c, l1, l2) ->
-      join (recurse_aux c) (join (recurse_letin l1) (recurse_letin l2))
+      join (recurse_aux c) (join (recurse_aux l1) (recurse_aux l2))
 
-    | _ -> init
 
-  and recurse_letin =
-    function
+
     | FnLetExpr velist ->
       List.fold_left (fun acc (v, e) -> join acc (recurse_aux e))
         init velist
 
     | FnLetIn (velist, letin) ->
-      let in_letin = recurse_letin letin in
+      let in_aux = recurse_aux letin in
       List.fold_left
-        (fun acc (v, e) -> join acc (recurse_aux e)) in_letin velist
+        (fun acc (v, e) -> join acc (recurse_aux e)) in_aux velist
+
+    | _ -> init
   in
   recurse_aux expre
 
 let rec_expr2 (r : 'a recursor) =
   rec_expr r.join r.init r.case r.on_case r.on_const r.on_var
-
-let rec rec_let (r : 'a recursor) fnlet =
-  match fnlet with
-  | FnLetIn (ve_list, letin) ->
-    let letin_res = rec_let r letin in
-    List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
-      letin_res ve_list
-
-  | FnLetExpr ve_list ->
-    List.fold_left (fun res (v, e) -> r.join res (rec_expr2 r e))
-      r.init ve_list
 
 
 let max_min_test =
@@ -780,38 +768,25 @@ let transform_expr
     | FnApp (a, b, el) ->
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
-    | FnFun letin -> FnFun (recurse_letin letin)
-    | FnRec (igu, letin) -> FnRec (igu, recurse_letin letin)
+    | FnFun letin -> FnFun (recurse_aux letin)
+    | FnRec (igu, letin) -> FnRec (igu, recurse_aux letin)
 
     | FnCond (c, l1, l2) ->
-      FnCond (recurse_aux c, recurse_letin l1, recurse_letin l2)
+      FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
 
-    | e -> e
-
-  and recurse_letin =
-    function
     | FnLetExpr velist ->
       FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux e)) velist)
 
     | FnLetIn (velist, letin) ->
-      let in_letin = recurse_letin letin in
-      FnLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_letin)
+      let in_aux = recurse_aux letin in
+      FnLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_aux)
+
+    | e -> e
   in
   recurse_aux expre
 
-let rec transform_exprs (transformer : fnExpr -> fnExpr) =
-  function
-  | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) -> (v, transformer e)) ve_list)
-  | FnLetIn (ve_list, letin) ->
-    FnLetIn ((List.map (fun (v, e) -> (v, transformer e)) ve_list),
-             transform_exprs transformer letin)
-
 let transform_expr2 tr =
   transform_expr tr.case tr.on_case tr.on_const tr.on_var
-
-let transform_let tr =
-  transform_exprs (transform_expr2 tr)
 
 (** Transformation with extra boolean argument *)
 let transform_expr_flag
@@ -846,23 +821,21 @@ let transform_expr_flag
     | FnApp (a, b, el) ->
       FnApp (a, b, List.map (fun e -> recurse_aux flag e) el)
 
-    | FnFun letin -> FnFun (recurse_letin flag letin)
-    | FnRec (igu, letin) -> FnRec (igu, recurse_letin flag letin)
+    | FnFun letin -> FnFun (recurse_aux flag letin)
+    | FnRec (igu, letin) -> FnRec (igu, recurse_aux flag letin)
 
     | FnCond (c, l1, l2) ->
-      FnCond (recurse_aux flag c, recurse_letin flag l1, recurse_letin flag l2)
+      FnCond (recurse_aux flag c, recurse_aux flag l1, recurse_aux flag l2)
 
-    | e -> e
-
-  and recurse_letin flag =
-    function
     | FnLetExpr velist ->
       FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux flag e)) velist)
 
     | FnLetIn (velist, letin) ->
-      let in_letin = recurse_letin flag letin in
+      let in_aux = recurse_aux flag letin in
       FnLetIn (List.map (fun (v, e) ->
-          (v, (recurse_aux flag e))) velist, in_letin)
+          (v, (recurse_aux flag e))) velist, in_aux)
+
+    | e -> e
   in
   recurse_aux top expre
 
@@ -957,8 +930,6 @@ let optype_rec =
 
 let analyze_optype (e : fnExpr) : operator_type = rec_expr2 optype_rec e
 
-let analyze_optype_l (l : fnlet) : operator_type = rec_let optype_rec l
-
 
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
@@ -969,11 +940,13 @@ let rec remove_id_binding func =
   match func with
   | FnLetExpr el -> FnLetExpr (aux_rem_from_list el)
   | FnLetIn (el, c) -> FnLetIn (aux_rem_from_list el, remove_id_binding c)
+  | _ -> func
 
 let rec compose func1 func2 =
   match func1 with
   | FnLetExpr el -> FnLetIn (el, func2)
   | FnLetIn (el, c) -> FnLetIn (el, compose c func2)
+  | _ -> func1
 
 let compose_head assignments func =
   match assignments with
@@ -988,6 +961,7 @@ let rec compose_tail assignments func =
     | FnLetExpr el ->
       FnLetIn (el, FnLetExpr assignments)
     | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
+    | _ -> func
 
 let complete_with_state stv el =
   (* Map the final expressions *)
@@ -1012,6 +986,7 @@ let rec complete_final_state stv func =
   match func with
   | FnLetExpr el -> FnLetExpr (complete_with_state stv el)
   | FnLetIn (el, l) -> FnLetIn (el, complete_final_state stv l)
+  | _ -> func
 
 
 let rec used_in_fnexpr e =
@@ -1038,6 +1013,7 @@ let rec used_in_fnlet =
     (VS.union bs1 bs2, VS.union us1 us2)
   | FnLetExpr ve_list ->
     used_in_assignments ve_list
+  | e -> (VS.empty, used_in_fnexpr e)
 
 and used_in_assignments ve_list =
   List.fold_left
@@ -1171,20 +1147,18 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
     | FnApp (t, vo, el) ->
       FnApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
 
-    | _ -> e
+    | FnLetExpr ve_list ->
+      FnLetExpr (List.map (fun (v, e) ->  (v, aux_rem_h Unit  e)) ve_list)
+    | FnLetIn (ve_list, letin) ->
+      FnLetIn ((List.map (fun (v, e) ->  (v, aux_rem_h Unit e)) ve_list),
+               aux_rem_h Unit letin)
+    | e -> e
   in
   aux_rem_h Unit expr
 
-let rec remove_hole_vars_fnlet (fnlet : fnlet) : fnlet =
-  match fnlet with
-  | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list)
-  | FnLetIn (ve_list, letin) ->
-    FnLetIn ((List.map (fun (v, e) ->  (v, remove_hole_vars e)) ve_list),
-             remove_hole_vars_fnlet letin)
 
-let rec scm_to_fn (scm : RAst.expr) : fnlet option * fnExpr option =
-  let rec translate (scm : RAst.expr) : fnlet option * fnExpr option =
+let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
+  let rec translate (scm : RAst.expr) : fnExpr option * fnExpr option =
     try
       match scm with
       | Int_e i -> None, Some (FnConst (CInt i))
@@ -1266,7 +1240,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnlet option * fnExpr option =
       failwith "Variable name not found in current environment."
   in
   let fo, eo = translate scm in
-  remove_hole_vars_fnlet =>> fo, remove_hole_vars =>> eo
+  remove_hole_vars =>> fo, remove_hole_vars =>> eo
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in
@@ -1349,6 +1323,7 @@ let force_flat vs fnlet =
            (fun vid e ve_list ->
               ve_list@[(FnVarinfo (VS.find_by_id vid vs), e)])
            final_subs [])
+    | _ -> failhere __FILE__ "force_flat" "Not a proper function."
   in
   let start_sub =
     VS.fold
@@ -1651,7 +1626,7 @@ let rec input_type_or_type =
   | t -> t
 (* ------------------------ 8- STRUCT UTILS ----------------------------*)
 
-type sigu = VS.t * (fnlet * fnExpr * fnlet)
+type sigu = VS.t * (fnExpr * fnExpr * fnExpr)
 
 type prob_rep =
   {
@@ -1661,9 +1636,9 @@ type prob_rep =
     scontext : context;
     min_input_size : int;
     uses_global_bound : bool;
-    loop_body : fnlet;
-    join_body : fnlet;
-    join_solution : fnlet;
+    loop_body : fnExpr;
+    join_body : fnExpr;
+    join_solution : fnExpr;
     init_values : RAst.expr IM.t;
     func_igu : sigu;
     reaching_consts : fnExpr IM.t;
@@ -1696,9 +1671,8 @@ let get_loop_bound problem =
 
 (** Includes passes to transform the code into an appropriate form *)
 
-let rec pass_remove_special_ops =
-  let remove_in_exprs =
-    transform_expr
+let rec pass_remove_special_ops e =
+    (transform_expr
       (fun e -> match e with FnBinop _ -> true
                            | FnApp _ -> true
                            | _ -> false)
@@ -1745,14 +1719,16 @@ let rec pass_remove_special_ops =
             else
               FnApp(st, vo, args'))
 
-         | _ -> failwith "Bad rec case.") identity identity
-  in
-  function
-  | FnLetIn (ve_list , letin) ->
-    FnLetIn (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list,
-             pass_remove_special_ops letin)
-  | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) -> (v, remove_in_exprs e)) ve_list)
+         | FnLetIn (ve_list , letin) ->
+           FnLetIn (List.map (fun (v, e) ->
+               (v, pass_remove_special_ops e)) ve_list,
+                    pass_remove_special_ops letin)
+         | FnLetExpr ve_list ->
+           FnLetExpr (List.map (fun (v, e) ->
+               (v, pass_remove_special_ops e)) ve_list)
+
+         | _ -> failwith "Bad rec case.") identity identity) e
+
 
 let rec pass_sequentialize fnlet =
   let rec reorganize ve_list let_queue =
@@ -1799,6 +1775,7 @@ let rec pass_sequentialize fnlet =
       reorganize ve_list (pass_sequentialize letin)
     | FnLetExpr ve_list ->
       reorganize ve_list (FnLetExpr [])
+    | e -> e
   in
   let rec remove_empty_lets =
     function
@@ -1817,6 +1794,7 @@ let rec pass_sequentialize fnlet =
       (match ve_list with
        | [] -> None
        | _ -> Some (FnLetExpr ve_list))
+    | e -> Some e
   in
   match remove_empty_lets (sequentialize_parallel_moves fnlet) with
   | Some fnlet -> fnlet
@@ -1948,6 +1926,9 @@ let expr_to_cil fd temps e =
 
     | FnHoleL _ | FnHoleR _ -> failwith "Holes cannot be converted"
     | FnFun _ | FnCond _ | FnRec _ -> failwith "Control flow not supported"
+
+    | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
+    | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
 
   and fnvar_to_lval v =
     match v with
@@ -2088,6 +2069,8 @@ let fnlet_to_stmts fd fnlet =
       translate_let letin a_block
     | FnLetExpr a_list ->
       add_assignments instr_li_stmt (List.sort sort_nb_used_vars a_list)
+
+    | _ -> instr_li_stmt
   in
   let empty_statement = { labels = []; sid = new_sid ();
                           skind = Instr []; preds = []; succs = [] }

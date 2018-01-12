@@ -188,6 +188,7 @@ and make_join ~(state : VS.t) ~(skip: fnLVar list) =
     FnLetIn (
       make_assignment_list state skip ve_list,
       make_join ~state:state ~skip:(skip@to_skip) cont)
+  | e -> e
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
@@ -267,8 +268,7 @@ let set_types_and_varsets =
     else
       nvs, t
   in
-  let aux_set =
-    transform_expr
+  (transform_expr
       (fun e -> is_a_hole e)
       (fun rfun e ->
          match e with
@@ -282,9 +282,8 @@ let set_types_and_varsets =
 
          | _ -> rfun e)
 
-      identity identity
-  in
-  transform_exprs aux_set
+      identity identity)
 
-let build (state : VS.t) (fnlet : fnlet) =
+
+let build (state : VS.t) fnlet =
   set_types_and_varsets (make_join ~state:state ~skip:[] fnlet)

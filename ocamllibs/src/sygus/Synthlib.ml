@@ -1,8 +1,28 @@
+(**
+   This file is part of Parsynt.
+
+   Author: Victor Nicolet <victorn@cs.toronto.edu>
+
+    Parsynt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+  *)
+
 open Cil
 open Format
 open Synthlib2ast
 open Sylexer
 open Utils
+open ListTools
 
 let parseinputs s = Syparser.file Sylexer.token (Lexing.from_string s)
 let parsechan ch = Syparser.file Sylexer.token (Lexing.from_channel ch)
@@ -61,3 +81,40 @@ let rec sort_of_ciltyp typ =
     failhere __FILE__ "sort_of_ciltyp" "No type for named type."
 
 let sort_of_varinfo vi = sort_of_ciltyp vi.vtype
+
+(* Some helpers to generate equivalent of recursive functions. *)
+let _n_simul_recursive = ref 5
+(* Generate a list of functions, with different arities where their
+   last arguments represent the list of arguments. *)
+let gen_arity_defs (fname, sort) (vname, vsort, vterm)
+    nonlist_args (listname, listsort) =
+  let lsizes = 0 -- (!_n_simul_recursive) in
+  let build_funs_rec prev_funcs n =
+    let margs =
+       nonlist_args @
+       (List.map (fun i -> (listname^(string_of_int i)), listsort) (0 -- n))
+    in
+    let bodyf =
+      let rec_call =
+        match prev_funcs with
+        | [] -> SyId vname
+        | _ ->
+          let last_fun_name, _ = last prev_funcs
+          in
+          let rec_args =
+            (List.map (fun (x,s) -> SyId x) nonlist_args) @
+            (List.map (fun i -> SyId (listname^(string_of_int i)))
+               (0 -- (n - 1)))
+          in
+          SyApp(last_fun_name, rec_args)
+      in
+      replace ~id:listname ~by:(SyId (listname^(string_of_int n)))
+        ~in_term:(replace ~id:vname ~by:rec_call ~in_term:vterm)
+    in
+    let nfname = fname^"_"^(string_of_int n) in
+    let funn = SyFunDefCmd(nfname, margs, sort, bodyf) in
+    prev_funcs@[(nfname, funn)]
+  in
+  List.fold_left
+    build_funs_rec
+    [] lsizes

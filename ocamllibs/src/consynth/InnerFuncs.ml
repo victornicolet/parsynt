@@ -92,7 +92,7 @@ let replace_by_join problem inner_loops =
         on_var = (fun v -> v);
       }
     in
-    (transform_let rpl_transformer lbody,
+    (transform_expr2 rpl_transformer lbody,
      {ctx with all_vars = VS.add new_seq ctx.all_vars;
                used_vars = VS.add new_seq ctx.used_vars;})
   in

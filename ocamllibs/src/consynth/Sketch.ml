@@ -66,7 +66,7 @@ let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 (* Current bitwidth setting *)
 let pp_current_bitwidth fmt func_expr =
   F.fprintf fmt "@.(current-bitwidth %s)@.@."
-    (if analyze_optype_l func_expr = NonLinear then "6" else "#f")
+    (if analyze_optype func_expr = NonLinear then "6" else "#f")
 
 
 (** A symbolic definition defines a list of values of a given type,
@@ -264,7 +264,7 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     state_arg_name
     (pp_assignments state_struct_name state_arg_name)
     (ListTools.pair field_names field_names)
-    pp_fnlet loop_body
+    pp_fnexpr loop_body
 
 (** Pretty print the whole loop wrapped in a Racket macro Loop and a function
     deifinition. The name of this function is set in the variable body_name of
@@ -320,7 +320,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     (ListTools.pair lvar_names field_names)
     (pp_assignments main_struct_name rstate_name)
     (ListTools.pair rvar_names field_names)
-    pp_fnlet join_body;
+    pp_fnexpr join_body;
   printing_sketch := false
 
 

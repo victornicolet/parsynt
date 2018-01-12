@@ -485,6 +485,7 @@ let find_exprs vi solved_sketch =
        | None -> find_binding vi letin)
     | FnLetExpr ve_list ->
       ret_binding vi ve_list
+    | _ -> None
   in
   let flat_function =
     force_flat solved_sketch.scontext.state_vars solved_sketch.loop_body

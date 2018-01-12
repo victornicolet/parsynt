@@ -58,6 +58,7 @@ let rec unfold new_exprs exec_info func =
       {exec_info with
        state_exprs = IM.update_all exec_info.state_exprs new_exprs;
        inputs = ES.union new_reads exec_info.inputs} let_cont
+  | _ -> failhere __FILE__ "unfold" "Bad toplevel expr form."
 
 
 

@@ -207,27 +207,25 @@ let iterator_c_typ = TInt (ILong,[])
     need to be renamed by appending the class_member_appendix prefix.
 *)
 
-let rename_bounds =
-  let rec rename_in_expr e =
-    let rename_index_vi skv =
-      match skv with
-      | FnVarinfo vi ->
-        begin
-          if is_left_index_vi vi || is_right_index_vi vi then
-            FnVarinfo {vi with vname = class_member_appendix^vi.vname}
-          else
-            FnVarinfo vi
-        end
-      | FnArray (v, e) -> FnArray (v, rename_in_expr e)
-      | _ -> skv
-    in
-    transform_expr2
-      { case = (fun e -> false);
-        on_case = (fun f e -> e);
-        on_const = (fun c -> c);
-        on_var = rename_index_vi } e
+let rec rename_bounds e =
+  let rename_index_vi skv =
+    match skv with
+    | FnVarinfo vi ->
+      begin
+        if is_left_index_vi vi || is_right_index_vi vi then
+          FnVarinfo {vi with vname = class_member_appendix^vi.vname}
+        else
+          FnVarinfo vi
+      end
+    | FnArray (v, e) -> FnArray (v, rename_bounds e)
+    | _ -> skv
   in
-  transform_exprs rename_in_expr
+  transform_expr2
+    { case = (fun e -> false);
+      on_case = (fun f e -> e);
+      on_const = (fun c -> c);
+      on_var = rename_index_vi } e
+
 
 (** In the loop body of the operator, some assignments might be repeptitive, due
     to the introduction of auxliiaries. Remove them from the body and return
@@ -259,6 +257,7 @@ let remove_constant_assignments sktch sklet =
       let ve_list0, c_a0 = rem_from_ve_list ve_list in
       let letin0, c_a1 = aux letin (c_a@c_a0) in
       FnLetIn (ve_list0, letin0), c_a1
+    | e -> e, c_a
   in
   aux sklet []
 

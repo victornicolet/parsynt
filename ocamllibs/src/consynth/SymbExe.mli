@@ -29,6 +29,6 @@ type exec_info =
     the application of the function to the input variables expressions.
 *)
 val create_symbol_map : Utils.VS.t -> Fn.fnExpr IM.t
-val unfold : Fn.fnExpr IM.t -> exec_info -> Fn.fnlet-> Fn.fnExpr IM.t * Fn.ES.t
+val unfold : Fn.fnExpr IM.t -> exec_info -> Fn.fnExpr-> Fn.fnExpr IM.t * Fn.ES.t
 val unfold_expr : exec_info -> Fn.fnExpr -> Fn.fnExpr * Fn.ES.t
-val unfold_once : ?silent:bool -> exec_info -> Fn.fnlet -> Fn.fnExpr IM.t * Fn.ES.t
+val unfold_once : ?silent:bool -> exec_info -> Fn.fnExpr -> Fn.fnExpr IM.t * Fn.ES.t

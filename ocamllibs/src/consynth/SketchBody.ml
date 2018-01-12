@@ -46,7 +46,7 @@ let apply_remove fnlet =
   | FnLetIn (el, cont) ->
     let new_rewrites = List.map remove_simple_state_rewritings el in
     FnLetIn (new_rewrites, cont)
-
+  | e -> e
 (**
    Rebuild && expressions that have been trasnformed by CIL into
     nested ifs.
@@ -97,7 +97,7 @@ let rec apply_rearrange fnlet =
   | FnLetIn (el, cont) ->
     FnLetIn (List.map rebuild_boolean_expressions el,
              apply_rearrange cont)
-
+  | e -> e
 
 (** Enforce conversion of 0s and 1s that should be boolean *)
 let force_boolean_constants (v, e) =
@@ -204,7 +204,7 @@ let rec remove_boolean_ifs fnlet =
     FnLetIn (List.map booleanize
                (List.map force_boolean_constants el),
              remove_boolean_ifs cont)
-
+  | e -> e
 
 (** Apply all optimizations *)
 let optims fnlet =
@@ -419,7 +419,7 @@ class sketch_builder
 
 
       (** TODO : add the current loop index *)
-      and convert_letin letin : fnlet =
+      and convert_letin letin =
         match letin with
         | State subs  ->
           let state =
@@ -524,7 +524,7 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
 
 (** Transform the converted sketch to a loop body and a join sketch *)
 
-let rec make_conditional_guards (initial_vs : VS.t) (letin_form : fnlet) =
+let rec make_conditional_guards initial_vs letin_form =
   match letin_form with
   | FnLetIn (bindings, body) ->
     let new_bindings, new_state_vars = mk_cg bindings initial_vs in
@@ -536,6 +536,7 @@ let rec make_conditional_guards (initial_vs : VS.t) (letin_form : fnlet) =
     let new_bindings, new_state_vars = mk_cg bindings initial_vs in
     FnLetExpr new_bindings, new_state_vars
 
+  | _ -> letin_form, initial_vs
 and mk_cg bindings vs =
   (List.fold_left
      (fun acc binding -> acc @ [mk_cg_binding vs binding]) [] bindings), vs
