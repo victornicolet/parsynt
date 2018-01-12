@@ -1,3 +1,22 @@
+(**
+   This file is part of Parsynt.
+
+   Author: Victor Nicolet <victorn@cs.toronto.edu>
+
+    Parsynt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+  *)
+
 open Cil
 open Format
 open Synthlib2ast
@@ -63,8 +82,7 @@ let rec sort_of_ciltyp typ =
 
 let sort_of_varinfo vi = sort_of_ciltyp vi.vtype
 
-
-(* Some helpers to generate equivalent of recusrive functions. *)
+(* Some helpers to generate equivalent of recursive functions. *)
 let _n_simul_recursive = ref 5
 (* Generate a list of functions, with different arities where their
    last arguments represent the list of arguments. *)
