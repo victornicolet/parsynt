@@ -36,9 +36,9 @@ let test loopsm =
        builder#build;
        let body_form, sigu = check_option builder#get_sketch in
        printf"%s%s%s : @; %a@." (color "green") fname color_default
-         pp_fnlet body_form;
+         pp_fnexpr body_form;
        let join = S.Join.build vs body_form in
        printf"Join : @; %a@."
-         pp_fnlet join
+         pp_fnexpr join
     )
     loopsm

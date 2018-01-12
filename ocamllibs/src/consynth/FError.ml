@@ -25,9 +25,6 @@ let exception_on_variable msg var =
 let exception_on_expression msg expr =
   raise_on "expression" msg pp_fnexpr expr
 
-let exception_on_function msg sklet  =
-  raise_on "function" msg pp_fnlet sklet
-
 
 exception Skip_loop of string
 

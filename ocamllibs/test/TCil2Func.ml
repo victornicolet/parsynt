@@ -43,7 +43,7 @@ let wf_single_subst func =
      end
   | _ -> false
 
-let wf_test_case fname (func : C2F.letin) (sketch : fnlet) =
+let wf_test_case fname (func : C2F.letin) sketch  =
   match fname with
   (** Merge two if branches to form a ternary expression *)
   | "test_merge_ifs" ->
@@ -234,7 +234,7 @@ let _test () =
            printf "All variables :%a@." VS.pvs allvars;
            printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
-           FPretty.printFnlet sketch;
+           FPretty.printFnexpr sketch;
            printf "@.";
          end;
        SM.add fname (stv, figu,func)

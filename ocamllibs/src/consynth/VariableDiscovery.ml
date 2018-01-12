@@ -31,12 +31,13 @@ let clear () =
     function discovery.
 *)
 
-let rec check_wf (input_function : Fn.fnlet) (stv : VS.t) : Fn.fnlet =
+let rec check_wf input_function stv  =
   match input_function with
   | Fn.FnLetExpr assignments ->
     input_function
   | Fn.FnLetIn (assignments, skletexpr) ->
     failwith "TODO : body with inner dependencies"
+  | _ -> failhere __FILE__ "check_wf" "Bad toplevel expression form."
 
 and check_wf_assignments (assignments : (Fn.fnLVar * Fn.fnExpr) list)
     (state : VS.t) =
@@ -117,6 +118,16 @@ let update_map map vi vi_used =
     @return A mapping from state variable ids to lists of variable ids.
 *)
 let uses stv input_func =
+  let f_expr = Fn.rec_expr
+      VS.union (* Join *)
+      VS.empty (* Leaf *)
+      (fun e -> false) (* No special cases *)
+      (fun f e -> VS.empty) (* Never used*)
+      (fun c -> VS.empty) (* Handle constants *)
+      (fun v ->
+         VS.inter
+           (VS.singleton (check_option (Fn.vi_of v))) stv) (* Variables *)
+  in
   let rec aux_used_stvs stv inpt map =
     match inpt with
     | Fn.FnLetIn (velist, letin) ->
@@ -124,7 +135,8 @@ let uses stv input_func =
       let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
     | Fn.FnLetExpr velist -> List.fold_left used_in_assignment map velist
-
+    | _ -> failhere __FILE__ "uses"
+             "Bad toplevel expr form, recursion should not have reached this."
   and used_in_assignment map (v, expr) =
     (* Ignore assignment to 'state' it is only a terminal symbol in the
        function *)
@@ -133,16 +145,6 @@ let uses stv input_func =
         check_option (Fn.vi_of v)
       with Failure s ->
         FError.exception_on_variable s v
-    in
-    let f_expr = Fn.rec_expr
-        VS.union (* Join *)
-        VS.empty (* Leaf *)
-        (fun e -> false) (* No special cases *)
-        (fun f e -> VS.empty) (* Never used*)
-        (fun c -> VS.empty) (* Handle constants *)
-        (fun v ->
-           VS.inter
-             (VS.singleton (check_option (Fn.vi_of v))) stv) (* Variables *)
     in
     update_map map vi (f_expr expr)
   in

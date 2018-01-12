@@ -24,25 +24,15 @@ open Synthlib2ast
 open Synthlib
 open Utils
 
-
-let rec of_letform terminal_expr =
-    let _aux  (var, expr) =
-      match var with
-      | FnVarinfo v ->
-        let sort = sort_of_varinfo v in
-        (v.vname, sort, to_term ~texpr:terminal_expr expr)
-      | _ -> failhere __FILE__ "to_term"
-               "Unsupported left hand side in binding."
-    in
-    function
-      | FnLetIn (velist, cont) ->
-        SyLet(map _aux velist, of_letform terminal_expr cont)
-      | FnLetExpr velist ->
-        SyLet(map _aux velist, terminal_expr)
-
-
-
-and  to_term ?(texpr=SyLiteral(SyBool true)) =
+let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
+  let _binding  (var, expr) =
+    match var with
+    | FnVarinfo v ->
+      let sort = sort_of_varinfo v in
+      (v.vname, sort, to_term ~texpr:texpr expr)
+    | _ -> failhere __FILE__ "to_term"
+             "Unsupported left hand side in binding."
+  in
   let rec of_var fnvar =
     match fnvar with
     | FnVarinfo vi -> SyId vi.vname
@@ -59,6 +49,10 @@ and  to_term ?(texpr=SyLiteral(SyBool true)) =
     | _ -> failhere __FILE__ "to_term" "Unsupported constant."
   in
   function
+  | FnLetIn (velist, cont) ->
+    SyLet(map _binding velist, to_term ~texpr:texpr cont)
+  | FnLetExpr velist ->
+    SyLet(map _binding velist, texpr)
   | FnVar v ->of_var v
   | FnConst c -> SyLiteral (of_const c)
   | FnBinop(op, e1, e2) ->
@@ -70,7 +64,8 @@ and  to_term ?(texpr=SyLiteral(SyBool true)) =
     (try
       let v = check_option maybe_v in
       SyApp(v.vname, map (to_term ~texpr:texpr) args)
-    with Failure s -> failhere __FILE__ "to_term terminal_expr" "Unsupported function.")
+     with Failure s ->
+       failhere __FILE__ "to_term terminal_expr" "Unsupported function.")
   | _ -> failhere __FILE__ "to_term" "Unsupported construct."
 
 
@@ -81,9 +76,14 @@ let to_fnconst =
   | SyInt i -> FnConst (CInt i)
   | SyReal r -> FnConst (CReal r)
   | SyBool b -> FnConst (CBool b)
+  | SyString s -> FnConst (CString s)
+  | _ -> FnConst (CString "bitvector_or_enum")
 
-let to_fnexpr vars  =
-  let rec _fnexpr =
+let to_fnexpr vars =
+  let rec _binding (v,t,e) =
+    let vi = VS.find_by_name v vars in
+    (FnVarinfo vi, _fnexpr e)
+  and  _fnexpr =
     function
     | SyId v ->
       (try
@@ -109,3 +109,5 @@ let to_fnexpr vars  =
           FnApp(Integer, None, fargs)
       end
     | SyLet(bindings, interm) ->
+      FnLetIn(map _binding bindings, _fnexpr interm)
+  in _fnexpr

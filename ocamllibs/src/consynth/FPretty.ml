@@ -256,31 +256,7 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
   | E -> fprintf ppf "(exp 1)"
 
 (** Basic pretty-printing *)
-let rec pp_fnstmt ppf ((vi, fnlet) : Cil.varinfo * fnlet)  =
-  Format.fprintf  ppf "%s = begin @.@[%a@] end\n"
-    vi.Cil.vname
-    pp_fnlet fnlet
-
-and pp_fnlet ppf =
-  function
-  | FnLetExpr el ->
-    fprintf ppf "@[<hov 2>(%s %a)@]"
-      !state_struct_name
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
-             pp_fnexpr e)) el
-
-  | FnLetIn (el, l) ->
-    fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
-      (fun ppf el ->
-         (pp_print_list
-            (fun ppf (v, e) ->
-               Format.fprintf ppf "@[<hov 2>[%a %a]@]"
-                 pp_fnlvar v pp_fnexpr e) ppf el)) el
-      pp_fnlet l
-
-and pp_fnlvar (ppf : Format.formatter) fnlvar =
+let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
   match fnlvar with
   | FnVarinfo v ->
     fprintf ppf "%s" v.Cil.vname
@@ -304,11 +280,28 @@ and pp_fnlvar (ppf : Format.formatter) fnlvar =
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
+  | FnLetExpr el ->
+    fprintf ppf "@[<hov 2>(%s %a)@]"
+      !state_struct_name
+      (pp_print_list
+         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
+         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+             pp_fnexpr e)) el
+
+  | FnLetIn (el, l) ->
+    fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
+      (fun ppf el ->
+         (pp_print_list
+            (fun ppf (v, e) ->
+               Format.fprintf ppf "@[<hov 2>[%a %a]@]"
+                 pp_fnlvar v pp_fnexpr e) ppf el)) el
+      pp_fnexpr l
+
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
   | FnConst c -> fp ppf "%a" (pp_constants ~for_c:false ~for_dafny:false) c
 
-  | FnFun l -> pp_fnlet ppf l
+  | FnFun l -> pp_fnexpr ppf l
 
   | FnApp (t, vio, argl) ->
     let funname =
@@ -352,7 +345,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnCond (c, e1, e2) ->
     fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
-      pp_fnexpr c pp_fnlet e1 pp_fnlet e2
+      pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
   | FnQuestion (c, e1, e2) ->
     if !print_imp_style then
@@ -367,7 +360,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (Ct.psprint80 Cil.dn_instr i)
       (Ct.psprint80 Cil.dn_exp g)
       (Ct.psprint80 Cil.dn_instr u)
-      pp_fnlet e
+      pp_fnexpr e
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
 
@@ -380,22 +373,6 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnStartOf l -> fp ppf "(StartOf %a)" pp_fnexpr l
 
-
-(** Print statements **)
-let printFnstmt s = pp_fnstmt std_formatter s
-let sprintFnstmt s =
-  pp_fnstmt str_formatter s;
-  flush_str_formatter ()
-
-let eprintFnstmt s = pp_fnstmt err_formatter s
-
-(** Print let-forms *)
-let printFnlet s = pp_fnlet std_formatter s
-let sprintFnlet s =
-  pp_fnlet str_formatter s;
-  flush_str_formatter ()
-
-let eprintFnlet s = pp_fnlet err_formatter s
 
 (** Print epxressions *)
 let printFnexpr s = pp_fnexpr std_formatter s
@@ -411,7 +388,7 @@ let pp_func ppf (state_set, stmt_li) =
     Utils.VS.pvs state_set
     (pp_print_list
        ~pp_sep:(fun fmt x -> fprintf fmt "\n@.")
-       pp_fnstmt) stmt_li
+       pp_fnexpr) stmt_li
 
 (** Print fnetches *)
 let sprintFunc s = pp_func std_formatter s
@@ -439,13 +416,26 @@ let pp_expr_list fmt el =
     ----------------------------------------------------------------------------
 *)
 
-let rec cp_fnstmt ppf ((vi, fnlet) : Cil.varinfo * fnlet)  =
-  Format.fprintf  ppf "%s = begin @.@[%a@] end\n"
-    vi.Cil.vname
-    pp_fnlet fnlet
+let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
+  match fnlvar with
+  | FnVarinfo v ->
+    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname color_default
 
-and cp_fnlet ppf =
-  function
+  | FnArray (v, offset) ->
+    let offset_str =
+      fprintf str_formatter "%a" pp_fnexpr offset;
+      flush_str_formatter ()
+    in
+    fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
+
+
+  | FnTuple vs ->
+    fprintf ppf "@[<v 2>(%a)@]" VS.pvs vs
+
+and cp_fnexpr (ppf : Format.formatter) fnexpr =
+  let fp = Format.fprintf in
+  match fnexpr with
+
   | FnLetExpr el ->
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
       (color "red") color_default
@@ -469,35 +459,16 @@ and cp_fnlet ppf =
             (fun ppf (v, e) ->
                Format.fprintf ppf "@[[%a %a]@]"
                  cp_fnlvar v cp_fnexpr e) ppf el)) el
-      cp_fnlet l
+      cp_fnexpr l
       (* Closing parenthesis *)
       (color "red") color_default
 
-and cp_fnlvar (ppf : Format.formatter) fnlvar =
-  match fnlvar with
-  | FnVarinfo v ->
-    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname color_default
-
-  | FnArray (v, offset) ->
-    let offset_str =
-      fprintf str_formatter "%a" pp_fnexpr offset;
-      flush_str_formatter ()
-    in
-    fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
-
-
-  | FnTuple vs ->
-    fprintf ppf "@[<v 2>(%a)@]" VS.pvs vs
-
-and cp_fnexpr (ppf : Format.formatter) fnexpr =
-  let fp = Format.fprintf in
-  match fnexpr with
   | FnVar v -> fp ppf "%a" cp_fnlvar v
 
   | FnConst c -> fp ppf "%s%a%s" (color "cyan")
                    (pp_constants ~for_c:true ~for_dafny:false) c color_default
 
-  | FnFun l -> cp_fnlet ppf l
+  | FnFun l -> cp_fnexpr ppf l
 
   | FnApp (t, vio, argl) ->
     let funname =
@@ -536,7 +507,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnCond (c, e1, e2) ->
     fp ppf "@[<hov 1> (%sif%s@;%a@;%a@;%a)@]"
       (color "b") color_default
-      cp_fnexpr c cp_fnlet e1 cp_fnlet e2
+      cp_fnexpr c cp_fnexpr e1 cp_fnexpr e2
 
   | FnQuestion (c, e1, e2) ->
     fp ppf "@[<hov 2>((%a)%s? %s%a%s %s%a)@]"
@@ -551,7 +522,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (Ct.psprint80 Cil.dn_instr i)
       (Ct.psprint80 Cil.dn_exp g)
       (Ct.psprint80 Cil.dn_instr u)
-      cp_fnlet e
+      cp_fnexpr e
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
 
@@ -564,22 +535,6 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnStartOf l -> fp ppf "(StartOf %a)" cp_fnexpr l
 
-
-(** Print statements **)
-let cprintFnstmt s = cp_fnstmt std_formatter s
-let scprintFnstmt s =
-  cp_fnstmt str_formatter s;
-  flush_str_formatter ()
-
-let ecprintFnstmt s = cp_fnstmt err_formatter s
-
-(** Print let-forms *)
-let cprintFnlet s = cp_fnlet std_formatter s
-let scprintFnlet s =
-  cp_fnlet str_formatter s;
-  flush_str_formatter ()
-
-let ecprintFnlet s = cp_fnlet err_formatter s
 
 (** Print epxressions *)
 let cprintFnexpr s = cp_fnexpr std_formatter s
@@ -728,6 +683,7 @@ let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
     fprintf fmt "@[%a@;%a@]"
       (pp_c_assignment_list p_id_assign) assgn_list
       (pp_c_fnlet ~p_id_assign:p_id_assign) fnlet'
+  | _ -> ()
 
 
 let print_c_let = pp_c_fnlet std_formatter
@@ -742,9 +698,9 @@ let rec pp_problem_rep fmt fnetch =
     fnetch.loop_name fnetch.id
     color_default
     (color "b") color_default
-    pp_fnlet fnetch.loop_body
+    pp_fnexpr fnetch.loop_body
     (color "b") color_default
-    pp_fnlet fnetch.join_solution
+    pp_fnexpr fnetch.join_solution
     (color "b-lightgray")
     (fun fmt () ->
        if List.length fnetch.inner_functions > 0 then

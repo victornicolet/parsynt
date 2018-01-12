@@ -124,7 +124,7 @@ let rec init_func_info linfo =
     - init, guard and update of the enclosing loop
     - sketch of the join.
 *)
-type sigu = VS.t * (fnlet * fnExpr * fnlet)
+type sigu = VS.t * (fnExpr * fnExpr * fnExpr)
 
 (**
    From cil loop bodies to intermediary function representation.
@@ -234,7 +234,7 @@ let func2sketch cfile funcreps =
     in
     let max_m_sizes = IM.fold (fun k i m -> max i m) m_sizes 0 in
     let max_m_sizes = max max_m_sizes
-        (if rec_let max_min_test loop_body then 1 else 0)
+        (if rec_expr2 max_min_test loop_body then 1 else 0)
     in
     (if !debug then
        printf "@.Max dependency length : %i@." max_m_sizes);
