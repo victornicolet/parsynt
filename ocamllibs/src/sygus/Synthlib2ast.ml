@@ -195,3 +195,16 @@ let which_logic s =
   | "LIA" -> SyLIA | "Arrays" -> SyArrays | "BV" -> SyBV | "Reals" -> SyReals
   (* Default Linear Integer Arithmetic *)
   | _ -> SyLIA
+
+
+let rec replace ~id:id  ~by:t1 ~in_term:term =
+  let _aux id' t1' t =  replace ~id:id' ~by:t1' ~in_term:t in
+  match term with
+  | SyApp (f, args) -> SyApp(f, List.map (_aux id t1) args)
+  | SyLet (bindings, term0) ->
+    SyLet(
+      List.map (fun (vb, vs, ve) -> (vb, vs, _aux id t1 ve)) bindings,
+      _aux id t1 term0)
+
+  | SyId id' when id' = id -> t1
+  | _ -> term
