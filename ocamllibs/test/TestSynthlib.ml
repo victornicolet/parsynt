@@ -59,28 +59,55 @@ let test_conversion () =
 
 let test_gen_arity_defs () =
   printf "TEST gen_arity_defs@.";
-  let deffs =
-    List.map
-      (fun (a,b) -> b)
-      (gen_arity_defs
-         ("fsum", SyIntSort)
-         ("sum", SyIntSort, SyApp("+",[SyId "a"; SyId"sum"]))
-         [("sum",SyIntSort)]
-         ("a", SyIntSort))
+  let deffs1 =
+    gen_arity_defs
+      (* cl = a ? cl + 1 : 0 *)
+      ("cl", SyIntSort, SyApp("ite",
+                               [SyId "a";
+                                SyApp("+",[SyId "cl"; SyLiteral (SyInt 1)]);
+                                SyLiteral (SyInt 0)]))
+      [("cl",SyIntSort)]
+      Utils.SM.empty
+      ("a", SyBoolSort)
   in
-  Synthlib.printsy (SyCommandsWithLogic (SyLIA, deffs));
-    let deffs =
-    List.map
-      (fun (a,b) -> b)
-      (gen_arity_defs
-         ("fmts", SyIntSort)
-         ("mts", SyIntSort, SyApp("max",
-                                  [SyApp("+", [SyId "a"; SyId"mts"]);
-                                   SyLiteral (SyInt 0)]))
-         [("mts",SyIntSort)]
-         ("a", SyIntSort))
+  let deffs2 =
+    (* ml = max(ml, a? cl + 1 : 0) *)
+    gen_arity_defs
+         ("ml", SyIntSort, SyApp("max",
+                                 [SyId "ml";
+                                  SyApp("ite",
+                                        [SyId "a";
+                                         SyApp("+",[SyId "cl";
+                                                    SyLiteral (SyInt 1)]);
+                                         SyLiteral (SyInt 0)])]))
+         [("ml",SyIntSort);("cl", SyIntSort)]
+         (Utils.SM.from_bindings [("cl",[("cl", SyBoolSort)])])
+         ("a", SyBoolSort)
   in
-  Synthlib.printsy (SyCommandsWithLogic (SyLIA, deffs))
+  let deffs3 =
+    gen_arity_defs
+         (* cj = a && cj  *)
+         ("cj", SyBoolSort, SyApp("and",
+                                  [SyId "a"; SyId "cj"]))
+         [("cj",SyBoolSort)]
+         Utils.SM.empty
+         ("a", SyBoolSort)
+  in
+  let deffs4 =
+    gen_arity_defs
+         (* c = cj && ai ? c + 1 : c  *)
+         ("c", SyIntSort, SyApp("ite",
+                                [SyApp("and",
+                                  [SyId "a"; SyId "cj"]);
+                                 SyApp("+", [SyId "c"; SyLiteral(SyInt 1)]);
+                                 SyLiteral(SyInt 0)]))
+         [("c", SyIntSort); ("cj", SyBoolSort)]
+         (Utils.SM.from_bindings [("cj",[("cj", SyBoolSort)])])
+         ("a", SyBoolSort)
+  in
+  Synthlib.print_file "test.sl"
+    (SyCommandsWithLogic (SyLIA,
+                          int_max_funDefCmd::deffs1@deffs2@deffs3@deffs4))
 
 
 

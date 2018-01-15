@@ -189,7 +189,7 @@ let sypp_command fmt (command : syCmd) =
 
 let sypp_commands fmt (commands : syCmd list) =
   pp_print_list
-    ~pp_sep:(fun fmt () -> fprintf fmt "@.")
+    ~pp_sep:(fun fmt () -> fprintf fmt "@.@.")
     (fun fmt cmd -> fprintf fmt "@[<v 2>%a@]" sypp_command cmd)
     fmt commands
 

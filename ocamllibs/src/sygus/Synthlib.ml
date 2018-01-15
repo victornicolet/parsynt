@@ -29,6 +29,10 @@ let parsechan ch = Syparser.file Sylexer.token (Lexing.from_channel ch)
 
 let printsy = sypp_sygus std_formatter
 
+let print_file f =
+  let oc = open_out f in
+  sypp_sygus (Format.formatter_of_out_channel oc)
+
 let slg_int i = SyGLiteral (SyInt i)
 let slg_bool b = SyGLiteral (SyBool b)
 
@@ -84,37 +88,98 @@ let sort_of_varinfo vi = sort_of_ciltyp vi.vtype
 
 (* Some helpers to generate equivalent of recursive functions. *)
 let _n_simul_recursive = ref 5
-(* Generate a list of functions, with different arities where their
-   last arguments represent the list of arguments. *)
-let gen_arity_defs (fname, sort) (vname, vsort, vterm)
-    nonlist_args (listname, listsort) =
+
+(**
+   Generate a list of functions, with different arities where their
+   last arguments represent the list of arguments.
+
+   @param vname the name of the main recursion variable.
+   @param vsort the sort of the main recurstion variable.
+   @param fterm the term of the function of the main recursion variable.
+   @param args the non-list arguments of the function including the main
+   recursion variable.
+   @param (listname, listsort) the name and sort of the scalar variables
+   of the sequence.
+   @return A list of function declaration commands.
+*)
+
+let gen_arity_defs (vname, vsort, fterm) args args_of_args
+    (listname, listsort) =
   let lsizes = 0 -- (!_n_simul_recursive) in
   let build_funs_rec prev_funcs n =
     let margs =
-       nonlist_args @
+       args @
        (List.map (fun i -> (listname^(string_of_int i)), listsort) (0 -- n))
     in
     let bodyf =
-      let rec_call =
-        match prev_funcs with
-        | [] -> SyId vname
-        | _ ->
-          let last_fun_name, _ = last prev_funcs
-          in
-          let rec_args =
-            (List.map (fun (x,s) -> SyId x) nonlist_args) @
-            (List.map (fun i -> SyId (listname^(string_of_int i)))
-               (0 -- (n - 1)))
-          in
-          SyApp(last_fun_name, rec_args)
+      let rec_calls_inst =
+        List.fold_left
+          (fun rterm (rec_vname, vsort) ->
+             let rec_call_body =
+               match prev_funcs with
+               | [] -> SyId rec_vname
+               | _ ->
+                 let last_fun_name =
+                   "f_"^rec_vname^"_"^(string_of_int (n-1))
+                 in
+                 let fun_args =
+                   if rec_vname = vname then args
+                   else
+                     (try
+                        SM.find rec_vname args_of_args
+                      with Not_found ->
+                        failhere __FILE__ "gen_arity_defs"
+                          (sprintf "Couldn't find the args for recursive call \
+                                    to %s in function f_%s." rec_vname vname))
+                 in
+                 let rec_args =
+                   (List.map (fun (x,s) -> SyId x) fun_args) @
+                   (List.map (fun i -> SyId (listname^(string_of_int i)))
+                      (0 -- (n - 1)))
+                 in
+                 SyApp(last_fun_name, rec_args)
+             in
+             replace ~id:rec_vname ~by:rec_call_body ~in_term:rterm)
+          fterm args
       in
       replace ~id:listname ~by:(SyId (listname^(string_of_int n)))
-        ~in_term:(replace ~id:vname ~by:rec_call ~in_term:vterm)
+        ~in_term:rec_calls_inst
     in
-    let nfname = fname^"_"^(string_of_int n) in
-    let funn = SyFunDefCmd(nfname, margs, sort, bodyf) in
-    prev_funcs@[(nfname, funn)]
+    let nfname = "f_"^vname^"_"^(string_of_int n) in
+    let funn = SyFunDefCmd(nfname, margs, vsort, bodyf) in
+    prev_funcs@[funn]
   in
   List.fold_left
     build_funs_rec
     [] lsizes
+
+
+(* Pre-defined functions *)
+
+let int_max_funDefCmd =
+  SyFunDefCmd("max",
+              [("x", SyIntSort);("y",SyIntSort)],
+              SyIntSort,
+              SyApp("ite",[SyApp(">",[SyId "x"; SyId "y"]);
+                          SyId "x"; SyId "y"]))
+
+let int_min_funDefCmd =
+  SyFunDefCmd("max",
+              [("x", SyIntSort);("y",SyIntSort)],
+              SyIntSort,
+              SyApp("ite",[SyApp("<",[SyId "x"; SyId "y"]);
+                           SyId "x"; SyId "y"]))
+
+let real_max_funDefCmd =
+  SyFunDefCmd("max",
+              [("x", SyRealSort);("y",SyRealSort)],
+              SyRealSort,
+              SyApp("ite",[SyApp(">",[SyId "x"; SyId "y"]);
+                          SyId "x"; SyId "y"]))
+
+let real_min_funDefCmd =
+  SyFunDefCmd("max",
+              [("x", SyRealSort);("y",SyRealSort)],
+              SyRealSort,
+              SyApp("ite",[SyApp("<",[SyId "x"; SyId "y"]);
+                           SyId "x"; SyId "y"]))

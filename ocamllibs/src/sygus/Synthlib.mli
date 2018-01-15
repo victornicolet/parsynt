@@ -22,8 +22,16 @@ open Synthlib2ast
 val parseinputs : string -> sygusFile
 val parsechan : in_channel -> sygusFile
 val printsy : sygusFile -> unit
+val print_file : string -> sygusFile -> unit
 
 val sort_of_varinfo : Cil.varinfo -> sySort
 
-val gen_arity_defs: (symbol * sySort) -> (symbol * sySort * syTerm) ->
-  (symbol * sySort) list -> symbol * sySort -> (symbol * syCmd) list
+val gen_arity_defs: (symbol * sySort * syTerm) -> (symbol * sySort) list ->
+  ((symbol * sySort) list) Utils.SM.t ->
+  symbol * sySort -> syCmd list
+
+(* Predefined definitions *)
+val int_max_funDefCmd : syCmd
+val int_min_funDefCmd : syCmd
+val real_max_funDefCmd : syCmd
+val real_min_funDefCmd : syCmd
