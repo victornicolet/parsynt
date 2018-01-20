@@ -2,7 +2,7 @@ OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-Name: ConSynth
+Name: ParSynth
 Version: 0.1
 Synopsis: Parallel program synthesis.
 Authors: Victor Nicolet

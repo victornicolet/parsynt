@@ -154,6 +154,35 @@ let gen_arity_defs (vname, vsort, fterm) args args_of_args
     [] lsizes
 
 
+(** Generate constraint for a problem. Since CVC4 does not support recursion
+    we generate constraint for different sizes, callign the different functions
+    with the corresponding arity.
+    @param rname The name of the recursion step we are trying to
+    synthesize/verify.
+    @param rargs The non-list-arguments.
+*)
+
+let gen_recursion_constraints (rname, rargs, rinput) (fname, fargs, lname) =
+  let gen_at_height cmd_lst i =
+    let lhterm =
+      let f_list_inputs = [] in
+      SyApp(rname,
+            [
+              SyApp (fname, fargs@f_list_inputs);
+            ])
+    in
+    let rhterm =
+      let f_list_inputs =
+        []
+      in
+      SyApp (fname, fargs@f_list_inputs)
+    in
+      cmd_lst@[SyConstraintCmd (SyApp("=",[lhterm; rhterm]))]
+  in
+  List.fold_left gen_at_height [] (1 -- !_n_simul_recursive)
+
+
+
 (* Pre-defined functions *)
 
 let int_max_funDefCmd =
