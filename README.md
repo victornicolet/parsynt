@@ -13,9 +13,9 @@ However, you should stil run the script at the end to setup the tool!
 
 When ```setup.sh``` succeeds, you have a link to an executable in the base folder. Try the tool on a file ```example.c``` :
 
-```./Parsynth c_examples/<example_name.c>```
+```./Parsynth examples/c/<example_name.c>```
 
-The tool will search for all the innermost for loops and try to find a divide-and-conquer parallelization for them. If it succeeds, it will produce a TBB implementation in ```tbb_examples/<name of the function where the loop appears>.cpp``` and a proof to be checked by Dafny in ```dafny_examples/<name of the function where the loop appears>.dfy```.
+The tool will search for all the innermost for loops and try to find a divide-and-conquer parallelization for them. If it succeeds, it will produce a TBB implementation in ```examples/tbb/<name of the function where the loop appears>.cpp``` and a proof to be checked by Dafny in ```examples/dafny/<name of the function where the loop appears>.dfy```.
 
 To check the proofs, the user might want to install the Dafny Proof checker.
 
@@ -78,7 +78,7 @@ We only tested the tool on Ubuntu 16.04 (including a fresh installation of Ubunt
 The compilation and execution of the Ocaml executable relies on some project structure that is setup at the end of the ```setup.sh``` script.
 
 ### Install the Racket library
-```cd parsynth_racket```
+```cd src/synthools```
 
 ```raco pkg install```
 

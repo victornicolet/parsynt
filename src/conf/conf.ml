@@ -42,10 +42,14 @@ module SH =
 let (>>) l n = List.nth l n
 
 let project_dir = Project_dir.base
+let source_dir = Project_dir.src
 let output_dir = ref project_dir
 
 let project_file rel_path =
   project_dir^"/"^rel_path
+
+let source_file rel_path =
+  source_dir^"/"^rel_path
 
 let import file_name separator =
   let reg_separator = Str.regexp separator in
@@ -75,7 +79,7 @@ let import file_name separator =
   | e -> raise e;;
 
 
-let main_conf_file = import (project_file "ocamllibs/conf.csv") ","
+let main_conf_file = import (source_file "conf/conf.csv") ","
 
 
 let get_conf_string key =
@@ -109,7 +113,7 @@ let get_builtin s = List.assoc s builtin_var_names
 
 (** 3 - Parameters of the verification condition of the synthesis *)
 let verif_params_filename =
-  project_file "ocamllibs/src/conf/verification.params"
+  source_file "conf/verification.params"
 
 let verification_parameters =
   let reg_separator = Str.regexp "," in

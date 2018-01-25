@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Steps needed to clean up the repo before compilation.
+echo "Removing DLLs in examples."
+rm examples/dafny/*.dll
+rm examples/dafny/*.mdb

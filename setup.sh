@@ -89,27 +89,28 @@ do
 done
 
 # Install the collection in raco
-PKG_CONSYNTH='parsynth_racket'
-CONSYNTH_INSTL_SRC=$(raco_install_src $PKG_CONSYNTH)
-if [[ -z $CONSYNTH_INSTL_SRC ]]
+PKG_NAME='synthools'
+PKG_SRC='src/synthools'
+PKG_INSTL_SRC=$(raco_install_src $PKG_NAME)
+if [[ -z $PKG_INSTL_SRC ]]
 then
-    echo "Installing local package consynth ..."
-    cd parsynth_racket;
+    echo "Installing local package synthools."
+    cd $PKG_SRC;
     # Errors printed come from the fact that the generator uses racket
     # skeletons for the sketches. Probably should think about a better
     # solution ...
     raco pkg install &> /dev/null
     cd ..;
     #Check if the package has been successfully installed
-    if [[ -z $(raco_install_src $PKG_CONSYNTH) ]]
+    if [[ -z $(raco_install_src $PKG_NAME) ]]
     then
         msg_fail "Couldn't install package consynth."
         contact
     else
-        msg_success "Package $PKG_CONSYNTH successfully installed!"
+        msg_success "Package $PKG_NAME successfully installed!"
     fi
 else
-    msg_success "Package $PKG_CONSYNTH already present."
+    msg_success "Package $PKG_NAME already present."
 fi
 
 msg_success "All Racket components present."
@@ -232,23 +233,27 @@ done
 
 sep "Installing modified version of Cil."
 
+CIL_SOURCE_DIR="src"
 
 # Retrieve and install our modified version
-if [[ -d "alt-cil" ]]; then
+if [[ -d "$CIL_SOURCE_DIR/alt-cil" ]]; then
     echo "Modified Cil implementation already downloaded."
 else
     echo "Cloning Git repository for modified version of Cil ..."
+    cd $CIL_SOURCE_DIR
     eval "git clone https://github.com/victornicolet/alt-cil.git"
+    cd ..
 fi
 
 CIL_PINNED=$(opam show cil | sed -n -e 's/^.*pinned: //p')
 
 if [[ -z $CIL_PINNED ]]
 then
-    cd alt-cil
+    cd $CIL_SOURCE_DIR/alt-cil
     echo "Creating local cil package and installing it with opam .."
     opam pin add cil . -n
-    cd ..
+    opem install cil
+    cd ../..
 else
     msg_success "Cil version pinned to local repository."
 fi
@@ -279,15 +284,9 @@ sep "Installed all requirements."
 
 
 sep "Creating Makefiles for Ocaml sources ..."
-PROJECT_DIR=$(pwd)
-rm ./ocamllibs/src/conf/project_dir.ml
-echo "let base = \"$PROJECT_DIR\"" >> ./ocamllibs/src/conf/project_dir.ml
-cd ocamllibs
 oasis setup -setup-update dynamic
-#cd ..
-msg_success "Makefiles created, trying make in ocamllib"
+msg_success "Makefiles created, trying make."
 make
-cd ..
 
 
 if [ $? -eq 0 ]; then
@@ -298,8 +297,7 @@ else
     exit
 fi
 
-make links
-
-sep "Testing with simple example Sum."
-
-make test
+sep "Testing with some simple examples..."
+cd test
+./check_solved.sh
+cd ..

@@ -1,7 +1,7 @@
 opam-version: "1.2"
 name: "Parsynt"
 version: "0.1"
-maintainer: "Victor Nicolet <victorn@cs.toronto.ed"
+maintainer: "Victor Nicolet <victorn@cs.toronto.edu>"
 author: "Victor Nicolet <victorn@cs.toronto.edu>"
 homepage: "http://www.cs.totonto.edu/~victorn/parsynt/"
 bug-reports: "http://www.github.com/victornicolet/parsynt/issues"

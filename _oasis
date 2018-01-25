@@ -13,7 +13,7 @@ Homepage: https://github.com/victornicolet/consynth
 
 AlphaFeatures: ocamlbuild_more_args
 XOCamlbuildExtraArgs: "-use-menhir"
-PreBuildCommand: $rm dafny_examples/*.dll dafny_examples/*.mdb
+PreBuildCommand: ./prebuild.sh
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
 PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
@@ -68,7 +68,7 @@ Executable test_main
   BuildDepends: cil, getopt, sygus, consynth, conf, codegen
 
 Executable Parsy
-  Path: ./
+  Path: src
   MainIs: Parsy.ml
   CompiledObject: best
   Install: false

@@ -3,7 +3,7 @@
 echo "---------------------------------------------------------------------------------------------"
 echo "******************** Executing Parsynth on all the files in test/solved/ ********************"
 echo "---------------------------------------------------------------------------------------------"
-for file in test/solved/*
+for file in solved/*
 do
-  ./Parsy.native "$file"
+  ../Parsy.native "$file"
 done
