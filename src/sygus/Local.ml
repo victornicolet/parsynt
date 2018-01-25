@@ -34,7 +34,6 @@ open Conf
 let debug = ref false
 let dump_sketch = ref false
 
-let templateDir = Conf.project_dir^"/templates/"
 let dumpDir = Filename.concat Conf.project_dir "/ocamllibs/dump/"
 
 let copy_file from_filename to_filename =
@@ -87,12 +86,12 @@ let completeFile filename solution_file_name sketch_printer sketch =
       (Str.global_replace (regexp_string "%output-file%")
          solution_file_name line)
   in
-  let header = open_in (templateDir^"header.rkt") in
+  let header = open_in (Conf.template "header.rkt") in
   Stream.iter process_line (line_stream_of_channel header);
   let fmt = Format.make_formatter
     (output oc)  (fun () -> flush oc) in
   sketch_printer fmt sketch;
-  let footer = open_in (templateDir^"footer.rkt") in
+  let footer = open_in (Conf.template "footer.rkt") in
   Stream.iter process_line (line_stream_of_channel footer);
   close_out oc
 

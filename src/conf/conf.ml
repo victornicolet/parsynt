@@ -44,12 +44,16 @@ let (>>) l n = List.nth l n
 let project_dir = Project_dir.base
 let source_dir = Project_dir.src
 let output_dir = ref project_dir
+let templates_dir = Project_dir.templates
 
 let project_file rel_path =
   project_dir^"/"^rel_path
 
 let source_file rel_path =
   source_dir^"/"^rel_path
+
+let template template_name =
+  templates_dir^"/"^template_name
 
 let import file_name separator =
   let reg_separator = Str.regexp separator in
