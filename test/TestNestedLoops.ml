@@ -26,20 +26,26 @@ open PpTools
 open InnerFuncs
 open FuncTypes
 
-let test_filename = Conf.project_dir ^"/ocamllibs/test/nested_loops.c"
+let test_filename = Conf.project_dir ^"/test/nested_loops.c"
+
+let trynf e m =
+  try e with Not_found -> failhere __FILE__ "test" m
 
 let test () =
   printf "%sTEST: nested loops%s@." (color "b-blue") color_default;
-  let cfile = Canalyst.parseOneFile test_filename in
-  Cfg.computeFileCFG cfile;
-  process_file cfile;
-  let loop_infos = get_loops () in
+  let cfile = trynf (Canalyst.parseOneFile test_filename) "parseOneFile" in
+  trynf (Cfg.computeFileCFG cfile) "computeCFGInfo";
+  trynf (process_file cfile) "processFile";
+  let loop_infos = trynf (get_loops ()) "get_loops" in
   IH.iter
     (fun lid cl ->
        begin
-         printf "%s%s-----------------%s@." (color "b-green") (color "black")
+         printf "%s%s----------------%s@." (color "b-green") (color "black")
            color_default;
-         pp_loop std_formatter cl
+         try
+           pp_loop std_formatter cl
+         with Not_found ->
+           failhere __FILE__ "test" "pp_loop"
        end)
     loop_infos;
 

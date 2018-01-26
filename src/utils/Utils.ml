@@ -31,6 +31,8 @@ module SM = Sets.SM
 
 let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
 
+let continue_not_found f m = try f with Not_found -> print_endline m
+
 (** Hash a set of variables with their variable id *)
 let ih_of_vs vset =
   let ihs = IH.create 10 in

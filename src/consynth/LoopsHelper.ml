@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open Cil
 open Utils
@@ -52,23 +52,23 @@ let rec rem_last_instr (bdy : stmt list) =
     let lastStmt = last bdy in
     match lastStmt.skind with
     | Instr il ->
-       begin
-         match il with
-         | [i] ->
-            begin
-              rem_stmt_in_cfg lastStmt;
-              let stmtli = (remove_last bdy) in
-              Some i, Some stmtli
-            end
+      begin
+        match il with
+        | [i] ->
+          begin
+            rem_stmt_in_cfg lastStmt;
+            let stmtli = (remove_last bdy) in
+            Some i, Some stmtli
+          end
 
-         | hd::tl ->
-            begin
-              lastStmt.skind <- Instr (remove_last il);
-              Some (last il), Some bdy
-            end
+        | hd::tl ->
+          begin
+            lastStmt.skind <- Instr (remove_last il);
+            Some (last il), Some bdy
+          end
 
-         | [] -> None, None
-       end
+        | [] -> None, None
+      end
 
     | Block b -> rem_last_instr b.bstmts
 
@@ -80,9 +80,9 @@ let rec rem_last_instr (bdy : stmt list) =
 let rec instr_eq instr instr' =
   match instr, instr' with
   | Set (lv, e, loc), Set (lv', e', loc') ->
-     (lval_eq lv lv') && (expr_eq e e')
+    (lval_eq lv lv') && (expr_eq e e')
   | Call (lvo, ef, el, loc), Call (lvo', ef', el',loc') ->
-     (lvo = lvo') && (ef = ef') && (el = el')
+    (lvo = lvo') && (ef = ef') && (el = el')
   | _ , _ -> false
 
 and lval_eq lval lval' =
@@ -118,9 +118,9 @@ let rec rem_loop_init (bdy : block) inners :
           Format.printf "In succs.@.";
           match stmt.skind with
           | Instr il ->
-             Instr (
-               List.filter
-                 (fun instr -> not (instr_eq init instr)) il)
+            Instr (
+              List.filter
+                (fun instr -> not (instr_eq init instr)) il)
           | _ -> stmt.skind
         end
       else
@@ -138,124 +138,124 @@ let get_loop_condition b =
   let rec skipEmpty = function
     | [] -> []
     | {skind = Instr []; labels = []}::rest ->
-	   skipEmpty rest
+      skipEmpty rest
     | x -> x
   in
   (* stm -> exp option * instr list *)
   let rec get_cond_from_if if_stm =
     match if_stm.skind with
       If(e,tb,fb,_) ->
-	    let e = EC.stripNopCasts e in
-	    let tsl = skipEmpty tb.bstmts in
-	    let fsl = skipEmpty fb.bstmts in
-	    (match tsl, fsl with
-	      {skind = Break _} :: _, [] -> Some e
-	    | [], {skind = Break _} :: _ ->
-	       Some(UnOp(LNot, e, intType))
-	    | ({skind = If(_,_,_,_)} as s) :: _, [] ->
-	       let teo = get_cond_from_if s in
-	       (match teo with
-	         None -> None
-	       | Some te ->
-		      Some(BinOp(LAnd,e,EC.stripNopCasts te,intType)))
-	    | [], ({skind = If(_,_,_,_)} as s) :: _ ->
-	       let feo = get_cond_from_if s in
-	       (match feo with
-	         None -> None
-	       | Some fe ->
-		      Some(BinOp(LAnd,UnOp(LNot,e,intType),
-			             EC.stripNopCasts fe,intType)))
-	    | {skind = Break _} :: _, ({skind = If(_,_,_,_)} as s):: _ ->
-	       let feo = get_cond_from_if s in
-	       (match feo with
-	         None -> None
-	       | Some fe ->
-		      Some(BinOp(LOr,e,EC.stripNopCasts fe,intType)))
-	    | ({skind = If(_,_,_,_)} as s) :: _, {skind = Break _} :: _ ->
-	       let teo = get_cond_from_if s in
-	       (match teo with
-	         None -> None
-	       | Some te ->
-		      Some(BinOp(LOr,UnOp(LNot,e,intType),
-			             EC.stripNopCasts te,intType)))
-	    | ({skind = If(_,_,_,_)} as ts) :: _ ,
-           ({skind = If(_,_,_,_)} as fs) :: _ ->
-	       let teo = get_cond_from_if ts in
-	       let feo = get_cond_from_if fs in
-	       (match teo, feo with
-	         Some te, Some fe ->
-		       Some(BinOp(LOr,BinOp(LAnd,e,EC.stripNopCasts te,intType),
-			              BinOp(LAnd,UnOp(LNot,e,intType),
-				                EC.stripNopCasts fe,intType),intType))
-	       | _,_ -> None)
-	    | _, _ -> (if !debug
-          then ignore(E.log "cond_finder: branches of %a not good\n"
-					                       d_stmt if_stm);
-		           None))
+      let e = EC.stripNopCasts e in
+      let tsl = skipEmpty tb.bstmts in
+      let fsl = skipEmpty fb.bstmts in
+      (match tsl, fsl with
+	 {skind = Break _} :: _, [] -> Some e
+       | [], {skind = Break _} :: _ ->
+	 Some(UnOp(LNot, e, intType))
+       | ({skind = If(_,_,_,_)} as s) :: _, [] ->
+	 let teo = get_cond_from_if s in
+	 (match teo with
+	    None -> None
+	  | Some te ->
+	    Some(BinOp(LAnd,e,EC.stripNopCasts te,intType)))
+       | [], ({skind = If(_,_,_,_)} as s) :: _ ->
+	 let feo = get_cond_from_if s in
+	 (match feo with
+	    None -> None
+	  | Some fe ->
+	    Some(BinOp(LAnd,UnOp(LNot,e,intType),
+		       EC.stripNopCasts fe,intType)))
+       | {skind = Break _} :: _, ({skind = If(_,_,_,_)} as s):: _ ->
+	 let feo = get_cond_from_if s in
+	 (match feo with
+	    None -> None
+	  | Some fe ->
+	    Some(BinOp(LOr,e,EC.stripNopCasts fe,intType)))
+       | ({skind = If(_,_,_,_)} as s) :: _, {skind = Break _} :: _ ->
+	 let teo = get_cond_from_if s in
+	 (match teo with
+	    None -> None
+	  | Some te ->
+	    Some(BinOp(LOr,UnOp(LNot,e,intType),
+		       EC.stripNopCasts te,intType)))
+       | ({skind = If(_,_,_,_)} as ts) :: _ ,
+         ({skind = If(_,_,_,_)} as fs) :: _ ->
+	 let teo = get_cond_from_if ts in
+	 let feo = get_cond_from_if fs in
+	 (match teo, feo with
+	    Some te, Some fe ->
+	    Some(BinOp(LOr,BinOp(LAnd,e,EC.stripNopCasts te,intType),
+		       BinOp(LAnd,UnOp(LNot,e,intType),
+			     EC.stripNopCasts fe,intType),intType))
+	  | _,_ -> None)
+       | _, _ -> (if !debug
+                  then ignore(E.log "cond_finder: branches of %a not good\n"
+				d_stmt if_stm);
+		  None))
     | _ -> (if !debug
-      then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
-	        None)
+            then ignore(E.log "cond_finder: %a not an if\n" d_stmt if_stm);
+	    None)
   in
   let sl = skipEmpty b.bstmts in
   match sl with
     ({skind = If(_,_,_,_); labels=[]} as s) :: rest ->
-      get_cond_from_if s, rest
+    get_cond_from_if s, rest
   | s :: _ ->
-     (if !debug then ignore(E.log "checkMover: %a is first, not an if\n"
-			                  d_stmt s);
-      None, sl)
+    (if !debug then ignore(E.log "checkMover: %a is first, not an if\n"
+			     d_stmt s);
+     None, sl)
   | [] ->
-     (if !debug then ignore(E.log "checkMover: no statements in loop block?\n");
-      None, sl)
+    (if !debug then ignore(E.log "checkMover: no statements in loop block?\n");
+     None, sl)
 
 
 (** Get the initiatlization, termination and update in a*)
 let get_loop_IGU loop_stmt : (igu option * Cil.stmt list) =
   match loop_stmt.skind with
   | Loop (bdy, _, _, _) ->
-     begin
-       try
-         let body_copy = Cil.mkBlock bdy.bstmts in
-         (**
-             Identify the termination condition and remove the break
-             statement associated to it.
-         *)
-         let term_expr_o, rem = get_loop_condition body_copy in
-         let term_expr = match term_expr_o with
-           | Some expr ->
-              expr
-           | None ->
-              raise (Failure "couldn't get the termination condition.")
-         in
-         let init =
-           if List.length loop_stmt.preds < 2 then
-             ( Format.printf "Did you compute the CFG information before \
-                       calling get_loop_IGU?@.";
-               None)
-           else
-             Some (last_instr (List.nth loop_stmt.preds 1)) in
-         (** Removing the last instruction **should** remove the index update *)
-         let update, newbody =
-           match  rem_last_instr rem with
-           | Some instr, Some s ->
-              instr, s
-           | None, Some s ->
-              begin
-                Ct.ppbk (Cil.mkBlock s);
-                raise (Failure "failed to find last intruction.")
-              end
-           | Some _, None
-           | None, None ->
-              raise (Failure "failed to find last statement in body.")
-         in
-         Some (check_option init, (Ct.neg_exp term_expr), update), newbody
-       with Failure s ->
-		 print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
-     end
+    begin
+      try
+        let body_copy = Cil.mkBlock bdy.bstmts in
+        (**
+            Identify the termination condition and remove the break
+            statement associated to it.
+        *)
+        let term_expr_o, rem = get_loop_condition body_copy in
+        let term_expr = match term_expr_o with
+          | Some expr ->
+            expr
+          | None ->
+            raise (Failure "couldn't get the termination condition.")
+        in
+        let init =
+          if List.length loop_stmt.preds < 2 then
+            ( Format.printf "Did you compute the CFG information before \
+                             calling get_loop_IGU?@.";
+              None)
+          else
+            Some (last_instr (List.nth loop_stmt.preds 1)) in
+        (** Removing the last instruction **should** remove the index update *)
+        let update, newbody =
+          match  rem_last_instr rem with
+          | Some instr, Some s ->
+            instr, s
+          | None, Some s ->
+            begin
+              Ct.ppbk (Cil.mkBlock s);
+              raise (Failure "failed to find last intruction.")
+            end
+          | Some _, None
+          | None, None ->
+            raise (Failure "failed to find last statement in body.")
+        in
+        Some (check_option init, (Ct.neg_exp term_expr), update), newbody
+      with Failure s ->
+	print_endline ("get_loop_IGU : "^s); None , bdy.bstmts
+    end
   |_ ->
-     raise(
-       Failure(
-         "get_loop_IGU : bad argument, expected a Loop statement."))
+    raise(
+      Failure(
+        "get_loop_IGU : bad argument, expected a Loop statement."))
 
 
 let mkcond expr_list =
@@ -268,21 +268,21 @@ let search_loop_exits loop_statement body =
   let rec aux (cond_stack, breaks) stm =
     match stm.skind with
     | If (c, sif, selse, loc) ->
-       let _, breaks_if =
-         List.fold_left aux (cond_stack@[c], []) sif.bstmts
-       in
-       let _, breaks_else =
-         List.fold_left
-           aux (cond_stack@[CilTools.neg_exp c], []) selse.bstmts
-       in
-       (cond_stack, breaks@breaks_if@breaks_else)
+      let _, breaks_if =
+        List.fold_left aux (cond_stack@[c], []) sif.bstmts
+      in
+      let _, breaks_else =
+        List.fold_left
+          aux (cond_stack@[CilTools.neg_exp c], []) selse.bstmts
+      in
+      (cond_stack, breaks@breaks_if@breaks_else)
 
     | Break _ ->
-       (cond_stack, breaks@[(stm,mkcond cond_stack)])
+      (cond_stack, breaks@[(stm,mkcond cond_stack)])
 
     | Block b
     | Loop (b, _, _, _) ->
-       List.fold_left aux (cond_stack, []) b.bstmts
+      List.fold_left aux (cond_stack, []) b.bstmts
     | Goto (stmtr, _) -> (cond_stack, breaks)
     | _ -> (cond_stack, breaks)
   in
@@ -298,6 +298,8 @@ let rec valid_init_expr cil_exp =
     (match h with
      | Cil.Var vi ->
        if vi.vistmp then
+         (* Special behaviour when initialized with temp. We should fetch the
+            initialization of the temp.*)
          raise (Init_with_temp vi)
        else true
 
@@ -310,19 +312,24 @@ let rec valid_init_expr cil_exp =
 
 
 
-(* Can raise Init_with_temp *)
+(**
+   Takes a variables id and a statement and return some valid init expression
+   (according to valid_init_expr or none.
+   Can raise Init_with_temp
+*)
 let reduce_def_to_const vid stmt =
-  let aux_for_instr vid instr =
+  let const_of_lhs vid instr =
     match instr with
     | Set (lv, e, _) ->
-       let vi = VS.max_elt (basic lv) in
-       if vi.vid = vid
-       then (if valid_init_expr e then Some e else None)
-       else None
+      let lhvars = va_write_instr instr in
+      let vi = VS.max_elt lhvars in
+      if vi.vid = vid
+      then (if valid_init_expr e then Some e else None)
+      else None
     | _ -> None
   in
   match stmt.skind with
   | Instr il ->
-     let l = List.filter is_some (List.map (aux_for_instr vid) il) in
-     (match l with | [c] -> c | _ -> None)
+    let l = List.filter is_some (List.map (const_of_lhs vid) il) in
+    (match l with | [c] -> c | _ -> None)
   | _ -> None

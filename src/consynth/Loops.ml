@@ -415,20 +415,26 @@ let remove_temps (map : exp IM.t) =
     (fun e ->
        match e with
        | Lval (Var vi, NoOffset) when vi.vistmp ->
-         IM.find vi.vid map
+         (try IM.find vi.vid map with Not_found ->
+           failhere __FILE__ "remove_temps" "Temporary expression not found.")
        | _ -> e) map
 
 
 let add_def_info loop vid vid2const def_id =
   let stmt =
-    IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
+    try
+      IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
+    with Not_found ->
+      failhere __FILE__ "add_def_info" "stmt info not found."
   in
-  try
-    match reduce_def_to_const vid stmt with
+  try match reduce_def_to_const vid stmt with
     | Some const -> IM.add vid const vid2const
     | None -> vid2const
-  with Init_with_temp vi ->
+  with
+  | Init_with_temp vi ->
     IM.add vid (Cil.Lval (Var vi, NoOffset)) vid2const
+  | Not_found ->
+    failhere __FILE__ "add_def_info" "Not found"
 
 let analyze_definitions cl (x : IOS.t IH.t) =
   IH.fold
@@ -447,21 +453,34 @@ let complete_reachingdefs f =
     let parent_fundec =
       match get_fun f loop.lcontext.host_function.vname with
       | Some fdc -> fdc
-      | None -> failwith "Loops.ml : complete_reachingdefs : \
-                          failed to get fundef"
+      | None ->
+        failhere __FILE__  "complete_reachingdefs" "Failed to get fundef."
     in
     Reachingdefs.computeRDs parent_fundec;
     let set_rd_of_loop loop =
-      (** Definitions reaching the loop statement *)
-      match (Ct.simplify_rds (Reachingdefs.getRDs loop.lid)) with
+      let simple_rds =
+        try
+          (Ct.simplify_rds (Reachingdefs.getRDs loop.lid))
+        with Not_found ->
+          if !debug then
+            printf "Error in loop: %i line %i.@." loop.lid loop.lcontext.loc.line;
+          failhere __FILE__ "complete_reachingdefs" "set_rd_of_loop"
+      in
+          (** Definitions reaching the loop statement *)
+      match simple_rds with
       | Some x ->
         begin
           let vid2const_map =
-            remove_temps (analyze_definitions loop (IHTools.convert x)) in
+            remove_temps (
+              try analyze_definitions loop (IHTools.convert x)
+              with Not_found ->
+                failhere __FILE__ "complete_reachingdefs"
+                  "Analyzing definitions.")
+          in
           loop.lcontext.reaching_constants <- vid2const_map
         end
       | None ->
-        if !debug || true then
+        if !debug then
           begin
             eprintf
               "Error : analyse_loop_context - no reaching defs \
@@ -481,9 +500,13 @@ let complete_reachingdefs f =
 let process_file cfile =
   master_filename := cfile.fileName;
   iterGlobals cfile (global_filter_only_func (collect_loops cfile));
+  if !debug then print_endline "Cleaning loop bodies...";
   clean_loop_bodies cfile ();
+  if !debug then print_endline "Analyzing loop bodies...";
   analyze_loop_bodies cfile ();
-  complete_reachingdefs cfile
+  if !debug then print_endline "Completing with reaching definitions..";
+  complete_reachingdefs cfile;
+  if !debug then print_endline "Finished processing input file."
 
 let get_loops () =
   if (!master_filename = "") then

@@ -139,11 +139,12 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
 
 
 let rec solve_one ?(solver = Conf.rosette) ?(expr_depth = 1) problem =
+  (* Set the expression depth of the sketch printer. *)
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
     if !verbose then
-      printf "@.SOLVING problem for %s.@." lp_name;
+      printf "@.SOLVING %s.@." lp_name;
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
         ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch solver) problem
@@ -194,7 +195,8 @@ let rec solve_inners problem =
       somes (List.map solve_inner_problem problem.inner_functions)
     in
     (* Replace occurrences of the inner functions by join operator and new
-       input sequence if possible. *)
+       input sequence if possible.
+       - Condition 1: all inner function are solved. *)
     if List.length inner_funcs = List.length problem.inner_functions then
       Some (replace_by_join problem inner_funcs)
     else

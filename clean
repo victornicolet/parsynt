@@ -2,5 +2,5 @@
 
 #Steps needed to clean up the repo before compilation.
 echo "Removing DLLs in examples/dafny."
-rm examples/dafny/*.dll
-rm examples/dafny/*.mdb
+rm examples/dafny/*.dll || true
+rm examples/dafny/*.mdb || true
