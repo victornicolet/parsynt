@@ -289,13 +289,18 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
              pp_fnexpr e)) el
 
   | FnLetIn (el, l) ->
-    fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
-      (fun ppf el ->
-         (pp_print_list
-            (fun ppf (v, e) ->
-               Format.fprintf ppf "@[<hov 2>[%a %a]@]"
-                 pp_fnlvar v pp_fnexpr e) ppf el)) el
-      pp_fnexpr l
+    (match el with
+    | [(FnArray(a,i), e)] ->
+      (fprintf ppf "@[<v>(vector-set! %a %a %a)@;%a@]"
+         pp_fnlvar a pp_fnexpr i pp_fnexpr e pp_fnexpr l)
+    | _ ->
+      (fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
+         (fun ppf el ->
+            (pp_print_list
+               (fun ppf (v, e) ->
+                  Format.fprintf ppf "@[<hov 2>[%a %a]@]"
+                    pp_fnlvar v pp_fnexpr e) ppf el)) el
+         pp_fnexpr l))
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 

@@ -206,11 +206,30 @@ let rec remove_boolean_ifs fnlet =
              remove_boolean_ifs cont)
   | e -> e
 
+let rec isolate_set_array (fnlet : fnExpr) =
+  let rec split_bindings bindings pre =
+    match bindings with
+    | hd :: tl ->
+      (match hd with
+      | FnArray (a,i) , e -> (pre, Some hd, tl)
+      | _ -> split_bindings tl (pre@[hd]))
+
+    | [] -> (pre, None, [])
+  in
+  match fnlet with
+  | FnLetIn (el, cont) ->
+    let pre, mid, rest = split_bindings el [] in
+    (match mid with
+    | Some mid ->
+      FnLetIn(pre, FnLetIn([mid], isolate_set_array (FnLetIn(rest, cont))))
+    | None ->
+      FnLetIn(el, isolate_set_array cont))
+  | e -> e
+
 (** Apply all optimizations *)
 let optims fnlet =
   let fnlet' = apply_remove fnlet in
-  apply_rearrange ( remove_boolean_ifs fnlet')
-
+  isolate_set_array (apply_rearrange (remove_boolean_ifs fnlet'))
 
 
 (** A class to build the sketch, initialized with a set containing all
