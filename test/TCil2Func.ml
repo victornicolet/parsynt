@@ -93,7 +93,6 @@ let wf_test_case fname (func : C2F.letin) sketch  =
        (match func with
        | C2F.Let (vid, expr, cont, id, loc) ->
           (match expr with
-          | C2F.FRec (_, _) -> true
           | _ -> false) &&
             C2F.is_empty_state cont
 

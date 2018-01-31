@@ -233,6 +233,8 @@ let rec simplify_reduce sklet ctx =
   | FnLetExpr ve_list ->
     FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
 
+  | e -> e
+
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =
   let pp_defs fmt () =

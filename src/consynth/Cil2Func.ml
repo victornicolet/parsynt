@@ -50,12 +50,12 @@ let gen_id () = incr __letin_index; !__letin_index
 
 type lhs =
   | LhVar of varinfo
+  | LhElem of lhs * expr
   | LhTuple of VS.t
 
-type letin =
+and letin =
   | State of (expr IM.t)
   | Let of lhs * expr * letin * int * location
-  | LetRec of igu * letin * letin * location
   | LetCond of expr * letin * letin * letin * location
 
 and expr =
@@ -64,7 +64,6 @@ and expr =
   | Container of exp * substitutions
   | FunApp of exp * (expr list)
   | FQuestion of expr * expr * expr
-  | FRec of igu * expr
   (** Types for translated expressions *)
   | FBinop of symb_binop * expr * expr
   | FUnop of symb_unop * expr
@@ -82,7 +81,14 @@ and expr =
 and substitutions = expr IM.t
 
 
-
+let rec array_of_elem elem_lhs =
+  match elem_lhs with
+  | LhVar vi ->
+     if VariableAnalysis.is_pointer vi then
+       Some vi
+     else None
+  | LhElem (a, _) -> array_of_elem a
+  | _ -> None
 
 
 (** Pretty-printing functions *)
@@ -95,6 +101,7 @@ object (self)
   method pp_lhs ppf lhs =
     match lhs with
     | LhVar vi -> fprintf ppf "%s" vi.vname
+    | LhElem (a, ofs) -> fprintf ppf "%a[%a]" self#pp_lhs a self#pp_expr ofs
     | LhTuple vs ->
        pp_print_list ~pp_sep:(fun fmt () -> fprintf ppf ", ")
          (fun fmt vi -> fprintf ppf "%s" vi.vname)
@@ -122,16 +129,6 @@ object (self)
          self#pp_lhs vi self#pp_expr expr
          (color "red") color_default
          (self#pp_letin ~wloc:wloc) letn
-         (if wloc then string_of_loc loc else "")
-
-    | LetRec ((i, g , u), let1, letcont, loc) ->
-       fprintf ppf "%sletrec%s (%s,%s,%s) @; %a@]@[%sin%s @[ %a @]%s"
-         (color "red") color_default
-         (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
-         (psprint80 Cil.dn_instr u)
-         (self#pp_letin ~wloc:wloc) let1
-         (color "red") color_default
-         (self#pp_letin ~wloc:wloc) letcont
          (if wloc then string_of_loc loc else "")
 
     | LetCond (exp, letif, letelse, letcont, loc) ->
@@ -183,13 +180,6 @@ object (self)
     | FQuestion (c, a, b) ->
        fprintf ppf "@[<hov 2>(%a@ ?@ %a :@ %a)@]"
          self#pp_expr c self#pp_expr a self#pp_expr b
-
-    | FRec ((i, g, u), expr) ->
-       fprintf ppf "%s(%s;%s;%s)%s { %a }"
-         (color "blue")
-         (psprint80 Cil.dn_instr i) (psprint80 Cil.dn_exp g)
-         (psprint80 Cil.dn_instr u)
-         color_default self#pp_expr expr
 
     | FBinop (op, e1, e2) ->
        fprintf ppf "%s %a %a"
@@ -275,9 +265,6 @@ let rec wf_letin vs =
   | LetCond (c, let_if, let_else, let_cont, loc) ->
      wf_letin vs let_if && wf_letin vs let_else && wf_letin vs let_cont
 
-  | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     wf_letin vs let_body && wf_letin vs let_cont
-
 let rec transform_topdown funct letin =
   let letin' = funct letin in
   match letin' with
@@ -290,9 +277,6 @@ let rec transform_topdown funct letin =
               transform_topdown funct let_cont,
               loc)
 
-  | LetRec ((i, g, u), let_body, let_cont, loc) ->
-     LetRec ((i, g, u), transform_topdown funct let_body,
-             transform_topdown funct let_cont, loc)
 
   | _ -> letin'
 
@@ -307,10 +291,6 @@ let rec transform_bottomup funct letin =
                 transform_bottomup funct let_else,
                 transform_bottomup funct let_cont,
                 loc)
-
-    | LetRec ((i, g, u), let_body, let_cont, loc) ->
-       LetRec ((i, g, u), transform_bottomup funct let_body,
-               transform_bottomup funct let_cont, loc)
 
     | _ -> funct letin
   in
@@ -353,8 +333,7 @@ let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
   | FAlignofE e
     | FSizeofE e
     | FCastE (_, e)
-    | FUnop (_, e)
-    | FRec (_, e) ->
+    | FUnop (_, e) ->
      used_vars_expr ~onlyNoOffset:onlyNoOffset e
 
   | FBinop (op, e', e) ->
@@ -379,9 +358,6 @@ let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =
         (used_vars_letin let_if);
         (used_vars_letin let_else);
         (used_vars_letin cont)]
-
-  | LetRec (igu, let_body, cont, loc) ->
-     VS.union (used_vars_letin let_body) (used_vars_letin cont)
 
 
 let rec is_not_identity_substitution vid expr =
@@ -456,9 +432,6 @@ and apply_subs expr subs =
   | FQuestion (e, e1, e2) ->
      FQuestion (apply_subs e subs, apply_subs e1 subs, apply_subs e2 subs)
 
-  | FRec (igu, e) ->
-     FRec (igu, apply_subs e subs)
-
   | _ -> failwith "Cannot apply substitutions for this expressions."
 
 
@@ -478,6 +451,10 @@ let bound_state_vars vs lf =
        (match lhv with
         | LhVar vi ->
            bound_vars (VS.add vi bv) cont
+        | LhElem (a, ofs) ->
+           bound_vars (match array_of_elem a with
+            | Some vi -> (VS.add vi bv)
+            | None -> bv) cont
         | LhTuple vil ->
            bound_vars (VS.union vil bv) cont)
 
@@ -485,8 +462,6 @@ let bound_state_vars vs lf =
        let v1 = bound_vars bv l1 in
        let v2 = bound_vars bv l2 in
        bound_vars (VS.union v1 v2) l3
-    | LetRec (_, l1, l2, _) ->
-       bound_vars (bound_vars bv l1) l2
   in
   bound_vars VS.empty lf
 
@@ -509,33 +484,43 @@ let rec let_add old_let new_let =
   | LetCond (e, bif, belse, cont, lc) ->
      LetCond (e, bif, belse, let_add cont new_let, lc)
 
-  | LetRec (igu, letform, let_cont, lc) ->
-     LetRec (igu, letform, let_add let_cont new_let, lc)
 
-let rec do_il vs il =
+let rec do_lval vs lval e let_form loc =
+  let rec build_elemt x offsets =
+    List.fold_left
+      (fun elemt offset -> LhElem(elemt, container offset))
+      (LhVar x) offsets
+  in
+  let do_lhs (lval : Cil.lval) =
+    match lval with
+    | Var v, NoOffset -> LhVar v
+    | h , o ->
+       let mvi, ofs = VariableAnalysis.analyze_host h in
+       let ofs2 = VariableAnalysis.analyze_offset o in
+       (match mvi with
+       | Some x ->
+          (build_elemt x (ofs@ofs2))
+       | None ->
+          failhere __FILE__ "do_lval" "Bad left hand side in assignment.")
+  in
+  let id = gen_id () in
+  add_uses id (used_vars_expr e);
+  let_add let_form (Let (do_lhs lval, e, (empty_state ()), id, loc))
+
+and do_il vs il =
   List.fold_left (do_i vs) (empty_state ()) il
 
 and do_i vs let_form =
-  let from_lval lv expre loc =
-    let vset = VS.sovv ~onlyNoOffset:true lv in
-    let id = gen_id () in
-    add_uses id (used_vars_expr expre);
-    let lhv =
-      if VS.cardinal vset = 1 then LhVar (VS.max_elt vset)
-      else LhTuple vset
-    in
-    let_add let_form (Let (lhv, expre, (empty_state ()), id, loc))
-  in
   function
   | Set (lv, exp, loc) ->
-     from_lval lv (container exp) loc
+     do_lval vs lv (container exp) let_form loc
 
   | Call (lvo, ef, e_argli, loc) ->
      begin
        match lvo with
        | Some lv ->
           let func_app =  FunApp (ef, (List.map container e_argli)) in
-          from_lval lv func_app loc
+          do_lval vs lv func_app let_form loc
        | None ->
           (* SIde effects not supported but check if it is an inner loop call *)
           begin
@@ -549,7 +534,7 @@ and do_i vs let_form =
                if Conf.is_inner_loop_func_name fname then
                  (* Replace by a binding to state variables of the inner loop *)
                  let func_app = FunApp (ef, List.map container e_argli) in
-                 from_lval (h, o) func_app loc
+                 do_lval vs (h, o) func_app let_form loc
                else
                  failwith "do_i : side effects not suppoerted."
             | _ -> failwith "do_i : side effects no supported."
@@ -597,20 +582,8 @@ and do_s vs let_form s =
      let_add let_form if_fun
 
   | Loop (b, loc,_,_) ->
-     let block_loop = do_b vs b in
-     let igu =
-       try
-         check_option ((IH.find global_loops s.sid).ligu)
-       with
-       | Not_found ->
-          failwith (sprintf "Couldn't find loop %i." s.sid)
-       | Failure msg ->
-          eprintf "%s" msg;
-          failwith (sprintf "Couldn't find igu for loop %i." s.sid)
-     in
-     let loop_fun = LetRec (igu, block_loop, empty_state (), loc) in
-     let_add let_form loop_fun
-
+     failhere __FILE__ "do_s"
+       "Loops not supported: should be abstracted as a function."
   | Block b ->
      let_add let_form (do_b vs b)
 
@@ -648,9 +621,6 @@ let let_add2 old_let new_let vs =
 
     | LetCond (e, bif, belse, cont, lc) ->
        LetCond (e, bif, belse, let_add2_aux cont new_let, lc)
-
-    | LetRec (igu, letform, let_cont, lc) ->
-       LetRec (igu, letform, let_add2_aux let_cont new_let, lc)
   in
   let_add2_aux old_let new_let
 
@@ -740,7 +710,8 @@ and convert_loop vs tmps let_body igu let_cont loc =
      if (IM.cardinal subs') = 1
      then
        let vid, expr = IM.max_binding subs' in
-       let rec_expr = FRec (igu, expr) in
+       (* TODO: removed FRec type but have to fix this *)
+       let rec_expr = FunApp (igu, [expr]) in
        let id = gen_id () in
        add_uses id (used_vars_expr rec_expr);
        true,  Let (LhVar (VS.find_by_id vid vs), rec_expr, let_cont, id, loc)
@@ -780,6 +751,10 @@ and red vs tmps let_form substs =
             let nsubs = IM.add vi.vid (Var vi) substs in
             Let(lhv, nexpr, red vs tmps cont nsubs, id, loc)
 
+         | LhElem (lhs, ofs) ->
+            let nexpr = apply_subs expr substs in
+            Let(lhv, nexpr, red vs tmps cont substs, id, loc)
+
          | LhTuple vil ->
             let nexpr = apply_subs expr substs in
             let nsubs =
@@ -795,6 +770,12 @@ and red vs tmps let_form substs =
            let nexpr = apply_subs expr substs in
            let nsubs = IM.add vi.vid nexpr substs in
            red vs tmps cont nsubs
+
+        (* Can't reduce for arrays. *)
+        | LhElem (a, i) ->
+           let nexpr = apply_subs expr substs in
+           Let(lhv, nexpr, red vs tmps cont substs, id, loc)
+
         | LhTuple vil ->
            let nexpr = apply_subs expr substs in
            let nsubs =
@@ -804,16 +785,6 @@ and red vs tmps let_form substs =
            in
            red vs tmps cont nsubs
      end
-
-  | LetRec (igu, body, cont, loc) ->
-     let redd_body = reduce vs tmps body in
-     let redd_cont = reduce vs tmps cont in
-     let converted, conversion =
-       convert_loop vs tmps redd_body igu redd_cont loc in
-     if converted then
-       conversion
-     else
-       LetRec (igu, redd_body, reduce vs tmps cont, loc)
 
   | LetCond (e, bif, belse, cont, loc) ->
      let ce = e  in
@@ -838,7 +809,12 @@ and clean vs let_form =
 
   | Let (v, e, c, id, loc) ->
      let lhs =
-       match v with LhVar vi -> VS.singleton vi | LhTuple vil -> vil
+       match v with LhVar vi -> VS.singleton vi
+                  | LhElem (a,_) ->
+                     (match array_of_elem a with
+                      | Some vi -> VS.singleton vi
+                      | None -> VS.empty)
+                  | LhTuple vil -> vil
      in
      if not (VS.is_empty (VS.diff vs lhs))
      then Let(v, e, clean vs c, id, loc)
@@ -849,8 +825,6 @@ and clean vs let_form =
   | LetCond (ce, lif, lelse, lcont, loc) ->
      LetCond (ce, clean vs lif, clean vs lelse, clean vs lcont, loc)
 
-  | LetRec (figu, lbody, lcont, loc) ->
-     LetRec (figu, clean vs lbody, clean vs lcont, loc)
 
 and reduce vs tmps let_form =
   let reduced_form = red vs tmps let_form IM.empty in
@@ -948,17 +922,13 @@ let eliminate_temporaries variables let_form =
               let new_subs = add_sub vi.vid n_expr subs in
               elim_let_aux letcont new_subs
 
-         | LhTuple vil ->
+         | LhElem _ | LhTuple _ ->
             let n_expr = apply_subs expr subs in
-            (* No temporaries appear in tuples (cil can't have temporaries *)
+            (* No temporaries are tuples or arrays *)
             let new_cont, fsubs = elim_let_aux letcont subs in
             Let(lhv, n_expr, new_cont, id, loc), fsubs
        end
 
-    | LetRec ( figu, let1, let2, loc) ->
-       let nlet1, subs =  elim_let_aux let1 subs in
-       let nlet2, subs =  elim_let_aux let1 subs in
-       LetRec (figu, nlet1, nlet2, loc), subs
 
     | LetCond (c, lif, lelse, letcont, loc) ->
        let c' = elim_expr vs subs c in
@@ -1007,9 +977,7 @@ let cil2func (variables : Loops.variables) block (i,g,u) =
   (**
 Prepare the environment for the conversion. Inner loops are functions
 inside the parent loop.
-   *)
 
-  (**
  We need the other loops in case of nested loops to avoid
       recomputing the for statement in the inner loops.
    *)

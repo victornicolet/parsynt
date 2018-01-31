@@ -7,6 +7,25 @@ let un = VS.union
 let empty = VS.empty
 let uns = VS.unions
 
+(** Variable classification *)
+let is_simple v =
+  match v.vtype with
+  | TFloat _ | TInt _ | TEnum _ -> true
+  | _ -> false
+
+let is_complex v =
+  match v.vtype with
+  | TComp _ -> true | _ -> false
+
+let is_array v =
+  match v.vtype with
+  | TArray _ -> true | _ -> false
+
+let is_pointer v =
+  match v.vtype with
+  | TPtr  _ -> true | _ -> false
+
+
 (** Read set of a block/stmt/instr/expression *)
 
 let rec va_read (b : block) =
@@ -61,7 +80,7 @@ and va_read_expr (expr : exp) =
 
 and basic ((host, offset) : lval) =
   match host with
-  | Var v -> VS.singleton v
+  | Var v -> singleton v
   | _ -> empty
 
 (** Retrieve indexes *)
@@ -95,7 +114,11 @@ and va_write_stmt (stm : stmt) =
 
 and va_write_instr (inst : instr) =
   match inst with
-  | Set (lv, e, _) -> basic lv
+  | Set ((lvh, lvo), e, _) ->
+    (match lvh with
+     | Var v -> VS.singleton v
+     | Mem m -> filter is_pointer (va_read_expr m)
+    )
   | Call (lvo, _, _, _) -> maybe_apply_default basic lvo empty
   | _ -> empty
 
@@ -143,23 +166,6 @@ and aliased_o off =
   | Field (f, o) -> aliased_o o
   | Index (e, o) -> un (aliased_o o) (aliased_expr e)
 
-(** Variable classification *)
-let is_simple v =
-  match v.vtype with
-  | TFloat _ | TInt _ | TEnum _ -> true
-  | _ -> false
-
-let is_complex v =
-  match v.vtype with
-  | TComp _ -> true | _ -> false
-
-let is_array v =
-  match v.vtype with
-  | TArray _ -> true | _ -> false
-
-let is_pointer v =
-  match v.vtype with
-  | TPtr  _ -> true | _ -> false
 
 (** Set of analyzable variables of b *)
 let analyzable b =

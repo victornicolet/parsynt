@@ -206,11 +206,30 @@ let rec remove_boolean_ifs fnlet =
              remove_boolean_ifs cont)
   | e -> e
 
+let rec isolate_set_array (fnlet : fnExpr) =
+  let rec split_bindings bindings pre =
+    match bindings with
+    | hd :: tl ->
+      (match hd with
+      | FnArray (a,i) , e -> (pre, Some hd, tl)
+      | _ -> split_bindings tl (pre@[hd]))
+
+    | [] -> (pre, None, [])
+  in
+  match fnlet with
+  | FnLetIn (el, cont) ->
+    let pre, mid, rest = split_bindings el [] in
+    (match mid with
+    | Some mid ->
+      FnLetIn(pre, FnLetIn([mid], isolate_set_array (FnLetIn(rest, cont))))
+    | None ->
+      FnLetIn(el, isolate_set_array cont))
+  | e -> e
+
 (** Apply all optimizations *)
 let optims fnlet =
   let fnlet' = apply_remove fnlet in
-  apply_rearrange ( remove_boolean_ifs fnlet')
-
+  isolate_set_array (apply_rearrange (remove_boolean_ifs fnlet'))
 
 
 (** A class to build the sketch, initialized with a set containing all
@@ -224,7 +243,7 @@ class sketch_builder
     (all_vs : VS.t)
     (stv : VS.t)
     (func : letin)
-    _figu =
+    (_figu : VS.t * (letin * expr * letin)) =
   object (self)
     val mutable all_vars = all_vs
     val mutable state_vars = stv
@@ -247,22 +266,22 @@ class sketch_builder
       | None -> false
 
     method build =
-      let rec convert (cur_v : fnLVar)  =
+      let rec convert =
         function
         | Var vi ->
           (if self#is_global_bound vi then uses_global_bound <- true
-          else ());
+           else ());
           mkVarExpr vi
 
         (** TODO : array -> region *)
         | Array (vi, el) ->
-          let expr_list = List.map (convert cur_v) el in
+          let expr_list = List.map convert el in
           mkVarExpr ~offsets:expr_list vi
 
         | FunApp (ef, arg_l) ->
           let is_c_def, vi_o, ty = is_exp_function ef in
           let sty = type_of_ciltyp ty in
-          let fargs =  List.map (convert cur_v) arg_l in
+          let fargs =  List.map convert arg_l in
           if is_c_def then
             FnApp (sty, vi_o, fargs)
           else
@@ -278,30 +297,28 @@ class sketch_builder
 
 
         | Container (e, subs) ->
-          let converted_substitutions = IM.map (convert cur_v) subs in
+          let converted_substitutions = IM.map convert subs in
           convert_cils ~subs:converted_substitutions e
 
         | FQuestion (ec, e1, e2) ->
-          FnQuestion (convert cur_v ec,
-                      (convert cur_v e1),
-                      (convert cur_v e2))
+          FnQuestion (convert ec,
+                      (convert e1),
+                      (convert e2))
 
-        | FRec ((i, g, u), expr) ->
-          FnRec ((i, g, u), FnLetExpr [(cur_v, convert cur_v expr)])
 
         | FBinop (op, e1, e2) ->
-          FnBinop (op, convert cur_v e1, convert cur_v e2)
+          FnBinop (op, convert e1, convert e2)
 
-        | FUnop (op, e) -> FnUnop (op, convert cur_v e)
+        | FUnop (op, e) -> FnUnop (op, convert e)
 
         | FConst c -> FnConst c
 
         | FSizeof t -> FnSizeof (type_of_ciltyp t)
-        | FSizeofE e -> FnSizeofE (convert cur_v e)
+        | FSizeofE e -> FnSizeofE (convert e)
         | FSizeofStr s -> FnSizeofStr s
         | FAlignof t -> FnAlignof (type_of_ciltyp t)
-        | FAlignofE e -> FnAlignofE (convert cur_v e)
-        | FCastE (t, e) -> FnCastE (type_of_ciltyp t, convert cur_v e)
+        | FAlignofE e -> FnAlignofE (convert e)
+        | FCastE (t, e) -> FnCastE (type_of_ciltyp t, convert e)
         | FAddrof lval -> FnAddrof (skexpr_of_lval lval)
         | _ -> failwith "not yet implemented"
 
@@ -430,7 +447,7 @@ class sketch_builder
                      FnVarinfo (VS.find_by_id k state_vars)
                    with Not_found -> FnVarinfo (VS.find_by_id k all_vars)
                  in
-                 (cur_v, convert cur_v e))
+                 (cur_v, convert e))
               subs
           in
           let complete_state =
@@ -445,32 +462,26 @@ class sketch_builder
           FnLetExpr complete_state
 
         | Let (v, e, cont, i, loc) ->
-          let cur_v =
+          let rec cur_v (v : lhs) =
             match v with
             | LhVar vi -> FnVarinfo vi
             | LhTuple vil -> FnTuple vil
+            | LhElem (a, i) ->
+              let fv = cur_v a in
+              FnArray(fv, convert i)
           in
-          FnLetIn ([(cur_v, convert cur_v e)], convert_letin cont)
+          FnLetIn ([(cur_v v, convert e)], convert_letin cont)
 
-        | LetRec (igu, let_body, let_cont, loc) ->
-          (** Tail position *)
-          if is_empty_state let_cont then
-            FnLetExpr [(FnTuple state_vars,
-                        FnRec (igu, convert_letin let_body))]
-          else
-            FnLetIn ([(FnTuple state_vars,
-                       FnRec (igu, convert_letin let_body))],
-                     convert_letin let_cont)
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
             FnLetExpr [(FnTuple state_vars,
-                        FnCond (convert (FnTuple stv) c,
+                        FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
             FnLetIn ( [(FnTuple state_vars,
-                        FnCond (convert (FnTuple stv) c,
+                        FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))],
                       convert_letin let_cont)
@@ -482,7 +493,7 @@ class sketch_builder
       let iletin = convert_letin ilet in
       let uletin = convert_letin ulet in
       (** TODO implement records to manage index *)
-      let gskexpr = convert (FnVarinfo (VS.max_elt index)) gexpr in
+      let gskexpr = convert gexpr in
       sketch <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));
 
