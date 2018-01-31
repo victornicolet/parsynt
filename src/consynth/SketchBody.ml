@@ -503,7 +503,7 @@ class sketch_builder
 
 (** Defines the kind of constants we can accept a initialization
     parameters.
-    Translates a Cil.exp into a FnetchTypes.fnExpr
+    Translates a Cil.exp into a FnetchTypes.fnExpr.
 *)
 
 let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
@@ -515,9 +515,8 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
        (match c_constant vi.Cil.vname with
         | Some skconst -> Some (FnConst skconst)
         | None ->
-          Format.printf "@;Warning: dangerous intialization %s.@."
-            (CilTools.psprint80 Cil.dn_exp cil_exp);
           match o with
+          | Cil.NoOffset -> Some (FnVar (FnVarinfo vi))
           | Cil.Index (e, o) ->
             begin
               match conv_init_expr Integer e with
@@ -527,7 +526,7 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
           | _ -> None)
      | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
        (match conv_init_expr Integer e with
-        | Some e' -> Some (FnVar (FnArray ((FnVarinfo vi), e')))
+        | Some e_index -> Some (FnVar (FnArray ((FnVarinfo vi), e_index)))
         | _ -> None)
      | _ -> None)
   | _ -> None

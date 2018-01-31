@@ -34,7 +34,7 @@ open Conf
 let debug = ref false
 let dump_sketch = ref false
 
-let dumpDir = Filename.concat Conf.project_dir "/ocamllibs/dump/"
+let dumpDir = Filename.concat Conf.project_dir "/dump/"
 
 let copy_file from_filename to_filename =
   let oc = open_out to_filename in

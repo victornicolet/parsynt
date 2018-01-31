@@ -421,14 +421,16 @@ let remove_temps (map : exp IM.t) =
 
 
 let add_def_info loop vid vid2const def_id =
+  if def_id > loop.lid then vid2const else
   let stmt =
     try
       IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
     with Not_found ->
       failhere __FILE__ "add_def_info" "stmt info not found."
   in
-  try match reduce_def_to_const vid stmt with
-    | Some const -> IM.add vid const vid2const
+  try match def_to_init vid stmt with
+    | Some const ->
+      IM.add vid const vid2const
     | None -> vid2const
   with
   | Init_with_temp vi ->

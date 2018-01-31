@@ -317,7 +317,7 @@ let rec valid_init_expr cil_exp =
    (according to valid_init_expr or none.
    Can raise Init_with_temp
 *)
-let reduce_def_to_const vid stmt =
+let def_to_init vid stmt =
   let const_of_lhs vid instr =
     match instr with
     | Set (lv, e, _) ->
