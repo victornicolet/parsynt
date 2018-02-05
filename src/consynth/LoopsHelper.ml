@@ -313,7 +313,7 @@ let rec valid_init_expr cil_exp =
 
 
 (**
-   Takes a variables id and a statement and return some valid init expression
+   Takes a variable id and a statement and return some valid init expression
    (according to valid_init_expr or none.
    Can raise Init_with_temp
 *)

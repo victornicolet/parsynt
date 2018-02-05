@@ -103,6 +103,7 @@ let str_contains str sub = ExtLib.String.exists str sub;;
 let str_begins_with sub str = ExtLib.String.starts_with str sub;;
 (** Lists *)
 module ListTools = struct
+  open List
   (** a -- b -- > list of integers from a to b *)
   let (--) i j =
     if i <= j then
@@ -115,6 +116,26 @@ module ListTools = struct
     let rec aux_init l i =
       if i <= 0 then (f 0)::l else (aux_init ((f i)::l) (i -1))
     in aux_init [] len
+
+  (* Generate all k-length subslists of list l *)
+  let k_combinations n lst =
+    let rec inner acc k lst =
+      match k with
+      | 0 -> [[]]
+      | _ ->
+        match lst with
+        | []      -> acc
+        | x :: xs ->
+          let rec accmap acc f = function
+            | []      -> acc
+            | x :: xs -> accmap ((f x) :: acc) f xs
+          in
+          let newacc = accmap acc (fun z -> x :: z) (inner [] (k - 1) xs)
+          in
+          inner newacc k xs
+    in
+    inner [] n lst
+
   (**
       Returns the max of a list.
       /!\ The max of an empty list is min_int.

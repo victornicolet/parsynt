@@ -185,16 +185,46 @@ let add_new_aux aux_to_add (aux_vs, aux_exprs) =
        IM.add aux_to_add.avarinfo.vid aux_to_add aux_exprs)
     end
 
+let create_new_aux new_aux_vi expr =
+  (* Adding auxiliaries in a smarter way. Since we cannot infer initial values
+     now, there is an offset for the discovery. When the aux is supposed to
+     accumulate constant values, this will create a problem. *)
+  let rec_case = Fn.FnVar (Fn.FnVarinfo new_aux_vi) in
+  let funcs =
+    match expr with
+    | FnBinop (op, expr1, expr2) when is_constant expr1 && is_constant expr2 ->
+      [FnBinop (op, rec_case, expr2);
+       FnBinop (op, expr1, rec_case);
+       FnBinop (op, expr1, expr2)]
+    | _ -> [rec_case]
+  in
+  let new_aux func =
+    { avarinfo = new_aux_vi;
+      aexpr = expr;
+      afunc = func;
+      depends = VS.singleton new_aux_vi }
+  in
+  List.iter (fun func -> printf "Candidate: %a.@." pp_fnexpr func) funcs;
+  List.map new_aux funcs
+
+
 let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
   let vid, aux = List.nth candidates 0 in
   (* Create a new auxiliary to avoid deleting the old one *)
   let new_vi = gen_fresh (Fn.type_of aux.aexpr) () in
-  (* Replace the old expression of the auxiliary by the auxiliary *)
+  (**
+     Replace the old expression of the auxiliary by the auxiliary. Be careful
+     not to add too many recursive calls. Try to replace it only once, to avoid
+     spurious recursive locations.
+  *)
   let replace_aux =
-    Fn.replace_expression
+    (Fn.replace_many
       aux.aexpr (Fn.FnVar (Fn.FnVarinfo new_vi))
-      current_expr
+      current_expr 1)@
+    [Fn.replace_expression
+       aux.aexpr (Fn.FnVar (Fn.FnVarinfo new_vi))
+       current_expr]
   in
   let cexpr =
     (** Replace auxiliary recurrence variables by their expression *)
@@ -202,7 +232,7 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
   in
   (** Transform all a(i + ...) into a(i) if i + ... is the
       current index expression *)
-  let new_f = reset_index_expressions xinfo replace_aux in
+  let new_f = reset_index_expressions xinfo (List.hd replace_aux) in
   let dependencies = used_in_fnexpr new_f in
   let new_auxiliary =
       { avarinfo = new_vi; aexpr = cexpr;
@@ -216,9 +246,10 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
 
 (** Finding auxiliary variables given a map of state variables to expressions
     and the previous set of auxiliary variables.
-    @param id the state variable we are analyzing.
-    @param stv the state variables.
-    @param exprs the current expressions of the state variables.
+    @param xinfo the execution info, for the state variables.
+    @param xinfo_aux the execution info, for the auxliary variables.
+    @param expr the expression of the state variables, normalized and at the
+    current unfolding.
     @param aux_var_set auxiliary variables already created.
     @param aux_var_map map auxiliary variable id to its previous expression and
     associated function.
@@ -229,8 +260,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
     xinfo xinfo_aux expr
     (aux_var_set, aux_var_map) input_expressions =
   let stv = xinfo.context.state_vars in
-  let rec is_stv =
-    function
+  let rec is_stv expr =
+    match expr with
     | Fn.FnUnop (_, Fn.FnVar v)
     | Fn.FnVar v ->
       begin
@@ -277,10 +308,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
       (fun v -> [])
       e
   in
-  (** Find in a expression map the bindings matching EXACTLY the expression *)
+  (** Find in an expression map the bindings matching EXACTLY the expression *)
   let find_ce to_match emap =
-    let cemap = IM.filter (fun vid aux -> aux.aexpr @= to_match) emap in
-    IM.bindings cemap
+    IM.bindings (IM.filter (fun vid aux -> aux.aexpr @= to_match) emap)
   in
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
        ce = g (e, ...) *)
@@ -425,18 +455,16 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   if not_last_iteration then
                     let typ = Fn.type_of current_expr in
                     let new_aux_varinfo = gen_fresh typ () in
-                    let new_aux =
-                        { avarinfo = new_aux_varinfo;
-                          aexpr = current_expr;
-                          afunc = Fn.FnVar (Fn.FnVarinfo new_aux_varinfo);
-                          depends = VS.singleton new_aux_varinfo }
-                    in
+                    let new_auxs = create_new_aux new_aux_varinfo current_expr in
                     if !debug then
                       printf "@.Adding new variable %s : %a@."
                         new_aux_varinfo.vname
                         cp_fnexpr current_expr;
 
-                    add_new_aux new_aux (new_aux_vs, new_aux_exprs)
+                    List.fold_left
+                      (fun (rec_aux_vs, rec_aux_exprs) new_aux ->
+                         add_new_aux new_aux (rec_aux_vs, rec_aux_exprs))
+                      (new_aux_vs, new_aux_exprs) new_auxs
                   else
                     (new_aux_vs, new_aux_exprs)
               end
@@ -451,11 +479,10 @@ let find_auxiliaries ?(not_last_iteration = true) i
     (VS.empty, IM.empty) candidate_exprs
 
 (** Discover a set a auxiliary variables for a given variable.
-    @param stv the set of state variables.
-    @param idx the set of index variables.
-    @param input_func the input function.
-    @param varid the id of the variable we're analyzing.
-    @return a pair of auxiliary variables and auxiliary functions.
+    @param sketch the input problem representation.
+    @param varid the id of the state variable that has to be analyzed.
+    @return the new problem representation, with the update loop body
+    and the updated state variables.
 *)
 let discover_for_id sketch varid =
   let idx_update = get_index_update sketch in
@@ -464,12 +491,13 @@ let discover_for_id sketch varid =
   GenVars.init ();
   init ();
   (*  max_exec_no := VS.cardinal stv + 1; *)
-  printf "@.%s%s---------------- UNFOLDINGS for %s ----------------%s@."
+  printf "@.%s%s---------------- START UNFOLDINGS for %s ----------------%s@."
     (color "black")
     (color "b-blue")
     (VS.find_by_id varid ctx.state_vars).vname
     color_default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
+  (* Always start with the state variable symbols. *)
   let init_exprs = create_symbol_map ctx.state_vars in
   let init_i = { context = ctx;
                  state_exprs = init_exprs;
@@ -478,9 +506,8 @@ let discover_for_id sketch varid =
                }
   in
   (** Fixpoint stops when the set of auxiliary variables is stable,
-      which means the set of auxiliary variables hasn't changed and
-      the functions associated to these auxilary variables haven't
-      changed.
+      which means the set of auxliary variables and the associated functions
+      do not change with new unfoldings.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
     printf "@.%s%s-------------------- UNFOLDING %i ----------------%s@."
@@ -497,24 +524,24 @@ let discover_for_id sketch varid =
           exprs_map
       in
       (** Compute the new expressions for the index *)
-      let xinfo_index = { context =
-                            { state_vars = xinfo.context.index_vars ;
-                              index_vars = VS.empty;
-                              used_vars = VS.empty;
-                              all_vars = VS.empty;
-                              costly_exprs = ES.empty;};
-                          state_exprs = xinfo.index_exprs ;
-                          index_exprs = IM.empty ;
-                          inputs = Fn.ES.empty;
-                        }
-      in
       let new_idx_exprs =
+        let xinfo_index = { context =
+                              { state_vars = xinfo.context.index_vars ;
+                                index_vars = VS.empty;
+                                used_vars = VS.empty;
+                                all_vars = VS.empty;
+                                costly_exprs = ES.empty;};
+                            state_exprs = xinfo.index_exprs ;
+                            index_exprs = IM.empty ;
+                            inputs = Fn.ES.empty;
+                          }
+        in
         let full_map, _ = unfold_once ~silent:true xinfo_index idx_update in
         VS.fold
           (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
           xinfo.context.index_vars IM.empty
       in
-      (** Find the new set of auxliaries by analyzing the expressions at the
+      (** Find the new set of auxiliaries by analyzing the expressions at the
           current expansion level *)
       let xinfo' = { xinfo with state_exprs = new_exprs} in
       let aux_var_set, aux_var_map =
@@ -587,12 +614,8 @@ let discover_for_id sketch varid =
 (** Main entry point.
     Discovers new variables that can be useful in parallelizing
     the computation.
-    @param stv the set of state variables.
-    @param input_func the input function of the algorithm.
-    @param igu the init, guard and update statements of the enclosing loop. It
-    will be used in computing the symbolic index in the algorithm.
-    @return A new set of state variables and a new function with the variables
-    discovered by the algortihm.
+    @param problem the problem representation.
+    @param the modified problem representaiton, with new auxiliary variables.
 *)
 
 let timec = ref 0.0
@@ -601,8 +624,9 @@ let discover problem =
   timec := Unix.gettimeofday ();
 
   aux_init (VS.union problem.scontext.state_vars (get_index_varset problem));
-  (** Analyze the index and produce the update function for
-      the index.
+  (**
+     Rank the state variables by the how many times they are used in the loop
+     body.
   *)
   let ranked_stv =
     rank_by_use (uses problem.scontext.state_vars problem.loop_body) in

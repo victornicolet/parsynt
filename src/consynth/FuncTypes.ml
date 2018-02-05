@@ -18,6 +18,7 @@
   *)
 
 open Utils
+open ListTools
 open Format
 open Loops
 open RAst
@@ -859,6 +860,42 @@ let rec replace_expression ?(in_subscripts = false)
       v
   in
   transform_expr case case_handler const_handler var_handler exp
+
+
+(**
+   Replace expression n time. Returns a list of expressions, with all
+   the possible combinations.
+*)
+let rec replace_many ?(in_subscripts = false)
+    ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
+  (* Count how many expresions have to be replace, and then using a mutable
+     counter replace expressions depending on counter. For each possible
+     combination, give the indexes that have to be replaced. *)
+  let num_occ =
+    rec_expr2
+      {
+        init = 0;
+        join = (fun a b -> a + b);
+        case = (fun e -> e = tr);
+        on_case = (fun e f -> 1);
+        on_var = (fun v -> 0);
+        on_const = (fun c -> 0);
+      } expr
+  in
+  let repl_indexed il =
+    let cntr = ref 0 in
+    transform_expr2
+      {
+        case = (fun e -> e = tr);
+        on_var = (fun v -> v);
+        on_case = (fun f e -> incr cntr; if List.mem !cntr il then b else e);
+        on_const = (fun c -> c)
+      }
+      expr
+  in
+  let index_to_repl = k_combinations n (1 -- num_occ) in
+  List.map repl_indexed index_to_repl
+
 
 
 let rec apply_substutions subs e =

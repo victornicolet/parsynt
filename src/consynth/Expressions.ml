@@ -637,3 +637,16 @@ end
        | _ -> failwith "Unexpected case in replace_AC"
 in
 rebuild_tree_AC ctx (transform_expr case handle_case identity identity flat_in)
+
+
+(* Other expression properties *)
+let is_constant expr =
+  rec_expr2
+    { join = (fun a b -> a && b) ;
+      init = true;
+      case = (fun e -> false);
+      on_case = (fun f e -> true);
+      on_const = (fun c -> true);
+      on_var = (fun v -> false);
+    }
+    expr

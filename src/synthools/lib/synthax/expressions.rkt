@@ -16,7 +16,16 @@
 
 ;; Syntax for synthesizable expressions in holes
 
-;; Available binary and unary operatorsn
+
+(define-syntax _loop
+  (syntax-rules ()
+    [(_loop start end limit body)
+     (lambda (initial)
+       (letrec
+           ([aux (lambda (s i) (if (>= i end) s (aux (body s i) (add1 i))))])
+         (aux initial start)))]))
+
+;; Available binary and unary operators
 (define-synthax BasicBinops
   ([(BasicBinops) (choose + -)]))
 
@@ -33,6 +42,17 @@
 (define-synthax Scalar
   ([(Scalar x ...) (choose x ... (??))]
    [(Scalar) (??)]))
+
+;; Vector set
+(define-synthax SetVector
+  ([(SetVector (a ...) (i ...) (e ...))
+    (vector-set! (choose a ...) (choose (i ...) (??))
+                 (choose e ...))]))
+
+(define-synthax RefVector
+  ([(RefVector (a ...) (i ...))
+    (vector-ref (choose a ...) (choose i ... (??)))]))
+
 ;; and a scalar expression contains only scalars
 (define-synthax (ScalarExpr x ... depth)
   #:base (Scalar x ...)
@@ -193,3 +213,5 @@
                                    (BoolExpr b ... d))
                                   (NumExprBasic r ... d)
                                   (NumExprBasic r ... d))]))
+
+;; Synthesizing loops and linear joins
