@@ -893,6 +893,7 @@ let rec replace_many ?(in_subscripts = false)
       }
       expr
   in
+  if num_occ <= 0 then [expr] else
   let index_to_repl = k_combinations n (1 -- num_occ) in
   List.map repl_indexed index_to_repl
 

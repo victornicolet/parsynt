@@ -185,6 +185,11 @@ let add_new_aux aux_to_add (aux_vs, aux_exprs) =
        IM.add aux_to_add.avarinfo.vid aux_to_add aux_exprs)
     end
 
+
+(* TODO *)
+let pick_best_recfunc fexpr_l =
+  List.hd fexpr_l
+
 let create_new_aux new_aux_vi expr =
   (* Adding auxiliaries in a smarter way. Since we cannot infer initial values
      now, there is an offset for the discovery. When the aux is supposed to
@@ -221,10 +226,7 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
   let replace_aux =
     (Fn.replace_many
       aux.aexpr (Fn.FnVar (Fn.FnVarinfo new_vi))
-      current_expr 1)@
-    [Fn.replace_expression
-       aux.aexpr (Fn.FnVar (Fn.FnVarinfo new_vi))
-       current_expr]
+      current_expr 1)
   in
   let cexpr =
     (** Replace auxiliary recurrence variables by their expression *)
@@ -232,7 +234,9 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
   in
   (** Transform all a(i + ...) into a(i) if i + ... is the
       current index expression *)
-  let new_f = reset_index_expressions xinfo (List.hd replace_aux) in
+  let new_f =
+    pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
+  in
   let dependencies = used_in_fnexpr new_f in
   let new_auxiliary =
       { avarinfo = new_vi; aexpr = cexpr;
