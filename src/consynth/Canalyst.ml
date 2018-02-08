@@ -148,6 +148,15 @@ let cil2func cfile loops =
     in
 
     finfo.reaching_consts <- loop.lcontext.reaching_constants;
+    if !verbose then
+      begin
+        printf "@.Reaching constants:@.";
+        IM.iter
+          (fun k e -> printf "%s = %s@."
+              (VS.find_by_id k loop.lvariables.state_vars).Cil.vname
+              (CilTools.psprint80 Cil.dn_exp e)
+          ) finfo.reaching_consts
+      end;
     finfo.func <- func;
     finfo.figu <- figu;
     finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
@@ -200,6 +209,16 @@ let func2sketch cfile funcreps =
              m)
         func_info.reaching_consts IM.empty
     in
+    if !verbose then
+      begin
+        printf "@.Reaching constants information:@.";
+        IM.iter
+          (fun k c ->
+             printf "Reaching constant: %s = %a@."
+               (VS.find_by_id k state_vars).Cil.vname
+               FPretty.pp_fnexpr c)
+          s_reach_consts
+      end;
     let sketch_obj =
       new Sketch.Body.sketch_builder var_set state_vars
         func_info.func figu

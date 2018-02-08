@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open Cil
 open Pretty
@@ -269,10 +269,10 @@ let appendC l a =
 (** Cil specific utility functions *)
 (** Pretty printing shortcuts *)
 module CilTools = CilTop
-  (**
-      Extract the variables used in statements/expressions/instructions/..
-      Used variables can be on either side of an assignment.
-  *)
+(**
+    Extract the variables used in statements/expressions/instructions/..
+    Used variables can be on either side of an assignment.
+*)
 module VS = struct
   include VSo
   let rec sovi (instr : Cil.instr) : t =
@@ -741,3 +741,27 @@ let list_map f l = count_map f l 0
 
 let equals x1 x2 : bool =
   (compare x1 x2) = 0
+
+
+let print_defs vs defsHash =
+  IH.iter
+    (fun k ios ->
+       let stmts =
+         let def_ids =
+           List.map (fun os -> match os with Some o -> o | None -> failwith "X")
+             (List.filter (fun os -> match os with Some _ -> true | _ -> false)
+                  (IOS.elements ios))
+         in
+         List.map
+           (fun def_id ->
+              IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash)
+                def_id)
+           def_ids
+       in
+       printf "Reaching defs for %s:@.@[<h 2>%a@]@."
+         (try (VS.find_by_id k vs).vname with Not_found -> "??")
+         (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
+            (fun fmt stmt ->
+               fprintf fmt "%s" (CilTools.psprint80 Cil.dn_stmt stmt)))
+         stmts)
+    defsHash

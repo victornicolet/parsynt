@@ -415,39 +415,78 @@ let remove_temps (map : exp IM.t) =
     (fun e ->
        match e with
        | Lval (Var vi, NoOffset) when vi.vistmp ->
+         if !verbose then printf "@.Remove temp definition %s@." vi.vname;
          (try IM.find vi.vid map with Not_found ->
            failhere __FILE__ "remove_temps" "Temporary expression not found.")
        | _ -> e) map
 
 
-let add_def_info loop vid vid2const def_id =
-  if def_id > loop.lid then vid2const else
-  let stmt =
-    try
-      IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash) def_id
-    with Not_found ->
-      failhere __FILE__ "add_def_info" "stmt info not found."
+let add_statevar_def loop vid vid2const def_id =
+  let is_after id1 id2 =
+    (* id1 -> id2 but id2 -/-> id1 *)
+    false
   in
-  try match def_to_init vid stmt with
-    | Some const ->
-      IM.add vid const vid2const
-    | None -> vid2const
-  with
-  | Init_with_temp vi ->
-    IM.add vid (Cil.Lval (Var vi, NoOffset)) vid2const
-  | Not_found ->
-    failhere __FILE__ "add_def_info" "Not found"
+  let def_stmt () =
+    let stmt =
+      (IH.find (IHTools.convert
+                  Reachingdefs.ReachingDef.defIdStmtHash)
+         def_id)
+    in
+    if !verbose then
+      begin
+      try
+        printf "Statement:@. %s" (CilTop.psprint80 Cil.dn_stmt stmt)
+      with Not_found ->
+        failhere __FILE__ "add_def_info" "stmt info not found."
+    end;
+    stmt
+  in
+  let add_def_info vid =
+  (try
+    (if !verbose then printf "@.Add this definition for %s?@."
+         (VS.find_by_id vid loop.lvariables.state_vars).vname)
+  with Not_found -> ());
+  if is_after def_id loop.lid then
+    (ignore(def_stmt ());
+     if !verbose then printf "@.This definition after loop statement.@.";
+     vid2const)
+  else
+    begin
+      if !verbose then printf "Yes.@.";
+      let stmt =
+        try
+          def_stmt ()
+        with Not_found ->
+          failhere __FILE__ "add_def_info" "stmt info not found."
+      in
+      try match def_to_init vid stmt with
+        | Some const ->
+          IM.add vid const vid2const
+        | None -> vid2const
+      with
+      | Init_with_temp vi ->
+        IM.add vid (Cil.Lval (Var vi, NoOffset)) vid2const
+      | Not_found ->
+        failhere __FILE__ "add_def_info" "Not found"
+    end
+  in
+  if
+    IM.mem vid vid2const || not (VS.has_vid vid loop.lvariables.state_vars)
+  then
+    vid2const
+  else
+    add_def_info vid
+
 
 let analyze_definitions cl (x : IOS.t IH.t) =
   IH.fold
     (fun vid ioset vid2const ->
-       (IOS.fold
-          (fun maybe_defid vmap ->
-             maybe_apply_default
-               (add_def_info cl vid vmap)
-               maybe_defid
-               vmap)
-          ioset vid2const))
+       (List.fold_left
+          (fun vmap defid_opt ->
+             match defid_opt with
+             | Some defid -> add_statevar_def cl vid vmap defid
+             | None -> vmap))
+          vid2const (IOS.elements ioset))
     x IM.empty
 
 let complete_reachingdefs f =
@@ -472,9 +511,10 @@ let complete_reachingdefs f =
       match simple_rds with
       | Some x ->
         begin
+          let ih_x = IHTools.convert x in
           let vid2const_map =
             remove_temps (
-              try analyze_definitions loop (IHTools.convert x)
+              try analyze_definitions loop ih_x
               with Not_found ->
                 failhere __FILE__ "complete_reachingdefs"
                   "Analyzing definitions.")
