@@ -134,7 +134,7 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
   in
   {problem with
    join_solution =
-     ExpressionReduction.simplify_reduce translated_join_body problem.scontext;
+     ExpressionReduction.normalize problem.scontext translated_join_body;
    init_values = remap_init_values sol_info.Codegen.init_values}
 
 

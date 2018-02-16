@@ -27,14 +27,90 @@ open Expressions
 
 let verbose = ref true
 
-(** op2 is right-distributive over op1 if :
-    (a op1 b) op2 c = (a op2 c) op1 (b op2 c)
-    @param op1 'sum' like operator
-    @param op2 distributes over op1
-    @return true if op2 is right distributive over op1
-*)
+let reduce_cost_binop rfunc ctx (op2 : symb_binop) (x : fnExpr) (y : fnExpr) =
+  match x, y with
+  (** Transform comparisions with max min into conjunctions
+      or disjunctions, because conj/disj. are associative *)
+  (* max(a, b) > c --> a > c or b > c *)
+  | FnBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->
+    FnBinop (Or, FnBinop (op2, a, c), FnBinop (op2, b, c))
+  (* c > max(a, b) --> c > a and c > b *)
+  | c, FnBinop (Max, a, b) when op2 = Gt || op2 = Ge ->
+    FnBinop (And, FnBinop (op2, c, a), FnBinop (op2, c, b))
+  (* max(a, b) < c --> a < c and b < c *)
+  | FnBinop (Max, a, b), c when op2 = Lt || op2 = Le ->
+    FnBinop (And, FnBinop (op2, a, c), FnBinop (op2, b, c))
+  (* c < max(a, b) --> c < a or c < b *)
+  | c, FnBinop (Max, a, b) when op2 = Lt || op2 = Le ->
+    FnBinop (Or, FnBinop (op2, c, a), FnBinop (op2, c, b))
 
-(** Equality of expressions under commutativity *)
+
+  (* Distributivity with operators *)
+  | FnBinop (op1, a, b), c ->
+    let ca = cost ctx a in
+    let cb = cost ctx b in
+    let cc = cost ctx c in
+    (* [(a + b) * c --> a*c + b*c] if no stv in c *)
+    if is_right_distributive op1 op2 && ((max ca cb) >= cc)
+    then
+      FnBinop (op1, (FnBinop (op2, a, c)),
+               (FnBinop (op2, b, c)))
+
+    else
+      FnBinop (op2, x, y)
+
+  | c, FnBinop (Or, a , b) when op2 = And ->
+    FnBinop (Or, FnBinop (And, c, a), FnBinop (And, c, b))
+
+  (* Distributivity with ternary expressions *)
+  | FnQuestion (cond, a, b), c ->
+    let ca = cost ctx a in
+    let cb = cost ctx b in
+    let cc = cost ctx c in
+    if is_associative op2 &&  (max ca cb) > cc then
+      FnQuestion (cond, FnBinop (op2, a, c), FnBinop (op2, b, c))
+    else
+      FnBinop (op2, x, y)
+
+  | c, FnQuestion (cond, a, b) ->
+    let ca = cost ctx a in
+    let cb = cost ctx b in
+    let cc = cost ctx c in
+    if is_associative op2 && (max ca cb) > cc then
+      FnQuestion (cond, FnBinop (op2, c, a), FnBinop (op2, c, b))
+    else
+      FnBinop (op2, x, y)
+
+  | _, _ -> FnBinop (op2, x, y)
+
+
+let reduce_cost_ternary rfunc ctx c x y =
+  match x, y with
+  | FnBinop (op1, x1, x2), FnBinop (op2, y1, y2)
+    when op1 = op2 && is_associative op1 ->
+    let cx1 = cost ctx x1 in
+    let cx2 = cost ctx x2 in
+    let cy1 = cost ctx y1 in
+    let cy2 = cost ctx y2 in
+    if x1 = y1 && cx1 > (max cx2 cy2) then
+      let cond = rfunc (FnQuestion (c, x2, y2)) in
+      FnBinop (op1, x1, cond)
+    else
+      begin
+        if x2 = y2 && cx2 > (max cx1 cy1) then
+          let cond = rfunc (FnQuestion (c, x1, y1)) in
+          FnBinop (op1, cond, x2)
+        else
+          FnQuestion (c, x, y)
+      end
+  | _, _ -> FnQuestion (c, x, y)
+
+
+
+(**
+   Reduce the cost of an expression. The cost is computed according to the ctx
+   information, which contains 'costly' expressions.
+ *)
 let reduce_cost ctx expr =
   let reduction_cases expr =
     match expr with
@@ -47,91 +123,11 @@ let reduce_cost ctx expr =
   let reduce_transform rfunc expr =
     match expr with
     | FnBinop (op2, x, y) ->
-      let x' = rfunc x in
-      let y' = rfunc y in
-      begin
-        match x', y' with
-        (** Transform comparisions with max min into conjunctions
-            or disjunctions, because conj/disj. are associative *)
-        (* max(a, b) > c --> a > c or b > c *)
-        | FnBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->
-          FnBinop (Or, FnBinop (op2, a, c), FnBinop (op2, b, c))
-        (* c > max(a, b) --> c > a and c > b *)
-        | c, FnBinop (Max, a, b) when op2 = Gt || op2 = Ge ->
-          FnBinop (And, FnBinop (op2, c, a), FnBinop (op2, c, b))
-        (* max(a, b) < c --> a < c and b < c *)
-        | FnBinop (Max, a, b), c when op2 = Lt || op2 = Le ->
-          FnBinop (And, FnBinop (op2, a, c), FnBinop (op2, b, c))
-        (* c < max(a, b) --> c < a or c < b *)
-        | c, FnBinop (Max, a, b) when op2 = Lt || op2 = Le ->
-          FnBinop (Or, FnBinop (op2, c, a), FnBinop (op2, c, b))
-
-
-        (* Distributivity with operators *)
-        | FnBinop (op1, a, b), c ->
-          let ca = cost ctx a in
-          let cb = cost ctx b in
-          let cc = cost ctx c in
-          (* [(a + b) * c --> a*c + b*c] if no stv in c *)
-          if is_right_distributive op1 op2 && ((max ca cb) >= cc)
-          then
-            FnBinop (op1, (FnBinop (op2, a, c)),
-                     (FnBinop (op2, b, c)))
-
-          else
-            FnBinop (op2, x', y')
-
-        | c, FnBinop (Or, a , b) when op2 = And ->
-          FnBinop (Or, FnBinop (And, c, a), FnBinop (And, c, b))
-
-        (* Distributivity with ternary expressions *)
-        | FnQuestion (cond, a, b), c ->
-          let ca = cost ctx a in
-          let cb = cost ctx b in
-          let cc = cost ctx c in
-          if is_associative op2 &&  (max ca cb) > cc then
-            FnQuestion (cond, FnBinop (op2, a, c), FnBinop (op2, b, c))
-          else
-            FnBinop (op2, x', y')
-
-        | c, FnQuestion (cond, a, b) ->
-          let ca = cost ctx a in
-          let cb = cost ctx b in
-          let cc = cost ctx c in
-          if is_associative op2 && (max ca cb) > cc then
-            FnQuestion (cond, FnBinop (op2, c, a), FnBinop (op2, c, b))
-          else
-            FnBinop (op2, x', y')
-
-        | _, _ -> FnBinop (op2, x', y')
-      end
-    (* End FnBinop (c, x, y) case *)
+      reduce_cost_binop rfunc ctx op2 (rfunc x) (rfunc y)
 
     | FnQuestion (c, x, y)->
-      let x' = rfunc x in let y' = rfunc y in
-      let c = rfunc c in
-      begin
-        match x', y' with
-        | FnBinop (op1, x1, x2), FnBinop (op2, y1, y2)
-          when op1 = op2 && is_associative op1 ->
-          let cx1 = cost ctx x1 in
-          let cx2 = cost ctx x2 in
-          let cy1 = cost ctx y1 in
-          let cy2 = cost ctx y2 in
-          if x1 = y1 && cx1 > (max cx2 cy2) then
-            let cond = rfunc (FnQuestion (c, x2, y2)) in
-            FnBinop (op1, x1, cond)
-          else
-            begin
-              if x2 = y2 && cx2 > (max cx1 cy1) then
-                let cond = rfunc (FnQuestion (c, x1, y1)) in
-                FnBinop (op1, cond, x2)
-              else
-                FnQuestion (c, x', y')
-            end
-        | _, _ -> FnQuestion (c, x', y')
-      end
-    (* End FnQuestion (c, x, y) case *)
+      reduce_cost_ternary rfunc ctx (rfunc c) (rfunc x) (rfunc y)
+
     (* Distribute unary boolean not down, unary num neg down *)
     | FnUnop (op, x) ->
       let e' = rfunc x in
@@ -225,15 +221,19 @@ let reduce_full ?(limit = 10) ctx expr =
   let r2 = rules_AC r0 in
   r2
 
-let rec simplify_reduce sklet ctx =
+let rec normalize ctx sklet =
   match sklet with
   | FnLetIn (ve_list, letin) ->
     FnLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
-             simplify_reduce letin ctx)
+             normalize ctx letin)
   | FnLetExpr ve_list ->
     FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
 
-  | e -> e
+  | e -> reduce_full ctx e
+
+
+(** WIP: normalizing conditional paths.  *)
+
 
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =

@@ -1,3 +1,7 @@
+/*
+   The Boyer-Moore majority algorithm.
+ */
+
 int majority (int *a, int n){
 
   int cnt = 0;
