@@ -18,6 +18,8 @@ examples/dafny/*.dll
 examples/dafny/*.mdb
 dump
 src/conf/project_dir.ml
+examples/dafny/__loop*
+test/synth_times.csv
 
 src/alt-cil/
 *.mldylib
