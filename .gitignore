@@ -39,7 +39,6 @@ setup.data
 consynth/setup.ml
 myocamlbuild.ml
 z3-master/
-verification.params
 
 #Emacs
 *~
