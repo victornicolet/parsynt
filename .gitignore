@@ -1,5 +1,4 @@
 # File extensions
-*~
 *#
 *.byte
 *.native
@@ -39,11 +38,14 @@ consynth/synthServ
 setup.data
 consynth/setup.ml
 myocamlbuild.ml
-_tags
 z3-master/
 conf.csv
 verification.params
 
+#Emacs
+*~
+.emacs.desktop
+.emacs.desktop.lock
 
 # Other
 \#LICENSE
