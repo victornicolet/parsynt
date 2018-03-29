@@ -282,6 +282,13 @@ fi
 
 sep "Installed all requirements."
 
+# Configuration for absolute paths in Ocaml source
+rm $PWD/src/cond/project_dir.ml
+touch $PWD/src/cond/project_dir.ml
+echo "let base = \"$PWD\"" >> $PWD/src/conf/project_dir.ml
+echo "let src = \"$PWD/src\"" >> $PWD/src/conf/project_dir.ml
+echo "let templates = \"$PWD/src/templates/\"" >> $PWD/src/conf/project_dir.ml
+
 
 sep "Creating Makefiles for Ocaml sources ..."
 oasis setup -setup-update dynamic
