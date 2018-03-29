@@ -1,67 +1,72 @@
 open Cil
 open Format
-open SPretty
+open FPretty
 open Utils
+open Utils.PpTools
 open VariableDiscovery
 open TestUtils
-
-module T = SketchTypes
-
-(** Counting blocks of one example *)
-let n_vi, n, n_e =
-  let vi = make_int_varinfo "N" in
-  (vi, T.mkVar vi, T.mkVarExpr vi);;
-
-(** Index var *)
-let i_vi, i, i_e =
-  let vi = make_int_varinfo "ind" in
-  (vi, T.mkVar vi, T.mkVarExpr vi);;
-
-let i_set, i_map = VS.singleton i_vi, IM.singleton i_vi.vid i_e ;;
-
-let sigu = i_set, (T.SkLetExpr [(i, (T.SkConst (T.CInt 0)))],
-                   T.SkBinop (T.Lt, i_e, n_e),
-                   T.SkLetExpr [(i, T.SkBinop (T.Plus, i_e, sk_one))]);;
+open FuncTypes
 
 
-
-(** Input array *)
-let a_vi, a, a_e =
-  let vi = make_int_varinfo "array" in
-  vi, T.mkVar ~offsets:[i_e] vi, T.mkVarExpr ~offsets:[i_e] vi
-
-(** State variables : a flag and a counter *)
-
-let f_vi, f, f_e =
-  let vi = make_bool_varinfo "flag" in
-  (vi, T.mkVar vi, T.mkVarExpr vi)
-
-let count_vi, count, count_e =
-  let vi = make_int_varinfo "count" in
-  vi, T.mkVar vi, T.mkVarExpr vi
-
-
-let state = VS.of_list [f_vi; count_vi];;
-
-
-
-(** Function *)
-let counting_block =
-  T.SkLetExpr [(f, a_e);
-             (count,
-              T.SkBinop(T.Plus,
-                      count_e,
-                      T.SkQuestion(
-                        T.SkBinop(T.And, T.SkUnop(T.Not, f_e), a_e),
-                        sk_one,
-                        sk_zero)))]
-
+let test_1 () =
+  (* Test variable discovery for mts *)
+  let mts_vi = make_int_varinfo "mts" in
+  let array_vi = make_int_array_varinfo "A" in
+  let i = make_int_varinfo "i" in
+  let n = make_int_varinfo "n" in
+  let mts_func =
+    _let
+      [(var mts_vi),(_b (evar mts_vi) Max (array_vi $ (evar i)))]
+  in
+  let mts_figu : sigu =
+    VS.singleton i,
+    ((_let [(var i),sk_zero]),
+    (_b (evar i) Lt (evar n)),
+    (_let [(var i),(_b (evar i) Plus sk_one)]))
+  in
+  let rconsts =
+    List.fold_left
+      (fun map (e,v) -> IM.add e.vid v map) IM.empty [(mts_vi, sk_zero)]
+  in
+  let pb = discover
+    {
+      id = 0;
+      loop_name = "mts_test";
+      min_input_size = 0;
+      host_function = make_empty_fundec ();
+      inner_functions = [];
+      scontext = {
+        state_vars = VS.singleton mts_vi;
+        index_vars = VS.singleton i;
+        used_vars = VS.of_varlist [mts_vi; i; array_vi];
+        all_vars = VS.of_varlist [mts_vi; i; array_vi];
+        costly_exprs = ES.empty;
+      };
+      uses_global_bound = false;
+      init_values = IM.empty;
+      func_igu = mts_figu;
+      loop_body = mts_func;
+      join_body = sk_tail_state;
+      join_solution = sk_tail_state;
+      reaching_consts = rconsts;
+    }
+  in
+  VS.pp_var_names std_formatter pb.scontext.state_vars
 
 
 let test () =
-  let new_state, new_func =
-      discover state counting_block sigu
-  in
-  fprintf std_formatter
-    "New state is : %a@. New function is : @.%a"
-    VSOps.pvs new_state pp_sklet new_func;;
+  printf "\t%s%s TEST VARIABLE DISCOVERY %s@."
+    (color "b-green") (color "black") color_default;
+
+  let var_bank = new namedVariables in
+  var_bank#add_vars_by_name
+    [
+      ("v", "int");("w", "int");("x", "int");("y", "int");("z", "int");
+      ("mps", "int");("mts", "int");("sum", "int");
+      ("a", "bool");("b", "bool");("c","bool");
+      ("X", "int array");("Y", "int array");
+      ("A", "bool array");("B", "bool array")
+    ];
+    printf "\t%s%s OK: TEST PASSED %s@."
+      (color "b-green") (color "black") color_default;
+  test_1 ();

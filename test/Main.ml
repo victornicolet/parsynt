@@ -37,7 +37,8 @@ module TGDef = TGenDefs
 module TSbx = TSymbExe
 module TScm = TestSchemeParsing
 module TSl = TestSynthlib
-module TNL = TestNestedLoops;;
+module TNL = TestNestedLoops
+module TVd = TDiscovery;;
 (* module T3 = TZ3;; *)
 
 let tid = ref (-1);;
@@ -77,4 +78,5 @@ match !tid with
 | 1 -> testProcessFile ()
 | 2 -> TNL.test ()
 | 3 -> TSl.test ()
+| 4 -> TVd.test ()
 | _ -> ()

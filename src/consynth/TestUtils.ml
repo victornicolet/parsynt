@@ -108,3 +108,21 @@ class variableManager vi_list =
     method expr name = FnVar (FnVarinfo (SM.find name vi_map))
     method get_vs = vs
   end
+
+class namedVariables =
+  object (self)
+    val vars : Cil.varinfo Sets.SH.t = Sets.SH.create 32
+    method add_vars_by_name l =
+     List.iter self#add_var_name l
+    method add_var_name (varname, typname) =
+      let var =
+        match typname with
+        | "int" -> make_int_varinfo varname
+        | "bool" -> make_bool_varinfo varname
+        | "int array" -> make_int_array_varinfo varname
+        | "bool array" -> make_bool_array_varinfo varname
+        | _ -> failhere __FILE__ "add_var_name" "Bad type."
+      in
+      Sets.SH.add vars varname var
+    method get s = Sets.SH.find vars s
+  end
