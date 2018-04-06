@@ -216,7 +216,7 @@ opam_install () {
 }
 # Check for Ocaml packages
 # We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("extlib" "getopt")
+declare -a OCAML_PACKAGES=("extlib" "getopt" "core")
 
 for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
 do
@@ -283,8 +283,8 @@ fi
 sep "Installed all requirements."
 
 # Configuration for absolute paths in Ocaml source
-rm $PWD/src/cond/project_dir.ml
-touch $PWD/src/cond/project_dir.ml
+rm $PWD/src/conf/project_dir.ml
+touch $PWD/src/conf/project_dir.ml
 echo "let base = \"$PWD\"" >> $PWD/src/conf/project_dir.ml
 echo "let src = \"$PWD/src\"" >> $PWD/src/conf/project_dir.ml
 echo "let templates = \"$PWD/src/templates/\"" >> $PWD/src/conf/project_dir.ml

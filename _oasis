@@ -31,7 +31,7 @@ Library mutils
   Modules: Utils
   BuildTools: ocamlbuild
   Install : false
-  BuildDepends: cil, extlib, conf
+  BuildDepends: cil, extlib, conf, sexplib
 
 Library sygus
   Path: src/sygus
@@ -65,7 +65,7 @@ Executable test_main
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, sygus, consynth, conf, codegen
+  BuildDepends: cil, getopt, sygus, consynth, conf, codegen, sexplib
 
 Executable Parsy
   Path: src
