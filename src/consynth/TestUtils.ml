@@ -134,12 +134,18 @@ class namedVariables =
         match typname with
         | "int" -> make_int_varinfo varname
         | "bool" -> make_bool_varinfo varname
-        | "int array" -> make_int_array_varinfo varname
-        | "bool array" -> make_bool_array_varinfo varname
+        | "int_array" -> make_int_array_varinfo varname
+        | "int_int_array" -> make_int_int_array_varinfo varname
+        | "bool_array" -> make_bool_array_varinfo varname
         | _ -> failhere __FILE__ "add_var_name" "Bad type."
       in
       Sets.SH.add vars varname var
-    method get s = Sets.SH.find vars s
+    method get s =
+      try
+        Sets.SH.find vars s
+      with Not_found ->
+        (Format.printf "Variable %s not found.@." s;
+         raise Not_found)
   end
 
 (*  Pretty printing passed/error/failure messages for tests. *)
@@ -148,3 +154,86 @@ let msg_color tcolor bcolor msg =
 
 let msg_passed = msg_color "black" "b-green"
 let msg_failed = msg_color "white" "b-red"
+
+
+(* Using S-Expressions *)
+open Sexplib.Sexp
+module S = Sexplib.Type
+
+let vardefs defstring =
+  let nv = new namedVariables in
+  let defs = parse defstring in
+  (match defs with
+   | Done (sexpdefs, _) ->
+     (match sexpdefs with
+      | S.List l ->
+        List.iter
+          (fun pair -> match pair with
+             | S.List [S.Atom a; S.Atom b] -> nv#add_var_name (a,b)
+             | S.Atom a -> failwith "Definition must be (name type)"
+             | _ -> failwith "Bad definitions.") l
+      | S.Atom k -> print_endline k ;failwith "Bad definitions. Must be ((name type) ...)")
+   | _ -> failwith "Unexpected");
+  nv
+
+let rec expression vardefs string_expression =
+  let const_string a =
+    try
+      _ci (int_of_string a)
+    with e ->
+        match a with
+        | "true" -> _cb true
+        | "false" -> _cb false
+        | _ -> raise e
+  in
+  let rec cstr_expr e =
+    match parse string_expression with
+    | Done (sexpr, _) ->
+      constr_expr sexpr
+    | _ ->
+      try
+        const_string string_expression
+      with _ ->
+        failwith "Couldn't terminate parsing."
+  and constr_expr e =
+    match e with
+    | S.List (t::tl) ->
+      (
+        let args = List.map constr_expr tl in
+        match List.length args with
+        | 3 ->
+          (match t with
+           | Atom s when s = "?" -> _Q (args >> 0) (args >> 1) (args >> 2)
+           | _ -> failwith "App 3 error")
+        | 2 ->
+          (let op =
+             match t with
+             | Atom s ->
+               (match s with
+               | "+" -> Plus | "-" -> Minus | "max" -> Max | "min" -> Min
+               | ">" -> Gt | "<" -> Lt | "<=" -> Le | ">=" -> Ge | "=" -> Eq
+               | _ -> failwith "Binop error.")
+             | _ -> failwith "App 2 error"
+           in
+           _b (args >> 0) op (args >> 1))
+        | 1 ->
+          (let op =
+             match t with
+             | Atom s ->
+               (match s with |"-" -> Neg | "!" -> Not | _ -> failwith "Unop error.")
+             | _ -> failwith "App 1 error"
+           in
+           _u op (args >> 0))
+         | _ -> failwith "App n")
+    | S.Atom a ->
+      (try
+         const_string a
+      with _ ->
+        let aparts = Str.split (Str.regexp "\#") a in
+        FnVar (List.fold_left
+                 (fun  v offset -> FnArray (v, expression vardefs offset))
+                 (var (vardefs#get (List.hd aparts)))
+                 (List.tl aparts)))
+    | _ -> failwith "toplevel error"
+  in
+  cstr_expr string_expression

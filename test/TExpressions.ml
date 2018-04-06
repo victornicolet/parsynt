@@ -196,9 +196,98 @@ let test_normalize_expression_03 () =
   in
   normalization_test "wb" ctx wb1 wb1_norm_expected
 
+
+let test_normalize_expression_04 () =
+  printf "Test: normalizing expression from second unfolding of \
+          max top right rectangle (m = 3).@.";
+  let mtrr0 = make_int_varinfo "mtrr0" in
+  let a = make_int_int_array_varinfo "A" in
+  let c = make_int_array_varinfo "c" in
+  let a00 = a $$ (sk_zero, sk_zero) in
+  let a10 = a $$ (sk_one, sk_zero) in
+  let a01 = a $$ (sk_zero, sk_one) in
+  let a11 = a $$ (sk_one, sk_one) in
+  let a02 = a $$ (sk_zero, (_ci 2)) in
+  let a12 = a $$ (sk_one, (_ci 2)) in
+  let c0, c1, c2 = c $ sk_zero, c $ sk_one, c $ (_ci 2)in
+  let mtrr1 =
+    fmax
+      (fmax (evar mtrr0)
+         (fmax
+            (fmax
+               (fplus (fplus (fplus c1 a01) (fplus c0 a00)) (fplus c2 a02))
+               (fplus (fplus c1 a01) (fplus c0 a00)))
+            (fplus c0 a00)))
+
+      (fmax
+         (fplus (fplus (fplus (fplus c1 a01) a11) (fplus (fplus c0 a00) a10))(fplus (fplus c2 a02) a12))
+         (fmax (fplus (fplus (fplus c1 a01) a11)
+                  (fplus (fplus c0 a00) a10))
+            (fplus (fplus c0 a00) a10)))
+  in
+  let ctx =
+    {
+      state_vars = VS.of_list [mtrr0; c];
+      index_vars = VS.empty;
+      used_vars = VS.singleton a;
+      all_vars = VS.of_list [mtrr0; a; c];
+      costly_exprs = ES.of_list [c0; c1; evar mtrr0]
+    }
+  in
+  let mtrr1_norm_expected =
+    (fmax
+       (fplus c2
+         (fplus c0
+           (fplus c1
+             (fplus a12
+               (fplus a02
+                 (fplus a10
+                   (fplus a00
+                     (fplus a11 a01))))))))
+       (fmax
+          (fplus c2
+            (fplus c0
+              (fplus c1
+                (fplus a02
+                  (fplus a00 a01)))))
+          (fmax
+             (fplus
+             (fmax
+                (fplus c1
+                  (fplus a10
+                    (fplus a00
+                      (fplus a11 a01))))
+                (fmax a00
+                   (fplus a10 a00)))
+               c0)
+             (fmax
+                (fplus c0
+                  (fplus c1
+                    (fplus a00 a01)))
+                (evar mtrr0)))))
+  in
+  normalization_test "mtrr2" ctx mtrr1 mtrr1_norm_expected
+
+
+let test_normalize_expression_05 () =
+  printf "Test: two unfolding of maxmimum prefix sum.@.";
+  let vars = vardefs "((mps int) (sum int) (a int_array))" in
+  let e0 = expression vars "(max (max mps (+ sum a#0)) (+ (+ sum a#0) a#1))" in
+  let e1 = expression vars "(max (+ sum (max a#0 (+ a#1 a#0))) mps)" in
+  let ctx = { state_vars = VS.of_list [vars#get "sum"; vars#get "mps"];
+              index_vars = VS.empty;
+              used_vars = VS.singleton (vars#get "a");
+              all_vars = VS.of_list [vars#get "sum"; vars#get "mps"; vars#get "a"];
+              costly_exprs = ES.of_list [evar (vars#get "sum"); evar (vars#get "mps")] }
+  in
+  normalization_test "mps" ctx e0 e1
+
+
 let test () =
   test_flatten_expression ();
   test_normalize_expression_01 ();
   test_normalize_expression_00 ();
   test_normalize_expression_02 ();
-  test_normalize_expression_03 ()
+  test_normalize_expression_03 ();
+  test_normalize_expression_04 ();
+  test_normalize_expression_05 ()
