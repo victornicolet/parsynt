@@ -91,6 +91,11 @@ let fplus e1 e2 = _b e1 Plus e2
 let ftimes e1 e2 = _b e1 Times e2
 let fmin e1 e2 = _b e1 Min e2
 let fmax e1 e2 = _b e1 Max e2
+let fand e1 e2 = _b e1 And e2
+let fgt e1 e2 = _b e1 Gt e2
+let flt e1 e2 = _b e1 Lt e2
+let fneg e1 = _u Neg e1
+let fnot e1 = _u Not e1
 
 let make_empty_fundec () =
   {

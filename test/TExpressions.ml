@@ -28,9 +28,9 @@ let test_flatten_expression () =
   let e_2 = FnBinop (Times, e_1, FnBinop (Times, FnVar x, FnUnop (Neg, FnVar y))) in
   let e1_flat_ok, e2_flat_ok =
     (match flatten_AC e_1 with
-    | FnApp (_, Some f, args4) ->
-      f = get_AC_op Plus && List.length args4 = 4
-    | _ -> false),
+     | FnApp (_, Some f, args4) ->
+       f = get_AC_op Plus && List.length args4 = 4
+     | _ -> false),
     (match flatten_AC e_2 with
      | FnApp (_, Some f, args3) ->
        f = get_AC_op Times && List.length args3 = 3 &&
@@ -63,6 +63,8 @@ let normalization_test name context expr expected =
     end
 
 let test_normalize_expression_00 () =
+  printf "Test: normalizing expression from second unfolding of \
+          max terminal sum.@.";
   let mts0 = make_int_varinfo "mts0" in
   let a = make_int_array_varinfo "a" in
   let a1 = a $ (_ci 1) in
@@ -82,6 +84,8 @@ let test_normalize_expression_00 () =
   normalization_test "mts" ctx mts1 emts1
 
 let test_normalize_expression_01 () =
+  printf "Test: normalizing expression from second unfolding of \
+          max top left rectangle.@.";
   let col0 = make_int_array_varinfo "col0" in
   let mtrl0 = make_int_varinfo "mtrl0" in
   let a = make_int_int_array_varinfo "A" in
@@ -112,15 +116,89 @@ let test_normalize_expression_01 () =
   let mtrl1_norm_expected =
     fmax
       (fplus (col0 $ (_ci 1)) (fmax (fplus a11 a01) a01))
-       (fmax
-          (fplus (col0 $ (_ci 0))
-             (fmax (fplus a10 a00) a00))
-          (fmax (evar mtrl0) (_ci 0)))
+      (fmax
+         (fplus (col0 $ (_ci 0))
+            (fmax (fplus a10 a00) a00))
+         (fmax (evar mtrl0) (_ci 0)))
   in
   normalization_test "mtlr" ctx mtrl1 mtrl1_norm_expected
 
 
+let test_normalize_expression_02 () =
+  printf "Test: normalizing expression from second unfolding of \
+          max top right rectangle.@.";
+  let mtrr0 = make_int_varinfo "mtrr0" in
+  let a = make_int_int_array_varinfo "A" in
+  let c = make_int_array_varinfo "c" in
+  let a00 = a $$ (sk_zero, sk_zero) in
+  let a10 = a $$ (sk_one, sk_zero) in
+  let a01 = a $$ (sk_zero, sk_one) in
+  let a11 = a $$ (sk_one, sk_one) in
+  let c0, c1 = c $ sk_zero, c $ sk_one in
+  let mtrr1 =
+    fmax
+      (fmax (evar mtrr0)
+         (fmax (fplus (fplus c1 a01) (fplus c0 a00))
+            (fplus c0 a00)))
+      (fmax (fplus (fplus (fplus c1 a01) a11)
+               (fplus (fplus c0 a00) a10))
+         (fplus (fplus c0 a00) a10))
+  in
+  let ctx =
+    {
+      state_vars = VS.of_list [mtrr0; c];
+      index_vars = VS.empty;
+      used_vars = VS.singleton a;
+      all_vars = VS.of_list [mtrr0; a; c];
+      costly_exprs = ES.of_list [c0; c1; evar mtrr0]
+    }
+  in
+  let mtrr1_norm_expected =
+    (fmax
+       (fplus
+          (fmax
+             (fplus c1 (fplus a10 (fplus a00 (fplus a11 a01))))
+             (fmax a00 (fplus a10 a00)))
+          c0)
+       (fmax
+          (fplus c0 (fplus c1 (fplus a00 a01))) (evar mtrr0)))
+  in
+  normalization_test "mtrr" ctx mtrr1 mtrr1_norm_expected
+
+let test_normalize_expression_03 () =
+  printf "Test: normalizing expression from second unfolding of \
+          well-balanced parenthesis.@.";
+  let wb0, cnt0 = make_bool_varinfo "wb0", make_int_varinfo "cnt0" in
+  let a = make_bool_array_varinfo "A" in
+  let a0 = a $ sk_zero in
+  let a1 = a $ sk_one in
+  let wb1 =
+    fand (fand (evar wb0)
+            (fgt (fplus (evar cnt0) (_Q a0 sk_one (fneg sk_one))) sk_zero))
+      (fgt (fplus (fplus (evar cnt0) (_Q a0 sk_one (fneg sk_one)))
+              (_Q a1 sk_one (fneg sk_one))) sk_zero)
+  in
+  let ctx = {
+    state_vars = VS.of_list [wb0; cnt0];
+    index_vars = VS.empty;
+    used_vars = VS.singleton a;
+    all_vars = VS.of_list [wb0; cnt0; a];
+    costly_exprs = ES.of_list [evar wb0; evar cnt0]
+  } in
+  let wb1_norm_expected =
+    fand
+      (fgt
+         (fplus (evar cnt0)
+            (fmin (_Q a0 sk_one (fneg sk_one))
+               (fplus (_Q a0 sk_one (fneg sk_one))
+                  (_Q a1 sk_one (fneg sk_one))))) sk_zero)
+      (evar wb0)
+  in
+  normalization_test "wb" ctx wb1 wb1_norm_expected
+
 let test () =
   test_flatten_expression ();
   test_normalize_expression_01 ();
-  test_normalize_expression_00 ()
+  test_normalize_expression_00 ();
+  test_normalize_expression_02 ();
+  test_normalize_expression_03 ()
