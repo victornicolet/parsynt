@@ -1,6 +1,6 @@
 open Utils
 open Cil
-
+open PpTools
 open FuncTypes
 
 
@@ -19,7 +19,7 @@ let cil_int = TInt (IInt, [])
 let cil_bool = TInt (IBool, [])
 let cil_int_array = TArray (cil_int, None, [])
 let cil_bool_array = TArray (cil_bool, None, [])
-
+let cil_int_int_array = TArray (cil_int_array, None, [])
 (* Warning : default is zero !*)
 let make_int_varinfo  ?(init = zero) varname =
   makeVarinfo false varname ~init:(singl_init init) cil_int
@@ -29,6 +29,9 @@ let make_bool_varinfo ?(init = cil_true) varname =
 
 let make_int_array_varinfo varname =
   makeVarinfo false varname cil_int_array
+
+let make_int_int_array_varinfo varname =
+  makeVarinfo false varname cil_int_int_array
 
 let make_bool_array_varinfo vname =
   makeVarinfo false vname cil_bool_array
@@ -75,12 +78,19 @@ let increment_all_indexes index_exprs =
 
 let _s vil = VS.of_list vil
 let ( $ ) vi e = FnVar (FnArray ((FnVarinfo vi), e))
+let ( $$ ) vi (e1, e2) = FnVar (FnArray ((FnArray ((FnVarinfo vi), e1)), e2))
+let _ci i = FnConst (CInt i)
+let _cb b = FnConst (CBool b)
 let _b e1 op e2 = FnBinop (op, e1, e2)
 let _u op e1 = FnUnop (op, e1)
 let _Q c e1 e2 = FnQuestion (c, e1, e2)
 let _let el = FnLetExpr el
 let _letin el l = FnLetIn (el, l)
-
+(* some functions lifted to host language *)
+let fplus e1 e2 = _b e1 Plus e2
+let ftimes e1 e2 = _b e1 Times e2
+let fmin e1 e2 = _b e1 Min e2
+let fmax e1 e2 = _b e1 Max e2
 
 let make_empty_fundec () =
   {
@@ -126,3 +136,10 @@ class namedVariables =
       Sets.SH.add vars varname var
     method get s = Sets.SH.find vars s
   end
+
+(*  Pretty printing passed/error/failure messages for tests. *)
+let msg_color tcolor bcolor msg =
+  Format.printf "%s%s%s%s@." (color tcolor) (color bcolor) msg color_default
+
+let msg_passed = msg_color "black" "b-green"
+let msg_failed = msg_color "white" "b-red"

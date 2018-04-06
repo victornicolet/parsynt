@@ -38,6 +38,7 @@ module TSbx = TSymbExe
 module TScm = TestSchemeParsing
 module TSl = TestSynthlib
 module TNL = TestNestedLoops
+module TE = TExpressions
 module TVd = TDiscovery;;
 (* module T3 = TZ3;; *)
 
@@ -79,4 +80,5 @@ match !tid with
 | 2 -> TNL.test ()
 | 3 -> TSl.test ()
 | 4 -> TVd.test ()
+| 5 -> TE.test ()
 | _ -> ()

@@ -3,35 +3,124 @@ open SymbExe
 open Utils
 open Cil
 open TestUtils
-open SPretty
+open PpTools
+open FPretty
 open ExpressionReduction
 open Expressions
 open VariableDiscovery
 
-open SketchTypes
+open FuncTypes
 
 let x, y, z, a, b, c, a_n =
-  SkVarinfo (make_int_varinfo "x"),
-  SkVarinfo (make_int_varinfo ~init:one "y"),
-  SkVarinfo (make_int_varinfo "z"),
-  SkVarinfo (make_int_varinfo "a"),
-  SkVarinfo (make_bool_varinfo ~init:cil_false "b"),
-  SkVarinfo (make_bool_varinfo "c"),
-  SkVarinfo (make_int_array_varinfo "a_n")
+  FnVarinfo (make_int_varinfo "x"),
+  FnVarinfo (make_int_varinfo ~init:one "y"),
+  FnVarinfo (make_int_varinfo "z"),
+  FnVarinfo (make_int_varinfo "a"),
+  FnVarinfo (make_bool_varinfo ~init:cil_false "b"),
+  FnVarinfo (make_bool_varinfo "c"),
+  FnVarinfo (make_int_array_varinfo "a_n")
+
+let test_flatten_expression () =
+  let e_1 =
+    FnBinop (Plus, FnBinop (Plus, FnVar x , FnVar y),
+             FnBinop (Plus, FnVar a,FnVar  b))
+  in
+  let e_2 = FnBinop (Times, e_1, FnBinop (Times, FnVar x, FnUnop (Neg, FnVar y))) in
+  let e1_flat_ok, e2_flat_ok =
+    (match flatten_AC e_1 with
+    | FnApp (_, Some f, args4) ->
+      f = get_AC_op Plus && List.length args4 = 4
+    | _ -> false),
+    (match flatten_AC e_2 with
+     | FnApp (_, Some f, args3) ->
+       f = get_AC_op Times && List.length args3 = 3 &&
+       (* One of the elements of the list has to be (plus x y a b) *)
+       (List.fold_left
+          (fun found elt ->
+             (match elt with
+              | FnApp (_, Some fplus, args4) ->
+                fplus = get_AC_op Plus && List.length args4 = 4
+              | _ -> found))
+          false args3)
+     |_ -> false)
+  in
+  if e1_flat_ok && e2_flat_ok then
+    msg_passed "Flatten expressions test passed."
+  else
+    msg_failed "Flatten expressions test failed."
 
 
-let e_1 =
-  SkBinop (Plus, SkBinop (Plus, SkVar x , SkVar y),
-           SkBinop (Plus, SkVar a,SkVar  b))
+let normalization_test name context expr expected =
+  let expr_norm = normalize context expr in
+  if expected @= expr_norm then
+    msg_passed (sprintf "Normalization of %s test passed." name)
+  else
+    begin
+      msg_failed (sprintf "Normalization test of %s failed." name);
+      printf "Expected:@.%a@.Result of normalization:@.%a@."
+        pp_fnexpr expected
+        pp_fnexpr expr_norm
+    end
 
-let e_1_flat = flatten_AC e_1
+let test_normalize_expression_00 () =
+  let mts0 = make_int_varinfo "mts0" in
+  let a = make_int_array_varinfo "a" in
+  let a1 = a $ (_ci 1) in
+  let a0 = a $ (_ci 0) in
+  let mts1 =                    (* max(max(mts0 + a0, 0) + a1, 0) *)
+    fmax (fplus (fmax (fplus (evar mts0) a0) sk_zero) a1) sk_zero in
+  let ctx =
+    {state_vars = VS.singleton mts0;
+     index_vars = VS.empty;
+     used_vars = VS.singleton a;
+     all_vars = VS.of_list [mts0; a];
+     costly_exprs = ES.of_list [(evar mts0)]}
+  in
+  let emts1 =                   (* max(mts0 + a1 + a0, max(a1 + 0, 0)) *)
+    fmax (fplus (evar mts0) (fplus a0 a1)) (fmax (fplus a1 sk_zero) sk_zero)
+  in
+  normalization_test "mts" ctx mts1 emts1
+
+let test_normalize_expression_01 () =
+  let col0 = make_int_array_varinfo "col0" in
+  let mtrl0 = make_int_varinfo "mtrl0" in
+  let a = make_int_int_array_varinfo "A" in
+  let a01 = (a $$ (_ci 0, _ci 1)) in
+  let a11 = (a $$ (_ci 1, _ci 1)) in
+  let a10 = (a $$ (_ci 1, _ci 0)) in
+  let a00 = (a $$ (_ci 0, _ci 0)) in
+  let mtrl1 =
+    fmax
+      (fmax
+         (fplus (fplus (col0 $ (_ci 0)) a00) a10)
+         (fplus (fplus (col0 $ (_ci 1)) a01) a11))
+      (fmax
+         (evar mtrl0)
+         (fmax sk_zero
+            (fmax
+               (fplus (col0 $ (_ci 0)) a00)
+               (fplus (col0 $ (_ci 1)) a01))))
+  in
+  let ctx =
+    { state_vars = VS.of_list [col0; mtrl0];
+      index_vars = VS.empty;
+      used_vars = VS.of_list [a];
+      all_vars = VS.of_list [col0; mtrl0; a];
+      costly_exprs = ES.of_list [evar mtrl0; (col0 $ (_ci 0)); (col0 $(_ci 1))];
+    }
+  in
+  let mtrl1_norm_expected =
+    fmax
+      (fplus (col0 $ (_ci 1)) (fmax (fplus a11 a01) a01))
+       (fmax
+          (fplus (col0 $ (_ci 0))
+             (fmax (fplus a10 a00) a00))
+          (fmax (evar mtrl0) (_ci 0)))
+  in
+  normalization_test "mtlr" ctx mtrl1 mtrl1_norm_expected
 
 
-let e_2 =
-  SkBinop (Times, e_1, SkBinop (Times, SkVar x, SkUnop (Neg, SkVar y)))
-
-let e_2_flat = flatten_AC e_2
-;;
-
-printf "e_1 = %a @. e_1_flat = %a@." pp_skexpr e_1 pp_skexpr e_1_flat;
-printf "e_2 = %a @. e_2_flat = %a@." pp_skexpr e_2 pp_skexpr e_2_flat
+let test () =
+  test_flatten_expression ();
+  test_normalize_expression_01 ();
+  test_normalize_expression_00 ()
