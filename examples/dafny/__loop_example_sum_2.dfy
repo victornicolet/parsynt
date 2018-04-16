@@ -8,7 +8,7 @@ function Sum(a : seq<int>): int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  (rightSum + (leftSum + ((-4) + 4)))
+  (leftSum + (rightSum + (4 + (-4))))
 }
 
 

@@ -1,3 +1,22 @@
+(**
+   This file is part of Parsynt.
+
+   Author: Victor Nicolet <victorn@cs.toronto.edu>
+
+    Parsynt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Cil
 open Format
 open FPretty
@@ -19,6 +38,8 @@ module SH = Hashtbl.Make
       let equal s s' = s = s'
       let hash s = hash_str s
     end)
+
+
 
 (** List different types of operators:
     - comparison operators
@@ -204,6 +225,21 @@ let ( @= ) e1 e2 =
   aux_eq (flatten_AC e1) (flatten_AC e2)
 
 
+(* Set of expressions, equipped with the associative and commutative
+   equality.
+ *)
+module ACES = Set.Make (
+  struct
+    type t = fnExpr
+    let compare x y =
+      (if x @= y then 0 else 1)
+  end)
+
+let es_to_aces s = ACES.of_list (ES.elements s)
+
+
+(* Expression cost: the number of occurrences of
+   an expression and the maximal depth of an expression. *)
 type ecost =
   {
     occurrences : int;
@@ -211,6 +247,7 @@ type ecost =
   }
 
 let expression_cost ctx e =
+  let ctx_costlies = es_to_aces ctx.costly_exprs in
   let case0 = { occurrences = 0; max_depth = 0 } in
   let case1 = { occurrences = 1; max_depth = 1 } in
   let join_c c1 c2 =
@@ -218,7 +255,7 @@ let expression_cost ctx e =
       max_depth = let mx =  max c1.max_depth c2.max_depth in
         if mx > 0 then mx + 1 else 0 }
   in
-  let special_case e = ES.mem e ctx.costly_exprs in
+  let special_case e = ACES.mem e ctx_costlies in
   let handle_spec f e =  case1 in
   let case_var v =
     let vi_o = vi_of v in
@@ -237,6 +274,7 @@ let compare_ecost ec1 ec2 =
 
 let compare_cost ctx e1 e2 =
   compare_ecost (expression_cost ctx e1) (expression_cost ctx e2)
+
 
 (** Compute the 'cost' of an expression with respect to a set of other
     c-expressions : the cost is the pair of the maximum depth of a
@@ -267,7 +305,7 @@ and depth_c_func ctx func =
        (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
        (0, 0)
        (List.map (fun (v, e) -> depth_cost ctx e) velist))
-
+  | _ -> (0,0)
 
 let cost ctx expr =
   depth_cost ctx expr
@@ -276,14 +314,25 @@ let cost ctx expr =
 
 
 (* AC rules *)
+
+let e_of_ac_op e =
+  match e with
+  | FnApp(t, Some f, el) -> SH.mem named_AC_ops f.vname
+  | _ -> false
+
+let op_of_ac_e e =
+  match e with
+  | FnApp(t, Some f, el) ->
+    Some (op_from_name f.vname)
+  | _ -> None
+
+let args_of_ac_e e =
+  match e with
+  | FnApp(_,_,el) when e_of_ac_op e -> Some el
+  | _ -> None
+
 (* Rebuild an expression from its flattened expression. *)
 let rec rebuild_tree_AC ctx =
-  let rebuild_case expr =
-    match expr with
-    | FnApp (t, Some f, el) ->
-      SH.mem named_AC_ops f.vname
-    | _ -> false
-  in
   let rebuild_flat_expr rfunc e =
     match e with
     | FnApp (t, Some f, el) ->
@@ -303,10 +352,76 @@ let rec rebuild_tree_AC ctx =
 
     | _ -> failwith "Rebuild_flat_expr : Unexpected case."
   in
-  transform_expr rebuild_case rebuild_flat_expr identity identity
+  transform_expr e_of_ac_op rebuild_flat_expr identity identity
 
 
 (** Special rules, tranformations. *)
+
+
+
+let rec  __factorize_before_flattening__ e =
+  (* All e in el must be e_of_ac_op *)
+  let rec find_subexprs top el =
+    (*  Returns a list where all the elements are a partition of the input list el
+        such that we can rebuild the expression list with the best grouping possible.
+    *)
+    let rec find_all_matches el pre sub =
+      match el with
+      | hd::tl ->
+        let hd_op = check_option (op_of_ac_e hd) in
+        let best_match, hd_match, hd_diffs =
+          List.fold_left
+            (fun (best_match, ecommons, ediffs) e ->
+               let e_op = check_option (op_of_ac_e e) in
+               if hd_op != e_op then
+                 (best_match, ecommons, hd::ediffs)
+               else
+                 let hd_args = check_option (args_of_ac_e hd) in
+                 (* Match part: the elements that have a mathing element in
+                    the arguments of hd
+                 *)
+                 let match_part, rest_part =
+                   List.partition
+                     (fun xe -> List.exists (fun ye -> xe @= ye) hd_args)
+                     (check_option (args_of_ac_e e))
+                 in
+                 let len_match = List.length match_part in
+                 (max best_match len_match,
+                  (List.length match_part, match_part, rest_part)
+                  ::ecommons
+                 ,ediffs))
+            (0, [], [])
+            (pre@tl)
+        in
+        find_all_matches tl (hd::pre) ((hd, best_match, hd_match, hd_diffs)::sub)
+      | [] -> sub
+    in
+    let matches = find_all_matches el [] [] in
+    let best_group =
+      match matches with
+      | hd::tl ->
+        Some
+          (List.fold_left
+             (fun x y ->
+                let _, score_x, _, _ = x in
+                let _, score_y, _, _ = y in
+                if score_x > score_y then x else y)
+             hd
+             tl)
+      | _ -> None
+    in
+    []
+  in
+  let transform rfunc e =
+    match e with
+    | FnApp (t, Some f, args) ->
+      let op = SH.find named_AC_ops f.vname in
+      let _args = List.map rfunc args in
+      FnApp (t, Some f, args)
+    | _ -> e
+  in
+  transform_expr e_of_ac_op transform identity identity
+
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
     it returns *)
@@ -325,6 +440,8 @@ let __factorize__ ctx top_op el =
                              | FnBinop (_, _, _) -> true
                              | _ -> false) el
   in
+  (* Regroup expressions lists by common factors.
+  *)
   let rec regroup el =
     match el with
     | hd :: tl ->
@@ -343,6 +460,7 @@ let __factorize__ ctx top_op el =
                    | FnBinop (op', e1', ee) when op' = op && e1' @= e1 ->
                      true
                    | _ -> false) tl
+
             in
             let _, sim_exprs_snd = extract_operand_lists sim_exprs in
             let new_exprs =
@@ -420,6 +538,7 @@ let __factorize__ ctx top_op el =
   List.map flatten_AC (best_factorization @(el_no_binops))
 
 let factorize ctx =
+  (* Transform apps where we can recognize the top operator. *)
   let case e =
     match e with
     | FnApp (_, Some opvar, _) ->
@@ -468,6 +587,11 @@ let __transform_conj_comps__ top_op el =
          | FnBinop (op, _, _) -> List.mem op comparison_operators
          | _ -> false) el
   in
+  (* Build max or min from conjunctions of comparisons.
+     Rules:
+     + a > b and c > b <=> min(a,c) > b.
+     + a > b or c > b <=> max(a,c) > b.
+  *)
   let build_comp_conj
       (is_left_operand : bool)
       (top_op : symb_binop)
@@ -487,7 +611,7 @@ let __transform_conj_comps__ top_op el =
                 FnApp (type_of common_expr, Some (get_AC_op Min),
                        right_op_list))
 
-      | _ , _ -> failwith "Unexpected match case in build_comp_conj"
+      | _ , _ -> failhere __FILE__ "build_comp_conj" "Unexpected match case (1)."
     else
       let left_op_list, _ = extract_operand_lists exprs in
       match top_op, op with
@@ -503,8 +627,10 @@ let __transform_conj_comps__ top_op el =
                        left_op_list),
                 common_expr)
 
-      | _ , _ -> failwith "Unexpected match case in build_comp_conj"
+      | _ , _ -> failhere __FILE__ "build_comp_conj" "Unexpected match case (2)."
   in
+  (* Regroup expressions in expression list. Check for factorizable terms while
+     regrouping: the list of expressions get modified during the regroup phase. *)
   let rec regroup el =
     match el with
     | hd :: tl ->

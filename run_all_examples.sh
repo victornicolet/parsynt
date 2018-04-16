@@ -4,5 +4,5 @@ declare -a ALL_EXAMPLES=("sum.c" "min.c" "max.c" "hamming.c" "length.c" "2nd_min
 
 for EXAMPLE in "${ALL_EXAMPLES[@]}"
 do
-    ./Parsynth examples/c/experiments/$EXAMPLE
+    ./Parsy.native examples/c/experiments/$EXAMPLE
 done

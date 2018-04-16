@@ -216,7 +216,7 @@ let reduce_full ?(limit = 10) ctx expr =
     let r1 = apply_special_rules ctx flat_r in
     rebuild_tree_AC ctx r1
   in
-  let sexpr = (*simplify ctx*) expr in
+  let sexpr = rules_AC expr in
   let r0 = aux_apply_ternary_rules limit sexpr in
   let r2 = rules_AC r0 in
   r2

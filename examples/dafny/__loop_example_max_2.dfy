@@ -10,7 +10,7 @@ function M(a : seq<int>): int
 
 function MJoin(leftM : int, rightM : int): int
 {
-  DfMax(rightM, DfMax(leftM, (-2)))
+  DfMax(leftM, DfMax(rightM, (-2)))
 }
 
 

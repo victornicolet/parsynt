@@ -21,17 +21,17 @@ function Res(a : seq<bool>): bool
 
 function Aux_2Join(leftAux_2 : bool, rightAux_2 : bool): bool
 {
-  (leftAux_2 || rightAux_2)
+  (rightAux_2 || leftAux_2)
 }
 
 function Seen1Join(leftRes : bool, leftSeen1 : bool, rightRes : bool, rightSeen1 : bool): bool
 {
-  (rightRes || (rightSeen1 || leftSeen1))
+  (leftSeen1 || (rightSeen1 || rightRes))
 }
 
 function ResJoin(leftAux_2 : bool, leftRes : bool, leftSeen1 : bool, rightAux_2 : bool, rightRes : bool, rightSeen1 : bool): bool
 {
-  ((leftSeen1 && (rightAux_2 && true)) || (leftRes || rightRes))
+  ((leftSeen1 && (rightAux_2 && true)) || (rightRes || leftRes))
 }
 
 

@@ -15,7 +15,7 @@ function Mps(a : seq<int>): int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  (rightSum + leftSum)
+  (leftSum + rightSum)
 }
 
 function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int

@@ -10,7 +10,7 @@ function M(a : seq<int>): int
 
 function MJoin(leftM : int, rightM : int): int
 {
-  DfMin(rightM, leftM)
+  DfMin(leftM, rightM)
 }
 
 

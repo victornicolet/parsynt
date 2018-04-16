@@ -155,13 +155,19 @@ let test_normalize_expression_02 () =
   in
   let mtrr1_norm_expected =
     (fmax
-       (fplus
-          (fmax
-             (fplus c1 (fplus a10 (fplus a00 (fplus a11 a01))))
-             (fmax a00 (fplus a10 a00)))
-          c0)
+       (fplus c0
+          (fplus c1
+             (fplus a00 a01)))
        (fmax
-          (fplus c0 (fplus c1 (fplus a00 a01))) (evar mtrr0)))
+          (fplus c1
+             (fplus c0
+                (fplus a10
+                   (fplus a00
+                      (fplus a11 a01)))))
+          (fmax
+             (fplus c0
+                (fmax (fplus a10 a00)
+                   a00)) (evar mtrr0))))
   in
   normalization_test "mtrr" ctx mtrr1 mtrr1_norm_expected
 
@@ -214,56 +220,56 @@ let test_normalize_expression_04 () =
     fmax
       (fmax (evar mtrr0)
          (fmax
+            (fplus (fplus (fplus c1 a01) (fplus c0 a00)) (fplus c2 a02))
             (fmax
-               (fplus (fplus (fplus c1 a01) (fplus c0 a00)) (fplus c2 a02))
-               (fplus (fplus c1 a01) (fplus c0 a00)))
-            (fplus c0 a00)))
+               (fplus (fplus c1 a01) (fplus c0 a00))
+               (fplus c0 a00))))
 
       (fmax
          (fplus (fplus (fplus (fplus c1 a01) a11) (fplus (fplus c0 a00) a10))(fplus (fplus c2 a02) a12))
-         (fmax (fplus (fplus (fplus c1 a01) a11)
-                  (fplus (fplus c0 a00) a10))
+         (fmax (fplus (fplus (fplus c1 a01) a11) (fplus (fplus c0 a00) a10))
             (fplus (fplus c0 a00) a10)))
   in
+  let costly_exprs = [c0; c1; evar mtrr0] in
   let ctx =
     {
       state_vars = VS.of_list [mtrr0; c];
       index_vars = VS.empty;
       used_vars = VS.singleton a;
       all_vars = VS.of_list [mtrr0; a; c];
-      costly_exprs = ES.of_list [c0; c1; evar mtrr0]
+      costly_exprs = ES.of_list costly_exprs
     }
   in
   let mtrr1_norm_expected =
     (fmax
        (fplus c2
-         (fplus c0
-           (fplus c1
-             (fplus a12
-               (fplus a02
-                 (fplus a10
-                   (fplus a00
-                     (fplus a11 a01))))))))
+          (fplus c0
+             (fplus c1
+                (fplus a12
+                   (fplus a02
+                      (fplus a10
+                         (fplus a00
+                            (fplus a11 a01))))))))
        (fmax
           (fplus c2
-            (fplus c0
-              (fplus c1
-                (fplus a02
-                  (fplus a00 a01)))))
-          (fmax
-             (fplus
-             (fmax
+             (fplus c0
                 (fplus c1
-                  (fplus a10
-                    (fplus a00
-                      (fplus a11 a01))))
-                (fmax a00
-                   (fplus a10 a00)))
-               c0)
+                   (fplus a02
+                      (fplus a00 a01)))))
+          (fmax
              (fmax
                 (fplus c0
-                  (fplus c1
-                    (fplus a00 a01)))
+                   (fplus c1
+                      (fplus a10
+                         (fplus a00
+                            (fplus a11 a01)))))
+                (fplus c0
+                   (fplus c1
+                      (fplus a00 a01))))
+             (fmax
+                (fplus c0
+                   (fmax a00
+                      (fplus a10 a00)))
                 (evar mtrr0)))))
   in
   normalization_test "mtrr2" ctx mtrr1 mtrr1_norm_expected

@@ -37,14 +37,15 @@ function First_pos(a : seq<int>): bool
 
 function PosJoin(leftFirst_pos : bool, leftPos : int, leftDfLength : int, rightFirst_pos : bool, rightPos : int, rightDfLength : int): int
 {
-  (if ((leftFirst_pos || leftFirst_pos) && (((-2) + 1) == ((-2) + 1))) then
+  (if (leftFirst_pos && ((((-2) + 1) == ((-2) + 1)) || (((-2) + 1) == 
+                                                         ((-2) + 1)))) then
     (rightPos + leftDfLength) else leftPos)
 }
 
 function First_posJoin(leftFirst_pos : bool, leftPos : int, rightFirst_pos : bool, rightPos : int): bool
 {
   (if ((((-2113) - rightPos) >= rightPos) && (leftFirst_pos || leftFirst_pos)) then
-    true else (leftFirst_pos && rightFirst_pos))
+    true else (rightFirst_pos && leftFirst_pos))
 }
 
 
