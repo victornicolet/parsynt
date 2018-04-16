@@ -245,32 +245,29 @@ let test_normalize_expression_04 () =
        (fplus c2
           (fplus c0
              (fplus c1
-                (fplus a12
+                (fmax
                    (fplus a02
-                      (fplus a10
-                         (fplus a00
-                            (fplus a11 a01))))))))
+                      (fplus a00 a01))
+                   (fplus a12
+                      (fplus a02
+                         (fplus a10
+                            (fplus a00
+                               (fplus a11 a01)))))))))
        (fmax
-          (fplus c2
+          (fmax
              (fplus c0
                 (fplus c1
-                   (fplus a02
-                      (fplus a00 a01)))))
+                   (fplus a10
+                      (fplus a00
+                         (fplus a11 a01)))))
+             (fplus c0
+                (fplus c1
+                   (fplus a00 a01))))
           (fmax
-             (fmax
-                (fplus c0
-                   (fplus c1
-                      (fplus a10
-                         (fplus a00
-                            (fplus a11 a01)))))
-                (fplus c0
-                   (fplus c1
-                      (fplus a00 a01))))
-             (fmax
-                (fplus c0
-                   (fmax a00
-                      (fplus a10 a00)))
-                (evar mtrr0)))))
+             (fplus c0
+                (fmax a00
+                   (fplus a10 a00)))
+             (evar mtrr0))))
   in
   normalization_test "mtrr2" ctx mtrr1 mtrr1_norm_expected
 

@@ -347,7 +347,8 @@ let rec rebuild_tree_AC ctx =
           List.fold_left
             (fun tree e -> FnBinop (op, e, tree))
             hd tl
-        | [] -> failwith "Unexpected length for list in AC conversion"
+        | [] -> failhere __FILE__ "rebuild_tree_AC"
+                  "Unexpected length for list in AC conversion"
       end
 
     | _ -> failwith "Rebuild_flat_expr : Unexpected case."
@@ -358,69 +359,43 @@ let rec rebuild_tree_AC ctx =
 (** Special rules, tranformations. *)
 
 
+let __factorize_multi__ ctx top_op el =
+  let ac_costlies = ACES.of_list (ES.elements ctx.costly_exprs) in
+  let el_hasop, el_noop =
+    List.partition
+      (fun e -> match op_of_ac_e e with
+         | Some op -> is_right_distributive op top_op
+         | None -> false) el
+  in
+  (* Transforms the list into a binary expression containing
+     on one size the state variables, the other side other variables.
+  *)
+  let split_e =
+    List.map
+      (fun e -> match e with
+         | FnApp (t, f, args) ->
+           let args1, args2 =
+             List.partition
+               (fun e -> ACES.mem e ac_costlies) args
+           in
+           let op = check_option (op_of_ac_e e) in
+           if List.length args1 > 0 && List.length args2 > 0 then
+             FnBinop
+               (op, FnApp (t,f,args1), FnApp (t,f,args2))
+           else
+             e
+         | _ -> e) el_hasop
+  in
+  (* TODO:
+     - find the bests factors.
+     - output two expressions: the factorized expression,
+     and the rest of the expression.
+     - factoirzation possible for same state-expressions, with same op.
+  *)
+  el
 
-let rec  __factorize_before_flattening__ e =
-  (* All e in el must be e_of_ac_op *)
-  let rec find_subexprs top el =
-    (*  Returns a list where all the elements are a partition of the input list el
-        such that we can rebuild the expression list with the best grouping possible.
-    *)
-    let rec find_all_matches el pre sub =
-      match el with
-      | hd::tl ->
-        let hd_op = check_option (op_of_ac_e hd) in
-        let best_match, hd_match, hd_diffs =
-          List.fold_left
-            (fun (best_match, ecommons, ediffs) e ->
-               let e_op = check_option (op_of_ac_e e) in
-               if hd_op != e_op then
-                 (best_match, ecommons, hd::ediffs)
-               else
-                 let hd_args = check_option (args_of_ac_e hd) in
-                 (* Match part: the elements that have a mathing element in
-                    the arguments of hd
-                 *)
-                 let match_part, rest_part =
-                   List.partition
-                     (fun xe -> List.exists (fun ye -> xe @= ye) hd_args)
-                     (check_option (args_of_ac_e e))
-                 in
-                 let len_match = List.length match_part in
-                 (max best_match len_match,
-                  (List.length match_part, match_part, rest_part)
-                  ::ecommons
-                 ,ediffs))
-            (0, [], [])
-            (pre@tl)
-        in
-        find_all_matches tl (hd::pre) ((hd, best_match, hd_match, hd_diffs)::sub)
-      | [] -> sub
-    in
-    let matches = find_all_matches el [] [] in
-    let best_group =
-      match matches with
-      | hd::tl ->
-        Some
-          (List.fold_left
-             (fun x y ->
-                let _, score_x, _, _ = x in
-                let _, score_y, _, _ = y in
-                if score_x > score_y then x else y)
-             hd
-             tl)
-      | _ -> None
-    in
-    []
-  in
-  let transform rfunc e =
-    match e with
-    | FnApp (t, Some f, args) ->
-      let op = SH.find named_AC_ops f.vname in
-      let _args = List.map rfunc args in
-      FnApp (t, Some f, args)
-    | _ -> e
-  in
-  transform_expr e_of_ac_op transform identity identity
+
+
 
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
@@ -550,9 +525,10 @@ let factorize ctx =
     | FnApp (t, Some opvar, el) ->
       let op = op_from_name opvar.vname in
       let fact_el = List.map rfunc (__factorize__ ctx op el) in
+      printf "%a@." pp_fnexpr  (FnApp (t, Some opvar, fact_el));
       FnApp (t, Some opvar, fact_el)
 
-    | _ -> failwith "factorize_all : bad case"
+    | _ -> failhere __FILE__ "factorize_all" "bad case"
   in
   transform_expr case fact identity identity
 
