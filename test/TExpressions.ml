@@ -50,6 +50,27 @@ let test_flatten_expression () =
     msg_failed "Flatten expressions test failed."
 
 
+
+let test_split_expression () =
+  let tname = "Splitting expression according to costly expressions." in
+  let vars = vardefs "((mtrr int) (c int_array) (a int_int_array))" in
+  let e1 = expression vars "(max (+ mtrr c#0) \
+                            (max (+ mtrr (+ c#0 (+ c#1 (+ a#0#1 a#1#0)))) (+ a#0#1 a#0#0)))" in
+  let ctx = make_context vars "((mtrr c) () (a) (mtrr c a) (mtrr c#0 c#1))" in
+  let splittin_results =
+    (match flatten_AC e1 with
+     | FnApp(_, _, el) ->
+       __factorize_multi__  ctx Max el
+     | _ -> [])
+  in
+  printf "Split expression:@.%a@." cp_expr_list splittin_results;
+  if List.length splittin_results < 1 then
+    msg_failed tname
+  else
+    msg_passed tname
+
+(* A group of normalization tests to ensure we do not 'break' the old examples.
+*)
 let normalization_test name context expr expected =
   let expr_norm = normalize context expr in
   if expected @= expr_norm then
@@ -58,9 +79,10 @@ let normalization_test name context expr expected =
     begin
       msg_failed (sprintf "Normalization test of %s failed." name);
       printf "Expected:@.%a@.Result of normalization:@.%a@."
-        pp_fnexpr expected
-        pp_fnexpr expr_norm
+        cp_fnexpr expected
+        cp_fnexpr expr_norm
     end
+
 
 let test_normalize_expression_00 () =
   printf "Test: normalizing expression from second unfolding of \
@@ -93,31 +115,33 @@ let test_normalize_expression_01 () =
   let a11 = (a $$ (_ci 1, _ci 1)) in
   let a10 = (a $$ (_ci 1, _ci 0)) in
   let a00 = (a $$ (_ci 0, _ci 0)) in
+  let c0 = (col0 $ (_ci 0)) in
+  let c1 = (col0 $ (_ci 1)) in
   let mtrl1 =
     fmax
       (fmax
-         (fplus (fplus (col0 $ (_ci 0)) a00) a10)
-         (fplus (fplus (col0 $ (_ci 1)) a01) a11))
+         (fplus (fplus c0 a00) a10)
+         (fplus (fplus c1 a01) a11))
       (fmax
          (evar mtrl0)
          (fmax sk_zero
             (fmax
-               (fplus (col0 $ (_ci 0)) a00)
-               (fplus (col0 $ (_ci 1)) a01))))
+               (fplus c0 a00)
+               (fplus c1 a01))))
   in
   let ctx =
     { state_vars = VS.of_list [col0; mtrl0];
       index_vars = VS.empty;
       used_vars = VS.of_list [a];
       all_vars = VS.of_list [col0; mtrl0; a];
-      costly_exprs = ES.of_list [evar mtrl0; (col0 $ (_ci 0)); (col0 $(_ci 1))];
+      costly_exprs = ES.of_list [evar mtrl0; c0; c1];
     }
   in
   let mtrl1_norm_expected =
     fmax
-      (fplus (col0 $ (_ci 1)) (fmax (fplus a11 a01) a01))
+      (fplus c1 (fmax (fplus a11 a01) a01))
       (fmax
-         (fplus (col0 $ (_ci 0))
+         (fplus c0
             (fmax (fplus a10 a00) a00))
          (fmax (evar mtrl0) (_ci 0)))
   in
@@ -155,19 +179,12 @@ let test_normalize_expression_02 () =
   in
   let mtrr1_norm_expected =
     (fmax
-       (fplus c0
-          (fplus c1
-             (fplus a00 a01)))
+       (fplus c0 (fplus c1 (fmax (fplus a01 a00)
+                              (fplus (fplus a10 a00)
+                                 (fplus a11 a01)))))
        (fmax
-          (fplus c1
-             (fplus c0
-                (fplus a10
-                   (fplus a00
-                      (fplus a11 a01)))))
-          (fmax
-             (fplus c0
-                (fmax (fplus a10 a00)
-                   a00)) (evar mtrr0))))
+          (fplus c0 (fmax a00 (fplus a00 a10)))
+          (evar mtrr0)))
   in
   normalization_test "mtrr" ctx mtrr1 mtrr1_norm_expected
 
@@ -254,14 +271,12 @@ let test_normalize_expression_04 () =
                             (fplus a00
                                (fplus a11 a01)))))))))
        (fmax
-          (fmax
-             (fplus c0
-                (fplus c1
+          (fplus c0
+             (fplus c1
+                (fmax
                    (fplus a10
                       (fplus a00
-                         (fplus a11 a01)))))
-             (fplus c0
-                (fplus c1
+                         (fplus a11 a01)))
                    (fplus a00 a01))))
           (fmax
              (fplus c0
@@ -288,6 +303,7 @@ let test_normalize_expression_05 () =
 
 let test () =
   test_flatten_expression ();
+  test_split_expression ();
   test_normalize_expression_01 ();
   test_normalize_expression_00 ();
   test_normalize_expression_02 ();

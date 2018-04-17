@@ -176,8 +176,8 @@ let vardefs defstring =
    | _ -> failwith "Unexpected");
   nv
 
-let rec expression vardefs string_expression =
-  let const_string a =
+
+let rec const_string a =
     try
       _ci (int_of_string a)
     with e ->
@@ -185,21 +185,13 @@ let rec expression vardefs string_expression =
         | "true" -> _cb true
         | "false" -> _cb false
         | _ -> raise e
-  in
-  let rec cstr_expr e =
-    match parse string_expression with
-    | Done (sexpr, _) ->
-      constr_expr sexpr
-    | _ ->
-      try
-        const_string string_expression
-      with _ ->
-        failwith "Couldn't terminate parsing."
-  and constr_expr e =
+
+
+and constr_expr vardefs e =
     match e with
     | S.List (t::tl) ->
       (
-        let args = List.map constr_expr tl in
+        let args = List.map (constr_expr vardefs) tl in
         match List.length args with
         | 3 ->
           (match t with
@@ -235,5 +227,59 @@ let rec expression vardefs string_expression =
                  (var (vardefs#get (List.hd aparts)))
                  (List.tl aparts)))
     | _ -> failwith "toplevel error"
+
+
+and expression vardefs string_expression =
+  let rec cstr_expr e =
+    match parse string_expression with
+    | Done (sexpr, _) ->
+      constr_expr vardefs sexpr
+    | _ ->
+      try
+        const_string string_expression
+      with _ ->
+        failwith "Couldn't terminate parsing."
   in
   cstr_expr string_expression
+
+
+let make_context vardefs defstring : context =
+  let tovars atomlist =
+    match atomlist with
+    | S.List l ->
+      VS.of_list
+        (List.map
+           (fun maybe_atom ->
+              match maybe_atom with
+              | S.Atom s -> vardefs#get s
+              | _ -> failhere __FILE__ "context" "Expected atom.")
+           l)
+    | _ -> failhere __FILE__ "context" "Expected list."
+  in
+  let toexprs exprlist =
+    match exprlist with
+    | S.List l ->
+      ES.of_list
+        (List.map
+           (fun maybe_expr -> constr_expr vardefs maybe_expr)
+           l)
+    | _ -> failhere __FILE__ "context" "Expected list."
+  in
+  let defs = parse defstring in
+  (match defs with
+   | Done (sexpdefs, _) ->
+     (match sexpdefs with
+      | S.List l ->
+        (if List.length l != 5 then
+           failhere __FILE__ "context" "context has 5 members."
+         else
+           {
+             state_vars = tovars (l >> 0);
+             index_vars = tovars (l >> 1) ;
+             used_vars = tovars (l >> 2);
+             all_vars = tovars (l >> 3);
+             costly_exprs = toexprs (l >> 4);
+           })
+        | S.Atom k -> print_endline k;
+         failhere __FILE__ "context" "Bad context definition.")
+   | _ -> failwith "Unexpected")

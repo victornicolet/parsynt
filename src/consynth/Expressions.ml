@@ -41,6 +41,7 @@ module SH = Hashtbl.Make
 
 
 
+
 (** List different types of operators:
     - comparison operators
     - associative operators
@@ -238,6 +239,17 @@ module ACES = Set.Make (
 let es_to_aces s = ACES.of_list (ES.elements s)
 
 
+let update_assoc_ace al (op, a) b =
+  match
+    (List.fold_left
+      (fun (found, nl) ((op', a'),b') ->
+         if a' @= a && op' = op then (true, ((op, a), b::b')::nl)
+         else (found, ((op', a'),b')::nl))
+      (false, [])
+      al) with
+  | true, nl -> nl
+  | false, nl -> ((op, a),[b])::nl
+
 (* Expression cost: the number of occurrences of
    an expression and the maximal depth of an expression. *)
 type ecost =
@@ -360,15 +372,17 @@ let rec rebuild_tree_AC ctx =
 
 
 let __factorize_multi__ ctx top_op el =
+  let el = List.map (rebuild_tree_AC ctx) el in
+  let el = List.map flatten_AC el in
   let ac_costlies = ACES.of_list (ES.elements ctx.costly_exprs) in
   let el_hasop, el_noop =
     List.partition
       (fun e -> match op_of_ac_e e with
-         | Some op -> is_right_distributive op top_op
+         | Some op -> is_right_distributive top_op op
          | None -> false) el
   in
   (* Transforms the list into a binary expression containing
-     on one size the state variables, the other side other variables.
+     on one side the state variables, the other side other variables.
   *)
   let split_e =
     List.map
@@ -379,23 +393,56 @@ let __factorize_multi__ ctx top_op el =
                (fun e -> ACES.mem e ac_costlies) args
            in
            let op = check_option (op_of_ac_e e) in
-           if List.length args1 > 0 && List.length args2 > 0 then
-             FnBinop
-               (op, FnApp (t,f,args1), FnApp (t,f,args2))
-           else
-             e
-         | _ -> e) el_hasop
+           (match List.length args1, List.length args2 with
+            (* Initial list was empty? *)
+            | 0, 0 -> e
+            (* No 'costly' expression in the arguments. *)
+            | 0 , _ -> e
+            (* All arguments are 'costly' *)
+            | _ , 0 -> e
+            (* Costly part needs to be separated from inputs.
+               Create a binary expression, with the first operand always
+               being the operand containing the costly expressions.
+            *)
+            | _, _ ->
+              FnBinop
+                (op, FnApp (t,f,args1), FnApp (t,f,args2)))
+         | _ -> e)
+      el_hasop
   in
-  (* TODO:
-     - find the bests factors.
-     - output two expressions: the factorized expression,
-     and the rest of the expression.
-     - factoirzation possible for same state-expressions, with same op.
-  *)
-  el
+  let new_factorized_expr =
+    let factor_assoc_list, rest =
+      List.fold_left
+        (fun (alist, rst) e ->
+           match e with
+           | FnBinop (op, ecostly, echeap) ->
+             (update_assoc_ace alist (op, ecostly) echeap, rst)
+           | _ -> (alist, e::rst)
+        )
+        ([], [])
+        split_e
+    in
+    let factorized =
+      List.map
+         (fun ((op, a), bl) ->
+            if List.length bl > 1 then
+              FnBinop (op, a, FnApp(type_of (bl >> 0), Some (get_AC_op top_op), bl))
+            else
+              FnBinop (op, a, (bl >> 0)))
+         factor_assoc_list
+    in
+    factorized@rest
+  in
+  (new_factorized_expr@el_noop)
 
 
-
+let factorize_multi_toplevel ctx e =
+  (* Transform apps where we can recognize the top operator. *)
+  let e' = flatten_AC e in
+  match e' with
+  | FnApp (t, Some op, el) ->
+    FnApp(t, Some op, __factorize_multi__ ctx (op_from_name op.vname) el)
+  | e -> e'
 
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
@@ -525,7 +572,6 @@ let factorize ctx =
     | FnApp (t, Some opvar, el) ->
       let op = op_from_name opvar.vname in
       let fact_el = List.map rfunc (__factorize__ ctx op el) in
-      printf "%a@." pp_fnexpr  (FnApp (t, Some opvar, fact_el));
       FnApp (t, Some opvar, fact_el)
 
     | _ -> failhere __FILE__ "factorize_all" "bad case"
@@ -677,11 +723,8 @@ let transform_conj_comps e =
 (** Put all the special rules here *)
 let apply_special_rules ctx e =
   let e' = transform_all_comparisons e in
-  let e'' =
-    let t_e = factorize ctx (transform_conj_comps e') in
-    if cost ctx t_e < cost ctx e' then t_e else e'
-  in
-  factorize ctx e''
+  let t_e = factorize ctx (factorize ctx (transform_conj_comps e')) in
+  factorize ctx  (if cost ctx t_e < cost ctx e' then t_e else e')
 
 let accumulated_subexpression vi e =
   match e with
