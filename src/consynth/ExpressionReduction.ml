@@ -202,22 +202,28 @@ let remove_double_negs ctx e=
   in
   transform_expr red_cases red_apply_dbn identity identity e
 
-let reduce_full ?(limit = 10) ctx expr =
-  let rec aux_apply_ternary_rules limit e =
+let reduce_full ?(search_linear=false) ?(limit = 10) ctx expr =
+  let rec aux_apply_ternary_rules ctx limit e =
     let red_expr0 = reduce_cost ctx e in
     let red_expr1 = reduce_cost_specials ctx red_expr0 in
     let red_expr = remove_double_negs ctx.state_vars red_expr1 in
     if red_expr @= e || limit = 0
     then red_expr
-    else aux_apply_ternary_rules (limit - 1) red_expr
+    else aux_apply_ternary_rules ctx (limit - 1) red_expr
   in
   let rules_AC e =
     let flat_r = (flatten_AC e) in
     let r1 = apply_special_rules ctx flat_r in
     rebuild_tree_AC ctx r1
   in
-  let sexpr = rules_AC expr in
-  let r0 = aux_apply_ternary_rules limit sexpr in
+  let r' =
+    if search_linear then
+      let r'' = aux_apply_ternary_rules {ctx with costly_exprs = ES.empty} limit expr in
+      factorize_multi_toplevel ctx r''
+    else
+      expr
+  in
+  let r0 = aux_apply_ternary_rules ctx limit r' in
   let r2 = rules_AC r0 in
   r2
 

@@ -300,6 +300,44 @@ let test_normalize_expression_05 () =
   in
   normalization_test "mps" ctx e0 e1
 
+let test_local_normal_test () =
+  let tname = "Test local normal." in
+  let ploc_res fmt locres =
+    fprintf fmt (match locres with
+        | NonLoc -> "NonLocal"
+        | Mixed -> "Mixed"
+        | Input -> "Input"
+        | State -> "State"
+        | Const -> "Const")
+  in
+  let vars = vardefs "((mps int) (sum int) (c int_array) (a int_array))" in
+  let expr0 = List.map (expression vars)
+      ["(+ a#0 a#1)";
+       "(max (- sum c#0) c#22)";
+       "(+ (+ mps sum) (+ a#0 (+ a#1 a#2)))";
+       "(+ (+ mps (+ sum c#0)) (+ a#0 (+ a#1 a#2)))";
+       "(+ (+ (+ mps a#0) (+ sum c#0)) (+ a#0 (+ a#1 a#2)))";
+       "(max (+ mps (max c#0 c#1)) (+ a#0 a#1))"]
+  in
+  let ctx = make_context vars
+      "((mps sum c) () (a) (mps sum c a) (mps sum c#0))"
+  in
+  let loc_res =
+    List.map (locality_rule ctx) expr0
+  in
+  let expected_list =
+    [Input; State; Mixed; Mixed; NonLoc; Mixed]
+  in
+  if loc_res = expected_list then
+    msg_passed tname
+  else
+    (List.iter
+       (fun (r, e) ->
+          printf "Expression %a is %a.@." cp_fnexpr e ploc_res r
+       )
+       (ListTools.pair loc_res expr0);
+     msg_failed tname)
+
 
 let test () =
   test_flatten_expression ();
@@ -309,4 +347,5 @@ let test () =
   test_normalize_expression_02 ();
   test_normalize_expression_03 ();
   test_normalize_expression_04 ();
-  test_normalize_expression_05 ()
+  test_normalize_expression_05 ();
+  test_local_normal_test ()

@@ -64,7 +64,7 @@ let is_none = function None -> true | _ -> false
 (** Convert a varinfo to an expression *)
 let v2e (v : varinfo): Cil.exp = Lval (var v)
 
-let (=>>) (f: 'a -> 'a) (xo : 'a option) =
+let (==>) (f: 'a -> 'a) (xo : 'a option) =
   match xo with
   | Some x -> Some (f x)
   | None -> None
@@ -116,6 +116,10 @@ module ListTools = struct
     let rec aux_init l i =
       if i <= 0 then (f 0)::l else (aux_init ((f i)::l) (i -1))
     in aux_init [] len
+
+  let mapoption (f: 'a -> 'b option) (l : 'a list) : 'b list =
+    List.map (function Some x -> x | _ -> failwith "x")
+      (List.filter is_some (List.map f l))
 
   (* Generate all k-length subslists of list l *)
   let k_combinations n lst =

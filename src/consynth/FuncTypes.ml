@@ -1278,7 +1278,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
       failwith "Variable name not found in current environment."
   in
   let fo, eo = translate scm in
-  remove_hole_vars =>> fo, remove_hole_vars =>> eo
+  remove_hole_vars ==> fo, remove_hole_vars ==> eo
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in

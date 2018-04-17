@@ -18,6 +18,6 @@
 *)
 
 val reduce_cost: FuncTypes.context -> FuncTypes.fnExpr -> FuncTypes.fnExpr
-val reduce_full: ?limit:int -> FuncTypes.context -> FuncTypes.fnExpr ->
+val reduce_full: ?search_linear:bool -> ?limit:int -> FuncTypes.context -> FuncTypes.fnExpr ->
   FuncTypes.fnExpr
 val normalize: FuncTypes.context -> FuncTypes.fnExpr -> FuncTypes.fnExpr

@@ -370,6 +370,61 @@ let rec rebuild_tree_AC ctx =
 
 (** Special rules, tranformations. *)
 
+(**
+   Work in progress: multidimensional data structure support.
+   Add some facotrization rules that take multiple elements
+   at a time.
+*)
+let costly_arrays ctx =
+  ListTools.mapoption
+    (fun e -> match e with
+       | FnVar (FnArray (FnVarinfo a, _)) -> Some a
+       | _ -> None)
+    (ES.elements ctx.costly_exprs)
+
+let costly_vars ctx =
+  ListTools.mapoption
+    (fun e -> match e with
+       | FnVar (FnVarinfo a)  -> Some a
+       | _ -> None)
+    (ES.elements ctx.costly_exprs)
+
+type expression_flavour =
+  | Mixed
+  | State
+  | Input
+  | Const
+  | NonLoc
+
+let locality_rule ctx e =
+  let cvs =  VS.of_list (costly_vars ctx) in
+  let ctas = VS.of_list (costly_arrays ctx) in
+  rec_expr2
+    {
+      join = (fun f1 f2 ->
+          match f1, f2 with
+          | e1, e2 when e1 = e2 -> e1
+          | State, Input -> Mixed
+          | Input, State -> Mixed
+          | Mixed, Mixed -> Mixed
+          | Const, e1 | e1, Const -> e1
+          | _, _ -> NonLoc
+        );
+      init = Mixed;
+      case = (fun e -> false);
+      on_case = (fun e f -> Mixed);
+      on_var =
+        (fun v ->
+           match v with
+           | FnArray (FnVarinfo c, _) ->
+             if VS.mem c ctas then State else Input
+           | FnVarinfo v ->
+             if VS.mem v cvs then State else Input
+           | _ -> Input
+        );
+      on_const = (fun c -> Const);
+    } e
+
 
 let __factorize_multi__ ctx top_op el =
   let el = List.map (rebuild_tree_AC ctx) el in
@@ -439,10 +494,14 @@ let __factorize_multi__ ctx top_op el =
 let factorize_multi_toplevel ctx e =
   (* Transform apps where we can recognize the top operator. *)
   let e' = flatten_AC e in
-  match e' with
-  | FnApp (t, Some op, el) ->
-    FnApp(t, Some op, __factorize_multi__ ctx (op_from_name op.vname) el)
-  | e -> e'
+  let eres =
+    match e' with
+    | FnApp (t, Some op, el) ->
+      FnApp(t, Some op, __factorize_multi__ ctx (op_from_name op.vname) el)
+    | e -> e'
+  in
+  rebuild_tree_AC ctx eres
+
 
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
@@ -722,9 +781,12 @@ let transform_conj_comps e =
 
 (** Put all the special rules here *)
 let apply_special_rules ctx e =
-  let e' = transform_all_comparisons e in
-  let t_e = factorize ctx (factorize ctx (transform_conj_comps e')) in
-  factorize ctx  (if cost ctx t_e < cost ctx e' then t_e else e')
+  let e0 = transform_all_comparisons e in
+  let e1 =
+    let e' = factorize ctx (transform_conj_comps e) in
+    if cost ctx e' < cost ctx e0 then e' else e0
+  in
+  factorize ctx e1
 
 let accumulated_subexpression vi e =
   match e with

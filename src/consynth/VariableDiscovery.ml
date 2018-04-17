@@ -161,12 +161,12 @@ let rank_by_use uses_map =
     num_uses_list
 
 
-let add_new_aux aux_to_add (aux_vs, aux_exprs) =
+let add_new_aux ctx aux_to_add (aux_vs, aux_exprs) =
   let same_expr_and_func =
     IM.filter
       (fun varid aux ->
-         let func = replace_expression
-             ~in_subscripts:true
+         let func = replace_AC
+             ctx
              ~to_replace:(FnVar (FnVarinfo aux.avarinfo))
              ~by:(FnVar (FnVarinfo aux_to_add.avarinfo))
              ~ine:aux.afunc
@@ -246,7 +246,7 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     printf "@.Updated %s, now has accumulator : %a and expression %a@."
       new_vi.vname cp_fnexpr new_f cp_fnexpr cexpr;
 
-  add_new_aux new_auxiliary (new_aux_vs, new_aux_exprs)
+  add_new_aux xinfo.context new_auxiliary (new_aux_vs, new_aux_exprs)
 
 (** Finding auxiliary variables given a map of state variables to expressions
     and the previous set of auxiliary variables.
@@ -427,7 +427,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                     { aux with
                       aexpr =
                         replace_available_vars xinfo xinfo_aux current_expr } in
-                  add_new_aux new_aux (new_aux_vs, new_aux_exprs)
+                  add_new_aux xinfo.context new_aux (new_aux_vs, new_aux_exprs)
 
 
                 else
@@ -451,7 +451,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                     printf "Variable is incremented after index update %s: %a@."
                       aux.avarinfo.vname cp_fnexpr current_expr_i;
                   let new_aux = { aux with afunc = current_expr_i } in
-                  add_new_aux new_aux (new_aux_vs, new_aux_exprs)
+                  add_new_aux xinfo.context new_aux (new_aux_vs, new_aux_exprs)
 
 
                 | _ ->
@@ -467,7 +467,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
 
                     List.fold_left
                       (fun (rec_aux_vs, rec_aux_exprs) new_aux ->
-                         add_new_aux new_aux (rec_aux_vs, rec_aux_exprs))
+                         add_new_aux xinfo.context new_aux (rec_aux_vs, rec_aux_exprs))
                       (new_aux_vs, new_aux_exprs) new_auxs
                   else
                     (new_aux_vs, new_aux_exprs)
