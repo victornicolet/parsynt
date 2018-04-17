@@ -216,26 +216,21 @@ let reduce_full ?(search_linear=false) ?(limit = 10) ctx expr =
     let r1 = apply_special_rules ctx flat_r in
     rebuild_tree_AC ctx r1
   in
-  let r' =
-    if search_linear then
-      let r'' = aux_apply_ternary_rules {ctx with costly_exprs = ES.empty} limit expr in
-      factorize_multi_toplevel ctx r''
-    else
-      expr
-  in
-  let r0 = aux_apply_ternary_rules ctx limit r' in
-  let r2 = rules_AC r0 in
-  r2
+  let r0 = aux_apply_ternary_rules ctx limit expr in
+  if search_linear then
+    factorize_multi_toplevel ctx r0
+  else
+    rules_AC r0
 
-let rec normalize ctx sklet =
+let rec normalize ?(linear=false) ctx sklet =
   match sklet with
   | FnLetIn (ve_list, letin) ->
-    FnLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
+    FnLetIn (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list,
              normalize ctx letin)
   | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
+    FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
 
-  | e -> reduce_full ctx e
+  | e -> reduce_full ~search_linear:linear ctx e
 
 
 (** WIP: normalizing conditional paths.  *)

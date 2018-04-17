@@ -500,8 +500,8 @@ let factorize_multi_toplevel ctx e =
       FnApp(t, Some op, __factorize_multi__ ctx (op_from_name op.vname) el)
     | e -> e'
   in
-  rebuild_tree_AC ctx eres
-
+  let e'' =  rebuild_tree_AC ctx eres in
+  e''
 
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions

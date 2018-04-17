@@ -71,8 +71,8 @@ let test_split_expression () =
 
 (* A group of normalization tests to ensure we do not 'break' the old examples.
 *)
-let normalization_test name context expr expected =
-  let expr_norm = normalize context expr in
+let normalization_test lin name context expr expected =
+  let expr_norm = normalize ~linear:lin context expr in
   if expected @= expr_norm then
     msg_passed (sprintf "Normalization of %s test passed." name)
   else
@@ -103,7 +103,7 @@ let test_normalize_expression_00 () =
   let emts1 =                   (* max(mts0 + a1 + a0, max(a1 + 0, 0)) *)
     fmax (fplus (evar mts0) (fplus a0 a1)) (fmax (fplus a1 sk_zero) sk_zero)
   in
-  normalization_test "mts" ctx mts1 emts1
+  normalization_test false "mts" ctx mts1 emts1
 
 let test_normalize_expression_01 () =
   printf "Test: normalizing expression from second unfolding of \
@@ -145,7 +145,7 @@ let test_normalize_expression_01 () =
             (fmax (fplus a10 a00) a00))
          (fmax (evar mtrl0) (_ci 0)))
   in
-  normalization_test "mtlr" ctx mtrl1 mtrl1_norm_expected
+  normalization_test true "mtlr" ctx mtrl1 mtrl1_norm_expected
 
 
 let test_normalize_expression_02 () =
@@ -186,7 +186,7 @@ let test_normalize_expression_02 () =
           (fplus c0 (fmax a00 (fplus a00 a10)))
           (evar mtrr0)))
   in
-  normalization_test "mtrr" ctx mtrr1 mtrr1_norm_expected
+  normalization_test true "mtrr" ctx mtrr1 mtrr1_norm_expected
 
 let test_normalize_expression_03 () =
   printf "Test: normalizing expression from second unfolding of \
@@ -217,7 +217,7 @@ let test_normalize_expression_03 () =
                   (_Q a1 sk_one (fneg sk_one))))) sk_zero)
       (evar wb0)
   in
-  normalization_test "wb" ctx wb1 wb1_norm_expected
+  normalization_test false "wb" ctx wb1 wb1_norm_expected
 
 
 let test_normalize_expression_04 () =
@@ -247,7 +247,7 @@ let test_normalize_expression_04 () =
          (fmax (fplus (fplus (fplus c1 a01) a11) (fplus (fplus c0 a00) a10))
             (fplus (fplus c0 a00) a10)))
   in
-  let costly_exprs = [c0; c1; evar mtrr0] in
+  let costly_exprs = [c0; c1; c2; evar mtrr0] in
   let ctx =
     {
       state_vars = VS.of_list [mtrr0; c];
@@ -284,7 +284,7 @@ let test_normalize_expression_04 () =
                    (fplus a10 a00)))
              (evar mtrr0))))
   in
-  normalization_test "mtrr2" ctx mtrr1 mtrr1_norm_expected
+  normalization_test true "mtrr2" ctx mtrr1 mtrr1_norm_expected
 
 
 let test_normalize_expression_05 () =
@@ -298,7 +298,7 @@ let test_normalize_expression_05 () =
               all_vars = VS.of_list [vars#get "sum"; vars#get "mps"; vars#get "a"];
               costly_exprs = ES.of_list [evar (vars#get "sum"); evar (vars#get "mps")] }
   in
-  normalization_test "mps" ctx e0 e1
+  normalization_test false "mps" ctx e0 e1
 
 let test_local_normal_test () =
   let tname = "Test local normal." in
