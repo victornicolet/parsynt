@@ -32,7 +32,6 @@ open Cil2Func
 open Racket
 open Synthlib
 open Synthlib2ast
-open Cil
 
 open Utils.ListTools
 
@@ -46,7 +45,7 @@ module Join = SketchJoin
 let iterations_limit =
   ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
 
-let auxiliary_vars : Cil.varinfo IH.t = IH.create 10
+let auxiliary_vars : fnV IH.t = IH.create 10
 
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 
@@ -73,10 +72,10 @@ let pp_current_bitwidth fmt func_expr =
     the second string in the type corresponds *)
 
 type define_symbolic =
-  | DefInteger of varinfo list
-  | DefReal of varinfo list
-  | DefBoolean of varinfo list
-  | DefArray of varinfo list
+  | DefInteger of fnV list
+  | DefReal of fnV list
+  | DefBoolean of fnV list
+  | DefArray of fnV list
   | DefEmpty
 
 let gen_cell_vars vi =
@@ -98,7 +97,7 @@ let rec pp_define_symbolic fmt def =
       (fun vi ->
           let vars = gen_cell_vars vi in
           pp_define_symbolic fmt
-            (match array_type (type_of_ciltyp vi.vtype) with
+            (match array_type vi.vtype with
              | Integer -> DefInteger vars
              | Real -> DefReal vars
              | Boolean -> DefBoolean vars
@@ -111,12 +110,12 @@ let rec pp_define_symbolic fmt def =
 
 let pp_vs_to_symbs fmt except vs =
   (* Populate the types *)
-  VS.iter
+  VarSet.iter
     (fun vi ->
        if List.mem vi except then ()
        else
          pp_define_symbolic fmt
-           (match type_of_ciltyp vi.vtype with
+           (match vi.vtype with
             | Integer -> DefInteger [vi]
             | Boolean -> DefBoolean [vi]
             | Real -> DefReal [vi]
@@ -129,9 +128,9 @@ let pp_vs_to_symbs fmt except vs =
 
 
 let input_symbols_of_vs vs =
-  VS.fold
+  VarSet.fold
     (fun vi symbs ->
-       if CilTools.is_like_array vi then
+       if is_array_type vi.vtype then
          symbs@(gen_cell_vars vi)
        else
          vi::symbs) vs []
@@ -177,7 +176,7 @@ let create fmt input_vars varname =
   let pp_loc_assert = F.fprintf fmt "@[<hov 2>(assert (and %a))@]@\n" in
   match varname with
   | INFNTY ->
-    let vi = makeVarinfo false "__MAX_INT_" (TInt (IInt, [])) in
+    let vi = mkFnVar "__MAX_INT_" Integer in
     pp_define_symbolic fmt (DefInteger [vi]);
     let input_symbols = input_symbols_of_vs input_vars in
     pp_loc_assert
@@ -188,7 +187,7 @@ let create fmt input_vars varname =
     vi
 
   | NINFNTY ->
-    let vi = makeVarinfo false "__MIN_INT_" (TInt (IInt, [])) in
+    let vi = mkFnVar "__MIN_INT_" Integer in
     pp_define_symbolic fmt (DefInteger [vi]);
     let input_symbols = input_symbols_of_vs input_vars in
     pp_loc_assert
@@ -198,7 +197,7 @@ let create fmt input_vars varname =
       input_symbols;
     vi
 
-let special_const_table : Cil.varinfo IH.t = IH.create 10
+let special_const_table : fnV IH.t = IH.create 10
 
 let get_or_create fmt input_vars special_const_typ =
   let special_const_index =
@@ -223,11 +222,11 @@ let handle_special_consts fmt input_vars reach_consts =
        | FnConst NInfnty ->
          (** Assume all numeric inputs are greater than a symbolic variable.*)
          let vi = get_or_create fmt input_vars NINFNTY in
-         FnVar (FnVarinfo vi)
+         FnVar (FnVariable vi)
 
        | FnConst Infnty ->
          let vi = get_or_create fmt input_vars INFNTY in
-         FnVar (FnVarinfo vi)
+         FnVar (FnVariable vi)
 
        | _ -> expr) reach_consts
 
@@ -259,7 +258,7 @@ let pp_symbolic_definitions_of fmt except_vars vars =
 
 let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
   let state_arg_name = "__s" in
-  let field_names = VS.namelist state_vars in
+  let field_names = List.map (fun v -> v.vname) (VarSet.elements state_vars) in
   Format.fprintf fmt "@[<hov 2>(lambda (%s i)@;(let@;(%a)@;%a))@]"
     state_arg_name
     (pp_assignments state_struct_name state_arg_name)
@@ -275,7 +274,7 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     the state of the loop (valuation of the state variables).
 *)
 let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
-  let index_list = VS.varlist index_set in
+  let index_list = VarSet.elements index_set in
   let pp_index_low_up =
         (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
@@ -306,13 +305,13 @@ let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 
-  let left_state_vars = VS.vs_with_prefix state_vars
+  let left_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
-  let right_state_vars = VS.vs_with_prefix state_vars
+  let right_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let lvar_names = VS.namelist left_state_vars in
-  let rvar_names = VS.namelist right_state_vars in
-  let field_names = VS.namelist state_vars in
+  let lvar_names = VarSet.names left_state_vars in
+  let rvar_names = VarSet.names right_state_vars in
+  let field_names = VarSet.names state_vars in
   printing_sketch := true;
   Format.fprintf fmt
     "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
@@ -361,7 +360,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
     ident_state_name main_struct_name
-    s0_sketch_printer (VS.varlist state_vars);
+    s0_sketch_printer (VarSet.elements state_vars);
 
   (** Handle special constants such as Infnty and NInfnty to create the
       necessary assertions and symbolic variables *)
@@ -382,8 +381,8 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                   (try
                      replace_all_subs
                        ~tr:[FnConst (CInt 0); FnConst (CInt64 0L)]
-                       ~by:[FnVar (FnVarinfo {vi with vname = "_begin_"});
-                            FnVar (FnVarinfo {vi with vname = "_begin_"})]
+                       ~by:[FnVar (FnVariable {vi with vname = "_begin_"});
+                            FnVar (FnVariable {vi with vname = "_begin_"})]
                        ~ine:(IM.find vid reach_consts)
                   with _ -> IM.find vid reach_consts)
               else
@@ -396,11 +395,11 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                      F.eprintf
                        "@.%sERROR : \
                         Variable %s should be initialized or auxiliary.%s@."
-                       (color "red") vi.Cil.vname color_default;
+                       (color "red") vi.vname color_default;
                      failwith "Unexpected variable."
                    end))))
          li)
-    (VS.bindings state_vars)
+    (VarSet.bindings state_vars)
 
 
 (** Pretty print one verification condition, the loop
@@ -477,13 +476,13 @@ let pp_rosette_sketch fmt (sketch : prob_rep) =
   let state_vars = sketch.scontext.state_vars in
   (** Read variables : force read /\ state = empty *)
   let read_vars =
-    VS.diff
+    VarSet.diff
       (remove_interpreted_symbols sketch.scontext.used_vars)
-      (VS.union state_vars sketch.scontext.index_vars)
+      (VarSet.union state_vars sketch.scontext.index_vars)
   in
   let idx = sketch.scontext.index_vars in
   let field_names =
-    List.map (fun vi -> vi.Cil.vname) (VS.varlist state_vars) in
+    List.map (fun vi -> vi.vname) (VarSet.elements state_vars) in
   let main_struct = (main_struct_name, field_names) in
   let st0 = init_state_name in
   (* Global bound name "n" *)
@@ -491,7 +490,7 @@ let pp_rosette_sketch fmt (sketch : prob_rep) =
     List.fold_left
       (fun name_list expr ->
          match expr with
-         | Some (FnVar (FnVarinfo vi)) -> name_list@[vi]
+         | Some (FnVar (FnVariable vi)) -> name_list@[vi]
          | _ -> name_list)
       []
       (if sketch.uses_global_bound then
@@ -535,7 +534,8 @@ let logic_of_pb pb = SyLIA
 (* There are no comp types in synthlib. *)
 let funcdef_body pb =
   let ret_sort =
-    (List.map sort_of_varinfo (VS.varlist pb.scontext.state_vars))
+    (List.map (fun x -> sort_of_ciltyp (check_option (ciltyp_of_symb_type x)))
+       (VarSet.types pb.scontext.state_vars))
   in
   let funbody = SyLiteral (SyInt 0)
   in

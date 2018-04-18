@@ -240,10 +240,10 @@ let optims fnlet =
 *)
 
 class sketch_builder
-    (all_vs : VS.t)
-    (stv : VS.t)
+    (all_vs : VarSet.t)
+    (stv : VarSet.t)
     (func : letin)
-    (_figu : VS.t * (letin * expr * letin)) =
+    (_figu : VarSet.t * (letin * expr * letin)) =
   object (self)
     val mutable all_vars = all_vs
     val mutable state_vars = stv
@@ -444,17 +444,16 @@ class sketch_builder
               (fun k e ->
                  let cur_v =
                    try
-                     FnVariable (var_of_vi (VS.find_by_id k state_vars))
-                   with Not_found -> FnVariable
-                                       (var_of_vi (VS.find_by_id k all_vars))
+                     FnVariable (VarSet.find_by_id state_vars k)
+                   with Not_found -> FnVariable (VarSet.find_by_id all_vars k)
                  in
                  (cur_v, convert e))
               subs
           in
           let complete_state =
-            VS.fold
+            VarSet.fold
               (fun state_vi l ->
-                 let state_var = var_of_vi state_vi in
+                 let state_var = state_vi in
                  l@[
                    if IM.mem state_var.vid state
                    then IM.find state_var.vid state
@@ -477,12 +476,12 @@ class sketch_builder
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
-            FnLetExpr [(FnTuple (varset_of_vs state_vars),
+            FnLetExpr [(FnTuple state_vars,
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
-            FnLetIn ( [(FnTuple (varset_of_vs state_vars),
+            FnLetIn ( [(FnTuple state_vars,
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))],

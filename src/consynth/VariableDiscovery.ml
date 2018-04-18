@@ -1,4 +1,3 @@
-open Cil
 open Format
 open FPretty
 open ExpressionReduction
@@ -33,14 +32,14 @@ let clear () =
 
 let rec check_wf input_function stv  =
   match input_function with
-  | Fn.FnLetExpr assignments ->
+  | FnLetExpr assignments ->
     input_function
-  | Fn.FnLetIn (assignments, skletexpr) ->
+  | FnLetIn (assignments, skletexpr) ->
     failwith "TODO : body with inner dependencies"
   | _ -> failhere __FILE__ "check_wf" "Bad toplevel expression form."
 
-and check_wf_assignments (assignments : (Fn.fnLVar * Fn.fnExpr) list)
-    (state : VS.t) =
+and check_wf_assignments (assignments : (fnLVar * fnExpr) list)
+    (state : VarSet.t) =
   try
     List.iter
       (fun (v, e) ->
@@ -52,16 +51,16 @@ and check_wf_assignments (assignments : (Fn.fnLVar * Fn.fnExpr) list)
 
 and accepted_expression e =
   match e with
-  | Fn.FnVar _
-  | Fn.FnConst _ -> true
-  | Fn.FnQuestion _ -> true
-  | Fn.FnUnop (_, e') -> accepted_expression e'
-  | Fn.FnBinop (_, e', e'') ->
+  | FnVar _
+  | FnConst _ -> true
+  | FnQuestion _ -> true
+  | FnUnop (_, e') -> accepted_expression e'
+  | FnBinop (_, e', e'') ->
     (accepted_expression e') && (accepted_expression e'')
   | _ -> false
 
 (** Generation of new auxiliary variables *)
-let allvars = ref VS.empty
+let allvars = ref VarSet.empty
 
 let aux_var_prefix = ref "aux_"
 
@@ -71,7 +70,7 @@ let aux_init vs =
   allvars := vs;
   aux_var_counter := 0;
   aux_var_prefix :=
-    (VS.fold
+    (VarSet.fold
        (fun vi gen_prefix ->
           let prefix_contains = (vi.vname = gen_prefix)
           in
@@ -85,13 +84,10 @@ let aux_init vs =
 let gen_fresh ty () =
   let fresh_name = (!aux_var_prefix)^(string_of_int (!aux_var_counter)) in
   incr aux_var_counter;
-  match Fn.ciltyp_of_symb_type ty with
-  | Some ct ->
-    let fresh_var = makeVarinfo false fresh_name ct in
-    allvars := VS.add fresh_var !allvars;
-    fresh_var
-  | None ->
-    failwith "Failed in variable generation : couldn't find a variable type."
+  let fresh_var = mkFnVar fresh_name ty in
+  allvars := VarSet.add fresh_var !allvars;
+  fresh_var
+
 
 
 (** Rank the state variable according to sequential order assignment and then
@@ -99,14 +95,14 @@ let gen_fresh ty () =
 *)
 let merge_union vid ao bo =
   match ao, bo with
-  | Some a, Some b -> Some (VS.union a b)
+  | Some a, Some b -> Some (VarSet.union a b)
   | Some a, None -> Some a
   | _ , Some b -> Some b
   | _ ,_ -> None
 
 let update_map map vi vi_used =
   if IM.mem vi.vid map then
-    IM.add vi.vid (VS.union vi_used (IM.find vi.vid map)) map
+    IM.add vi.vid (VarSet.union vi_used (IM.find vi.vid map)) map
   else
     IM.add vi.vid vi_used map
 
@@ -118,23 +114,23 @@ let update_map map vi vi_used =
     @return A mapping from state variable ids to lists of variable ids.
 *)
 let uses stv input_func =
-  let f_expr = Fn.rec_expr
-      VS.union (* Join *)
-      VS.empty (* Leaf *)
+  let f_expr = rec_expr
+      VarSet.union (* Join *)
+      VarSet.empty (* Leaf *)
       (fun e -> false) (* No special cases *)
-      (fun f e -> VS.empty) (* Never used*)
-      (fun c -> VS.empty) (* Handle constants *)
+      (fun f e -> VarSet.empty) (* Never used*)
+      (fun c -> VarSet.empty) (* Handle constants *)
       (fun v ->
-         VS.inter
-           (VS.singleton (check_option (Fn.vi_of v))) stv) (* Variables *)
+         VarSet.inter
+           (VarSet.singleton (check_option (vi_of v))) stv) (* Variables *)
   in
   let rec aux_used_stvs stv inpt map =
     match inpt with
-    | Fn.FnLetIn (velist, letin) ->
+    | FnLetIn (velist, letin) ->
       let new_uses = List.fold_left used_in_assignment map velist in
       let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
-    | Fn.FnLetExpr velist -> List.fold_left used_in_assignment map velist
+    | FnLetExpr velist -> List.fold_left used_in_assignment map velist
     | _ -> failhere __FILE__ "uses"
              "Bad toplevel expr form, recursion should not have reached this."
   and used_in_assignment map (v, expr) =
@@ -142,7 +138,7 @@ let uses stv input_func =
        function *)
     let vi =
       try
-        check_option (Fn.vi_of v)
+        check_option (vi_of v)
       with Failure s ->
         FError.exception_on_variable s v
     in
@@ -153,7 +149,7 @@ let uses stv input_func =
 let rank_by_use uses_map =
   let num_uses_list =
     List.map
-      (fun (vi, use_set) -> (vi, VS.cardinal use_set))
+      (fun (vi, use_set) -> (vi, VarSet.cardinal use_set))
       (IM.bindings uses_map)
   in
   List.sort
@@ -167,8 +163,8 @@ let add_new_aux ctx aux_to_add (aux_vs, aux_exprs) =
       (fun varid aux ->
          let func = replace_AC
              ctx
-             ~to_replace:(FnVar (FnVarinfo aux.avarinfo))
-             ~by:(FnVar (FnVarinfo aux_to_add.avarinfo))
+             ~to_replace:(FnVar (FnVariable aux.avarinfo))
+             ~by:(FnVar (FnVariable aux_to_add.avarinfo))
              ~ine:aux.afunc
          in
          aux.aexpr @= aux_to_add.aexpr && func @= aux_to_add.afunc)
@@ -181,7 +177,7 @@ let add_new_aux ctx aux_to_add (aux_vs, aux_exprs) =
         (color "b-green") (color "black") color_default
         aux_to_add.avarinfo.vname
         cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
-      (VS.add aux_to_add.avarinfo aux_vs,
+      (VarSet.add aux_to_add.avarinfo aux_vs,
        IM.add aux_to_add.avarinfo.vid aux_to_add aux_exprs)
     end
 
@@ -194,7 +190,7 @@ let create_new_aux new_aux_vi expr =
   (* Adding auxiliaries in a smarter way. Since we cannot infer initial values
      now, there is an offset for the discovery. When the aux is supposed to
      accumulate constant values, this will create a problem. *)
-  let rec_case = Fn.FnVar (Fn.FnVarinfo new_aux_vi) in
+  let rec_case = FnVar (FnVariable new_aux_vi) in
   let funcs =
     match expr with
     | FnBinop (op, expr1, expr2) when is_constant expr1 && is_constant expr2 ->
@@ -207,7 +203,7 @@ let create_new_aux new_aux_vi expr =
     { avarinfo = new_aux_vi;
       aexpr = expr;
       afunc = func;
-      depends = VS.singleton new_aux_vi }
+      depends = VarSet.singleton new_aux_vi }
   in
   List.iter (fun func -> printf "Candidate: %a.@." pp_fnexpr func) funcs;
   List.map new_aux funcs
@@ -217,15 +213,15 @@ let function_updater xinfo xinfo_aux (aux_vs, aux_exprs)
     current_expr candidates (new_aux_vs, new_aux_exprs) =
   let vid, aux = List.nth candidates 0 in
   (* Create a new auxiliary to avoid deleting the old one *)
-  let new_vi = gen_fresh (Fn.type_of aux.aexpr) () in
+  let new_vi = gen_fresh (type_of aux.aexpr) () in
   (**
      Replace the old expression of the auxiliary by the auxiliary. Be careful
      not to add too many recursive calls. Try to replace it only once, to avoid
      spurious recursive locations.
   *)
   let replace_aux =
-    (Fn.replace_many
-      aux.aexpr (Fn.FnVar (Fn.FnVarinfo new_vi))
+    (replace_many
+      aux.aexpr (FnVar (FnVariable new_vi))
       current_expr 1)
   in
   let cexpr =
@@ -266,30 +262,30 @@ let find_auxiliaries ?(not_last_iteration = true) i
   let stv = xinfo.context.state_vars in
   let rec is_stv expr =
     match expr with
-    | Fn.FnUnop (_, Fn.FnVar v)
-    | Fn.FnVar v ->
+    | FnUnop (_, FnVar v)
+    | FnVar v ->
       begin
         try
-          VS.mem (check_option (Fn.vi_of v)) stv
+          VarSet.mem (check_option (vi_of v)) stv
         with Failure s -> false
       end
-    | Fn.FnQuestion (c, e1, e2) -> is_stv c
+    | FnQuestion (c, e1, e2) -> is_stv c
     | _ -> false
   in
   let is_candidate expr =
     match expr with
-    | Fn.FnBinop (_, e1, e2)
-    | Fn.FnQuestion (_, e1, e2) ->
+    | FnBinop (_, e1, e2)
+    | FnQuestion (_, e1, e2) ->
       (** One of the operands must be a state variable
           but not the other *)
-      (is_stv e1 && (not (Fn.fn_uses stv e2))) ||
-      (is_stv e2 && (not (Fn.fn_uses stv e1)))
+      (is_stv e1 && (not (fn_uses stv e2))) ||
+      (is_stv e2 && (not (fn_uses stv e1)))
     (* Special rule for conditionals *)
     | _ ->  false
   in
   let handle_candidate f =
     function
-    | Fn.FnBinop (_, e1, e2) ->
+    | FnBinop (_, e1, e2) ->
       begin
         match e1, e2 with
         | FnQuestion(c, _, _), estv when is_stv estv -> [c]
@@ -298,12 +294,12 @@ let find_auxiliaries ?(not_last_iteration = true) i
         | estv, e when is_stv estv -> [e]
         | _ -> []
       end
-    | Fn.FnQuestion (_, e1, e2) ->
+    | FnQuestion (_, e1, e2) ->
       if is_stv e1 then [e2] else [e1]
     | _ ->  []
   in
   let candidates e =
-    Fn.rec_expr
+    rec_expr
       (fun a b -> a@b)
       []
       is_candidate
@@ -319,7 +315,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
        ce = g (e, ...) *)
   let find_subexpr top_expr emap =
-    Fn.rec_expr
+    rec_expr
       (fun a b -> a@b) []
       (fun e ->
          IM.exists
@@ -338,14 +334,14 @@ let find_auxiliaries ?(not_last_iteration = true) i
          *)
          let fe', _ =
            unfold_expr {xinfo with
-                      context = {xinfo.context with state_vars = VS.empty}}
+                      context = {xinfo.context with state_vars = VarSet.empty}}
              aux.afunc
          in
 
          (* Finish the work by replacing the auxiliary by its expression. *)
          let fe' =
-           Fn.replace_expression
-             (Fn.FnVar (Fn.FnVarinfo aux.avarinfo)) aux.aexpr
+           replace_expression
+             (FnVar (FnVariable aux.avarinfo)) aux.aexpr
              fe'
          in
          (* We keep the expressions such that applying the function associated
@@ -367,11 +363,11 @@ let find_auxiliaries ?(not_last_iteration = true) i
       if i > 0 then
         IM.fold
           (fun vid e ce ->
-             let vi = VS.find_by_id vid xinfo.context.state_vars in
+             let vi = VarSet.find_by_id xinfo.context.state_vars vid in
              replace_AC
                xinfo_aux.context
                ~to_replace:(accumulated_subexpression vi e)
-               ~by:(Fn.FnVar (Fn.FnVarinfo vi))
+               ~by:(FnVar (FnVariable vi))
                ~ine:ce)
           xinfo_aux.state_exprs candidate_expr
       else
@@ -384,7 +380,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
     in
     (** If the expression is already "known", stop here *)
     match current_expr with
-    | Fn.FnVar (Fn.FnVarinfo vi) ->
+    | FnVar (FnVariable vi) ->
       if !debug then
         printf "@.Elim %a, we have it in %s@."
           cp_fnexpr current_expr vi.vname;
@@ -400,8 +396,8 @@ let find_auxiliaries ?(not_last_iteration = true) i
         | (vid, aux):: _ ->
           assert (aux.aexpr @= current_expr);
           (* The expression is exactly the expression of a aux *)
-          let vi = VS.find_by_id vid aux_vs in
-          (VS.add vi new_aux_vs,
+          let vi = VarSet.find_by_id aux_vs vid in
+          (VarSet.add vi new_aux_vs,
            IM.add vid aux new_aux_exprs)
 
         | [] ->
@@ -457,7 +453,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
                 | _ ->
                   (* We have to create a new variable *)
                   if not_last_iteration then
-                    let typ = Fn.type_of current_expr in
+                    let typ = type_of current_expr in
                     let new_aux_varinfo = gen_fresh typ () in
                     let new_auxs = create_new_aux new_aux_varinfo current_expr in
                     if !debug then
@@ -480,7 +476,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
     printf "Expression to create auxliaries :%a@."
       cp_fnexpr expr;
   List.fold_left (update_aux (aux_var_set, aux_var_map))
-    (VS.empty, IM.empty) candidate_exprs
+    (VarSet.empty, IM.empty) candidate_exprs
 
 (** Discover a set a auxiliary variables for a given variable.
     @param sketch the input problem representation.
@@ -494,11 +490,11 @@ let discover_for_id sketch varid =
   let input_func = sketch.loop_body in
   GenVars.init ();
   init ();
-  (*  max_exec_no := VS.cardinal stv + 1; *)
+  (*  max_exec_no := VarSet.cardinal stv + 1; *)
   printf "@.%s%s---------------- START UNFOLDINGS for %s ----------------%s@."
     (color "black")
     (color "b-blue")
-    (VS.find_by_id varid ctx.state_vars).vname
+    (VarSet.find_by_id ctx.state_vars varid).vname
     color_default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
   (* Always start with the state variable symbols. *)
@@ -506,7 +502,7 @@ let discover_for_id sketch varid =
   let init_i = { context = ctx;
                  state_exprs = init_exprs;
                  index_exprs = init_idx_exprs ;
-                 inputs = Fn.ES.empty
+                 inputs = ES.empty
                }
   in
   (** Fixpoint stops when the set of auxiliary variables is stable,
@@ -519,7 +515,7 @@ let discover_for_id sketch varid =
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
-        unfold_once {xinfo with inputs = Fn.ES.empty} input_func
+        unfold_once {xinfo with inputs = ES.empty} input_func
       in
       (** Reduce the depth of the state variables in the expression *)
       let new_exprs =
@@ -531,18 +527,18 @@ let discover_for_id sketch varid =
       let new_idx_exprs =
         let xinfo_index = { context =
                               { state_vars = xinfo.context.index_vars ;
-                                index_vars = VS.empty;
-                                used_vars = VS.empty;
-                                all_vars = VS.empty;
+                                index_vars = VarSet.empty;
+                                used_vars = VarSet.empty;
+                                all_vars = VarSet.empty;
                                 costly_exprs = ES.empty;};
                             state_exprs = xinfo.index_exprs ;
                             index_exprs = IM.empty ;
-                            inputs = Fn.ES.empty;
+                            inputs = ES.empty;
                           }
         in
         let full_map, _ = unfold_once ~silent:true xinfo_index idx_update in
-        VS.fold
-          (fun vi map -> IM.add vi.Cil.vid (IM.find vi.vid full_map) map)
+        VarSet.fold
+          (fun vi map -> IM.add vi.vid (IM.find vi.vid full_map) map)
           xinfo.context.index_vars IM.empty
       in
       (** Find the new set of auxiliaries by analyzing the expressions at the
@@ -576,14 +572,14 @@ let discover_for_id sketch varid =
   in
 
   let _ , (aux_vs, aux_ef) =
-    fixpoint 0 init_i VS.empty IM.empty
+    fixpoint 0 init_i VarSet.empty IM.empty
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
   let clean_aux, clean_aux_ef =
     remove_duplicate_auxiliaries init_i (aux_vs, aux_ef) input_func
   in
 
-  VS.iter (fun vi -> IH.add discovered_aux vi.Cil.vid vi) aux_vs;
+  VarSet.iter (fun vi -> IH.add discovered_aux vi.vid vi) aux_vs;
   (** Finally add the auxliaries at the beginning of the function. Since the
       auxliaries depend only on the inputs and not the value of the state
       variables we can safely add the assignments (or let bindings) at
@@ -596,14 +592,14 @@ let discover_for_id sketch varid =
   if !debug then
     begin
       printf "@.DISCOVER for variable %s finished.@."
-        (VS.find_by_id varid ctx.state_vars).vname;
+        (VarSet.find_by_id ctx.state_vars varid).vname;
     end;
   printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
-  VS.iter
+  VarSet.iter
     (fun vi ->
-       printf "@.(%i : %s) = (%a,@; %a)@." vi.C.vid vi.C.vname
-         cp_fnexpr (IM.find vi.C.vid clean_aux_ef).aexpr
-         cp_fnexpr (IM.find vi.C.vid clean_aux_ef).afunc
+       printf "@.(%i : %s) = (%a,@; %a)@." vi.vid vi.vname
+         cp_fnexpr (IM.find vi.vid clean_aux_ef).aexpr
+         cp_fnexpr (IM.find vi.vid clean_aux_ef).afunc
     ) clean_aux;
 
   let new_ctx, new_loop_body, new_constant_exprs =
@@ -627,7 +623,7 @@ let timec = ref 0.0
 let discover problem =
   timec := Unix.gettimeofday ();
 
-  aux_init (VS.union problem.scontext.state_vars (get_index_varset problem));
+  aux_init (VarSet.union problem.scontext.state_vars (get_index_varset problem));
   (**
      Rank the state variables by the how many times they are used in the loop
      body.

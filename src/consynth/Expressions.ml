@@ -17,7 +17,6 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Cil
 open Format
 open FPretty
 open FuncTypes
@@ -77,40 +76,18 @@ let is_left_distributive op1 op2 =
   | _ , _ -> false
 
 (** Operator -> variable *)
-let c_t_int = TInt (IInt, [])
-let c_t_bool = TInt (IBool, [])
+let int_function = Function (List (Integer, None), Integer)
+let bool_function = Function (List (Boolean, None), Boolean)
 
 let named_AC_ops = SH.create 10;;
 (** Initialize map *)
-SH.add named_AC_ops "plus"
-  (makeVarinfo false "plus"
-     (TFun (c_t_int,
-            Some [("x", c_t_int, []); ("y", c_t_int, [])], false, [])));
+SH.add named_AC_ops "plus" (mkFnVar "plus" int_function);
+SH.add named_AC_ops "times" (mkFnVar "times" int_function);
+SH.add named_AC_ops "max" (mkFnVar "max" int_function);
+SH.add named_AC_ops "min" (mkFnVar "min" int_function);
+SH.add named_AC_ops "and" (mkFnVar "and" bool_function);
+SH.add named_AC_ops "or" (mkFnVar "or" bool_function);;
 
-SH.add named_AC_ops "times"
-  (makeVarinfo false "times"
-     (TFun (c_t_int,
-            Some [("x", c_t_int, []); ("y", c_t_int, [])], false, [])));
-
-SH.add named_AC_ops "max"
-  (makeVarinfo false "max"
-     (TFun (c_t_int,
-            Some [("x", c_t_int, []); ("y", c_t_int, [])], false, [])));
-
-SH.add named_AC_ops "min"
-  (makeVarinfo false "min"
-     (TFun (c_t_int,
-            Some [("x", c_t_int, []); ("y", c_t_int, [])], false, [])));
-
-SH.add named_AC_ops "and"
-  (makeVarinfo false "and"
-     (TFun (c_t_bool,
-            Some [("x", c_t_bool, []); ("y", c_t_bool, [])], false, [])));
-
-SH.add named_AC_ops "or"
-  (makeVarinfo false "or"
-     (TFun (c_t_bool,
-            Some [("x", c_t_bool, []); ("y", c_t_bool, [])], false, [])));;
 
 let get_AC_op op =
   let fsh = SH.find named_AC_ops in
@@ -272,7 +249,7 @@ let expression_cost ctx e =
   let case_var v =
     let vi_o = vi_of v in
     match vi_o with
-    | Some vi -> if VS.mem vi ctx.state_vars then case1 else case0
+    | Some vi -> if VarSet.mem vi ctx.state_vars then case1 else case0
     | _ -> case0
   in
   let case_const c = case0 in
@@ -378,14 +355,14 @@ let rec rebuild_tree_AC ctx =
 let costly_arrays ctx =
   ListTools.mapoption
     (fun e -> match e with
-       | FnVar (FnArray (FnVarinfo a, _)) -> Some a
+       | FnVar (FnArray (FnVariable a, _)) -> Some a
        | _ -> None)
     (ES.elements ctx.costly_exprs)
 
 let costly_vars ctx =
   ListTools.mapoption
     (fun e -> match e with
-       | FnVar (FnVarinfo a)  -> Some a
+       | FnVar (FnVariable a)  -> Some a
        | _ -> None)
     (ES.elements ctx.costly_exprs)
 
@@ -397,8 +374,8 @@ type expression_flavour =
   | NonLoc
 
 let locality_rule ctx e =
-  let cvs =  VS.of_list (costly_vars ctx) in
-  let ctas = VS.of_list (costly_arrays ctx) in
+  let cvs =  VarSet.of_list (costly_vars ctx) in
+  let ctas = VarSet.of_list (costly_arrays ctx) in
   rec_expr2
     {
       join = (fun f1 f2 ->
@@ -416,10 +393,10 @@ let locality_rule ctx e =
       on_var =
         (fun v ->
            match v with
-           | FnArray (FnVarinfo c, _) ->
-             if VS.mem c ctas then State else Input
-           | FnVarinfo v ->
-             if VS.mem v cvs then State else Input
+           | FnArray (FnVariable c, _) ->
+             if VarSet.mem c ctas then State else Input
+           | FnVariable v ->
+             if VarSet.mem v cvs then State else Input
            | _ -> Input
         );
       on_const = (fun c -> Const);
@@ -790,8 +767,8 @@ let apply_special_rules ctx e =
 
 let accumulated_subexpression vi e =
   match e with
-  | FnBinop (op, FnVar (FnVarinfo vi'), acc) when vi = vi' -> acc
-  | FnBinop (op, acc, FnVar (FnVarinfo vi')) when vi = vi' -> acc
+  | FnBinop (op, FnVar (FnVariable vi'), acc) when vi = vi' -> acc
+  | FnBinop (op, acc, FnVar (FnVariable vi')) when vi = vi' -> acc
   | _ -> e
 
 

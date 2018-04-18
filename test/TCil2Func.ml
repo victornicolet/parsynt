@@ -213,8 +213,12 @@ let _test () =
          C2F.cil2func cl.lvariables stmt igu
        in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
-       let so = new Sketch.Body.sketch_builder allvars
-         stv func (check_option figu) in
+       let figu' =
+         let ids, igu = check_option figu in
+         varset_of_vs ids, igu
+       in
+       let so = new Sketch.Body.sketch_builder (varset_of_vs allvars)
+         (varset_of_vs stv) func figu' in
        so#build;
        let sketch, sigu = check_option so#get_sketch in
        let fname = cl.lcontext.host_function.vname in

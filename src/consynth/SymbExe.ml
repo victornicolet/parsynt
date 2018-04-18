@@ -1,26 +1,22 @@
 open Utils
-open Cil
 open FError
 open Expressions
-
-module Fn = FuncTypes
-module Ct = CilTools
-module ES = Fn.ES
+open FuncTypes
 
 
 let debug = ref false
 
 type exec_info =
-  { context : Fn.context;
-    state_exprs : Fn.fnExpr IM.t;
-    index_exprs : Fn.fnExpr IM.t;
-    inputs : Fn.ES.t  }
+  { context : context;
+    state_exprs : fnExpr IM.t;
+    index_exprs : fnExpr IM.t;
+    inputs : ES.t  }
 
 (** Create a mapping from variable ids to variable expressions to start the
     algorithm *)
 let create_symbol_map vs=
-  VS.fold
-    (fun vi map -> IM.add vi.vid (Fn.FnVar (Fn.FnVarinfo vi)) map) vs IM.empty
+  VarSet.fold
+    (fun vi map -> IM.add vi.vid (FnVar (FnVariable vi)) map) vs IM.empty
 
 
 (** --------------------------------------------------------------------------*)
@@ -33,26 +29,26 @@ let rec unfold new_exprs exec_info func =
 
   and update_expressions (new_exprs, read_exprs) (var, expr) =
     match var with
-    | Fn.FnTuple vs -> exec_info.state_exprs, read_exprs
-    | Fn.FnVarinfo vi ->
+    | FnTuple vs -> exec_info.state_exprs, read_exprs
+    | FnVariable vi ->
       let vid = vi.vid in
       let nexpr, n_rexprs = unfold_expr exec_info expr in
       if !debug then
         (Format.fprintf Format.std_formatter "Set of read exprs : %a@."
            (fun fmt a -> FPretty.pp_expr_set fmt a)
-           (Fn.ES.union n_rexprs read_exprs))
+           (ES.union n_rexprs read_exprs))
       else
         ();
-      IM.add vid nexpr new_exprs, Fn.ES.union n_rexprs read_exprs
-    | Fn.FnArray (v, e) ->
+      IM.add vid nexpr new_exprs, ES.union n_rexprs read_exprs
+    | FnArray (v, e) ->
       exception_on_variable
         "Unsupported arrays in state variables for variable discovery algorithm."
         v
   in
   match func with
-  | Fn.FnLetExpr let_list ->
+  | FnLetExpr let_list ->
     apply_let_exprs new_exprs let_list exec_info
-  | Fn.FnLetIn (let_list, let_cont) ->
+  | FnLetIn (let_list, let_cont) ->
     let new_exprs, new_reads = apply_let_exprs new_exprs let_list exec_info in
     unfold new_exprs
       {exec_info with
@@ -64,12 +60,12 @@ let rec unfold new_exprs exec_info func =
 
 and exec_var exec_info v =
   match v with
-  | Fn.FnTuple vs -> Fn.FnVar v, ES.empty
+  | FnTuple vs -> FnVar v, ES.empty
 
-  | Fn.FnVarinfo vi ->
+  | FnVariable vi ->
     begin
       (* Is the variable a state variable ?*)
-      if VS.has_vid vi.vid exec_info.context.Fn.state_vars then
+      if VarSet.has_vid exec_info.context.state_vars vi.vid then
         try
           IM.find vi.vid exec_info.state_exprs, ES.empty
         with Not_found ->
@@ -84,7 +80,7 @@ and exec_var exec_info v =
       else
         begin
           (* Is the variable an index variable ? *)
-          if VS.has_vid vi.vid exec_info.context.Fn.index_vars then
+          if VarSet.has_vid exec_info.context.index_vars vi.vid then
             try
               IM.find vi.vid exec_info.index_exprs, ES.empty
             with Not_found ->
@@ -95,10 +91,10 @@ and exec_var exec_info v =
                variable has been used previously, if not we create a
                new variable for this use.
             *)
-            Fn.FnVar v, ES.singleton (Fn.FnVar v)
+            FnVar v, ES.singleton (FnVar v)
         end
     end
-  | Fn.FnArray (v', offset_expr) ->
+  | FnArray (v', offset_expr) ->
     (** TODO : add support for arrays in state variables. For now,
         we assume all state variables are scalars, so if we have
         an array in an expression it is necessarily an input variable.
@@ -106,13 +102,13 @@ and exec_var exec_info v =
     begin
       let new_v' =
         match exec_var exec_info v' with
-        | Fn.FnVar v, _-> v
+        | FnVar v, _-> v
         | bad_v, _ ->
           exception_on_expression "Unexpected variable form in exec_var" bad_v
       in
       let new_offset, new_reads = unfold_expr exec_info offset_expr in
-      Fn.FnVar (Fn.FnArray (new_v', new_offset)),
-      ES.union (ES.singleton (Fn.FnVar (Fn.FnArray (new_v', new_offset))))
+      FnVar (FnArray (new_v', new_offset)),
+      ES.union (ES.singleton (FnVar (FnArray (new_v', new_offset))))
         new_reads
     end
 
@@ -121,50 +117,50 @@ and unfold_expr exec_info expr =
   (* Where all the work is done : when encountering an expression in
        the function*)
 
-  | Fn.FnVar v -> exec_var exec_info v
+  | FnVar v -> exec_var exec_info v
 
-  | Fn.FnConst c -> expr, ES.empty
+  | FnConst c -> expr, ES.empty
 
   (* Recursive cases with only expressions as subexpressions *)
-  | Fn.FnFun sklet -> expr, ES.empty (* TODO recursive *)
+  | FnFun sklet -> expr, ES.empty (* TODO recursive *)
 
-  | Fn.FnBinop (binop, e1, e2) ->
+  | FnBinop (binop, e1, e2) ->
     let e1', r1 = unfold_expr exec_info e1 in
     let e2', r2 = unfold_expr exec_info e2 in
-    Fn.FnBinop (binop, e1', e2'), ES.union r1 r2
+    FnBinop (binop, e1', e2'), ES.union r1 r2
 
-  | Fn.FnQuestion (c, e1, e2) ->
+  | FnQuestion (c, e1, e2) ->
     let c', rc = unfold_expr exec_info c in
     let e1', r1 = unfold_expr exec_info e1 in
     let e2', r2 = unfold_expr exec_info e2 in
-    Fn.FnQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
+    FnQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
 
-  | Fn.FnUnop (unop, expr') ->
+  | FnUnop (unop, expr') ->
     let e, r = unfold_expr exec_info expr' in
-    Fn.FnUnop (unop, e), r
+    FnUnop (unop, e), r
 
-  | Fn.FnApp (sty, vi_o, elist) ->
+  | FnApp (sty, vi_o, elist) ->
     let erlist = List.map  (unfold_expr exec_info) elist in
     let elist', rlist = ListTools.unpair erlist in
-    Fn.FnApp (sty, vi_o, elist'),
+    FnApp (sty, vi_o, elist'),
     List.fold_left (fun r es -> ES.union r es) ES.empty rlist
 
-  | Fn.FnAddrof expr' | Fn.FnStartOf expr'
-  | Fn.FnAlignofE expr' | Fn.FnSizeofE expr' ->
+  | FnAddrof expr' | FnStartOf expr'
+  | FnAlignofE expr' | FnSizeofE expr' ->
     unfold_expr exec_info expr'
 
-  | Fn.FnSizeof _ | Fn.FnSizeofStr _ | Fn.FnAlignof _ ->
+  | FnSizeof _ | FnSizeofStr _ | FnAlignof _ ->
     expr, ES.empty
 
-  | Fn.FnCastE (sty, expr') ->
+  | FnCastE (sty, expr') ->
     let e, r = unfold_expr exec_info expr' in
-    Fn.FnCastE (sty, e), r
+    FnCastE (sty, e), r
 
   (* Special cases where we have irreducible conitionals and nested for
      loops*)
-  | Fn.FnRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
-  | Fn.FnCond (c, letif, letelse) -> expr, ES.empty (* TODO recursive *)
-  | Fn.FnAddrofLabel _ | _ ->
+  | FnRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
+  | FnCond (c, letif, letelse) -> expr, ES.empty (* TODO recursive *)
+  | FnAddrofLabel _ | _ ->
     failwith "Unsupported expression in variable discovery algorithm"
 
 (** unfold_once : simulate the applciation of a function body to a set of

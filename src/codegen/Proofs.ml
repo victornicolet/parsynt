@@ -41,7 +41,7 @@ let pp_input_params fmt varinfo_list =
     ~pp_sep:(fun fmt () -> fprintf fmt ",@;")
     (fun fmt vi -> fprintf fmt "%s : %a"
         vi.vname pp_converted_stype
-        (type_of_ciltyp vi.vtype))
+        vi.vtype)
     fmt
     varinfo_list
 
@@ -54,7 +54,7 @@ let pp_input_params_prefix fmt varinfo_list =
     (fun fmt vi -> fprintf fmt "%s%s : %a"
         right_state_input_prefix
         vi.vname pp_converted_stype
-        (type_of_ciltyp vi.vtype))
+        vi.vtype)
     fmt
     varinfo_list
 
@@ -73,9 +73,9 @@ type proofVariable =
   {
     pid : int;
     name : string;
-    sequence : varinfo;
-    ivars : VS.t;
-    in_vars : varinfo list;
+    sequence : fnV;
+    ivars : VarSet.t;
+    in_vars : fnV list;
     out_type : symbolic_type;
     empty_value : fnExpr;
     function_expr : fnExpr;
@@ -111,7 +111,7 @@ let clear () =
 
 let pp_dfy fmt
     ((parent_pfv : proofVariable), (* The proofvariable we are printing for *)
-     (ivars : VS.t), (* The set of index variables *)
+     (ivars : VarSet.t), (* The set of index variables *)
      (seq : string), (* The name of the current sequence *)
      (e : fnExpr), (* The expression to print *)
      (for_join : bool), (* Are we printing an expression for the join ? *)
@@ -127,7 +127,7 @@ let pp_dfy fmt
         on_var = (* Transform only variables *)
           (fun v ->
              match v with
-             | FnVarinfo vi ->
+             | FnVariable vi ->
                begin
                  try
                    let pfv =
@@ -136,25 +136,25 @@ let pp_dfy fmt
                    if for_join then
                      let _, _, is_from_right_state = is_right_state_varname vi.vname in
                      if is_from_right_state then
-                       FnVarinfo {vi with vname = "right"^pfv.name}
+                       FnVariable {vi with vname = "right"^pfv.name}
                      else
-                       FnVarinfo {vi with vname = "left"^pfv.name}
+                       FnVariable {vi with vname = "left"^pfv.name}
                    else
                      (** Replace by a recursive call *)
                      let seq_arg =
                        fprintf str_formatter "%s(%s[..|%s|-1])" pfv.name seq seq;
                        flush_str_formatter ()
                      in
-                     FnVarinfo {vi with vname = seq_arg}
+                     FnVariable {vi with vname = seq_arg}
                  with Not_found ->
                    (if r
-                    then FnVarinfo
+                    then FnVariable
                         {vi with vname = right_state_input_prefix^vi.vname}
                     else
-                      (if VS.mem vi ivars then
+                      (if VarSet.mem vi ivars then
                          let name = (Conf.get_conf_string "dafny_length_fun")^
                                     "("^seq^")" in
-                         FnVarinfo {vi with vname = name}
+                         FnVariable {vi with vname = name}
                        else v))
                end
 
@@ -165,13 +165,13 @@ let pp_dfy fmt
                    - it is the beggining of the chunk. *)
                begin
                  match e with
-                 | FnVar (FnVarinfo i_vi) when is_left_index_vi i_vi ->
+                 | FnVar (FnVariable i_vi) when is_left_index_vi i_vi ->
                    let name = seq^"[0]" in
-                   FnVarinfo {input_i with vname = name}
+                   FnVariable {input_i with vname = name}
 
-                 | FnVar (FnVarinfo i_vi) ->
+                 | FnVar (FnVariable i_vi) ->
                    let name = seq^"[|"^seq^"|-1]" in
-                   FnVarinfo {input_i with vname = name}
+                   FnVariable {input_i with vname = name}
 
                  | _ -> failwith "Cannot generate proofs whith complex indexes."
                end
@@ -184,19 +184,19 @@ let pp_dfy fmt
         let pos_var = check_option cur_pfv.pos_var in
         if str_begins_with "right" vi.vname then
           FnBinop
-            (Plus, FnVar (FnVarinfo vi),
-             FnVar (FnVarinfo {vi with
+            (Plus, FnVar (FnVariable vi),
+             FnVar (FnVariable {vi with
                                vname = "left"^pos_var.name}))
         else
-          FnVar (FnVarinfo vi)
+          FnVar (FnVariable vi)
       in
       let transf =
         { case =
-            (fun e -> match e with FnVar (FnVarinfo vi) -> true | _ -> false);
+            (fun e -> match e with FnVar (FnVariable vi) -> true | _ -> false);
           on_case =
             (fun f e ->
                match e with
-               | FnVar (FnVarinfo vi) ->
+               | FnVar (FnVariable vi) ->
                  begin
                    try
                      let pfv =
@@ -474,7 +474,7 @@ let find_exprs vi solved_sketch =
   let rec ret_binding vi ve_list =
     match ve_list with
     | (v, e)::tl ->
-      if v = FnVarinfo vi then Some e else (ret_binding vi tl)
+      if v = FnVariable vi then Some e else (ret_binding vi tl)
     | [] -> None
   in
   let rec find_binding vi sklet =
@@ -671,31 +671,30 @@ let gen_proof_vars sketch =
   clear_uses ();
   let array_of_sketch =
     let arrays =
-      VS.filter
-        (fun vi -> CilTools.is_like_array vi)
+      VarSet.filter
+        (fun vi -> is_array_type vi.vtype)
         sketch.scontext.all_vars
     in
-    if VS.cardinal arrays > 1 then
+    if VarSet.cardinal arrays > 1 then
       failwith "Cannot generate proofs for multiple arrays."
     else
       try
-        VS.max_elt arrays
+        VarSet.max_elt arrays
       with Not_found ->
-        (makeVarinfo false (Conf.get_conf_string "dafny_seq_placeholder")
-           (TArray ((TInt ((IInt), []), None, []))))
+        (mkFnVar (Conf.get_conf_string "dafny_seq_placeholder") (Vector(Integer, None)))
   in
   (* Create a proofVariable for the index, that will be used in state variables
      that depend on position *)
   let index_pfv =
     let v, (i, g, u) = sketch.func_igu in
-    let index_vi = VS.min_elt sketch.scontext.index_vars in
+    let index_vi = VarSet.min_elt sketch.scontext.index_vars in
     let index_name = Conf.get_conf_string "dafny_length_fun" in
     {
       pid = index_vi.vid;
       inspected = false;
       name = index_name;
       sequence = array_of_sketch;
-      ivars = VS.empty;
+      ivars = VarSet.empty;
       in_vars =  [];
       pos_var = None;
       out_type = Integer;
@@ -714,22 +713,22 @@ let gen_proof_vars sketch =
   let pfv_id = ref 0 in
   input_seq_vi := Some array_of_sketch;
   (* Fill the hash table *)
-  VS.iter
+  VarSet.iter
     (fun vi ->
        let function_expr, join_expr = find_exprs vi sketch in
        (* Identify the variables used by the function that are not
           state variables. In most cases this will only be the input
           sequence *)
        let in_vars =
-         VS.filter
+         VarSet.filter
            (fun vi -> not (is_left_index_vi vi || is_right_index_vi vi))
-           (VS.diff (used_in_fnexpr function_expr)
-              (VS.union sketch.scontext.state_vars
+           (VarSet.diff (used_in_fnexpr function_expr)
+              (VarSet.union sketch.scontext.state_vars
                  sketch.scontext.index_vars))
        in
        let input_vars =
-         if VS.cardinal in_vars >= 1 then
-           VS.varlist in_vars else
+         if VarSet.cardinal in_vars >= 1 then
+           VarSet.elements in_vars else
            [array_of_sketch]
        in
        (* Replace ternary expressions that correspond to a min/max *)
@@ -764,7 +763,7 @@ let gen_proof_vars sketch =
            on_var =
              (fun v ->
                 match v with
-                | FnVarinfo vi when VS.mem vi sketch.scontext.index_vars -> true
+                | FnVariable vi when VarSet.mem vi sketch.scontext.index_vars -> true
                 | _ -> false)
          } in
          rec_expr2 recursor function_expr
@@ -801,18 +800,18 @@ let gen_proof_vars sketch =
   let pfv_list = IHTools.key_list vi_to_proofVars in
   let update_deps_pfv vid pfv =
     let depend_set =
-      VS.fold
+      VarSet.fold
         (fun vi dep_list ->
            (IH.find vi_to_proofVars vi.vid)::dep_list)
-        (VS.inter sketch.scontext.state_vars
+        (VarSet.inter sketch.scontext.state_vars
            (used_in_fnexpr pfv.function_expr))
         []
     in
     let join_depend_set =
-      VS.fold
+      VarSet.fold
         (fun vi dep_list ->
            (IH.find vi_to_proofVars vi.vid)::dep_list)
-        (VS.inter sketch.scontext.state_vars
+        (VarSet.inter sketch.scontext.state_vars
            (used_in_fnexpr pfv.join_expr))
         []
     in

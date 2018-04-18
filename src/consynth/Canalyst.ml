@@ -183,8 +183,8 @@ let no_sketches = ref 0;;
 
 let func2sketch cfile funcreps =
   let rec  transform_func func_info =
-    let var_set = func_info.lvariables.all_vars in
-    let state_vars = func_info.lvariables.state_vars in
+    let var_set = varset_of_vs func_info.lvariables.all_vars in
+    let state_vars = varset_of_vs func_info.lvariables.state_vars in
     let figu =
       match func_info.figu with
       | Some f -> f
@@ -195,8 +195,7 @@ let func2sketch cfile funcreps =
         (fun vid cilc m ->
            let expect_type =
              try
-               (type_of_ciltyp
-                  ((VS.find_by_id vid var_set).Cil.vtype))
+               (VarSet.find_by_id var_set vid).vtype
              with Not_found ->
                Bottom
            in
@@ -205,7 +204,7 @@ let func2sketch cfile funcreps =
            | None ->
              eprintf "@.Warning : initial value %s for %s not valid.@."
                (CilTools.psprint80 Cil.dn_exp cilc)
-               (VS.find_by_id vid var_set).Cil.vname;
+               (VarSet.find_by_id var_set vid).vname;
              m)
         func_info.reaching_consts IM.empty
     in
@@ -215,18 +214,21 @@ let func2sketch cfile funcreps =
         IM.iter
           (fun k c ->
              printf "Reaching constant: %s = %a@."
-               (VS.find_by_id k state_vars).Cil.vname
+               (VarSet.find_by_id state_vars k).vname
                FPretty.pp_fnexpr c)
           s_reach_consts
       end;
+    let figu' =
+      let iset, igu = figu in varset_of_vs iset, igu
+    in
     let sketch_obj =
       new Sketch.Body.sketch_builder var_set state_vars
-        func_info.func figu
+        func_info.func figu'
     in
     sketch_obj#build;
     let loop_body, sigu =
       match sketch_obj#get_sketch with
-      | Some (a,b) -> a,b
+      | Some (a,b) ->  a,b
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
     let index_set, _ = sigu in
@@ -245,7 +247,7 @@ let func2sketch cfile funcreps =
            | FnConst c -> IM.add k 1 m_s
            | FnVar v ->
              (match v with
-              | FnVarinfo vi -> IM.add k 0 m_s
+              | FnVariable vi -> IM.add k 0 m_s
               | FnArray (v, e) -> IM.add k (fnArray_dep_len e) m_s
               | _ -> raise Tuple_fail)
            | _ -> failhere __FILE__"func2sketch" "Unsupported intialization.")
@@ -260,17 +262,18 @@ let func2sketch cfile funcreps =
     {
       id = func_info.lid;
       host_function =
-        (try check_option
-              (get_fun cfile func_info.host_function.Cil.vname)
+        (mkFuncDec
+           (try check_option
+               (get_fun cfile func_info.host_function.Cil.vname)
         with Failure s -> (eprintf "Failure : %s@." s;
                            failhere __FILE__ "func2sketch"
-                             "Failed to get host function."));
+                             "Failed to get host function.")));
       loop_name = func_info.loop_name;
       scontext =
         { state_vars = state_vars;
           index_vars = index_set;
-          used_vars = func_info.lvariables.used_vars;
-          all_vars = func_info.lvariables.all_vars;
+          used_vars = varset_of_vs func_info.lvariables.used_vars;
+          all_vars = varset_of_vs func_info.lvariables.all_vars;
           costly_exprs = ES.empty;
         };
       min_input_size = max_m_sizes;

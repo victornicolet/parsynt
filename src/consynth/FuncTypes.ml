@@ -27,16 +27,19 @@ open Synthlib
 open Synthlib2ast
 
 (**
-   1 - Expressions & functions.
-   2-  Symbolic types, operators, helper functions.
-   3 - Recursors.
-   4 - Scheme & func transformers.
-   5 - Expression sets.
-   6 - Index variables management.
-   7 - Typing expressions.
-   8 - Structs for problem info.
-   9 - Conversion to CIL.
-   10 - Conversion to Synthlib.
+   1 - Expression types.
+   2 - Operators and constants.
+   3 - Variables management.
+   4 - Expressions.
+   5 - Typing functions.
+   6 - Basic helper functions.
+   7 - Recursors.
+   8 - Scheme & func transformers.
+   9 - Expression sets.
+   10 - Index variables management.
+   11 - Structs for problem info.
+   12 - Conversion to CIL.
+   13 - Conversion to Synthlib.
 *)
 
 let use_unsafe_operations = ref false
@@ -45,7 +48,7 @@ exception BadType of string
 
 let failontype s = raise (BadType s)
 
-(** ------------------- 1 - EXPRESSIONS & FUNCTIONS---------------------------*)
+(** ------------------- 1 - EXPRESSION TYPES  ------------------------------*)
 (** Internal type for building funces *)
 type operator_type =
   | Arith                       (* Arithmetic only *)
@@ -78,6 +81,9 @@ type symbolic_type =
   (** User-defined structures *)
   | Struct of symbolic_type
 
+
+
+(* ---------------------- 2 - Operators and constants ---------------------------- *)
 
 type symb_unop =
     | Not | Add1 | Sub1
@@ -141,6 +147,9 @@ and constants =
 exception Tuple_fail            (* Tuples are not supported for the moment. *)
 
 
+
+(* -------------------- 3 - VARIABLES MANAGEMENT -------------------- *)
+
 let _GLOB_VARIDS = ref 100
 let _new_id () = incr _GLOB_VARIDS; !_GLOB_VARIDS
 
@@ -169,13 +178,89 @@ struct
     FnVs.max_elt (FnVs.filter (fun elt -> elt.vname = name) vs)
   let vids_of_vs vs : int list =
     List.map (fun vi -> vi.vid) (FnVs.elements vs)
+  let has_vid vs id : bool =
+    List.mem id (vids_of_vs vs)
   let pp_var_names fmt vs =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt elt -> fprintf fmt "%s" elt.vname)
       fmt (FnVs.elements vs)
+  let bindings vs =
+    List.map (fun elt -> (elt.vid, elt)) (FnVs.elements vs)
+  let names vs =
+    List.map (fun elt -> elt.vname) (FnVs.elements vs)
+  let types vs =
+    List.map (fun elt -> elt.vtype) (FnVs.elements vs)
+  let add_prefix vs prefix =
+    FnVs.of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (FnVs.elements vs))
+  let iset vs ilist =
+    FnVs.of_list
+      (List.filter (fun vi -> List.mem vi.vid ilist) (FnVs.elements vs))
 end
 
+
+
+type jcompletion = { cvi : fnV; cleft : bool; cright : bool;}
+
+module CSet = Set.Make (struct
+    type t = jcompletion
+    let compare jcs0 jcs1  =
+      if jcs0.cvi.vid = jcs1.cvi.vid then
+        (match jcs0.cleft && jcs0.cright, jcs1.cleft && jcs1.cright with
+         | true, true -> 0
+         | true, false -> 1
+         | false, true -> -1
+         | false, false -> if jcs0.cleft then 1 else -1)
+      else Pervasives.compare jcs0.cvi.vid jcs1.cvi.vid
+  end)
+
+module CS = struct
+  include CSet
+  let of_vs vs =
+    VarSet.fold
+      (fun vi cset -> CSet.add {cvi = vi; cleft = false; cright = false} cset)
+      vs CSet.empty
+
+
+  let map f cs =
+    CSet.fold (fun jc cset -> CSet.add (f jc) cset)
+      cs CSet.empty
+
+  let complete_left cs =
+    CSet.fold (fun jc cset -> CSet.add {jc with cleft = true} cset)
+      cs CSet.empty
+
+  let complete_right cs =
+    CSet.fold (fun jc cset -> CSet.add {jc with cright = true} cset)
+      cs CSet.empty
+
+  let complete_all cs =
+    map (fun jc -> {jc with cleft = true; cright = true;}) cs
+
+  let to_jc_list cs =
+    CSet.fold (fun jc jclist -> jc::jclist)
+      cs []
+
+  let to_vs cs =
+    CSet.fold (fun jc vs -> VarSet.add jc.cvi vs) cs VarSet.empty
+
+  let pp_cs fmt cs =
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
+      (fun fmt jc ->
+         if jc.cleft then
+           fprintf fmt "%s%s"
+             (Conf.get_conf_string "rosette_join_left_state_prefix")
+             jc.cvi.vname;
+         if jc.cright then
+           fprintf fmt "%s%s%s"
+             (if jc.cleft then " " else "")
+             (Conf.get_conf_string "rosette_join_right_state_prefix")
+             jc.cvi.vname;)
+      fmt (to_jc_list cs)
+end
+
+
+(* -------------------- 4 - EXPRESSIONS --------------------  *)
 
 type hole_type = symbolic_type * operator_type
 
@@ -243,18 +328,268 @@ and body_func =
 
 
 
-(** ----------- 2 - SYMBOLIC TYPES & OPERATORS, HELPER FUNCTIONS -------------*)
-(** Interface types with Rosette/Racket *)
+(* -------------------- 5 - TYPING FUNCTIONS -------------------- *)
 
-(*
-  Operators : Cil operators and C function names.
-*)
+let rec type_of_ciltyp =
+  function
+  | Cil.TInt (ik, _) ->
+    begin
+      match ik with
+      | Cil.IBool -> Boolean
+      | _ -> Integer
+    end
 
-(* Unary operators - available in Rosette *)
+  | Cil.TFloat _ -> Real
+
+  | Cil.TArray (t, _, _) ->
+    Vector (type_of_ciltyp t, None)
+
+  | Cil.TFun (t, arglisto, _, _) ->
+    Procedure (type_of_args arglisto, type_of_ciltyp t)
+  | Cil.TComp (ci, _) -> Unit
+  | Cil.TVoid _ -> Unit
+  | Cil.TPtr (t, _) ->
+    Vector (type_of_ciltyp t, None)
+  | Cil.TNamed (ti, _) ->
+    type_of_ciltyp ti.Cil.ttype
+  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
+
+and type_of_args argslisto =
+  try
+    let argslist = check_option argslisto in
+    let symb_types_list =
+      List.map
+        (fun (s, t, atr) -> type_of_ciltyp t)
+        argslist
+    in
+    match symb_types_list with
+    | [] -> Unit
+    | [st] -> st
+    | _ -> Tuple symb_types_list
+  with Failure s -> Unit
+
+let rec type_of_cilconst c =
+  match c with
+  | Cil.CInt64 _  | Cil.CChr _ -> Integer
+  | Cil.CReal _ -> Real
+  | Cil.CStr _ | Cil.CWStr _ -> List (Integer, None)
+  | Cil.CEnum (_, _, einf) -> failwith "Enum types not implemented"
+
+let rec ciltyp_of_symb_type =
+  function
+  | Integer -> Some (Cil.TInt (Cil.IInt, []))
+  | Boolean -> Some (Cil.TInt (Cil.IBool, []))
+  | Real | Num -> Some (Cil.TFloat (Cil.FFloat, []))
+  | Vector (t, _) ->
+    (match ciltyp_of_symb_type t with
+     | Some tc -> Some (Cil.TArray (tc, None, []))
+     | None -> None)
+  | _ -> None
+
+let type_of_binop_args =
+  function
+  | Rem | Mod | Quot | Expt
+  | Lt | Gt | Ge | Le | Max | Min
+  | Plus | Minus | Times | Div  -> Num
+  | Xor | And | Nand | Nor | Or | Implies -> Boolean
+  | _ -> Unit
+
+let type_of_unop_args =
+  function
+  | Not -> Boolean
+  | _ -> Num
+
+let tupletype_of_vs vs =
+  Tuple (List.map (fun vi -> type_of_ciltyp vi.Cil.vtype) (VS.varlist vs))
+
+let rec pp_typ fmt t =
+  let fpf = Format.fprintf in
+  match t with
+  | Unit -> fpf fmt "unit"
+  | Bottom -> fpf fmt "<BOT>"
+  | Integer -> fpf fmt "integer"
+  | Real -> fpf fmt "real"
+  | Num -> fpf fmt "num"
+  | Boolean -> fpf fmt "boolean"
+  | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
+  | Tuple tl ->
+    Format.pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      pp_typ fmt tl
+  | Function (argt, rett) ->
+    fpf fmt "%a -> %a" pp_typ argt pp_typ rett
+  | Pair t -> fpf fmt "%a pair" pp_typ t
+  | List (t, _) -> fpf fmt "%a list" pp_typ t
+  | Struct t -> fpf fmt "%a struct" pp_typ t
+  | Bitvector i -> fpf fmt "bitvector[%i]" i
+  | Box t -> fpf fmt "%a box" pp_typ t
+  | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
+
+let rec is_subtype t tmax =
+  match t, tmax with
+  | t, tmax when t = tmax -> true
+  | Integer, Real -> true
+  | Num, Real | Real, Num -> true
+  | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
+  | _, _ ->
+    failontype (Format.fprintf str_formatter
+                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
+                flush_str_formatter ())
+
+
+let rec res_type t =
+  match t with
+  | Function (t, t') -> t'
+  | _ -> t
+
+let array_type t =
+  match t with
+  | Vector (t, _) -> t
+  | _ -> failontype "Array type must be applied to array types."
+
+let is_array_type t =
+  match t with
+  | Vector (t,_) -> true
+  | Bitvector _ -> true
+  | _ -> false
+
+let rec join_types t1 t2 =
+  match t1, t2 with
+  | t1, t2 when t1 = t2 -> t1
+  | Integer, Boolean -> Boolean
+  | Integer, Real | Real, Integer
+  | Num, Real | Real, Num -> Real
+  | Integer, Num | Num, Integer -> Num
+  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
+  | _, _ ->
+    failontype (Format.fprintf Format.str_formatter
+                "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
+                Format.flush_str_formatter () )
+
+let type_of_unop t =
+  let type_of_unsafe_unop t =
+    function
+    | _ -> Real
+  in
+  function
+  | Not -> if t = Boolean then Some Boolean else None
+
+  | Neg  | Abs | Add1 | Sub1->
+    if is_subtype t Real then Some t else None
+
+  | Floor | Ceiling | Round | Truncate ->
+    if is_subtype t Real then Some Integer else None
+
+  | Sgn ->
+    if is_subtype t Real then Some Boolean else None
+
+  | UnsafeUnop op ->
+    Some (type_of_unsafe_unop t op)
+
+
+let type_of_binop t1 t2 =
+  let join_t = join_types t1 t2 in
+  let type_of_unsafe_binop t1 t2 =
+    function
+    | _ -> Some Real
+  in
+  function
+  | And | Nand | Xor | Or | Implies | Nor ->
+    if is_subtype join_t Boolean then Some Boolean else None
+
+  | Le | Ge | Gt | Lt | Neq ->
+    if is_subtype join_t Real then Some Boolean else None
+
+  | Eq  -> Some Boolean
+
+  | Plus | Minus | Times | Div | Rem | Quot | Expt | Mod | Max | Min ->
+    if is_subtype join_t Real then Some join_t else None
+
+  | UnsafeBinop o -> type_of_unsafe_binop t1 t2 o
+  | ShiftL | ShiftR -> Some (Bitvector 0)
+
+
+let rec type_of_const c =
+  match c with
+  | CNil -> Unit
+  | CBool _ -> Boolean
+  | CChar _ -> Integer
+  | CString _ -> List (Integer, None)
+  | CReal _ -> Real
+  | CInt _ | CInt64 _ -> Integer
+  | CBox b -> Box (type_of_cilconst b)
+  | CUnop (op, c) -> type_of (FnUnop (op, FnConst c))
+  | CBinop (op, c, c') -> type_of (FnBinop (op, FnConst c, FnConst c'))
+  | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
+  | CUnsafeBinop (op, c, c') -> join_types (type_of_const c) (type_of_const c')
+  | CUnsafeUnop (op, c) -> (type_of_const c)
+  | Infnty | NInfnty -> Num
+
+and type_of_var v =
+  match v with
+  | FnVariable vi -> vi.vtype
+  | FnArray (v, e) ->
+    (** We only consider integer indexes for now *)
+    (** Return the type of the array cells *)
+    begin
+      match type_of_var v with
+      | Vector (tv, _) -> tv
+      | t -> failwith
+               (Format.fprintf Format.str_formatter
+                  "Unexpected type %a for variable in array access."
+                  pp_typ t ; Format.flush_str_formatter ())
+    end
+  | FnTuple vs ->
+    let tl =
+      VarSet.fold (fun vi tl -> tl@[vi.vtype]) vs []
+    in
+    Tuple tl
 
 
 
+and type_of expr =
+  match expr with
+  | FnVar v -> type_of_var v
+  | FnConst c -> type_of_const c
+  | FnAddrofLabel _ | FnStartOf _
+  | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
+  | FnAlignof _ | FnAlignofE _  | FnAddrof _ -> Integer
+  | FnCastE (t, e) -> t
+  | FnUnop (unop, e) ->
+    (match type_of_unop (type_of e) unop with
+     | Some x -> x | None -> failwith "Could not find type of expressions.")
 
+  | FnBinop (binop, e1, e2) ->
+    (match type_of_binop (type_of e1) (type_of e2) binop with
+     | Some x -> x | None -> failwith "Could not find type of expressions.")
+
+  | FnQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
+
+  | FnApp (t, _, _) -> t
+  | FnHoleL (ht, _,  _) | FnHoleR (ht, _) ->
+    (match ht with (t, ot) -> t)
+
+  | _ -> failwith "Typing subfunctions not yet implemented"
+
+
+let filter_vs_by_type t =
+  VarSet.filter
+    (fun vi ->
+       vi.vtype = t)
+
+let filter_cs_by_type t =
+  CS.filter
+    (fun jc ->
+       let st = jc.cvi.vtype in
+       st = t)
+
+let rec input_type_or_type =
+  function
+  | Function (it, rt) -> input_type_or_type it
+  | t -> t
+
+
+(** ----------- 6 - BASIC HELPER FUNCTIONS -------------*)
 
 (* Given a cil operator, return an unary symb operator and a type *)
 let symb_unop_of_cil =
@@ -479,9 +814,9 @@ let uninterpeted fname =
 (* Remove interpreted symbols, i.e remove the variables
    that have a name that is a function.
 *)
-let remove_interpreted_symbols (vars : VS.t) =
-  VS.filter
-    (fun v -> uninterpeted v.Cil.vname)
+let remove_interpreted_symbols (vars : VarSet.t) =
+  VarSet.filter
+    (fun v -> uninterpeted v.vname)
     vars
 
 (* Returns true if the expression is a function name. *)
@@ -612,77 +947,7 @@ let mkOp ?(t = Unit) vi argl =
     end
 
 
-let rec type_of_ciltyp =
-  function
-  | Cil.TInt (ik, _) ->
-    begin
-      match ik with
-      | Cil.IBool -> Boolean
-      | _ -> Integer
-    end
 
-  | Cil.TFloat _ -> Real
-
-  | Cil.TArray (t, _, _) ->
-    Vector (type_of_ciltyp t, None)
-
-  | Cil.TFun (t, arglisto, _, _) ->
-    Procedure (type_of_args arglisto, type_of_ciltyp t)
-  | Cil.TComp (ci, _) -> Unit
-  | Cil.TVoid _ -> Unit
-  | Cil.TPtr (t, _) ->
-    Vector (type_of_ciltyp t, None)
-  | Cil.TNamed (ti, _) ->
-    type_of_ciltyp ti.Cil.ttype
-  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
-
-and type_of_args argslisto =
-  try
-    let argslist = check_option argslisto in
-    let symb_types_list =
-      List.map
-        (fun (s, t, atr) -> type_of_ciltyp t)
-        argslist
-    in
-    match symb_types_list with
-    | [] -> Unit
-    | [st] -> st
-    | _ -> Tuple symb_types_list
-  with Failure s -> Unit
-
-let rec type_of_cilconst c =
-  match c with
-  | Cil.CInt64 _  | Cil.CChr _ -> Integer
-  | Cil.CReal _ -> Real
-  | Cil.CStr _ | Cil.CWStr _ -> List (Integer, None)
-  | Cil.CEnum (_, _, einf) -> failwith "Enum types not implemented"
-
-let rec ciltyp_of_symb_type =
-  function
-  | Integer -> Some (Cil.TInt (Cil.IInt, []))
-  | Boolean -> Some (Cil.TInt (Cil.IBool, []))
-  | Real | Num -> Some (Cil.TFloat (Cil.FFloat, []))
-  | Vector (t, _) ->
-    (match ciltyp_of_symb_type t with
-     | Some tc -> Some (Cil.TArray (tc, None, []))
-     | None -> None)
-  | _ -> None
-
-let type_of_binop_args =
-  function
-  | Rem | Mod | Quot | Expt
-  | Lt | Gt | Ge | Le | Max | Min
-  | Plus | Minus | Times | Div  -> Num
-  | Xor | And | Nand | Nor | Or | Implies -> Boolean
-  | _ -> Unit
-
-let type_of_unop_args =
-  function
-  | Not -> Boolean
-  | _ -> Num
-
-let tupletype_of_vs vs =
-  Tuple (List.map (fun vi -> type_of_ciltyp vi.Cil.vtype) (VS.varlist vs))
 
 
 
@@ -719,7 +984,7 @@ let cil_varinfo vi =
     failhere __FILE__ "cil_varinfo" "Couldn't convert type."
 
 
-(** ---------------------------- 3 - RECURSORS -------------------------------*)
+(* ---------------------------- 7 - RECURSORS -------------------------------*)
 
 
 type 'a recursor=
@@ -1144,7 +1409,7 @@ and used_in_assignments ve_list =
     (VarSet.empty, VarSet.empty) ve_list
 
 
-(** ------------------------ 4 - SCHEME <-> FUNC -------------------------- *)
+(** ------------------------ 8 - SCHEME <-> FUNC -------------------------- *)
 (** Translate basic scheme to the Func expressions
     @param env a mapping from variable ids to varinfos.
 *)
@@ -1453,7 +1718,7 @@ let force_flat vs fnlet =
 
 
 
-(** ------------------------ 5 -  EXPRESSION SET ----------------------------*)
+(** ------------------------ 9 -  EXPRESSION SET ----------------------------*)
 
 module ES = Set.Make (
   struct
@@ -1492,7 +1757,7 @@ let ctx_add_cexp ctx cexp =
   {ctx with costly_exprs = cexp}
 
 
-(** ------------------- 6 - INDEX VARIABLES MANAGEMENT -----------------------*)
+(** ------------------- 10 - INDEX VARIABLES MANAGEMENT -----------------------*)
 (** Create and manage variables for index boundaries *)
 
 let start_iname = Conf.get_conf_string "rosette_index_suffix_start"
@@ -1515,7 +1780,7 @@ let create_boundary_variables index_set =
 
 let left_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
-  let l, _ = IH.find index_to_boundary vi.Cil.vid in l
+  let l, _ = IH.find index_to_boundary vi.vid in l
 
 let is_left_index_vi i =
   try
@@ -1527,7 +1792,7 @@ let is_left_index_vi i =
 
 let right_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
-  let _, r = IH.find index_to_boundary vi.Cil.vid in r
+  let _, r = IH.find index_to_boundary vi.vid in r
 
 let is_right_index_vi i =
   try
@@ -1554,197 +1819,21 @@ let is_prefix_or_suffix vi expr =
   | _ -> false
 
 
-
-
-(* ----------------------- 7 - TYPING EXPRESSIONS ----------------------------*)
-
-let rec pp_typ fmt t =
-  let fpf = Format.fprintf in
-  match t with
-  | Unit -> fpf fmt "unit"
-  | Bottom -> fpf fmt "<BOT>"
-  | Integer -> fpf fmt "integer"
-  | Real -> fpf fmt "real"
-  | Num -> fpf fmt "num"
-  | Boolean -> fpf fmt "boolean"
-  | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
-  | Tuple tl ->
-    Format.pp_print_list
-      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-      pp_typ fmt tl
-  | Function (argt, rett) ->
-    fpf fmt "%a -> %a" pp_typ argt pp_typ rett
-  | Pair t -> fpf fmt "%a pair" pp_typ t
-  | List (t, _) -> fpf fmt "%a list" pp_typ t
-  | Struct t -> fpf fmt "%a struct" pp_typ t
-  | Bitvector i -> fpf fmt "bitvector[%i]" i
-  | Box t -> fpf fmt "%a box" pp_typ t
-  | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
-
-let rec is_subtype t tmax =
-  match t, tmax with
-  | t, tmax when t = tmax -> true
-  | Integer, Real -> true
-  | Num, Real | Real, Num -> true
-  | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
-  | _, _ ->
-    failontype (Format.fprintf str_formatter
-                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
-                flush_str_formatter ())
-
-
-let rec res_type t =
-  match t with
-  | Function (t, t') -> t'
-  | _ -> t
-
-let array_type t =
-  match t with
-  | Vector (t, _) -> t
-  | _ -> failontype "Array type must be applied to array types."
-
-let rec join_types t1 t2 =
-  match t1, t2 with
-  | t1, t2 when t1 = t2 -> t1
-  | Integer, Boolean -> Boolean
-  | Integer, Real | Real, Integer
-  | Num, Real | Real, Num -> Real
-  | Integer, Num | Num, Integer -> Num
-  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
-  | _, _ ->
-    failontype (Format.fprintf Format.str_formatter
-                "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
-                Format.flush_str_formatter () )
-
-let type_of_unop t =
-  let type_of_unsafe_unop t =
-    function
-    | _ -> Real
-  in
-  function
-  | Not -> if t = Boolean then Some Boolean else None
-
-  | Neg  | Abs | Add1 | Sub1->
-    if is_subtype t Real then Some t else None
-
-  | Floor | Ceiling | Round | Truncate ->
-    if is_subtype t Real then Some Integer else None
-
-  | Sgn ->
-    if is_subtype t Real then Some Boolean else None
-
-  | UnsafeUnop op ->
-    Some (type_of_unsafe_unop t op)
-
-
-let type_of_binop t1 t2 =
-  let join_t = join_types t1 t2 in
-  let type_of_unsafe_binop t1 t2 =
-    function
-    | _ -> Some Real
-  in
-  function
-  | And | Nand | Xor | Or | Implies | Nor ->
-    if is_subtype join_t Boolean then Some Boolean else None
-
-  | Le | Ge | Gt | Lt | Neq ->
-    if is_subtype join_t Real then Some Boolean else None
-
-  | Eq  -> Some Boolean
-
-  | Plus | Minus | Times | Div | Rem | Quot | Expt | Mod | Max | Min ->
-    if is_subtype join_t Real then Some join_t else None
-
-  | UnsafeBinop o -> type_of_unsafe_binop t1 t2 o
-  | ShiftL | ShiftR -> Some (Bitvector 0)
-
-
-let rec type_of_const c =
-  match c with
-  | CNil -> Unit
-  | CBool _ -> Boolean
-  | CChar _ -> Integer
-  | CString _ -> List (Integer, None)
-  | CReal _ -> Real
-  | CInt _ | CInt64 _ -> Integer
-  | CBox b -> Box (type_of_cilconst b)
-  | CUnop (op, c) -> type_of (FnUnop (op, FnConst c))
-  | CBinop (op, c, c') -> type_of (FnBinop (op, FnConst c, FnConst c'))
-  | Pi | SqrtPi | Sqrt2 | E | Ln2 | Ln10 -> Real
-  | CUnsafeBinop (op, c, c') -> join_types (type_of_const c) (type_of_const c')
-  | CUnsafeUnop (op, c) -> (type_of_const c)
-  | Infnty | NInfnty -> Num
-
-and type_of_var v =
-  match v with
-  | FnVariable vi -> vi.vtype
-  | FnArray (v, e) ->
-    (** We only consider integer indexes for now *)
-    (** Return the type of the array cells *)
-    begin
-      match type_of_var v with
-      | Vector (tv, _) -> tv
-      | t -> failwith
-               (Format.fprintf Format.str_formatter
-                  "Unexpected type %a for variable in array access."
-                  pp_typ t ; Format.flush_str_formatter ())
-    end
-  | FnTuple vs ->
-    let tl =
-      VarSet.fold (fun vi tl -> tl@[vi.vtype]) vs []
-    in
-    Tuple tl
-
-
-
-and type_of expr =
-  match expr with
-  | FnVar v -> type_of_var v
-  | FnConst c -> type_of_const c
-  | FnAddrofLabel _ | FnStartOf _
-  | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
-  | FnAlignof _ | FnAlignofE _  | FnAddrof _ -> Integer
-  | FnCastE (t, e) -> t
-  | FnUnop (unop, e) ->
-    (match type_of_unop (type_of e) unop with
-     | Some x -> x | None -> failwith "Could not find type of expressions.")
-
-  | FnBinop (binop, e1, e2) ->
-    (match type_of_binop (type_of e1) (type_of e2) binop with
-     | Some x -> x | None -> failwith "Could not find type of expressions.")
-
-  | FnQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
-
-  | FnApp (t, _, _) -> t
-  | FnHoleL (ht, _,  _) | FnHoleR (ht, _) ->
-    (match ht with (t, ot) -> t)
-
-  | _ -> failwith "Typing subfunctions not yet implemented"
-
-
-let filter_vs_by_type t =
-  VarSet.filter
-    (fun vi ->
-       vi.vtype = t)
-
-let filter_cs_by_type t =
-  CS.filter
-    (fun jc ->
-       let st = type_of_ciltyp jc.cvi.Cil.vtype in
-       st = t)
-
-let rec input_type_or_type =
-  function
-  | Function (it, rt) -> input_type_or_type it
-  | t -> t
-(* ------------------------ 8- STRUCT UTILS ----------------------------*)
+(* ------------------------ 11 - STRUCT UTILS ----------------------------*)
 
 type sigu = VarSet.t * (fnExpr * fnExpr * fnExpr)
+
+type func_dec =
+  {
+    fvar : fnV;
+    fformals : fnV list;
+    flocals : fnV list;
+  }
 
 type prob_rep =
   {
     id : int;
-    host_function : Cil.fundec;
+    host_function : func_dec;
     loop_name : string;
     scontext : context;
     min_input_size : int;
@@ -1756,6 +1845,13 @@ type prob_rep =
     func_igu : sigu;
     reaching_consts : fnExpr IM.t;
     inner_functions : prob_rep list;
+  }
+
+let mkFuncDec fndc =
+  {
+    fvar = var_of_vi fndc.Cil.svar;
+    fformals = List.map var_of_vi fndc.Cil.sformals;
+    flocals = List.map var_of_vi fndc.Cil.slocals;
   }
 
 let get_index_init problem =
@@ -1771,16 +1867,16 @@ let get_index_guard problem =
   let idx, (i, g, u) = problem.func_igu in g
 
 let get_init_value problem vi =
-  try IM.find vi.Cil.vid problem.reaching_consts
+  try IM.find vi.vid problem.reaching_consts
   with Not_found ->
-    (match scm_to_fn (IM.find vi.Cil.vid problem.init_values) with
+    (match scm_to_fn (IM.find vi.vid problem.init_values) with
      | _ , Some e -> e  | _ -> raise Not_found)
 
 let get_loop_bound problem =
   get_loop_bound_var (get_index_guard problem)
 
 
-(* ----------------------- 9 - CONVERSION TO CIL  ----------------------------*)
+(* ----------------------- 12 - CONVERSION TO CIL  ----------------------------*)
 
 (** Includes passes to transform the code into an appropriate form *)
 

@@ -24,6 +24,7 @@ open Sylexer
 open Utils
 open ListTools
 
+
 let parseinputs s = Syparser.file Sylexer.token (Lexing.from_string s)
 let parsechan ch = Syparser.file Sylexer.token (Lexing.from_channel ch)
 

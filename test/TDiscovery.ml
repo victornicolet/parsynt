@@ -19,7 +19,7 @@ let test_1 () =
       [(var mts_vi),(_b (evar mts_vi) Max (array_vi $ (evar i)))]
   in
   let mts_figu : sigu =
-    VS.singleton i,
+    VarSet.singleton i,
     ((_let [(var i),sk_zero]),
     (_b (evar i) Lt (evar n)),
     (_let [(var i),(_b (evar i) Plus sk_one)]))
@@ -33,13 +33,13 @@ let test_1 () =
       id = 0;
       loop_name = "mts_test";
       min_input_size = 0;
-      host_function = make_empty_fundec ();
+      host_function = {fvar = mkFnVar "__" Bottom; fformals = []; flocals = [] };
       inner_functions = [];
       scontext = {
-        state_vars = VS.singleton mts_vi;
-        index_vars = VS.singleton i;
-        used_vars = VS.of_varlist [mts_vi; i; array_vi];
-        all_vars = VS.of_varlist [mts_vi; i; array_vi];
+        state_vars = VarSet.singleton mts_vi;
+        index_vars = VarSet.singleton i;
+        used_vars = VarSet.of_list [mts_vi; i; array_vi];
+        all_vars = VarSet.of_list [mts_vi; i; array_vi];
         costly_exprs = ES.empty;
       };
       uses_global_bound = false;
@@ -51,7 +51,7 @@ let test_1 () =
       reaching_consts = rconsts;
     }
   in
-  VS.pp_var_names std_formatter pb.scontext.state_vars
+  VarSet.pp_var_names std_formatter pb.scontext.state_vars
 
 
 let test () =

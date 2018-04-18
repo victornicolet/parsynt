@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Cil
+
 open FuncTypes
 open FPretty
 open List
@@ -27,15 +27,15 @@ open Utils
 let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
   let _binding  (var, expr) =
     match var with
-    | FnVarinfo v ->
-      let sort = sort_of_varinfo v in
+    | FnVariable v ->
+      let sort = sort_of_varinfo (cil_varinfo v) in
       (v.vname, sort, to_term ~texpr:texpr expr)
     | _ -> failhere __FILE__ "to_term"
              "Unsupported left hand side in binding."
   in
   let rec of_var fnvar =
     match fnvar with
-    | FnVarinfo vi -> SyId vi.vname
+    | FnVariable vi -> SyId vi.vname
     | FnArray(v,e) -> of_var v
     | FnTuple _ -> failhere __FILE__ "to_term" "Tuples not supported."
   in
@@ -81,14 +81,14 @@ let to_fnconst =
 
 let to_fnexpr vars =
   let rec _binding (v,t,e) =
-    let vi = VS.find_by_name v vars in
-    (FnVarinfo vi, _fnexpr e)
+    let vi = VarSet.find_by_name vars v in
+    (FnVariable vi, _fnexpr e)
   and  _fnexpr =
     function
     | SyId v ->
       (try
-        let vi = VS.find_by_name v vars in
-        FnVar (FnVarinfo vi)
+        let vi = VarSet.find_by_name vars v in
+        FnVar (FnVariable vi)
       with Not_found ->
         failhere __FILE__ "to_fnexpr" "Unknown variable.")
     | SyLiteral lit -> to_fnconst lit

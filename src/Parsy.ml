@@ -116,7 +116,7 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
         (fun map vid ast_expr ->
            IM.add vid ast_expr map)
         IM.empty
-        (VS.vids_of_vs problem.scontext.state_vars) expr_list
+        (VarSet.vids_of_vs problem.scontext.state_vars) expr_list
 
     | None ->
       (** If auxiliaries have been created, the sketch has been solved
@@ -125,7 +125,7 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
       IH.fold
         (fun vid vi map ->
            IM.add vid
-             (match type_of_ciltyp vi.vtype with
+             (match vi.vtype with
               | Integer -> RAst.Int_e 0
               | Boolean -> RAst.Bool_e true
               | Real -> RAst.Int_e 1

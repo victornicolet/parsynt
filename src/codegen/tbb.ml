@@ -10,6 +10,8 @@ module Ct = CilTools
 
 let class_member_appendix = Conf.get_conf_string "class_member_appendix"
 
+let convtype_of_v v = check_option (ciltyp_of_symb_type v.vtype)
+
 (** Class constructor argument *)
 type cpp_include =
   | IncludeLocal of string
@@ -21,8 +23,8 @@ let pp_include fmt includ =
   | IncludeGlobal s -> fprintf fmt "#include <%s>@." s
 
 type cpp_constr_arg =
-  | FormalArg of varinfo
-  | FormalRefArg of varinfo
+  | FormalArg of fnV
+  | FormalRefArg of fnV
   | SpecialArg of string
 
 
@@ -31,10 +33,10 @@ let pp_cpp_constr_arg fmt =
   function
   | FormalArg vi ->
     fprintf fmt "%s %s"
-      (Ct.psprint80 dn_type vi.vtype) vi.vname
+      (Ct.psprint80 dn_type (convtype_of_v vi)) vi.vname
   | FormalRefArg vi ->
     fprintf fmt "%s& %s"
-      (Ct.psprint80 dn_type vi.vtype) vi.vname
+      (Ct.psprint80 dn_type (convtype_of_v vi)) vi.vname
   | SpecialArg s ->
     fprintf fmt "%s" s
 
@@ -46,12 +48,12 @@ let pp_constr_arg_in_app fmt =
   | SpecialArg s ->
     fprintf fmt "%s" s
 
-type cpp_constr_initializer = varinfo * init_expr
+type cpp_constr_initializer = fnV * init_expr
 
 and init_expr =
   | ConstExpr of fnExpr
-  | ClassMember of varinfo * string
-  | LocalVar of varinfo
+  | ClassMember of fnV * string
+  | LocalVar of fnV
 
 let pp_initializer fmt (vi, init) =
   fprintf fmt "%s%s(%s)"
@@ -102,7 +104,7 @@ type cpp_class_method =
     margs : cpp_constr_arg list;
     mid : int;
     mbody : stmt;
-    mlocals : VS.t;
+    mlocals : VarSet.t;
     mcpp : bool;
     mprint : (formatter -> unit -> unit) option;
   }
@@ -122,9 +124,9 @@ let pp_method fmt cmet =
 
     (* Print the local variables's declarations *)
     (fun fmt () ->
-       (VS.iter
+       (VarSet.iter
           (fun vi ->
-             fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type vi.vtype) vi.vname))
+             fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type (convtype_of_v vi)) vi.vname))
          cmet.mlocals)
     ()
 
@@ -143,8 +145,8 @@ type cpp_class =
   {
     cname : string;
     ctype : typ;
-    mutable private_vars : VS.t;
-    mutable public_vars : VS.t;
+    mutable private_vars : VarSet.t;
+    mutable public_vars : VarSet.t;
     mutable constructors : cpp_class_constr list;
     mutable public_members : cpp_class_method list
   }
@@ -156,17 +158,17 @@ let makeEmptyClass class_name =
   {
     cname = class_name;
     ctype = class_type;
-    private_vars = VS.empty;
-    public_vars = VS.empty;
+    private_vars = VarSet.empty;
+    public_vars = VarSet.empty;
     constructors = [];
     public_members = [];
   }
 
 let pp_class fmt cls =
   let pp_members fmt vs =
-    VS.iter
+    VarSet.iter
       (fun vi -> fprintf fmt "@[%s %s%s;@]@;"
-          (Ct.psprint80 Cil.dn_type vi.vtype) class_member_appendix vi.vname)
+          (Ct.psprint80 Cil.dn_type (convtype_of_v vi)) class_member_appendix vi.vname)
       vs
   in
   let pp_class_body fmt cls =
@@ -178,7 +180,7 @@ let pp_class fmt cls =
                  %a@\n@\n\
                  %a@]@;"
       pp_members cls.private_vars
-      pp_members cls.public_vars
+      pp_members  cls.public_vars
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
          pp_cpp_constructor) cls.constructors
       (pp_print_list
@@ -210,12 +212,12 @@ let iterator_c_typ = TInt (ILong,[])
 let rec rename_bounds e =
   let rename_index_vi skv =
     match skv with
-    | FnVarinfo vi ->
+    | FnVariable vi ->
       begin
         if is_left_index_vi vi || is_right_index_vi vi then
-          FnVarinfo {vi with vname = class_member_appendix^vi.vname}
+          FnVariable {vi with vname = class_member_appendix^vi.vname}
         else
-          FnVarinfo vi
+          FnVariable vi
       end
     | FnArray (v, e) -> FnArray (v, rename_bounds e)
     | _ -> skv
@@ -234,10 +236,10 @@ let remove_constant_assignments sktch sklet =
   let is_constant_assignment v e =
     let used_vars = used_in_fnexpr e in
     (* The expression doesn't use state variables or an index *)
-    VS.is_empty
-      (VS.union
-         (VS.inter sktch.scontext.state_vars used_vars)
-         (VS.inter sktch.scontext.index_vars used_vars))
+    VarSet.is_empty
+      (VarSet.union
+         (VarSet.inter sktch.scontext.state_vars used_vars)
+         (VarSet.inter sktch.scontext.index_vars used_vars))
   in
   let rem_from_ve_list ve_list =
     List.fold_left
@@ -277,10 +279,10 @@ let fprint_test_prelude fmt pb_header_filename =
 (** Generate different names or sets of variables needed in the
     class declaration *)
 let pbname_of_sketch solution =
-  (solution.host_function.svar.vname ^ (string_of_int solution.id))
+  (solution.host_function.fvar.vname ^ (string_of_int solution.id))
 
 let private_vars_of_sketch sketch =
-  VS.diff (VS.diff sketch.scontext.used_vars sketch.scontext.state_vars)
+  VarSet.diff (VarSet.diff sketch.scontext.used_vars sketch.scontext.state_vars)
     sketch.scontext.index_vars
 
 let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
@@ -290,13 +292,13 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
       fprintf fmt "%a@\n" (pp_c_assignment_list false) c_as
   in
   (* Local versions of the class's variables *)
-  VS.iter
+  VarSet.iter
     (fun vi ->
        fprintf fmt "%s %s = %s%s;@\n"
-         (Ct.psprint80 dn_type vi.vtype)
+         (Ct.psprint80 dn_type (check_option (ciltyp_of_symb_type vi.vtype)))
          vi.vname
          class_member_appendix vi.vname)
-    (VS.union pb.scontext.used_vars pb.scontext.state_vars);
+    (VarSet.union pb.scontext.used_vars pb.scontext.state_vars);
   fprintf fmt "@\n";
   (* Index bounds must be prefixed by "my_" *)
   let b, e = {b with vname = class_member_appendix^b.vname},
@@ -322,7 +324,7 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
     i.vname
     ppbody ();
   (* Update class vars that need it *)
-  VS.iter
+  VarSet.iter
     (fun vi ->
        fprintf fmt "@[%s%s = %s;@]@;" class_member_appendix vi.vname vi.vname)
     pb.scontext.state_vars
@@ -339,20 +341,14 @@ let make_tbb_class pb =
         ttype = iterator_c_typ;
         treferenced = false;},[])
   in
-  let index_var =
-    Ct.change_var_typ (VS.max_elt pb.scontext.index_vars) index_type
-  in
-  let begin_index_var =
-    Ct.change_var_typ (left_index_vi index_var) index_type
-  in
-  let end_index_var =
-    Ct.change_var_typ (right_index_vi index_var) index_type
-  in
+  let index_var = VarSet.max_elt pb.scontext.index_vars in
+  let begin_index_var = left_index_vi index_var in
+  let end_index_var = right_index_vi index_var in
 
   tbb_class.private_vars <- private_vars_of_sketch pb;
   tbb_class.public_vars <-
-    VS.union pb.scontext.state_vars
-      (VS.of_varlist [begin_index_var; end_index_var]);
+    VarSet.union pb.scontext.state_vars
+      (VarSet.of_list [begin_index_var; end_index_var]);
   let bounds_initial_values =
     IM.add begin_index_var.vid
       (FnConst
@@ -372,7 +368,7 @@ let make_tbb_class pb =
            with Not_found ->
            try vi, Some (IM.find vi.vid bounds_initial_values)
            with Not_found -> vi, None)
-        (VS.varlist tbb_class.public_vars)
+        (VarSet.elements tbb_class.public_vars)
     in
     List.map
       (fun (vi, maybe_init) ->
@@ -401,7 +397,7 @@ let make_tbb_class pb =
     let copy_cstr_initializers =
       let private_vars_inits =
         List.map (fun vi -> (vi, ClassMember (vi, copy_from_name)))
-          (VS.varlist tbb_class.private_vars)
+          (VarSet.elements tbb_class.private_vars)
       in
       private_vars_inits @ public_vars_inits
     in
@@ -415,13 +411,13 @@ let make_tbb_class pb =
   in
   let tbb_cstr_init =
     let private_vars_args =
-      VS.fold (fun vi argslist -> argslist@[FormalArg vi])
+      VarSet.fold (fun vi argslist -> argslist@[FormalArg vi])
         tbb_class.private_vars []
     in
     let init_cstr_intializers =
       let private_vars_inits =
         List.map (fun vi -> (vi, LocalVar vi))
-          (VS.varlist tbb_class.private_vars)
+          (VarSet.elements tbb_class.private_vars)
       in
       private_vars_inits @ public_vars_inits
     in
@@ -458,7 +454,7 @@ let make_tbb_class pb =
       mattributes = [];
       margs = [SpecialArg operator_arg];
       mcpp = true;
-      mlocals = VS.empty;
+      mlocals = VarSet.empty;
       mbody = (mkStmt (Instr []));
       mprint = Some operator_body_printer;
     }
@@ -474,7 +470,7 @@ let make_tbb_class pb =
       fprintf fmt "%a@\n" (pp_c_fnlet ~p_id_assign:true)
         (fn_for_c pb.join_solution);
       (* Assign local variable value to class member *)
-      VS.iter
+      VarSet.iter
         (fun vi ->
            fprintf fmt "@[%s%s = %s;@]@;"
              class_member_appendix vi.vname vi.vname)
@@ -513,7 +509,7 @@ let fprint_implementations fmt pb tbb_class =
   in
   let return_type =
     let ret_typ =
-      match pb.host_function.svar.vtype with
+      match convtype_of_v pb.host_function.fvar with
       | TFun (ret_typ, _, _, _) -> ret_typ
       | _ -> TVoid []
     in
@@ -522,7 +518,7 @@ let fprint_implementations fmt pb tbb_class =
   let class_field =
     try
       (Ct.psprint80 dn_exp
-         (IH.find Loops.return_exprs pb.host_function.svar.vid))
+         (IH.find Loops.return_exprs pb.host_function.fvar.vid))
     with Not_found -> "/* DON't KNOW WHAT TO RETURN */"
   in
   (* Print the parallel version of the loop *)
@@ -559,10 +555,10 @@ let fprint_implementations fmt pb tbb_class =
     test_cname
     (* Assign local copy for all variables *)
     (fun fmt () ->
-       VS.iter
+       VarSet.iter
          (fun vi ->
             fprintf fmt "%s %s = %s%s;@\n"
-              (Ct.psprint80 dn_type vi.vtype)
+              (Ct.psprint80 dn_type (check_option (ciltyp_of_symb_type vi.vtype)))
               vi.vname
               class_member_appendix
               vi.vname)

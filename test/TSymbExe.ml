@@ -29,24 +29,24 @@ open FuncTypes
 
 let x, y, z, a, b, c, a_n =
   (make_int_varinfo "x"),
-  (make_int_varinfo ~init:one "y"),
+  (make_int_varinfo "y"),
   (make_int_varinfo "z"),
   (make_int_varinfo "a"),
-  (make_bool_varinfo ~init:cil_false "b"),
+  (make_bool_varinfo "b"),
   (make_bool_varinfo "c"),
   (make_int_array_varinfo "a_n")
 
 let index_var = make_int_varinfo "i"
 let index_expr = mkVarExpr index_var
-let array = FnArray (FnVarinfo a_n, index_expr)
+let array = FnArray (FnVariable a_n, index_expr)
 
-let allvs  = VS.of_list [x; y; z; a; b; c; a_n; index_var]
+let allvs  = VarSet.of_list [x; y; z; a; b; c; a_n; index_var]
 
-let stv = VS.singleton a
+let stv = VarSet.singleton a
 
 let sctx : context =
     { state_vars = stv;
-      index_vars = VS.singleton index_var;
+      index_vars = VarSet.singleton index_var;
       all_vars = allvs;
       used_vars = allvs;
       costly_exprs = ES.empty;
@@ -54,7 +54,7 @@ let sctx : context =
 
 let init_exprs = IM.singleton a.vid (mkVarExpr a)
 
-let skv_a = FnVarinfo a
+let skv_a = FnVariable a
 let sum_array =
   (FnLetIn ([skv_a,
              FnBinop(Max,
@@ -67,7 +67,7 @@ let index_map1 = IM.singleton index_var.vid index_expr
 let index_map2 = increment_all_indexes index_map1
 let index_map3 = increment_all_indexes index_map2
 (** Apply the functions to states *)
-let index_set = VS.singleton index_var
+let index_set = VarSet.singleton index_var
 
 let r0 : exec_info = { context = sctx;
            state_exprs = init_exprs;

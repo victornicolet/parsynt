@@ -12,13 +12,13 @@ open VariableDiscovery
 open FuncTypes
 
 let x, y, z, a, b, c, a_n =
-  FnVarinfo (make_int_varinfo "x"),
-  FnVarinfo (make_int_varinfo ~init:one "y"),
-  FnVarinfo (make_int_varinfo "z"),
-  FnVarinfo (make_int_varinfo "a"),
-  FnVarinfo (make_bool_varinfo ~init:cil_false "b"),
-  FnVarinfo (make_bool_varinfo "c"),
-  FnVarinfo (make_int_array_varinfo "a_n")
+  FnVariable (make_int_varinfo "x"),
+  FnVariable (make_int_varinfo "y"),
+  FnVariable (make_int_varinfo "z"),
+  FnVariable (make_int_varinfo "a"),
+  FnVariable (make_bool_varinfo "b"),
+  FnVariable (make_bool_varinfo "c"),
+  FnVariable (make_int_array_varinfo "a_n")
 
 let test_flatten_expression () =
   let e_1 =
@@ -94,10 +94,10 @@ let test_normalize_expression_00 () =
   let mts1 =                    (* max(max(mts0 + a0, 0) + a1, 0) *)
     fmax (fplus (fmax (fplus (evar mts0) a0) sk_zero) a1) sk_zero in
   let ctx =
-    {state_vars = VS.singleton mts0;
-     index_vars = VS.empty;
-     used_vars = VS.singleton a;
-     all_vars = VS.of_list [mts0; a];
+    {state_vars = VarSet.singleton mts0;
+     index_vars = VarSet.empty;
+     used_vars = VarSet.singleton a;
+     all_vars = VarSet.of_list [mts0; a];
      costly_exprs = ES.of_list [(evar mts0)]}
   in
   let emts1 =                   (* max(mts0 + a1 + a0, max(a1 + 0, 0)) *)
@@ -130,10 +130,10 @@ let test_normalize_expression_01 () =
                (fplus c1 a01))))
   in
   let ctx =
-    { state_vars = VS.of_list [col0; mtrl0];
-      index_vars = VS.empty;
-      used_vars = VS.of_list [a];
-      all_vars = VS.of_list [col0; mtrl0; a];
+    { state_vars = VarSet.of_list [col0; mtrl0];
+      index_vars = VarSet.empty;
+      used_vars = VarSet.of_list [a];
+      all_vars = VarSet.of_list [col0; mtrl0; a];
       costly_exprs = ES.of_list [evar mtrl0; c0; c1];
     }
   in
@@ -170,10 +170,10 @@ let test_normalize_expression_02 () =
   in
   let ctx =
     {
-      state_vars = VS.of_list [mtrr0; c];
-      index_vars = VS.empty;
-      used_vars = VS.singleton a;
-      all_vars = VS.of_list [mtrr0; a; c];
+      state_vars = VarSet.of_list [mtrr0; c];
+      index_vars = VarSet.empty;
+      used_vars = VarSet.singleton a;
+      all_vars = VarSet.of_list [mtrr0; a; c];
       costly_exprs = ES.of_list [c0; c1; evar mtrr0]
     }
   in
@@ -202,10 +202,10 @@ let test_normalize_expression_03 () =
               (_Q a1 sk_one (fneg sk_one))) sk_zero)
   in
   let ctx = {
-    state_vars = VS.of_list [wb0; cnt0];
-    index_vars = VS.empty;
-    used_vars = VS.singleton a;
-    all_vars = VS.of_list [wb0; cnt0; a];
+    state_vars = VarSet.of_list [wb0; cnt0];
+    index_vars = VarSet.empty;
+    used_vars = VarSet.singleton a;
+    all_vars = VarSet.of_list [wb0; cnt0; a];
     costly_exprs = ES.of_list [evar wb0; evar cnt0]
   } in
   let wb1_norm_expected =
@@ -250,10 +250,10 @@ let test_normalize_expression_04 () =
   let costly_exprs = [c0; c1; c2; evar mtrr0] in
   let ctx =
     {
-      state_vars = VS.of_list [mtrr0; c];
-      index_vars = VS.empty;
-      used_vars = VS.singleton a;
-      all_vars = VS.of_list [mtrr0; a; c];
+      state_vars = VarSet.of_list [mtrr0; c];
+      index_vars = VarSet.empty;
+      used_vars = VarSet.singleton a;
+      all_vars = VarSet.of_list [mtrr0; a; c];
       costly_exprs = ES.of_list costly_exprs
     }
   in
@@ -292,10 +292,10 @@ let test_normalize_expression_05 () =
   let vars = vardefs "((mps int) (sum int) (a int_array))" in
   let e0 = expression vars "(max (max mps (+ sum a#0)) (+ (+ sum a#0) a#1))" in
   let e1 = expression vars "(max (+ sum (max a#0 (+ a#1 a#0))) mps)" in
-  let ctx = { state_vars = VS.of_list [vars#get "sum"; vars#get "mps"];
-              index_vars = VS.empty;
-              used_vars = VS.singleton (vars#get "a");
-              all_vars = VS.of_list [vars#get "sum"; vars#get "mps"; vars#get "a"];
+  let ctx = { state_vars = VarSet.of_list [vars#get "sum"; vars#get "mps"];
+              index_vars = VarSet.empty;
+              used_vars = VarSet.singleton (vars#get "a");
+              all_vars = VarSet.of_list [vars#get "sum"; vars#get "mps"; vars#get "a"];
               costly_exprs = ES.of_list [evar (vars#get "sum"); evar (vars#get "mps")] }
   in
   normalization_test false "mps" ctx e0 e1

@@ -24,6 +24,7 @@ val parsechan : in_channel -> sygusFile
 val printsy : sygusFile -> unit
 val print_file : string -> sygusFile -> unit
 
+val sort_of_ciltyp : Cil.typ -> sySort
 val sort_of_varinfo : Cil.varinfo -> sySort
 
 val gen_arity_defs: (symbol * sySort * syTerm) -> (symbol * sySort) list ->

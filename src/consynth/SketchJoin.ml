@@ -24,10 +24,10 @@ module IH = Sets.IH
 
 let debug = ref false
 
-let auxiliary_variables : Cil.varinfo IH.t = IH.create 10
+let auxiliary_variables : fnV IH.t = IH.create 10
 
-let cur_left_auxiliaries = ref VS.empty
-let cur_right_auxiliaries = ref VS.empty
+let cur_left_auxiliaries = ref VarSet.empty
+let cur_right_auxiliaries = ref VarSet.empty
 
 let left_aux_ids = ref []
 let right_aux_ids = ref []
@@ -43,8 +43,8 @@ let is_right_aux i =
 
 let init () =
   IH.clear auxiliary_variables;
-  cur_left_auxiliaries := VS.empty;
-  cur_right_auxiliaries := VS.empty
+  cur_left_auxiliaries := VarSet.empty;
+  cur_right_auxiliaries := VarSet.empty
 
 (* Returns true is the expression is a hole. The second
    boolean in the pair is useful when we are trying to merge
@@ -79,19 +79,19 @@ let completion_vars_of_hole =
   | FnHoleL (_, _, cs) -> cs
   | _ -> CS.empty
 
-let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t)
+let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VarSet.t)
     (optype : operator_type) =
   let holt t = (t, optype) in
   function
   | FnVar sklv ->
     begin
       match sklv with
-      | FnVarinfo vi ->
-        let t = type_of_ciltyp vi.Cil.vtype in
-        if (IH.mem auxiliary_variables vi.Cil.vid) && is_final
+      | FnVariable vi ->
+        let t = vi.vtype in
+        if (IH.mem auxiliary_variables vi.vid) && is_final
         then FnVar sklv, 0
         else
-          (if VS.mem vi state
+          (if VarSet.mem vi state
            then FnHoleL (holt t, sklv, CS.complete_all (CS.of_vs state)), 1
            else FnHoleR (holt t, CS.complete_right (CS.of_vs state)), 1)
       | FnArray (sklv, expr) ->
@@ -146,7 +146,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VS.t)
 and make_hole_e
     ?(max_depth = 2)
     ?(is_final=false)
-    (state : VS.t) (e : fnExpr) =
+    (state : VarSet.t) (e : fnExpr) =
   let optype = analyze_optype e in
   make_holes
     ~max_depth:max_depth
@@ -164,8 +164,8 @@ and make_assignment_list state skip =
       | _ ->
         try
           let vi = check_option (vi_of v) in
-          if VS.mem vi !cur_left_auxiliaries ||
-             VS.mem vi !cur_right_auxiliaries  then
+          if VarSet.mem vi !cur_left_auxiliaries ||
+             VarSet.mem vi !cur_right_auxiliaries  then
             (v, FnHoleL (((type_of e), Basic), v,
                          CS.complete_all (CS.of_vs state)))
           else
@@ -178,7 +178,7 @@ and make_assignment_list state skip =
           failhere __FILE__ "make_assignment_list"  msg
     )
 
-and make_join ~(state : VS.t) ~(skip: fnLVar list) =
+and make_join ~(state : VarSet.t) ~(skip: fnLVar list) =
   function
   | FnLetExpr ve_list ->
     FnLetExpr (make_assignment_list state skip ve_list)
@@ -285,5 +285,5 @@ let set_types_and_varsets =
       identity identity)
 
 
-let build (state : VS.t) fnlet =
+let build (state : VarSet.t) fnlet =
   set_types_and_varsets (make_join ~state:state ~skip:[] fnlet)

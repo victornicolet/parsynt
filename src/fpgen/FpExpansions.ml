@@ -55,7 +55,7 @@ let needs_extension sketch =
          (not (IM.mem i acc_map) &&
           (not (IS.is_empty
                   (IS.inter
-                     (VS.vidset_of_vs (used_in_fnexpr expr))
+                     (IS.of_list (VarSet.vids_of_vs (used_in_fnexpr expr)))
                      (IM.keyset acc_map))
                ))))
       expr_map
@@ -84,8 +84,8 @@ let needs_extension sketch =
   let needs_cache =
     IS.union (IM.keyset (which_cached acc_map expr_map)) needs_superacc
   in
-  (VS.subset_of_list (IS.elements needs_superacc) sketch.scontext.state_vars,
-   VS.subset_of_list (IS.elements needs_cache) sketch.scontext.state_vars)
+  (VarSet.iset sketch.scontext.state_vars (IS.elements needs_superacc),
+   VarSet.iset sketch.scontext.state_vars (IS.elements needs_cache))
 
 
 
@@ -99,7 +99,7 @@ let gen_header sketch =
   if !debug then
     printf "@.%sDEBUG%s: Generating header for %s(%i) in %s@."
       (Ppt.color "red") Ppt.color_default
-      sketch.loop_name sketch.id sketch.host_function.C.svar.C.vname;
+      sketch.loop_name sketch.id sketch.host_function.fvar.vname;
   (* -------------------------- *)
   let needs_superacc, needs_cache =  needs_extension sketch in
   ( )

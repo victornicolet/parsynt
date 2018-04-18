@@ -1,12 +1,12 @@
 open Utils
-module Fn = FuncTypes
+open FuncTypes
 
 type exec_info =
   {
-    context : Fn.context;
-    state_exprs : Fn.fnExpr IM.t;
-    index_exprs : Fn.fnExpr IM.t;
-    inputs : Fn.ES.t
+    context : context;
+    state_exprs : fnExpr IM.t;
+    index_exprs : fnExpr IM.t;
+    inputs : ES.t
   }
 
 (** exec_once : simulate the application of a function body to a set of
@@ -28,7 +28,7 @@ type exec_info =
     @return a map of variable ids in the state to the expressions resulting from
     the application of the function to the input variables expressions.
 *)
-val create_symbol_map : Utils.VS.t -> Fn.fnExpr IM.t
-val unfold : Fn.fnExpr IM.t -> exec_info -> Fn.fnExpr-> Fn.fnExpr IM.t * Fn.ES.t
-val unfold_expr : exec_info -> Fn.fnExpr -> Fn.fnExpr * Fn.ES.t
-val unfold_once : ?silent:bool -> exec_info -> Fn.fnExpr -> Fn.fnExpr IM.t * Fn.ES.t
+val create_symbol_map : VarSet.t -> fnExpr IM.t
+val unfold : fnExpr IM.t -> exec_info -> fnExpr-> fnExpr IM.t * ES.t
+val unfold_expr : exec_info -> fnExpr -> fnExpr * ES.t
+val unfold_once : ?silent:bool -> exec_info -> fnExpr -> fnExpr IM.t * ES.t

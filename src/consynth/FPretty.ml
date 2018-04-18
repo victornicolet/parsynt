@@ -567,7 +567,7 @@ let cp_expr_list fmt el =
 *)
 
 let printing_for_join = ref false
-let cpp_class_members_set = ref VS.empty
+let cpp_class_members_set = ref VarSet.empty
 
 let rec pp_c_expr ?(for_dafny = false) fmt e =
   match e with
@@ -638,7 +638,7 @@ and pp_c_var ?(rhs = true) fmt v =
   | FnVariable v ->
     let var_name =
       if !printing_for_join && rhs then
-        if (VS.has_vid v.vid !cpp_class_members_set) ||
+        if (VarSet.has_vid !cpp_class_members_set v.vid) ||
            (is_left_index_vi v) || (is_right_index_vi v) then
           match is_right_state_varname v.vname with
           | real_varname, true, true ->
