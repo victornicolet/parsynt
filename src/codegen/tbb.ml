@@ -10,7 +10,10 @@ module Ct = CilTools
 
 let class_member_appendix = Conf.get_conf_string "class_member_appendix"
 
-let convtype_of_v v = check_option (ciltyp_of_symb_type v.vtype)
+let convtype_of_v v =
+  match ciltyp_of_symb_type v.vtype with
+  | Some t -> t
+  | None -> TVoid ([])
 
 (** Class constructor argument *)
 type cpp_include =
@@ -577,9 +580,9 @@ let fprint_tbb_class fmt pb tbb_class =
 
 let output_tbb_test fname_of_sol solution =
   let tbb_file_oc =  open_out (fname_of_sol solution) in
-  printf "New file: %s.@." (fname_of_sol solution);
   let tbb_file_out_fmt = Format.make_formatter
       (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
   let tbb_class_summary = make_tbb_class solution in
+  printf "New file: %s.@." (fname_of_sol solution);
   fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
   close_out tbb_file_oc
