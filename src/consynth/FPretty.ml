@@ -449,12 +449,12 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
+         (fun ppf (v,e) -> fprintf ppf "@[<v 2>%a@]"
              cp_fnexpr e)) el
       (color "red") color_default
 
   | FnLetIn (el, l) ->
-    fprintf ppf "%s(%slet%s @[<hov 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
+    fprintf ppf "%s(%slet%s @[<v 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
       (* Opening parenthesis *)
       (color "red")
       (* Let keyword *)
@@ -501,7 +501,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnAlignofE e -> fp ppf "(AlignOfE %a)" cp_fnexpr e
 
   | FnBinop (op, e1, e2) ->
-    fp ppf "@[<hov 2>(%s%s%s@ %a@ %a)@]"
+    fp ppf "@[<hov 1>(%s%s%s@;%a@;%a)@]"
       (color "b") (string_of_symb_binop op) color_default
       cp_fnexpr e1 cp_fnexpr e2
 
@@ -510,12 +510,12 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (color "b") (string_of_symb_unop op) color_default cp_fnexpr e
 
   | FnCond (c, e1, e2) ->
-    fp ppf "@[<hov 1> (%sif%s@;%a@;%a@;%a)@]"
+    fp ppf "@[<v 1>(%sif%s@;%a@;%a@;%a)@]"
       (color "b") color_default
       cp_fnexpr c cp_fnexpr e1 cp_fnexpr e2
 
   | FnQuestion (c, e1, e2) ->
-    fp ppf "@[<hov 2>((%a)%s? %s%a%s %s%a)@]"
+    fp ppf "@[<hov 2>((%a)%s?@;%s%a%s@;%s%a)@]"
       cp_fnexpr c
       (color "b") color_default
       cp_fnexpr e1

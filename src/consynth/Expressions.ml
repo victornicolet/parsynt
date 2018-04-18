@@ -408,28 +408,33 @@ let is_normal =
   | _ -> true
 
 let collect_normal_subexpressions ctx =
+  let add_guard c = (fun (cl, e) -> c::cl, e) in
+  let not c = FnUnop (Not, c) in
   rec_expr2
     {
       join = (fun x y -> x @ y);
       init = [];
       case = (fun e ->
           match e with
-          | FnBinop _ | FnUnop _ | FnCond _ ->
+          | FnBinop _ | FnUnop _ | FnCond _ | FnQuestion _ ->
             true
           | _ ->  false);
       on_case =
         (fun f e ->
-           if is_normal (locality_rule ctx e) then [e] else
+           if is_normal (locality_rule ctx e) then [[],e] else
              match e with
              | FnBinop (_, e1, e2) -> (f e1)@(f e2)
              | FnUnop (_, e1) -> (f e1)
-             | FnCond (_, e1, e2) -> (f e1)@(f e2)
+             | FnCond (c, e1, e2)
+             | FnQuestion(c , e1, e2) ->
+               ((List.map (add_guard c) (f e1))@
+                (List.map (add_guard (not c)) (f e2)))
              | _ -> failhere __FILE__ "collect" "x"
              );
       on_var =
-        (fun v -> [FnVar v]);
+        (fun v -> [[],FnVar v]);
       on_const =
-        (fun c -> [FnConst c]);
+        (fun c -> [[],FnConst c]);
     }
 
 (*

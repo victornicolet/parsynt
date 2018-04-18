@@ -1,6 +1,7 @@
 open Format
 open SymbExe
 open Utils
+open PpTools
 open Cil
 open TestUtils
 open PpTools
@@ -75,7 +76,21 @@ let normalization_test lin name context expr expected =
   let expr_norm = normalize ~linear:lin context expr in
   let normal_expressions = collect_normal_subexpressions context expr_norm in
   if expected @= expr_norm then
-    (printf "Normal subexpressions:@.%a@." cp_expr_list normal_expressions;
+    (printf "Normal subexpressions:@.%a@."
+       (fun fmt gexp_list ->
+          pp_print_list
+            ~pp_sep:(fun fmt () -> fprintf fmt "@.")
+            (fun fmt (g, e) ->
+               if List.length g > 0 then
+                 fprintf fmt "@[<hov 1>%sif%s@;[%a]@;%s{%s(%a)%s}%s@]"
+                   (color "red") color_default
+                   cp_expr_list g
+                   (color "red") color_default
+                    cp_fnexpr e
+                   (color "red") color_default
+               else
+                 fprintf fmt "%a" cp_fnexpr e)
+            fmt gexp_list) normal_expressions;
      msg_passed (sprintf "Normalization of %s test passed." name))
   else
     begin

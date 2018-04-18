@@ -1,0 +1,7 @@
+Test: max length block of 1s
+maxlen1s
+true
+((cl int) (ml int) (c int) (conj bool) (a bool_array))
+((cl ml c conj) () (a) (cl ml c conj a) (cl ml c conj))
+(max (max cl (? a#0 (+ cl 1) 0)) (? a#1 (+ (? a#0 (+ cl 1) 0) 1) 0))
+(max (? a#0 (max (+ cl 1) cl) (max cl 0)) (? (&& a#1 a#0) (+ cl (+ 1 1)) (? (! a#0) 0 (+ 0 1))))
