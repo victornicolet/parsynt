@@ -104,9 +104,9 @@ object (self)
     | LhElem (a, ofs) -> fprintf ppf "%a[%a]" self#pp_lhs a self#pp_expr ofs
     | LhTuple vs ->
        pp_print_list ~pp_sep:(fun fmt () -> fprintf ppf ", ")
-         (fun fmt vi -> fprintf ppf "%s" vi.vname)
+         (fun fmt vi -> fprintf ppf "%s" vi.Cil.vname)
          ppf
-         (VS.varlist vs)
+         (VS.elements vs)
 
   method pp_letin ?(wloc = false) ppf letin =
     match letin with

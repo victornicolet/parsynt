@@ -258,8 +258,8 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
 (** Basic pretty-printing *)
 let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
   match fnlvar with
-  | FnVarinfo v ->
-    fprintf ppf "%s" v.Cil.vname
+  | FnVariable v ->
+    fprintf ppf "%s" v.vname
   | FnArray (v, offset) ->
     let offset_str =
       fprintf str_formatter "%a" pp_fnexpr offset;
@@ -272,10 +272,10 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
          pp_fnlvar v offset_str)
 
   | FnTuple vs ->
-    if VS.cardinal vs > 1 then
-      fprintf ppf "(values %a)" VS.pp_var_names vs
+    if VarSet.cardinal vs > 1 then
+      fprintf ppf "(values %a)" VarSet.pp_var_names vs
     else
-      fprintf ppf "%a" VS.pp_var_names vs
+      fprintf ppf "%a" VarSet.pp_var_names vs
 
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
@@ -311,7 +311,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnApp (t, vio, argl) ->
     let funname =
       match vio with
-      | Some vi -> vi.Cil.vname
+      | Some vi -> vi.vname
       | None -> "()"
     in
     fp ppf "(%s %a)" funname
@@ -423,8 +423,8 @@ let pp_expr_list fmt el =
 
 let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
   match fnlvar with
-  | FnVarinfo v ->
-    fprintf ppf "%s%s%s" (color "yellow") v.Cil.vname color_default
+  | FnVariable v ->
+    fprintf ppf "%s%s%s" (color "yellow") v.vname color_default
 
   | FnArray (v, offset) ->
     let offset_str =
@@ -435,7 +435,7 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
 
 
   | FnTuple vs ->
-    fprintf ppf "@[<v 2>(%a)@]" VS.pvs vs
+    fprintf ppf "@[<v 2>(%a)@]" VarSet.pp_var_names vs
 
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
@@ -478,7 +478,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnApp (t, vio, argl) ->
     let funname =
       match vio with
-      | Some vi -> vi.Cil.vname
+      | Some vi -> vi.vname
       | None -> "()"
     in
     fp ppf "@[<hov 2>(%s%s%s %a)@]" (color "u") funname color_default
@@ -623,7 +623,7 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
   | FnApp (t, vo, args) ->
     (match vo with
      | Some vi ->
-       fprintf fmt "@[%s(%a)@]" vi.Cil.vname pp_c_expr_list args
+       fprintf fmt "@[%s(%a)@]" vi.vname pp_c_expr_list args
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
@@ -635,22 +635,22 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
 
 and pp_c_var ?(rhs = true) fmt v =
   match v with
-  | FnVarinfo v ->
+  | FnVariable v ->
     let var_name =
       if !printing_for_join && rhs then
-        if (VS.has_vid v.Cil.vid !cpp_class_members_set) ||
+        if (VS.has_vid v.vid !cpp_class_members_set) ||
            (is_left_index_vi v) || (is_right_index_vi v) then
-          match is_right_state_varname v.Cil.vname with
+          match is_right_state_varname v.vname with
           | real_varname, true, true ->
             (rs_prefix^"my_"^real_varname)
           | real_varname, true, false ->
             "my_"^real_varname
           | _ , false, _ ->
-            "my_"^v.Cil.vname
+            "my_"^v.vname
         else
-          v.Cil.vname
+          v.vname
       else
-        v.Cil.vname
+        v.vname
     in
     fprintf fmt "%s" var_name
 

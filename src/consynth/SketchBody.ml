@@ -271,19 +271,19 @@ class sketch_builder
         | Var vi ->
           (if self#is_global_bound vi then uses_global_bound <- true
            else ());
-          mkVarExpr vi
+          mkVarExpr (var_of_vi vi)
 
         (** TODO : array -> region *)
         | Array (vi, el) ->
           let expr_list = List.map convert el in
-          mkVarExpr ~offsets:expr_list vi
+          mkVarExpr ~offsets:expr_list (var_of_vi vi)
 
         | FunApp (ef, arg_l) ->
           let is_c_def, vi_o, ty = is_exp_function ef in
           let sty = type_of_ciltyp ty in
           let fargs =  List.map convert arg_l in
           if is_c_def then
-            FnApp (sty, vi_o, fargs)
+            FnApp (sty, (var_of_vi ==> vi_o), fargs)
           else
             let fname = (check_option vi_o).Cil.vname in
             (match fargs with
@@ -293,7 +293,7 @@ class sketch_builder
              | e1::[e2] ->
                let binop = (check_option (symb_binop_of_fname fname)) in
                FnBinop (binop, e1, e2)
-             | _ -> FnApp (sty, vi_o, fargs))
+             | _ -> FnApp (sty, var_of_vi ==> vi_o, fargs))
 
 
         | Container (e, subs) ->
@@ -331,8 +331,8 @@ class sketch_builder
           let skvar = skexpr_of_lval v in
           begin
             match skvar with
-            | FnVar (FnVarinfo vi) when IM.mem vi.Cil.vid subs ->
-              IM.find vi.Cil.vid subs
+            | FnVar (FnVariable vi) when IM.mem vi.vid subs ->
+              IM.find vi.vid subs
             | _ -> skvar
           end
 
@@ -412,7 +412,7 @@ class sketch_builder
           begin
             match vo with
             | Some vi ->
-              mkVarExpr ~offsets:(convert_offsets ofs_li) vi
+              mkVarExpr ~offsets:(convert_offsets ofs_li) (var_of_vi vi)
             | None -> failhere __FILE__ "skexpr_of_lval" "Is it an lval?"
           end
 
@@ -425,7 +425,7 @@ class sketch_builder
               (** Anonymous function with type *)
               (fun t x -> FnApp (t, None, off_list))
             | Some vi ->
-              (fun t x -> x vi)
+              (fun t x -> x (var_of_vi vi))
           in
           let t =  Cil.typeOfLval (host,offset) in
           vi_to_expr
@@ -444,8 +444,9 @@ class sketch_builder
               (fun k e ->
                  let cur_v =
                    try
-                     FnVarinfo (VS.find_by_id k state_vars)
-                   with Not_found -> FnVarinfo (VS.find_by_id k all_vars)
+                     FnVariable (var_of_vi (VS.find_by_id k state_vars))
+                   with Not_found -> FnVariable
+                                       (var_of_vi (VS.find_by_id k all_vars))
                  in
                  (cur_v, convert e))
               subs
@@ -453,10 +454,11 @@ class sketch_builder
           let complete_state =
             VS.fold
               (fun state_vi l ->
+                 let state_var = var_of_vi state_vi in
                  l@[
-                   if IM.mem state_vi.Cil.vid state
-                   then IM.find state_vi.Cil.vid state
-                   else (FnVarinfo state_vi, mkVarExpr state_vi)])
+                   if IM.mem state_var.vid state
+                   then IM.find state_var.vid state
+                   else (FnVariable state_var, mkVarExpr state_var)])
               state_vars []
           in
           FnLetExpr complete_state
@@ -464,8 +466,8 @@ class sketch_builder
         | Let (v, e, cont, i, loc) ->
           let rec cur_v (v : lhs) =
             match v with
-            | LhVar vi -> FnVarinfo vi
-            | LhTuple vil -> FnTuple vil
+            | LhVar vi -> FnVariable (var_of_vi vi)
+            | LhTuple vil -> FnTuple (varset_of_vs vil)
             | LhElem (a, i) ->
               let fv = cur_v a in
               FnArray(fv, convert i)
@@ -475,12 +477,12 @@ class sketch_builder
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
-            FnLetExpr [(FnTuple state_vars,
+            FnLetExpr [(FnTuple (varset_of_vs state_vars),
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
-            FnLetIn ( [(FnTuple state_vars,
+            FnLetIn ( [(FnTuple (varset_of_vs state_vars),
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))],
@@ -516,17 +518,17 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
         | Some skconst -> Some (FnConst skconst)
         | None ->
           match o with
-          | Cil.NoOffset -> Some (FnVar (FnVarinfo vi))
+          | Cil.NoOffset -> Some (FnVar (FnVariable (var_of_vi vi)))
           | Cil.Index (e, o) ->
             begin
               match conv_init_expr Integer e with
-              | Some se -> Some (FnVar (FnArray (FnVarinfo vi, se)))
+              | Some se -> Some (FnVar (FnArray (FnVariable (var_of_vi vi), se)))
               | None -> None
             end
           | _ -> None)
      | Cil.Mem (Cil.BinOp (_, Cil.Lval ((Cil.Var vi), Cil.NoOffset), e,_)) ->
        (match conv_init_expr Integer e with
-        | Some e_index -> Some (FnVar (FnArray ((FnVarinfo vi), e_index)))
+        | Some e_index -> Some (FnVar (FnArray ((FnVariable (var_of_vi vi)), e_index)))
         | _ -> None)
      | _ -> None)
   | _ -> None

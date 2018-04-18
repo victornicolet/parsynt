@@ -13,7 +13,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+n    You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
@@ -53,79 +53,8 @@ type operator_type =
   | NonLinear                   (* Non-linear operators *)
   | NotNum                        (* Not a numeral operator *)
 
-exception Tuple_fail            (* Tuples are not supported for the moment. *)
-
-type hole_type = symbolic_type * operator_type
-
-(* Type for variables *)
-and fnLVar =
-  | FnVarinfo of Cil.varinfo
-  (** Access to an array cell *)
-  | FnArray of fnLVar * fnExpr
-  (** Records : useful to represent the state *)
-  | FnTuple of VS.t
-
-(* Type for expressions *)
-and fnExpr =
-  | FnLetExpr of (fnLVar * fnExpr) list
-  | FnLetIn of (fnLVar * fnExpr) list * fnExpr
-  | FnVar of fnLVar
-  | FnConst of constants
-  | FnFun of fnExpr
-  | FnRec of  igu * fnExpr
-  | FnCond of fnExpr * fnExpr * fnExpr
-  | FnBinop of symb_binop * fnExpr * fnExpr
-  | FnUnop of symb_unop * fnExpr
-  | FnApp of symbolic_type * (Cil.varinfo option) * (fnExpr list)
-  | FnQuestion of fnExpr * fnExpr * fnExpr
-  | FnHoleL of hole_type * fnLVar * CS.t
-  | FnHoleR of hole_type * CS.t
-  (** Simple translation of Cil exp needed to nest
-      sub-expressions with state variables *)
-  | FnSizeof of symbolic_type
-  | FnSizeofE of fnExpr
-  | FnSizeofStr of string
-  | FnAlignof of symbolic_type
-  | FnAlignofE of fnExpr
-  | FnCastE of symbolic_type * fnExpr
-  | FnAddrof of fnExpr
-  | FnAddrofLabel of Cil.stmt ref
-  | FnStartOf of fnExpr
-
-(** Structure types for Rosette sketches *)
-
-and initial_defs =
-  | Initials of (string * string) list [@@deriving_sexp]
-
-(**
-   The body of the join and the loop are Racket programs with
-   holes insides.
-*)
-and racket_with_holes = string list [@@deriving_sexp]
-
-(**
-   A state is simply a list of variables that are modified
-   during the loop.
-*)
-and state = string list [@@deriving_sexp]
-
-(**
-   We generate the body of the oririginal loop simply from
-   the state variables and the list of function that are
-   applied to each state variable.
-*)
-and body_func =
-    | DefineBody of state * racket_with_holes
-  | DefineJoin of state * racket_with_holes
-[@@deriving_sexp]
-
-
-
-(** ----------- 2 - SYMBOLIC TYPES & OPERATORS, HELPER FUNCTIONS -------------*)
-(** Interface types with Rosette/Racket *)
-
-and symbolic_type =
-    | Bottom
+type symbolic_type =
+  | Bottom
   | Num
   | Unit
   (** Base types : only booleans, integers and reals *)
@@ -150,13 +79,7 @@ and symbolic_type =
   | Struct of symbolic_type
 
 
-
-(*
-  Operators : Cil operators and C function names.
-*)
-
-(* Unary operators - available in Rosette *)
-and symb_unop =
+type symb_unop =
     | Not | Add1 | Sub1
     | Abs | Floor | Ceiling | Truncate | Round
     | Neg
@@ -214,6 +137,124 @@ and constants =
   | Pi | SqrtPi
   | Sqrt2
   | Ln2 | Ln10 | E
+
+exception Tuple_fail            (* Tuples are not supported for the moment. *)
+
+
+let _GLOB_VARIDS = ref 100
+let _new_id () = incr _GLOB_VARIDS; !_GLOB_VARIDS
+
+type fnV = {
+  mutable vname : string;
+  mutable vtype : symbolic_type;
+  vinit : constants option;
+  mutable vid : int;
+  mutable vistmp : bool;
+}
+
+
+module FnVs =
+  Set.Make
+    (struct
+      type t = fnV
+      let compare  x y = Pervasives.compare x.vid y.vid
+    end)
+
+module VarSet =
+struct
+  include FnVs
+  let find_by_id vs id : FnVs.elt =
+    FnVs.max_elt (FnVs.filter (fun elt -> elt.vid = id) vs)
+  let find_by_name vs name : FnVs.elt =
+    FnVs.max_elt (FnVs.filter (fun elt -> elt.vname = name) vs)
+  let vids_of_vs vs : int list =
+    List.map (fun vi -> vi.vid) (FnVs.elements vs)
+  let pp_var_names fmt vs =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+      (fun fmt elt -> fprintf fmt "%s" elt.vname)
+      fmt (FnVs.elements vs)
+end
+
+
+type hole_type = symbolic_type * operator_type
+
+(* Type for variables *)
+and fnLVar =
+  | FnVariable of fnV
+  (** Access to an array cell *)
+  | FnArray of fnLVar * fnExpr
+  (** Records : useful to represent the state *)
+  | FnTuple of VarSet.t
+
+(* Type for expressions *)
+and fnExpr =
+  | FnLetExpr of (fnLVar * fnExpr) list
+  | FnLetIn of (fnLVar * fnExpr) list * fnExpr
+  | FnVar of fnLVar
+  | FnConst of constants
+  | FnFun of fnExpr
+  | FnRec of  igu * fnExpr
+  | FnCond of fnExpr * fnExpr * fnExpr
+  | FnBinop of symb_binop * fnExpr * fnExpr
+  | FnUnop of symb_unop * fnExpr
+  | FnApp of symbolic_type * (fnV option) * (fnExpr list)
+  | FnQuestion of fnExpr * fnExpr * fnExpr
+  | FnHoleL of hole_type * fnLVar * CS.t
+  | FnHoleR of hole_type * CS.t
+  (** Simple translation of Cil exp needed to nest
+      sub-expressions with state variables *)
+  | FnSizeof of symbolic_type
+  | FnSizeofE of fnExpr
+  | FnSizeofStr of string
+  | FnAlignof of symbolic_type
+  | FnAlignofE of fnExpr
+  | FnCastE of symbolic_type * fnExpr
+  | FnAddrof of fnExpr
+  | FnAddrofLabel of Cil.stmt ref
+  | FnStartOf of fnExpr
+
+(** Structure types for Rosette sketches *)
+
+and initial_defs =
+  | Initials of (string * string) list [@@deriving_sexp]
+
+(**
+   The body of the join and the loop are Racket programs with
+   holes insides.
+*)
+and racket_with_holes = string list [@@deriving_sexp]
+
+(**
+   A state is simply a list of variables that are modified
+   during the loop.
+*)
+and state = string list [@@deriving_sexp]
+
+(**
+   We generate the body of the oririginal loop simply from
+   the state variables and the list of function that are
+   applied to each state variable.
+*)
+and body_func =
+    | DefineBody of state * racket_with_holes
+  | DefineJoin of state * racket_with_holes
+[@@deriving_sexp]
+
+
+
+(** ----------- 2 - SYMBOLIC TYPES & OPERATORS, HELPER FUNCTIONS -------------*)
+(** Interface types with Rosette/Racket *)
+
+(*
+  Operators : Cil operators and C function names.
+*)
+
+(* Unary operators - available in Rosette *)
+
+
+
+
 
 (* Given a cil operator, return an unary symb operator and a type *)
 let symb_unop_of_cil =
@@ -454,15 +495,19 @@ let is_exp_function ef =
   | _ -> false,  None , Cil.typeOf ef
 
 
+
+let mkFnVar name typ =
+  { vname = name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;}
+
 (**
-   Generate a FnVar expression from a varinfo, with possible offsets
+   Generate a FnVar expression from a variable, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined
    constant.
 *)
 let mkVar ?(offsets = []) vi =
   List.fold_left
     (fun fnlvar offset -> FnArray (fnlvar, offset))
-    (FnVarinfo vi)
+    (FnVariable vi)
     offsets
 
 (**
@@ -470,7 +515,7 @@ let mkVar ?(offsets = []) vi =
    a constant if the name of the variable is a predefined constant.
 *)
 let mkVarExpr ?(offsets = []) vi =
-  match c_constant vi.Cil.vname with
+  match c_constant vi.vname with
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
@@ -495,10 +540,10 @@ let is_right_state_varname s =
 (* Compare variables by comparing the variable id of their varinfo. *)
 let rec cmpVar fnlvar1 fnlvar2 =
   match fnlvar1, fnlvar2 with
-  | FnVarinfo vi, FnVarinfo vi' -> compare vi.Cil.vid vi'.Cil.vid
+  | FnVariable vi, FnVariable vi' -> compare vi.vid vi'.vid
   | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
     cmpVar fnlv1 fnlv2
-  | FnVarinfo _, FnTuple _ -> -1
+  | FnVariable _, FnTuple _ -> -1
   | FnTuple _ , _ -> 1
   | FnArray _ , _ -> 1
   | _ , FnArray _ -> -1
@@ -507,7 +552,7 @@ let rec cmpVar fnlvar1 fnlvar2 =
 (* Get the varinfo of a variable. *)
 let rec vi_of fnlv =
   match fnlv with
-  | FnVarinfo vi' -> Some vi'
+  | FnVariable vi' -> Some vi'
   | FnArray (fnlv', _) -> vi_of fnlv'
   | FnTuple _ -> None
 
@@ -524,7 +569,7 @@ let is_reserved_name s = not (uninterpeted s)
 let rec fnArray_dep_len e =
   match e with
   | FnVar v ->
-    (match v with FnVarinfo vi -> 1
+    (match v with FnVariable vi -> 1
                 | FnArray (v, e') -> fnArray_dep_len e'
                 | _  -> raise Tuple_fail)
 
@@ -553,7 +598,7 @@ let force_constant expr =
 
 
 let mkOp ?(t = Unit) vi argl =
-  let fname = vi.Cil.vname in
+  let fname = vi.vname in
   match symb_unop_of_fname fname with
   | Some unop ->
     FnUnop (unop, List.hd argl)
@@ -638,6 +683,41 @@ let type_of_unop_args =
 
 let tupletype_of_vs vs =
   Tuple (List.map (fun vi -> type_of_ciltyp vi.Cil.vtype) (VS.varlist vs))
+
+
+
+
+(* Convert Cil Varinfo to variable *)
+
+let var_of_vi vi =
+  {
+    vname = vi.Cil.vname;
+    vinit = None;
+    vtype = type_of_ciltyp vi.Cil.vtype;
+    vid = vi.Cil.vid;
+    vistmp = vi.Cil.vistmp;
+  }
+
+let varset_of_vs vs =
+  VarSet.of_list (List.map var_of_vi (VS.elements vs))
+
+(* And vice versa *)
+let cilvars = IH.create 10
+
+let cilvar_register vi =
+  IH.add cilvars vi.Cil.vid vi;
+  vi
+
+let cil_varinfo vi =
+  try
+    IH.find cilvars vi.vid
+  with Not_found ->
+  match ciltyp_of_symb_type vi.vtype with
+  | Some vt ->
+    cilvar_register (Cil.makeVarinfo false vi.vname vt)
+  | None ->
+    failhere __FILE__ "cil_varinfo" "Couldn't convert type."
+
 
 (** ---------------------------- 3 - RECURSORS -------------------------------*)
 
@@ -902,13 +982,13 @@ let rec replace_many ?(in_subscripts = false)
 let rec apply_substutions subs e =
   let case e =
     match e with
-    | FnVar (FnVarinfo vi) -> true
+    | FnVar (FnVariable vi) -> true
     | _ -> false
   in
   let case_handler rfunc e =
     match e with
-    | FnVar (FnVarinfo vi) ->
-      (try IM.find vi.Cil.vid subs with Not_found -> e)
+    | FnVar (FnVariable vi) ->
+      (try IM.find vi.vid subs with Not_found -> e)
     | _ -> rfunc e
   in
   let const_handler c = c in
@@ -941,7 +1021,7 @@ let rec fn_uses vs expr =
   let case_handler f e =  false in
   let const_handler c = false in
   let var_handler v =
-    try VS.mem (check_option (vi_of v)) vs with Not_found -> false
+    try VarSet.mem (check_option (vi_of v)) vs with Not_found -> false
   in rec_expr join false case case_handler const_handler var_handler expr
 
 (** Opperator complexity of a function or an expression *)
@@ -1007,14 +1087,14 @@ let complete_with_state stv el =
     List.fold_left
       (fun map (v,e) ->
          let vi = check_option (vi_of v) in
-         IM.add vi.Cil.vid (v, e) map)
+         IM.add vi.vid (v, e) map)
       IM.empty el
   in
   let map' =
-    VS.fold
+    VarSet.fold
       (fun vi map ->
-         if IM.mem vi.Cil.vid map then map
-         else IM.add vi.Cil.vid (mkVar vi, mkVarExpr vi) map)
+         if IM.mem vi.vid map then map
+         else IM.add vi.vid (mkVar vi, mkVarExpr vi) map)
       stv emap
   in
   let _, velist = ListTools.unpair (IM.bindings map') in
@@ -1027,41 +1107,41 @@ let rec complete_final_state stv func =
   | _ -> func
 
 
-let rec used_in_fnexpr e =
-  let join = VS.union in
-  let init = VS.empty in
+let rec used_in_fnexpr e : VarSet.t =
+  let join = VarSet.union in
+  let init = VarSet.empty in
   let case e = false in
-  let case_h f e = VS.empty in
+  let case_h f e = VarSet.empty in
   let rec var_handler v =
     match v with
-    | FnVarinfo vi -> VS.singleton vi
+    | FnVariable vi -> VarSet.singleton vi
     | FnArray (v0, e) ->
-      VS.union (var_handler v0) (used_in_fnexpr e)
-    | _ -> VS.empty
+      VarSet.union (var_handler v0) (used_in_fnexpr e)
+    | _ -> VarSet.empty
   in
-  let const_handler c= VS.empty in
+  let const_handler c = VarSet.empty in
   rec_expr join init case case_h const_handler var_handler e
 
 
-let rec used_in_fnlet =
+let rec used_in_fnlet  =
   function
   | FnLetIn (ve_list, letin) ->
     let bs1, us1 = (used_in_fnlet letin) in
     let bs2, us2 = (used_in_assignments ve_list) in
-    (VS.union bs1 bs2, VS.union us1 us2)
+    (VarSet.union bs1 bs2, VarSet.union us1 us2)
   | FnLetExpr ve_list ->
     used_in_assignments ve_list
-  | e -> (VS.empty, used_in_fnexpr e)
+  | e -> (VarSet.empty, used_in_fnexpr e)
 
 and used_in_assignments ve_list =
   List.fold_left
     (fun (bind_set, use_set) (v, e) ->
-       (VS.union bind_set
+       (VarSet.union bind_set
           (match vi_of v with
-           | Some vi -> VS.singleton vi
-           | None -> VS.empty),
-        VS.union use_set (used_in_fnexpr e)))
-    (VS.empty, VS.empty) ve_list
+           | Some vi -> VarSet.singleton vi
+           | None -> VarSet.empty),
+        VarSet.union use_set (used_in_fnexpr e)))
+    (VarSet.empty, VarSet.empty) ve_list
 
 
 (** ------------------------ 4 - SCHEME <-> FUNC -------------------------- *)
@@ -1083,12 +1163,12 @@ let errmsg_unexpected_expr ex_type unex_expr =
 
 
 type join_translation_info = {
-  mutable initial_vars : VS.t;
-  mutable initial_state_vars : VS.t;
-  mutable used_vars : Cil.varinfo SH.t;
-  mutable used_state_vars : VS.t;
-  initial_state_right : Cil.varinfo IH.t;
-  initial_state_left: Cil.varinfo IH.t;
+  mutable initial_vars : VarSet.t;
+  mutable initial_state_vars : VarSet.t;
+  mutable used_vars : fnV SH.t;
+  mutable used_state_vars : VarSet.t;
+  initial_state_right : fnV IH.t;
+  initial_state_left: fnV IH.t;
 }
 
 let get_binop_of_scm (op : RAst.op) =
@@ -1120,10 +1200,10 @@ let co = check_option
 
 let join_info =
   {
-    initial_vars = VS.empty;
-    initial_state_vars = VS.empty;
+    initial_vars = VarSet.empty;
+    initial_state_vars = VarSet.empty;
     used_vars = SH.create 10;
-    used_state_vars = VS.empty;
+    used_state_vars = VarSet.empty;
     initial_state_right = IH.create 10;
     initial_state_left = IH.create 10;
   }
@@ -1141,32 +1221,32 @@ let init_scm_translate all_vs state_vs =
 let scm_register s =
   let pure_varname, is_class_member, is_right_state_mem =
     is_right_state_varname s in
-  let varinfo =
+  let varinfo : fnV =
     try
       SH.find join_info.used_vars pure_varname
     with Not_found ->
       begin
         let newly_used_vi =
           try
-            VS.find_by_name pure_varname join_info.initial_vars
+            VarSet.find_by_name join_info.initial_vars pure_varname
           with
           | Not_found ->
-            Cil.makeVarinfo false pure_varname (Cil.TVoid [])
+            mkFnVar pure_varname Bottom
         in
         SH.add join_info.used_vars pure_varname newly_used_vi;
         newly_used_vi
       end
   in
-  {varinfo with Cil.vname = s}
+  {varinfo with vname = s}
 
 let hole_var_name = "??_hole"
-let hole_var = Cil.makeVarinfo false hole_var_name (Cil.TVoid [])
+let hole_var = mkFnVar hole_var_name Bottom
 
 
 let remove_hole_vars (expr: fnExpr) : fnExpr =
   let rec aux_rem_h t e =
     match e with
-    | FnVar (FnVarinfo v) when v = hole_var ->
+    | FnVar (FnVariable v) when v = hole_var ->
       (match t with
        | Num -> FnConst (CInt 0)
        | _ -> FnConst (CBool true))
@@ -1205,10 +1285,10 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
       | Bool_e b -> None, Some (FnConst (CBool b))
       | Id_e id ->
         (match id with
-         | "??" -> None, Some (FnVar (FnVarinfo hole_var))
+         | "??" -> None, Some (FnVar (FnVariable hole_var))
          | _ ->
            (let vi = scm_register id in
-            None, Some (FnVar (FnVarinfo vi))))
+            None, Some (FnVar (FnVariable vi))))
       | Nil_e -> None, Some (FnConst (CNil))
 
       | Binop_e (op, e1, e2) ->
@@ -1228,7 +1308,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
             (fun (ids, e) ->
                let _, exp = translate e in
                let vi = scm_register ids in
-               (FnVarinfo vi), co exp)
+               (FnVariable vi), co exp)
             bindings
         in
         let fn_let, _ = translate  e2 in
@@ -1287,17 +1367,17 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
     Additionally we remove identity bindings.
 *)
 and rosette_state_struct_to_fnlet scm_expr_list =
-  let stv_vars_list = VS.varlist join_info.initial_state_vars in
+  let stv_vars_list = VarSet.elements join_info.initial_state_vars in
   let fn_expr_list = to_expression_list scm_expr_list in
   try
-    FnLetExpr (ListTools.pair (List.map (fun vi -> FnVarinfo vi) stv_vars_list)
+    FnLetExpr (ListTools.pair (List.map (fun vi -> FnVariable vi) stv_vars_list)
                  fn_expr_list)
   with Invalid_argument s ->
     eprintf "FAILURE :@\n\
              Failed to translate state in list of bindings, got %i state \
              variables and state was %i long.@\n\
              ---> Did you initialize the join_info before using scm_to_fn ?"
-      (VS.cardinal join_info.initial_state_vars)
+      (VarSet.cardinal join_info.initial_state_vars)
       (List.length fn_expr_list);
     failwith "Failure in rosette_state_struct_to_fnlet."
 
@@ -1341,7 +1421,7 @@ let force_flat vs fnlet =
            (fun new_subs (v,e) ->
               try
                 let vi = co (vi_of v)  in
-                IM.add vi.Cil.vid (apply_substutions subs_copy e) new_subs
+                IM.add vi.vid (apply_substutions subs_copy e) new_subs
               with Failure s -> new_subs)
            subs ve_list)
 
@@ -1352,20 +1432,20 @@ let force_flat vs fnlet =
            (fun new_subs (v,e) ->
               try
                 let vi = co (vi_of v)  in
-                IM.add vi.Cil.vid (apply_substutions subs e) new_subs
+                IM.add vi.vid (apply_substutions subs e) new_subs
               with Failure s -> new_subs)
            subs_copy ve_list)
       in
       FnLetExpr
         (IM.fold
            (fun vid e ve_list ->
-              ve_list@[(FnVarinfo (VS.find_by_id vid vs), e)])
+              ve_list@[(FnVariable (VarSet.find_by_id vs vid), e)])
            final_subs [])
     | _ -> failhere __FILE__ "force_flat" "Not a proper function."
   in
   let start_sub =
-    VS.fold
-      (fun vi subs -> IM.add vi.Cil.vid (FnVar (FnVarinfo vi)) subs)
+    VarSet.fold
+      (fun vi subs -> IM.add vi.vid (FnVar (FnVariable vi)) subs)
       vs
       IM.empty
   in
@@ -1384,25 +1464,25 @@ module ES = Set.Make (
 
 (** Context for expression analysis *)
 type context = {
-  state_vars : VS.t;
-  index_vars : VS.t;
-  used_vars : VS.t;
-  all_vars : VS.t;
+  state_vars : VarSet.t;
+  index_vars : VarSet.t;
+  used_vars : VarSet.t;
+  all_vars : VarSet.t;
   costly_exprs : ES.t
 }
 
 let mk_ctx vs stv = {
   state_vars = stv;
-  index_vars = VS.empty;
-  used_vars = VS.diff stv vs;
+  index_vars = VarSet.empty;
+  used_vars = VarSet.diff stv vs;
   all_vars = vs;
   costly_exprs = ES.empty
 }
 
 let ctx_update_vsets ctx vs =
-  let new_allvs = VS.union ctx.all_vars vs in
-  let new_usedvs = VS.union ctx.used_vars vs in
-  let new_stvs = VS.union ctx.state_vars vs in
+  let new_allvs = VarSet.union ctx.all_vars vs in
+  let new_usedvs = VarSet.union ctx.used_vars vs in
+  let new_stvs = VarSet.union ctx.state_vars vs in
   { ctx with
     state_vars = new_stvs;
     used_vars = new_usedvs;
@@ -1418,21 +1498,19 @@ let ctx_add_cexp ctx cexp =
 let start_iname = Conf.get_conf_string "rosette_index_suffix_start"
 let end_iname = Conf.get_conf_string "rosette_index_suffix_end"
 
-let index_to_boundary : (Cil.varinfo * Cil.varinfo) IH.t = IH.create 10
+let index_to_boundary : (fnV * fnV) IH.t = IH.create 10
 
 
 let create_boundary_variables index_set =
-  VS.iter
+  VarSet.iter
     (fun index_vi ->
        let starti =
-         Cil.makeVarinfo false (index_vi.Cil.vname^start_iname)
-           index_vi.Cil.vtype
+         mkFnVar (index_vi.vname^start_iname) index_vi.vtype
        in
        let endi =
-         Cil.makeVarinfo false (index_vi.Cil.vname^end_iname)
-           index_vi.Cil.vtype
+         mkFnVar (index_vi.vname^end_iname) index_vi.vtype
        in
-       IH.add index_to_boundary index_vi.Cil.vid (starti, endi))
+       IH.add index_to_boundary index_vi.vid (starti, endi))
     index_set
 
 let left_index_vi vi =
@@ -1599,7 +1677,7 @@ let rec type_of_const c =
 
 and type_of_var v =
   match v with
-  | FnVarinfo vi -> type_of_ciltyp vi.Cil.vtype
+  | FnVariable vi -> vi.vtype
   | FnArray (v, e) ->
     (** We only consider integer indexes for now *)
     (** Return the type of the array cells *)
@@ -1613,7 +1691,7 @@ and type_of_var v =
     end
   | FnTuple vs ->
     let tl =
-      VS.fold (fun vi tl -> tl@[type_of_ciltyp vi.Cil.vtype]) vs []
+      VarSet.fold (fun vi tl -> tl@[vi.vtype]) vs []
     in
     Tuple tl
 
@@ -1645,11 +1723,9 @@ and type_of expr =
 
 
 let filter_vs_by_type t =
-  VS.filter
+  VarSet.filter
     (fun vi ->
-       let st = type_of_ciltyp vi.Cil.vtype in
-       st = t)
-
+       vi.vtype = t)
 
 let filter_cs_by_type t =
   CS.filter
@@ -1657,14 +1733,13 @@ let filter_cs_by_type t =
        let st = type_of_ciltyp jc.cvi.Cil.vtype in
        st = t)
 
-
 let rec input_type_or_type =
   function
   | Function (it, rt) -> input_type_or_type it
   | t -> t
 (* ------------------------ 8- STRUCT UTILS ----------------------------*)
 
-type sigu = VS.t * (fnExpr * fnExpr * fnExpr)
+type sigu = VarSet.t * (fnExpr * fnExpr * fnExpr)
 
 type prob_rep =
   {
@@ -1740,7 +1815,7 @@ let rec pass_remove_special_ops e =
               (let e1 = args' >> 0 in
                match vo with
                | Some var ->
-                 (match String.lowercase var.Cil.vname with
+                 (match String.lowercase var.vname with
                   | "max" ->
                     let e2 = args' >> 1 in
                     FnQuestion (FnBinop(Gt, e1, e2), e1, e2)
@@ -1785,20 +1860,20 @@ let rec pass_sequentialize fnlet =
                with Failure s ->  failwith "Non-scalar type unsupported"
              in
              let expr_depends = used_in_fnexpr e in
-             (VS.add vi modified_set,
-              IM.add vi.Cil.vid e expr_map,
-              IM.add vi.Cil.vid expr_depends dep_graph))
-        (VS.empty, IM.empty, IM.empty) ve_list
+             (VarSet.add vi modified_set,
+              IM.add vi.vid e expr_map,
+              IM.add vi.vid expr_depends dep_graph))
+        (VarSet.empty, IM.empty, IM.empty) ve_list
     in
-    (* let depends_graph = IM.map (fun deps -> VS.inter deps modified_vars) *)
+    (* let depends_graph = IM.map (fun deps -> VarSet.inter deps modified_vars) *)
     (*     depends_graph_unpure *)
     (* in *)
     (** We need to implement here the algorithm described in :
         http://gallium.inria.fr/~xleroy/publi/parallel-move.pdf *)
-    let statement_order = VS.vids_of_vs modified_vars in
+    let statement_order = VarSet.vids_of_vs modified_vars in
     List.fold_left
       (fun let_bindings vid ->
-         FnLetIn ([FnVarinfo (VS.find_by_id vid modified_vars),
+         FnLetIn ([FnVariable (VarSet.find_by_id modified_vars vid),
                    IM.find vid vid_to_expr], let_bindings))
       let_queue statement_order
       (** Analyze dependencies to produce bindings ordered such that
@@ -1902,6 +1977,8 @@ let expr_to_cil fd temps e =
       fd.slocals <- fd.slocals@[new_temp];
       (match fo with
        | Some vi ->
+         let vi =  makeVarinfo false vi.vname
+             (check_option (ciltyp_of_symb_type vi.vtype)) in
          temps :=
            !temps@[(makeFunCall
                       new_temp
@@ -1970,7 +2047,9 @@ let expr_to_cil fd temps e =
 
   and fnvar_to_lval v =
     match v with
-    | FnVarinfo v -> Var v , NoOffset
+    | FnVariable vi ->
+      let v = cil_varinfo vi in
+      Var v , NoOffset
     | FnArray (v, e) ->
       let lh, offset = fnvar_to_lval v in
       lh , Index (fnexpr_to_exp e, offset)
@@ -2060,7 +2139,9 @@ let expr_to_cil fd temps e =
 
 let rec fnvar_to_cil fd tmps v =
   match v with
-  | FnVarinfo v -> Var v , NoOffset
+  | FnVariable v ->
+    let v = cil_varinfo v in
+    (Var v , NoOffset)
   | FnArray (v, e) ->
     let lh, offset = fnvar_to_cil fd tmps v in
     lh , Index (expr_to_cil fd tmps e, offset)
@@ -2074,9 +2155,9 @@ let sort_nb_used_vars (v1, e1) (v2, e2) =
   let used2 = used_in_fnexpr e2 in
   let vi1 = check_option (vi_of v1) in
   let vi2 = check_option (vi_of v2) in
-  match VS.mem vi1 used2, VS.mem vi2 used1 with
+  match VarSet.mem vi1 used2, VarSet.mem vi2 used1 with
   | false, false ->
-    if VS.cardinal used1 > VS.cardinal used2 then 1 else -1
+    if VarSet.cardinal used1 > VarSet.cardinal used2 then 1 else -1
   | true, false -> 1
   | false, true -> -1
   (* Case with a conflict ! Needs a temp variable. *)

@@ -64,7 +64,7 @@ let is_none = function None -> true | _ -> false
 (** Convert a varinfo to an expression *)
 let v2e (v : varinfo): Cil.exp = Lval (var v)
 
-let (==>) (f: 'a -> 'a) (xo : 'a option) =
+let (==>) (f: 'a -> 'b) (xo : 'a option) =
   match xo with
   | Some x -> Some (f x)
   | None -> None
