@@ -8,7 +8,7 @@ function Length(dafny_seq_ : seq<int>): int
 
 function LengthJoin(leftLength : int, rightLength : int): int
 {
-  ((leftLength + 1) + (rightLength - 1))
+  ((rightLength - 1) + (leftLength + 1))
 }
 
 
