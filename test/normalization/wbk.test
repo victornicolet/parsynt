@@ -1,0 +1,7 @@
+Test: well balanced variation, third unfolding
+wbk1
+false
+((wb bool) (a bool_array) (cnt int))
+((wb cnt) () (a) (wb cnt a) (wb cnt))
+(&& (&& (&& wb (> (+ cnt (? a#0 1 (- 1))) 0)) (> (+ (+ cnt (? a#0 1 (- 1))) (? a#1 1 (- 1))) 0))  (> (+ (+ (+ cnt (? a#0 1 (- 1))) (? a#1 1 (- 1))) (? a#2 1 (- 1))) 0))
+(&& (> (+ cnt (min (min (? a#0 1 (- 1)) (+ (? a#0  1 (- 1)) (? a#1 1 (- 1)))) (+ (+ (? a#0  1 (- 1)) (? a#1 1 (- 1))) (? a#2 1 (- 1))))) 0) wb)

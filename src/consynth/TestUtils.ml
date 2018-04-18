@@ -178,6 +178,7 @@ and constr_expr vardefs e =
                (match s with
                | "+" -> Plus | "-" -> Minus | "max" -> Max | "min" -> Min
                | ">" -> Gt | "<" -> Lt | "<=" -> Le | ">=" -> Ge | "=" -> Eq
+               | "&&" -> And | "||" -> Or
                | _ -> failwith "Binop error.")
              | _ -> failwith "App 2 error"
            in
