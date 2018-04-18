@@ -367,11 +367,11 @@ let costly_vars ctx =
     (ES.elements ctx.costly_exprs)
 
 type expression_flavour =
-  | Mixed
+  | Normal
   | State
   | Input
   | Const
-  | NonLoc
+  | NonNormal
 
 let locality_rule ctx e =
   let cvs =  VarSet.of_list (costly_vars ctx) in
@@ -381,15 +381,15 @@ let locality_rule ctx e =
       join = (fun f1 f2 ->
           match f1, f2 with
           | e1, e2 when e1 = e2 -> e1
-          | State, Input -> Mixed
-          | Input, State -> Mixed
-          | Mixed, Mixed -> Mixed
+          | State, Input -> Normal
+          | Input, State -> Normal
+          | Normal, Normal -> Normal
           | Const, e1 | e1, Const -> e1
-          | _, _ -> NonLoc
+          | _, _ -> NonNormal
         );
-      init = Mixed;
+      init = Normal;
       case = (fun e -> false);
-      on_case = (fun e f -> Mixed);
+      on_case = (fun e f -> Normal);
       on_var =
         (fun v ->
            match v with
@@ -402,7 +402,39 @@ let locality_rule ctx e =
       on_const = (fun c -> Const);
     } e
 
+let is_normal =
+  function
+  | NonNormal -> false
+  | _ -> true
 
+let collect_normal_subexpressions ctx =
+  rec_expr2
+    {
+      join = (fun x y -> x @ y);
+      init = [];
+      case = (fun e ->
+          match e with
+          | FnBinop _ | FnUnop _ | FnCond _ ->
+            true
+          | _ ->  false);
+      on_case =
+        (fun f e ->
+           if is_normal (locality_rule ctx e) then [e] else
+             match e with
+             | FnBinop (_, e1, e2) -> (f e1)@(f e2)
+             | FnUnop (_, e1) -> (f e1)
+             | FnCond (_, e1, e2) -> (f e1)@(f e2)
+             | _ -> failhere __FILE__ "collect" "x"
+             );
+      on_var =
+        (fun v -> [FnVar v]);
+      on_const =
+        (fun c -> [FnConst c]);
+    }
+
+(*
+Factorize by finding common factors larger than a single expression.
+ *)
 let __factorize_multi__ ctx top_op el =
   let el = List.map (rebuild_tree_AC ctx) el in
   let el = List.map flatten_AC el in
@@ -515,8 +547,9 @@ let __factorize__ ctx top_op el =
               List.partition
                 (fun e ->
                    match e with
-                   | FnBinop (op', e1', ee) when op' = op && e1' @= e1 ->
-                     true
+                   | FnBinop (op', e1', ee) when op' = op && e1' @= e1 -> true
+                   (* | FnBinop (op', ee, e1') when op' = op && e1' @= e1 && is_commutative op' ->
+                    *   true *)
                    | _ -> false) tl
 
             in

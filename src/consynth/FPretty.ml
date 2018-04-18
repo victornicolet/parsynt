@@ -557,7 +557,11 @@ let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
     pp_print_list ~pp_sep:sep cp_fnexpr fmt elt_list
 
 let cp_expr_list fmt el =
-  ppli fmt ~sep:" " cp_fnexpr el
+  pp_print_list
+    ~pp_sep:(fun fmt () -> fprintf fmt "@;")
+    cp_fnexpr
+    fmt
+    el
 
 
 

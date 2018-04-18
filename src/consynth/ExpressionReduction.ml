@@ -29,7 +29,7 @@ let verbose = ref true
 
 let reduce_cost_binop rfunc ctx (op2 : symb_binop) (x : fnExpr) (y : fnExpr) =
   match x, y with
-  (** Transform comparisions with max min into conjunctions
+  (** Transform comparisons with max min into conjunctions
       or disjunctions, because conj/disj. are associative *)
   (* max(a, b) > c --> a > c or b > c *)
   | FnBinop (Max, a, b), c when op2 = Gt || op2 = Ge ->

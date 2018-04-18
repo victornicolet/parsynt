@@ -73,6 +73,8 @@ let test_split_expression () =
 *)
 let normalization_test lin name context expr expected =
   let expr_norm = normalize ~linear:lin context expr in
+  let normal_expressions = collect_normal_subexpressions context expr_norm in
+  printf "Normal subexpressions:@.%a@." cp_expr_list normal_expressions;
   if expected @= expr_norm then
     msg_passed (sprintf "Normalization of %s test passed." name)
   else
@@ -304,8 +306,8 @@ let test_local_normal_test () =
   let tname = "Test local normal." in
   let ploc_res fmt locres =
     fprintf fmt (match locres with
-        | NonLoc -> "NonLocal"
-        | Mixed -> "Mixed"
+        | NonNormal -> "NonNormalal"
+        | Normal -> "Normal"
         | Input -> "Input"
         | State -> "State"
         | Const -> "Const")
@@ -326,7 +328,7 @@ let test_local_normal_test () =
     List.map (locality_rule ctx) expr0
   in
   let expected_list =
-    [Input; State; Mixed; Mixed; NonLoc; Mixed]
+    [Input; State; Normal; Normal; NonNormal; Normal]
   in
   if loc_res = expected_list then
     msg_passed tname
