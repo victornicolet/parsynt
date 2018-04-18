@@ -74,9 +74,9 @@ let test_split_expression () =
 let normalization_test lin name context expr expected =
   let expr_norm = normalize ~linear:lin context expr in
   let normal_expressions = collect_normal_subexpressions context expr_norm in
-  printf "Normal subexpressions:@.%a@." cp_expr_list normal_expressions;
   if expected @= expr_norm then
-    msg_passed (sprintf "Normalization of %s test passed." name)
+    (printf "Normal subexpressions:@.%a@." cp_expr_list normal_expressions;
+     msg_passed (sprintf "Normalization of %s test passed." name))
   else
     begin
       msg_failed (sprintf "Normalization test of %s failed." name);
@@ -341,6 +341,25 @@ let test_local_normal_test () =
      msg_failed tname)
 
 
+(* Normalization: file defined tests. *)
+let test_load filename =
+  let inchan = IO.input_channel (open_in filename) in
+  let message = IO.read_line inchan in
+  print_endline message;
+  let title = IO.read_line inchan in
+  let use_lin = bool_of_string (IO.read_line inchan) in
+  let vars = vardefs (IO.read_line inchan) in
+  let context = make_context vars (IO.read_line inchan) in
+  let ein = expression vars (IO.read_line inchan) in
+  let enorm = expression vars (IO.read_line inchan) in
+  normalization_test use_lin title context ein enorm
+
+let file_defined_tests () =
+  let test_files =
+    glob (Conf.project_dir^"/test/normalization/*.test")
+  in
+  List.iter test_load test_files
+
 let test () =
   test_flatten_expression ();
   test_split_expression ();
@@ -350,4 +369,5 @@ let test () =
   test_normalize_expression_03 ();
   test_normalize_expression_04 ();
   test_normalize_expression_05 ();
+  file_defined_tests ();
   test_local_normal_test ()

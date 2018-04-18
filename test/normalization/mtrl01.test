@@ -1,0 +1,7 @@
+Test: mtrl with width 3
+mtrl (m=3)
+true
+((c int_array) (mtrl0 int) (a int_int_array))
+((mtrl0 c) () (a) (c mtrl0 a) (c#0 c#1 c#2 mtrl0))
+(max (max (+ (+ (+ c#0 a#0#0) a#0#1) a#0#2) (+ (+ (+ c#1 a#0#1) a#1#1) a#1#2)) (max (max (+ (+ c#0 a#0#0) a#0#1) (+ (+ c#1 a#0#1) a#1#1)) (max mtrl0 (max 0 (max (+ c#0 a#0#0) (+ c#1 a#0#1))))))
+(max (+ c#0 (max (+ a#0#0 (+ a#0#1 a#0#2)) (max (+ a#0#0 a#0#1) a#0#0))) (max (+ c#1 (max (+ a#0#1 (+ a#1#1 a#1#2)) (max (+ a#0#1 a#1#1) a#0#1))) (max mtrl0 0)))

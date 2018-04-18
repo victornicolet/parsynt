@@ -710,3 +710,35 @@ let print_defs vs defsHash =
                fprintf fmt "%s" (CilTools.psprint80 Cil.dn_stmt stmt)))
          stmts)
     defsHash
+
+(* From  http://www.wiki.crossplatform.ru *)
+
+(* OCaml does not come with a globbing function. As a workaround, the
+   following function builds a regular expression from a glob pattern.
+   Only the '*' and '?' wildcards are recognized. *)
+open Str
+
+let regexp_of_glob pat =
+  Str.regexp
+    (Printf.sprintf "^%s$"
+       (String.concat ""
+          (List.map
+             (function
+                | Str.Text s -> Str.quote s
+                | Str.Delim "*" -> ".*"
+                | Str.Delim "?" -> "."
+                | Str.Delim _ -> assert false)
+             (Str.full_split (Str.regexp "[*?]") pat))))
+
+(* Now we can build a very basic globber. Only the filename part will
+   be used in the glob pattern, so directory wildcards will break in
+   this simple example. *)
+let glob pat =
+  let basedir = Filename.dirname pat in
+  let files = Sys.readdir basedir in
+  let regexp = regexp_of_glob (Filename.basename pat) in
+  List.map
+    (Filename.concat basedir)
+    (List.filter
+       (fun file -> Str.string_match regexp file 0)
+       (Array.to_list files))
