@@ -28,6 +28,10 @@ open FuncTypes
 open Format
 
 
+type stv_type =
+  | Scalar of constants
+  | Linear of (int * constants) list
+
 let symbolic_execution_test tname vars ctx funct unfoldings efinal =
   let indexes =  create_symbol_map ctx.index_vars in
   let state = create_symbol_map ctx.state_vars in
@@ -40,9 +44,23 @@ let symbolic_execution_test tname vars ctx funct unfoldings efinal =
     }
   in
   let results, inputs = unfold_once ~silent:false xinfo funct in
-  IM.iter
-    (fun k e -> printf "%a@." cp_fnexpr e) results;
-  msg_passed tname
+  try
+    List.iter
+      (fun (vid, stv_type) ->
+         let e = IM.find vid results in
+         match stv_type, e with
+         | Scalar c, FnConst c' -> if c = c' then () else failwith "Y"
+         | Linear kl, FnVector ar ->
+           (List.iter
+              (fun (k, c) ->
+                 if FnConst c = Array.get ar k then () else failwith "X") kl)
+         | _ -> failwith "Z")
+      efinal;
+    msg_passed ("Test passed: "^tname)
+  with Failure s ->
+    IM.iter
+      (fun k e -> printf "%a@." cp_fnexpr e) results;
+  msg_failed (tname^" : "^s)
 
 
 let test_01 () =
@@ -54,9 +72,11 @@ let test_01 () =
     _letin
       [(FnArray (FnVariable c, sk_zero), sk_zero);
        (FnVariable sum, sk_zero)]
-      sk_tail_state
+      (_letin [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)))]
+         sk_tail_state)
   in
-  symbolic_execution_test "sum0" vars cont funct 1 ""
+  symbolic_execution_test "sum0" vars cont funct 1
+    [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0)])]
 
 (* Normalization: file defined tests. *)
 let test_load filename =
@@ -64,13 +84,13 @@ let test_load filename =
   let message = IO.read_line inchan in
   print_endline message;
 
-  let title = IO.read_line inchan in
-  let unfoldings = int_of_string (IO.read_line inchan) in
-  let vars = vardefs (IO.read_line inchan) in
-  let context = make_context vars (IO.read_line inchan) in
-  let funct = expression vars (IO.read_line inchan) in
-  let efinal = expression vars (IO.read_line inchan) in
-  symbolic_execution_test title vars context funct unfoldings efinal
+  (* let title = IO.read_line inchan in
+   * let unfoldings = int_of_string (IO.read_line inchan) in
+   * let vars = vardefs (IO.read_line inchan) in
+   * let context = make_context vars (IO.read_line inchan) in
+   * let funct = expression vars (IO.read_line inchan) in
+   * let efinal = expression vars (IO.read_line inchan) in *)
+  ()
 
 let file_defined_tests () =
   let test_files =

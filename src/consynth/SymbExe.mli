@@ -30,5 +30,5 @@ type exec_info =
 *)
 val create_symbol_map : VarSet.t -> fnExpr IM.t
 val unfold : fnExpr IM.t -> exec_info -> fnExpr-> fnExpr IM.t * ES.t
-val unfold_expr : exec_info -> fnExpr -> fnExpr * ES.t
+val unfold_expr : ?loc:int -> exec_info -> fnExpr -> fnExpr * ES.t
 val unfold_once : ?silent:bool -> exec_info -> fnExpr -> fnExpr IM.t * ES.t

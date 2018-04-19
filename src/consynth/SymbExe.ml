@@ -42,7 +42,7 @@ let create_symbol_map vs=
 (** Intermediary functions for unfold_once *)
 let rec unfold new_exprs exec_info func =
 
-  let rec apply_let_exprs new_exprs let_list exec_info =
+  let rec apply_let_exprs new_exprs (let_list : (fnLVar * fnExpr) list) exec_info =
     List.fold_left
       update_expressions (new_exprs, exec_info.inputs) let_list
 
@@ -59,10 +59,28 @@ let rec unfold new_exprs exec_info func =
       else
         ();
       IM.add vid nexpr new_exprs, ES.union n_rexprs read_exprs
+
     | FnArray (v, e) ->
-      exception_on_variable
-        "Unsupported arrays in state variables for variable discovery algorithm."
-        v
+      begin
+        match v, e with
+        | FnVariable a_vi, FnConst (CInt i) ->
+          let vid = a_vi.vid in
+          let avect =
+            try
+              match IM.find vid exec_info.state_exprs with
+              | FnVector av -> av
+              | _ -> failhere __FILE__ "update_expressions"
+                       "Expected a vector expression in the state of array variable."
+            with Not_found ->
+              failhere __FILE__ "update_expressions"
+                (Format.sprintf "Couldn't find an expression for array %s." a_vi.vname)
+          in
+          let nexpr_i , n_rexprs = unfold_expr ~loc:i exec_info expr in
+          Array.set avect i nexpr_i;
+          IM.add vid (FnVector avect) new_exprs, ES.union n_rexprs read_exprs
+        | _ ->
+          exception_on_expression "Unspported array access in unfold" (FnVar var)
+      end
   in
   match func with
   | FnLetExpr let_list ->
@@ -114,24 +132,32 @@ and exec_var exec_info v =
         end
     end
   | FnArray (v', offset_expr) ->
-    (** TODO : add support for arrays in state variables. For now,
-        we assume all state variables are scalars, so if we have
-        an array in an expression it is necessarily an input variable.
-    *)
     begin
-      let new_v' =
-        match exec_var exec_info v' with
-        | FnVar v, _-> v
-        | bad_v, _ ->
-          exception_on_expression "Unexpected variable form in exec_var" bad_v
-      in
-      let new_offset, new_reads = unfold_expr exec_info offset_expr in
-      FnVar (FnArray (new_v', new_offset)),
-      ES.union (ES.singleton (FnVar (FnArray (new_v', new_offset))))
-        new_reads
+      match v' with
+      | FnVariable vi when VarSet.has_vid exec_info.context.state_vars vi.vid ->
+        (try
+           let vect = IM.find vi.vid exec_info.state_exprs in
+           match unfold_expr exec_info offset_expr, vect with
+           | (FnConst (CInt k), re) , FnVector ar -> Array.get ar k , re
+           | _ ->
+             failhere __FILE__ "exec_var" "Index non ineger or array expression not vector"
+         with Not_found ->
+           failhere __FILE__ "exec_var" "Not found: vector expression.")
+      | _ ->
+        let new_v' =
+          match exec_var exec_info v' with
+          | FnVar v, _-> v
+          | bad_v, _ ->
+            exception_on_expression "Unexpected variable form in exec_var" bad_v
+        in
+        let new_offset, new_reads = unfold_expr exec_info offset_expr in
+        FnVar (FnArray (new_v', new_offset)),
+        ES.union (ES.singleton (FnVar (FnArray (new_v', new_offset))))
+          new_reads
     end
 
-and unfold_expr exec_info expr =
+and unfold_expr ?(loc = 0) exec_info expr  =
+  let rcall = unfold_expr exec_info in
   match expr with
   (* Where all the work is done : when encountering an expression in
        the function*)
@@ -144,35 +170,35 @@ and unfold_expr exec_info expr =
   | FnFun sklet -> expr, ES.empty (* TODO recursive *)
 
   | FnBinop (binop, e1, e2) ->
-    let e1', r1 = unfold_expr exec_info e1 in
-    let e2', r2 = unfold_expr exec_info e2 in
+    let e1', r1 = rcall e1 in
+    let e2', r2 = rcall e2 in
     FnBinop (binop, e1', e2'), ES.union r1 r2
 
   | FnCond (c, e1, e2) ->
-    let c', rc = unfold_expr exec_info c in
-    let e1', r1 = unfold_expr exec_info e1 in
-    let e2', r2 = unfold_expr exec_info e2 in
+    let c', rc = rcall c in
+    let e1', r1 = rcall e1 in
+    let e2', r2 = rcall e2 in
     FnCond (c', e1', e2'), ES.union rc (ES.union r1 r2)
 
   | FnUnop (unop, expr') ->
-    let e, r = unfold_expr exec_info expr' in
+    let e, r = rcall expr' in
     FnUnop (unop, e), r
 
   | FnApp (sty, vi_o, elist) ->
-    let erlist = List.map  (unfold_expr exec_info) elist in
+    let erlist = List.map  (rcall) elist in
     let elist', rlist = ListTools.unpair erlist in
     FnApp (sty, vi_o, elist'),
     List.fold_left (fun r es -> ES.union r es) ES.empty rlist
 
   | FnAddrof expr' | FnStartOf expr'
   | FnAlignofE expr' | FnSizeofE expr' ->
-    unfold_expr exec_info expr'
+    rcall expr'
 
   | FnSizeof _ | FnSizeofStr _ | FnAlignof _ ->
     expr, ES.empty
 
   | FnCastE (sty, expr') ->
-    let e, r = unfold_expr exec_info expr' in
+    let e, r = rcall expr' in
     FnCastE (sty, e), r
 
   (* Special cases where we have irreducible conitionals and nested for

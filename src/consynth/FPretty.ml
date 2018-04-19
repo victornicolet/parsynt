@@ -452,7 +452,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> fprintf ppf "@[<v 2>%a@]"
+         (fun ppf (v,e) -> fprintf ppf "@[<2>%a@]"
              cp_fnexpr e)) el
       (color "red") color_default
 
@@ -480,7 +480,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fprintf ppf "@[<v 2><%a>@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
+           ~pp_sep:(fun fmt () -> fprintf fmt "; ")
            cp_fnexpr fmt l)
       (Array.to_list a)
 
