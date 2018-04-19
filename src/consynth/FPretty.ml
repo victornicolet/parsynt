@@ -365,10 +365,8 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
   | FnRec ((i, g, u), e) ->
-    fp ppf "@[<hov 2>(Loop %s %s %s %a)@]"
-      (Ct.psprint80 Cil.dn_instr i)
-      (Ct.psprint80 Cil.dn_exp g)
-      (Ct.psprint80 Cil.dn_instr u)
+    fp ppf "@[<hov 2>(Loop %a %a %a %a)@]"
+      pp_fnexpr i pp_fnexpr g pp_fnexpr u
       pp_fnexpr e
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
@@ -481,7 +479,8 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (fun fmt l ->
          pp_print_list
            ~pp_sep:(fun fmt () -> fprintf fmt "; ")
-           cp_fnexpr fmt l)
+           (fun fmt e -> fprintf fmt "%a" cp_fnexpr e)
+           fmt l)
       (Array.to_list a)
 
   | FnFun l -> cp_fnexpr ppf l
@@ -529,10 +528,10 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       cp_fnexpr e2
 
   | FnRec ((i, g, u), e) ->
-    fp ppf "(Loop %s %s %s %a)"
-      (Ct.psprint80 Cil.dn_instr i)
-      (Ct.psprint80 Cil.dn_exp g)
-      (Ct.psprint80 Cil.dn_instr u)
+    fp ppf "(Loop %a %a %a %a)"
+      cp_fnexpr i
+      cp_fnexpr g
+      cp_fnexpr u
       cp_fnexpr e
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t

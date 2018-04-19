@@ -156,7 +156,7 @@ and exec_var exec_info v =
           new_reads
     end
 
-and unfold_expr ?(loc = 0) exec_info expr  =
+and unfold_expr ?(loc = -1) exec_info expr  =
   let rcall = unfold_expr exec_info in
   match expr with
   (* Where all the work is done : when encountering an expression in
@@ -201,11 +201,51 @@ and unfold_expr ?(loc = 0) exec_info expr  =
     let e, r = rcall expr' in
     FnCastE (sty, e), r
 
-  (* Special cases where we have irreducible conitionals and nested for
+  (* Special cases where we have irreducible conditionals and nested for
      loops*)
-  | FnRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
+  | FnRec ((i, g, u), sklet) ->
+    let emap, reads = unfold_loop exec_info loc i g u sklet in
+    (* Update once tuples are supported. *)
+    let _, e = IM.max_binding emap in
+    (match e with
+    | FnVector ar ->
+      (if loc > 0 then Array.get ar loc else e), reads
+    | _ -> e, reads)
+
+
   | FnAddrofLabel _ | _ ->
     failwith "Unsupported expression in variable discovery algorithm"
+
+
+and unfold_loop exec_info loc i g u body =
+  let indexvar = VarSet.max_elt (used_in_fnexpr u) in
+  (* TODO redo this part correctly *)
+  let i0, iEnd =
+    match i with
+    | FnConst (CInt c) -> c, 0
+    | _ ->
+      (Format.printf "%sAssuming loop is leftwards.%s@."
+        (PpTools.color "blue") PpTools.color_default);
+      0, !_arsize_ - 1
+  in
+  let i0', iEnd' =
+    match g with
+    | FnBinop (Lt, i, FnConst (CInt c))
+    | FnBinop (Gt, FnConst (CInt c), i) ->
+      0, c
+    | FnBinop (Lt, FnConst (CInt c), i)
+    | FnBinop (Gt, i, FnConst (CInt c)) ->
+      c, 0
+    | _ -> 0, !_arsize_
+  in
+  let i0, iEnd = min i0 i0' , max iEnd iEnd' in
+  let current_index = ref 0 in
+  let body_i = replace_expression ~in_subscripts:true
+      ~to_replace:(FnVar (FnVariable indexvar))
+      ~by:(FnConst (CInt !current_index))
+      ~ine:body
+  in
+  unfold IM.empty exec_info body_i
 
 (** unfold_once : simulate the applciation of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh

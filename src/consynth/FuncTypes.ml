@@ -279,7 +279,7 @@ and fnExpr =
   | FnVar of fnLVar
   | FnConst of constants
   | FnFun of fnExpr
-  | FnRec of  igu * fnExpr
+  | FnRec of  (fnExpr * fnExpr * fnExpr) * fnExpr
   | FnCond of fnExpr * fnExpr * fnExpr
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
