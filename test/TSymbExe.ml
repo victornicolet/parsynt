@@ -25,88 +25,61 @@ open ExpressionReduction
 open VariableDiscovery
 open FPretty
 open FuncTypes
+open Format
 
 
-let x, y, z, a, b, c, a_n =
-  (make_int_varinfo "x"),
-  (make_int_varinfo "y"),
-  (make_int_varinfo "z"),
-  (make_int_varinfo "a"),
-  (make_bool_varinfo "b"),
-  (make_bool_varinfo "c"),
-  (make_int_array_varinfo "a_n")
-
-let index_var = make_int_varinfo "i"
-let index_expr = mkVarExpr index_var
-let array = FnArray (FnVariable a_n, index_expr)
-
-let allvs  = VarSet.of_list [x; y; z; a; b; c; a_n; index_var]
-
-let stv = VarSet.singleton a
-
-let sctx : context =
-    { state_vars = stv;
-      index_vars = VarSet.singleton index_var;
-      all_vars = allvs;
-      used_vars = allvs;
-      costly_exprs = ES.empty;
+let symbolic_execution_test tname vars ctx funct unfoldings efinal =
+  let indexes =  create_symbol_map ctx.index_vars in
+  let state = create_symbol_map ctx.state_vars in
+  let xinfo =
+    {
+      context = ctx;
+      state_exprs = state;
+      index_exprs = indexes;
+      inputs = ES.empty;
     }
-
-let init_exprs = IM.singleton a.vid (mkVarExpr a)
-
-let skv_a = FnVariable a
-let sum_array =
-  (FnLetIn ([skv_a,
-             FnBinop(Max,
-                         sk_zero,
-                         FnBinop (Plus, FnVar skv_a, FnVar array))],
-             sk_tail_state))
-
-
-let index_map1 = IM.singleton index_var.vid index_expr
-let index_map2 = increment_all_indexes index_map1
-let index_map3 = increment_all_indexes index_map2
-(** Apply the functions to states *)
-let index_set = VarSet.singleton index_var
-
-let r0 : exec_info = { context = sctx;
-           state_exprs = init_exprs;
-           index_exprs = index_map1;
-           inputs = ES.empty
-         }
-
-let r1_array = GenVars.init () ;
-  let sexprs, rexprs = unfold_once r0 sum_array in
-  { r0 with state_exprs = sexprs;
-            inputs = rexprs;
-            index_exprs = index_map2 }
-
-let r2_array =
-  let r2ae, r2ar =
-    unfold_once {r1_array with inputs = ES.empty} sum_array
   in
-  { r1_array with state_exprs = r2ae;
-                               inputs = r2ar;
-                               index_exprs = index_map3 }
-
-
-
-let reduced_r2_array = IM.map (reduce_full sctx)
-    r2_array.state_exprs
-
-let print_exprs str exprs =
-  Format.printf "%s :\n" str;
+  let results, inputs = unfold_once ~silent:false xinfo funct in
   IM.iter
-    (fun vid expr -> Format.printf "%i : %a\n" vid pp_fnexpr expr)
-    exprs
+    (fun k e -> printf "%a@." cp_fnexpr e) results;
+  msg_passed tname
+
+
+let test_01 () =
+  let vars = vardefs "((sum int) (i int) (c int_array) (A int_array))" in
+  let cont = make_context vars "((sum c) (i) (A) (sum c i A) (sum c))" in
+  let c = vars#get "c" in
+  let sum = vars#get "sum" in
+  let funct =
+    _letin
+      [(FnArray (FnVariable c, sk_zero), sk_zero);
+       (FnVariable sum, sk_zero)]
+      sk_tail_state
+  in
+  symbolic_execution_test "sum0" vars cont funct 1 ""
+
+(* Normalization: file defined tests. *)
+let test_load filename =
+  let inchan = IO.input_channel (open_in filename) in
+  let message = IO.read_line inchan in
+  print_endline message;
+
+  let title = IO.read_line inchan in
+  let unfoldings = int_of_string (IO.read_line inchan) in
+  let vars = vardefs (IO.read_line inchan) in
+  let context = make_context vars (IO.read_line inchan) in
+  let funct = expression vars (IO.read_line inchan) in
+  let efinal = expression vars (IO.read_line inchan) in
+  symbolic_execution_test title vars context funct unfoldings efinal
+
+let file_defined_tests () =
+  let test_files =
+    glob (Conf.project_dir^"/test/symbolic_execution/*.test")
+  in
+  List.iter test_load test_files
+
+
 
 let test () =
-  print_exprs "r1_array" r1_array.state_exprs;
-  Format.fprintf Format.std_formatter
-    "Inputs at first iteration :@.%a@.@."
-    (fun fmt es ->  pp_expr_set fmt es) r1_array.inputs;
-  print_exprs "r2_array" r2_array.state_exprs;
-  Format.fprintf Format.std_formatter
-    "Inputs at second iteration :@.%a@.@."
-    (fun fmt es ->  pp_expr_set fmt es) r2_array.inputs;
-  print_exprs "red_r2_array" reduced_r2_array
+  test_01 ();
+  file_defined_tests ()

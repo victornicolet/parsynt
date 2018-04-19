@@ -53,7 +53,7 @@ and accepted_expression e =
   match e with
   | FnVar _
   | FnConst _ -> true
-  | FnQuestion _ -> true
+  | FnCond _ -> true
   | FnUnop (_, e') -> accepted_expression e'
   | FnBinop (_, e', e'') ->
     (accepted_expression e') && (accepted_expression e'')
@@ -269,13 +269,13 @@ let find_auxiliaries ?(not_last_iteration = true) i
           VarSet.mem (check_option (vi_of v)) stv
         with Failure s -> false
       end
-    | FnQuestion (c, e1, e2) -> is_stv c
+    | FnCond (c, e1, e2) -> is_stv c
     | _ -> false
   in
   let is_candidate expr =
     match expr with
     | FnBinop (_, e1, e2)
-    | FnQuestion (_, e1, e2) ->
+    | FnCond (_, e1, e2) ->
       (** One of the operands must be a state variable
           but not the other *)
       (is_stv e1 && (not (fn_uses stv e2))) ||
@@ -288,13 +288,13 @@ let find_auxiliaries ?(not_last_iteration = true) i
     | FnBinop (_, e1, e2) ->
       begin
         match e1, e2 with
-        | FnQuestion(c, _, _), estv when is_stv estv -> [c]
-        | estv, FnQuestion(c, _, _) when is_stv estv -> [c]
+        | FnCond(c, _, _), estv when is_stv estv -> [c]
+        | estv, FnCond(c, _, _) when is_stv estv -> [c]
         | e, estv  when is_stv estv -> [e]
         | estv, e when is_stv estv -> [e]
         | _ -> []
       end
-    | FnQuestion (_, e1, e2) ->
+    | FnCond (_, e1, e2) ->
       if is_stv e1 then [e2] else [e1]
     | _ ->  []
   in

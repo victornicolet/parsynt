@@ -526,13 +526,13 @@ let clear_uses () =
 let rebuild_min_max =
   let filter =
     function
-    | FnQuestion (FnBinop (op, e1, e2), e1', e2')
+    | FnCond (FnBinop (op, e1, e2), e1', e2')
       when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) -> true
     | _ -> false
   in
   let transform rfunc e =
     match e with
-    | FnQuestion (FnBinop (op, e1, e2), e1', e2')
+    | FnCond (FnBinop (op, e1, e2), e1', e2')
       when e1 = e1' && e2 = e2' && (op = Lt || op = Gt) ->
       let e1o = rfunc e1 in
       let e2o = rfunc e2 in
@@ -753,11 +753,11 @@ let gen_proof_vars sketch =
          let recursor = {
            join = (fun a b -> a || b);
            init = false;
-           case = (fun e -> match e with FnQuestion _ -> true | _ -> false);
+           case = (fun e -> match e with FnCond _ -> true | _ -> false);
            on_case =
              (fun f e ->
                 match e with
-                | FnQuestion (c, e1, e2) -> f e1 || f e2
+                | FnCond (c, e1, e2) -> f e1 || f e2
                 | _ -> false);
            on_const = (fun c -> false);
            on_var =

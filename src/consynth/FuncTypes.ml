@@ -284,9 +284,9 @@ and fnExpr =
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
   | FnApp of symbolic_type * (fnV option) * (fnExpr list)
-  | FnQuestion of fnExpr * fnExpr * fnExpr
   | FnHoleL of hole_type * fnLVar * CS.t
   | FnHoleR of hole_type * CS.t
+  | FnVector of fnExpr array
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
   | FnSizeof of symbolic_type
@@ -563,7 +563,7 @@ and type_of expr =
     (match type_of_binop (type_of e1) (type_of e2) binop with
      | Some x -> x | None -> failwith "Could not find type of expressions.")
 
-  | FnQuestion (c, e1, e2) -> join_types (type_of e1) (type_of e2)
+  | FnCond (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
   | FnApp (t, _, _) -> t
   | FnHoleL (ht, _,  _) | FnHoleR (ht, _) ->
@@ -1031,7 +1031,7 @@ let rec_expr
     | FnSizeofE e | FnStartOf e
     | FnUnop (_, e) -> recurse_aux e
 
-    | FnQuestion (c, e1, e2) ->
+    | FnCond (c, e1, e2) ->
       join (join (recurse_aux c) (recurse_aux e1)) (recurse_aux e2)
 
     | FnApp (_, _, el) ->
@@ -1039,10 +1039,6 @@ let rec_expr
 
     | FnFun letin
     | FnRec (_, letin) -> recurse_aux letin
-
-    | FnCond (c, l1, l2) ->
-      join (recurse_aux c) (join (recurse_aux l1) (recurse_aux l2))
-
 
 
     | FnLetExpr velist ->
@@ -1108,9 +1104,6 @@ let transform_expr
     | FnStartOf e -> FnStartOf (recurse_aux e)
     | FnUnop (op, e) -> FnUnop (op, recurse_aux e)
 
-    | FnQuestion (c, e1, e2) ->
-      FnQuestion (recurse_aux c, recurse_aux e1, recurse_aux e2)
-
     | FnApp (a, b, el) ->
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
@@ -1160,9 +1153,6 @@ let transform_expr_flag
     | FnSizeofE e -> FnSizeofE (recurse_aux flag e)
     | FnStartOf e -> FnStartOf (recurse_aux flag e)
     | FnUnop (op, e) -> FnUnop (op, recurse_aux flag e)
-
-    | FnQuestion (c, e1, e2) ->
-      FnQuestion (recurse_aux flag c, recurse_aux flag e1, recurse_aux flag e2)
 
     | FnApp (a, b, el) ->
       FnApp (a, b, List.map (fun e -> recurse_aux flag e) el)
@@ -1524,8 +1514,8 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
       let tdown = type_of_unop_args op in
       FnUnop (op, aux_rem_h tdown e0)
 
-    | FnQuestion (c, e1, e2) ->
-      FnQuestion (aux_rem_h Boolean c, aux_rem_h t e1, aux_rem_h t e2)
+    | FnCond (c, e1, e2) ->
+      FnCond (aux_rem_h Boolean c, aux_rem_h t e1, aux_rem_h t e2)
 
     | FnApp (t, vo, el) ->
       FnApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
@@ -1585,7 +1575,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
         let le2, ex2 = translate  e2 in
         begin
           if is_some ex1 && is_some ex2 then
-            None, Some (FnQuestion (co cond, co ex1, co ex2))
+            None, Some (FnCond (co cond, co ex1, co ex2))
           else
             begin
               try
@@ -1891,10 +1881,10 @@ let rec pass_remove_special_ops e =
            let e1' = rfun e1 in let e2' = rfun e2 in
            (match op with
             | Max ->
-              FnQuestion (FnBinop(Gt, e1', e2'), e1', e2')
+              FnCond (FnBinop(Gt, e1', e2'), e1', e2')
 
             | Min ->
-              FnQuestion (FnBinop(Lt, e1', e2'), e1', e2')
+              FnCond (FnBinop(Lt, e1', e2'), e1', e2')
 
             | Nand ->
               FnUnop (Not, FnBinop (And, e1', e2'))
@@ -1914,10 +1904,10 @@ let rec pass_remove_special_ops e =
                  (match String.lowercase var.vname with
                   | "max" ->
                     let e2 = args' >> 1 in
-                    FnQuestion (FnBinop(Gt, e1, e2), e1, e2)
+                    FnCond (FnBinop(Gt, e1, e2), e1, e2)
                   | "min" ->
                     let e2 = args' >> 1 in
-                    FnQuestion (FnBinop(Lt, e1, e2), e1, e2)
+                    FnCond (FnBinop(Lt, e1, e2), e1, e2)
                   | "add1" ->
                     FnBinop (Plus, e1, FnConst (CInt 1))
                   | "sub1" ->
@@ -2065,7 +2055,7 @@ let expr_to_cil fd temps e =
     (* Start of *)
     | FnStartOf e -> StartOf (lval_or_error e)
 
-    | FnQuestion (c, e1, e2) ->
+    | FnCond (c, e1, e2) ->
       Question (fnexpr_to_exp c, fnexpr_to_exp e1, fnexpr_to_exp e2, t)
 
     | FnApp (st, fo, args) ->
@@ -2136,10 +2126,11 @@ let expr_to_cil fd temps e =
       end
 
     | FnHoleL _ | FnHoleR _ -> failwith "Holes cannot be converted"
-    | FnFun _ | FnCond _ | FnRec _ -> failwith "Control flow not supported"
+    | FnFun _ | FnRec _ -> failwith "Control flow not supported"
 
     | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
     | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
+    | FnVector _ -> failhere __FILE__ "exp_to_cil" "Vector literal not supported."
 
   and fnvar_to_lval v =
     match v with
@@ -2150,7 +2141,7 @@ let expr_to_cil fd temps e =
       let lh, offset = fnvar_to_lval v in
       lh , Index (fnexpr_to_exp e, offset)
 
-    | FnTuple _ -> failwith "Tuple not yet implemented"
+    | FnTuple _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
 
 
   and cil_binop_of_symb_binop binop =

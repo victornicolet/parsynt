@@ -123,17 +123,11 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VarSet.t)
   | FnUnop (op, e) ->
     merge_leaves max_depth (make_holes state optype e)
 
-  | FnCond (c, li, le) ->
-    let ch, _ = make_holes state optype c in
-    FnCond (ch ,
-            make_join ~state:state ~skip:[] li,
-            make_join ~state:state ~skip:[] le), 0
-
-  | FnQuestion (c, ei, ee) ->
+  | FnCond (c, ei, ee) ->
     let h1, d1  = merge_leaves max_depth (make_holes state optype ei) in
     let h2, d2 = merge_leaves max_depth (make_holes state optype ee) in
     let hc, dc = merge_leaves max_depth (make_holes state optype c) in
-    FnQuestion (hc, h1, h2), max (max d1 d2) dc
+    FnCond (hc, h1, h2), max (max d1 d2) dc
 
   | FnApp (t, vo, args) ->
     let new_args, depths =
@@ -242,10 +236,10 @@ and merge_leaves max_depth (e,d) =
               (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
           in FnApp (t, ov, el'), d
 
-      | FnQuestion (c, ei, ee) ->
+      | FnCond (c, ei, ee) ->
         begin
           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-            FnQuestion (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c),
+            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c),
                         ei, ee), d
           else
             e, 0

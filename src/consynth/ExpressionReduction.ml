@@ -63,21 +63,21 @@ let reduce_cost_binop rfunc ctx (op2 : symb_binop) (x : fnExpr) (y : fnExpr) =
     FnBinop (Or, FnBinop (And, c, a), FnBinop (And, c, b))
 
   (* Distributivity with ternary expressions *)
-  | FnQuestion (cond, a, b), c ->
+  | FnCond (cond, a, b), c ->
     let ca = cost ctx a in
     let cb = cost ctx b in
     let cc = cost ctx c in
     if is_associative op2 &&  (max ca cb) > cc then
-      FnQuestion (cond, FnBinop (op2, a, c), FnBinop (op2, b, c))
+      FnCond (cond, FnBinop (op2, a, c), FnBinop (op2, b, c))
     else
       FnBinop (op2, x, y)
 
-  | c, FnQuestion (cond, a, b) ->
+  | c, FnCond (cond, a, b) ->
     let ca = cost ctx a in
     let cb = cost ctx b in
     let cc = cost ctx c in
     if is_associative op2 && (max ca cb) > cc then
-      FnQuestion (cond, FnBinop (op2, c, a), FnBinop (op2, c, b))
+      FnCond (cond, FnBinop (op2, c, a), FnBinop (op2, c, b))
     else
       FnBinop (op2, x, y)
 
@@ -93,17 +93,17 @@ let reduce_cost_ternary rfunc ctx c x y =
     let cy1 = cost ctx y1 in
     let cy2 = cost ctx y2 in
     if x1 = y1 && cx1 > (max cx2 cy2) then
-      let cond = rfunc (FnQuestion (c, x2, y2)) in
+      let cond = rfunc (FnCond (c, x2, y2)) in
       FnBinop (op1, x1, cond)
     else
       begin
         if x2 = y2 && cx2 > (max cx1 cy1) then
-          let cond = rfunc (FnQuestion (c, x1, y1)) in
+          let cond = rfunc (FnCond (c, x1, y1)) in
           FnBinop (op1, cond, x2)
         else
-          FnQuestion (c, x, y)
+          FnCond (c, x, y)
       end
-  | _, _ -> FnQuestion (c, x, y)
+  | _, _ -> FnCond (c, x, y)
 
 
 
@@ -115,7 +115,7 @@ let reduce_cost ctx expr =
   let reduction_cases expr =
     match expr with
     | FnBinop (_, _, _) -> true
-    | FnQuestion (_, _,_) -> true
+    | FnCond (_, _,_) -> true
     | FnUnop (_,_) -> true
     | _ -> false
   in
@@ -125,7 +125,7 @@ let reduce_cost ctx expr =
     | FnBinop (op2, x, y) ->
       reduce_cost_binop rfunc ctx op2 (rfunc x) (rfunc y)
 
-    | FnQuestion (c, x, y)->
+    | FnCond (c, x, y)->
       reduce_cost_ternary rfunc ctx (rfunc c) (rfunc x) (rfunc y)
 
     (* Distribute unary boolean not down, unary num neg down *)
@@ -157,26 +157,26 @@ let reduce_cost ctx expr =
 let reduce_cost_specials ctx e=
   let red_cases e =
     match e with
-    | FnQuestion _ -> true
+    | FnCond _ -> true
     | _ -> false
   in
   let red_apply rfunc e =
     match e with
-    | FnQuestion (cond1, x, y) ->
+    | FnCond (cond1, x, y) ->
       let x' = rfunc x in
       let y' = rfunc y in
       begin
         match x', y' with
-        | FnQuestion (cond2, a, b), c ->
+        | FnCond (cond2, a, b), c ->
           let ca = cost ctx a in
           let cb = cost ctx b in
           let cc = cost ctx c in
           if ca > (max cb cc) then
-            FnQuestion (FnBinop (And, cond1, cond2), a,
-                        FnQuestion (FnUnop (Not, cond2), c, b))
+            FnCond (FnBinop (And, cond1, cond2), a,
+                        FnCond (FnUnop (Not, cond2), c, b))
           else
-            FnQuestion (cond1, x, y)
-        | _ ->  FnQuestion (cond1, x, y)
+            FnCond (cond1, x, y)
+        | _ ->  FnCond (cond1, x, y)
       end
     | _ -> failwith "Unexpected case in reduce_cost_specials"
   in

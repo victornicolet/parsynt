@@ -55,12 +55,12 @@ let apply_remove fnlet =
 let rebuild_boolean_expressions (var, expr) =
   let to_rearrange expr =
     match expr with
-    | FnQuestion (c, e1, e2) -> true
+    | FnCond (c, e1, e2) -> true
     | _ -> false
   in
   let rearrange_aux rfunc expr =
     match expr with
-    | FnQuestion (c, e1, e2) ->
+    | FnCond (c, e1, e2) ->
       let c = rfunc c in
       let e1' = rfunc e1 in
       let e2' = rfunc e2 in
@@ -75,14 +75,14 @@ let rebuild_boolean_expressions (var, expr) =
           rfunc (FnBinop (Or, c, e))
 
         (* if (a) then if (b) x : y else y -> if (a && b) then x else y *)
-        | FnQuestion (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
-          rfunc (FnQuestion (FnBinop (And, c, c'), e1bis, e1ter))
+        | FnCond (c', e1bis, e1ter), e1ter' when e1ter = e1ter' ->
+          rfunc (FnCond (FnBinop (And, c, c'), e1bis, e1ter))
         (** Distributivity / associativity *)
         (* if (a) then (b || c) else c -> (a && b) || c) *)
         | FnBinop (Or, a, b1), b2 when b1 = b2 ->
           FnBinop(Or, FnBinop(And, a, c), b1)
 
-        | _ , _ -> FnQuestion(c, e1', e2')
+        | _ , _ -> FnCond(c, e1', e2')
       end
     | _ -> failwith "Unexpected case."
   in
@@ -115,7 +115,7 @@ let force_boolean_constants (v, e) =
   let candidate flag e =
     match e with
     | FnBinop (op, _, _) when (op = Or || op  = And) -> true
-    | FnQuestion (_, e1, e2) when (type_of e1 = Boolean) ||
+    | FnCond (_, e1, e2) when (type_of e1 = Boolean) ||
                                   (type_of e2 = Boolean) -> true
     | _ -> flag
   in
@@ -125,13 +125,13 @@ let force_boolean_constants (v, e) =
       let e1' = rfunc true e1 in let e2' = rfunc true e2 in
       FnBinop (op, cast_bool_cst e1', cast_bool_cst e2')
 
-    | FnQuestion (c, e1, e2) when (type_of e1 = Boolean) ||
+    | FnCond (c, e1, e2) when (type_of e1 = Boolean) ||
                                   (type_of e2 = Boolean) ||
                                   flag ->
       let e1' = rfunc true e1 in
       let e2' = rfunc true e2 in
       let c' = rfunc true c in
-      FnQuestion (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
+      FnCond (cast_bool_cst c', cast_bool_cst e1', cast_bool_cst e2')
 
     | _ -> rfunc false e
   in
@@ -146,9 +146,9 @@ let force_boolean_constants (v, e) =
 let transform_boolean_if_expression =
   let case e =
     match e with
-    | FnQuestion (FnConst (CBool true), _, _) -> true
-    | FnQuestion (FnConst (CBool false), _, _) -> true
-    | FnQuestion (c, FnConst (CBool true), FnConst (CBool false)) -> true
+    | FnCond (FnConst (CBool true), _, _) -> true
+    | FnCond (FnConst (CBool false), _, _) -> true
+    | FnCond (c, FnConst (CBool true), FnConst (CBool false)) -> true
     | FnBinop (Or, FnConst (CBool true), _)
     | FnBinop (Or,_, FnConst (CBool true)) -> true
     | FnBinop (Or, FnConst (CBool false), _)
@@ -162,11 +162,11 @@ let transform_boolean_if_expression =
   let transform_bool rfunc e =
     match e with
     (* true ? a : b -> a *)
-    | FnQuestion (FnConst (CBool true), e1, _) -> rfunc e1
+    | FnCond (FnConst (CBool true), e1, _) -> rfunc e1
     (* false ? a : b -> b *)
-    | FnQuestion (FnConst (CBool false), _, e2) -> rfunc e2
+    | FnCond (FnConst (CBool false), _, e2) -> rfunc e2
     (* c ? true : false --> c *)
-    | FnQuestion (c, FnConst (CBool true),FnConst (CBool false)) ->
+    | FnCond (c, FnConst (CBool true),FnConst (CBool false)) ->
       rfunc c
     (* true || c --> true *)
     | FnBinop (Or, FnConst (CBool true), _)
@@ -301,7 +301,7 @@ class sketch_builder
           convert_cils ~subs:converted_substitutions e
 
         | FQuestion (ec, e1, e2) ->
-          FnQuestion (convert ec,
+          FnCond (convert ec,
                       (convert e1),
                       (convert e2))
 
@@ -377,7 +377,7 @@ class sketch_builder
 
         | Cil.Question (c, e1, e2, t) ->
           let c' = convert_cils ~expect_ty:Boolean c in
-          FnQuestion (c',  convert_cils ~subs:subs e1,
+          FnCond (c',  convert_cils ~subs:subs e1,
                       convert_cils ~subs:subs e2)
 
         | Cil.CastE (t, e) ->

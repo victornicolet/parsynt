@@ -6,21 +6,40 @@ open FuncTypes
 
 let debug = ref false
 
+(**
+   Structure with the informatino needed during the symbolic execution:
+   - context contains variables information (intpurs, state variables)
+   - state exprs maps state variable ids to expressions.
+   - index exprs maps index variable ids to expressions.
+   - inputs is the set of input expressions.
+*)
 type exec_info =
   { context : context;
     state_exprs : fnExpr IM.t;
     index_exprs : fnExpr IM.t;
     inputs : ES.t  }
 
+(* Array size must be bounded during the symbolic execution. *)
+let _MAX_ARRAY_SIZE_ = int_of_string (Conf.get_conf_string "symbolic_execution_finitization")
+
+let _arsize_ = ref _MAX_ARRAY_SIZE_
 (** Create a mapping from variable ids to variable expressions to start the
     algorithm *)
 let create_symbol_map vs=
   VarSet.fold
-    (fun vi map -> IM.add vi.vid (FnVar (FnVariable vi)) map) vs IM.empty
+    (fun vi map ->
+              IM.add vi.vid
+                (if is_array_type vi.vtype then
+                   (FnVector (Array.init !_arsize_
+                                (fun i -> FnVar(FnArray(FnVariable vi, FnConst (CInt i))))))
+                 else
+                   (FnVar (FnVariable vi))
+                )
+                map) vs IM.empty
 
 
 (** --------------------------------------------------------------------------*)
-(** Intermediary functions for exec_once *)
+(** Intermediary functions for unfold_once *)
 let rec unfold new_exprs exec_info func =
 
   let rec apply_let_exprs new_exprs let_list exec_info =
@@ -129,11 +148,11 @@ and unfold_expr exec_info expr =
     let e2', r2 = unfold_expr exec_info e2 in
     FnBinop (binop, e1', e2'), ES.union r1 r2
 
-  | FnQuestion (c, e1, e2) ->
+  | FnCond (c, e1, e2) ->
     let c', rc = unfold_expr exec_info c in
     let e1', r1 = unfold_expr exec_info e1 in
     let e2', r2 = unfold_expr exec_info e2 in
-    FnQuestion (c', e1', e2'), ES.union rc (ES.union r1 r2)
+    FnCond (c', e1', e2'), ES.union rc (ES.union r1 r2)
 
   | FnUnop (unop, expr') ->
     let e, r = unfold_expr exec_info expr' in
@@ -159,7 +178,6 @@ and unfold_expr exec_info expr =
   (* Special cases where we have irreducible conitionals and nested for
      loops*)
   | FnRec ((i, g, u), sklet) -> expr, ES.empty (* TODO recusrive + test on IGU *)
-  | FnCond (c, letif, letelse) -> expr, ES.empty (* TODO recursive *)
   | FnAddrofLabel _ | _ ->
     failwith "Unsupported expression in variable discovery algorithm"
 

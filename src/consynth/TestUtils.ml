@@ -68,7 +68,7 @@ let _ci i = FnConst (CInt i)
 let _cb b = FnConst (CBool b)
 let _b e1 op e2 = FnBinop (op, e1, e2)
 let _u op e1 = FnUnop (op, e1)
-let _Q c e1 e2 = FnQuestion (c, e1, e2)
+let _Q c e1 e2 = FnCond (c, e1, e2)
 let _let el = FnLetExpr el
 let _letin el l = FnLetIn (el, l)
 (* some functions lifted to host language *)

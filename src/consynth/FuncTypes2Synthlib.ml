@@ -59,7 +59,7 @@ let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
     SyApp(string_of_symb_binop op,
           [to_term ~texpr:texpr e1; to_term ~texpr:texpr e2])
   | FnUnop(op, e) -> SyApp(string_of_symb_unop op, [to_term ~texpr:texpr e])
-  | FnQuestion(c,e1,e2) -> SyApp("ite", map (to_term ~texpr:texpr) [c;e1;e2])
+  | FnCond(c,e1,e2) -> SyApp("ite", map (to_term ~texpr:texpr) [c;e1;e2])
   | FnApp(_,maybe_v, args) ->
     (try
       let v = check_option maybe_v in

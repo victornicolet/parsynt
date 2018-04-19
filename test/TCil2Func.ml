@@ -62,7 +62,7 @@ let wf_test_case fname (func : C2F.letin) sketch  =
     in
     let sketch_ok =
       match sketch with
-      | FnLetExpr ([_, FnQuestion(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
+      | FnLetExpr ([_, FnCond(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
                                  FnBinop(Plus, _, _))]) -> true
       | _ -> false
     in
@@ -116,10 +116,10 @@ let wf_test_case fname (func : C2F.letin) sketch  =
 
   | "test_balanced_bool" ->
     (match sketch with
-     | FnLetIn ([_, FnQuestion(FnVar(FnArray(_, _)),
+     | FnLetIn ([_, FnCond(FnVar(FnArray(_, _)),
                              FnBinop(Plus, _, _),
                              FnBinop(Minus, _, _))],
-                FnLetExpr([(_, FnQuestion(FnBinop(And, _, _),
+                FnLetExpr([(_, FnCond(FnBinop(And, _, _),
                                           sk_one, sk_zero));
                           (_,_);(_,_)])) -> true
      | _ -> false)
@@ -134,7 +134,7 @@ let wf_test_case fname (func : C2F.letin) sketch  =
          (match cnte with
             FnBinop(Plus,
                     _,
-                    FnQuestion(FnVar(FnArray _), FnConst _,
+                    FnCond(FnVar(FnArray _), FnConst _,
                               FnConst _)) -> true
            |_ -> false)
      |_ -> false)
@@ -150,10 +150,10 @@ let wf_test_case fname (func : C2F.letin) sketch  =
   (** The drop-while example *)
   | "test_drop_while_pos_int" ->
     (match sketch with
-     | FnLetExpr ([(_, FnQuestion(FnBinop(And,
+     | FnLetExpr ([(_, FnCond(FnBinop(And,
                                           FnUnop(Not, FnBinop(Eq, _, _)),_),
                                   _, _));
-                   (_, FnQuestion(FnUnop(Not, _), _, _))]) -> true
+                   (_, FnCond(FnUnop(Not, _), _, _))]) -> true
      | _ -> false)
 
   | "test_alternating_sequence" ->
@@ -161,7 +161,7 @@ let wf_test_case fname (func : C2F.letin) sketch  =
      | FnLetExpr ([(_, FnVar (FnArray(_, _)));
                     (_ , FnBinop(And,
                                  FnVar(_),
-                                 FnQuestion(FnVar(_),_,_)))])-> true
+                                 FnCond(FnVar(_),_,_)))])-> true
      | _ -> false)
 
 

@@ -195,7 +195,7 @@ let ( @= ) e1 e2 =
     else
       false
 
-  | FnQuestion (c1, e11, e12), FnQuestion (c2, e21, e22) ->
+  | FnCond (c1, e11, e12), FnCond (c2, e21, e22) ->
     aux_eq c1 c2 && aux_eq e11 e21 && aux_eq e12 e22
 
   | _, _ -> e1 = e2
@@ -416,7 +416,7 @@ let collect_normal_subexpressions ctx =
       init = [];
       case = (fun e ->
           match e with
-          | FnBinop _ | FnUnop _ | FnCond _ | FnQuestion _ ->
+          | FnBinop _ | FnUnop _ | FnCond _ ->
             true
           | _ ->  false);
       on_case =
@@ -425,8 +425,7 @@ let collect_normal_subexpressions ctx =
              match e with
              | FnBinop (_, e1, e2) -> (f e1)@(f e2)
              | FnUnop (_, e1) -> (f e1)
-             | FnCond (c, e1, e2)
-             | FnQuestion(c , e1, e2) ->
+             | FnCond(c , e1, e2) ->
                ((List.map (add_guard c) (f e1))@
                 (List.map (add_guard (not c)) (f e2)))
              | _ -> failhere __FILE__ "collect" "x"

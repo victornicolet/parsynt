@@ -308,6 +308,14 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnFun l -> pp_fnexpr ppf l
 
+  | FnVector a ->
+    fprintf ppf "@[<v 2><%a>@]"
+      (fun fmt l ->
+         pp_print_list
+           ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
+           pp_fnexpr fmt l)
+      (Array.to_list a)
+
   | FnApp (t, vio, argl) ->
     let funname =
       match vio with
@@ -349,10 +357,6 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (string_of_symb_unop op) pp_fnexpr e
 
   | FnCond (c, e1, e2) ->
-    fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
-      pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
-
-  | FnQuestion (c, e1, e2) ->
     if !print_imp_style then
       fp ppf "((@[%a@])? @[%a@]: @[%a@])"
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
@@ -440,7 +444,6 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-
   | FnLetExpr el ->
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
       (color "red") color_default
@@ -472,6 +475,14 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnConst c -> fp ppf "%s%a%s" (color "cyan")
                    (pp_constants ~for_c:true ~for_dafny:false) c color_default
+
+ | FnVector a ->
+    fprintf ppf "@[<v 2><%a>@]"
+      (fun fmt l ->
+         pp_print_list
+           ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
+           cp_fnexpr fmt l)
+      (Array.to_list a)
 
   | FnFun l -> cp_fnexpr ppf l
 
@@ -510,11 +521,6 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (color "b") (string_of_symb_unop op) color_default cp_fnexpr e
 
   | FnCond (c, e1, e2) ->
-    fp ppf "@[<v 1>(%sif%s@;%a@;%a@;%a)@]"
-      (color "b") color_default
-      cp_fnexpr c cp_fnexpr e1 cp_fnexpr e2
-
-  | FnQuestion (c, e1, e2) ->
     fp ppf "@[<hov 2>((%a)%s?@;%s%a%s@;%s%a)@]"
       cp_fnexpr c
       (color "b") color_default
@@ -616,7 +622,7 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
         (string_of_symb_binop ~fd:true op)
         (pp_c_expr ~for_dafny:for_dafny) e2
 
-  | FnQuestion (c, e1, e2) ->
+  | FnCond (c, e1, e2) ->
     (if for_dafny then
        fprintf fmt "@[<hov 2>(if %a then@;%a else@;%a)@]"
      else
