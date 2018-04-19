@@ -7,7 +7,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 eval "./Parsy.native test/experiments/$1.c"
-eval "dafny2 examples/dafny/Example_$1.dfy"
+eval "dafny examples/dafny/Example_$1.dfy"
 
 if [ -z "$2" ]
 then

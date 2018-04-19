@@ -33,9 +33,9 @@ let create_symbol_map vs=
                    (FnVector (Array.init !_arsize_
                                 (fun i -> FnVar(FnArray(FnVariable vi, FnConst (CInt i))))))
                  else
-                   (FnVar (FnVariable vi))
-                )
+                   (FnVar (FnVariable vi)))
                 map) vs IM.empty
+
 
 
 (** --------------------------------------------------------------------------*)
@@ -172,7 +172,22 @@ and unfold_expr ?(loc = -1) exec_info expr  =
   | FnBinop (binop, e1, e2) ->
     let e1', r1 = rcall e1 in
     let e2', r2 = rcall e2 in
-    FnBinop (binop, e1', e2'), ES.union r1 r2
+    let rset = ES.union r1 r2 in
+    (match e1', e2' with
+     | FnConst c, FnConst c' ->
+       (* Partial interpretation *)
+       (match c,c',binop with
+        | CInt i1, CInt i2, Plus -> FnConst (CInt (i1 + i2))
+        | CInt i1, CInt i2, Minus -> FnConst (CInt (i1 - i2))
+        | CInt i1, CInt i2, Times -> FnConst (CInt (i1 * i2))
+        | CInt i1, CInt i2, Div -> FnConst (CInt (i1 / i2))
+        | CBool b1, CBool b2, And -> FnConst (CBool (b1 && b2))
+        | CBool b1, CBool b2, Or -> FnConst (CBool (b1 || b2))
+        | _ -> FnBinop (binop, e1', e2'))
+     (* TODO put partial interpretation in a separate module *)
+     ,rset
+     | _, _ ->
+      FnBinop (binop, e1', e2'), rset)
 
   | FnCond (c, e1, e2) ->
     let c', rc = rcall c in
@@ -245,7 +260,18 @@ and unfold_loop exec_info loc i g u body =
       ~by:(FnConst (CInt !current_index))
       ~ine:body
   in
-  unfold IM.empty exec_info body_i
+  let rec exec_loop (new_exprs, read_exprs) exec_info k =
+    if k >= iEnd then
+      new_exprs, read_exprs
+    else
+      let e', r' = (unfold IM.empty exec_info body_i) in
+      exec_loop (e', r')
+        {exec_info with
+         state_exprs = IM.update_all exec_info.state_exprs e';
+         inputs = ES.union r' exec_info.inputs} (k + 1)
+  in
+  exec_loop (IM.empty, ES.empty) exec_info 0
+
 
 (** unfold_once : simulate the applciation of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh

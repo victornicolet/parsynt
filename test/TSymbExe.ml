@@ -80,7 +80,7 @@ let test_01 () =
 
 
 
-let test_01 () =
+let test_02 () =
   let vars = vardefs "((sum int) (i int) (c int_array) (A int_array))" in
   let cont = make_context vars "((sum c) (i) (A) (sum c i A) (sum c))" in
   let c = vars#get "c" in
@@ -100,6 +100,30 @@ let test_01 () =
   in
   symbolic_execution_test "sum1" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])]
+
+let test_03 () =
+  (* TODO: partial execution for indexes (partial exec for integers) *)
+  let vars = vardefs "((sum int) (i int) (c int_array) (A int_array))" in
+  let cont = make_context vars "((sum c) (i) (A) (sum c i A) (sum c))" in
+  let c = vars#get "c" in
+  let sum = vars#get "sum" in
+  let i = vars#get "i" in
+  let funct =
+    _letin
+      [(FnArray (FnVariable c, sk_zero), sk_zero);
+       (FnVariable sum, sk_zero)]
+      (_letin [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)));
+               (FnArray (FnVariable c, _ci 2)), (FnVar (FnArray (FnVariable c, sk_zero)))]
+         (_let [(FnArray (FnVariable c, _ci 2)),
+                  (FnRec (
+                      (* Initial value, guard and update of index of the loop. *)
+                      (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                      (* Body of the loop *)
+                      (_let [(FnArray (FnVariable c, _ci 2)),
+                             (fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one)])))]))
+  in
+  symbolic_execution_test "sum2" vars cont funct 1
+    [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 10)])]
 
 
 (* Normalization: file defined tests. *)
@@ -126,4 +150,6 @@ let file_defined_tests () =
 
 let test () =
   test_01 ();
+  test_02 ();
+  test_03 ();
   file_defined_tests ()
