@@ -41,6 +41,11 @@ exception Sketch_generation of string
 let fail_sketch_generation str =
   raise (Sketch_generation str)
 
+
+exception Type_error of string
+let fail_type_error str =
+  raise (Type_error str)
+
 (** Logging for debugging purposes *)
 let logfile = ref "log"
 
