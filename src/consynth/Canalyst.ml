@@ -325,3 +325,9 @@ let pp_sketch solver fmt sketch_rep =
       Sketch.pp_rosette_sketch fmt sketch_rep
     end
   | _ -> ()
+
+
+let clear () =
+  IH.clear VariableDiscovery.discovered_aux_alltime;
+  Loops.clear ();
+  IH.clear Sketch.auxiliary_vars

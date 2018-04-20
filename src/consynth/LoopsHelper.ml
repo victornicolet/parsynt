@@ -115,7 +115,6 @@ let rec rem_loop_init (bdy : block) inners :
       if List.mem inner.sid (List.map (fun stmt -> stmt.sid) stmt.succs)
       then
         begin
-          Format.printf "In succs.@.";
           match stmt.skind with
           | Instr il ->
             Instr (

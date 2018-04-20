@@ -12,8 +12,8 @@ module VS = Utils.VS
 module LF = Liveness.LiveFlow
 module Ct = CilTools
 
-let verbose = ref true
-let debug = ref true
+let verbose = ref false
+let debug = ref false
 
 (**
     The integer option set used in Cil implementation of reachingdefs.ml.

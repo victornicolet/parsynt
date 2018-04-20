@@ -37,3 +37,5 @@ val cil2func : Cil.file -> Loops.loop_info Utils.IM.t -> func_info list
 val func2sketch: Cil.file -> func_info list -> FuncTypes.prob_rep list
 val find_new_variables : FuncTypes.prob_rep -> FuncTypes.prob_rep
 val pp_sketch: Conf.solver -> Format.formatter -> FuncTypes.prob_rep -> unit
+
+val clear: unit -> unit
