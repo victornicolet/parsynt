@@ -138,13 +138,14 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
    init_values = remap_init_values sol_info.Codegen.init_values}
 
 
-let rec solve_one ?(solver = Conf.rosette) ?(expr_depth = 1) problem =
+let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) problem =
   (* Set the expression depth of the sketch printer. *)
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
     if !verbose then
-      printf "@.SOLVING %s.@." lp_name;
+      printf "@.%sSOLVING %s.%s@." (color "blue") lp_name color_default;
+    printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_body;
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
         ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch solver) problem
@@ -189,7 +190,7 @@ let rec solve_inners problem =
   if List.length problem.inner_functions = 0 then
     Some problem
   else
-    let solve_inner_problem problem = solve_one problem in
+    let solve_inner_problem problem = solve_one ~inner:true problem in
     (* Solve the inner functions. *)
     let inner_funcs =
       somes (List.map solve_inner_problem problem.inner_functions)
@@ -224,6 +225,8 @@ and solve_problem problem =
   in
   maybe_apply aux_solve (solve_inners problem)
 
+
+(** --------------------------------------------------------------------------*)
 (** Generating a TBB implementation of the parallel solution discovered *)
 let output_tbb_tests (solutions : prob_rep list) =
   let tbb_test_filename (solution : prob_rep) =
@@ -303,13 +306,13 @@ let main () =
   elapsed_time := Unix.gettimeofday ();
   printf "Parsing C program ...\t\t\t\t";
   let c_file, loops = C.processFile filename in
-  printf "%sDONE%s@.@.C program -> functional representation ...\t"
-    (color "green") color_default;
+  printf "%sDONE%s@.@.%sC program -> partial functional representation ...%s\t"
+    (color "green") color_default (color "yellow") color_default;
   let functions = C.cil2func c_file loops in
-  printf "%sDONE%s@.@.Functional representation -> sketch ...\t\t"
-    (color "green") color_default;
+  printf "%sDONE%s@.@.%sPartial functional representation -> functional representation ...%s\t\t"
+    (color "green") color_default (color "yellow") color_default;
   let problem_list = Canalyst.func2sketch c_file functions in
-  printf "%sDONE%s@.@.Solving sketches ...\t\t@." (color "green") color_default;
+  printf "%sDONE%s@.@.%sSolving sketches ...%s\t\t@." (color "green") color_default (color "yellow") color_default;
   (** Try to solve the sketches without adding auxiliary variables *)
   (* All the sketches that have been solved, including with auxiliaries *)
   let solved =

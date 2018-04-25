@@ -223,6 +223,7 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
   | CBox cst -> fprintf ppf "<Cil.constant>"
   | CChar c -> fprintf ppf "%c" c
   | CString s -> fprintf ppf "%s" s
+  | CArrayInit c -> fprintf ppf "{%a}" (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
   | CUnop (op, c) ->
     fprintf ppf "(%s %a)" (string_of_symb_unop op)
       (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
@@ -268,7 +269,7 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
     if !print_imp_style then
       fprintf ppf "%a[%s]" pp_fnlvar v offset_str
     else
-      (fprintf ppf "(vector-ref %a %s)"
+      (fprintf ppf "(list-ref %a %s)"
          pp_fnlvar v offset_str)
 
   | FnTuple vs ->
@@ -291,7 +292,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnLetIn (el, l) ->
     (match el with
     | [(FnArray(a,i), e)] ->
-      (fprintf ppf "@[<v>(vector-set! %a %a %a)@;%a@]"
+      (fprintf ppf "@[<v>(list-set %a %a %a)@;%a@]"
          pp_fnlvar a pp_fnexpr i pp_fnexpr e pp_fnexpr l)
     | _ ->
       (fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"

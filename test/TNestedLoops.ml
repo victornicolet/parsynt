@@ -25,6 +25,7 @@ open Utils
 open PpTools
 open InnerFuncs
 open FuncTypes
+module SJoin = SketchJoin
 
 let test_filenames = glob (Conf.project_dir ^"/test/nested_loops/*.c")
 
@@ -72,13 +73,12 @@ let one_test test_filename =
   if !test_verbosity > 0 then
     List.iter (FPretty.pp_problem_rep std_formatter) unsolved_sketches;
 
-  if !test_verbosity > 0 then
-    printf "@.FUNC --> FUNC translation: OK@.";
 
   let transformed_inner =
     List.map (fun pb -> replace_by_join pb pb.inner_functions) unsolved_sketches
   in
   if !test_verbosity > 0 then
+    printf "@.FUNC --> FUNC translation: OK@.";
     List.iter (FPretty.pp_problem_rep std_formatter) transformed_inner
 
 

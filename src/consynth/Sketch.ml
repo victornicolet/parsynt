@@ -45,6 +45,10 @@ module Join = SketchJoin
 let iterations_limit =
   ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
 
+let inner_iterations_limit =
+  ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
+
+
 let auxiliary_vars : fnV IH.t = IH.create 10
 
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
@@ -102,7 +106,7 @@ let rec pp_define_symbolic fmt def =
              | Real -> DefReal vars
              | Boolean -> DefBoolean vars
              | _ -> DefEmpty);
-          F.fprintf fmt "@[<hv 2>(define %s@;(vector %a))@]@\n"
+          F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
             vi.vname pp_string_list (to_v vars)) vil
 
   | DefEmpty -> ()
@@ -384,7 +388,7 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
                        ~by:[FnVar (FnVariable {vi with vname = "_begin_"});
                             FnVar (FnVariable {vi with vname = "_begin_"})]
                        ~ine:(IM.find vid reach_consts)
-                  with _ -> IM.find vid reach_consts)
+                   with _ -> IM.find vid reach_consts)
               else
                 (if IH.mem auxiliary_vars vid
                  then

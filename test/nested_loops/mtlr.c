@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-int example_nested_sum(int** a, int* c, int n) {
+int example_mtlr(int** a, int* c, int n) {
   int mtr = 0;
   int mtrl = 0;
   int sum = 0;

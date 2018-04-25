@@ -127,12 +127,13 @@ and symb_unsafe_binop =
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
-    | CNil
+  | CNil
   | CInt of int
   | CInt64 of int64
   | CReal of float
   | CBool of bool
   | CBox of Cil.constant
+  | CArrayInit of constants
   | CChar of char
   | CString of string
   | CUnop of symb_unop * constants
@@ -515,6 +516,7 @@ let rec type_of_const c =
   | CBool _ -> Boolean
   | CChar _ -> Integer
   | CString _ -> List (Integer, None)
+  | CArrayInit c -> type_of_const c (* TODO: think about a better solution. *)
   | CReal _ -> Real
   | CInt _ | CInt64 _ -> Integer
   | CBox b -> Box (type_of_cilconst b)

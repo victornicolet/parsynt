@@ -138,8 +138,10 @@ let cil2func cfile loops =
     let finfo = init_func_info loop in
     let stmt = (loop_body loop) in
     if !verbose then
-      printf "@.Identified state variables: %a@."
-        VS.pvs loop.lvariables.state_vars;
+      (printf "@.%s=== Loop %i in %s ===%s"
+         (color "blue") loop.lid loop.lcontext.host_function.C.vname color_default;
+       printf "@.Identified state variables: %a"
+         VS.pvs loop.lvariables.state_vars);
     let func, figu =
       match loop.ligu with
       | Some igu ->
@@ -164,9 +166,8 @@ let cil2func cfile loops =
       let printer =
         new Cil2Func.cil2func_printer loop.lvariables
       in
-      (printf "@.%s[for loop %i in %s failed]%s@."
-         (color "red") loop.lid loop.lcontext.host_function.C.vname
-         color_default;);
+      (printf "@.[for loop %i in %s]@."
+          loop.lid loop.lcontext.host_function.C.vname;);
       printer#printlet func;
       printf "@.";
     else ();
@@ -208,12 +209,28 @@ let func2sketch cfile funcreps =
              m)
         func_info.reaching_consts IM.empty
     in
+    (* Add initilization to array variables. *)
+    let s_reach_consts =
+      VarSet.fold
+        (fun fnv rcc ->
+           if IM.mem fnv.vid rcc then rcc
+           else
+             (match fnv.vtype with
+              | Vector (t, _) ->
+                IM.add fnv.vid (FnConst (CArrayInit (match t with
+                    | Integer -> CInt 0
+                    | Real -> CReal 0.
+                    | Boolean -> CBool true
+                    | _ -> CNil))) rcc
+              | _ -> rcc))
+        state_vars s_reach_consts
+    in
     if !verbose then
       begin
         printf "@.Reaching constants information:@.";
         IM.iter
           (fun k c ->
-             printf "Reaching constant: %s = %a@."
+             printf "%s = %a@;"
                (VarSet.find_by_id state_vars k).vname
                FPretty.pp_fnexpr c)
           s_reach_consts
