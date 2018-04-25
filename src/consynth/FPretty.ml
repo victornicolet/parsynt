@@ -69,6 +69,11 @@ let hole_type_expr fmt ((t, ot) : hole_type) =
 let string_of_opchoice oct =
   "(" ^ (operator_choice_name oct) ^" 0)"
 
+
+let make_index_completion_string f e =
+  fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
+  flush_str_formatter ()
+
 (** Pretty-printing operators *)
 
 let string_of_unsafe_binop =
@@ -290,18 +295,24 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
              pp_fnexpr e)) el
 
   | FnLetIn (el, l) ->
-    (match el with
-    | [(FnArray(a,i), e)] ->
-      (fprintf ppf "@[<v>(list-set %a %a %a)@;%a@]"
-         pp_fnlvar a pp_fnexpr i pp_fnexpr e pp_fnexpr l)
-    | _ ->
-      (fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
-         (fun ppf el ->
-            (pp_print_list
-               (fun ppf (v, e) ->
+    fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
+       (fun ppf el ->
+          (pp_print_list
+             (fun ppf (v, e) ->
+                match v with
+                (* For now we expect only one-dimensional arrays  *)
+                | FnArray(a,i) ->
+                  (match a with
+                   | FnVariable _ ->
+                     Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a %a)]@]"
+                       pp_fnlvar a pp_fnlvar a pp_fnexpr i pp_fnexpr e
+                   | _ ->
+                     failhere __FILE__ "pp_fnexpr" "Unsupported write in two-dim. array")
+                | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
-                    pp_fnlvar v pp_fnexpr e) ppf el)) el
-         pp_fnexpr l))
+                    pp_fnlvar v pp_fnexpr e)
+             ppf el)) el
+       pp_fnexpr l
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
@@ -326,13 +337,15 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "(%s %a)" funname
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_fnexpr) argl
 
-  | FnHoleR (t, cs) ->
+  | FnHoleR (t, cs, i) ->
+    let istr = make_index_completion_string pp_fnexpr i in
     fp ppf "@[<hv 2>(%a %a %i)@]"
-      hole_type_expr t CS.pp_cs cs !holes_expr_depth
+      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
-  | FnHoleL (t, v, cs) ->
+  | FnHoleL (t, v, cs, i) ->
+    let istr = make_index_completion_string pp_fnexpr i in
     fp ppf "@[<hv 2>(%a %a %i)@]"
-      hole_type_expr t CS.pp_cs cs !holes_expr_depth
+      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnAddrof e -> fp ppf "(AddrOf )"
 
@@ -495,11 +508,11 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "@[<hov 2>(%s%s%s %a)@]" (color "u") funname color_default
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_fnexpr) argl
 
-  | FnHoleR (t, _) ->
+  | FnHoleR (t, _, _) ->
     fp ppf "%s%a%s"
       (color "grey") hole_type_expr t color_default
 
-  | FnHoleL (t, v, _) ->
+  | FnHoleL (t, v, _, _) ->
     fp ppf "%s %a %s"
       (color "grey") hole_type_expr t color_default
 
@@ -637,9 +650,9 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
-  | FnHoleL ((t, _), v , _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
+  | FnHoleL ((t, _), v , _, _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
                                  (pp_c_var ~rhs:true) v pp_typ t
-  | FnHoleR ((t, _), _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
+  | FnHoleR ((t, _), _, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_fnexpr e
 

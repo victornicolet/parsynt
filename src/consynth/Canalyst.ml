@@ -250,7 +250,11 @@ let func2sketch cfile funcreps =
     in
     let index_set, _ = sigu in
     IH.clear SketchJoin.auxiliary_variables;
-    let join_body = Sketch.Join.build state_vars loop_body in
+    let join_body = Sketch.Join.build
+        (FnVar (FnVariable (VarSet.max_elt index_set)))
+        state_vars
+        loop_body
+    in
     incr no_sketches;
     create_boundary_variables index_set;
     (* Input size from reaching definitions, min_int dependencies,
@@ -325,7 +329,9 @@ let find_new_variables sketch_rep =
 
   let join_body =
     complete_final_state new_sketch.scontext.state_vars
-      (Sketch.Join.build new_sketch.scontext.state_vars nlb_opt)
+      (Sketch.Join.build
+         (FnVar (FnVariable (VarSet.max_elt sketch_rep.scontext.index_vars)))
+         new_sketch.scontext.state_vars nlb_opt)
   in
   {
     new_sketch with

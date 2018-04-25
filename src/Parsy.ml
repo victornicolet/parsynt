@@ -144,8 +144,8 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) prob
   let lp_name = problem.loop_name in
   try
     if !verbose then
-      printf "@.%sSOLVING %s.%s@." (color "blue") lp_name color_default;
-    printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_body;
+      (printf "@.%sSOLVING %s.%s@." (color "blue") lp_name color_default;
+       printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_body);
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
         ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch solver) problem

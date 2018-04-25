@@ -220,10 +220,20 @@ let rec isolate_set_array (fnlet : fnExpr) =
   | FnLetIn (el, cont) ->
     let pre, mid, rest = split_bindings el [] in
     (match mid with
-    | Some mid ->
-      FnLetIn(pre, FnLetIn([mid], isolate_set_array (FnLetIn(rest, cont))))
-    | None ->
-      FnLetIn(el, isolate_set_array cont))
+     | Some mid ->
+       (match pre, rest with
+       | [], [] -> FnLetIn([mid], isolate_set_array cont)
+       | _::_, [] ->
+         FnLetIn(pre, FnLetIn([mid], isolate_set_array cont))
+       | [], _::_ ->
+         FnLetIn([mid], isolate_set_array (FnLetIn(rest, cont)))
+       | _, _ ->
+         FnLetIn(pre, FnLetIn([mid], isolate_set_array (FnLetIn(rest, cont)))))
+     | None ->
+       if List.length el > 0 then
+         FnLetIn(el, isolate_set_array cont)
+       else
+         isolate_set_array cont)
   | e -> e
 
 (** Apply all optimizations *)

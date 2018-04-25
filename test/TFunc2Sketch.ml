@@ -21,7 +21,7 @@ open Format
 open Utils
 open FPretty
 open PpTools
-
+open FuncTypes
 module C = Canalyst
 module C2F = Cil2Func
 module S = Sketch
@@ -37,7 +37,7 @@ let test loopsm =
        let body_form, sigu = check_option builder#get_sketch in
        printf"%s%s%s : @; %a@." (color "green") fname color_default
          pp_fnexpr body_form;
-       let join = S.Join.build vs body_form in
+       let join = S.Join.build (FnConst (CInt 0)) vs body_form in
        printf"Join : @; %a@."
          pp_fnexpr join
     )

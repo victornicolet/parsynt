@@ -215,6 +215,8 @@ module CSet = Set.Make (struct
       else Pervasives.compare jcs0.cvi.vid jcs1.cvi.vid
   end)
 
+(* Completions set: used in holes to express the set of possible expressions
+   or variables to use. *)
 module CS = struct
   include CSet
   let of_vs vs =
@@ -245,18 +247,25 @@ module CS = struct
   let to_vs cs =
     CSet.fold (fun jc vs -> VarSet.add jc.cvi vs) cs VarSet.empty
 
-  let pp_cs fmt cs =
+  let pp_cs index_string fmt cs =
+    let lprefix = Conf.get_conf_string "rosette_join_left_state_prefix" in
+    let rprefix = Conf.get_conf_string "rosette_join_right_state_prefix" in
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
       (fun fmt jc ->
-         if jc.cleft then
-           fprintf fmt "%s%s"
-             (Conf.get_conf_string "rosette_join_left_state_prefix")
-             jc.cvi.vname;
-         if jc.cright then
-           fprintf fmt "%s%s%s"
-             (if jc.cleft then " " else "")
-             (Conf.get_conf_string "rosette_join_right_state_prefix")
-             jc.cvi.vname;)
+         match jc.cvi.vtype with
+         | Vector _ ->
+           (if jc.cleft then
+              fprintf fmt "(list-ref %s%s %s)" lprefix jc.cvi.vname index_string;
+            if jc.cright then
+              fprintf fmt "%s(list-ref %s%s %s)"
+                (if jc.cleft then " " else "") rprefix jc.cvi.vname index_string;)
+         | _ ->
+           (if jc.cleft then
+              fprintf fmt "%s%s" lprefix jc.cvi.vname;
+            if jc.cright then
+              fprintf fmt "%s%s%s"
+                (if jc.cleft then " " else "") rprefix jc.cvi.vname;)
+      )
       fmt (to_jc_list cs)
 end
 
@@ -285,8 +294,8 @@ and fnExpr =
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
   | FnApp of symbolic_type * (fnV option) * (fnExpr list)
-  | FnHoleL of hole_type * fnLVar * CS.t
-  | FnHoleR of hole_type * CS.t
+  | FnHoleL of hole_type * fnLVar * CS.t * fnExpr
+  | FnHoleR of hole_type * CS.t * fnExpr
   | FnVector of fnExpr array
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
@@ -568,7 +577,7 @@ and type_of expr =
   | FnCond (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
   | FnApp (t, _, _) -> t
-  | FnHoleL (ht, _,  _) | FnHoleR (ht, _) ->
+  | FnHoleL (ht, _,  _, _) | FnHoleR (ht, _, _) ->
     (match ht with (t, ot) -> t)
 
   | _ -> failwith "Typing subfunctions not yet implemented"
@@ -582,8 +591,9 @@ let filter_vs_by_type t =
 let filter_cs_by_type t =
   CS.filter
     (fun jc ->
-       let st = jc.cvi.vtype in
-       st = t)
+       match jc.cvi.vtype with
+       | Vector (st, _) -> st = t
+       | st -> st = t)
 
 let rec input_type_or_type =
   function

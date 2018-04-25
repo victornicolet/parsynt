@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open FuncTypes
 open Utils
@@ -23,6 +23,7 @@ open FPretty
 module IH = Sets.IH
 
 let debug = ref false
+let narrow_array_completions = ref true
 
 let auxiliary_variables : fnV IH.t = IH.create 10
 
@@ -64,41 +65,63 @@ let is_right_hole =
 
 let replace_hole_type t' =
   function
-  | FnHoleR (t, cs) -> FnHoleR(t', cs)
-  | FnHoleL (t, v, cs) -> FnHoleL(t', v, cs)
+  | FnHoleR (t, cs, i) -> FnHoleR(t', cs, i)
+  | FnHoleL (t, v, cs, i) -> FnHoleL(t', v, cs, i)
   | e -> e
 
 let type_of_hole =
   function
-  | FnHoleR (t, _) | FnHoleL (t, _, _) -> Some t
+  | FnHoleR (t, _, _) | FnHoleL (t, _, _, _) -> Some t
   | _ -> None
 
 let completion_vars_of_hole =
   function
-  | FnHoleR (_, cs) -> cs
-  | FnHoleL (_, _, cs) -> cs
+  | FnHoleR (_, cs, _) -> cs
+  | FnHoleL (_, _, cs, _) -> cs
   | _ -> CS.empty
 
-let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VarSet.t)
+let midx_of_hole =
+  function
+  | FnHoleR (_, _,i) -> i
+  | FnHoleL (_, _,_,i) -> i
+  | _ -> FnConst(CNil)
+
+let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
+    (index_expr : fnExpr)
+    (state : VarSet.t)
     (optype : operator_type) =
   let holt t = (t, optype) in
+  let self_rcall =
+    make_holes ~max_depth:max_depth ~is_final:is_final ~is_array:is_array index_expr state
+  in
   function
-  | FnVar sklv ->
+  | FnVar var ->
     begin
-      match sklv with
+      match var with
       | FnVariable vi ->
         let t = vi.vtype in
         if (IH.mem auxiliary_variables vi.vid) && is_final
-        then FnVar sklv, 0
+        then FnVar var, 0
         else
           (if VarSet.mem vi state
-           then FnHoleL (holt t, sklv, CS.complete_all (CS.of_vs state)), 1
-           else FnHoleR (holt t, CS.complete_right (CS.of_vs state)), 1)
+           then FnHoleL (holt t, var, CS.complete_all (CS.of_vs state), index_expr), 1
+           else FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
       | FnArray (sklv, expr) ->
-        (** Array : for now, cannot be a stv *)
-        let t = type_of_var sklv in
-        (match t with
-         | Vector (t, _) -> FnHoleR (holt t, CS.complete_right (CS.of_vs state)), 1
+        (match type_of_var sklv with
+         | Vector (t, _) ->
+           let vi = check_option (vi_of sklv) in
+           (if VarSet.mem vi state
+            then
+              let completion =
+                if is_array then
+                  CS.of_vs
+                    (VarSet.filter (fun v -> is_array_type v.vtype) state)
+                else
+                  CS.of_vs state
+              in
+              FnHoleL (holt t, sklv, CS.complete_all completion, index_expr), 1
+            else
+              FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
          | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
       | FnTuple vs -> FnVar (FnTuple vs), 0
     end
@@ -107,63 +130,83 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) (state : VarSet.t)
     let cs = CS.complete_right (CS.of_vs state) in
     begin
       match c with
-      | CInt _ | CInt64 _ -> FnHoleR (holt Integer, cs), 1
-      | CReal _ -> FnHoleR (holt Real, cs), 1
-      | CBool _ -> FnHoleR (holt Boolean, cs), 1
-      | _ -> FnHoleR (holt Unit, cs), 1
+      | CInt _ | CInt64 _ -> FnHoleR (holt Integer, cs, index_expr), 1
+      | CReal _ -> FnHoleR (holt Real, cs, index_expr), 1
+      | CBool _ -> FnHoleR (holt Boolean, cs, index_expr), 1
+      | _ -> FnHoleR (holt Unit, cs, index_expr), 1
     end
 
-  | FnFun skl -> FnFun (make_join ~state:state ~skip:[] skl), 0
+  | FnFun skl -> FnFun (make_join ~index:index_expr ~state:state ~skip:[] skl), 0
 
   | FnBinop (op, e1, e2) ->
-    let holes1, d1 = merge_leaves max_depth (make_holes state optype e1) in
-    let holes2, d2 = merge_leaves max_depth (make_holes state optype e2) in
+    let holes1, d1 = merge_leaves max_depth (self_rcall optype e1) in
+    let holes2, d2 = merge_leaves max_depth (self_rcall optype e2) in
     FnBinop (op, holes1, holes2), max d1 d2
 
   | FnUnop (op, e) ->
-    merge_leaves max_depth (make_holes state optype e)
+    merge_leaves max_depth (self_rcall optype e)
 
   | FnCond (c, ei, ee) ->
-    let h1, d1  = merge_leaves max_depth (make_holes state optype ei) in
-    let h2, d2 = merge_leaves max_depth (make_holes state optype ee) in
-    let hc, dc = merge_leaves max_depth (make_holes state optype c) in
+    let h1, d1  = merge_leaves max_depth (self_rcall optype ei) in
+    let h2, d2 = merge_leaves max_depth (self_rcall optype ee) in
+    let hc, dc = merge_leaves max_depth (self_rcall optype c) in
     FnCond (hc, h1, h2), max (max d1 d2) dc
 
   | FnApp (t, vo, args) ->
     let new_args, depths =
-      ListTools.unpair (List.map (make_holes state optype) args) in
+      ListTools.unpair (List.map (self_rcall optype) args) in
     FnApp (t, vo, new_args), ListTools.intlist_max depths
 
   | _ as skexpr ->  skexpr, 0
 
 
-and make_hole_e
-    ?(max_depth = 2)
-    ?(is_final=false)
-    (state : VarSet.t) (e : fnExpr) =
+and make_hole_e ?(max_depth = 2) ?(is_array=false) ?(is_final=false)
+    (index_expr : fnExpr) (state : VarSet.t) (e : fnExpr) =
   let optype = analyze_optype e in
   make_holes
-    ~max_depth:max_depth
+    ~max_depth:(if is_array then max_depth else 1)
     ~is_final:is_final
-    state optype e
+    ~is_array:is_array
+    index_expr
+    (if !narrow_array_completions && is_array then
+       (VarSet.filter (fun v -> is_array_type v.vtype) state)
+     else
+       state)
+     optype e
 
-and make_assignment_list state skip =
-  List.map (fun (v, e) ->
+and make_assignment_list ie state skip =
+  let in_skip_list var skip =
+    match var with
+    | FnVariable v ->
+      (match v.vtype with
+      | Vector _ ->
+        List.exists
+          (fun skip_v -> match vi_of skip_v with
+             | Some skip_fnv -> v = skip_fnv
+             | None -> false) skip
+      | _ -> List.mem var skip)
+    | _ -> List.mem var skip
+  in
+  List.map (fun (vbound, e) ->
       match e with
-      | FnVar v when List.mem v skip -> (v, e)
+      | FnVar v when v = vbound && in_skip_list v skip -> (v, e)
 
       | FnApp (st, f, args) ->
-        (v, e)
+        (vbound, e)
 
       | _ ->
         try
-          let vi = check_option (vi_of v) in
-          if VarSet.mem vi !cur_left_auxiliaries ||
-             VarSet.mem vi !cur_right_auxiliaries  then
-            (v, FnHoleL (((type_of e), Basic), v,
-                         CS.complete_all (CS.of_vs state)))
+          let vi_bound = check_option (vi_of vbound) in
+          if VarSet.mem vi_bound !cur_left_auxiliaries ||
+             VarSet.mem vi_bound !cur_right_auxiliaries  then
+            (vbound, FnHoleL (((type_of e), Basic), vbound,
+                         CS.complete_all (CS.of_vs state), ie))
           else
-            (v, fst (make_hole_e ~is_final:true state e))
+            (match vi_bound.vtype with
+             | Vector _ ->
+               (vbound, fst (make_hole_e ~is_array:true ~is_final:true ie state e))
+             | _ ->
+               (vbound, fst (make_hole_e ~is_final:true ie state e)))
         with Failure s ->
           Format.eprintf "Failure %s@." s;
           let msg =
@@ -172,16 +215,16 @@ and make_assignment_list state skip =
           failhere __FILE__ "make_assignment_list"  msg
     )
 
-and make_join ~(state : VarSet.t) ~(skip: fnLVar list) =
+and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) =
   function
   | FnLetExpr ve_list ->
-    FnLetExpr (make_assignment_list state skip ve_list)
+    FnLetExpr (make_assignment_list index state skip ve_list)
 
   | FnLetIn (ve_list, cont) ->
     let to_skip = fst (ListTools.unpair ve_list) in
     FnLetIn (
-      make_assignment_list state skip ve_list,
-      make_join ~state:state ~skip:(skip@to_skip) cont)
+      make_assignment_list index state skip ve_list,
+      make_join ~index:index ~state:state ~skip:(skip@to_skip) cont)
   | e -> e
 
 and merge_leaves max_depth (e,d) =
@@ -209,28 +252,31 @@ and merge_leaves max_depth (e,d) =
         let vars = CS.union (completion_vars_of_hole h1)
             (completion_vars_of_hole h2)
         in
+        let idx = midx_of_hole h1
+        in
         (match (type_of_binop (res_type t1) (res_type t2) op) with
          | Some t ->
            if t1 = t2 && rh_h1 && rh_h2 then
              let ht_final = Function (t1, t) in
-             FnHoleR ((ht_final, join_optypes o1 o2), vars), d
+             FnHoleR ((ht_final, join_optypes o1 o2), vars, idx), d
            else
              FnBinop(op, h1, h2), d + 1
 
          | None -> failwith "Type error in holes")
 
       | FnApp (t, ov, el) ->
-        let all_holes, vars =
+        let all_holes, vars, idx =
           List.fold_left
-            (fun (is_h, vars) e ->
+            (fun (is_h, vars, idx) e ->
                (is_h && is_right_hole e,
-                CS.union vars (completion_vars_of_hole e)))
+                CS.union vars (completion_vars_of_hole e),
+                midx_of_hole e))
 
-            (true, CS.empty) el
+            (true, CS.empty, FnConst(CNil)) el
         in
         if all_holes
         then
-          FnHoleR ((t, NotNum), vars), d
+          FnHoleR ((t, NotNum), vars, idx), d
         else
           let el', _ = ListTools.unpair
               (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
@@ -239,8 +285,8 @@ and merge_leaves max_depth (e,d) =
       | FnCond (c, ei, ee) ->
         begin
           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c),
-                        ei, ee), d
+            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c, midx_of_hole ee),
+                    ei, ee), d
           else
             e, 0
         end
@@ -263,21 +309,21 @@ let set_types_and_varsets =
       nvs, t
   in
   (transform_expr
-      (fun e -> is_a_hole e)
-      (fun rfun e ->
-         match e with
-         | FnHoleL ((t, o), v, vs) ->
-           let nvs, nt = adapt_vs_and_t vs t in
-           FnHoleL ((nt, o), v, nvs)
+     (fun e -> is_a_hole e)
+     (fun rfun e ->
+        match e with
+        | FnHoleL ((t, o), v, vs, i) ->
+          let nvs, nt = adapt_vs_and_t vs t in
+          FnHoleL ((nt, o), v, nvs, i)
 
-         | FnHoleR ((t, o), vs) ->
-           let nvs, nt = adapt_vs_and_t vs t in
-           FnHoleR ((nt, o), nvs)
+        | FnHoleR ((t, o), vs, i) ->
+          let nvs, nt = adapt_vs_and_t vs t in
+          FnHoleR ((nt, o), nvs, i)
 
-         | _ -> rfun e)
+        | _ -> rfun e)
 
-      identity identity)
+     identity identity)
 
 
-let build (state : VarSet.t) fnlet =
-  set_types_and_varsets (make_join ~state:state ~skip:[] fnlet)
+let build i (state : VarSet.t) fnlet =
+  set_types_and_varsets (make_join ~index:i ~state:state ~skip:[] fnlet)

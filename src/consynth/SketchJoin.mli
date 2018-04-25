@@ -6,4 +6,4 @@ val is_left_aux : int -> bool
 val is_right_aux : int -> bool
 val debug : bool ref
 val auxiliary_variables : FuncTypes.fnV Sets.IH.t
-val build : FuncTypes.VarSet.t -> FuncTypes.fnExpr -> FuncTypes.fnExpr
+val build : FuncTypes.fnExpr -> FuncTypes.VarSet.t -> FuncTypes.fnExpr -> FuncTypes.fnExpr
