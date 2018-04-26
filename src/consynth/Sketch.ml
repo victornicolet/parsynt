@@ -80,11 +80,18 @@ type define_symbolic =
   | DefReal of fnV list
   | DefBoolean of fnV list
   | DefArray of fnV list
+  | DefMatrix of fnV list
   | DefEmpty
 
-let gen_cell_vars vi =
+let gen_array_cell_vars vi =
   ListTools.init !iterations_limit
     (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
+
+let gen_mat_cell_vars vi =
+  ListTools.init !iterations_limit
+    (fun i ->
+       (ListTools.init !inner_iterations_limit
+          (fun j -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)})))
 
 let rec pp_define_symbolic fmt def =
   let to_v l  = (List.map (fun vi -> vi.vname) l) in
@@ -99,7 +106,7 @@ let rec pp_define_symbolic fmt def =
   | DefArray vil ->
     List.iter
       (fun vi ->
-          let vars = gen_cell_vars vi in
+          let vars = gen_array_cell_vars vi in
           pp_define_symbolic fmt
             (match array_type vi.vtype with
              | Integer -> DefInteger vars
@@ -108,6 +115,26 @@ let rec pp_define_symbolic fmt def =
              | _ -> DefEmpty);
           F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
             vi.vname pp_string_list (to_v vars)) vil
+
+  | DefMatrix vil ->
+    List.iter
+      (fun vi ->
+         let mvars = gen_mat_cell_vars vi in
+         let avars = gen_array_cell_vars vi in
+         List.iteri
+           (fun i vars ->
+              pp_define_symbolic fmt
+                (match matrix_type vi.vtype with
+                 | Integer -> DefInteger vars
+                 | Real -> DefReal vars
+                 | Boolean -> DefBoolean vars
+                 | _ -> DefEmpty);
+              F.fprintf fmt "@[<hv 2>(define %s$%i@;(list %a))@]@\n"
+                vi.vname i pp_string_list (to_v vars))
+           mvars;
+         F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
+           vi.vname pp_string_list (to_v avars))
+      vil
 
   | DefEmpty -> ()
 
@@ -123,10 +150,14 @@ let pp_vs_to_symbs fmt except vs =
             | Integer -> DefInteger [vi]
             | Boolean -> DefBoolean [vi]
             | Real -> DefReal [vi]
-            | Vector (v, _) -> DefArray [vi]
+            | Vector (v, _) ->
+              (* Support up to 2-dimensional arrays. *)
+              (match v with
+              | Vector (v2, _) -> DefMatrix [vi]
+              | _ -> DefArray [vi])
             | _ ->
               (F.eprintf "Unsupported type for variable %s.\
-                          This might lead to errors in the sketch."
+                          This will lead to errors in the sketch."
                  vi.vname;
                DefEmpty))) vs
 
@@ -134,10 +165,13 @@ let pp_vs_to_symbs fmt except vs =
 let input_symbols_of_vs vs =
   VarSet.fold
     (fun vi symbs ->
-       if is_array_type vi.vtype then
-         symbs@(gen_cell_vars vi)
+       if is_matrix_type vi.vtype then
+         symbs@(List.flatten (gen_mat_cell_vars vi))
        else
-         vi::symbs) vs []
+         (if is_array_type vi.vtype then
+            symbs@(gen_array_cell_vars vi)
+          else
+            vi::symbs)) vs []
 
 let pp_defined_input fmt vs =
   F.pp_print_list
@@ -473,7 +507,7 @@ let pp_synth fmt s0 bnames state_vars read_vars min_dep_len =
     from a variable id to an expression exists, then the value of the variable
     will be set to this expression in the inital state of the loop.
 *)
-let pp_rosette_sketch fmt (sketch : prob_rep) =
+let pp_rosette_sketch inner fmt (sketch : prob_rep) =
   clear_special_consts ();
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
@@ -506,6 +540,8 @@ let pp_rosette_sketch fmt (sketch : prob_rep) =
   in
   (** FPretty configuration for the current sketch *)
   FPretty.state_struct_name := main_struct_name;
+  if inner then
+    pp_comment fmt "Sketch for the memoryless join.";
   pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
@@ -513,7 +549,7 @@ let pp_rosette_sketch fmt (sketch : prob_rep) =
   pp_newline fmt ();
   pp_loop fmt idx bnames (sketch.loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
-  pp_join fmt (sketch.join_body, state_vars);
+  pp_join fmt (sketch.join_sketch, state_vars);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;

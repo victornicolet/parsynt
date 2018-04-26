@@ -250,10 +250,17 @@ let func2sketch cfile funcreps =
     in
     let index_set, _ = sigu in
     IH.clear SketchJoin.auxiliary_variables;
-    let join_body = Sketch.Join.build
+    let join_sk =
+      Sketch.Join.build
         (FnVar (FnVariable (VarSet.max_elt index_set)))
         state_vars
         loop_body
+    in
+    let mless_sk =
+      Sketch.Join.build_for_inner
+        (FnVar (FnVariable (VarSet.max_elt index_set)))
+        state_vars
+        loop_body;
     in
     incr no_sketches;
     create_boundary_variables index_set;
@@ -280,6 +287,11 @@ let func2sketch cfile funcreps =
     in
     (if !debug then
        printf "@.Max dependency length : %i@." max_m_sizes);
+    (**
+       Return the structure containing all the information to solve the problem.
+       This structure should be containing all the information to call the solver
+       and the auxiliary discovery methods.
+    *)
     {
       id = func_info.lid;
       host_function =
@@ -300,7 +312,8 @@ let func2sketch cfile funcreps =
       min_input_size = max_m_sizes;
       uses_global_bound = sketch_obj#get_uses_global_bounds;
       loop_body = loop_body;
-      join_body = join_body;
+      join_sketch = join_sk;
+      memless_sketch = mless_sk;
       join_solution = FnLetExpr ([]);
       init_values = IM.empty;
       func_igu = sigu;
@@ -327,7 +340,7 @@ let find_new_variables sketch_rep =
   IH.copy_into VariableDiscovery.discovered_aux_alltime
     SketchJoin.auxiliary_variables;
 
-  let join_body =
+  let join_sketch =
     complete_final_state new_sketch.scontext.state_vars
       (Sketch.Join.build
          (FnVar (FnVariable (VarSet.max_elt sketch_rep.scontext.index_vars)))
@@ -336,16 +349,16 @@ let find_new_variables sketch_rep =
   {
     new_sketch with
     loop_body = new_loop_body;
-    join_body = join_body;
+    join_sketch = join_sketch;
   }
 
-let pp_sketch solver fmt sketch_rep =
+let pp_sketch ?(inner = false) solver fmt sketch_rep =
   match solver.name with
   | "Rosette" ->
     begin
       IH.copy_into VariableDiscovery.discovered_aux_alltime
         Sketch.auxiliary_vars;
-      Sketch.pp_rosette_sketch fmt sketch_rep
+      Sketch.pp_rosette_sketch inner fmt sketch_rep
     end
   | _ -> ()
 

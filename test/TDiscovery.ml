@@ -46,7 +46,8 @@ let test_1 () =
       init_values = IM.empty;
       func_igu = mts_figu;
       loop_body = mts_func;
-      join_body = sk_tail_state;
+      join_sketch = sk_tail_state;
+      memless_sketch = sk_tail_state;
       join_solution = sk_tail_state;
       reaching_consts = rconsts;
     }

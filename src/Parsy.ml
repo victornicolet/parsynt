@@ -145,13 +145,14 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) prob
   try
     if !verbose then
       (printf "@.%sSOLVING %s.%s@." (color "blue") lp_name color_default;
-       printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_body);
+       printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_sketch);
+    (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
-        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch solver) problem
+        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch ~inner:inner solver) problem
     in
     if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
-      (* We get an "unsat" answer : add loop to auxliary discovery *)
+      (* We get an "unsat" answer : add loop to auxiliary discovery *)
       begin
         printf
           "@.%sNO SOLUTION%s found for %s (solver returned unsat)."

@@ -463,6 +463,16 @@ let is_array_type t =
   | Bitvector _ -> true
   | _ -> false
 
+let is_matrix_type t =
+  match t with
+  | Vector (Vector (t, _), _) -> true
+  | _ -> false
+
+let matrix_type t =
+  match t with
+  | Vector (Vector (t, _), _) -> t
+  | _ -> failontype "Cannot extract matrix type, this is not a matrix."
+
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
@@ -1841,7 +1851,8 @@ type prob_rep =
     min_input_size : int;
     uses_global_bound : bool;
     loop_body : fnExpr;
-    join_body : fnExpr;
+    join_sketch : fnExpr;
+    memless_sketch : fnExpr;
     join_solution : fnExpr;
     init_values : RAst.expr IM.t;
     func_igu : sigu;

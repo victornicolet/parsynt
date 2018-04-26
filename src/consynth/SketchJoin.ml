@@ -23,7 +23,7 @@ open FPretty
 module IH = Sets.IH
 
 let debug = ref false
-let narrow_array_completions = ref true
+let narrow_array_completions = ref false
 
 let auxiliary_variables : fnV IH.t = IH.create 10
 
@@ -327,3 +327,10 @@ let set_types_and_varsets =
 
 let build i (state : VarSet.t) fnlet =
   set_types_and_varsets (make_join ~index:i ~state:state ~skip:[] fnlet)
+
+let build_for_inner i state fnlet =
+  narrow_array_completions := true;
+  let sketch = make_join ~index:i ~state:state ~skip:[] fnlet in
+  let typed_sketch = set_types_and_varsets sketch in
+  narrow_array_completions := false;
+  typed_sketch
