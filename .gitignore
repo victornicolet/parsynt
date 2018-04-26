@@ -20,6 +20,7 @@ dump
 src/conf/project_dir.ml
 examples/dafny/__loop*
 test/synth_times.csv
+dump*
 
 src/alt-cil/
 *.mldylib
