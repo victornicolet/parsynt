@@ -1205,11 +1205,11 @@ let rec replace_expression ?(in_subscripts = false)
   let case e = (e = tr) in
   let case_handler rfunc e = b in
   let const_handler c = c in
-  let var_handler v =
+  let rec var_handler v =
     if in_subscripts then
       match v with
       | FnArray (v, e) ->
-        FnArray (v,
+        FnArray (var_handler v,
                  replace_expression ~in_subscripts:true ~to_replace:tr ~by:b
                    ~ine:e)
       | _ -> v
@@ -1854,6 +1854,7 @@ type prob_rep =
     join_sketch : fnExpr;
     memless_sketch : fnExpr;
     join_solution : fnExpr;
+    memless_solution : fnExpr;
     init_values : RAst.expr IM.t;
     func_igu : sigu;
     reaching_consts : fnExpr IM.t;

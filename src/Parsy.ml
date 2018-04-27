@@ -138,7 +138,7 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
    init_values = remap_init_values sol_info.Codegen.init_values}
 
 
-let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) problem =
+let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) parent_ctx problem =
   (* Set the expression depth of the sketch printer. *)
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
@@ -149,7 +149,7 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) prob
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
-        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch ~inner:inner solver) problem
+        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch ~inner:inner ~parent_context:parent_ctx solver) problem
     in
     if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
       (* We get an "unsat" answer : add loop to auxiliary discovery *)
@@ -160,7 +160,7 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) prob
         if !FPretty.skipped_non_linear_operator then
           (** Try with non-linear operators. *)
           (FPretty.reinit ~ed:expr_depth ~use_nl:true;
-           solve_one problem)
+           solve_one parent_ctx problem)
         else
           (FPretty.reinit ~ed:expr_depth ~use_nl:false;
            None)
@@ -191,7 +191,7 @@ let rec solve_inners problem =
   if List.length problem.inner_functions = 0 then
     Some problem
   else
-    let solve_inner_problem problem = solve_one ~inner:true problem in
+    let solve_inner_problem inpb = solve_one ~inner:true (Some problem.scontext) inpb in
     (* Solve the inner functions. *)
     let inner_funcs =
       somes (List.map solve_inner_problem problem.inner_functions)
@@ -209,7 +209,7 @@ and solve_problem problem =
   (* Try to solve the inner loops first *)
   let aux_solve problem =
       let tactic1_sol =
-        if !skip_first_solve then None else solve_one problem
+        if !skip_first_solve then None else solve_one None problem
       in
       match tactic1_sol with
       | Some x -> Some x
@@ -218,9 +218,9 @@ and solve_problem problem =
         let problem =
           Canalyst.find_new_variables problem
         in
-        match solve_one problem with
+        match solve_one None problem with
         | Some x -> Some x
-        | None -> solve_one ~expr_depth:2 problem
+        | None -> solve_one ~expr_depth:2 None problem
         (** If the problem is not solved yet, might be because expression
             depth is too limited *)
   in

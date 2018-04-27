@@ -63,7 +63,7 @@ let pp_comment fmt str =
   Format.fprintf fmt ";;%s@." str
 
 (** Written only in the one-dimensional index case so far *)
-let pp_body_app fmt (body_name, s, bnds, from, to_n) =
+let pp_join_body_app fmt (body_name, s, bnds, from, to_n) =
   let bnm, i_st, i_m, i_e = bnds in
   let pp_input_state fmt () =
     Format.fprintf fmt "(%s %i %i)" s from to_n
@@ -77,6 +77,12 @@ let pp_body_app fmt (body_name, s, bnds, from, to_n) =
   Format.fprintf fmt "@[<hov 2>(%s %a %i %i %a)@]"
     body_name pp_input_state () from to_n pp_global_bounds ()
 
+let pp_mless_body_app fmt (body_name, s, to_n) =
+  let pp_input_state fmt () =
+    Format.fprintf fmt "(%s %i)" s to_n
+  in
+  Format.fprintf fmt "@[<hov 2>(%s %a %i)@]"
+    body_name pp_input_state () to_n
 
 (** 4 - Grammar macros parameters *)
 

@@ -141,7 +141,10 @@ let cil2func cfile loops =
       (printf "@.%s=== Loop %i in %s ===%s"
          (color "blue") loop.lid loop.lcontext.host_function.C.vname color_default;
        printf "@.Identified state variables: %a"
-         VS.pvs loop.lvariables.state_vars);
+         VS.pvs loop.lvariables.state_vars;
+        printf "@.Identified index variables: %a"
+         VS.pvs loop.lvariables.index_vars;
+      );
     let func, figu =
       match loop.ligu with
       | Some igu ->
@@ -314,7 +317,9 @@ let func2sketch cfile funcreps =
       loop_body = loop_body;
       join_sketch = join_sk;
       memless_sketch = mless_sk;
+      (* No solution for now! *)
       join_solution = FnLetExpr ([]);
+      memless_solution = FnLetExpr ([]);
       init_values = IM.empty;
       func_igu = sigu;
       reaching_consts = s_reach_consts;
@@ -352,13 +357,21 @@ let find_new_variables sketch_rep =
     join_sketch = join_sketch;
   }
 
-let pp_sketch ?(inner = false) solver fmt sketch_rep =
+let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
+  let parent_context =
+    if inner then
+      (match parent_context with
+       | Some context -> context
+       | None -> failhere __FILE__ "pp_sketch" "Parent context not provided for child loop.")
+    else
+      mk_ctx VarSet.empty VarSet.empty
+  in
   match solver.name with
   | "Rosette" ->
     begin
       IH.copy_into VariableDiscovery.discovered_aux_alltime
         Sketch.auxiliary_vars;
-      Sketch.pp_rosette_sketch inner fmt sketch_rep
+      Sketch.pp_rosette_sketch parent_context inner fmt sketch_rep
     end
   | _ -> ()
 

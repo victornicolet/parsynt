@@ -46,12 +46,19 @@ let iterations_limit =
   ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
 
 let inner_iterations_limit =
-  ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
+  ref (int_of_string (Conf.get_conf_string "inner_loop_finite_limit"))
 
 
 let auxiliary_vars : fnV IH.t = IH.create 10
 
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
+
+let mat_w = ref (!inner_iterations_limit)
+let mat_h = ref (!iterations_limit)
+
+let reset_matdims() =
+  mat_w := !inner_iterations_limit;
+  mat_h := !iterations_limit
 
 
 
@@ -83,14 +90,13 @@ type define_symbolic =
   | DefMatrix of fnV list
   | DefEmpty
 
-let gen_array_cell_vars vi =
-  ListTools.init !iterations_limit
-    (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
+let gen_array_cell_vars ~num_cells:n vi =
+  ListTools.init (n - 1) (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
 
-let gen_mat_cell_vars vi =
-  ListTools.init !iterations_limit
+let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
+  ListTools.init (n - 1)
     (fun i ->
-       (ListTools.init !inner_iterations_limit
+       (ListTools.init (m - 1)
           (fun j -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)})))
 
 let rec pp_define_symbolic fmt def =
@@ -106,7 +112,7 @@ let rec pp_define_symbolic fmt def =
   | DefArray vil ->
     List.iter
       (fun vi ->
-          let vars = gen_array_cell_vars vi in
+          let vars = gen_array_cell_vars ~num_cells:!mat_w vi in
           pp_define_symbolic fmt
             (match array_type vi.vtype with
              | Integer -> DefInteger vars
@@ -119,8 +125,8 @@ let rec pp_define_symbolic fmt def =
   | DefMatrix vil ->
     List.iter
       (fun vi ->
-         let mvars = gen_mat_cell_vars vi in
-         let avars = gen_array_cell_vars vi in
+         let mvars = gen_mat_cell_vars ~num_lines:!mat_h ~num_cols:!mat_w vi in
+         let avars = gen_array_cell_vars ~num_cells:!mat_h vi in
          List.iteri
            (fun i vars ->
               pp_define_symbolic fmt
@@ -166,10 +172,10 @@ let input_symbols_of_vs vs =
   VarSet.fold
     (fun vi symbs ->
        if is_matrix_type vi.vtype then
-         symbs@(List.flatten (gen_mat_cell_vars vi))
+         symbs@(List.flatten (gen_mat_cell_vars ~num_lines:!mat_h ~num_cols:!mat_w vi))
        else
          (if is_array_type vi.vtype then
-            symbs@(gen_array_cell_vars vi)
+            symbs@(gen_array_cell_vars ~num_cells:!mat_w vi)
           else
             vi::symbs)) vs []
 
@@ -179,6 +185,8 @@ let pp_defined_input fmt vs =
     (fun fmt vi -> F.fprintf fmt "%s" vi.vname)
     fmt (input_symbols_of_vs vs)
 
+
+(* ---------------------------------------------------------------------------- *)
 (** Sketch -> Rosette sketch *)
 (** The name of the structure used to represent the state of the loop *)
 let main_struct_name = get_conf_string "rosette_struct_name"
@@ -189,6 +197,9 @@ let body_name = get_conf_string "rosette_loop_body_name"
 (** Name of the initial state for the loop in the Rosette sketch *)
 let ident_state_name = get_conf_string "rosette_identity_state_name"
 let init_state_name = get_conf_string "rosette_initial_state_name"
+let index_begin = get_conf_string "rosette_index_suffix_start"
+let index_end = get_conf_string "rosette_index_suffix_end"
+
 (** Choose between a very restricted set of values for intials/identity values *)
 let base_init_value_choice reaching_consts vi =
   (try
@@ -208,6 +219,7 @@ let base_init_value_choice reaching_consts vi =
 type special_const =
   | NINFNTY
   | INFNTY
+
 
 let create fmt input_vars varname =
   pp_comment fmt "Adding special variable with assertions.";
@@ -282,6 +294,8 @@ let pp_state_definition fmt main_struct =
     a list of strings representing the names of the symbolic variables
     that have been defined.
     @param fmt A formatter.
+    @param maxlines A integer representing the max number of symbolic matrix
+    lines required for the problem.
     @param vars The set of variables whose defintion will be printed.
 *)
 let pp_symbolic_definitions_of fmt except_vars vars =
@@ -294,11 +308,12 @@ let pp_symbolic_definitions_of fmt except_vars vars =
     the state of the loop (valuation of the state variables).
 *)
 
-let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
+let pp_loop_body fmt (index_name, loop_body, state_vars, state_struct_name) =
   let state_arg_name = "__s" in
   let field_names = List.map (fun v -> v.vname) (VarSet.elements state_vars) in
-  Format.fprintf fmt "@[<hov 2>(lambda (%s i)@;(let@;(%a)@;%a))@]"
+  Format.fprintf fmt "@[<hov 2>(lambda (%s %s)@;(let@;(%a)@;%a))@]"
     state_arg_name
+    index_name
     (pp_assignments state_struct_name state_arg_name)
     (ListTools.pair field_names field_names)
     pp_fnexpr loop_body
@@ -311,8 +326,12 @@ let pp_loop_body fmt (loop_body, state_vars, state_struct_name) =
     @param state_struct_name The name of the struct used to represent
     the state of the loop (valuation of the state variables).
 *)
-let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
+let pp_loop ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_struct_name =
   let index_list = VarSet.elements index_set in
+  if List.length index_list == 0 then
+    failhere __FILE__ "pp_loop" "Only one index for the loop.";
+
+  let index_name = (List.hd index_list).vname in
   let pp_index_low_up =
         (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
@@ -320,6 +339,8 @@ let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
           Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
   in
   pp_comment fmt "Functional representation of the loop body.";
+  (* Dynamic: both loop bounds can change. *)
+  if dynamic then
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %a %a)@;\
      @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
@@ -330,8 +351,29 @@ let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
     pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
     (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
     (Conf.get_conf_string "rosette_state_param_name")
+    pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
 
-    pp_loop_body (loop_body, state_vars, state_struct_name)
+
+  else
+    (* Else the start index is always fixed. *)
+     let pp_index_up =
+        (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+       (fun fmt vi ->
+          let _, end_vi = (IH.find index_to_boundary vi.vid) in
+          Format.fprintf fmt "%s" end_vi.vname))
+     in
+    pp_comment fmt "Sketch for the memoryless join: test for one instance.";
+    Format.fprintf fmt
+      "@[<hov 2>(define (%s %s %a)@;\
+       @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
+      body_name                   (* Name of the function *)
+      (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
+      pp_index_up index_list
+      pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
+      (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
+      (Conf.get_conf_string "rosette_state_param_name")
+
+      pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
 
 
 
@@ -342,7 +384,6 @@ let pp_loop fmt index_set bnames (loop_body, state_vars) state_struct_name =
     @param rstate_name The name of the right state argument of the join.
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
-
   let left_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
   let right_state_vars = VarSet.add_prefix state_vars
@@ -386,7 +427,7 @@ let pp_join fmt (join_body, state_vars) =
     from a variable id to an expression exists, then the value of the variable
     will be set to this expression in the inital state of the loop.
 *)
-let pp_states fmt state_vars read_vars st0 reach_consts =
+let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
   let reach_consts = handle_special_consts fmt read_vars reach_consts in
   let s0_sketch_printer =
     F.pp_print_list
@@ -405,39 +446,68 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
 
   (** Pretty print the initial states, with reaching constants and holes
       for the auxiliaries discovered *)
-  Format.fprintf fmt
-    "@[(define (%s %s %s) (%s %a))@]@."
-    st0
-    "_begin_" "end"
-    main_struct_name
-    (fun fmt li ->
-       (ppli fmt ~sep:" "
-          (fun fmt (vid, vi) ->
-             (if IM.mem vid reach_consts
-              then
-                pp_fnexpr fmt
-                  (try
-                     replace_all_subs
-                       ~tr:[FnConst (CInt 0); FnConst (CInt64 0L)]
-                       ~by:[FnVar (FnVariable {vi with vname = "_begin_"});
-                            FnVar (FnVariable {vi with vname = "_begin_"})]
-                       ~ine:(IM.find vid reach_consts)
-                   with _ -> IM.find vid reach_consts)
-              else
-                (if IH.mem auxiliary_vars vid
-                 then
-                   Format.fprintf fmt "%s"
-                     (base_init_value_choice reach_consts vi)
-                 else
-                   begin
-                     F.eprintf
-                       "@.%sERROR : \
-                        Variable %s should be initialized or auxiliary.%s@."
-                       (color "red") vi.vname color_default;
-                     failwith "Unexpected variable."
-                   end))))
-         li)
-    (VarSet.bindings state_vars)
+  if dynamic then
+    Format.fprintf fmt
+      "@[(define (%s %s %s) (%s %a))@]@."
+      st0
+      "_begin_" "end"
+      main_struct_name
+      (fun fmt li ->
+         (ppli fmt ~sep:" "
+            (fun fmt (vid, vi) ->
+               (if IM.mem vid reach_consts
+                then
+                  pp_fnexpr fmt
+                    (try
+                       replace_all_subs
+                         ~tr:[FnConst (CInt 0); FnConst (CInt64 0L)]
+                         ~by:[FnVar (FnVariable {vi with vname = "_begin_"});
+                              FnVar (FnVariable {vi with vname = "_begin_"})]
+                         ~ine:(IM.find vid reach_consts)
+                     with _ -> IM.find vid reach_consts)
+                else
+                  (if IH.mem auxiliary_vars vid
+                   then
+                     Format.fprintf fmt "%s"
+                       (base_init_value_choice reach_consts vi)
+                   else
+                     begin
+                       F.eprintf
+                         "@.%sERROR : \
+                          Variable %s should be initialized or auxiliary.%s@."
+                         (color "red") vi.vname color_default;
+                       failwith "Unexpected variable."
+                     end))))
+           li)
+      (VarSet.bindings state_vars)
+  else
+    Format.fprintf fmt
+      "@[(define (%s %s) (%s %a))@]@."
+      st0
+      "end_index"
+      main_struct_name
+      (fun fmt li ->
+         (ppli fmt ~sep:" "
+            (fun fmt (vid, vi) ->
+               (if IM.mem vid reach_consts
+                then
+                  pp_fnexpr fmt (IM.find vid reach_consts)
+                else
+                  (if IH.mem auxiliary_vars vid
+                   then
+                     Format.fprintf fmt "%s"
+                       (base_init_value_choice reach_consts vi)
+                   else
+                     begin
+                       F.eprintf
+                         "@.%sERROR : \
+                          Variable %s should be initialized or auxiliary.%s@."
+                         (color "red") vi.vname color_default;
+                       failwith "Unexpected variable."
+                     end))))
+           li)
+      (VarSet.bindings state_vars)
+
 
 
 (** Pretty print one verification condition, the loop
@@ -448,16 +518,29 @@ let pp_states fmt state_vars read_vars st0 reach_consts =
     @param i_m The splitting index for this instance.
     @param i_end The end index for this instance.
 *)
-let pp_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
+let pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
   let bnds = (bnm, i_st, i_m, i_end) in
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
       "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
       main_struct_name
-      pp_body_app (body_name, s0, bnds, i_st, i_end)
+      pp_join_body_app (body_name, s0, bnds, i_st, i_end)
       join_name
-      pp_body_app (body_name, s0, bnds, i_st, i_m)
-      pp_body_app (body_name, init_state_name, bnds, i_m, i_end)
+      pp_join_body_app (body_name, s0, bnds, i_st, i_m)
+      pp_join_body_app (body_name, init_state_name, bnds, i_m, i_end)
+  else
+    ()
+
+
+let pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
+  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
+    Format.fprintf fmt
+      "@[<hov 2>(%s-eq?@;%a@;(%s %s %a))@]"
+      main_struct_name
+      pp_mless_body_app (body_name, init_state_name, i_end)
+      join_name
+      init_state_name
+      pp_mless_body_app (body_name, s0, i_end)
   else
     ()
 
@@ -468,15 +551,24 @@ let pp_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
     @param symbolic_variable_names The list of symbolic variable names that will
     have a universal quantifier over.
 *)
-let pp_synth_body fmt (s0, bnm, state_vars, defined_input_vars, min_dep_len) =
+let pp_synth_body ?(m=false) fmt (s0, bnm, state_vars, defined_input_vars, min_dep_len) =
   Format.fprintf fmt
     "@[<hov 2>#:forall @[<hov 2>(list %a)@]@]@\n"
     pp_defined_input defined_input_vars;
+  if m then
+    Format.fprintf fmt
+    "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
+    (F.pp_print_list
+       (fun fmt (i_st, i_m, i_end) ->
+          pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
+            min_dep_len))
+    Conf.verification_parameters
+  else
   Format.fprintf fmt
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-          pp_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
+          pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
             min_dep_len))
     Conf.verification_parameters
 
@@ -484,30 +576,98 @@ let pp_synth_body fmt (s0, bnm, state_vars, defined_input_vars, min_dep_len) =
 (** Pretty-print a synthesis problem wrapped in a defintion for further
     access to the solved problem
 *)
-let pp_synth fmt s0 bnames state_vars read_vars min_dep_len =
+let pp_synth ?(memoryless=false) fmt s0 bnames state_vars read_vars min_dep_len =
   Format.fprintf fmt
     "@[<hov 2>(define odot (synthesize@;%a))@.@."
-    pp_synth_body (s0, bnames, state_vars, read_vars, min_dep_len)
+    (pp_synth_body ~m:memoryless) (s0, bnames, state_vars, read_vars, min_dep_len)
 
-(** Main interface to print the sketch of the whole problem.
-    @param fmt A Format.formatter
-    @param read A list of variable ids representing the subset of read-only
-    variables.
-    @param state A list of variables ids representing the set of state
-    variables.
-    @param all_vars The set of all the variables in the problem.
-    @param loop_body The loop body in a functional form.
-    @param join_body The sketch of the join for the loop body.
-    @param idx The set of index variables.
-    @param i The iniitalization of the index.
-    @param g AN expression containinf only index variables representing the
-    termination condition of the loop.
-    @param u A function updating the index from one iteration to another.
-    @param reach_consts A mapping from variable IDs to expressions. If a binding
-    from a variable id to an expression exists, then the value of the variable
-    will be set to this expression in the inital state of the loop.
+
+(* ---------------------------------------------------------------------------- *)
+(* Specific to pretty printing the sketch for the memoryless join. *)
+let pp_static_loop_bounds fmt index_name =
+  Format.fprintf fmt
+    "(define %s%s %i)@."
+    index_name index_begin 0
+
+(** Pretty print the whole body of the synthesis problem. (The set of
+    verification conditions is hardcoded here now, we have to change that).
+    @param s0 The name of the initial state.
+    @param state_vars The set of state variables.
+    @param symbolic_variable_names The list of symbolic variable names that will
+    have a universal quantifier over.
 *)
-let pp_rosette_sketch inner fmt (sketch : prob_rep) =
+
+let pp_rosette_sketch_inner_join fmt parent_context sketch =
+  clear_special_consts ();
+  mat_h := 1;
+  let min_dep_len = sketch.min_input_size in
+  (** State variables *)
+  let state_vars = sketch.scontext.state_vars in
+  (** Read variables : force read /\ state = empty *)
+  let read_vars =
+    VarSet.diff
+      (remove_interpreted_symbols sketch.scontext.used_vars)
+      (VarSet.union state_vars sketch.scontext.index_vars)
+  in
+  let idx = sketch.scontext.index_vars in
+  let index_name = (VarSet.max_elt idx).vname in
+  let parent_index_var = (VarSet.max_elt (parent_context.index_vars)) in
+  let field_names =
+    List.map (fun vi -> vi.vname) (VarSet.elements state_vars) in
+  let main_struct = (main_struct_name, field_names) in
+  let st0 = init_state_name in
+  (* Global bound name "n" *)
+  let bnd_vars =
+    List.fold_left
+      (fun name_list expr ->
+         match expr with
+         | Some (FnVar (FnVariable vi)) -> name_list@[vi]
+         | _ -> name_list)
+      []
+      (if sketch.uses_global_bound then
+          [(get_loop_bound sketch)]
+       else [])
+  in
+  let bnames =
+    List.map (fun vi -> vi.vname) bnd_vars
+  in
+  (* The parent index has to be replaced with a constant. *)
+
+  let loop_body =
+    replace_expression
+      ~in_subscripts:true
+      ~to_replace:(FnVar (FnVariable parent_index_var))
+      ~by:(FnConst (CInt 0))
+      ~ine:sketch.loop_body
+  in
+  (** FPretty configuration for the current sketch *)
+  FPretty.state_struct_name := main_struct_name;
+  (* Select the bitwidth for representatin in Rosettte depending on the operators used
+     in the loop body. *)
+  pp_current_bitwidth fmt sketch.loop_body;
+  (**
+     Print all the necessary symbolic definitions. For the memoryless join,
+     we need only one line of matrix input.
+  *)
+  pp_symbolic_definitions_of fmt bnd_vars read_vars;
+  pp_newline fmt ();
+  pp_state_definition fmt main_struct;
+  pp_newline fmt ();
+  pp_static_loop_bounds fmt index_name;
+  pp_newline fmt ();
+  pp_loop ~dynamic:false fmt idx bnames (loop_body, state_vars) main_struct_name;
+  pp_comment fmt "Wrapping for the sketch of the join.";
+  pp_mless_join fmt (sketch.join_sketch, state_vars);
+  pp_newline fmt ();
+  pp_comment fmt "Symbolic input state and synthesized id state";
+  pp_states ~dynamic:false fmt state_vars read_vars st0 sketch.reaching_consts;
+  pp_comment fmt "Actual synthesis work happens here";
+  pp_newline fmt ();
+  pp_synth ~memoryless:true fmt st0 bnames state_vars read_vars min_dep_len;
+  reset_matdims ()
+
+
+let pp_rosette_sketch_join fmt sketch =
   clear_special_consts ();
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
@@ -517,6 +677,15 @@ let pp_rosette_sketch inner fmt (sketch : prob_rep) =
     VarSet.diff
       (remove_interpreted_symbols sketch.scontext.used_vars)
       (VarSet.union state_vars sketch.scontext.index_vars)
+  in
+  let max_read_dim =
+    VarSet.fold
+      (fun var mdim ->
+         let vardim =
+           if is_matrix_type var.vtype then 2
+           else if is_array_type var.vtype then 1 else 0
+        in
+        max mdim vardim) read_vars 0
   in
   let idx = sketch.scontext.index_vars in
   let field_names =
@@ -538,10 +707,9 @@ let pp_rosette_sketch inner fmt (sketch : prob_rep) =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
+  if max_read_dim < 2 then mat_w := !mat_h;
   (** FPretty configuration for the current sketch *)
   FPretty.state_struct_name := main_struct_name;
-  if inner then
-    pp_comment fmt "Sketch for the memoryless join.";
   pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
@@ -555,8 +723,33 @@ let pp_rosette_sketch inner fmt (sketch : prob_rep) =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth fmt st0 bnames state_vars read_vars min_dep_len
+  pp_synth fmt st0 bnames state_vars read_vars min_dep_len;
+  reset_matdims ()
 
+
+(** Main interface to print the sketch of the whole problem.
+    @param fmt A Format.formatter
+    @param read A list of variable ids representing the subset of read-only
+    variables.
+    @param state A list of variables ids representing the set of state
+    variables.
+    @param all_vars The set of all the variables in the problem.
+    @param loop_body The loop body in a functional form.
+    @param join_body The sketch of the join for the loop body.
+    @param idx The set of index variables.
+    @param i The iniitalization of the index.
+    @param g AN expression containinf only index variables representing the
+    termination condition of the loop.
+    @param u A function updating the index from one iteration to another.
+    @param reach_consts A mapping from variable IDs to expressions. If a binding
+    from a variable id to an expression exists, then the value of the variable
+    will be set to this expression in the inital state of the loop.
+*)
+let pp_rosette_sketch parent_context inner fmt (sketch : prob_rep) =
+  if inner then
+    pp_rosette_sketch_inner_join fmt parent_context sketch
+  else
+    pp_rosette_sketch_join fmt sketch
 
 
 (******************************************************************************)

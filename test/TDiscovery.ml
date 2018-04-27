@@ -49,6 +49,7 @@ let test_1 () =
       join_sketch = sk_tail_state;
       memless_sketch = sk_tail_state;
       join_solution = sk_tail_state;
+      memless_solution = sk_tail_state;
       reaching_consts = rconsts;
     }
   in
