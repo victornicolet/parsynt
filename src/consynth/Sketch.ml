@@ -657,7 +657,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_newline fmt ();
   pp_loop ~dynamic:false fmt idx bnames (loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
-  pp_mless_join fmt (sketch.join_sketch, state_vars);
+  pp_join fmt (sketch.join_sketch, state_vars);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states ~dynamic:false fmt state_vars read_vars st0 sketch.reaching_consts;

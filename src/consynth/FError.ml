@@ -2,7 +2,6 @@ open Format
 open FuncTypes
 open FPretty
 
-
 let debug_global = ref true
 let set_debug_global () = debug_global := true
 let unset_debug_global () = debug_global := false

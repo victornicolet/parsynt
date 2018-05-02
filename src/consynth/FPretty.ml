@@ -306,8 +306,12 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
                    | FnVariable _ ->
                      Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a %a)]@]"
                        pp_fnlvar a pp_fnlvar a pp_fnexpr i pp_fnexpr e
+                   | FnArray(a', k) ->
+                     Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
+                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar a pp_fnexpr i pp_fnexpr e
                    | _ ->
-                     failhere __FILE__ "pp_fnexpr" "Unsupported write in two-dim. array")
+                     failhere __FILE__ "pp_fnexpr" "bad variable in binding."
+                  )
                 | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
                     pp_fnlvar v pp_fnexpr e)
