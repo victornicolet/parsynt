@@ -136,7 +136,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
       | _ -> FnHoleR (holt Unit, cs, index_expr), 1
     end
 
-  | FnFun skl -> FnFun (make_join ~index:index_expr ~state:state ~skip:[] skl), 0
+  | FnFun skl -> FnFun (make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl), 0
 
   | FnBinop (op, e1, e2) ->
     let holes1, d1 = merge_leaves max_depth (self_rcall optype e1) in
@@ -174,7 +174,7 @@ and make_hole_e ?(max_depth = 2) ?(is_array=false) ?(is_final=false)
        state)
      optype e
 
-and make_assignment_list ie state skip =
+and make_assignment_list ie state skip writes_in_array =
   let in_skip_list var skip =
     match var with
     | FnVariable v ->
@@ -204,6 +204,7 @@ and make_assignment_list ie state skip =
           else
             (match vi_bound.vtype with
              | Vector _ ->
+               writes_in_array := true;
                (vbound, fst (make_hole_e ~is_array:true ~is_final:true ie state e))
              | _ ->
                (vbound, fst (make_hole_e ~is_final:true ie state e)))
@@ -215,16 +216,16 @@ and make_assignment_list ie state skip =
           failhere __FILE__ "make_assignment_list"  msg
     )
 
-and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) =
+and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) =
   function
   | FnLetExpr ve_list ->
-    FnLetExpr (make_assignment_list index state skip ve_list)
+    FnLetExpr (make_assignment_list index state skip w_a ve_list)
 
   | FnLetIn (ve_list, cont) ->
     let to_skip = fst (ListTools.unpair ve_list) in
     FnLetIn (
-      make_assignment_list index state skip ve_list,
-      make_join ~index:index ~state:state ~skip:(skip@to_skip) cont)
+      make_assignment_list index state skip w_a ve_list,
+      make_join ~index:index ~state:state ~skip:(skip@to_skip) ~w_a:w_a cont)
   | e -> e
 
 and merge_leaves max_depth (e,d) =
@@ -325,12 +326,29 @@ let set_types_and_varsets =
      identity identity)
 
 
+(* TODO change the limits *)
+let wrap_with_loop i base_join =
+  FnRec ((FnConst (CInt 0),
+          FnBinop (Lt, i, FnConst (CInt 10)),
+          FnUnop (Add1,i)),
+         base_join)
+
+
+let make_loop_wrapped_join outeri state fnlet =
+  (* Get the base skeleton *)
+  let writes_in_array = ref false in
+  let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
+  if !writes_in_array then
+    wrap_with_loop outeri base_join
+  else
+    base_join
+
 let build i (state : VarSet.t) fnlet =
-  set_types_and_varsets (make_join ~index:i ~state:state ~skip:[] fnlet)
+  set_types_and_varsets (make_loop_wrapped_join i state fnlet)
 
 let build_for_inner i state fnlet =
   narrow_array_completions := true;
-  let sketch = make_join ~index:i ~state:state ~skip:[] fnlet in
-  let typed_sketch = set_types_and_varsets sketch in
+  let raw_sketch = make_loop_wrapped_join i state fnlet in
+  let typed_sketch = set_types_and_varsets raw_sketch in
   narrow_array_completions := false;
   typed_sketch
