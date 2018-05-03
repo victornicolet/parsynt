@@ -24,6 +24,7 @@ module IH = Sets.IH
 
 let debug = ref false
 let narrow_array_completions = ref false
+let join_loop_width = ref 5
 
 let auxiliary_variables : fnV IH.t = IH.create 10
 
@@ -117,7 +118,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
                 else
                   CS.of_vs state
               in
-              FnHoleL (holt t, sklv, CS.complete_all completion, index_expr), 1
+              FnHoleL (holt t, FnArray(sklv, expr), CS.complete_all completion, index_expr), 1
             else
               FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
          | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
@@ -203,9 +204,9 @@ and make_assignment_list ie state skip writes_in_array =
             (match vi_bound.vtype with
              | Vector _ ->
                writes_in_array := true;
-               (vbound, fst (make_hole_e ~is_array:true ~is_final:true ie state e))
+               (vbound, fst (make_hole_e ~is_array:true ie state e))
              | _ ->
-               (vbound, fst (make_hole_e ~is_final:true ie state e)))
+               (vbound, fst (make_hole_e ie state e)))
         with Failure s ->
           Format.eprintf "Failure %s@." s;
           let msg =
@@ -324,19 +325,51 @@ let set_types_and_varsets =
      identity identity)
 
 
+(* Sketch size can be reduced for memoryless join *)
+let rec inner_optims state letfun  =
+  let ctx_handle = ref (FnVariable (VarSet.max_elt state))  in
+  let loop_inner_optims expr =
+    transform_bindings
+      {
+        ctx = ctx_handle;
+        case =
+          (fun e ->
+             match e with
+             | FnHoleL _ | FnHoleR _ -> true
+             | _ -> false);
+        on_case =
+          (fun f e ->
+             match e with
+             | FnHoleL(_, v, _, _) -> FnVar v
+             | FnHoleR _ -> e
+             | _ -> e);
+        on_const = identity;
+        on_var = identity;
+      }
+      expr
+  in
+  match letfun with
+  | FnRec (igu, s, body) ->
+    FnRec (igu, s, loop_inner_optims body)
+  | e -> e
+
+
+
 (* TODO change the limits *)
 let wrap_with_loop for_inner i state base_join =
-  let start_state_val =
+  let start_state_valuation =
     if for_inner then
-      let lsp =  VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")  in
+      let lsp =
+        VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
+      in
       (FnLetExpr (identity_state lsp))
     else
       (fst (make_hole_e i state (FnLetExpr (identity_state state))))
   in
   FnRec ((FnConst (CInt 0),
-          FnBinop (Lt, i, FnConst (CInt 10)),
+          FnBinop (Lt, i, FnConst (CInt !join_loop_width)),
           FnUnop (Add1,i)),
-         (state, start_state_val),
+         (state, start_state_valuation),
          base_join)
 
 
@@ -356,5 +389,6 @@ let build_for_inner i state fnlet =
   narrow_array_completions := true;
   let raw_sketch = make_loop_wrapped_join ~for_inner:true i state fnlet in
   let typed_sketch = set_types_and_varsets raw_sketch in
+  let sketch = inner_optims state typed_sketch in
   narrow_array_completions := false;
-  typed_sketch
+  sketch

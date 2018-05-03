@@ -232,7 +232,7 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
   | CBox cst -> fprintf ppf "<Cil.constant>"
   | CChar c -> fprintf ppf "%c" c
   | CString s -> fprintf ppf "%s" s
-  | CArrayInit c -> fprintf ppf "{%a}" (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
+  | CArrayInit (n, c) -> fprintf ppf "(make-list %i %a)" n (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
   | CUnop (op, c) ->
     fprintf ppf "(%s %a)" (string_of_symb_unop op)
       (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
@@ -402,8 +402,8 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
           printing_sketch := false; pp_fnexpr fmt g; printing_sketch := b)  g
         index.vname pp_fnexpr u
         pp_fnexpr k
-        index.vname
         state_arg.vname
+        index.vname
         pp_fnexpr (FnLetIn (bind_state state_arg s, e))
 
     | _ -> failhere __FILE__ "pp_fnexpr" "Loop-function with multiple index not supported")

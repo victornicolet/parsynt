@@ -212,22 +212,6 @@ let func2sketch cfile funcreps =
              m)
         func_info.reaching_consts IM.empty
     in
-    (* Add initilization to array variables. *)
-    let s_reach_consts =
-      VarSet.fold
-        (fun fnv rcc ->
-           if IM.mem fnv.vid rcc then rcc
-           else
-             (match fnv.vtype with
-              | Vector (t, _) ->
-                IM.add fnv.vid (FnConst (CArrayInit (match t with
-                    | Integer -> CInt 0
-                    | Real -> CReal 0.
-                    | Boolean -> CBool true
-                    | _ -> CNil))) rcc
-              | _ -> rcc))
-        state_vars s_reach_consts
-    in
     if !verbose then
       begin
         printf "@.Reaching constants information:@.";
@@ -253,12 +237,15 @@ let func2sketch cfile funcreps =
     in
     let index_set, _ = sigu in
     IH.clear SketchJoin.auxiliary_variables;
+    Sketch.Join.join_loop_width := !mat_w;
     let join_sk =
       Sketch.Join.build
         (FnVar (FnVariable (VarSet.max_elt index_set)))
         state_vars
         loop_body
     in
+    (* Set the loop width for the join *)
+    Sketch.Join.join_loop_width := !mat_w;
     let mless_sk =
       Sketch.Join.build_for_inner
         (FnVar (FnVariable (VarSet.max_elt index_set)))

@@ -134,7 +134,7 @@ and constants =
   | CReal of float
   | CBool of bool
   | CBox of Cil.constant
-  | CArrayInit of constants
+  | CArrayInit of int * constants
   | CChar of char
   | CString of string
   | CUnop of symb_unop * constants
@@ -536,7 +536,7 @@ let rec type_of_const c =
   | CBool _ -> Boolean
   | CChar _ -> Integer
   | CString _ -> List (Integer, None)
-  | CArrayInit c -> type_of_const c (* TODO: think about a better solution. *)
+  | CArrayInit (n, c) -> type_of_const c (* TODO: think about a better solution. *)
   | CReal _ -> Real
   | CInt _ | CInt64 _ -> Integer
   | CBox b -> Box (type_of_cilconst b)
@@ -1183,7 +1183,7 @@ let transform_expr_flag
     (case : bool -> fnExpr -> bool)
     (case_handler : bool-> (bool -> fnExpr -> fnExpr) -> fnExpr -> fnExpr)
     (const_handler: bool -> constants -> constants)
-    (var_handler : bool ->fnLVar -> fnLVar)
+    (var_handler : bool -> fnLVar -> fnLVar)
     (expre : fnExpr) : 'a =
 
   let rec recurse_aux flag =
@@ -1224,6 +1224,59 @@ let transform_expr_flag
     | e -> e
   in
   recurse_aux top expre
+
+
+
+type ast_var_transformer =
+  {
+    ctx : fnLVar ref;
+    case : fnExpr -> bool;
+    on_case : (fnExpr -> fnExpr) -> fnExpr -> fnExpr;
+    on_const : constants -> constants;
+    on_var : fnLVar -> fnLVar;
+  }
+
+
+let transform_bindings (tr : ast_var_transformer) =
+  let rec recurse_aux =
+    function
+    | e when tr.case e ->
+      tr.on_case recurse_aux e
+
+    | FnVar v -> FnVar (tr.on_var v)
+    | FnConst c -> FnConst (tr.on_const c)
+
+    | FnBinop (op, e1, e2) ->
+      FnBinop (op, (recurse_aux e1), (recurse_aux e2))
+
+    | FnCastE (t, e) -> FnCastE (t, recurse_aux e)
+    | FnAlignofE e -> FnAlignofE (recurse_aux e)
+    | FnAddrof e -> FnAddrof (recurse_aux e)
+    | FnSizeofE e -> FnSizeofE (recurse_aux e)
+    | FnStartOf e -> FnStartOf (recurse_aux e)
+    | FnUnop (op, e) -> FnUnop (op, recurse_aux e)
+
+    | FnApp (a, b, el) ->
+      FnApp (a, b, List.map (fun e -> recurse_aux e) el)
+
+    | FnFun letin -> FnFun (recurse_aux letin)
+    | FnRec (igu, (inner_state, init_inner_state), letin) ->
+      FnRec (igu, (inner_state, recurse_aux init_inner_state), recurse_aux letin)
+
+    | FnCond (c, l1, l2) ->
+      FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
+
+    | FnLetExpr velist ->
+      FnLetExpr (List.map (fun (v, e) -> tr.ctx := v; (v, recurse_aux e)) velist)
+
+    | FnLetIn (velist, letin) ->
+      let in_aux = recurse_aux letin in
+      FnLetIn (List.map (fun (v, e) -> tr.ctx := v; (v, (recurse_aux e))) velist, in_aux)
+
+    | e -> e
+  in
+  recurse_aux
+
 
 (** An application of a function transformer : replace
     expression to_replace by expression by.

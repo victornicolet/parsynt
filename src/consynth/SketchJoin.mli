@@ -1,3 +1,4 @@
+val join_loop_width : int ref
 val cur_left_auxiliaries : FuncTypes.VarSet.t ref
 val cur_right_auxiliaries : FuncTypes.VarSet.t ref
 val add_laux_id:int -> unit

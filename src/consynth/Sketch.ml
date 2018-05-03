@@ -326,7 +326,7 @@ let pp_loop_body fmt (index_name, loop_body, state_vars, state_struct_name) =
     @param state_struct_name The name of the struct used to represent
     the state of the loop (valuation of the state variables).
 *)
-let pp_loop ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_struct_name =
+let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_struct_name =
   let index_list = VarSet.elements index_set in
   if List.length index_list == 0 then
     failhere __FILE__ "pp_loop" "Only one index for the loop.";
@@ -349,7 +349,7 @@ let pp_loop ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_s
       pp_index_low_up index_list (* List of local lower and upper bounds - args *)
       pp_string_list bnames
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
-      (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
+      (if inner then !inner_iterations_limit else !iterations_limit)
       (Conf.get_conf_string "rosette_state_param_name")
       pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
 
@@ -370,7 +370,7 @@ let pp_loop ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_s
       (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
       pp_index_up index_list
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
-      (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
+      (if inner then !inner_iterations_limit else !iterations_limit)
       (Conf.get_conf_string "rosette_state_param_name")
 
       pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
@@ -415,6 +415,7 @@ let pp_join fmt (join_body, state_vars) =
     "@[<hov 2>(define (%s %s %s)@;%a)@]@.@."
     join_name  lstate_name rstate_name
     pp_join_body (join_body, state_vars, lstate_name, rstate_name)
+
 
 (** Some state definitons *)
 
@@ -509,6 +510,45 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
       (VarSet.bindings state_vars)
 
 
+let pp_input_state_definitions fmt state_vars reach_consts =
+    let s0_sketch_printer =
+    F.pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      (fun fmt vi ->
+         if is_array_type vi.vtype then
+           Format.fprintf fmt "(make-list %d %s)"
+             !inner_iterations_limit
+             (base_init_value_choice reach_consts vi)
+         else
+           Format.fprintf fmt "%s" (base_init_value_choice reach_consts vi))
+  in
+  (* Sketch for the identity state. *)
+   (** Pretty print the identity state, with holes *)
+  Format.fprintf fmt
+    "@[(define (%s %s) (%s %a))@]@."
+    ident_state_name "iEnd"
+    main_struct_name
+    s0_sketch_printer (VarSet.elements state_vars);
+  (* Define the symbols that do not have reaching consts.*)
+  let symbolic_vars = (VarSet.add_prefix state_vars "symbolic_") in
+  let const_vars = VarSet.filter (fun v -> IM.mem v.vid reach_consts) symbolic_vars in
+  let const_or_symbol =
+    List.map
+      (fun v ->
+         if IM.mem v.vid reach_consts then
+           IM.find v.vid reach_consts
+         else
+           FnVar (FnVariable v)) (VarSet.elements symbolic_vars)
+  in
+  let symbolic_defs_set = VarSet.diff symbolic_vars const_vars in
+  pp_symbolic_definitions_of fmt [] symbolic_defs_set;
+  Format.fprintf fmt
+    "@[(define (%s %s) (%s %a))@]@."
+    init_state_name "iEnd"
+    !state_struct_name
+    pp_expr_list const_or_symbol;
+  symbolic_defs_set
+
 
 (** Pretty print one verification condition, the loop
     from a starting index to an end index is split over a index
@@ -535,11 +575,11 @@ let pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
 let pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
-      "@[<hov 2>(%s-eq?@;%a@;(%s %s %a))@]"
+      "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a))@]"
       main_struct_name
       pp_mless_body_app (body_name, init_state_name, i_end)
       join_name
-      init_state_name
+      init_state_name i_end
       pp_mless_body_app (body_name, s0, i_end)
   else
     ()
@@ -576,10 +616,10 @@ let pp_synth_body ?(m=false) fmt (s0, bnm, state_vars, defined_input_vars, min_d
 (** Pretty-print a synthesis problem wrapped in a defintion for further
     access to the solved problem
 *)
-let pp_synth ?(memoryless=false) fmt s0 bnames state_vars read_vars min_dep_len =
+let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_len =
   Format.fprintf fmt
     "@[<hov 2>(define odot (synthesize@;%a))@.@."
-    (pp_synth_body ~m:memoryless) (s0, bnames, state_vars, read_vars, min_dep_len)
+    (pp_synth_body ~m:memoryless) (s0, bnames, state_vars, pb_input_vars, min_dep_len)
 
 
 (* ---------------------------------------------------------------------------- *)
@@ -615,7 +655,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let field_names =
     List.map (fun vi -> vi.vname) (VarSet.elements state_vars) in
   let main_struct = (main_struct_name, field_names) in
-  let st0 = init_state_name in
+  let st0 = ident_state_name in
   (* Global bound name "n" *)
   let bnd_vars =
     List.fold_left
@@ -655,15 +695,19 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
-  pp_loop ~dynamic:false fmt idx bnames (loop_body, state_vars) main_struct_name;
+  pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars) main_struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
-  pp_join fmt (sketch.join_sketch, state_vars);
+  pp_join fmt (sketch.memless_sketch, state_vars);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
-  pp_states ~dynamic:false fmt state_vars read_vars st0 sketch.reaching_consts;
+  let additional_symbols =
+    pp_input_state_definitions fmt state_vars sketch.reaching_consts
+  in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth ~memoryless:true fmt st0 bnames state_vars read_vars min_dep_len;
+  pp_synth ~memoryless:true fmt st0 bnames state_vars
+    (VarSet.union read_vars additional_symbols)
+    min_dep_len;
   reset_matdims ()
 
 

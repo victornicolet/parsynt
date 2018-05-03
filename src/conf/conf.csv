@@ -21,9 +21,8 @@ rosette_identity_state_name,$_identity
 rosette_initial_state_name,$_initial
 rosette_join_name,__join__
 rosette_join_left_state_prefix,l.
-rosette_join_right_state_prefix,x.
+rosette_join_right_state_prefix,r.
 rosette_loop_body_name,__loop_body__
-rosette_loop_iteration_limit,10
 rosette_func_loop_macro_name,LoopFunc
 rosette_index_suffix_start,_begin_
 rosette_index_suffix_end,_end_
