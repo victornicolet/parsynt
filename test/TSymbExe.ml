@@ -94,7 +94,9 @@ let test_02 () =
          (_let [(FnArray (FnVariable c, _ci 2)),
                   (FnRec (
                       (* Initial value, guard and update of index of the loop. *)
-                      (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                    (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                    (* Initial state *)
+                    (VarSet.empty, (FnLetExpr [])),
                       (* Body of the loop *)
                          (_let [(FnArray (FnVariable c, _ci 2)), _ci 2])))]))
   in
@@ -117,7 +119,9 @@ let test_03 () =
          (_let [(FnArray (FnVariable c, _ci 2)),
                   (FnRec (
                       (* Initial value, guard and update of index of the loop. *)
-                      (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                    (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                    (* Initial state *)
+                    (VarSet.empty, FnLetExpr([])),
                       (* Body of the loop *)
                       (_let [(FnArray (FnVariable c, _ci 2)),
                              (fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one)])))]))

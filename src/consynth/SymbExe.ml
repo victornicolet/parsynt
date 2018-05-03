@@ -288,7 +288,8 @@ and unfold_expr ?(loc = -1) exec_info expr  =
 
   (* Special cases where we have irreducible conditionals and nested for
      loops*)
-  | FnRec ((i, g, u), sklet) ->
+  | FnRec ((i, g, u), s0, sklet) ->
+    print_endline "TODO: s0 ignored in Loop function";
     let emap, reads = unfold_loop exec_info loc i g u sklet in
     (* Update once tuples are supported. *)
     let _, e = IM.max_binding emap in

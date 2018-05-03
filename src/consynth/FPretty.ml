@@ -10,11 +10,15 @@ module VS = Utils.VS
 let print_imp_style = ref false
 let printing_sketch = ref false
 let holes_expr_depth = ref 1
-let state_struct_name = ref "__state"
+let state_struct_name = ref "$"
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
 
+
 let state_vars = ref VS.empty
+
+let rosette_loop_macro_name = Conf.get_conf_string "rosette_func_loop_macro_name"
+let main_struct_name = Conf.get_conf_string "rosette_struct_name"
 
 let reinit ?(ed = 1) ?(use_nl = false) =
   printing_sketch := false;
@@ -382,10 +386,27 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
-  | FnRec ((i, g, u), e) ->
-    fp ppf "@[<hov 2>(Loop %a %a %a %a)@]"
-      pp_fnexpr i pp_fnexpr g pp_fnexpr u
-      pp_fnexpr e
+  | FnRec ((i, g, u), (s, k), e) ->
+    let index_set = used_in_fnexpr g in
+   ( match VarSet.cardinal index_set with
+    | 0 -> fp ppf "@[<v  2>%a@]" pp_fnexpr e
+    | 1 ->
+      let index = VarSet.max_elt index_set in
+      let uvars = used_in_fnexpr e in
+      let state_arg = mkFnVar (state_var_name uvars "__s") (Tuple (VarSet.types uvars)) in
+      fp ppf "@[<hov 2>(%s %a (lambda (%s) %a)@;(lambda (%s) %a)@;%a@;(lambda (%s %s) %a))@]"
+        rosette_loop_macro_name
+        pp_fnexpr i
+        index.vname
+        (fun fmt g -> let b = !printing_sketch in
+          printing_sketch := false; pp_fnexpr fmt g; printing_sketch := b)  g
+        index.vname pp_fnexpr u
+        pp_fnexpr k
+        index.vname
+        state_arg.vname
+        pp_fnexpr (FnLetIn (bind_state state_arg s, e))
+
+    | _ -> failhere __FILE__ "pp_fnexpr" "Loop-function with multiple index not supported")
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t
 
@@ -545,11 +566,12 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (color "b") color_default
       cp_fnexpr e2
 
-  | FnRec ((i, g, u), e) ->
-    fp ppf "(Loop %a %a %a %a)"
+  | FnRec ((i, g, u), (s, a), e) ->
+    fp ppf "(FnRec %a %a %a %a %a)"
       cp_fnexpr i
       cp_fnexpr g
       cp_fnexpr u
+      cp_fnexpr a
       cp_fnexpr e
 
   | FnSizeof t -> fp ppf "(SizeOf %a)" pp_symb_type t

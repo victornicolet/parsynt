@@ -34,7 +34,7 @@ open Conf
 let debug = ref false
 let dump_sketch = ref false
 
-let dumpDir = Filename.concat Conf.project_dir "/dump"
+let dumpDir = Filename.concat Conf.project_dir "dump/"
 
 let copy_file from_filename to_filename =
   let oc = open_out to_filename in
@@ -113,8 +113,8 @@ let exec_solver solver filename =
 
 let compile ?(solver=Conf.rosette) ?(print_err_msg = default_error)
     printer printer_arg =
-  let solution_tmp_file = Filename.temp_file "conSynthSol" solver.extension in
-  let sketch_tmp_file = Filename.temp_file "conSynthSketch" solver.extension in
+  let solution_tmp_file = Filename.temp_file "parsynt_solution_" solver.extension in
+  let sketch_tmp_file = Filename.temp_file "parsynt_sketch_" solver.extension in
   completeFile sketch_tmp_file solution_tmp_file printer printer_arg;
   let errno, elapsed = exec_solver solver sketch_tmp_file in
   if !dump_sketch || (errno != 0 && !debug) then

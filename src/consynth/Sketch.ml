@@ -286,7 +286,7 @@ let handle_special_consts fmt input_vars reach_consts =
     form of the definitions are defined in the Racket module.
 *)
 let pp_state_definition fmt main_struct =
-  pp_struct_defintion fmt main_struct;
+  (pp_struct_defintion ~transparent:true) fmt main_struct;
   pp_newline fmt ();
   pp_struct_equality fmt main_struct
 
@@ -310,7 +310,7 @@ let pp_symbolic_definitions_of fmt except_vars vars =
 
 let pp_loop_body fmt (index_name, loop_body, state_vars, state_struct_name) =
   let state_arg_name = "__s" in
-  let field_names = List.map (fun v -> v.vname) (VarSet.elements state_vars) in
+  let field_names = VarSet.names state_vars in
   Format.fprintf fmt "@[<hov 2>(lambda (%s %s)@;(let@;(%a)@;%a))@]"
     state_arg_name
     index_name
@@ -341,27 +341,27 @@ let pp_loop ?(dynamic=true) fmt index_set bnames (loop_body, state_vars) state_s
   pp_comment fmt "Functional representation of the loop body.";
   (* Dynamic: both loop bounds can change. *)
   if dynamic then
-  Format.fprintf fmt
-    "@[<hov 2>(define (%s %s %a %a)@;\
-     @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
-    body_name                   (* Name of the function *)
-    (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
-    pp_index_low_up index_list (* List of local lower and upper bounds - args *)
-    pp_string_list bnames
-    pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
-    (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
-    (Conf.get_conf_string "rosette_state_param_name")
-    pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
+    Format.fprintf fmt
+      "@[<hov 2>(define (%s %s %a %a)@;\
+       @[<hov 2>(Loop %a %d %s@;%a)@])@]@.@."
+      body_name                   (* Name of the function *)
+      (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
+      pp_index_low_up index_list (* List of local lower and upper bounds - args *)
+      pp_string_list bnames
+      pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
+      (int_of_string (Conf.get_conf_string "rosette_loop_iteration_limit"))
+      (Conf.get_conf_string "rosette_state_param_name")
+      pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
 
 
   else
     (* Else the start index is always fixed. *)
-     let pp_index_up =
-        (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-       (fun fmt vi ->
-          let _, end_vi = (IH.find index_to_boundary vi.vid) in
-          Format.fprintf fmt "%s" end_vi.vname))
-     in
+    let pp_index_up =
+      (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+         (fun fmt vi ->
+            let _, end_vi = (IH.find index_to_boundary vi.vid) in
+            Format.fprintf fmt "%s" end_vi.vname))
+    in
     pp_comment fmt "Sketch for the memoryless join: test for one instance.";
     Format.fprintf fmt
       "@[<hov 2>(define (%s %s %a)@;\
@@ -656,7 +656,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
   pp_loop ~dynamic:false fmt idx bnames (loop_body, state_vars) main_struct_name;
-  pp_comment fmt "Wrapping for the sketch of the join.";
+  pp_comment fmt "Wrapping for the sketch of the memoryless join.";
   pp_join fmt (sketch.join_sketch, state_vars);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";

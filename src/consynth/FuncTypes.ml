@@ -43,6 +43,7 @@ open Synthlib2ast
 *)
 
 let use_unsafe_operations = ref false
+let main_struct_name = Conf.get_conf_string "rosette_struct_name"
 
 exception BadType of string
 
@@ -289,7 +290,7 @@ and fnExpr =
   | FnVar of fnLVar
   | FnConst of constants
   | FnFun of fnExpr
-  | FnRec of  (fnExpr * fnExpr * fnExpr) * fnExpr
+  | FnRec of  (fnExpr * fnExpr * fnExpr) * (VarSet.t * fnExpr) * fnExpr
   | FnCond of fnExpr * fnExpr * fnExpr
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
@@ -676,6 +677,8 @@ let is_op_c_fun op =
 let identity_fn =
   FnLetExpr ([])
 
+let identity_state vs =
+  List.map (fun v -> (FnVariable v, FnVar(FnVariable v))) (VarSet.elements vs)
 
 (** Translate C Standard Library function names in
     functions supported by Rosette
@@ -876,6 +879,30 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
+
+let rec state_var_name vs maybe =
+  let vsnames = VarSet.names vs in
+  if List.mem maybe vsnames then
+    state_var_name vs ("_st_"^maybe)
+  else
+    maybe
+
+let state_member_accessor s_name v =
+  {
+    vname = main_struct_name^"-"^v.vname;
+    vtype = v.vtype;
+    vid = _new_id ();
+    vinit = None;
+    vistmp = true;
+  }
+
+let bind_state state_var vs =
+  let vars = VarSet.elements vs in
+  List.map
+    (fun v ->
+       (FnVariable v, FnApp(v.vtype,
+                            Some (state_member_accessor state_var v),
+                            [FnVar (FnVariable state_var)]))) vars
 (*
    In the join solution we need to differentiate left/right states. Right state
    variables are prefix with the "rosette_join_right_state_prefix" parameter.
@@ -1060,7 +1087,7 @@ let rec_expr
       List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | FnFun letin
-    | FnRec (_, letin) -> recurse_aux letin
+    | FnRec (_, _, letin) -> recurse_aux letin
 
 
     | FnLetExpr velist ->
@@ -1130,7 +1157,8 @@ let transform_expr
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
     | FnFun letin -> FnFun (recurse_aux letin)
-    | FnRec (igu, letin) -> FnRec (igu, recurse_aux letin)
+    | FnRec (igu, (inner_state, init_inner_state), letin) ->
+      FnRec (igu, (inner_state, recurse_aux init_inner_state), recurse_aux letin)
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
@@ -1180,7 +1208,7 @@ let transform_expr_flag
       FnApp (a, b, List.map (fun e -> recurse_aux flag e) el)
 
     | FnFun letin -> FnFun (recurse_aux flag letin)
-    | FnRec (igu, letin) -> FnRec (igu, recurse_aux flag letin)
+    | FnRec (igu, istate, letin) -> FnRec (igu, istate,  recurse_aux flag letin)
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux flag c, recurse_aux flag l1, recurse_aux flag l2)

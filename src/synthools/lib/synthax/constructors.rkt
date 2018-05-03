@@ -2,7 +2,7 @@
 
 (require "./expressions.rkt")
 
-(provide Loopsc Loop)
+(provide Loopsc Loop LoopFunc)
 
 (define loop-limit 64)
 
@@ -15,6 +15,13 @@
      (begin (assert (and (<= start end) (<= 0 start) (<= end loop-limit)))
             (Loopsc start end 10 initial body))]))
 
+
+(define-syntax LoopFunc
+  (syntax-rules ()
+    [(LoopFunc i_val i_guard i_update input_state loop_body)
+     (letrec
+         ([aux (lambda (s i) (if (i_guard i) (aux (loop_body s i) (i_update i)) s))])
+       (aux input_state i_val))]))
 
 (define-syntax Loopsc
   (syntax-rules ()

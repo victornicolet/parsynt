@@ -36,11 +36,9 @@ let right_aux_ids = ref []
 let add_laux_id i = left_aux_ids := i :: !left_aux_ids
 let add_raux_id i = right_aux_ids := i :: !right_aux_ids
 
-let is_left_aux i =
-  List.mem i !left_aux_ids
+let is_left_aux i = List.mem i !left_aux_ids
 
-let is_right_aux i =
-  List.mem i !right_aux_ids
+let is_right_aux i = List.mem i !right_aux_ids
 
 let init () =
   IH.clear auxiliary_variables;
@@ -327,19 +325,27 @@ let set_types_and_varsets =
 
 
 (* TODO change the limits *)
-let wrap_with_loop i base_join =
+let wrap_with_loop for_inner i state base_join =
+  let start_state_val =
+    if for_inner then
+      let lsp =  VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")  in
+      (FnLetExpr (identity_state lsp))
+    else
+      (fst (make_hole_e i state (FnLetExpr (identity_state state))))
+  in
   FnRec ((FnConst (CInt 0),
           FnBinop (Lt, i, FnConst (CInt 10)),
           FnUnop (Add1,i)),
+         (state, start_state_val),
          base_join)
 
 
-let make_loop_wrapped_join outeri state fnlet =
+let make_loop_wrapped_join ?(for_inner=false) outeri state fnlet =
   (* Get the base skeleton *)
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
   if !writes_in_array then
-    wrap_with_loop outeri base_join
+    wrap_with_loop for_inner outeri state base_join
   else
     base_join
 
@@ -348,7 +354,7 @@ let build i (state : VarSet.t) fnlet =
 
 let build_for_inner i state fnlet =
   narrow_array_completions := true;
-  let raw_sketch = make_loop_wrapped_join i state fnlet in
+  let raw_sketch = make_loop_wrapped_join ~for_inner:true i state fnlet in
   let typed_sketch = set_types_and_varsets raw_sketch in
   narrow_array_completions := false;
   typed_sketch
