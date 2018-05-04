@@ -69,7 +69,7 @@ type symbolic_type =
   | Tuple of symbolic_type list
   (** Other lifted types *)
   | Bitvector of int
-  (** A function in Rosette is an uniterpreted function *)
+  (** A function in Rosette is an uninterpreted function *)
   | Function of symbolic_type * symbolic_type
   (** A procdedure is a reference to a procedure object *)
   | Procedure of symbolic_type * symbolic_type
@@ -887,7 +887,7 @@ let rec state_var_name vs maybe =
   else
     maybe
 
-let state_member_accessor s_name v =
+let state_member_accessor v =
   {
     vname = main_struct_name^"-"^v.vname;
     vtype = v.vtype;
@@ -901,7 +901,7 @@ let bind_state state_var vs =
   List.map
     (fun v ->
        (FnVariable v, FnApp(v.vtype,
-                            Some (state_member_accessor state_var v),
+                            Some (state_member_accessor v),
                             [FnVar (FnVariable state_var)]))) vars
 (*
    In the join solution we need to differentiate left/right states. Right state

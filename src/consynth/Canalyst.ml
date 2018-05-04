@@ -250,6 +250,7 @@ let func2sketch cfile funcreps =
       Sketch.Join.build_for_inner
         (FnVar (FnVariable (VarSet.max_elt index_set)))
         state_vars
+        s_reach_consts
         loop_body;
     in
     incr no_sketches;

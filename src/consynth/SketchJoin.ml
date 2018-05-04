@@ -356,13 +356,22 @@ let rec inner_optims state letfun  =
 
 
 (* TODO change the limits *)
-let wrap_with_loop for_inner i state base_join =
+let wrap_with_loop for_inner i state reach_consts base_join =
   let start_state_valuation =
     if for_inner then
       let lsp =
         VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
       in
-      (FnLetExpr (identity_state lsp))
+      let stv_or_cst =
+        List.map
+          (fun v ->
+             (mkVar v,
+              if IM.mem v.vid reach_consts then
+              IM.find v.vid reach_consts
+             else
+               mkVarExpr v)) (VarSet.elements lsp)
+      in
+      (FnLetExpr stv_or_cst)
     else
       (fst (make_hole_e i state (FnLetExpr (identity_state state))))
   in
@@ -373,21 +382,21 @@ let wrap_with_loop for_inner i state base_join =
          base_join)
 
 
-let make_loop_wrapped_join ?(for_inner=false) outeri state fnlet =
+let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   (* Get the base skeleton *)
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
   if !writes_in_array then
-    wrap_with_loop for_inner outeri state base_join
+    wrap_with_loop for_inner outeri state reach_consts base_join
   else
     base_join
 
 let build i (state : VarSet.t) fnlet =
-  set_types_and_varsets (make_loop_wrapped_join i state fnlet)
+  set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
 
-let build_for_inner i state fnlet =
+let build_for_inner i state reach_consts fnlet =
   narrow_array_completions := true;
-  let raw_sketch = make_loop_wrapped_join ~for_inner:true i state fnlet in
+  let raw_sketch = make_loop_wrapped_join ~for_inner:true i state reach_consts fnlet in
   let typed_sketch = set_types_and_varsets raw_sketch in
   let sketch = inner_optims state typed_sketch in
   narrow_array_completions := false;
