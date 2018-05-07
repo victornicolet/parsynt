@@ -334,10 +334,11 @@ let find_new_variables sketch_rep =
     SketchJoin.auxiliary_variables;
 
   let join_sketch =
-    complete_final_state new_sketch.scontext.state_vars
-      (Sketch.Join.build
-         (FnVar (FnVariable (VarSet.max_elt sketch_rep.scontext.index_vars)))
-         new_sketch.scontext.state_vars nlb_opt)
+    (fun bnds ->
+       complete_final_state new_sketch.scontext.state_vars
+         ((Sketch.Join.build
+            (FnVar (FnVariable (VarSet.max_elt sketch_rep.scontext.index_vars)))
+            new_sketch.scontext.state_vars nlb_opt) bnds))
   in
   {
     new_sketch with

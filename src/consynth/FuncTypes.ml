@@ -297,6 +297,7 @@ and fnExpr =
   | FnApp of symbolic_type * (fnV option) * (fnExpr list)
   | FnHoleL of hole_type * fnLVar * CS.t * fnExpr
   | FnHoleR of hole_type * CS.t * fnExpr
+  | FnChoice of fnExpr list
   | FnVector of fnExpr array
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
@@ -1633,90 +1634,106 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
   aux_rem_h Unit expr
 
 
-let rec scm_to_fn (scm : RAst.expr) : fnExpr option * fnExpr option =
-  let rec translate (scm : RAst.expr) : fnExpr option * fnExpr option =
+let rec scm_to_fn (scm : RAst.expr) : fnExpr =
+  let unwrap_fun_e e =
+    match e with
+    | Fun_e (il, e') -> e'
+    | e -> e
+  in
+  let rec translate (scm : RAst.expr) : fnExpr =
     try
       match scm with
-      | Int_e i -> None, Some (FnConst (CInt i))
-      | Float_e f -> None, Some (FnConst (CReal f))
-      | Str_e s -> None, Some (FnConst (CString s))
-      | Bool_e b -> None, Some (FnConst (CBool b))
+      | Int_e i -> FnConst (CInt i)
+      | Float_e f -> FnConst (CReal f)
+      | Str_e s -> FnConst (CString s)
+      | Bool_e b -> FnConst (CBool b)
       | Id_e id ->
         (match id with
-         | "??" -> None, Some (FnVar (FnVariable hole_var))
+         | "??" -> FnVar (FnVariable hole_var)
          | _ ->
            (let vi = scm_register id in
-            None, Some (FnVar (FnVariable vi))))
-      | Nil_e -> None, Some (FnConst (CNil))
+            FnVar (FnVariable vi)))
+      | Nil_e -> FnConst (CNil)
 
       | Binop_e (op, e1, e2) ->
-        let _, e1' = translate  e1 in
-        let _, e2' = translate  e2 in
-        None, Some (FnBinop (get_binop_of_scm op, co e1', co e2'))
+        let e1' = translate  e1 in
+        let e2' = translate  e2 in
+        FnBinop (get_binop_of_scm op, e1', e2')
 
       | Unop_e (op, e) ->
-        let _, e' = translate  e in
-        None, Some (FnUnop (get_unop_of_scm op, co e'))
+        let e' = translate  e in
+        FnUnop (get_unop_of_scm op, e')
 
       | Cons_e (x, y)-> failwith "Cons not supported"
 
       | Let_e (bindings, e2)
       | Letrec_e (bindings, e2) ->
-        let bds = List.map
+        let fn_bindings = List.map
             (fun (ids, e) ->
-               let _, exp = translate e in
+               let  exp = translate e in
                let vi = scm_register ids in
-               (FnVariable vi), co exp)
+               (FnVariable vi, exp))
             bindings
         in
-        let fn_let, _ = translate  e2 in
-        Some (FnLetIn (bds, co fn_let)), None
+        let fn_let = translate  e2 in
+        FnLetIn (fn_bindings, fn_let)
 
       | If_e (c, e1, e2) ->
-        let _, cond = translate  c in
-        let le1, ex1 = translate  e1 in
-        let le2, ex2 = translate  e2 in
-        begin
-          if is_some ex1 && is_some ex2 then
-            None, Some (FnCond (co cond, co ex1, co ex2))
-          else
-            begin
-              try
-                None, Some (FnCond (co cond, co le1, co le2))
-              with Failure s ->
-                failwith (s^"\nUnexpected form in conditional.")
-            end
-        end
+        let cond = translate  c in
+        let le1 = translate  e1 in
+        let le2 = translate  e2 in
+        FnCond (cond, le1, le2)
 
       | Apply_e (e, arglist) ->
         (match e with
          | Id_e s ->
            (match s with
-            | "vector-ref" ->
-              (None, Some (FnVar (to_array_var arglist)))
+            | "list-ref" ->
+              FnVar (to_array_var arglist)
+
+            | "LoopFunc" ->
+              (if List.length arglist = 5 then
+                 let init = translate (unwrap_fun_e (arglist >> 0)) in
+                 let guard = translate (unwrap_fun_e (arglist >> 1)) in
+                 let update = translate (unwrap_fun_e (arglist >> 2)) in
+                 FnRec ((init, guard, update),
+                        (VarSet.empty, FnApp(Bottom, None, [])),
+                        (translate (unwrap_fun_e (arglist >> 4)))
+                       )
+               else
+                 failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
+             )
 
             | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
-              (Some (rosette_state_struct_to_fnlet arglist), None)
+              rosette_state_struct_to_fnlet arglist
 
             | "identity" ->
               translate (arglist >> 0)
 
             | _ ->
-              (None, Some (to_fun_app e arglist)))
+              to_fun_app e arglist)
          | _ ->
            RAst.pp_expr std_formatter e;
            flush_all ();
            failwith "TODO")
 
 
-      | Fun_e _ | Def_e _ | Defrec_e _ |Delayed_e _ | Forced_e _ ->
-        failwith "Not supported"
+      | Fun_e (il, e) ->
+        let es = pp_space_sep_list (fun fmt s -> fprintf fmt "%s" s)
+            str_formatter il; flush_str_formatter () in
+        failhere __FILE__ "scm_to_fn" ("Fun_e : Not supported, ids: "^es)
+      | Def_e _ ->
+        failhere __FILE__ "scm_to_fn" "Def_e : definition not supported."
+      | Defrec_e _ ->
+        failhere __FILE__ "scm_to_fn" "Defrec_e : definitions not supported."
+      | Delayed_e _ | Forced_e _ ->
+        failhere __FILE__ "scm_to_fn" "Delayed_e or Forced_e not suppported."
 
     with Not_found ->
       failwith "Variable name not found in current environment."
   in
-  let fo, eo = translate scm in
-  remove_hole_vars ==> fo, remove_hole_vars ==> eo
+  let fne = translate scm in
+  remove_hole_vars fne
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in
@@ -1740,14 +1757,7 @@ and rosette_state_struct_to_fnlet scm_expr_list =
     failwith "Failure in rosette_state_struct_to_fnlet."
 
 and to_expression_list scm_expr_list =
-  List.map
-    (fun scm_expr ->
-       match scm_to_fn scm_expr with
-       | None, Some fn_expr -> fn_expr
-       | Some fnlet, None->
-         raise (Failure (errmsg_unexpected_fnlet scm_expr))
-       | _ ->
-         failwith "Unexpected case.") scm_expr_list
+  List.map scm_to_fn scm_expr_list
 
 and to_array_var scm_expr_list =
   let array_varinfo =
@@ -1932,8 +1942,8 @@ type prob_rep =
     min_input_size : int;
     uses_global_bound : bool;
     loop_body : fnExpr;
-    join_sketch : fnExpr;
-    memless_sketch : fnExpr;
+    join_sketch : fnV * fnV -> fnExpr;
+    memless_sketch : fnV * fnV ->  fnExpr;
     join_solution : fnExpr;
     memless_solution : fnExpr;
     init_values : RAst.expr IM.t;
@@ -1964,8 +1974,7 @@ let get_index_guard problem =
 let get_init_value problem vi =
   try IM.find vi.vid problem.reaching_consts
   with Not_found ->
-    (match scm_to_fn (IM.find vi.vid problem.init_values) with
-     | _ , Some e -> e  | _ -> raise Not_found)
+    scm_to_fn (IM.find vi.vid problem.init_values)
 
 let get_loop_bound problem =
   get_loop_bound_var (get_index_guard problem)
@@ -2236,6 +2245,7 @@ let expr_to_cil fd temps e =
     | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
     | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
     | FnVector _ -> failhere __FILE__ "exp_to_cil" "Vector literal not supported."
+    | FnChoice _ -> failhere __FILE__ "exp_to_cil" "Choice leaking to cil translation."
 
   and fnvar_to_lval v =
     match v with

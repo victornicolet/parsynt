@@ -44,7 +44,7 @@ let rec rem_struct_assigns (e : RAst.expr) =
 let identify_join_func e =
   match e with
   | Def_e (id_list, body) ->
-    List.length id_list = 3 &&
+    List.length id_list = 5 &&
     (List.nth id_list 0 = Cf.get_conf_string "rosette_join_name") &&
     (List.nth id_list 1 = (Cf.get_conf_string "rosette_struct_name")^"L") &&
     (List.nth id_list 2 = (Cf.get_conf_string "rosette_struct_name")^"R")
@@ -86,6 +86,7 @@ let get_solved_sketch_info (el : RAst.expr list) =
     with Not_found ->
       (eprintf "Couldn't find a join in the solution... \
                 Did we really find a solution ?@.";
+       eprintf "Received: %a@." RAst.pp_expr_list el;
        raise Not_found)
   in
   let maybe_init_v =

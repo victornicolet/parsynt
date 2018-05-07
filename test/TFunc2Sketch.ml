@@ -31,6 +31,7 @@ let test loopsm =
   printf "%s--------TEST Func ---> Sketch%s@." (color "red") color_default;
   SM.iter
     (fun fname vals ->
+       let i0, iN = mkFnVar "i0" Integer, mkFnVar "iN" Integer in
        let vs, igu, func = vals in
        let builder = new S.Body.sketch_builder vs vs func igu in
        builder#build;
@@ -39,6 +40,6 @@ let test loopsm =
          pp_fnexpr body_form;
        let join = S.Join.build (FnConst (CInt 0)) vs body_form in
        printf"Join : @; %a@."
-         pp_fnexpr join
+         pp_fnexpr (join (i0, iN))
     )
     loopsm

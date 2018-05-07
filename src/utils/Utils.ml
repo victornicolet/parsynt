@@ -579,6 +579,19 @@ module PpTools = struct
 
   let pp_newline fmt () = fprintf fmt "@."
 
+  let pad s l =
+    " " ^ s ^ String.make (l - String.length s + 1) ' '
+
+  let rec split_80 s =
+    if String.length s > 80 then
+      [String.sub s 0 80]@(split_80 (String.sub s 80 (String.length s - 80)))
+    else
+      [s]
+
+  let success s =
+    let lines = split_80 s in
+    List.iter
+      (fun s -> printf "%s%s%s%s" (color "b-green") (color "black") s color_default) lines
   (** List printing *)
 
   let rec ppli

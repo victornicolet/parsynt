@@ -355,6 +355,11 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "@[<hv 2>(%a %a %i)@]"
       hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
+  | FnChoice el ->
+    fp ppf "@[<v 2>(choose %a)@]"
+      (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
+         pp_fnexpr) el
+
   | FnAddrof e -> fp ppf "(AddrOf )"
 
   | FnAddrofLabel addr -> fp ppf "(AddrOfLabel)"
@@ -387,7 +392,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
   | FnRec ((i, g, u), (s, k), e) ->
-    let index_set = used_in_fnexpr g in
+    let index_set = VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u) in
    ( match VarSet.cardinal index_set with
     | 0 -> fp ppf "@[<v  2>%a@]" pp_fnexpr e
     | 1 ->
@@ -540,6 +545,10 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnHoleL (t, v, _, _) ->
     fp ppf "%s %a %s"
       (color "grey") hole_type_expr t color_default
+
+  | FnChoice el ->
+    fp ppf "(%sChoiceExpression%s %a)"
+      (color "red") color_default pp_expr_list el
 
   | FnAddrof e -> fp ppf "(AddrOf )"
 

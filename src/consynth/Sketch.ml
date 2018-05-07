@@ -430,11 +430,11 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
 let pp_join fmt (join_body, state_vars) =
   let lstate_name = main_struct_name^"L" in
   let rstate_name = main_struct_name^"R" in
+  let ist, ien = mkFnVar "$_start" Integer, mkFnVar "$_end" Integer in
   Format.fprintf fmt
-    "@[<hov 2>(define (%s %s %s)@;%a)@]@.@."
-    join_name  lstate_name rstate_name
-    pp_join_body (join_body, state_vars, lstate_name, rstate_name)
-
+    "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
+    join_name  lstate_name rstate_name ist.vname ien.vname
+    pp_join_body (join_body (ist, ien), state_vars, lstate_name, rstate_name)
 
 (** Some state definitons *)
 
@@ -571,25 +571,30 @@ let pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
   let bnds = (bnm, i_st, i_m, i_end) in
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
-      "@[<hov 2>(%s-eq?@;%a@;(%s %a %a))@]"
+      "@[<hov 2>(%s-eq?@;%a@;(%s %a %a %d %d))@]"
       main_struct_name
       pp_join_body_app (body_name, s0, bnds, i_st, i_end)
       join_name
       pp_join_body_app (body_name, s0, bnds, i_st, i_m)
       pp_join_body_app (body_name, init_state_name, bnds, i_m, i_end)
+      i_st
+      i_end
   else
     ()
 
 
 let pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
-  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
+  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len
+     && i_end <= !inner_iterations_limit
+  then
     Format.fprintf fmt
-      "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a))@]"
+      "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a 0 %d))@]"
       main_struct_name
       pp_mless_body_app (body_name, init_state_name, i_end)
       join_name
       init_state_name i_end
       pp_mless_body_app (body_name, s0, i_end)
+      i_end
   else
     ()
 
@@ -715,7 +720,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth ~memoryless:true fmt st0 bnames state_vars read_vars
+  pp_synth ~memoryless:true fmt st0 bnames state_vars (VarSet.union read_vars additional_symbols)
     (* (VarSet.union read_vars additional_symbols) *)
     min_dep_len;
   reset_matdims ()

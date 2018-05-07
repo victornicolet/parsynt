@@ -296,7 +296,7 @@ and merge_leaves max_depth (e,d) =
   else
     (e, d + 1)
 
-let set_types_and_varsets =
+let set_types_and_varsets e =
   let adapt_vs_and_t cs t =
     let nvs = filter_cs_by_type (input_type_or_type t) cs in
     if CS.cardinal nvs = 0 then
@@ -308,21 +308,22 @@ let set_types_and_varsets =
     else
       nvs, t
   in
-  (transform_expr
-     (fun e -> is_a_hole e)
-     (fun rfun e ->
-        match e with
-        | FnHoleL ((t, o), v, vs, i) ->
-          let nvs, nt = adapt_vs_and_t vs t in
-          FnHoleL ((nt, o), v, nvs, i)
+  (fun (i,j) ->
+     (transform_expr
+        (fun e -> is_a_hole e)
+        (fun rfun e ->
+           match e with
+           | FnHoleL ((t, o), v, vs, i) ->
+             let nvs, nt = adapt_vs_and_t vs t in
+             FnHoleL ((nt, o), v, nvs, i)
 
-        | FnHoleR ((t, o), vs, i) ->
-          let nvs, nt = adapt_vs_and_t vs t in
-          FnHoleR ((nt, o), nvs, i)
+           | FnHoleR ((t, o), vs, i) ->
+             let nvs, nt = adapt_vs_and_t vs t in
+             FnHoleR ((nt, o), nvs, i)
 
-        | _ -> rfun e)
+           | _ -> rfun e)
 
-     identity identity)
+        identity identity (e (i, j))))
 
 
 (* Sketch size can be reduced for memoryless join *)
@@ -348,10 +349,13 @@ let rec inner_optims state letfun  =
       }
       expr
   in
-  match letfun with
-  | FnRec (igu, s, body) ->
-    FnRec (igu, s, loop_inner_optims body)
-  | e -> e
+  (fun bounds ->
+     match letfun bounds with
+     | FnRec (igu, s, body) ->
+       FnRec (igu, s, loop_inner_optims body)
+     | FnLetIn ([s, innerb], cont) ->
+       FnLetIn([s, inner_optims state (fun b -> innerb) bounds], cont)
+     | e -> e)
 
 
 
@@ -375,21 +379,57 @@ let wrap_with_loop for_inner i state reach_consts base_join =
     else
       (fst (make_hole_e i state (FnLetExpr (identity_state state))))
   in
-  FnRec ((FnConst (CInt 0),
-          FnBinop (Lt, i, FnConst (CInt !join_loop_width)),
-          FnUnop (Add1,i)),
-         (state, start_state_valuation),
-         base_join)
+  (fun (i_start, i_end) ->
+     FnRec ((FnConst (CInt 0),
+             FnBinop (Lt, i, mkVarExpr i_end),
+             FnUnop (Add1,i)),
+            (state, start_state_valuation),
+            base_join))
+
+
+(**
+   Add a choice after the join to enable 'dropping' variables. Can be usefule when the join
+   is a loop and one of the variables's join function is more naturally expressed as a
+   constant time function rather than a function of a list.
+   Avoids problems especially when the variable is always initialized at the beginning of
+   the loop body, could be used as a temporary variable in the join loop, but its final value
+   is only the value of the right or the top chunk.
+*)
+let wrap_with_choice for_inner state base_join =
+  let special_state_var = mkFnVar (state_var_name state "_fs_") (Tuple (VarSet.types state)) in
+  let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
+  let final_choices =
+    List.map
+      (fun v ->
+         let accessor = state_member_accessor v in
+         let rightval = {v with vname = rprefix ^ v.vname} in
+         (mkVar v, FnChoice(
+           [FnApp(v.vtype, Some accessor, [mkVarExpr special_state_var]);
+            mkVarExpr rightval])))
+      (VarSet.elements state)
+  in
+  (fun (i, j) ->
+     FnLetIn([(mkVar special_state_var, base_join (i,j))], FnLetExpr(final_choices)))
+
+
+let add_drop_choice = ref true
 
 
 let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   (* Get the base skeleton *)
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
+
   if !writes_in_array then
-    wrap_with_loop for_inner outeri state reach_consts base_join
+    let loop_join =
+      wrap_with_loop for_inner outeri state reach_consts base_join
+    in
+    if !add_drop_choice then
+      wrap_with_choice for_inner state loop_join
+    else
+      loop_join
   else
-    base_join
+    (fun (i,j) -> base_join)
 
 let build i (state : VarSet.t) fnlet =
   set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)

@@ -57,13 +57,32 @@ let options = [
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
+let message_done () =
+  printf "%sDONE%s@." (color "green") color_default
+
+let message_skip () =
+  printf "@."
+
+let message_error_task s =
+    printf "@.%s%s%s" (color "red") s color_default
+
+let message_start_task s =
+    printf "@.%s%s%s" (color "yellow") (pad s 80) color_default
+
+let message_start_subtask s =
+    printf "@.%s%s%s" (color "blue") (pad s 50) color_default
+
+
+
 let solution_failed ?(failure = "") problem =
-  printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast\
+  printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast \
           of the solved problem of %s.@."
     (color "red") color_default problem.loop_name;
   if failure = "" then ()
   else
-    printf "Failure: %s" failure
+    (eprintf "@.[FAILURE] %s@." failure;
+     failhere __FILE__ "solution_failed" problem.loop_name)
+
 
 
 let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
@@ -81,30 +100,24 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
       (solution_failed problem;
        failwith "Couldn't retrieve solution from parsed ast.")
   in
-  (** Simplify the solution using Z3 *)
+  (** TODO // Simplify the solution using Z3 *)
   let translated_join_body =
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
-    match scm_to_fn sol_info.Codegen.join_body with
-    | Some sklet, _ ->
-      if !use_z3 then
-        (* (try *)
-        (*    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *)
-        (*    (z3t#simplify_let c_style_solution) *)
-        (*  with Failure s -> *)
-        (*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *)
-        (*     eprintf "MESSAGE: %s@\n" s; *)
-        (*     c_style_solution)) *)
-        print_endline "Z3 expression simplifcation in progress";
-        sklet
+    try scm_to_fn sol_info.Codegen.join_body with
+      (* if !use_z3 then
+       *   (\* (try *\)
+       *   (\*    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *\)
+       *   (\*    (z3t#simplify_let c_style_solution) *\)
+       *   (\*  with Failure s -> *\)
+       *   (\*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *\)
+       *   (\*     eprintf "MESSAGE: %s@\n" s; *\)
+       *   (\*     c_style_solution)) *\)
+       *   print_endline "Z3 expression simplifcation in progress";
+       *   sklet *)
 
-    | None, Some expr ->
-      (eprintf "Failed in translation, we got an expression %a for the join."
-         FPretty.pp_fnexpr expr;
-       failwith "Failed to translate the solution in a function in our\
-                 intermediate representation.")
-
-    | _ ->
+    | Failure s ->
+      eprintf "[FAILURE] %s@." s;
       failwith "Failed to translate the solution in our \
                 intermediate representation."
   in
@@ -143,9 +156,9 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) pare
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
+    message_start_subtask ("Solving sketch for "^problem.loop_name);
     if !verbose then
-      (printf "@.%sSOLVING %s.%s@." (color "blue") lp_name color_default;
-       printf "Sketch: %a@." FPretty.pp_fnexpr problem.join_sketch);
+       printf "Sketch: %a@." FPretty.pp_fnexpr (problem.join_sketch (mkFnVar "i0" Integer, mkFnVar "iN" Integer));
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
@@ -191,11 +204,14 @@ let rec solve_inners problem =
   if List.length problem.inner_functions = 0 then
     Some problem
   else
-    let solve_inner_problem inpb = solve_one ~inner:true (Some problem.scontext) inpb in
+    let solve_inner_problem inpb =
+      solve_one ~inner:true (Some problem.scontext) inpb in
     (* Solve the inner functions. *)
+    message_start_subtask ("Solving inner loops of "^problem.loop_name);
     let inner_funcs =
       somes (List.map solve_inner_problem problem.inner_functions)
     in
+    message_done ();
     (* Replace occurrences of the inner functions by join operator and new
        input sequence if possible.
        - Condition 1: all inner function are solved. *)
@@ -214,10 +230,11 @@ and solve_problem problem =
       match tactic1_sol with
       | Some x -> Some x
       | None ->
-        printf "Searching auxiliaries for %s ...@." problem.loop_name;
+        message_start_subtask ("Searching auxiliaries for "^problem.loop_name);
         let problem =
           Canalyst.find_new_variables problem
         in
+        message_done ();
         match solve_one None problem with
         | Some x -> Some x
         | None -> solve_one ~expr_depth:2 None problem
@@ -305,15 +322,17 @@ let main () =
     end;
 
   elapsed_time := Unix.gettimeofday ();
-  printf "Parsing C program ...\t\t\t\t";
+  message_start_task "Parsing C program ...";
   let c_file, loops = C.processFile filename in
-  printf "%sDONE%s@.@.%sC program -> partial functional representation ...%s\t"
-    (color "green") color_default (color "yellow") color_default;
+  message_done ();
+  message_start_task "Translating C Ast to partial functional ast...";
   let functions = C.cil2func c_file loops in
-  printf "%sDONE%s@.@.%sPartial functional representation -> functional representation ...%s\t\t"
-    (color "green") color_default (color "yellow") color_default;
+  message_done ();
+  message_start_task "Translating input to functional representation...";
   let problem_list = Canalyst.func2sketch c_file functions in
-  printf "%sDONE%s@.@.%sSolving sketches ...%s\t\t@." (color "green") color_default (color "yellow") color_default;
+  message_done ();
+  message_start_task "Solving sketches ...";
+  message_skip ();
   (** Try to solve the sketches without adding auxiliary variables *)
   (* All the sketches that have been solved, including with auxiliaries *)
   let solved =
