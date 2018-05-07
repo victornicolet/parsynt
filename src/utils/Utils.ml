@@ -579,8 +579,8 @@ module PpTools = struct
 
   let pp_newline fmt () = fprintf fmt "@."
 
-  let pad s l =
-    " " ^ s ^ String.make (l - String.length s + 1) ' '
+  let pad ?(c=' ') s l =
+    " " ^ s ^ String.make (l - String.length s + 1) c
 
   let rec split_80 s =
     if String.length s > 80 then
@@ -592,6 +592,22 @@ module PpTools = struct
     let lines = split_80 s in
     List.iter
       (fun s -> printf "%s%s%s%s" (color "b-green") (color "black") s color_default) lines
+
+  let message_done () =
+    printf "%sDONE%s@." (color "green") color_default
+
+  let message_skip () =
+    printf "@."
+
+  let message_error_task s =
+    printf "@.%s%s%s" (color "red") s color_default
+
+  let message_start_task s =
+    printf "@.%s%s%s" (color "yellow") (pad s 76) color_default
+
+  let message_start_subtask s =
+    printf "@.%s%s%s" (color "blue") (pad s 76) color_default
+
   (** List printing *)
 
   let rec ppli

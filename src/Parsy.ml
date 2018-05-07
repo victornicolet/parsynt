@@ -57,23 +57,6 @@ let options = [
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
-let message_done () =
-  printf "%sDONE%s@." (color "green") color_default
-
-let message_skip () =
-  printf "@."
-
-let message_error_task s =
-    printf "@.%s%s%s" (color "red") s color_default
-
-let message_start_task s =
-    printf "@.%s%s%s" (color "yellow") (pad s 80) color_default
-
-let message_start_subtask s =
-    printf "@.%s%s%s" (color "blue") (pad s 50) color_default
-
-
-
 let solution_failed ?(failure = "") problem =
   printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast \
           of the solved problem of %s.@."

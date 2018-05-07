@@ -491,10 +491,13 @@ let discover_for_id sketch varid =
   GenVars.init ();
   init ();
   (*  max_exec_no := VarSet.cardinal stv + 1; *)
-  printf "@.%s%s---------------- START UNFOLDINGS for %s ----------------%s@."
+  printf "@.%s%s%s%s@."
     (color "black")
     (color "b-blue")
-    (VarSet.find_by_id ctx.state_vars varid).vname
+    (pad ~c:'-' (fprintf str_formatter
+     "---------------- START UNFOLDINGS for %s ----------------"
+       (VarSet.find_by_id ctx.state_vars varid).vname; flush_str_formatter ())
+    80)
     color_default;
   let init_idx_exprs = create_symbol_map ctx.index_vars in
   (* Always start with the state variable symbols. *)
@@ -510,8 +513,12 @@ let discover_for_id sketch varid =
       do not change with new unfoldings.
   *)
   let rec fixpoint i xinfo aux_var_set aux_var_map =
-    printf "@.%s%s-------------------- UNFOLDING %i ----------------%s@."
-    (color "black") (color "b-blue") i color_default;
+    printf "@.%s%s%s%s@."
+      (color "black") (color "b-blue")
+      (pad ~c:'-' (fprintf str_formatter
+                     "-------------------- UNFOLDING %i ----------------" i;
+                  flush_str_formatter ()) 80)
+      color_default;
     let new_xinfo, (new_var_set, new_aux_exprs) =
       (** Find the new expressions by expanding once. *)
       let exprs_map, input_expressions =
