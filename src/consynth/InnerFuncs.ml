@@ -33,7 +33,7 @@ open Format
 
 let replace_by_join problem inner_loops =
   let inline_join in_info =
-    let join = in_info.join_solution in
+    let join = in_info.memless_solution in
     match join with
     | FnLetExpr bl ->
       if List.length bl > 0 then
