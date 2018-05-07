@@ -108,7 +108,8 @@ let exec_solver solver filename =
     | _ -> Sys.command (Racket.silent_racket_command_string filename)
   in
   let elapsed = (Unix.gettimeofday ()) -. start in
-  Format.printf "@.%s : executed in %.3f s@." solver.name elapsed;
+  if !debug then
+    Format.printf "@.%s : executed in %.3f s@." solver.name elapsed;
   errcode, elapsed
 
 let compile ?(solver=Conf.rosette) ?(print_err_msg = default_error)

@@ -1702,7 +1702,16 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
                        )
                else
                  failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
-             )
+              )
+
+            | "make-list" ->
+              let ln =
+                match List.hd arglist with
+                | Int_e i -> i
+                | _ -> failhere __FILE__ __LOC__ "Parsed make-list without length integer."
+              in
+              let v = translate (arglist >> 1) in
+              FnVector(Array.make ln v)
 
             | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
               rosette_state_struct_to_fnlet arglist

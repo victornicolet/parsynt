@@ -3,7 +3,7 @@
 int example_mtlr(int** a, int* c, int n) {
   int mtr = 0;
   int mtrl = 0;
-  int sum = 0;
+  int sum;
 
   for (int i = 0; i < n; i++) {
 	sum = 0;

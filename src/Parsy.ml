@@ -141,7 +141,7 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) pare
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
     if !verbose then
-       printf "Sketch: %a@." FPretty.pp_fnexpr (problem.join_sketch (mkFnVar "i0" Integer, mkFnVar "iN" Integer));
+       printf "@.Sketch: %a@." FPretty.pp_fnexpr (problem.join_sketch (mkFnVar "i0" Integer, mkFnVar "iN" Integer));
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
@@ -194,12 +194,20 @@ let rec solve_inners problem =
     let inner_funcs =
       somes (List.map solve_inner_problem problem.inner_functions)
     in
-    message_done ();
+    message_done ~done_what:"(inner loops)" ();
     (* Replace occurrences of the inner functions by join operator and new
        input sequence if possible.
        - Condition 1: all inner function are solved. *)
     if List.length inner_funcs = List.length problem.inner_functions then
-      Some (replace_by_join problem inner_funcs)
+      (if !verbose then
+         List.iter
+           (fun pb ->
+              printf "Inner function %s,@.Function:@.%a@.Join:@.%a@."
+                pb.loop_name
+                FPretty.pp_fnexpr pb.loop_body
+                FPretty.pp_fnexpr pb.join_solution)
+           inner_funcs;
+       Some (replace_by_join problem inner_funcs))
     else
       None
 

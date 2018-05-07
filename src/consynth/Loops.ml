@@ -158,6 +158,8 @@ type loop_info =
   {
     (* Identifier of the loop = identifier of the statement. *)
     lid : int;
+    (* The statement ids, as in the input file, before any modification. *)
+    sids : Cil.stmt IH.t;
     (* The loop itself. It is a for loop if the loop reprenestion has a igu. *)
     mutable lstmt : stmt;
     mutable ligu : igu option;
@@ -186,10 +188,11 @@ let loop_body loop =
 let loop_rwset loop =
   (loop.lvariables.used_vars, loop.lvariables.state_vars)
 
-let create_loop (lstm: stmt) (f : file) (hf : varinfo) (loc : location) :
+let create_loop (lstm: stmt) (f : file) (hf : varinfo) (loc : location) (sids : Cil.stmt IH.t) :
   loop_info =
   {
     lid = lstm.sid;
+    sids = sids;
     lstmt = lstm;
     ligu = None;
     lcontext = create_context f hf loc;
@@ -241,7 +244,7 @@ class loopCollector (hf : varinfo) (f : file) = object
   method vstmt (s : stmt) =
     match s.skind with
     | Loop (b, loc, o1, o2) ->
-      IH.add all_loops s.sid (create_loop s f hf loc);
+      IH.add all_loops s.sid (create_loop s f hf loc (Ct.collect_sids s));
       (* Skip children: nested loops will be handled after. *)
       SkipChildren
     | Return (oe, _) ->
@@ -265,7 +268,9 @@ class loopInner (f: file) (pl : loop_info) = object
       match s.skind with
       | Loop(b, loc, o1, o2) ->
         (* Create the inner loop. *)
-        let innerloop = create_loop s f pl.lcontext.host_function loc in
+        let innerloop =
+          create_loop s f pl.lcontext.host_function loc (Ct.collect_sids s)
+        in
         (* Visit inner loop with a new visitor *)
         let vis = new loopInner f innerloop in
         innerloop.lstmt <- visitCilStmt vis innerloop.lstmt;
@@ -426,6 +431,20 @@ let add_statevar_def loop vid vid2const def_id =
     (* id1 -> id2 but id2 -/-> id1 *)
     false
   in
+
+  let is_not_outer_when_inner def_id =
+    let par_id =  loop.lcontext.parent_loop_id in
+    if par_id > -1 then
+      (* This is a nested loop. *)
+      let parent_sids =
+        let parent_loop = IH.find all_loops par_id in
+        parent_loop.sids
+      in
+      IH.mem parent_sids def_id
+    else
+      true
+  in
+
   let def_stmt () =
     let stmt =
       (IH.find (IHTools.convert
@@ -441,14 +460,19 @@ let add_statevar_def loop vid vid2const def_id =
     end;
     stmt
   in
+
   let add_def_info vid =
-  (try
-    (if !verbose then printf "@.Add this definition for %s?@."
-         (VS.find_by_id vid loop.lvariables.state_vars).vname)
-  with Not_found -> ());
-  if is_after def_id loop.lid then
+    if !verbose then
+      (try
+         printf "@.Add this definition for %s?@."
+           (VS.find_by_id vid loop.lvariables.state_vars).vname
+       with Not_found -> ());
+
+  if is_after def_id loop.lid || not (is_not_outer_when_inner def_id) then
     (ignore(def_stmt ());
-     if !verbose then printf "@.This definition after loop statement.@.";
+     if !verbose then
+       printf "@.This definition is after loop statement %B.@."
+         (is_not_outer_when_inner def_id);
      vid2const)
   else
     begin
