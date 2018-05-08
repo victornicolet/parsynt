@@ -32,6 +32,7 @@ open Format
 *)
 
 let replace_by_join problem inner_loops =
+  (* Inline the join only if it is a list of parallel assignments. *)
   let inline_join in_info =
     let join = in_info.memless_solution in
     match join with
@@ -42,6 +43,7 @@ let replace_by_join problem inner_loops =
     | _ -> None
   in
   let replace (lbody, ctx) in_info =
+    (* Create a sequence type for the input of the inner loop. *)
     let state = in_info.scontext.state_vars in
     let new_seq_type = Tuple (VarSet.types state) in
     let new_seq =
@@ -53,6 +55,10 @@ let replace_by_join problem inner_loops =
     let new_joinf =
       mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
+    (* Replace the function application corresponding to the inner loop.
+       These were only placeholders introdced at the Cil intermediate
+       representation.
+    *)
     let rpl_case e =
       match e with
       | FnApp (st, Some f, args) ->

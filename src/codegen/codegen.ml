@@ -2,6 +2,7 @@ open RAst
 open ExtString
 open FuncTypes
 open Format
+open Utils
 
 module Tbb = Tbb
 module Cf = Conf
@@ -10,20 +11,20 @@ exception Expr_exn of expr list
 
 (** In the join, remove the "state structure" assignments. *)
 let is_struct_assgn (id,e) =
+  let rsn = Cf.get_conf_string "rosette_struct_name" in
   match e with
   | Apply_e (f, el) ->
     (match f with
      | Id_e struct_mem_id ->
-       String.starts_with struct_mem_id
-         (Cf.get_conf_string "rosette_struct_name")
+       String.starts_with struct_mem_id rsn
      | _ -> false)
     &&
     (match el with
      | [hd] ->
        (match hd with
         | Id_e id ->
-          (id = (Cf.get_conf_string "rosette_struct_name")^"R" ||
-           id = (Cf.get_conf_string "rosette_struct_name")^"L")
+          (str_begins_with rsn id && str_ends_with "L" id) ||
+          (str_begins_with rsn id && str_ends_with "R" id)
         | _ -> false)
      | _ -> false)
   | _ -> false
@@ -42,12 +43,16 @@ let rec rem_struct_assigns (e : RAst.expr) =
 
 (* Identify the join function and return its body *)
 let identify_join_func e =
+  let join_name = Cf.get_conf_string "rosette_join_name" in
+  let rosette_struct = Cf.get_conf_string "rosette_struct_name" in
   match e with
   | Def_e (id_list, body) ->
     List.length id_list = 5 &&
-    (List.nth id_list 0 = Cf.get_conf_string "rosette_join_name") &&
-    (List.nth id_list 1 = (Cf.get_conf_string "rosette_struct_name")^"L") &&
-    (List.nth id_list 2 = (Cf.get_conf_string "rosette_struct_name")^"R")
+    (List.nth id_list 0 = join_name ) &&
+    (let l1 = List.nth id_list 1 in
+     str_begins_with rosette_struct l1 && str_ends_with "L" l1) &&
+    (let l2 = List.nth id_list 2 in
+     str_begins_with rosette_struct l2 && str_ends_with "R" l2)
 
   | _ -> false
 

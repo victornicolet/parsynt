@@ -35,7 +35,7 @@ let err_handler_sketch i =
 
 (** Functions to print Racket constructs *)
 
-let pp_struct_defintion ?(transparent=false) fmt (sname, fields) =
+let pp_struct_definition ?(transparent=false) fmt (sname, fields) =
   if transparent then
       fprintf fmt "@[<1>(struct %s (%a) #:transparent)@;@]"
     sname

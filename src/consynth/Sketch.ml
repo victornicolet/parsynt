@@ -189,7 +189,7 @@ let pp_defined_input fmt vs =
 (* ---------------------------------------------------------------------------- *)
 (** Sketch -> Rosette sketch *)
 (** The name of the structure used to represent the state of the loop *)
-let main_struct_name = get_conf_string "rosette_struct_name"
+let struct_prefix = get_conf_string "rosette_struct_name"
 (** Name of the join function in the Rosette sketch *)
 let join_name = get_conf_string "rosette_join_name"
 (** Name of the loop function in the Rosette sketch *)
@@ -285,10 +285,11 @@ let handle_special_consts fmt input_vars reach_consts =
 (** Pretty print the state structure with an equality predicate. The
     form of the definitions are defined in the Racket module.
 *)
-let pp_state_definition fmt main_struct =
-  (pp_struct_defintion ~transparent:true) fmt main_struct;
+
+let define_state fmt (struct_name_and_fields : string * string list) =
+  (pp_struct_definition ~transparent:true) fmt struct_name_and_fields;
   pp_newline fmt ();
-  pp_struct_equality fmt main_struct
+  pp_struct_equality fmt struct_name_and_fields
 
 (** Given a set of variables, pretty print their definitions and return
     a list of strings representing the names of the symbolic variables
@@ -327,8 +328,7 @@ let pp_loop_body fmt (index_name, loop_body, state_vars, state_struct_name) =
     the state of the loop (valuation of the state variables).
 *)
 let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, state_vars)
-    reach_const state_struct_name =
-
+    reach_const sname =
   let index_list = VarSet.elements index_set in
   if List.length index_list == 0 then
     failhere __FILE__ "pp_loop" "Only one index for the loop.";
@@ -353,7 +353,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
       (if inner then !inner_iterations_limit else !iterations_limit)
       (Conf.get_conf_string "rosette_state_param_name")
-      pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
+      pp_loop_body (index_name, loop_body, state_vars, sname)
 
 
   else
@@ -371,7 +371,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
            if IM.mem v.vid reach_const then
              IM.find v.vid reach_const
            else
-             FnApp(v.vtype, Some (state_member_accessor v),
+             FnApp(v.vtype, Some (state_member_accessor sname v),
                    [mkVarExpr (mkFnVar state_var v.vtype)])) (VarSet.elements state_vars),
       state_var
     in
@@ -386,13 +386,13 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_index_up index_list
       (* Line 2: udpate state with constants, and bind it. *)
       bound_state1
-      main_struct_name
+      sname
       pp_expr_list extract_stv_or_reach_const
       (* Line 3: loop construct and loop body. *)
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
       (if inner then !inner_iterations_limit else !iterations_limit)
       bound_state1
-      pp_loop_body (index_name, loop_body, state_vars, state_struct_name)
+      pp_loop_body (index_name, loop_body, state_vars, sname)
 
 
 
@@ -403,6 +403,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     @param rstate_name The name of the right state argument of the join.
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
+  let sname = tuple_struct_name (VarSet.types state_vars) in
   let left_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
   let right_state_vars = VarSet.add_prefix state_vars
@@ -413,9 +414,9 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
   printing_sketch := true;
   Format.fprintf fmt
     "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
-    (pp_assignments main_struct_name lstate_name)
+    (pp_assignments sname lstate_name)
     (ListTools.pair lvar_names field_names)
-    (pp_assignments main_struct_name rstate_name)
+    (pp_assignments sname rstate_name)
     (ListTools.pair rvar_names field_names)
     pp_fnexpr join_body;
   printing_sketch := false
@@ -428,8 +429,9 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param state_vars The set of state variables.
 *)
 let pp_join fmt (join_body, state_vars) =
-  let lstate_name = main_struct_name^"L" in
-  let rstate_name = main_struct_name^"R" in
+  let sname = tuple_struct_name (VarSet.types state_vars) in
+  let lstate_name = sname^"L" in
+  let rstate_name = sname^"R" in
   let ist, ien = mkFnVar "$_start" Integer, mkFnVar "$_end" Integer in
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
@@ -448,6 +450,7 @@ let pp_join fmt (join_body, state_vars) =
     will be set to this expression in the inital state of the loop.
 *)
 let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
+  let struct_name = tuple_struct_name (VarSet.types state_vars) in
   let reach_consts = handle_special_consts fmt read_vars reach_consts in
   let s0_sketch_printer =
     F.pp_print_list
@@ -458,7 +461,8 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
   (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
     "@[(define %s (%s %a))@]@."
-    ident_state_name main_struct_name
+    ident_state_name
+    struct_name
     s0_sketch_printer (VarSet.elements state_vars);
 
   (** Handle special constants such as Infnty and NInfnty to create the
@@ -471,7 +475,7 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
       "@[(define (%s %s %s) (%s %a))@]@."
       st0
       "_begin_" "end"
-      main_struct_name
+      struct_name
       (fun fmt li ->
          (ppli fmt ~sep:" "
             (fun fmt (vid, vi) ->
@@ -505,7 +509,7 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
       "@[(define (%s %s) (%s %a))@]@."
       st0
       "end_index"
-      main_struct_name
+      struct_name
       (fun fmt li ->
          (ppli fmt ~sep:" "
             (fun fmt (vid, vi) ->
@@ -546,7 +550,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     ident_state_name "iEnd"
-    main_struct_name
+    (tuple_struct_name (VarSet.types state_vars))
     s0_sketch_printer (VarSet.elements state_vars);
   (* Define the symbols that do not have reaching consts.*)
   let symbolic_vars = (VarSet.add_prefix state_vars "symbolic_") in
@@ -554,7 +558,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     init_state_name "iEnd"
-    !state_struct_name
+    (tuple_struct_name (VarSet.types state_vars))
     pp_expr_list (List.map mkVarExpr (VarSet.elements symbolic_vars));
   symbolic_vars
 
@@ -567,12 +571,12 @@ let pp_input_state_definitions fmt state_vars reach_consts =
     @param i_m The splitting index for this instance.
     @param i_end The end index for this instance.
 *)
-let pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
+let pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
   let bnds = (bnm, i_st, i_m, i_end) in
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
     Format.fprintf fmt
       "@[<hov 2>(%s-eq?@;%a@;(%s %a %a %d %d))@]"
-      main_struct_name
+      struct_name
       pp_join_body_app (body_name, s0, bnds, i_st, i_end)
       join_name
       pp_join_body_app (body_name, s0, bnds, i_st, i_m)
@@ -583,13 +587,13 @@ let pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
     ()
 
 
-let pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len =
+let pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
   if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len
      && i_end <= !inner_iterations_limit
   then
     Format.fprintf fmt
       "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a 0 %d))@]"
-      main_struct_name
+      struct_name
       pp_mless_body_app (body_name, init_state_name, i_end)
       join_name
       init_state_name i_end
@@ -605,7 +609,8 @@ let pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end) min_dep_len 
     @param symbolic_variable_names The list of symbolic variable names that will
     have a universal quantifier over.
 *)
-let pp_synth_body ?(m=false) fmt (s0, bnm, state_vars, defined_input_vars, min_dep_len) =
+let pp_synth_body ?(m=false) fmt (s0, bnm, struct_name, defined_input_vars, min_dep_len) =
+
   Format.fprintf fmt
     "@[<hov 2>#:forall @[<hov 2>(list %a)@]@]@\n"
     pp_defined_input defined_input_vars;
@@ -614,7 +619,7 @@ let pp_synth_body ?(m=false) fmt (s0, bnm, state_vars, defined_input_vars, min_d
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-          pp_mless_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
+          pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
             min_dep_len))
     Conf.verification_parameters
   else
@@ -622,7 +627,7 @@ let pp_synth_body ?(m=false) fmt (s0, bnm, state_vars, defined_input_vars, min_d
     "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
     (F.pp_print_list
        (fun fmt (i_st, i_m, i_end) ->
-          pp_join_verification_condition fmt (s0, bnm, i_st, i_m, i_end)
+          pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
             min_dep_len))
     Conf.verification_parameters
 
@@ -634,6 +639,22 @@ let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_
   Format.fprintf fmt
     "@[<hov 2>(define odot (synthesize@;%a))@.@."
     (pp_synth_body ~m:memoryless) (s0, bnames, state_vars, pb_input_vars, min_dep_len)
+
+
+(* ---------------------------------------------------------------------------- *)
+(* When there are inner loops, those have been replaced by function calls in the
+   outer body. We need to define the corresponding functions *)
+let pp_inner_def fmt pb =
+  let stv = pb.scontext.state_vars in
+  let inner_struct_name = tuple_struct_name (VarSet.types stv) in
+  (* Define state struct type. *)
+  define_state fmt (inner_struct_name, VarSet.names stv)
+
+let pp_inner_loops fmt inner_loop_list =
+  match inner_loop_list with
+  | [] -> ()
+  | _ -> List.iter (pp_inner_def fmt) inner_loop_list
+
 
 
 (* ---------------------------------------------------------------------------- *)
@@ -666,9 +687,6 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let idx = sketch.scontext.index_vars in
   let index_name = (VarSet.max_elt idx).vname in
   let parent_index_var = (VarSet.max_elt (parent_context.index_vars)) in
-  let field_names =
-    List.map (fun vi -> vi.vname) (VarSet.elements state_vars) in
-  let main_struct = (main_struct_name, field_names) in
   let st0 = ident_state_name in
   (* Global bound name "n" *)
   let bnd_vars =
@@ -685,6 +703,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
+  let struct_name = tuple_struct_name (VarSet.types state_vars) in
   (* The parent index has to be replaced with a constant. *)
 
   let loop_body =
@@ -694,8 +713,6 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
       ~by:(FnConst (CInt 0))
       ~ine:sketch.loop_body
   in
-  (** FPretty configuration for the current sketch *)
-  FPretty.state_struct_name := main_struct_name;
   (* Select the bitwidth for representatin in Rosettte depending on the operators used
      in the loop body. *)
   pp_current_bitwidth fmt sketch.loop_body;
@@ -705,12 +722,12 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   *)
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  pp_state_definition fmt main_struct;
+  define_state fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
   pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars)
-    sketch.reaching_consts main_struct_name;
+    sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
   pp_join fmt (sketch.memless_sketch, state_vars);
   pp_newline fmt ();
@@ -720,7 +737,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth ~memoryless:true fmt st0 bnames state_vars (VarSet.union read_vars additional_symbols)
+  pp_synth ~memoryless:true fmt st0 bnames struct_name (VarSet.union read_vars additional_symbols)
     (* (VarSet.union read_vars additional_symbols) *)
     min_dep_len;
   reset_matdims ()
@@ -731,6 +748,7 @@ let pp_rosette_sketch_join fmt sketch =
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
+  let struct_name = tuple_struct_name (VarSet.types state_vars) in
   (** Read variables : force read /\ state = empty *)
   let read_vars =
     VarSet.diff
@@ -747,9 +765,6 @@ let pp_rosette_sketch_join fmt sketch =
         max mdim vardim) read_vars 0
   in
   let idx = sketch.scontext.index_vars in
-  let field_names =
-    List.map (fun vi -> vi.vname) (VarSet.elements state_vars) in
-  let main_struct = (main_struct_name, field_names) in
   let st0 = init_state_name in
   (* Global bound name "n" *)
   let bnd_vars =
@@ -768,13 +783,13 @@ let pp_rosette_sketch_join fmt sketch =
   in
   if max_read_dim < 2 then mat_w := !mat_h;
   (** FPretty configuration for the current sketch *)
-  FPretty.state_struct_name := main_struct_name;
   pp_current_bitwidth fmt sketch.loop_body;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  pp_state_definition fmt main_struct;
+  define_state fmt (struct_name, VarSet.names state_vars);
+  pp_inner_loops fmt sketch.inner_functions;
   pp_newline fmt ();
-  pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts main_struct_name;
+  pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (sketch.join_sketch, state_vars);
   pp_newline fmt ();
@@ -782,7 +797,7 @@ let pp_rosette_sketch_join fmt sketch =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth fmt st0 bnames state_vars read_vars min_dep_len;
+  pp_synth fmt st0 bnames struct_name read_vars min_dep_len;
   reset_matdims ()
 
 

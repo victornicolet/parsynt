@@ -27,7 +27,7 @@ open Sets
 module IH = Sets.IH
 module IS = Sets.IS
 module SM = Sets.SM
-
+module SH = Sets.SH
 
 let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
 
@@ -101,6 +101,7 @@ let bool_of_int64 i = i = 1L
 
 let str_contains str sub = ExtLib.String.exists str sub;;
 let str_begins_with sub str = ExtLib.String.starts_with str sub;;
+let str_ends_with sub str = ExtLib.String.ends_with str sub;;
 (** Lists *)
 module ListTools = struct
   open List

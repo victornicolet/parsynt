@@ -398,10 +398,11 @@ let wrap_with_loop for_inner i state reach_consts base_join =
 let wrap_with_choice for_inner state base_join =
   let special_state_var = mkFnVar (state_var_name state "_fs_") (Tuple (VarSet.types state)) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
+  let structname = tuple_struct_name (VarSet.types state) in
   let final_choices =
     List.map
       (fun v ->
-         let accessor = state_member_accessor v in
+         let accessor = state_member_accessor structname v in
          let rightval = {v with vname = rprefix ^ v.vname} in
          (mkVar v, FnChoice(
            [FnApp(v.vtype, Some accessor, [mkVarExpr special_state_var]);

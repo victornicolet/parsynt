@@ -10,7 +10,6 @@ module VS = Utils.VS
 let print_imp_style = ref false
 let printing_sketch = ref false
 let holes_expr_depth = ref 1
-let state_struct_name = ref "$"
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
 
@@ -18,7 +17,6 @@ let skipped_non_linear_operator = ref false
 let state_vars = ref VS.empty
 
 let rosette_loop_macro_name = Conf.get_conf_string "rosette_func_loop_macro_name"
-let main_struct_name = Conf.get_conf_string "rosette_struct_name"
 
 let reinit ?(ed = 1) ?(use_nl = false) =
   printing_sketch := false;
@@ -292,7 +290,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   match fnexpr with
   | FnLetExpr el ->
     fprintf ppf "@[<hov 2>(%s %a)@]"
-      !state_struct_name
+      (tuple_struct_name (List.map (fun (v,e) -> type_of_var v) el))
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
@@ -490,7 +488,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
       (color "red") color_default
       (color "b")
-      !state_struct_name
+      (tuple_struct_name (List.map (fun (v,e) -> type_of_var v) el))
       color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")

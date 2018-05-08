@@ -13,9 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-n    You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open Utils
 open ListTools
@@ -43,7 +43,8 @@ open Synthlib2ast
 *)
 
 let use_unsafe_operations = ref false
-let main_struct_name = Conf.get_conf_string "rosette_struct_name"
+let rosette_prefix_struct = Conf.get_conf_string "rosette_struct_name"
+let debug = ref false
 
 exception BadType of string
 
@@ -87,44 +88,44 @@ type symbolic_type =
 (* ---------------------- 2 - Operators and constants ---------------------------- *)
 
 type symb_unop =
-    | Not | Add1 | Sub1
-    | Abs | Floor | Ceiling | Truncate | Round
-    | Neg
-    (** Misc*)
-    | Sgn
-    | UnsafeUnop of symb_unsafe_unop
+  | Not | Add1 | Sub1
+  | Abs | Floor | Ceiling | Truncate | Round
+  | Neg
+  (** Misc*)
+  | Sgn
+  | UnsafeUnop of symb_unsafe_unop
 
 (* Binary operators available in Rosette *)
 and symb_binop =
-    (** Booleans*)
-    | And | Nand | Or | Nor | Implies | Xor
-    (** Integers and reals *)
-    | Plus | Minus | Times | Div | Quot | Rem | Mod
-    (** Max and min *)
-    | Max | Min
-    (** Comparison *)
-    | Eq | Lt | Le | Gt | Ge | Neq
-    (** Shift*)
-    | ShiftL | ShiftR
-    | Expt
-    | UnsafeBinop of symb_unsafe_binop
+  (** Booleans*)
+  | And | Nand | Or | Nor | Implies | Xor
+  (** Integers and reals *)
+  | Plus | Minus | Times | Div | Quot | Rem | Mod
+  (** Max and min *)
+  | Max | Min
+  (** Comparison *)
+  | Eq | Lt | Le | Gt | Ge | Neq
+  (** Shift*)
+  | ShiftL | ShiftR
+  | Expt
+  | UnsafeBinop of symb_unsafe_binop
 
 (**
    Some racket functions that are otherwise unsafe
    to use in Racket, but we might still need them.
 *)
 and symb_unsafe_unop =
-    (** Trigonometric + hyp. functions *)
-    | Sin | Cos | Tan | Sinh | Cosh | Tanh
-    (** Anti functions *)
-    | ASin | ACos | ATan | ASinh | ACosh | ATanh
-    (** Other functions *)
-    | Log | Log2 | Log10
-    | Exp | Sqrt
+  (** Trigonometric + hyp. functions *)
+  | Sin | Cos | Tan | Sinh | Cosh | Tanh
+  (** Anti functions *)
+  | ASin | ACos | ATan | ASinh | ACosh | ATanh
+  (** Other functions *)
+  | Log | Log2 | Log10
+  | Exp | Sqrt
 
 
 and symb_unsafe_binop =
-    | TODO
+  | TODO
 
 (** Some pre-defined constants existing in C99 *)
 and constants =
@@ -437,6 +438,22 @@ let rec pp_typ fmt t =
   | Box t -> fpf fmt "%a box" pp_typ t
   | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
 
+
+let rec shstr_of_type t =
+  match t with
+  | Unit -> "u"
+  | Bottom -> "o"
+  | Integer -> "i"
+  | Real -> "r"
+  | Num -> "n"
+  | Boolean -> "b"
+  | Vector (vt, _) -> "V"^(shstr_of_type vt)^"_"
+  | Tuple tl -> String.concat "" ("T" :: List.map shstr_of_type tl)
+  | Function (argt, rett) -> "F"^(shstr_of_type argt)^"_"^(shstr_of_type rett)^"_"
+  | _ ->
+    pp_typ err_formatter t;
+    failhere __FILE__ "shstr_of_type" "No short string for this type"
+
 let rec is_subtype t tmax =
   match t, tmax with
   | t, tmax when t = tmax -> true
@@ -485,7 +502,7 @@ let rec join_types t1 t2 =
   | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
   | _, _ ->
     failontype (Format.fprintf Format.str_formatter
-                "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
+                  "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
                 Format.flush_str_formatter () )
 
 let type_of_unop t =
@@ -881,6 +898,24 @@ let mkVarExpr ?(offsets = []) vi =
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
 
+let declared_tuple_types = SH.create 10
+
+
+let rec tuple_struct_name ?(seed = "") (tl : symbolic_type list) : string =
+  let poten_name =
+    String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))
+  in
+  if SH.mem declared_tuple_types poten_name then
+    let tl' = SH.find declared_tuple_types poten_name in
+    if tl = tl' then poten_name else
+      tuple_struct_name ~seed:(seed^"_") tl
+  else
+    (SH.add declared_tuple_types poten_name tl;
+     poten_name)
+
+let is_name_of_struct s =
+  str_begins_with rosette_prefix_struct s
+
 let rec state_var_name vs maybe =
   let vsnames = VarSet.names vs in
   if List.mem maybe vsnames then
@@ -888,21 +923,32 @@ let rec state_var_name vs maybe =
   else
     maybe
 
-let state_member_accessor v =
+let state_member_accessor s v =
   {
-    vname = main_struct_name^"-"^v.vname;
+    vname = s^"-"^v.vname;
     vtype = v.vtype;
     vid = _new_id ();
     vinit = None;
     vistmp = true;
   }
 
+let is_struct_accessor a =
+  try
+    let al =
+      let i = String.index a '-' in
+      let struct_name =
+  with Not_found -> false
+
+let from_accessor a =
+
+
 let bind_state state_var vs =
   let vars = VarSet.elements vs in
+  let structname = tuple_struct_name (VarSet.types vs) in
   List.map
     (fun v ->
        (FnVariable v, FnApp(v.vtype,
-                            Some (state_member_accessor v),
+                            Some (state_member_accessor structname v),
                             [FnVar (FnVariable state_var)]))) vars
 (*
    In the join solution we need to differentiate left/right states. Right state
@@ -1109,15 +1155,15 @@ let rec_expr2 (r : 'a recursor) =
 
 
 let max_min_test =
-    { join = (fun a b -> a || b);
-      init = false;
-      case = (fun e ->
-          match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
-      on_case = (fun f e ->
-          match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
-      on_const = (fun e -> false);
-      on_var = (fun e -> true);
-    }
+  { join = (fun a b -> a || b);
+    init = false;
+    case = (fun e ->
+        match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+    on_case = (fun f e ->
+        match e with FnBinop (op, _, _) -> op = Max || op = Min | _ -> false);
+    on_const = (fun e -> false);
+    on_var = (fun e -> true);
+  }
 
 
 (** Another recursion helper : a syntax tree tranformer *)
@@ -1333,8 +1379,8 @@ let rec replace_many ?(in_subscripts = false)
       expr
   in
   if num_occ <= 0 then [expr] else
-  let index_to_repl = k_combinations n (1 -- num_occ) in
-  List.map repl_indexed index_to_repl
+    let index_to_repl = k_combinations n (1 -- num_occ) in
+    List.map repl_indexed index_to_repl
 
 
 
@@ -1713,7 +1759,10 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
               let v = translate (arglist >> 1) in
               FnVector(Array.make ln v)
 
-            | a when a = (Conf.get_conf_string "rosette_struct_name")  ->
+            | a when is_struct_accessor s ->
+              from_accessor a
+
+            | a when is_name_of_struct s ->
               rosette_state_struct_to_fnlet arglist
 
             | "identity" ->
@@ -1746,7 +1795,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in
-    the set of staate variables so we use the same order to re-build the
+    the set of state variables so we use the same order to re-build the
     expressions.
     Additionally we remove identity bindings.
 *)
@@ -1994,62 +2043,62 @@ let get_loop_bound problem =
 (** Includes passes to transform the code into an appropriate form *)
 
 let rec pass_remove_special_ops e =
-    (transform_expr
-      (fun e -> match e with FnBinop _ -> true
-                           | FnApp _ -> true
-                           | _ -> false)
-      (fun rfun e ->
-         match e with
-         | FnBinop (op, e1, e2) ->
-           let e1' = rfun e1 in let e2' = rfun e2 in
-           (match op with
-            | Max ->
-              FnCond (FnBinop(Gt, e1', e2'), e1', e2')
+  (transform_expr
+     (fun e -> match e with FnBinop _ -> true
+                          | FnApp _ -> true
+                          | _ -> false)
+     (fun rfun e ->
+        match e with
+        | FnBinop (op, e1, e2) ->
+          let e1' = rfun e1 in let e2' = rfun e2 in
+          (match op with
+           | Max ->
+             FnCond (FnBinop(Gt, e1', e2'), e1', e2')
 
-            | Min ->
-              FnCond (FnBinop(Lt, e1', e2'), e1', e2')
+           | Min ->
+             FnCond (FnBinop(Lt, e1', e2'), e1', e2')
 
-            | Nand ->
-              FnUnop (Not, FnBinop (And, e1', e2'))
+           | Nand ->
+             FnUnop (Not, FnBinop (And, e1', e2'))
 
-            | Neq ->
-              FnUnop (Not, FnBinop (Eq, e1, e2))
+           | Neq ->
+             FnUnop (Not, FnBinop (Eq, e1, e2))
 
-            | _ -> FnBinop (op, e1', e2'))
+           | _ -> FnBinop (op, e1', e2'))
 
-         | FnApp (st, vo, args) ->
-           let args' = List.map rfun args in
-           (if List.length args' >= 1 then
-              (** Might be a binary operator ... *)
-              (let e1 = args' >> 0 in
-               match vo with
-               | Some var ->
-                 (match String.lowercase var.vname with
-                  | "max" ->
-                    let e2 = args' >> 1 in
-                    FnCond (FnBinop(Gt, e1, e2), e1, e2)
-                  | "min" ->
-                    let e2 = args' >> 1 in
-                    FnCond (FnBinop(Lt, e1, e2), e1, e2)
-                  | "add1" ->
-                    FnBinop (Plus, e1, FnConst (CInt 1))
-                  | "sub1" ->
-                    FnBinop (Minus, e1, FnConst (CInt 1))
-                  | _ -> FnApp(st, vo, args'))
-               | None ->
-                 FnApp(st, vo, args'))
-            else
-              FnApp(st, vo, args'))
+        | FnApp (st, vo, args) ->
+          let args' = List.map rfun args in
+          (if List.length args' >= 1 then
+             (** Might be a binary operator ... *)
+             (let e1 = args' >> 0 in
+              match vo with
+              | Some var ->
+                (match String.lowercase var.vname with
+                 | "max" ->
+                   let e2 = args' >> 1 in
+                   FnCond (FnBinop(Gt, e1, e2), e1, e2)
+                 | "min" ->
+                   let e2 = args' >> 1 in
+                   FnCond (FnBinop(Lt, e1, e2), e1, e2)
+                 | "add1" ->
+                   FnBinop (Plus, e1, FnConst (CInt 1))
+                 | "sub1" ->
+                   FnBinop (Minus, e1, FnConst (CInt 1))
+                 | _ -> FnApp(st, vo, args'))
+              | None ->
+                FnApp(st, vo, args'))
+           else
+             FnApp(st, vo, args'))
 
-         | FnLetIn (ve_list , letin) ->
-           FnLetIn (List.map (fun (v, e) ->
-               (v, pass_remove_special_ops e)) ve_list,
-                    pass_remove_special_ops letin)
-         | FnLetExpr ve_list ->
-           FnLetExpr (List.map (fun (v, e) ->
-               (v, pass_remove_special_ops e)) ve_list)
+        | FnLetIn (ve_list , letin) ->
+          FnLetIn (List.map (fun (v, e) ->
+              (v, pass_remove_special_ops e)) ve_list,
+                   pass_remove_special_ops letin)
+        | FnLetExpr ve_list ->
+          FnLetExpr (List.map (fun (v, e) ->
+              (v, pass_remove_special_ops e)) ve_list)
 
-         | _ -> failwith "Bad rec case.") identity identity) e
+        | _ -> failwith "Bad rec case.") identity identity) e
 
 
 let rec pass_sequentialize fnlet =
