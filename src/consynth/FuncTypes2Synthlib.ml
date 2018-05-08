@@ -37,7 +37,7 @@ let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
     match fnvar with
     | FnVariable vi -> SyId vi.vname
     | FnArray(v,e) -> of_var v
-    | FnTuple _ -> failhere __FILE__ "to_term" "Tuples not supported."
+    | FnRecord _ -> failhere __FILE__ "to_term" "Records not supported."
   in
   let of_const cst =
     match cst with

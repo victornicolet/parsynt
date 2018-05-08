@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-int example_mtrr(int** a, int* c, int n) {
+int _mtrr(int** a, int* c, int n) {
   int mtr = 0;
   int mtrr = 0;
   int sum = 0;

@@ -1,4 +1,4 @@
-int example_max_top_strip(int **a, int m, int n){
+int _mtopstrip(int **a, int m, int n){
   int top_strip_sum = 0;
   int max_top_strip = 0;
   int strip_sum = 0;

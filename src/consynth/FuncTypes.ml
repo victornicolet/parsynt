@@ -67,7 +67,7 @@ type symbolic_type =
   | Real
   | Boolean
   (** Type tuple *)
-  | Tuple of symbolic_type list
+  | Record of (string * symbolic_type) list
   (** Other lifted types *)
   | Bitvector of int
   (** A function in Rosette is an uninterpreted function *)
@@ -194,6 +194,8 @@ struct
     List.map (fun elt -> elt.vname) (FnVs.elements vs)
   let types vs =
     List.map (fun elt -> elt.vtype) (FnVs.elements vs)
+  let record vs =
+    List.map (fun elt -> elt.vname, elt.vtype) (FnVs.elements vs)
   let add_prefix vs prefix =
     FnVs.of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (FnVs.elements vs))
   let iset vs ilist =
@@ -282,7 +284,7 @@ and fnLVar =
   (** Access to an array cell *)
   | FnArray of fnLVar * fnExpr
   (** Records : useful to represent the state *)
-  | FnTuple of VarSet.t
+  | FnRecord of VarSet.t
 
 (* Type for expressions *)
 and fnExpr =
@@ -370,15 +372,18 @@ let rec type_of_ciltyp =
 and type_of_args argslisto =
   try
     let argslist = check_option argslisto in
-    let symb_types_list =
+    let symb_types_list, argnames =
       List.map
         (fun (s, t, atr) -> type_of_ciltyp t)
+        argslist,
+      List.map
+        (fun (s, t, atr) -> s)
         argslist
     in
     match symb_types_list with
     | [] -> Unit
     | [st] -> st
-    | _ -> Tuple symb_types_list
+    | _ -> Record (List.combine argnames symb_types_list)
   with Failure s -> Unit
 
 let rec type_of_cilconst c =
@@ -412,8 +417,8 @@ let type_of_unop_args =
   | Not -> Boolean
   | _ -> Num
 
-let tupletype_of_vs vs =
-  Tuple (List.map (fun vi -> type_of_ciltyp vi.Cil.vtype) (VS.varlist vs))
+let recordtype_of_vs vs =
+  Record (List.map (fun vi -> vi.Cil.vname, (type_of_ciltyp vi.Cil.vtype)) (VS.varlist vs))
 
 let rec pp_typ fmt t =
   let fpf = Format.fprintf in
@@ -425,10 +430,10 @@ let rec pp_typ fmt t =
   | Num -> fpf fmt "num"
   | Boolean -> fpf fmt "boolean"
   | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
-  | Tuple tl ->
+  | Record tl ->
     Format.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-      pp_typ fmt tl
+      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t) fmt tl
   | Function (argt, rett) ->
     fpf fmt "%a -> %a" pp_typ argt pp_typ rett
   | Pair t -> fpf fmt "%a pair" pp_typ t
@@ -448,7 +453,7 @@ let rec shstr_of_type t =
   | Num -> "n"
   | Boolean -> "b"
   | Vector (vt, _) -> "V"^(shstr_of_type vt)^"_"
-  | Tuple tl -> String.concat "" ("T" :: List.map shstr_of_type tl)
+  | Record tl -> String.concat "" ("T" :: List.map (fun (_, t) -> shstr_of_type t) tl)
   | Function (argt, rett) -> "F"^(shstr_of_type argt)^"_"^(shstr_of_type rett)^"_"
   | _ ->
     pp_typ err_formatter t;
@@ -579,11 +584,11 @@ and type_of_var v =
                   "Unexpected type %a for variable in array access."
                   pp_typ t ; Format.flush_str_formatter ())
     end
-  | FnTuple vs ->
+  | FnRecord vs ->
     let tl =
-      VarSet.fold (fun vi tl -> tl@[vi.vtype]) vs []
+      VarSet.fold (fun vi tl -> tl@[vi.vname, vi.vtype]) vs []
     in
-    Tuple tl
+    Record tl
 
 
 
@@ -934,13 +939,12 @@ let state_member_accessor s v =
 
 let is_struct_accessor a =
   try
-    let al =
-      let i = String.index a '-' in
-      let struct_name =
-  with Not_found -> false
-
-let from_accessor a =
-
+    let parts = Str.split (Str.regexp "-") a in
+    List.length parts = 2 &&
+    str_begins_with rosette_prefix_struct (parts >> 0)
+  with
+  | Not_found -> false
+  | Invalid_argument s -> false
 
 let bind_state state_var vs =
   let vars = VarSet.elements vs in
@@ -974,8 +978,8 @@ let rec cmpVar fnlvar1 fnlvar2 =
   | FnVariable vi, FnVariable vi' -> compare vi.vid vi'.vid
   | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
     cmpVar fnlv1 fnlv2
-  | FnVariable _, FnTuple _ -> -1
-  | FnTuple _ , _ -> 1
+  | FnVariable _, FnRecord _ -> -1
+  | FnRecord _ , _ -> 1
   | FnArray _ , _ -> 1
   | _ , FnArray _ -> -1
 
@@ -985,7 +989,7 @@ let rec vi_of fnlv =
   match fnlv with
   | FnVariable vi' -> Some vi'
   | FnArray (fnlv', _) -> vi_of fnlv'
-  | FnTuple _ -> None
+  | FnRecord _ -> None
 
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
@@ -1646,6 +1650,18 @@ let scm_register s =
 
 let hole_var_name = "??_hole"
 let hole_var = mkFnVar hole_var_name Bottom
+
+let from_accessor a =
+  if is_struct_accessor a then
+    let member_name = (Str.split (Str.regexp "-") a) >> 1 in
+    FnVar (FnVariable (scm_register member_name))
+  else
+    let msg =
+      fprintf str_formatter "Expected a struct accessor received %s" a;
+      flush_str_formatter ()
+    in
+    failhere __FILE__ "from_accessor" msg
+
 
 
 let remove_hole_vars (expr: fnExpr) : fnExpr =
@@ -2314,7 +2330,7 @@ let expr_to_cil fd temps e =
       let lh, offset = fnvar_to_lval v in
       lh , Index (fnexpr_to_exp e, offset)
 
-    | FnTuple _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
+    | FnRecord _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
 
 
   and cil_binop_of_symb_binop binop =
@@ -2406,7 +2422,7 @@ let rec fnvar_to_cil fd tmps v =
     let lh, offset = fnvar_to_cil fd tmps v in
     lh , Index (expr_to_cil fd tmps e, offset)
 
-  | FnTuple _ -> failwith "Tuple not yet implemented"
+  | FnRecord _ -> failwith "Tuple not yet implemented"
 
 
 (** Let bindings to imperative code. *)

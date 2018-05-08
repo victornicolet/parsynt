@@ -188,7 +188,12 @@ let rec solve_inners problem =
     Some problem
   else
     let solve_inner_problem inpb =
-      solve_one ~inner:true (Some problem.scontext) inpb in
+      let start = Unix.gettimeofday () in
+      let soln = solve_one ~inner:true (Some problem.scontext) inpb in
+      let elapsed = Unix.gettimeofday () -. start in
+      message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
+      soln
+    in
     (* Solve the inner functions. *)
     message_start_subtask ("Solving inner loops of "^problem.loop_name);
     let inner_funcs =

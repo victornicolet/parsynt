@@ -65,7 +65,7 @@ let rec gen_var v =
         match v with
         | FnVariable _ -> scalar_default_offset
         | FnArray _ -> !exec_count
-        | FnTuple _ -> scalar_default_offset
+        | FnRecord _ -> scalar_default_offset
       in
       add_to_genvars host_vi.vid offset vname (v, new_v);
       (offset, new_vi.vname, (v,new_v))

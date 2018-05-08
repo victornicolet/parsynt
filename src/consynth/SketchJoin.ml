@@ -122,7 +122,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
             else
               FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
          | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
-      | FnTuple vs -> FnVar (FnTuple vs), 0
+      | FnRecord vs -> FnVar (FnRecord vs), 0
     end
 
   | FnConst c ->
@@ -396,7 +396,7 @@ let wrap_with_loop for_inner i state reach_consts base_join =
    is only the value of the right or the top chunk.
 *)
 let wrap_with_choice for_inner state base_join =
-  let special_state_var = mkFnVar (state_var_name state "_fs_") (Tuple (VarSet.types state)) in
+  let special_state_var = mkFnVar (state_var_name state "_fs_") (Record (VarSet.record state)) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let structname = tuple_struct_name (VarSet.types state) in
   let final_choices =

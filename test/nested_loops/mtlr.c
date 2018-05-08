@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-int example_mtlr(int** a, int* c, int n) {
+int _mtlr(int** a, int* c, int n) {
   int* colmax;
   int mtr = 0;
   int mtrl = 0;

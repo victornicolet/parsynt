@@ -161,12 +161,12 @@ and pp_symb_type_aux ppf t =
     begin
       match t with
       | Unit -> fprintf ppf "unit"
-      | Tuple tl ->
+      | Record tl ->
         fprintf ppf "(%a)"
           (fun ppf l ->
              pp_print_list
                ~pp_sep:(fun ppf () -> fprintf ppf ",")
-               (fun ppf ty -> pp_symb_type ppf ty)
+               (fun ppf (s, ty) -> fprintf ppf "%s: %a" s pp_symb_type ty)
                ppf
                l)
           tl
@@ -279,7 +279,7 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
       (fprintf ppf "(list-ref %a %s)"
          pp_fnlvar v offset_str)
 
-  | FnTuple vs ->
+  | FnRecord vs ->
     if VarSet.cardinal vs > 1 then
       fprintf ppf "(values %a)" VarSet.pp_var_names vs
     else
@@ -396,7 +396,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
     | 1 ->
       let index = VarSet.max_elt index_set in
       let uvars = used_in_fnexpr e in
-      let state_arg = mkFnVar (state_var_name uvars "__s") (Tuple (VarSet.types uvars)) in
+      let state_arg = mkFnVar (state_var_name uvars "__s") (Record (VarSet.record uvars)) in
       fp ppf "@[<hov 2>(%s %a (lambda (%s) %a)@;(lambda (%s) %a)@;%a@;(lambda (%s %s) %a))@]"
         rosette_loop_macro_name
         pp_fnexpr i
@@ -478,7 +478,7 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
     fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
 
 
-  | FnTuple vs ->
+  | FnRecord vs ->
     fprintf ppf "@[<v 2>(%a)@]" VarSet.pp_var_names vs
 
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
@@ -712,7 +712,7 @@ and pp_c_var ?(rhs = true) fmt v =
 
   | FnArray (v, offset) -> fprintf fmt "%a[%a]" (pp_c_var ~rhs:rhs) v
                              (pp_c_expr ~for_dafny:false) offset
-  | FnTuple vs -> fprintf fmt "(<TUPLE>)"
+  | FnRecord vs -> fprintf fmt "(<RECORD>)"
 
 and pp_c_expr_list fmt el =
   ppli fmt ~sep:" " pp_c_expr el

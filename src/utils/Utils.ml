@@ -600,6 +600,13 @@ module PpTools = struct
   let message_skip () =
     printf "@."
 
+  let message_info (pmsg : unit -> unit) =
+    printf "@.%s" (color "grey");
+    pmsg ();
+    printf "%s@." color_default
+
+
+
   let message_error_task s =
     printf "@.%s%s%s" (color "red") s color_default
 

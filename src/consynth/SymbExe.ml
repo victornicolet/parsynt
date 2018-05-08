@@ -132,7 +132,7 @@ let rec unfold new_exprs exec_info func =
 
   and update_expressions (new_exprs, read_exprs) (var, expr) =
     match var with
-    | FnTuple vs -> exec_info.state_exprs, read_exprs
+    | FnRecord vs -> exec_info.state_exprs, read_exprs
     | FnVariable vi ->
       let vid = vi.vid in
       let nexpr, n_rexprs = unfold_expr exec_info expr in
@@ -181,7 +181,7 @@ let rec unfold new_exprs exec_info func =
 
 and exec_var exec_info v =
   match v with
-  | FnTuple vs -> FnVar v, ES.empty
+  | FnRecord vs -> FnVar v, ES.empty
 
   | FnVariable vi ->
     begin

@@ -476,7 +476,7 @@ class sketch_builder
           let rec cur_v (v : lhs) =
             match v with
             | LhVar vi -> FnVariable (var_of_vi vi)
-            | LhTuple vil -> FnTuple (varset_of_vs vil)
+            | LhTuple vil -> FnRecord (varset_of_vs vil)
             | LhElem (a, i) ->
               let fv = cur_v a in
               FnArray(fv, convert i)
@@ -486,12 +486,12 @@ class sketch_builder
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
           if is_empty_state let_cont then
-            FnLetExpr [(FnTuple state_vars,
+            FnLetExpr [(FnRecord state_vars,
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))]
           else
-            FnLetIn ( [(FnTuple state_vars,
+            FnLetIn ( [(FnRecord state_vars,
                         FnCond (convert c,
                                 convert_letin let_if,
                                 convert_letin let_else))],
