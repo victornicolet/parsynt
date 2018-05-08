@@ -1,4 +1,4 @@
-int example_dropwhile (int *a, int n) {
+int _dropwhile (int *a, int n) {
   int pos = 0;
   _Bool first_pos = 1;
 

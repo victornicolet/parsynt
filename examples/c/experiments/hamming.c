@@ -1,6 +1,6 @@
 #include "decl_header.h"
 
-int example_hamming(int *a, int*b, int n) {
+int _hamming(int *a, int*b, int n) {
   int diff = 0;
 
   for (int i = 0; i < n; i ++) {

@@ -1,4 +1,4 @@
-_Bool example_0star1star (_Bool *ar, int n) {
+_Bool _0star1star (_Bool *ar, int n) {
   _Bool an = 1;
   _Bool bn = 1;
 

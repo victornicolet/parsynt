@@ -8,7 +8,7 @@
    updated max.
 */
 
-_Bool example_line_sight (int *a, int n) {
+_Bool _line_sight (int *a, int n) {
   int amax = 0;
   _Bool visible = 1;
 

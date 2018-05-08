@@ -1,6 +1,6 @@
 /* Returns the second smallest element of an array */
 
-int second_min (int * a, int n) {
+int _2nd_min (int * a, int n) {
   int m = _max_int_;
   int m2 = _max_int_;
   for(int i = 0; i < n; i++) {
