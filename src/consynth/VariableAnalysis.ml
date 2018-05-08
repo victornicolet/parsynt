@@ -81,7 +81,8 @@ and va_read_expr (expr : exp) =
 and basic ((host, offset) : lval) =
   match host with
   | Var v -> singleton v
-  | _ -> empty
+  | Mem m -> filter is_pointer (va_read_expr m)
+
 
 (** Retrieve indexes *)
 

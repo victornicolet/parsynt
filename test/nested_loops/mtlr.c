@@ -6,8 +6,6 @@ int example_mtlr(int** a, int* c, int n) {
   int mtrl = 0;
   int sum;
 
-  colmax = malloc(sizeof(int) * n);
-
   for (int i = 0; i < n; i++) {
 	sum = 0;
 	mtr = 0;
