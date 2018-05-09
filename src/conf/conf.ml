@@ -152,10 +152,10 @@ let verification_parameters =
 
 (* 5 - Naming conventions *)
 let inner_loop_func_name func lid =
-  "L_"^(Str.first_chars func 4)^"@"^(string_of_int lid)
+  "_L_"^(Str.first_chars func 4)^"@"^(string_of_int lid)
 
 let is_inner_loop_func_name name =
-  if String.length name > 7 then String.sub name 0 7  = "__loop_" else false
+  if String.length name > 3 then String.sub name 0 3  = "_L_" else false
 
 let id_of_inner_loop name =
   let elts =  Str.split (Str.regexp "_") name in

@@ -435,6 +435,21 @@ and apply_subs expr subs =
   | _ -> failwith "Cannot apply substitutions for this expressions."
 
 
+(* v has been substituted with e in expr. Revert this. *)
+let rec revert_sub e v expr =
+  match expr with
+  | expr when expr = e -> Var v
+  | FBinop(op, e1, e2) -> FBinop (op, revert_sub e v e1, revert_sub e v e2)
+  | FUnop(op, e1) -> FUnop (op, revert_sub e v e1)
+  | Array (v, i) -> Array (v, List.map (revert_sub e v) i)
+  | Container (ce, subs) ->
+    Container (ce, IntegerMap.map (fun e' -> if e = e' then Var v else e') subs)
+  | FQuestion (c, t, f) -> FQuestion (revert_sub e v c,
+                                      revert_sub e v t,
+                                      revert_sub e v f)
+  | FunApp (ce, el) -> FunApp (ce, List.map (revert_sub e v) el)
+  | _ -> expr
+
 
 let bound_state_vars vs lf =
   let rec bound_vars bv =
@@ -467,10 +482,24 @@ let bound_state_vars vs lf =
 
 
 (**
+   Prepend a set of bindings to a let form. The input is a list of
+   bindings considered to be parallel assignments.
+*)
+let rec let_prepend binding_list cont =
+  let update_tl e v bl = List.map (fun (v', e') -> (v', revert_sub e v e')) bl in
+  let rec build_header bl =
+    match bl with
+    | [] -> cont
+    | (v, e) :: tl ->
+      let ntl = update_tl e v tl in
+      Let (LhVar v, e, build_header ntl, -1, defloc)
+  in
+  build_header binding_list
+
+(**
    Add a new let-form at the end of an old one,
    terminated by the state.
  *)
-
 let rec let_add old_let new_let =
   match old_let with
   | State subs ->
@@ -771,10 +800,25 @@ and red vs tmps let_form substs =
            let nsubs = IM.add vi.vid nexpr substs in
            red vs tmps cont nsubs
 
-        (* Can't reduce for arrays. *)
+        (* Do not keep reducing for arrays, and don't apply the
+           reduction: reinstall the bindings for the variables
+           used in the bound expression above.
+        *)
         | LhElem (a, i) ->
-           let nexpr = apply_subs expr substs in
-           Let(lhv, nexpr, red vs tmps cont substs, id, loc)
+          let usedvs = used_vars_expr expr in
+          let nsubs, reinstall_bindings =
+            VS.fold
+              (fun v (nsubs, bindings) ->
+                 try
+                   let e = IM.find v.vid nsubs in
+                   (IM.remove v.vid nsubs, (v, e)::bindings)
+                 with Not_found ->
+                   (nsubs, bindings))
+              usedvs (substs, [])
+          in
+          let_prepend
+            reinstall_bindings
+            (Let(lhv, expr, red vs tmps cont nsubs, id, loc))
 
         | LhTuple vil ->
            let nexpr = apply_subs expr substs in

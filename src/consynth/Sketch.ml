@@ -825,21 +825,19 @@ let pp_rosette_sketch_join fmt sketch =
     begin
       pp_inner_loops fmt sketch.inner_functions;
       pp_newline fmt ()
-    end
-  else
-    begin
-      pp_newline fmt ();
-      pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
-      pp_comment fmt "Wrapping for the sketch of the join.";
-      pp_join fmt (sketch.join_sketch, state_vars);
-      pp_newline fmt ();
-      pp_comment fmt "Symbolic input state and synthesized id state";
-      pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
-      pp_comment fmt "Actual synthesis work happens here";
-      pp_newline fmt ();
-      pp_synth fmt st0 bnames struct_name read_vars min_dep_len;
-      reset_matdims ()
-    end
+    end;
+  pp_newline fmt ();
+  pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
+  pp_comment fmt "Wrapping for the sketch of the join.";
+  pp_join fmt (sketch.join_sketch, state_vars);
+  pp_newline fmt ();
+  pp_comment fmt "Symbolic input state and synthesized id state";
+  pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
+  pp_comment fmt "Actual synthesis work happens here";
+  pp_newline fmt ();
+  pp_synth fmt st0 bnames struct_name read_vars min_dep_len;
+  reset_matdims ()
+
 
 
 (** Main interface to print the sketch of the whole problem.
