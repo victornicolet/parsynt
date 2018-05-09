@@ -43,10 +43,10 @@ module Body = SketchBody
 module Join = SketchJoin
 
 let iterations_limit =
-  ref (int_of_string (Conf.get_conf_string "loop_finite_limit"))
+  ref  (Conf.get_conf_int "loop_finite_limit")
 
 let inner_iterations_limit =
-  ref (int_of_string (Conf.get_conf_string "inner_loop_finite_limit"))
+  ref (Conf.get_conf_int "inner_loop_finite_limit")
 
 
 let auxiliary_vars : fnV IH.t = IH.create 10

@@ -20,7 +20,7 @@ type exec_info =
     inputs : ES.t  }
 
 (* Array size must be bounded during the symbolic execution. *)
-let _MAX_ARRAY_SIZE_ = int_of_string (Conf.get_conf_string "symbolic_execution_finitization")
+let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
 let _arsize_ = ref _MAX_ARRAY_SIZE_
 (** Create a mapping from variable ids to variable expressions to start the

@@ -280,10 +280,8 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
          pp_fnlvar v offset_str)
 
   | FnRecord vs ->
-    if VarSet.cardinal vs > 1 then
-      fprintf ppf "(values %a)" VarSet.pp_var_names vs
-    else
-      fprintf ppf "%a" VarSet.pp_var_names vs
+    fprintf ppf "(%s %a)" (tuple_struct_name (VarSet.types vs)) pp_string_list  (VarSet.names vs)
+
 
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
@@ -323,6 +321,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
   | FnConst c -> fp ppf "%a" (pp_constants ~for_c:false ~for_dafny:false) c
+
 
   | FnFun l -> pp_fnexpr ppf l
 

@@ -96,6 +96,28 @@ let get_conf_string key =
       key;
     raise Not_found
 
+let get_conf_int key =
+  try
+    int_of_string (List.hd (SH.find main_conf_file key))
+  with
+  | Not_found ->
+    eprintf "There is not setting for %s. \
+             There must be a missing setting in conf.csv !@."
+      key;
+    raise Not_found
+  | Failure s when s = "int_of_string" ->
+    (eprintf "There is a setting for %s, but it is not an int.\
+              Found %s."
+       key
+       (List.hd (SH.find main_conf_file key));
+     raise (Failure s))
+  | Failure s ->
+    (eprintf "There is a setting for %s, but there was an error getting it.\
+              Found %s."
+       key
+       (List.hd (SH.find main_conf_file key));
+     raise (Failure s))
+
 (** 2 - Builtin variable, such as min integer, max integer ... *)
 type builtins =
   | Min_Int
@@ -147,7 +169,9 @@ let verification_parameters =
     with
     | End_of_file -> close_in ic; !list
   with
-  | e -> raise e;;
+  | e ->
+    eprintf "Please check verification parameters. Error while loading.@.";
+    raise e;;
 
 
 (* 5 - Naming conventions *)
@@ -158,8 +182,14 @@ let is_inner_loop_func_name name =
   if String.length name > 3 then String.sub name 0 3  = "_L_" else false
 
 let id_of_inner_loop name =
-  let elts =  Str.split (Str.regexp "_") name in
-  int_of_string (List.nth elts ((List.length elts)-1))
+  try
+    let elts =  Str.split (Str.regexp "@") name in
+    int_of_string (List.nth elts ((List.length elts)-1))
+  with e ->
+    Format.eprintf "%s%s%s@."
+      __FILE__ "id_of_inner_loop" "Failed to parse id of loop.";
+    raise e
+
 
 let join_name fname =   "join"^fname
 let seq_name fname =   "^"^fname

@@ -50,11 +50,13 @@ let replace_by_join problem inner_loops =
     let new_seq =
       mkFnVar (Conf.seq_name in_info.loop_name) seq_inner
     in
+
     (* In case join cannot be inlined. *)
     let new_joinf_typ = Function (inner_styp, inner_styp) in
     let new_joinf =
       mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
+
     (* Replace the function application corresponding to the inner loop.
        These were only placeholders introdced at the Cil intermediate
        representation.
@@ -73,7 +75,7 @@ let replace_by_join problem inner_loops =
         (match inline_join in_info with
         | None ->
           FnApp (inner_styp, Some new_joinf,
-                 [FnVar(FnRecord state);FnVar(FnVariable(new_seq))])
+                 [FnVar(FnRecord state); FnVar(FnVariable(new_seq))])
         | Some inline_join ->
           inline_join)
       | _ -> rfunc e

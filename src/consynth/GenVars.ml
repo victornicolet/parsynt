@@ -90,3 +90,41 @@ let declared_vars () =
        if is_some vi then VarSet.add {(check_option vi) with vname = vname} vs
        else vs)
     genvars VarSet.empty
+
+
+(* General variable name generation. Can contain associated varinfo / fnV *)
+let _VARS = SH.create 10
+let register s =
+  SH.add _VARS s (None, None)
+
+let register_vi (vi : Cil.varinfo) =
+  if SH.mem _VARS vi.Cil.vname then
+    let ofnv, ovi = SH.find _VARS vi.Cil.vname in
+    match ofnv with
+    | Some var -> SH.replace _VARS vi.Cil.vname (Some var, Some vi)
+    | None -> SH.replace _VARS vi.Cil.vname (None, Some vi)
+  else
+    SH.add _VARS vi.Cil.vname (None, Some vi)
+
+let register_vs (vs : VS.t) = VS.iter register_vi vs
+
+let register_fnv (var : fnV) =
+  if SH.mem _VARS var.vname then
+    let ofnv, ovi = SH.find _VARS var.vname in
+    match ovi with
+    | Some vi -> SH.replace _VARS var.vname (Some var, Some vi)
+    | None -> SH.replace _VARS var.vname (Some var, None)
+  else
+    SH.add _VARS var.vname (Some var, None)
+
+let register_varset (vs : VarSet.t) = VarSet.iter register_fnv vs
+
+let new_name_counter = ref 0
+
+let rec get_new_name ?(base = "x") =
+  let try_name = base^(string_of_int !new_name_counter) in
+  incr new_name_counter;
+  if SH.mem _VARS try_name then
+    get_new_name ~base:base
+  else
+    try_name

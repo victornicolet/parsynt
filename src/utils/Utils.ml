@@ -637,6 +637,9 @@ module PpTools = struct
   let pp_comma_sep_list pf fmt =
     pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ") pf fmt
 
+  let pp_break_sep_list pf fmt =
+    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;") pf fmt
+
   let pp_sep_nl fmt () = fprintf fmt "@."
   let pp_sep_comma fmt () = fprintf fmt ", "
   let pp_sep_brk fmt () = fprintf fmt "@;"
@@ -671,7 +674,9 @@ module PpTools = struct
       let file_name = Str.matched_group 1 loca in
       let byte =  int_of_string (Str.matched_group 2 loca) in
       Some { Cil.line = line; file = file_name; Cil.byte = byte }
-    with Not_found -> None
+    with
+    | Not_found -> None
+    | Failure s -> None
 
 
   (** Hastable printing *)

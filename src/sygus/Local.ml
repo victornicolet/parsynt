@@ -152,7 +152,10 @@ let fetch_solution ?(solver=rosette) filename =
          | Rparser.Error -> raise e
          | Rlexer.LexError s ->
            eprintf "%s" s; raise e
-         | _ -> raise e)
+         | e ->
+           eprintf "Failure while parsing %s with simplify_parse_scm.@."
+             filename;
+           raise e)
     in
     Sys.remove filename;
     parsed
