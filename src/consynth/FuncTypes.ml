@@ -153,7 +153,7 @@ exception Tuple_fail            (* Tuples are not supported for the moment. *)
 
 (* -------------------- 3 - VARIABLES MANAGEMENT -------------------- *)
 
-let _GLOB_VARIDS = ref 100
+let _GLOB_VARIDS = ref 3000
 let _new_id () = incr _GLOB_VARIDS; !_GLOB_VARIDS
 
 type fnV = {
@@ -272,6 +272,60 @@ module CS = struct
       )
       fmt (to_jc_list cs)
 end
+
+(* General variable name generation. Can contain associated varinfo / fnV *)
+let _VARS = SH.create 10
+let register s =
+  SH.add _VARS s [(_new_id (), None, None)]
+
+let has_l_id l id =
+  List.exists (fun (i, _, _) -> i = id) l
+
+let register_vi (vi : Cil.varinfo) =
+  if SH.mem _VARS vi.Cil.vname then
+    let vars = SH.find _VARS vi.Cil.vname in
+    SH.replace _VARS vi.Cil.vname
+      (if has_l_id vars vi.Cil.vid then
+         (List.map
+            (fun (i, ovar, ovi) ->
+               if i = vi.Cil.vid then
+                 (i, ovar, Some vi)
+               else
+                 (i, ovar, ovi)) vars)
+       else
+         vars@[(vi.Cil.vid, None, Some vi)])
+  else
+    SH.add _VARS vi.Cil.vname [(vi.Cil.vid, None, Some vi)]
+
+let register_vs (vs : VS.t) = VS.iter register_vi vs
+
+let register_fnv (var : fnV) =
+    if SH.mem _VARS var.vname then
+    let vars = SH.find _VARS var.vname in
+    SH.replace _VARS var.vname
+      (if has_l_id vars var.vid then
+         (List.map
+            (fun (i, ovar, ovi) ->
+               if i = var.vid then
+                 (i, Some var, ovi)
+               else
+                 (i, ovar, ovi)) vars)
+       else
+         vars@[(var.vid, Some var, None)])
+  else
+    SH.add _VARS var.vname [(var.vid, Some var, None)]
+
+let register_varset (vs : VarSet.t) = VarSet.iter register_fnv vs
+
+let new_name_counter = ref 0
+
+let rec get_new_name ?(base = "x") =
+  let try_name = base^(string_of_int !new_name_counter) in
+  incr new_name_counter;
+  if SH.mem _VARS try_name then
+    get_new_name ~base:base
+  else
+    try_name
 
 
 (* -------------------- 4 - EXPRESSIONS --------------------  *)

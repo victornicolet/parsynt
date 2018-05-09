@@ -75,7 +75,9 @@ let processFile fileName =
     end;
   cfile,
   IH.fold
-    (fun k cl m -> IM.add k cl m)
+    (fun k cl m ->
+       register_vs cl.lvariables.all_vars;
+       IM.add k cl m)
     loops
     IM.empty
 
