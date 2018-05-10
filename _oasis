@@ -53,13 +53,6 @@ Library codegen
   CompiledObject: best
   BuildDepends: consynth, cil, sygus, extlib, conf, mutils
 
-Library fpgen
-  Path: src/fpgen
-  Modules: FpExact
-  CompiledObject: best
-  BuildDepends: consynth, cil, sygus, extlib, conf, mutils
-
-
 Executable test_main
   Path: test
   MainIs: Main.ml

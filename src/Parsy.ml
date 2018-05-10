@@ -27,8 +27,6 @@ open Getopt
 open FuncTypes
 open InnerFuncs
 
-open FpExact
-
 
 module L = Local
 module C = Canalyst
@@ -41,11 +39,11 @@ let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 let use_z3 = ref false
-let exact_fp = ref false
+(* let exact_fp = ref false *)
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
-  ( 'e', "exact-fp", (set exact_fp true), None);
+  (* ( 'e', "exact-fp", (set exact_fp true), None); *)
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 'g', "debug", (set debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
@@ -343,7 +341,7 @@ let main () =
   output_tbb_tests (somes solved);
   (* If exact_fp is set, generate the exact floating point parallel
      implementation *)
-  if !exact_fp then (List.iter fpexp_header (somes solved));
+  (* if !exact_fp then (List.iter fpexp_header (somes solved)); *)
   (* Generate a proof in Dafny. *)
   output_dafny_proofs (somes solved);
   (* Total elapsed_time  *)
