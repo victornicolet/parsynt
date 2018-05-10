@@ -279,16 +279,13 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
       (fprintf ppf "(list-ref %a %s)"
          pp_fnlvar v offset_str)
 
-  | FnRecord vs ->
-    fprintf ppf "(%s %a)" (tuple_struct_name (VarSet.types vs)) pp_string_list  (VarSet.names vs)
-
 
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
   | FnLetExpr el ->
     fprintf ppf "@[<hov 2>(%s %a)@]"
-      (tuple_struct_name (List.map (fun (v,e) -> type_of_var v) el))
+      (tuple_struct_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
@@ -309,8 +306,6 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
                    | FnArray(a', k) ->
                      Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
                        pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar a pp_fnexpr i pp_fnexpr e
-                   | _ ->
-                     failhere __FILE__ "pp_fnexpr" "bad variable in binding."
                   )
                 | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
@@ -319,6 +314,23 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
        pp_fnexpr l
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
+
+  | FnRecord (rt, exprs) ->
+    let stl =
+      match rt with
+      | Record stl -> stl
+      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record."
+    in
+    let record_name = tuple_struct_name stl in
+    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr) exprs
+
+  | FnRecordMember (record, mname) ->
+    let record_name =
+      match type_of record with
+      | Record stl -> tuple_struct_name stl
+      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
+    in
+    fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
 
   | FnConst c -> fp ppf "%a" (pp_constants ~for_c:false ~for_dafny:false) c
 
@@ -477,9 +489,6 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
     fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
 
 
-  | FnRecord vs ->
-    fprintf ppf "@[<v 2>(%a)@]" VarSet.pp_var_names vs
-
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
@@ -487,7 +496,8 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
       (color "red") color_default
       (color "b")
-      (tuple_struct_name (List.map (fun (v,e) -> type_of_var v) el))
+      (tuple_struct_name ~only_by_type:true
+         (List.map (fun (v,e) -> let tv = type_of_var v in shstr_of_type tv, tv) el))
       color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
@@ -514,6 +524,13 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnConst c -> fp ppf "%s%a%s" (color "cyan")
                    (pp_constants ~for_c:true ~for_dafny:false) c color_default
+
+  | FnRecord (t, el) ->
+    fp ppf "(Record[%a] %a)" pp_typ t pp_expr_list el
+
+  | FnRecordMember (r, m) ->
+    fp ppf "([%a]-%s %a)" pp_typ (type_of r) m cp_fnexpr r
+
 
  | FnVector a ->
     fprintf ppf "@[<v 2><%a>@]"
@@ -711,7 +728,6 @@ and pp_c_var ?(rhs = true) fmt v =
 
   | FnArray (v, offset) -> fprintf fmt "%a[%a]" (pp_c_var ~rhs:rhs) v
                              (pp_c_expr ~for_dafny:false) offset
-  | FnRecord vs -> fprintf fmt "(<RECORD>)"
 
 and pp_c_expr_list fmt el =
   ppli fmt ~sep:" " pp_c_expr el

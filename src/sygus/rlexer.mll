@@ -26,7 +26,7 @@ let keywords =
      "min", MIN;
      "max", MAX;
      "(ArithBinops 0)", ARITHBINOPS;
-     "(BasicUnopsNum 0)", BASICUNOPSUM;
+     "(BasicUnopsNum 0)", BASICUNOPSNUM;
      "(ScalarOps 0)", SCALAROPS;
      "(ComparisonOps 0)" , COMPARISONOPS;
      "(BasicBinopsNum 0)" , BASICBINOPSNUM;
@@ -48,7 +48,7 @@ let uncurry f (a, b) = f a b
 let _ = List.iter (uncurry (Hashtbl.replace keyword_tbl)) keywords
 }
 
-let id = ['_' 'a'-'z' 'A'-'Z' '$'] ['-' '$' '_' '.' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
+let id = ['_' 'a'-'z' 'A'-'Z' '$'] ['-' '$' '_' '#' '.' '\'' 'A'-'Z' 'a'-'z' '0'-'9']*
 let nl = ['\n' '\r']
 let ws = ['\n' '\t' '\r' ' ']
 let digit = ['0'-'9']

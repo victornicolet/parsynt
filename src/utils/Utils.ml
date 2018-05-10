@@ -74,7 +74,7 @@ let (>>) (a : 'a list) (b : int) = List.nth a b
 let foi = float_of_int
 let fos = float_of_string
 
-let (-->) (f : 'a -> 'a) (g : 'a -> 'a) = (fun x -> g (f x))
+let (-->) (f : 'a -> 'b) (g : 'b -> 'c) = (fun x -> g (f x))
 
 let (<=>) (f : 'a -> 'a) (g : 'a -> 'a) = (fun x -> f x = g x)
 
@@ -86,6 +86,9 @@ let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
 
 let fst (a,b)  = a
 let snd (a,b) = b
+let fst3 (a,b,c)  = a
+let snd3 (a,b,c) = b
+let third (a,b,c) = c
 
 (* Mutable conditionals for actions. *)
 let _brev b = b := not !b
@@ -178,6 +181,10 @@ module ListTools = struct
   let unpair a_b_li =
     List.fold_left
       (fun (a_li, b_li) (a, b) -> (a_li@[a], b_li@[b])) ([],[]) a_b_li
+
+  let untriple a_b_c_li =
+        List.fold_left
+      (fun (a_li, b_li, c_li) (a, b,c) -> (a_li@[a], b_li@[b], c_li@[c])) ([],[],[]) a_b_c_li
 
   let outer_join_lists (a, b) =
     List.fold_left

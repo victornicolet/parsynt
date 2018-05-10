@@ -475,28 +475,50 @@ class sketch_builder
         | Let (v, e, cont, i, loc) ->
           let rec cur_v (v : lhs) =
             match v with
-            | LhVar vi -> FnVariable (var_of_vi vi)
-            | LhTuple vil -> FnRecord (varset_of_vs vil)
+            | LhVar vi -> FnVariable (var_of_vi vi), []
             | LhElem (a, i) ->
-              let fv = cur_v a in
-              FnArray(fv, convert i)
+              let fv, a = cur_v a in
+              FnArray(fv, convert i), a
+
+            | LhTuple vil ->
+              (* Result is a tuple: create a variable to store it,
+                 and add the assignments to bind the variables to their new values in
+                 this record variable.
+              *)
+              let varset = varset_of_vs vil in
+              let rec_var = mkFnVar "tup$" (Record (VarSet.record varset)) in
+              let restore_stvs_bindings =
+                List.map
+                  (fun var -> (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
+                  (VarSet.elements varset)
+              in
+              FnVariable rec_var, restore_stvs_bindings
           in
-          FnLetIn ([(cur_v v, convert e)], convert_letin cont)
+          let v, append_bindings = cur_v v in
+          FnLetIn ([(v, convert e)],
+                   if List.length append_bindings > 0 then
+                     FnLetIn(append_bindings, convert_letin cont)
+                   else
+                     convert_letin cont)
 
 
         | LetCond (c, let_if, let_else, let_cont, loc) ->
+          let cond_body =
+            FnCond (convert c,
+                    convert_letin let_if,
+                    convert_letin let_else)
+          in
+          let cbody_state, _ = used_in_fnlet cond_body in
+          let rec_var = mkFnVar "tup$" (Record (VarSet.record cbody_state)) in
+          let restore_stvs_bindings =
+            List.map
+              (fun var -> (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
+              (VarSet.elements cbody_state)
+          in
           if is_empty_state let_cont then
-            FnLetExpr [(FnRecord state_vars,
-                        FnCond (convert c,
-                                convert_letin let_if,
-                                convert_letin let_else))]
+            FnLetIn([mkVar rec_var, cond_body], FnLetExpr(restore_stvs_bindings))
           else
-            FnLetIn ( [(FnRecord state_vars,
-                        FnCond (convert c,
-                                convert_letin let_if,
-                                convert_letin let_else))],
-                      convert_letin let_cont)
-
+            FnLetIn([mkVar rec_var, cond_body], FnLetIn(restore_stvs_bindings, convert_letin let_cont))
       in
 
       let index, (ilet, gexpr, ulet) = figu in

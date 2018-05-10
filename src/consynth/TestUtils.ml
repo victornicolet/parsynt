@@ -47,7 +47,6 @@ let rec vi_of_var =
   function
   | FnVariable vi -> Some vi
   | FnArray (v, _) -> vi_of_var v
-  | FnRecord vs -> None
 
 (* Fnetch type expression *)
 let sk_tail_state =

@@ -161,14 +161,15 @@ let rec pp_define_symbolic fmt def =
                    | Real -> DefReal newv
                    | Vector (v, _) -> DefArray newv
                    | _ -> DefEmpty);
-                newv >> 0, typ
+                newv >> 0, name, typ
              )
              mems
          in
-         let vars, typs = ListTools.unpair vars in
+         let vt = List.map (fun (v,n,t) -> n, t) vars in
+         let vars, _, _ = ListTools.untriple vars in
          F.fprintf fmt "@[<hv 2>(define %s@;(%s %a)@;)@]@\n"
            vi.vname
-           (tuple_struct_name typs)
+           (tuple_struct_name vt)
            pp_string_list (to_v vars)
       )
       virtl
@@ -232,6 +233,8 @@ let ident_state_name = get_conf_string "rosette_identity_state_name"
 let init_state_name = get_conf_string "rosette_initial_state_name"
 let index_begin = get_conf_string "rosette_index_suffix_start"
 let index_end = get_conf_string "rosette_index_suffix_end"
+let right_state_prefix = get_conf_string "rosette_join_right_state_prefix"
+let left_state_prefix = get_conf_string "rosette_join_left_state_prefix"
 
 (** Choose between a very restricted set of values for intials/identity values *)
 let base_init_value_choice reaching_consts vi =
@@ -436,7 +439,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     @param rstate_name The name of the right state argument of the join.
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
-  let sname = tuple_struct_name (VarSet.types state_vars) in
+  let sname = tuple_struct_name (VarSet.record state_vars) in
   let left_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
   let right_state_vars = VarSet.add_prefix state_vars
@@ -462,7 +465,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param state_vars The set of state variables.
 *)
 let pp_join fmt (join_body, state_vars) =
-  let sname = tuple_struct_name (VarSet.types state_vars) in
+  let sname = tuple_struct_name (VarSet.record state_vars) in
   let lstate_name = sname^"L" in
   let rstate_name = sname^"R" in
   let ist, ien = mkFnVar "$_start" Integer, mkFnVar "$_end" Integer in
@@ -483,7 +486,7 @@ let pp_join fmt (join_body, state_vars) =
     will be set to this expression in the inital state of the loop.
 *)
 let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
-  let struct_name = tuple_struct_name (VarSet.types state_vars) in
+  let struct_name = tuple_struct_name (VarSet.record state_vars) in
   let reach_consts = handle_special_consts fmt read_vars reach_consts in
   let s0_sketch_printer =
     F.pp_print_list
@@ -583,7 +586,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     ident_state_name "iEnd"
-    (tuple_struct_name (VarSet.types state_vars))
+    (tuple_struct_name (VarSet.record state_vars))
     s0_sketch_printer (VarSet.elements state_vars);
   (* Define the symbols that do not have reaching consts.*)
   let symbolic_vars = (VarSet.add_prefix state_vars "symbolic_") in
@@ -591,7 +594,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     init_state_name "iEnd"
-    (tuple_struct_name (VarSet.types state_vars))
+    (tuple_struct_name (VarSet.record state_vars))
     pp_expr_list (List.map mkVarExpr (VarSet.elements symbolic_vars));
   symbolic_vars
 
@@ -677,16 +680,44 @@ let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_
 (* ---------------------------------------------------------------------------- *)
 (* When there are inner loops, those have been replaced by function calls in the
    outer body. We need to define the corresponding functions *)
+let define_inner_join fmt lname (state, styp) join =
+  let lstate_var = mkFnVar "$R" styp in
+  let rstate_var = mkFnVar "$L" styp in
+  let bind_lstate = bind_state ~prefix:left_state_prefix lstate_var state in
+  let bind_rstate = bind_state ~prefix:right_state_prefix rstate_var state in
+  let wrapped_join =
+    FnLetIn (bind_lstate@bind_rstate, join)
+  in
+  fprintf fmt "@[<v 2>(define (%s %s %s)@;%a)@]"
+    (Conf.join_name lname)
+    lstate_var.vname
+    rstate_var.vname
+    pp_fnexpr wrapped_join
+
 let pp_inner_def fmt pb =
   let stv = pb.scontext.state_vars in
-  let inner_struct_name = tuple_struct_name (VarSet.types stv) in
+  let inner_struct_name = tuple_struct_name (VarSet.record stv) in
   (* Define state struct type. *)
-  define_state fmt (inner_struct_name, VarSet.names stv)
+  pp_comment fmt "Defining struct for state of the inner loop.";
+  define_state fmt (inner_struct_name, VarSet.names stv);
+  pp_newline fmt ()
 
-let pp_inner_loops fmt inner_loop_list =
+let pp_inner_loops_defs fmt inner_loop_list =
   match inner_loop_list with
   | [] -> ()
   | _ -> List.iter (pp_inner_def fmt) inner_loop_list
+
+let pp_inner_join_def fmt pb =
+  let stv = pb.scontext.state_vars in
+  let styp = Record (VarSet.record stv) in
+  pp_comment fmt "Defining inner join function for outer loop.";
+  define_inner_join fmt pb.loop_name (stv, styp) pb.join_solution;
+  pp_newline fmt ()
+
+let pp_inner_loops_joins fmt inner_loop_list =
+  match inner_loop_list with
+  | [] -> ()
+  | _ -> List.iter (pp_inner_join_def fmt) inner_loop_list
 
 
 
@@ -736,7 +767,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
-  let struct_name = tuple_struct_name (VarSet.types state_vars) in
+  let struct_name = tuple_struct_name (VarSet.record state_vars) in
   (* The parent index has to be replaced with a constant. *)
 
   let loop_body =
@@ -781,7 +812,7 @@ let pp_rosette_sketch_join fmt sketch =
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
-  let struct_name = tuple_struct_name (VarSet.types state_vars) in
+  let struct_name = tuple_struct_name (VarSet.record state_vars) in
   (** Read variables : force read /\ state = empty *)
   let read_vars =
     VarSet.diff
@@ -817,13 +848,18 @@ let pp_rosette_sketch_join fmt sketch =
   if max_read_dim < 2 then mat_w := !mat_h;
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.loop_body;
+  if List.length sketch.inner_functions > 0 then
+    begin
+      pp_inner_loops_defs fmt sketch.inner_functions;
+      pp_newline fmt ()
+    end;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
   define_state fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
   if List.length sketch.inner_functions > 0 then
     begin
-      pp_inner_loops fmt sketch.inner_functions;
+      pp_inner_loops_joins fmt sketch.inner_functions;
       pp_newline fmt ()
     end;
   pp_newline fmt ();

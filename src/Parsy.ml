@@ -133,7 +133,7 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
 
 
 let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) parent_ctx problem =
-  (* Set the expression depth of the sketch printer. *)
+  (* Set the expression depth of the sketch printer.*)
   FPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try

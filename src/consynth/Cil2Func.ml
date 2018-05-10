@@ -30,7 +30,7 @@ open Sets
 open Loops
 
 (**
-   Implementation of a simple CPS comversion from the
+   Implementation of a simple CPS conversion from the
    Cil program to a let-forms program with conditonals
    and loops.
    The loops can be translated in a straightforawrd
@@ -46,7 +46,7 @@ let uses = ref (IH.create 10)
 let add_uses id vs = IH.add !uses id vs
 
 let __letin_index = ref 0
-let gen_id () = incr __letin_index; !__letin_index
+let gen_letin_id () = incr __letin_index; !__letin_index
 
 type lhs =
   | LhVar of varinfo
@@ -515,11 +515,15 @@ let rec let_add old_let new_let =
 
 
 let rec do_lval vs lval e let_form loc =
+  (* build_elemt builds array accesses with the correct order
+     for the offsets.
+  *)
   let rec build_elemt x offsets =
     List.fold_left
       (fun elemt offset -> LhElem(elemt, container offset))
       (LhVar x) offsets
   in
+  (* lhs : left hand side of an assignment. Builds the let-bindings *)
   let do_lhs (lval : Cil.lval) =
     match lval with
     | Var v, NoOffset -> LhVar v
@@ -532,7 +536,7 @@ let rec do_lval vs lval e let_form loc =
        | None ->
           failhere __FILE__ "do_lval" "Bad left hand side in assignment.")
   in
-  let id = gen_id () in
+  let id = gen_letin_id () in
   add_uses id (used_vars_expr e);
   let_add let_form (Let (do_lhs lval, e, (empty_state ()), id, loc))
 
@@ -551,19 +555,20 @@ and do_i vs let_form =
           let func_app =  FunApp (ef, (List.map container e_argli)) in
           do_lval vs lv func_app let_form loc
        | None ->
-          (* SIde effects not supported but check if it is an inner loop call *)
+          (* Side effects not supported but check if it is an inner loop call *)
           begin
             match ef with
-            | Lval (h, o) when o = NoOffset ->
+            | Lval (hfun, ofun) when ofun = NoOffset ->
                let fname, fvi =
-                 match h with
+                 match hfun with
                  | Var vi -> vi.vname, vi
                  | _ -> failwith  "do_i : unexpected function call"
                in
+               (* Inner loop specific. *)
                if Conf.is_inner_loop_func_name fname then
                  (* Replace by a binding to state variables of the inner loop *)
                  let func_app = FunApp (ef, List.map container e_argli) in
-                 do_lval vs (h, o) func_app let_form loc
+                 do_lval vs (hfun, ofun) func_app let_form loc
                else
                  failwith "do_i : side effects not suppoerted."
             | _ -> failwith "do_i : side effects no supported."
@@ -603,11 +608,11 @@ and do_s vs let_form s =
          let instr_fun = do_il vs il in
          let_add let_form instr_fun
      end
-  | If (e, b1, b2, loc) ->
+  | If (e, b1, b2, ploc) ->
      let ce = Container (e, IM.empty) in
      let block_then = do_b vs b1 in
      let block_else = do_b vs b2 in
-     let if_fun = LetCond (ce, block_then, block_else, empty_state (), loc) in
+     let if_fun = LetCond (ce, block_then, block_else, empty_state (), ploc) in
      let_add let_form if_fun
 
   | Loop (b, loc,_,_) ->
@@ -633,7 +638,7 @@ let let_add2 old_let new_let vs =
        if IM.is_empty subs then
          new_let
        else
-         let stmt_id = gen_id () in
+         let stmt_id = gen_letin_id () in
          let def_loc = {line = 0; file = "__NONE"; byte = 0} in
          let let_head =
            IM.fold
@@ -741,7 +746,7 @@ and convert_loop vs tmps let_body igu let_cont loc =
        let vid, expr = IM.max_binding subs' in
        (* TODO: removed FRec type but have to fix this *)
        let rec_expr = FunApp (igu, [expr]) in
-       let id = gen_id () in
+       let id = gen_letin_id () in
        add_uses id (used_vars_expr rec_expr);
        true,  Let (LhVar (VS.find_by_id vid vs), rec_expr, let_cont, id, loc)
      else

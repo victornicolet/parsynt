@@ -31,6 +31,7 @@ open Format
    with new sequences representing inner loop's outputs.
 *)
 
+
 let replace_by_join problem inner_loops =
   (* Inline the join only if it is a list of parallel assignments. *)
   let inline_join in_info =
@@ -46,16 +47,18 @@ let replace_by_join problem inner_loops =
     (* Create a sequence type for the input of the inner loop. *)
     let state = in_info.scontext.state_vars in
     let inner_styp = Record (VarSet.record state) in
+
     let seq_inner = Vector (inner_styp, None) in
     let new_seq =
       mkFnVar (Conf.seq_name in_info.loop_name) seq_inner
     in
-
+    register_fnv new_seq;
     (* In case join cannot be inlined. *)
     let new_joinf_typ = Function (inner_styp, inner_styp) in
     let new_joinf =
       mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
+    register_fnv new_joinf;
 
     (* Replace the function application corresponding to the inner loop.
        These were only placeholders introdced at the Cil intermediate
@@ -73,9 +76,14 @@ let replace_by_join problem inner_loops =
       match e with
       | FnApp (st, Some f, args) ->
         (match inline_join in_info with
-        | None ->
+         | None ->
+           let capture_state =
+             FnRecord (Record (VarSet.record state),
+                       List.map mkVarExpr (VarSet.elements state))
+           in
+           let index = VarSet.max_elt problem.scontext.index_vars in
           FnApp (inner_styp, Some new_joinf,
-                 [FnVar(FnRecord state); FnVar(FnVariable(new_seq))])
+                 [capture_state; mkVarExpr ~offsets:[mkVarExpr index] new_seq])
         | Some inline_join ->
           inline_join)
       | _ -> rfunc e
@@ -88,7 +96,7 @@ let replace_by_join problem inner_loops =
       }
     in
     let new_body = transform_expr2 rpl_transformer lbody in
-    printf "transformed body:@.%a@." FPretty.pp_fnexpr new_body;
+    (* printf "transformed body:@.%a@." FPretty.pp_fnexpr new_body; *)
     let new_read_vars = used_in_fnexpr new_body in
     new_body, {ctx with all_vars = VarSet.union new_read_vars ctx.all_vars;
                used_vars = new_read_vars }
@@ -96,6 +104,11 @@ let replace_by_join problem inner_loops =
   let newbody, newctx =
     List.fold_left replace (problem.loop_body, problem.scontext) inner_loops
   in
+  let new_sketch =
+    let index = VarSet.max_elt problem.scontext.index_vars in
+    Sketch.Join.build (mkVarExpr index) problem.scontext.state_vars newbody
+  in
   {problem with inner_functions = inner_loops;
+                join_sketch = new_sketch;
                 scontext = newctx;
                 loop_body = newbody;}

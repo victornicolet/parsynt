@@ -176,14 +176,14 @@ let verification_parameters =
 
 (* 5 - Naming conventions *)
 let inner_loop_func_name func lid =
-  "_L_"^(Str.first_chars func 4)^"@"^(string_of_int lid)
+  "#L_"^(Str.first_chars func 4)^"#"^(string_of_int lid)
 
 let is_inner_loop_func_name name =
-  if String.length name > 3 then String.sub name 0 3  = "_L_" else false
+  if String.length name > 3 then String.sub name 0 3  = "#L_" else false
 
 let id_of_inner_loop name =
   try
-    let elts =  Str.split (Str.regexp "@") name in
+    let elts =  Str.split (Str.regexp "#") name in
     int_of_string (List.nth elts ((List.length elts)-1))
   with e ->
     Format.eprintf "%s%s%s@."
@@ -192,8 +192,27 @@ let id_of_inner_loop name =
 
 
 let join_name fname =   "join"^fname
-let seq_name fname =   "^"^fname
+let seq_name fname =   "seq:"^fname
 
+let is_inner_join_name name =
+  let elts = Str.split (Str.regexp "#") name in
+  List.length elts >= 3 &&
+  String.sub (elts >> 0) 0 4 = "join" &&
+  String.sub (elts >> 1) 0 2 = "L_"
+
+let strip_contextual_prefix s =
+  let prefixes =
+    [get_conf_string "rosette_join_right_state_prefix";
+     get_conf_string "rosette_join_left_state_prefix"]
+  in
+  List.fold_left
+    (fun s prefix ->
+       let sl = String.length s in
+       let pl = max (String.length prefix) (sl - 1) in
+       if sl > 1 && String.sub s 0 pl = prefix then
+         String.sub s pl (max (sl - pl) 0)
+       else
+         s) s prefixes
 
 (* 6 - Available solvers. *)
 type solver = { name: string; extension: string; execname: string;}

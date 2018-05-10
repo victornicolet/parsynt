@@ -101,6 +101,17 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
         let t = vi.vtype in
         if (IH.mem auxiliary_variables vi.vid) && is_final
         then FnVar var, 0
+        else if is_record_type t then
+          (* At this point, a variable of record type (not a record expression!) should
+             be the summarized input from the inner loop. *)
+          match t with
+          | Record lt ->
+            FnRecord(t,
+                     List.map
+                       (fun (s, mt) ->
+                          FnHoleR (holt mt, CS.complete_right (CS.of_vs state), index_expr))
+                       lt), 1
+          | _ -> FnVar var, 0
         else
           (if VarSet.mem vi state
            then FnHoleL (holt t, var, CS.complete_all (CS.of_vs state), index_expr), 1
@@ -119,10 +130,20 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
                   CS.of_vs state
               in
               FnHoleL (holt t, FnArray(sklv, expr), CS.complete_all completion, index_expr), 1
+            else if is_record_type t then
+              (* At this point, a variable of record type (not a record expression!) should
+                 be the summarized input from the inner loop. *)
+              match t with
+              | Record lt ->
+                FnRecord(t,
+                         List.map
+                           (fun (s, mt) ->
+                              FnHoleR (holt mt, CS.complete_right (CS.of_vs state), index_expr))
+                           lt), 1
+              | _ -> FnVar var, 0
             else
               FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
          | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
-      | FnRecord vs -> FnVar (FnRecord vs), 0
     end
 
   | FnConst c ->
@@ -134,6 +155,12 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
       | CBool _ -> FnHoleR (holt Boolean, cs, index_expr), 1
       | _ -> FnHoleR (holt Unit, cs, index_expr), 1
     end
+
+  | FnRecord(st, el) ->
+    let new_members, depths =
+      ListTools.unpair (List.map (self_rcall optype) el)
+    in
+    FnRecord (st, new_members), ListTools.intlist_max depths
 
   | FnFun skl -> FnFun (make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl), 0
 
@@ -153,7 +180,8 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
 
   | FnApp (t, vo, args) ->
     let new_args, depths =
-      ListTools.unpair (List.map (self_rcall optype) args) in
+      ListTools.unpair (List.map (self_rcall optype) args)
+    in
     FnApp (t, vo, new_args), ListTools.intlist_max depths
 
   | _ as skexpr ->  skexpr, 0
@@ -190,8 +218,18 @@ and make_assignment_list ie state skip writes_in_array =
       match e with
       | FnVar v when v = vbound && in_skip_list v skip -> (v, e)
 
+      | FnConst c -> (vbound, e)
+
       | FnApp (st, f, args) ->
-        (vbound, e)
+        (match f with
+        | Some func ->
+          (* Is it the join function of an inner loop? *)
+          (if Conf.is_inner_join_name func.vname then
+             (vbound, FnApp(st, f, (ListTools.unpair --> fst) (List.map (make_hole_e ie state) args)))
+           else
+             (vbound, e))
+        | None ->
+          (vbound, e))
 
       | _ ->
         try
@@ -398,7 +436,7 @@ let wrap_with_loop for_inner i state reach_consts base_join =
 let wrap_with_choice for_inner state base_join =
   let special_state_var = mkFnVar (state_var_name state "_fs_") (Record (VarSet.record state)) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let structname = tuple_struct_name (VarSet.types state) in
+  let structname = tuple_struct_name (VarSet.record state) in
   let final_choices =
     List.map
       (fun v ->

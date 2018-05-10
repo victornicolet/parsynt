@@ -319,14 +319,41 @@ let register_varset (vs : VarSet.t) = VarSet.iter register_fnv vs
 
 let new_name_counter = ref 0
 
-let rec get_new_name ?(base = "x") =
-  let try_name = base^(string_of_int !new_name_counter) in
-  incr new_name_counter;
-  if SH.mem _VARS try_name then
-    get_new_name ~base:base
+let get_new_name ?(base = "x") =
+  if SH.mem _VARS base then
+    let rec create_new_name x =
+      let try_name = base^(string_of_int !new_name_counter) in
+      incr new_name_counter;
+      if SH.mem _VARS try_name then
+        create_new_name base
+      else
+        try_name
+    in
+    create_new_name base
   else
-    try_name
+    base
 
+let find_var_name name =
+  match snd3 (List.hd (SH.find _VARS name)) with
+  | Some var -> var
+  | None -> raise Not_found
+
+let find_vi_name name =
+  match third (List.hd (SH.find _VARS name)) with
+  | Some vi -> vi
+  | None -> raise Not_found
+
+let find_vi_name_id name id =
+  let vlist = SH.find _VARS name in
+  match third (List.find (fun (i, _, _) -> i = id) vlist) with
+  | Some vi -> vi
+  | None -> raise Not_found
+
+let find_var_name_id name id =
+  let vlist = SH.find _VARS name in
+  match snd3 (List.find (fun (i, _, _) -> i = id) vlist) with
+  | Some var -> var
+  | None -> raise Not_found
 
 (* -------------------- 4 - EXPRESSIONS --------------------  *)
 
@@ -337,8 +364,7 @@ and fnLVar =
   | FnVariable of fnV
   (** Access to an array cell *)
   | FnArray of fnLVar * fnExpr
-  (** Records : useful to represent the state *)
-  | FnRecord of VarSet.t
+
 
 (* Type for expressions *)
 and fnExpr =
@@ -356,6 +382,8 @@ and fnExpr =
   | FnHoleR of hole_type * CS.t * fnExpr
   | FnChoice of fnExpr list
   | FnVector of fnExpr array
+  | FnRecord of symbolic_type * (fnExpr list)
+  | FnRecordMember of fnExpr * string
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
   | FnSizeof of symbolic_type
@@ -551,6 +579,11 @@ let matrix_type t =
   | Vector (Vector (t, _), _) -> t
   | _ -> failontype "Cannot extract matrix type, this is not a matrix."
 
+let is_record_type t =
+  match t with
+  | Record _ -> true
+  | _ -> false
+
 let rec join_types t1 t2 =
   match t1, t2 with
   | t1, t2 when t1 = t2 -> t1
@@ -613,7 +646,7 @@ let rec type_of_const c =
   | CBool _ -> Boolean
   | CChar _ -> Integer
   | CString _ -> List (Integer, None)
-  | CArrayInit (n, c) -> type_of_const c (* TODO: think about a better solution. *)
+  | CArrayInit (n, c) -> type_of_const c
   | CReal _ -> Real
   | CInt _ | CInt64 _ -> Integer
   | CBox b -> Box (type_of_cilconst b)
@@ -638,17 +671,12 @@ and type_of_var v =
                   "Unexpected type %a for variable in array access."
                   pp_typ t ; Format.flush_str_formatter ())
     end
-  | FnRecord vs ->
-    let tl =
-      VarSet.fold (fun vi tl -> tl@[vi.vname, vi.vtype]) vs []
-    in
-    Record tl
-
 
 
 and type_of expr =
   match expr with
   | FnVar v -> type_of_var v
+  | FnRecord (t, _) -> t
   | FnConst c -> type_of_const c
   | FnAddrofLabel _ | FnStartOf _
   | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
@@ -778,7 +806,7 @@ let symb_unop_of_fname =
 
 let symb_binop_of_fname : string -> symb_binop option =
   function
-  | "modf" | "modff" | "modfl" -> None (** TODO *)
+  | "modf" | "modff" | "modfl" -> Some Mod
   | "fmod" | "fmodl" | "fmodf" -> Some Mod
   | "remainder" | "remainderf" | "remainderl"
   | "drem" | "dremf" | "dreml" -> Some Rem
@@ -934,7 +962,8 @@ let is_exp_function ef =
 
 
 let mkFnVar name typ =
-  { vname = name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;}
+  let var_name = get_new_name ~base:name in
+  { vname = var_name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;}
 
 (**
    Generate a FnVar expression from a variable, with possible offsets
@@ -960,27 +989,32 @@ let mkVarExpr ?(offsets = []) vi =
 let declared_tuple_types = SH.create 10
 
 
-let rec tuple_struct_name ?(seed = "") (tl : symbolic_type list) : string =
+let rec tuple_struct_name ?(only_by_type=false) ?(seed = "") (stl : (string * symbolic_type) list) : string =
+  let tl = (ListTools.unpair --> snd) stl in
   let poten_name =
     String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))
   in
-  if SH.mem declared_tuple_types poten_name then
-    let tl' = SH.find declared_tuple_types poten_name in
-    if tl = tl' then poten_name else
-      tuple_struct_name ~seed:(seed^"_") tl
+  if only_by_type then
+    poten_name
+  else if SH.mem declared_tuple_types poten_name then
+    let stl' = SH.find declared_tuple_types poten_name in
+    if stl = stl' then poten_name
+    else
+      tuple_struct_name ~seed:(seed^"_") stl
   else
-    (SH.add declared_tuple_types poten_name tl;
+    (SH.add declared_tuple_types poten_name stl;
      poten_name)
 
 let is_name_of_struct s =
-  str_begins_with rosette_prefix_struct s
+  SH.mem declared_tuple_types s
 
 let rec state_var_name vs maybe =
   let vsnames = VarSet.names vs in
   if List.mem maybe vsnames then
     state_var_name vs ("_st_"^maybe)
   else
-    maybe
+    (register maybe;
+     maybe)
 
 let state_member_accessor s v =
   {
@@ -1000,14 +1034,15 @@ let is_struct_accessor a =
   | Not_found -> false
   | Invalid_argument s -> false
 
-let bind_state state_var vs =
+let bind_state ?(prefix="") state_var vs =
   let vars = VarSet.elements vs in
-  let structname = tuple_struct_name (VarSet.types vs) in
+  let structname = tuple_struct_name (VarSet.record vs) in
   List.map
     (fun v ->
-       (FnVariable v, FnApp(v.vtype,
-                            Some (state_member_accessor structname v),
-                            [FnVar (FnVariable state_var)]))) vars
+       (FnVariable {v with vname=prefix^v.vname},
+        FnApp(v.vtype,
+              Some (state_member_accessor structname v),
+              [FnVar (FnVariable state_var)]))) vars
 (*
    In the join solution we need to differentiate left/right states. Right state
    variables are prefix with the "rosette_join_right_state_prefix" parameter.
@@ -1032,8 +1067,6 @@ let rec cmpVar fnlvar1 fnlvar2 =
   | FnVariable vi, FnVariable vi' -> compare vi.vid vi'.vid
   | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
     cmpVar fnlv1 fnlv2
-  | FnVariable _, FnRecord _ -> -1
-  | FnRecord _ , _ -> 1
   | FnArray _ , _ -> 1
   | _ , FnArray _ -> -1
 
@@ -1043,7 +1076,6 @@ let rec vi_of fnlv =
   match fnlv with
   | FnVariable vi' -> Some vi'
   | FnArray (fnlv', _) -> vi_of fnlv'
-  | FnRecord _ -> None
 
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
@@ -1059,8 +1091,7 @@ let rec fnArray_dep_len e =
   match e with
   | FnVar v ->
     (match v with FnVariable vi -> 1
-                | FnArray (v, e') -> fnArray_dep_len e'
-                | _  -> raise Tuple_fail)
+                | FnArray (v, e') -> fnArray_dep_len e')
 
   | FnConst (CInt i) -> i + 1
   | FnConst (CInt64 i) -> (Int64.to_int i) + 1
@@ -1109,31 +1140,33 @@ let mkOp ?(t = Unit) vi argl =
 (* Convert Cil Varinfo to variable *)
 
 let var_of_vi vi =
-  {
-    vname = vi.Cil.vname;
-    vinit = None;
-    vtype = type_of_ciltyp vi.Cil.vtype;
-    vid = vi.Cil.vid;
-    vistmp = vi.Cil.vistmp;
-  }
+  let var =
+    {
+      vname = vi.Cil.vname;
+      vinit = None;
+      vtype = type_of_ciltyp vi.Cil.vtype;
+      vid = vi.Cil.vid;
+      vistmp = vi.Cil.vistmp;
+    }
+  in
+  register_fnv var;
+  var
 
 let varset_of_vs vs =
   VarSet.of_list (List.map var_of_vi (VS.elements vs))
 
 (* And vice versa *)
-let cilvars = IH.create 10
 
-let cilvar_register vi =
-  IH.add cilvars vi.Cil.vid vi;
-  vi
-
-let cil_varinfo vi =
+let cil_varinfo var =
   try
-    IH.find cilvars vi.vid
+    find_vi_name_id var.vname var.vid
   with Not_found ->
-  match ciltyp_of_symb_type vi.vtype with
+  match ciltyp_of_symb_type var.vtype with
   | Some vt ->
-    cilvar_register (Cil.makeVarinfo false vi.vname vt)
+    let vi = Cil.makeVarinfo false var.vname vt in
+    register_vi vi;
+    vi
+
   | None ->
     failhere __FILE__ "cil_varinfo" "Couldn't convert type."
 
@@ -1349,6 +1382,7 @@ let transform_bindings (tr : ast_var_transformer) =
       tr.on_case recurse_aux e
 
     | FnVar v -> FnVar (tr.on_var v)
+    | FnRecordMember (rv, s) -> FnRecordMember (recurse_aux rv, s)
     | FnConst c -> FnConst (tr.on_const c)
 
     | FnBinop (op, e1, e2) ->
@@ -1580,7 +1614,6 @@ let rec used_in_fnexpr e : VarSet.t =
     | FnVariable vi -> VarSet.singleton vi
     | FnArray (v0, e) ->
       VarSet.union (var_handler v0) (used_in_fnexpr e)
-    | _ -> VarSet.empty
   in
   let const_handler c = VarSet.empty in
   rec_expr join init case case_h const_handler var_handler e
@@ -1828,32 +1861,29 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
               in
               let v = translate (arglist >> 1) in
               FnVector(Array.make ln v)
-
             | a when is_struct_accessor s ->
               from_accessor a
-
             | a when is_name_of_struct s ->
-              rosette_state_struct_to_fnlet arglist
-
+              rosette_state_struct_to_fnlet s arglist
             | "identity" ->
               translate (arglist >> 0)
-
             | _ ->
               to_fun_app e arglist)
          | _ ->
-           RAst.pp_expr std_formatter e;
-           flush_all ();
-           failwith "TODO")
+           translate e)
 
 
       | Fun_e (il, e) ->
         let es = pp_space_sep_list (fun fmt s -> fprintf fmt "%s" s)
             str_formatter il; flush_str_formatter () in
         failhere __FILE__ "scm_to_fn" ("Fun_e : Not supported, ids: "^es)
+
       | Def_e _ ->
         failhere __FILE__ "scm_to_fn" "Def_e : definition not supported."
+
       | Defrec_e _ ->
         failhere __FILE__ "scm_to_fn" "Defrec_e : definitions not supported."
+
       | Delayed_e _ | Forced_e _ ->
         failhere __FILE__ "scm_to_fn" "Delayed_e or Forced_e not suppported."
 
@@ -1869,20 +1899,24 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     expressions.
     Additionally we remove identity bindings.
 *)
-and rosette_state_struct_to_fnlet scm_expr_list =
+and rosette_state_struct_to_fnlet sname scm_expr_list =
   let stv_vars_list = VarSet.elements join_info.initial_state_vars in
   let fn_expr_list = to_expression_list scm_expr_list in
   try
     FnLetExpr (ListTools.pair (List.map (fun vi -> FnVariable vi) stv_vars_list)
                  fn_expr_list)
   with Invalid_argument s ->
-    eprintf "FAILURE :@\n\
-             Failed to translate state in list of bindings, got %i state \
-             variables and state was %i long.@\n\
-             ---> Did you initialize the join_info before using scm_to_fn ?"
-      (VarSet.cardinal join_info.initial_state_vars)
-      (List.length fn_expr_list);
-    failwith "Failure in rosette_state_struct_to_fnlet."
+    (* Might be an inner state struct. *)
+    (try
+       FnRecord(Record(SH.find declared_tuple_types sname), fn_expr_list)
+     with Not_found ->
+       eprintf "FAILURE :@\n\
+                Failed to translate state in list of bindings, got %i state \
+                variables and state was %i long.@\n\
+                ---> Did you initialize the join_info before using scm_to_fn ?"
+         (VarSet.cardinal join_info.initial_state_vars)
+         (List.length fn_expr_list);
+       failwith "Failure in rosette_state_struct_to_fnlet.")
 
 and to_expression_list scm_expr_list =
   List.map scm_to_fn scm_expr_list
@@ -2369,7 +2403,8 @@ let expr_to_cil fd temps e =
 
     | FnHoleL _ | FnHoleR _ -> failwith "Holes cannot be converted"
     | FnFun _ | FnRec _ -> failwith "Control flow not supported"
-
+    | FnRecord _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
+    | FnRecordMember _ -> failhere __FILE__ "exp_to_cil" "Record member not supported."
     | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
     | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
     | FnVector _ -> failhere __FILE__ "exp_to_cil" "Vector literal not supported."
@@ -2384,7 +2419,6 @@ let expr_to_cil fd temps e =
       let lh, offset = fnvar_to_lval v in
       lh , Index (fnexpr_to_exp e, offset)
 
-    | FnRecord _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
 
 
   and cil_binop_of_symb_binop binop =
@@ -2475,8 +2509,6 @@ let rec fnvar_to_cil fd tmps v =
   | FnArray (v, e) ->
     let lh, offset = fnvar_to_cil fd tmps v in
     lh , Index (expr_to_cil fd tmps e, offset)
-
-  | FnRecord _ -> failwith "Tuple not yet implemented"
 
 
 (** Let bindings to imperative code. *)

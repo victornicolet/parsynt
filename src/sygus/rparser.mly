@@ -9,7 +9,7 @@ open RAst
 %token SCALAR
 
 %token ARITHBINOPS
-%token BASICUNOPSUM
+%token BASICUNOPSNUM
 %token SCALAROPS
 %token COMPARISONOPS
 %token BASICBINOPSNUM
@@ -156,7 +156,6 @@ binop : LPAREN CHOOSE binopseq0 RPAREN { $3 }
       | MIN 	   { Min }
       | MAX	   { Max }
       | ARITHBINOPS				{ Plus }
-      | BASICUNOPSUM				{ Minus }
       | SCALAROPS				{ Minus }
       | COMPARISONOPS				{ Lt }
       | BASICBINOPSNUM				{ Plus }
@@ -167,5 +166,6 @@ binop : LPAREN CHOOSE binopseq0 RPAREN { $3 }
 unop : NOT         { Not }
      | CAR         { Car }
      | CDR         { Cdr }
-     | NULL        { Null }
+     | NULL		   { Null }
      | LOAD        { Load }
+     | BASICUNOPSNUM	  { Minus }
