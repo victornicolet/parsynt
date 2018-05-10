@@ -401,14 +401,15 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
             Format.fprintf fmt "%s" end_vi.vname))
     in
     let extract_stv_or_reach_const, bound_state1 =
-      let state_var = state_var_name state_vars (Conf.get_conf_string "rosette_state_param_name") in
+      let state_var_name = state_var_name state_vars (Conf.get_conf_string "rosette_state_param_name") in
+      let state_var = mkFnVar state_var_name (Record (VarSet.record state_vars)) in
       List.map
         (fun v ->
            if IM.mem v.vid reach_const then
              IM.find v.vid reach_const
            else
              FnApp(v.vtype, Some (state_member_accessor sname v),
-                   [mkVarExpr (mkFnVar state_var v.vtype)])) (VarSet.elements state_vars),
+                   [mkVarExpr state_var])) (VarSet.elements state_vars),
       state_var
     in
     (* Print the reaching constants (initialization of variables) *)
@@ -418,16 +419,16 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
        @[<hov 2>(let ([%s (%s %a)])@;\
        @[<hov 2>(Loop %a %d %s@;%a)@])@])@]@.@."
       body_name                   (* Name of the function *)
-      (Conf.get_conf_string "rosette_state_param_name") (* Name of the input state *)
+      bound_state1.vname
       pp_index_up index_list
       (* Line 2: udpate state with constants, and bind it. *)
-      bound_state1
+      bound_state1.vname
       sname
       pp_expr_list extract_stv_or_reach_const
       (* Line 3: loop construct and loop body. *)
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
       (if inner then !inner_iterations_limit else !iterations_limit)
-      bound_state1
+      bound_state1.vname
       pp_loop_body (index_name, loop_body, state_vars, sname)
 
 
