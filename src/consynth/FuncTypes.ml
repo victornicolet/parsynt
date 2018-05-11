@@ -373,7 +373,7 @@ and fnExpr =
   | FnVar of fnLVar
   | FnConst of constants
   | FnFun of fnExpr
-  | FnRec of  (fnExpr * fnExpr * fnExpr) * (VarSet.t * fnExpr) * fnExpr
+  | FnRec of  (fnExpr * fnExpr * fnExpr) * (VarSet.t * fnExpr) * (fnV * fnExpr)
   | FnCond of fnExpr * fnExpr * fnExpr
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
@@ -396,34 +396,7 @@ and fnExpr =
   | FnAddrofLabel of Cil.stmt ref
   | FnStartOf of fnExpr
 
-(** Structure types for Rosette sketches *)
-
-and initial_defs =
-  | Initials of (string * string) list [@@deriving_sexp]
-
-(**
-   The body of the join and the loop are Racket programs with
-   holes insides.
-*)
-and racket_with_holes = string list [@@deriving_sexp]
-
-(**
-   A state is simply a list of variables that are modified
-   during the loop.
-*)
-and state = string list [@@deriving_sexp]
-
-(**
-   We generate the body of the oririginal loop simply from
-   the state variables and the list of function that are
-   applied to each state variable.
-*)
-and body_func =
-    | DefineBody of state * racket_with_holes
-  | DefineJoin of state * racket_with_holes
-[@@deriving_sexp]
-
-
+and fnDefinition = fnV * fnV list * fnExpr
 
 (* -------------------- 5 - TYPING FUNCTIONS -------------------- *)
 
@@ -963,7 +936,9 @@ let is_exp_function ef =
 
 let mkFnVar name typ =
   let var_name = get_new_name ~base:name in
-  { vname = var_name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;}
+  let var = { vname = var_name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;} in
+  register_fnv var;
+  var
 
 (**
    Generate a FnVar expression from a variable, with possible offsets
@@ -1225,7 +1200,7 @@ let rec_expr
       List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | FnFun letin
-    | FnRec (_, _, letin) -> recurse_aux letin
+    | FnRec (_, _, (_, letin)) -> recurse_aux letin
 
 
     | FnLetExpr velist ->
@@ -1295,8 +1270,8 @@ let transform_expr
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
     | FnFun letin -> FnFun (recurse_aux letin)
-    | FnRec (igu, (inner_state, init_inner_state), letin) ->
-      FnRec (igu, (inner_state, recurse_aux init_inner_state), recurse_aux letin)
+    | FnRec (igu, (inner_state, init_inner_state), (s, letin)) ->
+      FnRec (igu, (inner_state, recurse_aux init_inner_state), (s, recurse_aux letin))
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
@@ -1346,7 +1321,7 @@ let transform_expr_flag
       FnApp (a, b, List.map (fun e -> recurse_aux flag e) el)
 
     | FnFun letin -> FnFun (recurse_aux flag letin)
-    | FnRec (igu, istate, letin) -> FnRec (igu, istate,  recurse_aux flag letin)
+    | FnRec (igu, istate, (s, letin)) -> FnRec (igu, istate, (s, recurse_aux flag letin))
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux flag c, recurse_aux flag l1, recurse_aux flag l2)
@@ -1399,8 +1374,8 @@ let transform_bindings (tr : ast_var_transformer) =
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
     | FnFun letin -> FnFun (recurse_aux letin)
-    | FnRec (igu, (inner_state, init_inner_state), letin) ->
-      FnRec (igu, (inner_state, recurse_aux init_inner_state), recurse_aux letin)
+    | FnRec (igu, (inner_state, init_inner_state), (s, letin)) ->
+      FnRec (igu, (inner_state, recurse_aux init_inner_state), (s, recurse_aux letin))
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
@@ -1738,10 +1713,15 @@ let scm_register s =
 let hole_var_name = "??_hole"
 let hole_var = mkFnVar hole_var_name Bottom
 
-let from_accessor a =
+let from_accessor a s =
   if is_struct_accessor a then
     let member_name = (Str.split (Str.regexp "-") a) >> 1 in
-    FnVar (FnVariable (scm_register member_name))
+    let state =
+      try
+        find_var_name s
+      with Not_found -> failhere __FILE__ "from_accessor" ("State not found : "^s)
+    in
+    FnRecordMember(mkVarExpr state, member_name)
   else
     let msg =
       fprintf str_formatter "Expected a struct accessor received %s" a;
@@ -1788,6 +1768,11 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     match e with
     | Fun_e (il, e') -> e'
     | e -> e
+  in
+  let get_fun_state e =
+        match e with
+    | Fun_e (il, e') -> find_var_name (il >> 0)
+    | _ -> failwith "get_fun_state only on fun_e"
   in
   let rec translate (scm : RAst.expr) : fnExpr =
     try
@@ -1846,8 +1831,9 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
                  let guard = translate (unwrap_fun_e (arglist >> 1)) in
                  let update = translate (unwrap_fun_e (arglist >> 2)) in
                  FnRec ((init, guard, update),
-                        (VarSet.empty, FnApp(Bottom, None, [])),
-                        (translate (unwrap_fun_e (arglist >> 4)))
+                        (get_init_state (arglist >> 3)),
+                        (get_fun_state (arglist >> 4),
+                         translate (unwrap_fun_e (arglist >> 4)))
                        )
                else
                  failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
@@ -1862,7 +1848,9 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
               let v = translate (arglist >> 1) in
               FnVector(Array.make ln v)
             | a when is_struct_accessor s ->
-              from_accessor a
+              (match arglist with
+               | [Id_e s] -> from_accessor a s
+               | _ -> failhere __FILE__ __LOC__ "Bad accessor")
             | a when is_name_of_struct s ->
               rosette_state_struct_to_fnlet s arglist
             | "identity" ->
@@ -1888,8 +1876,9 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
         failhere __FILE__ "scm_to_fn" "Delayed_e or Forced_e not suppported."
 
     with Not_found ->
+      eprintf "expression : %a" pp_expr scm;
       failwith "Variable name not found in current environment."
-  in
+
   let fne = translate scm in
   remove_hole_vars fne
 
@@ -2141,6 +2130,14 @@ let get_init_value problem vi =
 let get_loop_bound problem =
   get_loop_bound_var (get_index_guard problem)
 
+let get_bounds problem =
+  let bvar = VarSet.max_elt (get_index_varset problem) in
+  try
+    find_var_name (bvar.vname^"_start"),
+    find_var_name (bvar.vname^"_end")
+  with Not_found ->
+    mkFnVar (bvar.vname^"_start") bvar.vtype,
+    mkFnVar (bvar.vname^"_end") bvar.vtype
 
 (* ----------------------- 12 - CONVERSION TO CIL  ----------------------------*)
 

@@ -98,7 +98,7 @@ let test_02 () =
                     (* Initial state *)
                     (VarSet.empty, (FnLetExpr [])),
                       (* Body of the loop *)
-                         (_let [(FnArray (FnVariable c, _ci 2)), _ci 2])))]))
+                         (c, (_let [(FnArray (FnVariable c, _ci 2)), _ci 2]))))]))
   in
   symbolic_execution_test "sum1" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])]
@@ -123,8 +123,8 @@ let test_03 () =
                     (* Initial state *)
                     (VarSet.empty, FnLetExpr([])),
                       (* Body of the loop *)
-                      (_let [(FnArray (FnVariable c, _ci 2)),
-                             (fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one)])))]))
+                    (c, (_let [(FnArray (FnVariable c, _ci 2)),
+                             (fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one)]))))]))
   in
   symbolic_execution_test "sum2" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 10)])]

@@ -389,8 +389,8 @@ let rec inner_optims state letfun  =
   in
   (fun bounds ->
      match letfun bounds with
-     | FnRec (igu, s, body) ->
-       FnRec (igu, s, loop_inner_optims body)
+     | FnRec (igu, s, (_s, body)) ->
+       FnRec (igu, s, (_s, loop_inner_optims body))
      | FnLetIn ([s, innerb], cont) ->
        FnLetIn([s, inner_optims state (fun b -> innerb) bounds], cont)
      | e -> e)
@@ -417,12 +417,13 @@ let wrap_with_loop for_inner i state reach_consts base_join =
     else
       (fst (make_hole_e i state (FnLetExpr (identity_state state))))
   in
+  let state_binder = mkFnVar "__s" (Record (VarSet.record state)) in
   (fun (i_start, i_end) ->
      FnRec ((FnConst (CInt 0),
              FnBinop (Lt, i, mkVarExpr i_end),
              FnUnop (Add1,i)),
             (state, start_state_valuation),
-            base_join))
+            (state_binder, base_join)))
 
 
 (**

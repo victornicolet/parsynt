@@ -300,7 +300,7 @@ and unfold_expr ?(loc = -1) exec_info expr  =
     failwith "Unsupported expression in variable discovery algorithm"
 
 
-and unfold_loop exec_info loc i g u body =
+and unfold_loop exec_info loc i g u (s, body) =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
   (* TODO redo this part correctly *)
   let i0, iEnd =

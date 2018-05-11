@@ -81,22 +81,10 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
       (solution_failed problem;
        failwith "Couldn't retrieve solution from parsed ast.")
   in
-  (** TODO // Simplify the solution using Z3 *)
   let translated_join_body =
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
     try scm_to_fn sol_info.Codegen.join_body with
-      (* if !use_z3 then
-       *   (\* (try *\)
-       *   (\*    let z3t = new Z3c.z3Translator sketch.scontext.all_vars in *\)
-       *   (\*    (z3t#simplify_let c_style_solution) *\)
-       *   (\*  with Failure s -> *\)
-       *   (\*    (eprintf "@\nFAILURE : couldn't simplify join using Z3.@\n"; *\)
-       *   (\*     eprintf "MESSAGE: %s@\n" s; *\)
-       *   (\*     c_style_solution)) *\)
-       *   print_endline "Z3 expression simplifcation in progress";
-       *   sklet *)
-
     | Failure s ->
       eprintf "[FAILURE] %s@." s;
       failwith "Failed to translate the solution in our \
@@ -138,8 +126,6 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) pare
   let lp_name = problem.loop_name in
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
-    if !verbose then
-       printf "@.Sketch: %a@." FPretty.pp_fnexpr (problem.join_sketch (mkFnVar "i0" Integer, mkFnVar "iN" Integer));
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver

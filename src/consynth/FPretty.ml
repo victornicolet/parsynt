@@ -400,14 +400,12 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       fp ppf "@[<hov 2>(if@;%a@;%a@;%a)@]"
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
-  | FnRec ((i, g, u), (s, k), e) ->
+  | FnRec ((i, g, u), (s, k), (_s, e)) ->
     let index_set = VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u) in
    ( match VarSet.cardinal index_set with
     | 0 -> fp ppf "@[<v  2>%a@]" pp_fnexpr e
     | 1 ->
       let index = VarSet.max_elt index_set in
-      let uvars = used_in_fnexpr e in
-      let state_arg = mkFnVar (state_var_name uvars "__s") (Record (VarSet.record uvars)) in
       fp ppf "@[<hov 2>(%s %a (lambda (%s) %a)@;(lambda (%s) %a)@;%a@;(lambda (%s %s) %a))@]"
         rosette_loop_macro_name
         pp_fnexpr i
@@ -416,9 +414,9 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
           printing_sketch := false; pp_fnexpr fmt g; printing_sketch := b)  g
         index.vname pp_fnexpr u
         pp_fnexpr k
-        state_arg.vname
+        _s.vname
         index.vname
-        pp_fnexpr (FnLetIn (bind_state state_arg s, e))
+        pp_fnexpr (FnLetIn (bind_state _s s, e))
 
     | _ -> failhere __FILE__ "pp_fnexpr" "Loop-function with multiple index not supported")
 
@@ -589,7 +587,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       (color "b") color_default
       cp_fnexpr e2
 
-  | FnRec ((i, g, u), (s, a), e) ->
+  | FnRec ((i, g, u), (s, a), (_s, e)) ->
     fp ppf "(FnRec %a %a %a %a %a)"
       cp_fnexpr i
       cp_fnexpr g
@@ -608,6 +606,11 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnStartOf l -> fp ppf "(StartOf %a)" cp_fnexpr l
 
+let pp_fndef fmt (func_var, args, body) =
+  fprintf fmt "@[<hov 2>(define (%s@;%a)@;%a)@]"
+    func_var.vname
+    (fun fmt -> PpTools.pp_break_sep_list (fun fmt v -> fprintf fmt "%s" v.vname) fmt) args
+    pp_fnexpr body
 
 (** Print epxressions *)
 let cprintFnexpr s = cp_fnexpr std_formatter s

@@ -237,16 +237,21 @@ let right_state_prefix = get_conf_string "rosette_join_right_state_prefix"
 let left_state_prefix = get_conf_string "rosette_join_left_state_prefix"
 
 (** Choose between a very restricted set of values for intials/identity values *)
-let base_init_value_choice reaching_consts vi =
+let base_init_value_choice fmt (reaching_consts, vi) =
+  let base_value fmt () =
   (try
      let e = IM.find vi.vid reaching_consts in
-     F.fprintf F.str_formatter "(choose %s %a)"
+     F.fprintf fmt "(choose %s %a)"
        (get_conf_string "rosette_base_init_values")
        pp_fnexpr e
    with Not_found ->
-     F.fprintf F.str_formatter "(choose %s)"
-       (get_conf_string "rosette_base_init_values"));
-  F.flush_str_formatter ()
+     F.fprintf fmt "(choose %s)"
+       (get_conf_string "rosette_base_init_values"))
+  in
+  match vi.vtype with
+  | Vector(v, on) -> F.fprintf fmt "(make-list %i %a)" !iterations_limit  base_value ()
+  | _ -> base_value fmt ()
+
 
 
 (** Handle special constants. For examples, -inf.0 is not supported by Rosette
@@ -465,11 +470,11 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param join_body The function of the join.
     @param state_vars The set of state variables.
 *)
-let pp_join fmt (join_body, state_vars) =
+let pp_join fmt (join_body, state_vars, bnd_args) =
   let sname = tuple_struct_name (VarSet.record state_vars) in
   let lstate_name = sname^"L" in
   let rstate_name = sname^"R" in
-  let ist, ien = mkFnVar "$_start" Integer, mkFnVar "$_end" Integer in
+  let ist, ien = bnd_args in
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
     join_name  lstate_name rstate_name ist.vname ien.vname
@@ -493,7 +498,7 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
     F.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-         Format.fprintf fmt "%s" (base_init_value_choice reach_consts vi))
+         Format.fprintf fmt "%a" base_init_value_choice (reach_consts, vi))
   in
   (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
@@ -518,27 +523,29 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
             (fun fmt (vid, vi) ->
                (if IM.mem vid reach_consts
                 then
+                  let var_begin = {vi with vname = "_begin_"} in
+                  register_fnv var_begin;
                   pp_fnexpr fmt
                     (try
                        replace_all_subs
                          ~tr:[FnConst (CInt 0); FnConst (CInt64 0L)]
-                         ~by:[FnVar (FnVariable {vi with vname = "_begin_"});
-                              FnVar (FnVariable {vi with vname = "_begin_"})]
+                         ~by:[mkVarExpr var_begin; mkVarExpr var_begin]
                          ~ine:(IM.find vid reach_consts)
                      with _ -> IM.find vid reach_consts)
                 else
-                  (if IH.mem auxiliary_vars vid
-                   then
-                     Format.fprintf fmt "%s"
-                       (base_init_value_choice reach_consts vi)
-                   else
-                     begin
-                       F.eprintf
-                         "@.%sERROR : \
-                          Variable %s should be initialized or auxiliary.%s@."
-                         (color "red") vi.vname color_default;
-                       failhere __FILE__ "pp_state" "(See ERROR) Unexpected variable."
-                     end))))
+                  (* (if IH.mem auxiliary_vars vid
+                   *  then *)
+                     Format.fprintf fmt "%a"
+                       base_init_value_choice (reach_consts, vi)
+                   (* else
+                    *   begin
+                    *     F.eprintf
+                    *       "@.%sERROR : \
+                    *        Variable %s should be initialized or auxiliary.%s@."
+                    *       (color "red") vi.vname color_default;
+                    *     failhere __FILE__ "pp_state" "(See ERROR) Unexpected variable."
+                    *   end )*)
+               )))
            li)
       (VarSet.bindings state_vars)
   else
@@ -556,8 +563,8 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
                 else
                   (if IH.mem auxiliary_vars vid
                    then
-                     Format.fprintf fmt "%s"
-                       (base_init_value_choice reach_consts vi)
+                     Format.fprintf fmt "%a"
+                       base_init_value_choice (reach_consts, vi)
                    else
                      begin
                        F.eprintf
@@ -575,12 +582,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
     F.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-         if is_array_type vi.vtype then
-           Format.fprintf fmt "(make-list %d %s)"
-             !inner_iterations_limit
-             (base_init_value_choice reach_consts vi)
-         else
-           Format.fprintf fmt "%s" (base_init_value_choice reach_consts vi))
+           Format.fprintf fmt "%a" base_init_value_choice (reach_consts, vi))
   in
   (* Sketch for the identity state. *)
    (** Pretty print the identity state, with holes *)
@@ -681,7 +683,7 @@ let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_
 (* ---------------------------------------------------------------------------- *)
 (* When there are inner loops, those have been replaced by function calls in the
    outer body. We need to define the corresponding functions *)
-let define_inner_join fmt lname (state, styp) join =
+let define_inner_join fmt lname (state, styp) (ist, iend) join =
   let lstate_var = mkFnVar "$R" styp in
   let rstate_var = mkFnVar "$L" styp in
   let bind_lstate = bind_state ~prefix:left_state_prefix lstate_var state in
@@ -689,10 +691,12 @@ let define_inner_join fmt lname (state, styp) join =
   let wrapped_join =
     FnLetIn (bind_lstate@bind_rstate, join)
   in
-  fprintf fmt "@[<v 2>(define (%s %s %s)@;%a)@]"
+  fprintf fmt "@[<v 2>(define (%s %s %s %s %s)@;%a)@]"
     (Conf.join_name lname)
     lstate_var.vname
     rstate_var.vname
+    ist.vname
+    iend.vname
     pp_fnexpr wrapped_join
 
 let pp_inner_def fmt pb =
@@ -712,7 +716,7 @@ let pp_inner_join_def fmt pb =
   let stv = pb.scontext.state_vars in
   let styp = Record (VarSet.record stv) in
   pp_comment fmt "Defining inner join function for outer loop.";
-  define_inner_join fmt pb.loop_name (stv, styp) pb.join_solution;
+  define_inner_join fmt pb.loop_name (stv, styp) (get_bounds pb) pb.join_solution;
   pp_newline fmt ()
 
 let pp_inner_loops_joins fmt inner_loop_list =
@@ -794,7 +798,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars)
     sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
-  pp_join fmt (sketch.memless_sketch, state_vars);
+  pp_join fmt (sketch.memless_sketch, state_vars, get_bounds sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   let additional_symbols =
@@ -866,7 +870,7 @@ let pp_rosette_sketch_join fmt sketch =
   pp_newline fmt ();
   pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
-  pp_join fmt (sketch.join_sketch, state_vars);
+  pp_join fmt (sketch.join_sketch, state_vars, get_bounds sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;

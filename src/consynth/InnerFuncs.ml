@@ -55,11 +55,11 @@ let replace_by_join problem inner_loops =
     register_fnv new_seq;
     (* In case join cannot be inlined. *)
     let new_joinf_typ = Function (inner_styp, inner_styp) in
+    (* The function corresponding to the join. *)
     let new_joinf =
       mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
-    register_fnv new_joinf;
-
+    let in_st, in_end = get_bounds in_info in
     (* Replace the function application corresponding to the inner loop.
        These were only placeholders introdced at the Cil intermediate
        representation.
@@ -83,7 +83,8 @@ let replace_by_join problem inner_loops =
            in
            let index = VarSet.max_elt problem.scontext.index_vars in
           FnApp (inner_styp, Some new_joinf,
-                 [capture_state; mkVarExpr ~offsets:[mkVarExpr index] new_seq])
+                 [capture_state; mkVarExpr ~offsets:[mkVarExpr index] new_seq;
+                  mkVarExpr in_st; mkVarExpr in_end])
         | Some inline_join ->
           inline_join)
       | _ -> rfunc e
