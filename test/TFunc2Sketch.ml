@@ -38,8 +38,8 @@ let test loopsm =
        let body_form, sigu = check_option builder#get_sketch in
        printf"%s%s%s : @; %a@." (color "green") fname color_default
          pp_fnexpr body_form;
-       let join = S.Join.build (FnConst (CInt 0)) vs body_form in
+       let join = S.Join.build_join [FnConst (CInt 0)] vs body_form in
        printf"Join : @; %a@."
-         pp_fnexpr (join (i0, iN))
+         pp_fnexpr (join (mkVarExpr i0, mkVarExpr iN))
     )
     loopsm

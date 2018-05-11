@@ -249,7 +249,7 @@ let base_init_value_choice fmt (reaching_consts, vi) =
        (get_conf_string "rosette_base_init_values"))
   in
   match vi.vtype with
-  | Vector(v, on) -> F.fprintf fmt "(make-list %i %a)" !iterations_limit  base_value ()
+  | Vector(v, on) -> F.fprintf fmt "(make-list %i %a)" !mat_w  base_value ()
   | _ -> base_value fmt ()
 
 
@@ -470,15 +470,19 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param join_body The function of the join.
     @param state_vars The set of state variables.
 *)
-let pp_join fmt (join_body, state_vars, bnd_args) =
+let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
   let sname = tuple_struct_name (VarSet.record state_vars) in
   let lstate_name = sname^"L" in
   let rstate_name = sname^"R" in
   let ist, ien = bnd_args in
+  let st_start, st_end =
+    if fixed then FnConst(CInt 0), FnConst(CInt !mat_w)
+    else mkVarExpr ist, mkVarExpr ien
+  in
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
     join_name  lstate_name rstate_name ist.vname ien.vname
-    pp_join_body (join_body (ist, ien), state_vars, lstate_name, rstate_name)
+    pp_join_body (join_body (st_start, st_end), state_vars, lstate_name, rstate_name)
 
 (** Some state definitons *)
 
@@ -798,7 +802,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars)
     sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
-  pp_join fmt (sketch.memless_sketch, state_vars, get_bounds sketch);
+  pp_join fmt (false, sketch.memless_sketch, state_vars, get_bounds sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   let additional_symbols =
@@ -824,15 +828,6 @@ let pp_rosette_sketch_join fmt sketch =
       (remove_interpreted_symbols sketch.scontext.used_vars)
       (VarSet.union state_vars sketch.scontext.index_vars)
   in
-  let max_read_dim =
-    VarSet.fold
-      (fun var mdim ->
-         let vardim =
-           if is_matrix_type var.vtype then 2
-           else if is_array_type var.vtype then 1 else 0
-        in
-        max mdim vardim) read_vars 0
-  in
   let idx = sketch.scontext.index_vars in
   let st0 = init_state_name in
   (* Global bound name "n" *)
@@ -850,7 +845,6 @@ let pp_rosette_sketch_join fmt sketch =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
-  if max_read_dim < 2 then mat_w := !mat_h;
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.loop_body;
   if List.length sketch.inner_functions > 0 then
@@ -870,7 +864,7 @@ let pp_rosette_sketch_join fmt sketch =
   pp_newline fmt ();
   pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
-  pp_join fmt (sketch.join_sketch, state_vars, get_bounds sketch);
+  pp_join fmt (true, sketch.join_sketch, state_vars, get_bounds sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;

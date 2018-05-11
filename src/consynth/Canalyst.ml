@@ -189,6 +189,7 @@ let no_sketches = ref 0;;
 
 let func2sketch cfile funcreps =
   let rec  transform_func func_info =
+    let inners = List.map transform_func func_info.inner_funcs in
     let var_set = varset_of_vs func_info.lvariables.all_vars in
     let state_vars = varset_of_vs func_info.lvariables.state_vars in
     let figu =
@@ -240,9 +241,12 @@ let func2sketch cfile funcreps =
     let index_set, _ = sigu in
     IH.clear SketchJoin.auxiliary_variables;
     Sketch.Join.join_loop_width := !mat_w;
+    let inner_indexes =
+      List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
+    in
     let join_sk =
-      Sketch.Join.build
-        (FnVar (FnVariable (VarSet.max_elt index_set)))
+      Sketch.Join.build_join
+        inner_indexes
         state_vars
         loop_body
     in
@@ -250,7 +254,7 @@ let func2sketch cfile funcreps =
     Sketch.Join.join_loop_width := !mat_w;
     let mless_sk =
       Sketch.Join.build_for_inner
-        (FnVar (FnVariable (VarSet.max_elt index_set)))
+        [FnVar (FnVariable (VarSet.max_elt index_set))]
         state_vars
         s_reach_consts
         loop_body;
@@ -269,8 +273,7 @@ let func2sketch cfile funcreps =
            | FnVar v ->
              (match v with
               | FnVariable vi -> IM.add k 0 m_s
-              | FnArray (v, e) -> IM.add k (fnArray_dep_len e) m_s
-              | _ -> raise Tuple_fail)
+              | FnArray (v, e) -> IM.add k (fnArray_dep_len e) m_s)
            | _ -> failhere __FILE__"func2sketch" "Unsupported intialization.")
         s_reach_consts IM.empty
     in
@@ -313,7 +316,7 @@ let func2sketch cfile funcreps =
       init_values = IM.empty;
       func_igu = sigu;
       reaching_consts = s_reach_consts;
-      inner_functions = List.map transform_func func_info.inner_funcs;
+      inner_functions = inners;
     }
   in
   List.map transform_func funcreps
@@ -334,12 +337,14 @@ let find_new_variables sketch_rep =
   in
   IH.copy_into VariableDiscovery.discovered_aux_alltime
     SketchJoin.auxiliary_variables;
-
+  let inner_indexes =
+    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) sketch_rep.inner_functions
+  in
   let join_sketch =
     (fun bnds ->
        complete_final_state new_sketch.scontext.state_vars
-         ((Sketch.Join.build
-            (FnVar (FnVariable (VarSet.max_elt sketch_rep.scontext.index_vars)))
+         ((Sketch.Join.build_join
+            inner_indexes
             new_sketch.scontext.state_vars nlb_opt) bnds))
   in
   {

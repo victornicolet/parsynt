@@ -400,34 +400,31 @@ let rec inner_optims state letfun  =
 (* TODO change the limits *)
 let wrap_with_loop for_inner i state reach_consts base_join =
   let start_state_valuation =
-    if for_inner then
-      let lsp =
-        VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
-      in
-      let stv_or_cst =
-        List.map
-          (fun v ->
-             (mkVar v,
-              if IM.mem v.vid reach_consts then
+    let lsp =
+      VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
+    in
+    let stv_or_cst =
+      List.map
+        (fun v ->
+           (mkVar v,
+            if IM.mem v.vid reach_consts then
               IM.find v.vid reach_consts
-             else
-               mkVarExpr v)) (VarSet.elements lsp)
-      in
-      (FnLetExpr stv_or_cst)
-    else
-      (fst (make_hole_e i state (FnLetExpr (identity_state state))))
+            else
+              mkVarExpr v)) (VarSet.elements lsp)
+    in
+    (FnLetExpr stv_or_cst)
   in
   let state_binder = mkFnVar "__s" (Record (VarSet.record state)) in
   (fun (i_start, i_end) ->
-     FnRec ((FnConst (CInt 0),
-             FnBinop (Lt, i, mkVarExpr i_end),
+     FnRec ((i_start,
+             FnBinop (Lt, i, i_end),
              FnUnop (Add1,i)),
             (state, start_state_valuation),
-            (state_binder, base_join)))
+            (state_binder, FnLetIn (bind_state state_binder state, base_join))))
 
 
 (**
-   Add a choice after the join to enable 'dropping' variables. Can be usefule when the join
+   Add a choice after the join to enable 'dropping' variables. Can be useful when the join
    is a loop and one of the variables's join function is more naturally expressed as a
    constant time function rather than a function of a list.
    Avoids problems especially when the variable is always initialized at the beginning of
@@ -471,13 +468,26 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   else
     (fun (i,j) -> base_join)
 
-let build i (state : VarSet.t) fnlet =
-  set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
+let build_join i (state : VarSet.t) fnlet =
+  match i with
+  | [] ->
+    set_types_and_varsets (make_loop_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
+  | [i] ->
+    set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
+  | _ ->
+    failhere __FILE__ "build_join" "Multiple inner loops not implemented."
 
-let build_for_inner i state reach_consts fnlet =
+let build_for_inner il state reach_consts fnlet =
+  let i =
+    match il with
+    | [i] -> i
+    | [] -> FnConst (CInt 0)
+    | _ ->
+      failhere __FILE__ "build_for_inner" "Multiple inner loops not implemented."
+  in
   narrow_array_completions := true;
-  let raw_sketch = make_loop_wrapped_join ~for_inner:true i state reach_consts fnlet in
-  let typed_sketch = set_types_and_varsets raw_sketch in
-  let sketch = inner_optims state typed_sketch in
-  narrow_array_completions := false;
-  sketch
+    let raw_sketch = make_loop_wrapped_join ~for_inner:true i state reach_consts fnlet in
+    let typed_sketch = set_types_and_varsets raw_sketch in
+    let sketch = inner_optims state typed_sketch in
+    narrow_array_completions := false;
+    sketch

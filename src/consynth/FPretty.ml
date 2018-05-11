@@ -416,7 +416,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
         pp_fnexpr k
         _s.vname
         index.vname
-        pp_fnexpr (FnLetIn (bind_state _s s, e))
+        pp_fnexpr e
 
     | _ -> failhere __FILE__ "pp_fnexpr" "Loop-function with multiple index not supported")
 

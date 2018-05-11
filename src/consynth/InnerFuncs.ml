@@ -106,8 +106,9 @@ let replace_by_join problem inner_loops =
     List.fold_left replace (problem.loop_body, problem.scontext) inner_loops
   in
   let new_sketch =
-    let index = VarSet.max_elt problem.scontext.index_vars in
-    Sketch.Join.build (mkVarExpr index) problem.scontext.state_vars newbody
+    Sketch.Join.build_join
+      (List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) problem.inner_functions)
+      problem.scontext.state_vars newbody
   in
   {problem with inner_functions = inner_loops;
                 join_sketch = new_sketch;

@@ -1830,10 +1830,22 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
                  let init = translate (unwrap_fun_e (arglist >> 0)) in
                  let guard = translate (unwrap_fun_e (arglist >> 1)) in
                  let update = translate (unwrap_fun_e (arglist >> 2)) in
+                 let __s = get_fun_state (arglist >> 4) in
+                 let stv =
+                   match __s.vtype with
+                   | Record name_type_list ->
+                     VarSet.of_list (List.map (fun (n,t) -> find_var_name n) name_type_list)
+                   | _ -> failhere __FILE__ "translate scm" "Expected a record type."
+                 in
+                 let stv_init =
+                   match arglist >> 3 with
+                   | Apply_e (e, inits) ->
+                     FnRecord(__s.vtype, List.map translate inits)
+                   | _ -> failhere __FILE__ "translate scm" "Expected a record expression."
+                 in
                  FnRec ((init, guard, update),
-                        (get_init_state (arglist >> 3)),
-                        (get_fun_state (arglist >> 4),
-                         translate (unwrap_fun_e (arglist >> 4)))
+                        (stv, stv_init),
+                        (__s, translate (unwrap_fun_e (arglist >> 4)))
                        )
                else
                  failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
@@ -1878,7 +1890,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     with Not_found ->
       eprintf "expression : %a" pp_expr scm;
       failwith "Variable name not found in current environment."
-
+  in
   let fne = translate scm in
   remove_hole_vars fne
 
@@ -2093,8 +2105,8 @@ type prob_rep =
     min_input_size : int;
     uses_global_bound : bool;
     loop_body : fnExpr;
-    join_sketch : fnV * fnV -> fnExpr;
-    memless_sketch : fnV * fnV ->  fnExpr;
+    join_sketch : fnExpr * fnExpr -> fnExpr;
+    memless_sketch : fnExpr * fnExpr ->  fnExpr;
     join_solution : fnExpr;
     memless_solution : fnExpr;
     init_values : RAst.expr IM.t;
