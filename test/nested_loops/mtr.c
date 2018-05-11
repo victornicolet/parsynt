@@ -10,14 +10,12 @@ int _mtlr(int** a, int* c, int n) {
   for (int i = 0; i < n; i++) {
 	sum = 0;
 	r_mts = 0;
-	r_mss = 0;
 
     for(int j = 0; j < n; j++){
 	  c[j] += a[i][j];
 	  r_mts = max(c[j] + r_mts, 0);
 	  r_mss = max(r_mts, r_mss);
     }
-	mtr = max(r_mts, mtr);
   }
   return mtr;
 }
