@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-int example_sum(int* a, int n) {
+int _sum(int* a, int n) {
   int sum = 0;
   for (int i = 0; i < n; i++) {
     sum += a[i];

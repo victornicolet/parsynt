@@ -1,4 +1,4 @@
-_Bool example_0after1 (_Bool *a, int n) {
+_Bool _0after1 (_Bool *a, int n) {
   _Bool seen1 = 0;
   _Bool res = 0;
 
