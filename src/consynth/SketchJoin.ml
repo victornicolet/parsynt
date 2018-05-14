@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
+open Beta
 open FuncTypes
 open Utils
 open FPretty

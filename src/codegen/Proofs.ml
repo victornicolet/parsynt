@@ -1,4 +1,4 @@
-open Cil
+open Beta
 open Format
 open Utils
 open FuncTypes
@@ -21,7 +21,7 @@ let rec string_of_dt : type a. a dafny_basic_type -> string =
 let pp_dfy_typ fmt t =
   fprintf fmt "%s" (string_of_dt t)
 
-let rec dfy_type_of_symb_type : symbolic_type -> type_simple dafny_basic_type =
+let rec dfy_type_of_symb_type : fn_type -> type_simple dafny_basic_type =
   function
   | Integer -> Int
   | Num -> Real
@@ -76,7 +76,7 @@ type proofVariable =
     sequence : fnV;
     ivars : VarSet.t;
     in_vars : fnV list;
-    out_type : symbolic_type;
+    out_type : fn_type;
     empty_value : fnExpr;
     function_expr : fnExpr;
     join_expr : fnExpr;
@@ -174,8 +174,7 @@ let pp_dfy fmt
                    FnVariable {input_i with vname = name}
 
                  | _ -> failwith "Cannot generate proofs whith complex indexes."
-               end
-             | _ -> failwith "Cannot generate proofs for tuples");}
+               end);}
       expr
   in
   let add_pos_offset e =

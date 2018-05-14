@@ -1,3 +1,4 @@
+open Beta
 open Utils
 open PpTools
 open FuncTypes

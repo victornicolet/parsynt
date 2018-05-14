@@ -1,3 +1,4 @@
+open Beta
 open Format
 open FuncTypes
 open FPretty

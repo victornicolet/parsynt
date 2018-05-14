@@ -15,13 +15,14 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 (* *
    1 - Printing sketches for Rosette (Scheme lang)
    2 - Printing sketches for other sygus solvers (Synthlib v2)
- *)
+*)
 
+open Beta
 open Utils
 open Conf
 open FuncTypes
@@ -88,7 +89,7 @@ type define_symbolic =
   | DefBoolean of fnV list
   | DefArray of fnV list
   | DefMatrix of fnV list
-  | DefRecord of (fnV * (string * symbolic_type) list) list
+  | DefRecord of (fnV * (string * fn_type) list) list
   | DefEmpty
 
 let gen_array_cell_vars ~num_cells:n vi =
@@ -113,9 +114,10 @@ let rec pp_define_symbolic fmt def =
   | DefArray vil ->
     List.iter
       (fun vi ->
-          let vars = gen_array_cell_vars ~num_cells:!mat_w vi in
-          pp_define_symbolic fmt
-            (try
+         let num_cells = if is_outer_used vi then !mat_h else !mat_w in
+         let vars = gen_array_cell_vars ~num_cells:num_cells vi in
+         pp_define_symbolic fmt
+           (try
               (match array_type vi.vtype with
                | Integer -> DefInteger vars
                | Real -> DefReal vars
@@ -124,8 +126,8 @@ let rec pp_define_symbolic fmt def =
                | _ -> DefEmpty)
             with BadType s ->
               failhere __FILE__ "pp_define_symbolic" s);
-          F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
-            vi.vname pp_string_list (to_v vars)) vil
+         F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
+           vi.vname pp_string_list (to_v vars)) vil
 
   | DefMatrix vil ->
     List.iter
@@ -191,8 +193,8 @@ let pp_vs_to_symbs fmt except vs =
             | Vector (v, _) ->
               (* Support up to 2-dimensional arrays. *)
               (match v with
-              | Vector (v2, _) -> DefMatrix [vi]
-              | _ -> DefArray [vi])
+               | Vector (v2, _) -> DefMatrix [vi]
+               | _ -> DefArray [vi])
             | Record rt ->
               DefRecord [(vi, rt)]
             | _ ->
@@ -239,14 +241,14 @@ let left_state_prefix = get_conf_string "rosette_join_left_state_prefix"
 (** Choose between a very restricted set of values for intials/identity values *)
 let base_init_value_choice fmt (reaching_consts, vi) =
   let base_value fmt () =
-  (try
-     let e = IM.find vi.vid reaching_consts in
-     F.fprintf fmt "(choose %s %a)"
-       (get_conf_string "rosette_base_init_values")
-       pp_fnexpr e
-   with Not_found ->
-     F.fprintf fmt "(choose %s)"
-       (get_conf_string "rosette_base_init_values"))
+    (try
+       let e = IM.find vi.vid reaching_consts in
+       F.fprintf fmt "(choose %s %a)"
+         (get_conf_string "rosette_base_init_values")
+         pp_fnexpr e
+     with Not_found ->
+       F.fprintf fmt "(choose %s)"
+         (get_conf_string "rosette_base_init_values"))
   in
   match vi.vtype with
   | Vector(v, on) -> F.fprintf fmt "(make-list %i %a)" !mat_w  base_value ()
@@ -376,7 +378,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
 
   let index_name = (List.hd index_list).vname in
   let pp_index_low_up =
-        (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+    (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
           let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
           Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
@@ -539,16 +541,16 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
                 else
                   (* (if IH.mem auxiliary_vars vid
                    *  then *)
-                     Format.fprintf fmt "%a"
-                       base_init_value_choice (reach_consts, vi)
-                   (* else
-                    *   begin
-                    *     F.eprintf
-                    *       "@.%sERROR : \
-                    *        Variable %s should be initialized or auxiliary.%s@."
-                    *       (color "red") vi.vname color_default;
-                    *     failhere __FILE__ "pp_state" "(See ERROR) Unexpected variable."
-                    *   end )*)
+                  Format.fprintf fmt "%a"
+                    base_init_value_choice (reach_consts, vi)
+                    (* else
+                     *   begin
+                     *     F.eprintf
+                     *       "@.%sERROR : \
+                     *        Variable %s should be initialized or auxiliary.%s@."
+                     *       (color "red") vi.vname color_default;
+                     *     failhere __FILE__ "pp_state" "(See ERROR) Unexpected variable."
+                     *   end )*)
                )))
            li)
       (VarSet.bindings state_vars)
@@ -582,14 +584,14 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
 
 
 let pp_input_state_definitions fmt state_vars reach_consts =
-    let s0_sketch_printer =
+  let s0_sketch_printer =
     F.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
-           Format.fprintf fmt "%a" base_init_value_choice (reach_consts, vi))
+         Format.fprintf fmt "%a" base_init_value_choice (reach_consts, vi))
   in
   (* Sketch for the identity state. *)
-   (** Pretty print the identity state, with holes *)
+  (** Pretty print the identity state, with holes *)
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     ident_state_name "iEnd"
@@ -659,20 +661,20 @@ let pp_synth_body ?(m=false) fmt (s0, bnm, struct_name, defined_input_vars, min_
     pp_defined_input defined_input_vars;
   if m then
     Format.fprintf fmt
-    "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
-    (F.pp_print_list
-       (fun fmt (i_st, i_m, i_end) ->
-          pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
-            min_dep_len))
-    Conf.verification_parameters
+      "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
+      (F.pp_print_list
+         (fun fmt (i_st, i_m, i_end) ->
+            pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
+              min_dep_len))
+      Conf.verification_parameters
   else
-  Format.fprintf fmt
-    "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
-    (F.pp_print_list
-       (fun fmt (i_st, i_m, i_end) ->
-          pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
-            min_dep_len))
-    Conf.verification_parameters
+    Format.fprintf fmt
+      "@[<hov 2>#:guarantee @[(assert@;(and@;%a))@]@]"
+      (F.pp_print_list
+         (fun fmt (i_st, i_m, i_end) ->
+            pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end)
+              min_dep_len))
+      Conf.verification_parameters
 
 
 (** Pretty-print a synthesis problem wrapped in a defintion for further
@@ -770,7 +772,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
          | _ -> name_list)
       []
       (if sketch.uses_global_bound then
-          [(get_loop_bound sketch)]
+         [(get_loop_bound sketch)]
        else [])
   in
   let bnames =
@@ -839,7 +841,7 @@ let pp_rosette_sketch_join fmt sketch =
          | _ -> name_list)
       []
       (if sketch.uses_global_bound then
-          [(get_loop_bound sketch)]
+         [(get_loop_bound sketch)]
        else [])
   in
   let bnames =
@@ -908,7 +910,7 @@ let pp_rosette_sketch parent_context inner fmt (sketch : prob_rep) =
 
 (** TODO
     Returns the logic needed to solve the sketch.
- *)
+*)
 let logic_of_pb pb = SyLIA
 
 

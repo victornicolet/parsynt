@@ -1,3 +1,4 @@
+open Beta
 open FuncTypes
 open Format
 open Utils

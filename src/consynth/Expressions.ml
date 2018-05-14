@@ -17,6 +17,8 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+
+open Beta
 open Format
 open FPretty
 open FuncTypes

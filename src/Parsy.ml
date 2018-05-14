@@ -17,7 +17,7 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
-open Cil
+open Beta
 open Conf
 open Str
 open Format

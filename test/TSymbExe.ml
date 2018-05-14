@@ -17,9 +17,9 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
+open Beta
 open SymbExe
 open Utils
-open Cil
 open TestUtils
 open ExpressionReduction
 open VariableDiscovery
