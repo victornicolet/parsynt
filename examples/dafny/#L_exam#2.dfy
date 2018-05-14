@@ -1,70 +1,112 @@
 function DfLength(s: seq<int>): int
 {if s == [] then 0 else DfLength(s[..|s|-1]) + 1}
 
-function DfMax(x: int, y: int): int { if x > y then x else y}
+function DfMin(x: int, y: int): int { if x > y then y else x}
 
-function Aux_1(a : seq<int>): int
+function Cnt(a : seq<bool>): int
 {
-  if a == [] then 1 else (a[|a|-1] + Aux_1(a[..|a|-1]))
+  if a == [] then 0 else (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1)))
 }
 
-function Mts(a : seq<int>): int
+function Aux_3(a : seq<bool>): int
 {
-  if a == [] then 0 else DfMax(0, (Mts(a[..|a|-1]) + a[|a|-1]))
+  if a == [] then
+    1
+    else
+    DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_3(a[..|a|-1]))
 }
 
-function Aux_1Join(leftAux_1 : int, rightAux_1 : int): int
+function Bal(a : seq<bool>): bool
 {
-  (leftAux_1 + (rightAux_1 + (-1)))
+  if a == [] then
+    true
+    else
+    (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) >= 0))
 }
 
-function MtsJoin(leftAux_1 : int, leftMts : int, rightAux_1 : int, rightMts : int): int
+function CntJoin(leftCnt : int, rightCnt : int): int
 {
-  DfMax(((leftMts - 1) + rightAux_1), rightMts)
+  (rightCnt + leftCnt)
+}
+
+function Aux_3Join(leftAux_3 : int, leftCnt : int, rightAux_3 : int, rightCnt : int): int
+{
+  DfMin((rightAux_3 + leftCnt), leftAux_3)
+}
+
+function BalJoin(leftAux_3 : int, leftCnt : int, leftBal : bool, rightAux_3 : int, rightCnt : int, rightBal : bool): bool
+{
+  (((if rightBal then ((3 - rightCnt) + leftCnt) else
+      ((rightAux_3 - rightCnt) + leftCnt)) >= rightCnt) && leftBal)
 }
 
 
-lemma BaseCaseAux_1(a : seq<int>)
-  ensures Aux_1(a) == Aux_1Join(Aux_1(a), Aux_1([]))
+lemma BaseCaseCnt(a : seq<bool>)
+  ensures Cnt(a) == CntJoin(Cnt(a), Cnt([]))
   {}
 
-lemma HomAux_1(a : seq<int>, R_a : seq<int>)
-  ensures Aux_1(a + R_a) == Aux_1Join(Aux_1(a), Aux_1(R_a))
+lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
+  ensures Cnt(a + R_a) == CntJoin(Cnt(a), Cnt(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
-    BaseCaseAux_1(a);
+    BaseCaseCnt(a);
     
      } else {
     calc{
-    Aux_1(a + R_a);
+    Cnt(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    Aux_1Join(Aux_1(a), Aux_1(R_a));
+    CntJoin(Cnt(a), Cnt(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
 
-lemma BaseCaseMts(a : seq<int>)
-  ensures Mts(a) == MtsJoin(Aux_1(a), Mts(a), Aux_1([]), Mts([]))
+lemma BaseCaseAux_3(a : seq<bool>)
+  ensures Aux_3(a) == Aux_3Join(Aux_3(a), Cnt(a), Aux_3([]), Cnt([]))
   {}
 
-lemma HomMts(a : seq<int>, R_a : seq<int>)
-  ensures Mts(a + R_a) == MtsJoin(Aux_1(a), Mts(a), Aux_1(R_a), Mts(R_a))
+lemma HomAux_3(a : seq<bool>, R_a : seq<bool>)
+  ensures Aux_3(a + R_a) == Aux_3Join(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
-    BaseCaseMts(a);
+    BaseCaseAux_3(a);
     
      } else {
     calc{
-    Mts(a + R_a);
+    Aux_3(a + R_a);
     =={
-      HomAux_1(a, R_a[..|R_a| - 1]);
+      HomCnt(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    MtsJoin(Aux_1(a), Mts(a), Aux_1(R_a), Mts(R_a));
+    Aux_3Join(Aux_3(a), Cnt(a), Aux_3(R_a), Cnt(R_a));
+    } // End calc.
+  } // End else.
+} // End lemma.
+
+lemma BaseCaseBal(a : seq<bool>)
+  ensures Bal(a) == BalJoin(Aux_3(a), Cnt(a), Bal(a), Aux_3([]), Cnt([]), Bal([]))
+  {}
+
+lemma HomBal(a : seq<bool>, R_a : seq<bool>)
+  ensures Bal(a + R_a) == BalJoin(Aux_3(a), Cnt(a), Bal(a), Aux_3(R_a), Cnt(R_a), Bal(R_a))
+  {
+    if R_a == [] 
+    {
+    assert(a + [] == a);
+    BaseCaseBal(a);
+    
+     } else {
+    calc{
+    Bal(a + R_a);
+    =={
+      HomAux_3(a, R_a[..|R_a| - 1]);
+      HomCnt(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      }
+    BalJoin(Aux_3(a), Cnt(a), Bal(a), Aux_3(R_a), Cnt(R_a), Bal(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

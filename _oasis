@@ -66,4 +66,4 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, getopt, codegen, fpgen, mutils
+  BuildDepends: consynth, getopt, codegen, mutils

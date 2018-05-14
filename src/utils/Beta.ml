@@ -337,8 +337,52 @@ let find_var_name_id name id =
   | None -> raise Not_found
 
 
+(* Join auxiliary variables. *)
+let aux_vars : fnV IH.t = IH.create 10
+
+let cur_left_auxiliaries = ref VarSet.empty
+let cur_right_auxiliaries = ref VarSet.empty
+
+let left_aux_ids : int list ref = ref []
+let right_aux_ids : int list ref = ref []
+
+let add_laux_id i = left_aux_ids := i :: !left_aux_ids
+let add_raux_id i = right_aux_ids := i :: !right_aux_ids
+
+let is_left_aux i = List.mem i !left_aux_ids
+
+let is_right_aux i = List.mem i !right_aux_ids
+
+let aux_vars_init () =
+  IH.clear aux_vars;
+  cur_left_auxiliaries := VarSet.empty;
+  cur_right_auxiliaries := VarSet.empty
+
+let is_currently_aux vi : bool = IH.mem aux_vars vi.vid
+
+(* Variable discovery: new variables *)
+let d_aux_alltime : fnV IH.t = IH.create 10
+let d_aux : fnV IH.t = IH.create 10
+
+let discover_init () =
+  IHTools.add_all d_aux_alltime d_aux;
+  IH.clear d_aux
+
+let discover_clear () =
+  IH.clear d_aux;
+  IH.clear d_aux_alltime
+
+let discover_add v =
+  IH.add d_aux v.vid v
+
+let discover_save () =
+  IH.copy_into d_aux_alltime aux_vars
+
 (* Bonus: mark array that are read by an outer loop. *)
 let outer_used = IH.create 10
+
+let outer_marked_clear () =
+  IH.clear outer_used
 
 let mark_outer_used fnv : unit =
   IH.add outer_used fnv.vid true

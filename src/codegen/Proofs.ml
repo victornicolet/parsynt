@@ -740,8 +740,8 @@ let gen_proof_vars sketch =
           with a length > minimal length *)
        let init_va = get_init_value sketch vi in
        let pfv_elim_non_empty =
-         if (SketchJoin.is_left_aux vi.vid
-             || SketchJoin.is_right_aux vi.vid
+         if (is_left_aux vi.vid
+             || is_right_aux vi.vid
              || uses_const [NInfnty; Infnty] function_expr
              || uses_const [NInfnty; Infnty] init_va)
          then 1 else 0

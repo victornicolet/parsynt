@@ -33,17 +33,6 @@ let debug_dev = ref true
 let max_exec_no =
   ref (Conf.get_conf_int "variable_discovery_max_unfoldings")
 
-let discovered_aux_alltime = IH.create 10
-let discovered_aux = IH.create 10
-
-let init () =
-  IHTools.add_all discovered_aux_alltime discovered_aux;
-  IH.clear discovered_aux
-
-let clear () =
-  IH.clear discovered_aux;
-  IH.clear discovered_aux_alltime
-
 (**
    Entry point : check that the function is a candidate for
     function discovery.
@@ -508,7 +497,7 @@ let discover_for_id sketch varid =
   let ctx = sketch.scontext in
   let input_func = sketch.loop_body in
   GenVars.init ();
-  init ();
+  discover_init ();
   (*  max_exec_no := VarSet.cardinal stv + 1; *)
   printf "@.%s%s%s%s@."
     (color "black")
@@ -605,7 +594,7 @@ let discover_for_id sketch varid =
     remove_duplicate_auxiliaries init_i (aux_vs, aux_ef) input_func
   in
 
-  VarSet.iter (fun vi -> IH.add discovered_aux vi.vid vi) aux_vs;
+  VarSet.iter discover_add aux_vs;
   (** Finally add the auxliaries at the beginning of the function. Since the
       auxliaries depend only on the inputs and not the value of the state
       variables we can safely add the assignments (or let bindings) at
@@ -631,7 +620,7 @@ let discover_for_id sketch varid =
   let new_ctx, new_loop_body, new_constant_exprs =
     VUtils.compose init_i input_func clean_aux clean_aux_ef
   in
-  init ();
+  discover_init ();
   {sketch with scontext = new_ctx;
                loop_body = new_loop_body }
 

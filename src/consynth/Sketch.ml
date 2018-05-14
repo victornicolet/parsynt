@@ -19,7 +19,7 @@
 
 (* *
    1 - Printing sketches for Rosette (Scheme lang)
-   2 - Printing sketches for other sygus solvers (Synthlib v2)
+   2 - Printing sketches for other sygus solvers (Synthlib v2) (Work in progress...)
 *)
 
 open Beta
@@ -87,9 +87,9 @@ type define_symbolic =
   | DefInteger of fnV list
   | DefReal of fnV list
   | DefBoolean of fnV list
-  | DefArray of fnV list
-  | DefMatrix of fnV list
-  | DefRecord of (fnV * (string * fn_type) list) list
+  | DefArray of (fnV * int) list
+  | DefMatrix of (fnV * int * int) list
+  | DefRecord of (fnV * ((string * fn_type) list) * (int * int)) list
   | DefEmpty
 
 let gen_array_cell_vars ~num_cells:n vi =
@@ -113,16 +113,15 @@ let rec pp_define_symbolic fmt def =
                         pp_string_list (to_v vil)
   | DefArray vil ->
     List.iter
-      (fun vi ->
-         let num_cells = if is_outer_used vi then !mat_h else !mat_w in
-         let vars = gen_array_cell_vars ~num_cells:num_cells vi in
+      (fun (vi, n) ->
+         let vars = gen_array_cell_vars ~num_cells:n vi in
          pp_define_symbolic fmt
            (try
               (match array_type vi.vtype with
                | Integer -> DefInteger vars
                | Real -> DefReal vars
                | Boolean -> DefBoolean vars
-               | Record r -> DefRecord (List.map (fun vi -> vi, r) vars)
+               | Record r -> DefRecord (List.map (fun vi -> vi, r, (n, n)) vars)
                | _ -> DefEmpty)
             with BadType s ->
               failhere __FILE__ "pp_define_symbolic" s);
@@ -131,9 +130,9 @@ let rec pp_define_symbolic fmt def =
 
   | DefMatrix vil ->
     List.iter
-      (fun vi ->
-         let mvars = gen_mat_cell_vars ~num_lines:!mat_h ~num_cols:!mat_w vi in
-         let avars = gen_array_cell_vars ~num_cells:!mat_h vi in
+      (fun (vi, n, m) ->
+         let mvars = gen_mat_cell_vars ~num_lines:n ~num_cols:m vi in
+         let avars = gen_array_cell_vars ~num_cells:n vi in
          List.iteri
            (fun i vars ->
               pp_define_symbolic fmt
@@ -151,7 +150,7 @@ let rec pp_define_symbolic fmt def =
 
   | DefRecord virtl ->
     List.iter
-      (fun (vi, mems) ->
+      (fun (vi, mems, (n, m)) ->
          let vars =
            List.map
              (fun (name, typ) ->
@@ -161,7 +160,7 @@ let rec pp_define_symbolic fmt def =
                    | Integer -> DefInteger newv
                    | Boolean -> DefBoolean newv
                    | Real -> DefReal newv
-                   | Vector (v, _) -> DefArray newv
+                   | Vector (v, _) -> DefArray [(newv >> 0, m)]
                    | _ -> DefEmpty);
                 newv >> 0, name, typ
              )
@@ -179,7 +178,7 @@ let rec pp_define_symbolic fmt def =
   | DefEmpty -> ()
 
 
-let pp_vs_to_symbs fmt except vs =
+let pp_vs_to_symbs ?(inner=false) fmt except vs =
   (* Populate the types *)
   VarSet.iter
     (fun vi ->
@@ -193,10 +192,10 @@ let pp_vs_to_symbs fmt except vs =
             | Vector (v, _) ->
               (* Support up to 2-dimensional arrays. *)
               (match v with
-               | Vector (v2, _) -> DefMatrix [vi]
-               | _ -> DefArray [vi])
+               | Vector (v2, _) -> DefMatrix [(vi, !mat_h, !mat_w)]
+               | _ -> DefArray [(vi, if inner then !mat_w else !mat_h)])
             | Record rt ->
-              DefRecord [(vi, rt)]
+              DefRecord [(vi, rt, (!mat_h, if inner then !mat_w else !mat_h))]
             | _ ->
               (F.eprintf "Unsupported type for variable %s.\
                           This will lead to errors in the sketch."
@@ -342,8 +341,8 @@ let define_state fmt (struct_name_and_fields : string * string list) =
     lines required for the problem.
     @param vars The set of variables whose defintion will be printed.
 *)
-let pp_symbolic_definitions_of fmt except_vars vars =
-  pp_vs_to_symbs fmt except_vars vars
+let pp_symbolic_definitions_of ?(inner=false) fmt except_vars vars =
+  pp_vs_to_symbs ~inner:inner fmt except_vars vars
 
 (** Pretty print the body of the loop.
     @param loop_body The function representing the loop body.
@@ -583,7 +582,7 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
       (VarSet.bindings state_vars)
 
 
-let pp_input_state_definitions fmt state_vars reach_consts =
+let pp_input_state_definitions ?(inner=false) fmt state_vars reach_consts =
   let s0_sketch_printer =
     F.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
@@ -599,7 +598,7 @@ let pp_input_state_definitions fmt state_vars reach_consts =
     s0_sketch_printer (VarSet.elements state_vars);
   (* Define the symbols that do not have reaching consts.*)
   let symbolic_vars = (VarSet.add_prefix state_vars "symbolic_") in
-  pp_symbolic_definitions_of fmt [] symbolic_vars;
+  pp_symbolic_definitions_of ~inner:inner fmt [] symbolic_vars;
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     init_state_name "iEnd"
@@ -808,7 +807,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   let additional_symbols =
-    pp_input_state_definitions fmt state_vars sketch.reaching_consts
+    pp_input_state_definitions ~inner:true fmt state_vars sketch.reaching_consts
   in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();

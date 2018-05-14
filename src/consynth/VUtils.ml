@@ -36,14 +36,14 @@ type auxiliary =
   }
 
 let add_left_auxiliary vi =
-  SketchJoin.add_laux_id vi.vid;
-  SketchJoin.cur_left_auxiliaries:=
-    (VarSet.add vi !SketchJoin.cur_left_auxiliaries)
+  add_laux_id vi.vid;
+  cur_left_auxiliaries:=
+    (VarSet.add vi !cur_left_auxiliaries)
 
 let add_right_auxiliary vi =
-  SketchJoin.add_raux_id vi.vid;
-  SketchJoin.cur_right_auxiliaries:=
-    (VarSet.add vi !SketchJoin.cur_right_auxiliaries)
+  add_raux_id vi.vid;
+  cur_right_auxiliaries:=
+    (VarSet.add vi !cur_right_auxiliaries)
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set

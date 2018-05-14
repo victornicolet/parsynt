@@ -112,7 +112,8 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
               | Boolean -> RAst.Bool_e true
               | Real -> RAst.Int_e 1
               | _ -> RAst.Nil_e) map)
-        Sketch.Join.auxiliary_variables IM.empty
+        aux_vars
+        IM.empty
   in
   {problem with
    join_solution =

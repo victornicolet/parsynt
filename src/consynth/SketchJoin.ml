@@ -26,25 +26,6 @@ let debug = ref false
 let narrow_array_completions = ref false
 let join_loop_width = ref 5
 
-let auxiliary_variables : fnV IH.t = IH.create 10
-
-let cur_left_auxiliaries = ref VarSet.empty
-let cur_right_auxiliaries = ref VarSet.empty
-
-let left_aux_ids = ref []
-let right_aux_ids = ref []
-
-let add_laux_id i = left_aux_ids := i :: !left_aux_ids
-let add_raux_id i = right_aux_ids := i :: !right_aux_ids
-
-let is_left_aux i = List.mem i !left_aux_ids
-
-let is_right_aux i = List.mem i !right_aux_ids
-
-let init () =
-  IH.clear auxiliary_variables;
-  cur_left_auxiliaries := VarSet.empty;
-  cur_right_auxiliaries := VarSet.empty
 
 (* Returns true is the expression is a hole. The second
    boolean in the pair is useful when we are trying to merge
@@ -99,7 +80,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
       match var with
       | FnVariable vi ->
         let t = vi.vtype in
-        if (IH.mem auxiliary_variables vi.vid) && is_final
+        if (is_currently_aux vi) && is_final
         then FnVar var, 0
         else if is_record_type t then
           (* At this point, a variable of record type (not a record expression!) should

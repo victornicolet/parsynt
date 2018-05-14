@@ -37,7 +37,7 @@ let debug = ref false
 let verbose = ref false
 (* Do not remove dead code, some of this
    dead code is useful in the examples *)
-let elim_dead_code = ref false
+let elimDeadCode = ref false
 
 
 let parseOneFile (fname : string) : C.file =
@@ -63,7 +63,7 @@ let processFile fileName =
   in
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
   Cfg.computeFileCFG cfile;
-  if !elim_dead_code then  Deadcodeelim.dce cfile;
+  if !elimDeadCode then  Deadcodeelim.dce cfile;
   Loops.debug := !debug;
   Loops.verbose := !verbose;
   process_file cfile;
@@ -240,7 +240,7 @@ let func2sketch cfile funcreps =
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
     let index_set, _ = sigu in
-    IH.clear SketchJoin.auxiliary_variables;
+    aux_vars_init ();
     Sketch.Join.join_loop_width := !mat_w;
     let inner_indexes =
       List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
@@ -284,6 +284,9 @@ let func2sketch cfile funcreps =
     in
     (if !debug then
        printf "@.Max dependency length : %i@." max_m_sizes);
+    if List.length inners > 0 then
+      VarSet.iter mark_outer_used (varset_of_vs func_info.lvariables.used_vars);
+
     (**
        Return the structure containing all the information to solve the problem.
        This structure should be containing all the information to call the solver
@@ -336,8 +339,7 @@ let find_new_variables sketch_rep =
   let new_loop_body =
     complete_final_state new_sketch.scontext.state_vars nlb_opt
   in
-  IH.copy_into VariableDiscovery.discovered_aux_alltime
-    SketchJoin.auxiliary_variables;
+  discover_save ();
   let inner_indexes =
     List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) sketch_rep.inner_functions
   in
@@ -366,14 +368,13 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   match solver.name with
   | "Rosette" ->
     begin
-      IH.copy_into VariableDiscovery.discovered_aux_alltime
-        Sketch.auxiliary_vars;
+      IH.copy_into d_aux_alltime Sketch.auxiliary_vars;
       Sketch.pp_rosette_sketch parent_context inner fmt sketch_rep
     end
   | _ -> ()
 
 
 let clear () =
-  IH.clear VariableDiscovery.discovered_aux_alltime;
+  discover_clear ();
   Loops.clear ();
   IH.clear Sketch.auxiliary_vars
