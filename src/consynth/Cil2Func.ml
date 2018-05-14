@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
-
 open Beta
 open Cil
 open Format
@@ -866,11 +865,10 @@ and clean vs let_form =
                       | None -> VS.empty)
                   | LhTuple vil -> vil
      in
-     if not (VS.is_empty (VS.diff vs lhs))
-     then Let(v, e, clean vs c, id, loc)
-     else
-       (VS.ppvs (VS.diff lhs vs);
-       failwith "Cil2func : Non-state variable bound in let form.")
+     if not (VS.equal vs lhs) && VS.is_empty (VS.diff vs lhs) then
+       let s = VS.string_of_vs lhs in
+       failhere __FILE__ "clean"  ("Non-state variable bound in let form :"^s)
+     else Let(v, e, clean vs c, id, loc)
 
   | LetCond (ce, lif, lelse, lcont, loc) ->
      LetCond (ce, clean vs lif, clean vs lelse, clean vs lcont, loc)
