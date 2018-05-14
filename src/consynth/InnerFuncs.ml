@@ -13,7 +13,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open Beta
 open FuncTypes
@@ -40,6 +40,7 @@ let replace_by_join problem inner_loops =
     match join with
     | FnLetExpr bl ->
       if List.length bl > 0 then
+        failwith "TODO: replace l. vars by state, r.vars by virtual input";
         Some (FnFun join)
       else None
     | _ -> None
@@ -68,8 +69,8 @@ let replace_by_join problem inner_loops =
     let rpl_case e =
       match e with
       | FnApp (st, Some f, args) ->
-          (Conf.is_inner_loop_func_name f.vname &&
-           (Conf.id_of_inner_loop f.vname) = in_info.id)
+        (Conf.is_inner_loop_func_name f.vname &&
+         (Conf.id_of_inner_loop f.vname) = in_info.id)
 
       | _ -> false
     in
@@ -83,11 +84,13 @@ let replace_by_join problem inner_loops =
                        List.map mkVarExpr (VarSet.elements state))
            in
            let index = VarSet.max_elt problem.scontext.index_vars in
-          FnApp (inner_styp, Some new_joinf,
-                 [capture_state; mkVarExpr ~offsets:[mkVarExpr index] new_seq;
-                  mkVarExpr in_st; mkVarExpr in_end])
-        | Some inline_join ->
-          inline_join)
+           FnApp (inner_styp, Some new_joinf,
+                  [capture_state; mkVarExpr ~offsets:[mkVarExpr index] new_seq;
+                   mkVarExpr in_st; mkVarExpr in_end])
+
+         | Some inline_join ->
+           inline_join)
+
       | _ -> rfunc e
     in
     let rpl_transformer =
@@ -101,7 +104,7 @@ let replace_by_join problem inner_loops =
     (* printf "transformed body:@.%a@." FPretty.pp_fnexpr new_body; *)
     let new_read_vars = used_in_fnexpr new_body in
     new_body, {ctx with all_vars = VarSet.union new_read_vars ctx.all_vars;
-               used_vars = new_read_vars }
+                        used_vars = new_read_vars }
   in
   let newbody, newctx =
     List.fold_left replace (problem.loop_body, problem.scontext) inner_loops

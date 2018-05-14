@@ -38,5 +38,5 @@ val func2sketch: Cil.file -> func_info list -> FuncTypes.prob_rep list
 val find_new_variables : FuncTypes.prob_rep -> FuncTypes.prob_rep
 val pp_sketch: ?inner:bool -> ?parent_context:FuncTypes.context option->
   Conf.solver -> Format.formatter -> FuncTypes.prob_rep -> unit
-
+val store_solution: FuncTypes.prob_rep option -> unit
 val clear: unit -> unit

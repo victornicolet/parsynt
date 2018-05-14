@@ -20,11 +20,38 @@ open Beta
 open FuncTypes
 open Utils
 open FPretty
+open Format
 module IH = Sets.IH
+
 
 let debug = ref false
 let narrow_array_completions = ref false
 let join_loop_width = ref 5
+
+(**
+   Solutions of inner loops are stored for inlining.
+*)
+let _inner_joins : (context * fnExpr) SH.t = SH.create 10
+
+let store_solution (maybe_solution : prob_rep option) : unit =
+  match maybe_solution with
+
+  | Some sol ->
+    (* Check that the solution is not empty *)
+    let solution_expr = sol.memless_solution in
+    if solution_expr = FnLetExpr([]) then
+      eprintf "[WARNING] Store empty solution? Loop: %s@." sol.loop_name;
+    SH.add _inner_joins (Conf.join_name sol.loop_name) (sol.scontext, sol.memless_solution)
+
+  | None -> ()
+
+let get_solution (join_name : string) : (context * fnExpr) option =
+  try
+    let (ctx, sol) = SH.find _inner_joins join_name in
+    if sol = FnLetExpr ([]) then None else Some (ctx, sol)
+  with Not_found ->
+    None
+
 
 
 (* Returns true is the expression is a hole. The second
@@ -65,6 +92,10 @@ let midx_of_hole =
   | FnHoleR (_, _,i) -> i
   | FnHoleL (_, _,_,i) -> i
   | _ -> FnConst(CNil)
+
+
+(* Some transformations need to be wrapped in a recursive function *)
+let force_wrap = ref false
 
 let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
     (index_expr : fnExpr)
@@ -195,44 +226,78 @@ and make_assignment_list ie state skip writes_in_array =
       | _ -> List.mem var skip)
     | _ -> List.mem var skip
   in
-  List.map (fun (vbound, e) ->
+  List.fold_left
+    (fun l (vbound, e) ->
       match e with
-      | FnVar v when v = vbound && in_skip_list v skip -> (v, e)
+      | FnVar v when v = vbound && in_skip_list v skip -> l @ [v, e]
 
-      | FnConst c -> (vbound, e)
+      | FnConst c -> l @ [vbound, e]
 
       | FnApp (st, f, args) ->
         (match f with
         | Some func ->
           (* Is it the join function of an inner loop? *)
           (if Conf.is_inner_join_name func.vname then
-             (vbound, FnApp(st, f, (ListTools.unpair --> fst) (List.map (make_hole_e ie state) args)))
+             let new_binds =
+               inline_inner_join ie state skip writes_in_array (vbound, st, func, args)
+             in
+             (l @ new_binds)
            else
-             (vbound, e))
+             l @ [(vbound, e)])
         | None ->
-          (vbound, e))
+          l @ [(vbound, e)])
 
       | _ ->
         try
           let vi_bound = check_option (vi_of vbound) in
           if VarSet.mem vi_bound !cur_left_auxiliaries ||
              VarSet.mem vi_bound !cur_right_auxiliaries  then
-            (vbound, FnHoleL (((type_of e), Basic), vbound,
-                         CS.complete_all (CS.of_vs state), ie))
+            l @ [vbound, FnHoleL (((type_of e), Basic), vbound,
+                         CS.complete_all (CS.of_vs state), ie)]
           else
             (match vi_bound.vtype with
              | Vector _ ->
                writes_in_array := true;
-               (vbound, fst (make_hole_e ~is_array:true ie state e))
+               l @ [vbound, fst (make_hole_e ~is_array:true ie state e)]
              | _ ->
-               (vbound, fst (make_hole_e ie state e)))
+               l @ [vbound, fst (make_hole_e ie state e)])
         with Failure s ->
           Format.eprintf "Failure %s@." s;
           let msg =
             Format.sprintf "Check if %s is vi failed." (FPretty.sprintFnexpr e)
           in
           failhere __FILE__ "make_assignment_list"  msg
-    )
+    ) []
+
+
+
+and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (wa : bool ref)
+    (vbound, st, f, args) : (fnLVar * fnExpr) list=
+  let state_has_array =
+    match st with
+    | Record slt -> List.exists (fun (s,t) -> is_array_type t) slt
+    | Vector _ -> true
+    | _ -> false
+  in
+  wa := state_has_array;
+  let default_join =
+    [(vbound, FnApp(st, Some f, (ListTools.unpair --> fst) (List.map (make_hole_e index state) args)))]
+  in
+  match get_solution f.vname with
+  | Some (ctx, func) ->
+    begin
+      match func with
+      | FnLetExpr([(_, FnRec (_, _, (_, b)))])
+      | FnLetIn([(_, FnRec (_, _, (_, b)))], _) ->
+        printf "@.Got the join: %a.@." pp_fnexpr b;
+        default_join
+
+      | _ -> default_join
+    end
+  | None ->
+    default_join
+
+
 
 and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) =
   function
@@ -245,6 +310,8 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
       make_assignment_list index state skip w_a ve_list,
       make_join ~index:index ~state:state ~skip:(skip@to_skip) ~w_a:w_a cont)
   | e -> e
+
+
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
@@ -434,11 +501,11 @@ let add_drop_choice = ref true
 
 
 let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
-  (* Get the base skeleton *)
+  force_wrap := false;
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
 
-  if !writes_in_array then
+  if !writes_in_array || !force_wrap then
     let loop_join =
       wrap_with_loop for_inner outeri state reach_consts base_join
     in

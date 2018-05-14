@@ -25,7 +25,6 @@ open Utils
 open Utils.PpTools
 open Getopt
 open FuncTypes
-open InnerFuncs
 
 
 module L = Local
@@ -66,10 +65,13 @@ let solution_failed ?(failure = "") problem =
 
 
 
-let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
+let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_rep) =
+
   if !verbose then
-    printf "@.%sSOLUTION for %s %s:@.%a"
-      (color "green") lp_name color_default RAst.pp_expr_list parsed;
+    printf "@.%s%sSOLUTION for %s %s:@.%a"
+      (color "green")       (if inner then "(inner loop)" else "")
+      lp_name color_default RAst.pp_expr_list parsed;
+
   (* Open and append to stats *)
   let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
@@ -115,10 +117,16 @@ let solution_found racket_elapsed lp_name parsed (problem : prob_rep) =
         aux_vars
         IM.empty
   in
-  {problem with
-   join_solution =
-     ExpressionReduction.normalize problem.scontext translated_join_body;
-   init_values = remap_init_values sol_info.Codegen.init_values}
+  if inner then
+    {problem with
+     memless_solution =
+       ExpressionReduction.normalize problem.scontext translated_join_body;
+     init_values = remap_init_values sol_info.Codegen.init_values}
+  else
+    {problem with
+     join_solution =
+       ExpressionReduction.normalize problem.scontext translated_join_body;
+     init_values = remap_init_values sol_info.Codegen.init_values}
 
 
 let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) parent_ctx problem =
@@ -130,7 +138,9 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) pare
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
     let racket_elapsed, parsed =
       L.compile_and_fetch solver
-        ~print_err_msg:Racket.err_handler_sketch (C.pp_sketch ~inner:inner ~parent_context:parent_ctx solver) problem
+        ~print_err_msg:Racket.err_handler_sketch
+        (C.pp_sketch ~inner:inner ~parent_context:parent_ctx solver)
+        problem
     in
     if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
       (* We get an "unsat" answer : add loop to auxiliary discovery *)
@@ -150,7 +160,10 @@ let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) pare
       (* A solution has been found *)
       begin
         try
-          Some (solution_found racket_elapsed lp_name parsed problem)
+          let sol = Some (solution_found ~inner:inner racket_elapsed lp_name parsed problem) in
+          if inner then
+            C.store_solution sol;
+          sol
         with Failure s ->
           solution_failed ~failure:s problem;
           None
@@ -174,10 +187,10 @@ let rec solve_inners problem =
   else
     let solve_inner_problem inpb =
       let start = Unix.gettimeofday () in
-      let soln = solve_one ~inner:true (Some problem.scontext) inpb in
+      let maybe_solution = solve_one ~inner:true (Some problem.scontext) inpb in
       let elapsed = Unix.gettimeofday () -. start in
       message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
-      soln
+      maybe_solution
     in
     (* Solve the inner functions. *)
     message_start_subtask ("Solving inner loops of "^problem.loop_name);
@@ -197,7 +210,7 @@ let rec solve_inners problem =
                 FPretty.pp_fnexpr pb.loop_body
                 FPretty.pp_fnexpr pb.join_solution)
            inner_funcs;
-       Some (replace_by_join problem inner_funcs))
+       Some (InnerFuncs.replace_by_join problem inner_funcs))
     else
       None
 

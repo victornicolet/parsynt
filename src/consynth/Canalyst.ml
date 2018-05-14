@@ -374,6 +374,8 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   | _ -> ()
 
 
+let store_solution = Join.store_solution
+
 let clear () =
   discover_clear ();
   Loops.clear ();

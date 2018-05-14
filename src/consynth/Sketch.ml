@@ -721,7 +721,7 @@ let pp_inner_join_def fmt pb =
   let stv = pb.scontext.state_vars in
   let styp = Record (VarSet.record stv) in
   pp_comment fmt "Defining inner join function for outer loop.";
-  define_inner_join fmt pb.loop_name (stv, styp) (get_bounds pb) pb.join_solution;
+  define_inner_join fmt pb.loop_name (stv, styp) (get_bounds pb) pb.memless_solution;
   pp_newline fmt ()
 
 let pp_inner_loops_joins fmt inner_loop_list =

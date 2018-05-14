@@ -16,7 +16,7 @@ int mLeftRectangle(int **A, int m, int n) {
 	  for(int j = 0; j < m; j++)
 		{
 		  rs += A[i][j];
-		  rects[j] += rs;
+		  rects[j] = rs;
 		  mtr[j] = max(mtr[j] + rs, 0);
 		  mlr = max(mlr, mtr[j]);
 		}
