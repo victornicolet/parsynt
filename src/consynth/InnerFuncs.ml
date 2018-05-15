@@ -34,18 +34,57 @@ open Format
 
 
 let replace_by_join problem inner_loops =
+  let created_inputs = IH.create 10 in
   (* Inline the join only if it is a list of parallel assignments. *)
-  let inline_join in_info =
+  let inline_join out_index in_info =
     let join = in_info.memless_solution in
     match join with
     | FnLetExpr bl ->
-      if List.length bl > 0 then
-        (failwith "TODO: replace l. vars by state, r.vars by virtual input";
-        Some (FnFun join))
-      else None
+      begin
+
+        if List.length bl > 0 then
+
+        let rec transform_var : fnLVar -> fnLVar =
+          function
+          | FnVariable vi ->
+            let rvname, _, right = is_right_state_varname vi.vname in
+            let lvname, _, left = is_left_state_varname vi.vname in
+            if left then
+              FnVariable (find_var_name lvname)
+            else if right then
+              let input_like = Conf.seq_name rvname in
+              begin
+                let v = try
+                  find_var_name input_like
+                with Not_found ->
+                  mkFnVar input_like (Vector(vi.vtype, None))
+                in
+                IH.add created_inputs v.vid v;
+                FnArray(FnVariable v, out_index)
+              end
+            else
+              FnVariable vi
+
+          | FnArray (v, e) -> FnArray (transform_var v,e)
+        in
+        let jn =
+          transform_expr2
+            {
+              case = (fun e -> false);
+              on_case = (fun f e -> e);
+              on_var = transform_var;
+              on_const = identity;
+            } join
+        in
+        Some jn
+
+        else None
+      end
     | _ -> None
   in
   let replace (lbody, ctx) in_info =
+    IH.clear created_inputs;
+    let out_index = mkVarExpr (VarSet.max_elt ctx.index_vars) in
     (* Create a sequence type for the input of the inner loop. *)
     let state = in_info.scontext.state_vars in
     let inner_styp = Record (VarSet.record state) in
@@ -77,7 +116,7 @@ let replace_by_join problem inner_loops =
     let rpl rfunc e =
       match e with
       | FnApp (st, Some f, args) ->
-        (match inline_join in_info with
+        (match inline_join out_index in_info with
          | None ->
            let capture_state =
              FnRecord (Record (VarSet.record state),
@@ -101,17 +140,22 @@ let replace_by_join problem inner_loops =
       }
     in
     let new_body = transform_expr2 rpl_transformer lbody in
-    (* printf "transformed body:@.%a@." FPretty.pp_fnexpr new_body; *)
-    let new_read_vars = used_in_fnexpr new_body in
-    new_body, {ctx with all_vars = VarSet.union new_read_vars ctx.all_vars;
-                        used_vars = new_read_vars }
+    let added_inputs =
+      IH.fold
+        (fun id v vset -> VarSet.add v vset) created_inputs
+        (used_in_fnexpr new_body)
+    in
+    new_body, {ctx with all_vars = VarSet.union added_inputs ctx.all_vars;
+                        used_vars = added_inputs }
   in
   let newbody, newctx =
     List.fold_left replace (problem.loop_body, problem.scontext) inner_loops
   in
   let new_sketch =
     Sketch.Join.build_join
-      (List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) problem.inner_functions)
+      (List.map
+         (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
+         problem.inner_functions)
       problem.scontext.state_vars newbody
   in
   {problem with inner_functions = inner_loops;

@@ -176,7 +176,7 @@ let verification_parameters =
 
 (* 5 - Naming conventions *)
 let sep_str = "#"
-let name_len = 5
+let name_len = 4
 
 let inner_loop_func_name func lid =
   sep_str^"L_"^(Str.first_chars func name_len)^sep_str^(string_of_int lid)

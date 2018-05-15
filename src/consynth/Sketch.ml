@@ -170,7 +170,7 @@ let rec pp_define_symbolic fmt def =
          let vars, _, _ = ListTools.untriple vars in
          F.fprintf fmt "@[<hv 2>(define %s@;(%s %a)@;)@]@\n"
            vi.vname
-           (tuple_struct_name vt)
+           (record_name vt)
            pp_string_list (to_v vars)
       )
       virtl
@@ -414,7 +414,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
            if IM.mem v.vid reach_const then
              IM.find v.vid reach_const
            else
-             FnApp(v.vtype, Some (state_member_accessor sname v),
+             FnApp(v.vtype, Some (record_accessor sname v),
                    [mkVarExpr state_var])) (VarSet.elements state_vars),
       state_var
     in
@@ -446,7 +446,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     @param rstate_name The name of the right state argument of the join.
 *)
 let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
-  let sname = tuple_struct_name (VarSet.record state_vars) in
+  let sname = record_name (VarSet.record state_vars) in
   let left_state_vars = VarSet.add_prefix state_vars
       (Conf.get_conf_string "rosette_join_left_state_prefix") in
   let right_state_vars = VarSet.add_prefix state_vars
@@ -472,7 +472,7 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param state_vars The set of state variables.
 *)
 let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
-  let sname = tuple_struct_name (VarSet.record state_vars) in
+  let sname = record_name (VarSet.record state_vars) in
   let lstate_name = sname^"L" in
   let rstate_name = sname^"R" in
   let ist, ien = bnd_args in
@@ -497,7 +497,7 @@ let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
     will be set to this expression in the inital state of the loop.
 *)
 let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
-  let struct_name = tuple_struct_name (VarSet.record state_vars) in
+  let struct_name = record_name (VarSet.record state_vars) in
   let reach_consts = handle_special_consts fmt read_vars reach_consts in
   let s0_sketch_printer =
     F.pp_print_list
@@ -594,7 +594,7 @@ let pp_input_state_definitions ?(inner=false) fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     ident_state_name "iEnd"
-    (tuple_struct_name (VarSet.record state_vars))
+    (record_name (VarSet.record state_vars))
     s0_sketch_printer (VarSet.elements state_vars);
   (* Define the symbols that do not have reaching consts.*)
   let symbolic_vars = (VarSet.add_prefix state_vars "symbolic_") in
@@ -602,7 +602,7 @@ let pp_input_state_definitions ?(inner=false) fmt state_vars reach_consts =
   Format.fprintf fmt
     "@[(define (%s %s) (%s %a))@]@."
     init_state_name "iEnd"
-    (tuple_struct_name (VarSet.record state_vars))
+    (record_name (VarSet.record state_vars))
     pp_expr_list (List.map mkVarExpr (VarSet.elements symbolic_vars));
   symbolic_vars
 
@@ -706,7 +706,7 @@ let define_inner_join fmt lname (state, styp) (ist, iend) join =
 
 let pp_inner_def fmt pb =
   let stv = pb.scontext.state_vars in
-  let inner_struct_name = tuple_struct_name (VarSet.record stv) in
+  let inner_struct_name = record_name (VarSet.record stv) in
   (* Define state struct type. *)
   pp_comment fmt "Defining struct for state of the inner loop.";
   define_state fmt (inner_struct_name, VarSet.names stv);
@@ -777,7 +777,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
-  let struct_name = tuple_struct_name (VarSet.record state_vars) in
+  let struct_name = record_name (VarSet.record state_vars) in
   (* The parent index has to be replaced with a constant. *)
 
   let loop_body =
@@ -822,7 +822,7 @@ let pp_rosette_sketch_join fmt sketch =
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
-  let struct_name = tuple_struct_name (VarSet.record state_vars) in
+  let struct_name = record_name (VarSet.record state_vars) in
   (** Read variables : force read /\ state = empty *)
   let read_vars =
     VarSet.diff

@@ -248,6 +248,8 @@ and make_assignment_list ie state skip writes_in_array =
           l @ [(vbound, e)])
 
       | _ ->
+        printf "Hole in expr : %a (%a)@." pp_fnexpr e pp_typ (type_of e);
+        printf "Result: %a@." pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
         try
           let vi_bound = check_option (vi_of vbound) in
           if VarSet.mem vi_bound !cur_left_auxiliaries ||
@@ -482,11 +484,11 @@ let wrap_with_loop for_inner i state reach_consts base_join =
 let wrap_with_choice for_inner state base_join =
   let special_state_var = mkFnVar (state_var_name state "_fs_") (Record (VarSet.record state)) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let structname = tuple_struct_name (VarSet.record state) in
+  let structname = record_name (VarSet.record state) in
   let final_choices =
     List.map
       (fun v ->
-         let accessor = state_member_accessor structname v in
+         let accessor = record_accessor structname v in
          let rightval = {v with vname = rprefix ^ v.vname} in
          (mkVar v, FnChoice(
            [FnApp(v.vtype, Some accessor, [mkVarExpr special_state_var]);

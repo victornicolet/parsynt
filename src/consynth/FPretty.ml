@@ -27,11 +27,7 @@ let reinit ?(ed = 1) ?(use_nl = false) =
   use_non_linear_operator := use_nl;
   skipped_non_linear_operator := false
 
-(**
-   TODO : find a way to be able to generate different hole
-   expressions for R-holes and L-holes. Also, might be useful
-   to refine available variables with the type of the hole.
-*)
+
 let ref_concat l = List.fold_left (fun ls s-> ls^" "^(!s)) "" l
 
 let hole_type_expr fmt ((t, ot) : hole_type) =
@@ -286,7 +282,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   match fnexpr with
   | FnLetExpr el ->
     fprintf ppf "@[<hov 2>(%s %a)@]"
-      (tuple_struct_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
+      (record_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
          (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
@@ -322,13 +318,13 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       | Record stl -> stl
       | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record."
     in
-    let record_name = tuple_struct_name stl in
+    let record_name = record_name stl in
     fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr) exprs
 
   | FnRecordMember (record, mname) ->
     let record_name =
       match type_of record with
-      | Record stl -> tuple_struct_name stl
+      | Record stl -> record_name stl
       | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
@@ -495,7 +491,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
       (color "red") color_default
       (color "b")
-      (tuple_struct_name ~only_by_type:true
+      (record_name ~only_by_type:true
          (List.map (fun (v,e) -> let tv = type_of_var v in shstr_of_type tv, tv) el))
       color_default
       (pp_print_list
@@ -718,7 +714,7 @@ and pp_c_var ?(rhs = true) fmt v =
            (is_left_index_vi v) || (is_right_index_vi v) then
           match is_right_state_varname v.vname with
           | real_varname, true, true ->
-            (rs_prefix^"my_"^real_varname)
+            (rhs_prefix^"my_"^real_varname)
           | real_varname, true, false ->
             "my_"^real_varname
           | _ , false, _ ->

@@ -29,24 +29,24 @@ open Synthlib2ast
 
 (**
    1 - Expressions.
-   2 - Typing functions.
-   3 - Basic helper functions.
+   2 - Basic helper functions.
+   3 - Typing functions.
    4 - Recursors.
    5 - Scheme & func transformers.
    6 - Expression sets.
-   7 - Index variables management.
+   7 - Index variables management (expressions part)
    8 - Structs for problem info.
    9 - Conversion to CIL.
-   10 - Conversion to Synthlib.
 *)
 
 let use_unsafe_operations = ref false
 let rosette_prefix_struct = Conf.get_conf_string "rosette_struct_name"
 let debug = ref false
 
-exception BadType of string
 
-let failontype s = raise (BadType s)
+(* ---------------------------- 1 - EXPRESSIONS ----------------------------- *)
+
+
 
 type hole_type = fn_type * operator_type
 
@@ -89,165 +89,14 @@ and fnExpr =
 
 and fnDefinition = fnV * fnV list * fnExpr
 
-(* -------------------- 5 - TYPING FUNCTIONS -------------------- *)
+(* Get the varinfo of a variable. *)
+let rec vi_of fnlv =
+  match fnlv with
+  | FnVariable vi' -> Some vi'
+  | FnArray (fnlv', _) -> vi_of fnlv'
 
-let rec type_of_ciltyp =
-  function
-  | Cil.TInt (ik, _) ->
-    begin
-      match ik with
-      | Cil.IBool -> Boolean
-      | _ -> Integer
-    end
+(* -------------------- 2 - TYPING FUNCTIONS -------------------- *)
 
-  | Cil.TFloat _ -> Real
-
-  | Cil.TArray (t, _, _) ->
-    Vector (type_of_ciltyp t, None)
-
-  | Cil.TFun (t, arglisto, _, _) ->
-    Procedure (type_of_args arglisto, type_of_ciltyp t)
-  | Cil.TComp (ci, _) -> Unit
-  | Cil.TVoid _ -> Unit
-  | Cil.TPtr (t, _) ->
-    Vector (type_of_ciltyp t, None)
-  | Cil.TNamed (ti, _) ->
-    type_of_ciltyp ti.Cil.ttype
-  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
-
-and type_of_args argslisto =
-  try
-    let argslist = check_option argslisto in
-    let symb_types_list, argnames =
-      List.map
-        (fun (s, t, atr) -> type_of_ciltyp t)
-        argslist,
-      List.map
-        (fun (s, t, atr) -> s)
-        argslist
-    in
-    match symb_types_list with
-    | [] -> Unit
-    | [st] -> st
-    | _ -> Record (List.combine argnames symb_types_list)
-  with Failure s -> Unit
-
-let rec type_of_cilconst c =
-  match c with
-  | Cil.CInt64 _  | Cil.CChr _ -> Integer
-  | Cil.CReal _ -> Real
-  | Cil.CStr _ | Cil.CWStr _ -> List (Integer, None)
-  | Cil.CEnum (_, _, einf) -> failwith "Enum types not implemented"
-
-let rec ciltyp_of_symb_type =
-  function
-  | Integer -> Some (Cil.TInt (Cil.IInt, []))
-  | Boolean -> Some (Cil.TInt (Cil.IBool, []))
-  | Real | Num -> Some (Cil.TFloat (Cil.FFloat, []))
-  | Vector (t, _) ->
-    (match ciltyp_of_symb_type t with
-     | Some tc -> Some (Cil.TArray (tc, None, []))
-     | None -> None)
-  | _ -> None
-
-
-let recordtype_of_vs vs =
-  Record (List.map (fun vi -> vi.Cil.vname, (type_of_ciltyp vi.Cil.vtype)) (VS.varlist vs))
-
-let rec pp_typ fmt t =
-  let fpf = Format.fprintf in
-  match t with
-  | Unit -> fpf fmt "unit"
-  | Bottom -> fpf fmt "<BOT>"
-  | Integer -> fpf fmt "integer"
-  | Real -> fpf fmt "real"
-  | Num -> fpf fmt "num"
-  | Boolean -> fpf fmt "boolean"
-  | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
-  | Record tl ->
-    Format.pp_print_list
-      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t) fmt tl
-  | Function (argt, rett) ->
-    fpf fmt "%a -> %a" pp_typ argt pp_typ rett
-  | Pair t -> fpf fmt "%a pair" pp_typ t
-  | List (t, _) -> fpf fmt "%a list" pp_typ t
-  | Struct t -> fpf fmt "%a struct" pp_typ t
-  | Bitvector i -> fpf fmt "bitvector[%i]" i
-  | Box t -> fpf fmt "%a box" pp_typ t
-  | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
-
-
-let rec shstr_of_type t =
-  match t with
-  | Unit -> "u"
-  | Bottom -> "o"
-  | Integer -> "i"
-  | Real -> "r"
-  | Num -> "n"
-  | Boolean -> "b"
-  | Vector (vt, _) -> "V"^(shstr_of_type vt)^"_"
-  | Record tl -> String.concat "" ("T" :: List.map (fun (_, t) -> shstr_of_type t) tl)
-  | Function (argt, rett) -> "F"^(shstr_of_type argt)^"_"^(shstr_of_type rett)^"_"
-  | _ ->
-    pp_typ err_formatter t;
-    failhere __FILE__ "shstr_of_type" "No short string for this type"
-
-let rec is_subtype t tmax =
-  match t, tmax with
-  | t, tmax when t = tmax -> true
-  | Integer, Real -> true
-  | Num, Real | Real, Num -> true
-  | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
-  | _, _ ->
-    failontype (Format.fprintf str_formatter
-                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
-                flush_str_formatter ())
-
-
-let rec res_type t =
-  match t with
-  | Function (t, t') -> t'
-  | _ -> t
-
-let array_type t =
-  match t with
-  | Vector (t, _) -> t
-  | _ -> failontype "Array type must be applied to array types."
-
-let is_array_type t =
-  match t with
-  | Vector (t,_) -> true
-  | Bitvector _ -> true
-  | _ -> false
-
-let is_matrix_type t =
-  match t with
-  | Vector (Vector (t, _), _) -> true
-  | _ -> false
-
-let matrix_type t =
-  match t with
-  | Vector (Vector (t, _), _) -> t
-  | _ -> failontype "Cannot extract matrix type, this is not a matrix."
-
-let is_record_type t =
-  match t with
-  | Record _ -> true
-  | _ -> false
-
-let rec join_types t1 t2 =
-  match t1, t2 with
-  | t1, t2 when t1 = t2 -> t1
-  | Integer, Boolean -> Boolean
-  | Integer, Real | Real, Integer
-  | Num, Real | Real, Num -> Real
-  | Integer, Num | Num, Integer -> Num
-  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
-  | _, _ ->
-    failontype (Format.fprintf Format.str_formatter
-                  "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
-                Format.flush_str_formatter () )
 
 let type_of_unop (t : fn_type) : symb_unop -> fn_type option =
   let type_of_unsafe_unop t =
@@ -348,7 +197,28 @@ and type_of expr =
   | FnHoleL (ht, _,  _, _) | FnHoleR (ht, _, _) ->
     (match ht with (t, ot) -> t)
 
-  | _ -> failwith "Typing subfunctions not yet implemented"
+  | FnFun e -> Function(type_of e, type_of e)
+  | FnVector a -> type_of (Array.get a 0)
+  | FnRecordMember(e, s) ->
+    begin
+      match type_of e with
+      | Record slt ->
+        (try
+          let _, t0 =
+            List.hd (List.filter (fun (s',t) -> s = s') slt) in
+          t0
+        with _ -> failontype "Record member not found in record type.")
+      | _ -> failontype "Should be a record type inside a record mmeber access."
+    end
+  | FnLetIn(_, e) -> type_of e
+  | FnLetExpr(el) ->
+    Record
+      (List.map (fun (v,e) ->
+           match vi_of v with
+           | Some var -> (var.vname, type_of e)
+           | None -> failontype "Cannot create type of final let-binding.") el)
+  | FnChoice _ -> Bottom
+  | FnRec(_, _, (s, _)) -> s.vtype
 
 
 let filter_vs_by_type t =
@@ -369,7 +239,7 @@ let rec input_type_or_type =
   | t -> t
 
 
-(** ----------- 6 - BASIC HELPER FUNCTIONS -------------*)
+(** ----------------------- 3 - BASIC HELPER FUNCTIONS -----------------------*)
 
 (* Given a cil operator, return an unary symb operator and a type *)
 let symb_unop_of_cil : Cil.unop -> symb_unop * fn_type =
@@ -611,14 +481,6 @@ let is_exp_function ef =
 
   | _ -> false,  None , Cil.typeOf ef
 
-
-
-let mkFnVar name typ =
-  let var_name = get_new_name ~base:name in
-  let var = { vname = var_name; vtype = typ; vid = _new_id (); vistmp = false; vinit = None;} in
-  register_fnv var;
-  var
-
 (**
    Generate a FnVar expression from a variable, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined
@@ -639,104 +501,19 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
-
-let declared_tuple_types = SH.create 10
-
-
-let rec tuple_struct_name
-    ?(only_by_type=false) ?(seed = "")
-    (stl : (string * fn_type) list) : string =
-
-  let tl = (ListTools.unpair --> snd) stl in
-  let poten_name =
-    String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))
-  in
-  if only_by_type then
-    poten_name
-  else if SH.mem declared_tuple_types poten_name then
-    let stl' = SH.find declared_tuple_types poten_name in
-    if stl = stl' then poten_name
-    else
-      tuple_struct_name ~seed:(seed^"_") stl
-  else
-    (SH.add declared_tuple_types poten_name stl;
-     poten_name)
-
-let is_name_of_struct s =
-  SH.mem declared_tuple_types s
-
-let rec state_var_name vs maybe =
-  let vsnames = VarSet.names vs in
-  if List.mem maybe vsnames then
-    state_var_name vs ("_st_"^maybe)
-  else
-    (register maybe;
-     maybe)
-
-let state_member_accessor s v =
-  {
-    vname = s^"-"^v.vname;
-    vtype = v.vtype;
-    vid = _new_id ();
-    vinit = None;
-    vistmp = true;
-  }
-
-let is_struct_accessor a =
-  try
-    let parts = Str.split (Str.regexp "-") a in
-    List.length parts = 2 &&
-    str_begins_with rosette_prefix_struct (parts >> 0)
-  with
-  | Not_found -> false
-  | Invalid_argument s -> false
-
 let bind_state ?(prefix="") state_var vs =
   let vars = VarSet.elements vs in
-  let structname = tuple_struct_name (VarSet.record vs) in
+  let structname = record_name (VarSet.record vs) in
   List.map
     (fun v ->
        (FnVariable {v with vname=prefix^v.vname},
         FnApp(v.vtype,
-              Some (state_member_accessor structname v),
+              Some (record_accessor structname v),
               [FnVar (FnVariable state_var)]))) vars
-(*
-   In the join solution we need to differentiate left/right states. Right state
-   variables are prefix with the "rosette_join_right_state_prefix" parameter.
- *)
-let rs_prefix = (Conf.get_conf_string "rosette_join_right_state_prefix")
 
-let is_right_state_varname s =
-  let varname_parts = Str.split (Str.regexp "\.") s in
-  let right_state_name = (Str.split (Str.regexp "\.") rs_prefix) >> 0 in
-  match List.length varname_parts with
-  | 2 -> varname_parts >> 1, true, (varname_parts >> 0) = right_state_name
-  | 1 -> varname_parts >> 0, false, false
-  | _ ->
-    failwith (fprintf str_formatter
-                "Unexpected list length when splitting variable name %s \
-                 over '.'" s; flush_str_formatter ())
-
-
-(* Compare variables by comparing the variable id of their varinfo. *)
-let rec cmpVar fnlvar1 fnlvar2 =
-  match fnlvar1, fnlvar2 with
-  | FnVariable vi, FnVariable vi' -> compare vi.vid vi'.vid
-  | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
-    cmpVar fnlv1 fnlv2
-  | FnArray _ , _ -> 1
-  | _ , FnArray _ -> -1
-
-
-(* Get the varinfo of a variable. *)
-let rec vi_of fnlv =
-  match fnlv with
-  | FnVariable vi' -> Some vi'
-  | FnArray (fnlv', _) -> vi_of fnlv'
 
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
-
 
 let is_reserved_name s = not (uninterpeted s)
 
@@ -789,11 +566,6 @@ let mkOp ?(t = Unit) vi argl =
     end
 
 
-
-
-
-
-
 (* Convert Cil Varinfo to variable *)
 
 let var_of_vi vi =
@@ -827,8 +599,17 @@ let cil_varinfo var =
   | None ->
     failhere __FILE__ "cil_varinfo" "Couldn't convert type."
 
+(* Compare variables by comparing the variable id of their varinfo. *)
+let rec cmpVar fnlvar1 fnlvar2 =
+  match fnlvar1, fnlvar2 with
+  | FnVariable vi, FnVariable vi' -> compare vi.vid vi'.vid
+  | FnArray (fnlv1, _), FnArray (fnlv2, _) ->
+    cmpVar fnlv1 fnlv2
+  | FnArray _ , _ -> 1
+  | _ , FnArray _ -> -1
 
-(* ---------------------------- 7 - RECURSORS -------------------------------*)
+
+(* ---------------------------- 4 - RECURSORS -------------------------------*)
 
 
 type 'a recursor=
@@ -1236,7 +1017,6 @@ let rec compose_tail assignments func =
     | _ -> func
 
 let complete_with_state stv el =
-  (* Map the final expressions *)
   let emap =
     List.fold_left
       (fun map (v,e) ->
@@ -1297,11 +1077,12 @@ and used_in_assignments ve_list =
     (VarSet.empty, VarSet.empty) ve_list
 
 
-(** ------------------------ 8 - SCHEME <-> FUNC -------------------------- *)
+(** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
+
+
 (** Translate basic scheme to the Func expressions
     @param env a mapping from variable ids to varinfos.
 *)
-
 let errmsg_unexpected_fnlet unex_let =
   (fprintf str_formatter "Expected a translated expression,\
                           received for tranlsation @; %a @."
@@ -1666,7 +1447,7 @@ let force_flat vs fnlet =
 
 
 
-(** ------------------------ 9 -  EXPRESSION SET ----------------------------*)
+(** ------------------------ 6 - EXPRESSION SETS -----------------------------*)
 
 module ES = Set.Make (
   struct
@@ -1705,50 +1486,8 @@ let ctx_add_cexp ctx cexp =
   {ctx with costly_exprs = cexp}
 
 
-(** ------------------- 10 - INDEX VARIABLES MANAGEMENT -----------------------*)
+(** ------------------- 7 - INDEX VARIABLES MANAGEMENT ----------------------*)
 (** Create and manage variables for index boundaries *)
-
-let start_iname = Conf.get_conf_string "rosette_index_suffix_start"
-let end_iname = Conf.get_conf_string "rosette_index_suffix_end"
-
-let index_to_boundary : (fnV * fnV) IH.t = IH.create 10
-
-
-let create_boundary_variables index_set =
-  VarSet.iter
-    (fun index_vi ->
-       let starti =
-         mkFnVar (index_vi.vname^start_iname) index_vi.vtype
-       in
-       let endi =
-         mkFnVar (index_vi.vname^end_iname) index_vi.vtype
-       in
-       IH.add index_to_boundary index_vi.vid (starti, endi))
-    index_set
-
-let left_index_vi vi =
-  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
-  let l, _ = IH.find index_to_boundary vi.vid in l
-
-let is_left_index_vi i =
-  try
-    (IH.iter
-       (fun vid (vil, _) ->
-          if i = vil then failwith "found" else ()) index_to_boundary;
-     false)
-  with Failure s -> if s = "found" then true else false
-
-let right_index_vi vi =
-  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
-  let _, r = IH.find index_to_boundary vi.vid in r
-
-let is_right_index_vi i =
-  try
-    (IH.iter
-       (fun vid (_, vir) ->
-          if i = vir then failwith "found" else ()) index_to_boundary;
-     false)
-  with Failure s -> if s = "found" then true else false
 
 
 (* Extract boundary variables "n" from func information *)
@@ -1767,7 +1506,7 @@ let is_prefix_or_suffix vi expr =
   | _ -> false
 
 
-(* ------------------------ 11 - STRUCT UTILS ----------------------------*)
+(* ------------------------ 8 - STRUCT UTILS ----------------------------*)
 
 type sigu = VarSet.t * (fnExpr * fnExpr * fnExpr)
 
@@ -1833,7 +1572,7 @@ let get_bounds problem =
     mkFnVar (bvar.vname^"_start") bvar.vtype,
     mkFnVar (bvar.vname^"_end") bvar.vtype
 
-(* ----------------------- 12 - CONVERSION TO CIL  ----------------------------*)
+(* ----------------------- 9 - CONVERSION TO CIL  ----------------------------*)
 
 (** Includes passes to transform the code into an appropriate form *)
 

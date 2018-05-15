@@ -20,6 +20,19 @@
 open Utils
 open Format
 
+(**
+   1 - Basic function types.
+   2 - Variables management.
+   3 - General variable names.
+   4 - Left and right state variables.
+   5 - Indexes.
+   6 - Auxiliary variables.
+   7 - Nested loops - outer state variables.
+   8 - Records.
+*)
+
+(* -------------------- 1 - BASIC FUNCTION TYPES -------------------- *)
+
 (** Internal type for building funces *)
 type operator_type =
   | Arith                       (* Arithmetic only *)
@@ -129,10 +142,172 @@ let type_of_unop_args : symb_unop -> fn_type=
 
 
 exception Tuple_fail            (* Tuples are not supported for the moment. *)
+exception BadType of string
+
+let failontype s = raise (BadType s)
+
+let rec type_of_ciltyp =
+  function
+  | Cil.TInt (ik, _) ->
+    begin
+      match ik with
+      | Cil.IBool -> Boolean
+      | _ -> Integer
+    end
+
+  | Cil.TFloat _ -> Real
+
+  | Cil.TArray (t, _, _) ->
+    Vector (type_of_ciltyp t, None)
+
+  | Cil.TFun (t, arglisto, _, _) ->
+    Procedure (type_of_args arglisto, type_of_ciltyp t)
+  | Cil.TComp (ci, _) -> Unit
+  | Cil.TVoid _ -> Unit
+  | Cil.TPtr (t, _) ->
+    Vector (type_of_ciltyp t, None)
+  | Cil.TNamed (ti, _) ->
+    type_of_ciltyp ti.Cil.ttype
+  | Cil.TEnum _ | Cil.TBuiltin_va_list _ -> failwith "Not implemented"
+
+and type_of_args argslisto =
+  try
+    let argslist = check_option argslisto in
+    let symb_types_list, argnames =
+      List.map
+        (fun (s, t, atr) -> type_of_ciltyp t)
+        argslist,
+      List.map
+        (fun (s, t, atr) -> s)
+        argslist
+    in
+    match symb_types_list with
+    | [] -> Unit
+    | [st] -> st
+    | _ -> Record (List.combine argnames symb_types_list)
+  with Failure s -> Unit
+
+let rec type_of_cilconst c =
+  match c with
+  | Cil.CInt64 _  | Cil.CChr _ -> Integer
+  | Cil.CReal _ -> Real
+  | Cil.CStr _ | Cil.CWStr _ -> List (Integer, None)
+  | Cil.CEnum (_, _, einf) -> failwith "Enum types not implemented"
+
+let rec ciltyp_of_symb_type =
+  function
+  | Integer -> Some (Cil.TInt (Cil.IInt, []))
+  | Boolean -> Some (Cil.TInt (Cil.IBool, []))
+  | Real | Num -> Some (Cil.TFloat (Cil.FFloat, []))
+  | Vector (t, _) ->
+    (match ciltyp_of_symb_type t with
+     | Some tc -> Some (Cil.TArray (tc, None, []))
+     | None -> None)
+  | _ -> None
 
 
 
-(* -------------------- 3 - VARIABLES MANAGEMENT -------------------- *)
+let recordtype_of_vs vs =
+  Record (List.map (fun vi -> vi.Cil.vname, (type_of_ciltyp vi.Cil.vtype)) (VS.varlist vs))
+
+let rec pp_typ fmt t =
+  let fpf = Format.fprintf in
+  match t with
+  | Unit -> fpf fmt "unit"
+  | Bottom -> fpf fmt "<BOT>"
+  | Integer -> fpf fmt "integer"
+  | Real -> fpf fmt "real"
+  | Num -> fpf fmt "num"
+  | Boolean -> fpf fmt "boolean"
+  | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
+  | Record tl ->
+    Format.pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
+      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t) fmt tl
+  | Function (argt, rett) ->
+    fpf fmt "%a -> %a" pp_typ argt pp_typ rett
+  | Pair t -> fpf fmt "%a pair" pp_typ t
+  | List (t, _) -> fpf fmt "%a list" pp_typ t
+  | Struct t -> fpf fmt "%a struct" pp_typ t
+  | Bitvector i -> fpf fmt "bitvector[%i]" i
+  | Box t -> fpf fmt "%a box" pp_typ t
+  | Procedure (tin, tout) -> fpf fmt "(%a %a proc)" pp_typ tin pp_typ tout
+
+
+let rec shstr_of_type t =
+  match t with
+  | Unit -> "u"
+  | Bottom -> "o"
+  | Integer -> "i"
+  | Real -> "r"
+  | Num -> "n"
+  | Boolean -> "b"
+  | Vector (vt, _) -> "V"^(shstr_of_type vt)^"_"
+  | Record tl -> String.concat "" ("T" :: List.map (fun (_, t) -> shstr_of_type t) tl)
+  | Function (argt, rett) -> "F"^(shstr_of_type argt)^"_"^(shstr_of_type rett)^"_"
+  | _ ->
+    pp_typ err_formatter t;
+    failhere __FILE__ "shstr_of_type" "No short string for this type"
+
+let rec is_subtype t tmax =
+  match t, tmax with
+  | t, tmax when t = tmax -> true
+  | Integer, Real -> true
+  | Num, Real | Real, Num -> true
+  | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
+  | Bottom, Integer -> true
+  | _, _ ->
+    failontype (Format.fprintf str_formatter
+                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
+                flush_str_formatter ())
+
+
+let rec res_type t =
+  match t with
+  | Function (t, t') -> t'
+  | _ -> t
+
+let array_type t =
+  match t with
+  | Vector (t, _) -> t
+  | _ -> failontype "Array type must be applied to array types."
+
+let is_array_type t =
+  match t with
+  | Vector (t,_) -> true
+  | Bitvector _ -> true
+  | _ -> false
+
+let is_matrix_type t =
+  match t with
+  | Vector (Vector (t, _), _) -> true
+  | _ -> false
+
+let matrix_type t =
+  match t with
+  | Vector (Vector (t, _), _) -> t
+  | _ -> failontype "Cannot extract matrix type, this is not a matrix."
+
+let is_record_type t =
+  match t with
+  | Record _ -> true
+  | _ -> false
+
+let rec join_types t1 t2 =
+  match t1, t2 with
+  | t1, t2 when t1 = t2 -> t1
+  | Integer, Boolean -> Boolean
+  | Integer, Real | Real, Integer
+  | Num, Real | Real, Num -> Real
+  | Integer, Num | Num, Integer -> Num
+  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
+  | _, _ ->
+    failontype (Format.fprintf Format.str_formatter
+                  "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
+                Format.flush_str_formatter () )
+
+
+(* -------------------- 2 - VARIABLES MANAGEMENT -------------------- *)
 
 let _GLOB_VARIDS = ref 3000
 let _new_id () = incr _GLOB_VARIDS; !_GLOB_VARIDS
@@ -254,6 +429,9 @@ module CS = struct
       fmt (to_jc_list cs)
 end
 
+
+(* -------------------- 3 - GENERAL VARIABLE NAMES -------------------- *)
+
 (* General variable name generation. Can contain associated varinfo / fnV *)
 let _VARS = SH.create 10
 let register s =
@@ -336,8 +514,89 @@ let find_var_name_id name id =
   | Some var -> var
   | None -> raise Not_found
 
+let mkFnVar name typ =
+  let var_name = get_new_name ~base:name in
+  let var =
+    { vname = var_name;
+      vtype = typ;
+      vid = _new_id ();
+      vistmp = false;
+      vinit = None;}
+  in
+  register_fnv var;
+  var
 
-(* Join auxiliary variables. *)
+
+
+(* -------------------- 4 - LEFT AND RIGHT STATE VARIABLES ------------------ *)
+
+let rhs_prefix = (Conf.get_conf_string "rosette_join_right_state_prefix")
+let lhs_prefix = (Conf.get_conf_string "rosette_join_left_state_prefix")
+
+let is_side_state_varname s side_prefix =
+  let varname_parts = Str.split (Str.regexp "\.") s in
+  let side_state_name = (Str.split (Str.regexp "\.") side_prefix) >> 0 in
+  match List.length varname_parts with
+  | 2 -> varname_parts >> 1, true, (varname_parts >> 0) = side_state_name
+  | 1 -> varname_parts >> 0, false, false
+  | _ ->
+    failwith (fprintf str_formatter
+                "Unexpected list length when splitting variable name %s \
+                 over '.'" s; flush_str_formatter ())
+
+let is_left_state_varname s = is_side_state_varname s lhs_prefix
+let is_right_state_varname s = is_side_state_varname s rhs_prefix
+
+(* -------------------- 5 - INDEXES -------------------- *)
+
+let start_iname = Conf.get_conf_string "rosette_index_suffix_start"
+let end_iname = Conf.get_conf_string "rosette_index_suffix_end"
+
+let index_to_boundary : (fnV * fnV) IH.t = IH.create 10
+
+
+
+let create_boundary_variables index_set =
+  VarSet.iter
+    (fun index_vi ->
+       let starti =
+         mkFnVar (index_vi.vname^start_iname) index_vi.vtype
+       in
+       let endi =
+         mkFnVar (index_vi.vname^end_iname) index_vi.vtype
+       in
+       IH.add index_to_boundary index_vi.vid (starti, endi))
+    index_set
+
+let left_index_vi vi =
+  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
+  let l, _ = IH.find index_to_boundary vi.vid in l
+
+let is_left_index_vi i =
+  try
+    (IH.iter
+       (fun vid (vil, _) ->
+          if i = vil then failwith "found" else ()) index_to_boundary;
+     false)
+  with Failure s -> if s = "found" then true else false
+
+let right_index_vi vi =
+  if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
+  let _, r = IH.find index_to_boundary vi.vid in r
+
+let is_right_index_vi i =
+  try
+    (IH.iter
+       (fun vid (_, vir) ->
+          if i = vir then failwith "found" else ()) index_to_boundary;
+     false)
+  with Failure s -> if s = "found" then true else false
+
+
+
+(* -------------------- 6 - AUXILIARY VARIABLES -------------------- *)
+
+
 let aux_vars : fnV IH.t = IH.create 10
 
 let cur_left_auxiliaries = ref VarSet.empty
@@ -378,7 +637,8 @@ let discover_add v =
 let discover_save () =
   IH.copy_into d_aux_alltime aux_vars
 
-(* Bonus: mark array that are read by an outer loop. *)
+(* ----------------- 7 - NESTED LOOPS : OUTER STATE VARIABLES --------------- *)
+
 let outer_used = IH.create 10
 
 let outer_marked_clear () =
@@ -389,3 +649,59 @@ let mark_outer_used fnv : unit =
 
 let is_outer_used fnv : bool =
   IH.mem outer_used fnv.vid
+
+
+(* -------------------- 8 - RECORDS -------------------- *)
+
+
+(* Managing tuple or record types. *)
+let rosette_prefix_struct = Conf.get_conf_string "rosette_struct_name"
+let declared_tuple_types = SH.create 10
+
+let rec record_name
+    ?(only_by_type=false) ?(seed = "")
+    (stl : (string * fn_type) list) : string =
+
+  let tl = (ListTools.unpair --> snd) stl in
+  let poten_name =
+    String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))
+  in
+  if only_by_type then
+    poten_name
+  else if SH.mem declared_tuple_types poten_name then
+    let stl' = SH.find declared_tuple_types poten_name in
+    if stl = stl' then poten_name
+    else
+      record_name ~seed:(seed^"_") stl
+  else
+    (SH.add declared_tuple_types poten_name stl;
+     poten_name)
+
+let is_name_of_struct s =
+  SH.mem declared_tuple_types s
+
+let rec state_var_name vs maybe =
+  let vsnames = VarSet.names vs in
+  if List.mem maybe vsnames then
+    state_var_name vs ("_st_"^maybe)
+  else
+    (register maybe;
+     maybe)
+
+let record_accessor s v =
+  {
+    vname = s^"-"^v.vname;
+    vtype = v.vtype;
+    vid = _new_id ();
+    vinit = None;
+    vistmp = true;
+  }
+
+let is_struct_accessor a =
+  try
+    let parts = Str.split (Str.regexp "-") a in
+    List.length parts = 2 &&
+    str_begins_with rosette_prefix_struct (parts >> 0)
+  with
+  | Not_found -> false
+  | Invalid_argument s -> false
