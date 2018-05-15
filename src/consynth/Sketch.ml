@@ -93,7 +93,10 @@ type define_symbolic =
   | DefEmpty
 
 let gen_array_cell_vars ~num_cells:n vi =
-  ListTools.init (n - 1) (fun i -> {vi with vname = vi.vname^"$"^(string_of_int i)})
+  let gen_cell i =
+    {vi with vname = vi.vname^"$"^(string_of_int i)}
+  in
+  ListTools.init (n - 1) gen_cell
 
 let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
   ListTools.init (n - 1)
@@ -121,7 +124,7 @@ let rec pp_define_symbolic fmt def =
                | Integer -> DefInteger vars
                | Real -> DefReal vars
                | Boolean -> DefBoolean vars
-               | Record r -> DefRecord (List.map (fun vi -> vi, r, (n, n)) vars)
+               | Record r -> DefRecord (List.map (fun vi -> vi, r, (n, !mat_w)) vars)
                | _ -> DefEmpty)
             with BadType s ->
               failhere __FILE__ "pp_define_symbolic" s);
@@ -195,7 +198,7 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
                | Vector (v2, _) -> DefMatrix [(vi, !mat_h, !mat_w)]
                | _ -> DefArray [(vi, if inner then !mat_w else !mat_h)])
             | Record rt ->
-              DefRecord [(vi, rt, (!mat_h, if inner then !mat_w else !mat_h))]
+              DefRecord [(vi, rt, (!mat_h, !mat_w))]
             | _ ->
               (F.eprintf "Unsupported type for variable %s.\
                           This will lead to errors in the sketch."
@@ -203,16 +206,34 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
                DefEmpty))) vs
 
 
-let input_symbols_of_vs vs =
+let rec input_symbols_of_vs vs =
   VarSet.fold
     (fun vi symbs ->
-       if is_matrix_type vi.vtype then
+       match vi.vtype with
+       | Vector(Vector _, _) ->
          symbs@(List.flatten (gen_mat_cell_vars ~num_lines:!mat_h ~num_cols:!mat_w vi))
-       else
-         (if is_array_type vi.vtype then
-            symbs@(gen_array_cell_vars ~num_cells:!mat_w vi)
-          else
-            vi::symbs)) vs []
+       | Vector(Record r, _) ->
+         symbs@(gen_record_array_cells ~num_records:!mat_h r vi)
+       | Vector(t, _) ->
+         symbs@(gen_array_cell_vars ~num_cells:!mat_w vi)
+       | _ ->
+         vi::symbs)
+    vs []
+
+and gen_record_array_cells ~num_records:n r vi =
+  let ith_cell i =
+    List.fold_left
+      (fun l (n,t) ->
+         let ith_vi_field =
+           {vi with vname = vi.vname^"$"^(string_of_int i)^"-"^n}
+         in
+         match t with
+         | Vector(t', _) -> l@(gen_array_cell_vars ~num_cells:!mat_w ith_vi_field)
+         | _ -> ith_vi_field::l) [] r
+  in
+  List.flatten (ListTools.init (n - 1) ith_cell)
+
+
 
 let pp_defined_input fmt vs =
   F.pp_print_list
