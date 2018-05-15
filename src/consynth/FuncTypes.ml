@@ -959,7 +959,7 @@ let rec fn_uses vs expr =
     try VarSet.mem (check_option (vi_of v)) vs with Not_found -> false
   in rec_expr join false case case_handler const_handler var_handler expr
 
-(** Opperator complexity of a function or an expression *)
+(** Operator complexity of a function or an expression *)
 let optype_rec =
   { join = join_optypes;
     init = NotNum;

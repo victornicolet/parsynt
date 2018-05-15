@@ -221,9 +221,10 @@ let rec pp_typ fmt t =
   | Boolean -> fpf fmt "boolean"
   | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
   | Record tl ->
-    Format.pp_print_list
-      ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
-      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t) fmt tl
+    fpf fmt "{%a}"
+      (Format.pp_print_list
+      ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@;")
+      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t)) tl
   | Function (argt, rett) ->
     fpf fmt "%a -> %a" pp_typ argt pp_typ rett
   | Pair t -> fpf fmt "%a pair" pp_typ t
@@ -258,7 +259,7 @@ let rec is_subtype t tmax =
   | Bottom, Integer -> true
   | _, _ ->
     failontype (Format.fprintf str_formatter
-                  "Cannot join these types %a %a" pp_typ t pp_typ tmax;
+                  "Cannot subtype: %a <: %a" pp_typ t pp_typ tmax;
                 flush_str_formatter ())
 
 
@@ -301,6 +302,7 @@ let rec join_types t1 t2 =
   | Num, Real | Real, Num -> Real
   | Integer, Num | Num, Integer -> Num
   | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
+  | Bottom, t | t, Bottom -> t
   | _, _ ->
     failontype (Format.fprintf Format.str_formatter
                   "Cannot join these types %a %a" pp_typ t1 pp_typ t2;

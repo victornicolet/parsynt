@@ -100,19 +100,53 @@ let force_wrap = ref false
 let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
     (index_expr : fnExpr)
     (state : VarSet.t)
-    (optype : operator_type) =
+    (optype : operator_type)
+    expression =
   let holt t = (t, optype) in
   let self_rcall =
     make_holes ~max_depth:max_depth ~is_final:is_final ~is_array:is_array index_expr state
   in
-  function
-  | FnVar var ->
-    begin
-      match var with
-      | FnVariable vi ->
-        let t = vi.vtype in
+  let make_hole_variable var vi =
+    let t = vi.vtype in
         if (is_currently_aux vi) && is_final
         then FnVar var, 0
+        else if is_record_type t then
+          (* At this point, a variable of record type (not a record expression!)
+             should be the summarized input from the inner loop. *)
+          match t with
+          | Record lt ->
+            FnRecord(t,
+                     List.map
+                       (fun (s, mt) ->
+                          FnHoleR (holt mt,
+                                   CS.complete_right (CS.of_vs state),
+                                   index_expr))
+                       lt), 1
+          | _ -> FnVar var, 0
+        else
+          (if VarSet.mem vi state
+           then
+             FnHoleL (holt t, var, CS.complete_all (CS.of_vs state), index_expr), 1
+           else
+             FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
+  in
+  let make_hole_array var sklv expr =
+    (match type_of_var sklv with
+     | Vector (t, _) ->
+       let vi = check_option (vi_of sklv) in
+       (if VarSet.mem vi state
+        then
+          let completion =
+            if is_array then
+              CS.of_vs
+                (VarSet.filter (fun v -> is_array_type v.vtype) state)
+            else
+              CS.of_vs state
+          in
+          FnHoleL (holt t,
+                   FnArray(sklv, expr),
+                   CS.complete_all completion, index_expr),
+          1
         else if is_record_type t then
           (* At this point, a variable of record type (not a record expression!) should
              be the summarized input from the inner loop. *)
@@ -121,42 +155,27 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
             FnRecord(t,
                      List.map
                        (fun (s, mt) ->
-                          FnHoleR (holt mt, CS.complete_right (CS.of_vs state), index_expr))
-                       lt), 1
-          | _ -> FnVar var, 0
+                          FnHoleR (holt mt,
+                                   CS.complete_right (CS.of_vs state),
+                                   index_expr))
+                       lt),
+            1
+          | _ ->
+            FnVar var,
+            0
         else
-          (if VarSet.mem vi state
-           then FnHoleL (holt t, var, CS.complete_all (CS.of_vs state), index_expr), 1
-           else FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
+          FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
+     | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
+  in
+  match expression with
+  | FnVar var ->
+    (match var with
+      | FnVariable vi ->
+        make_hole_variable var vi
+
       | FnArray (sklv, expr) ->
-        (match type_of_var sklv with
-         | Vector (t, _) ->
-           let vi = check_option (vi_of sklv) in
-           (if VarSet.mem vi state
-            then
-              let completion =
-                if is_array then
-                  CS.of_vs
-                    (VarSet.filter (fun v -> is_array_type v.vtype) state)
-                else
-                  CS.of_vs state
-              in
-              FnHoleL (holt t, FnArray(sklv, expr), CS.complete_all completion, index_expr), 1
-            else if is_record_type t then
-              (* At this point, a variable of record type (not a record expression!) should
-                 be the summarized input from the inner loop. *)
-              match t with
-              | Record lt ->
-                FnRecord(t,
-                         List.map
-                           (fun (s, mt) ->
-                              FnHoleR (holt mt, CS.complete_right (CS.of_vs state), index_expr))
-                           lt), 1
-              | _ -> FnVar var, 0
-            else
-              FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
-         | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
-    end
+        make_hole_array var sklv expr)
+
 
   | FnConst c ->
     let cs = CS.complete_right (CS.of_vs state) in
@@ -168,21 +187,30 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
       | _ -> FnHoleR (holt Unit, cs, index_expr), 1
     end
 
+
   | FnRecord(st, el) ->
     let new_members, depths =
       ListTools.unpair (List.map (self_rcall optype) el)
     in
     FnRecord (st, new_members), ListTools.intlist_max depths
 
-  | FnFun skl -> FnFun (make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl), 0
+
+  | FnFun skl ->
+    FnFun (
+      make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl),
+    0
+
 
   | FnBinop (op, e1, e2) ->
     let holes1, d1 = merge_leaves max_depth (self_rcall optype e1) in
     let holes2, d2 = merge_leaves max_depth (self_rcall optype e2) in
-    FnBinop (op, holes1, holes2), max d1 d2
+    FnBinop (op, holes1, holes2),
+    max d1 d2
+
 
   | FnUnop (op, e) ->
     merge_leaves max_depth (self_rcall optype e)
+
 
   | FnCond (c, ei, ee) ->
     let h1, d1  = merge_leaves max_depth (self_rcall optype ei) in
@@ -190,13 +218,35 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
     let hc, dc = merge_leaves max_depth (self_rcall optype c) in
     FnCond (hc, h1, h2), max (max d1 d2) dc
 
+
   | FnApp (t, vo, args) ->
     let new_args, depths =
       ListTools.unpair (List.map (self_rcall optype) args)
     in
     FnApp (t, vo, new_args), ListTools.intlist_max depths
 
-  | _ as skexpr ->  skexpr, 0
+  | FnRecordMember _ -> expression, 0
+
+  | FnLetExpr bindings ->
+    let w_a = ref false in
+    let new_bindings =
+      make_assignment_list index_expr state [] w_a bindings
+    in
+    FnLetExpr new_bindings, 0
+
+  | FnLetIn (bindings, cont) ->
+    let w_a = ref false in
+    let new_bindings  =
+      make_assignment_list index_expr state [] w_a bindings
+    in
+    let new_cont, _ =
+      self_rcall optype cont
+    in
+    FnLetIn (new_bindings, new_cont), 0
+
+  | _ -> expression, 0
+
+
 
 
 and make_hole_e ?(max_depth = 2) ?(is_array=false) ?(is_final=false)
@@ -248,7 +298,8 @@ and make_assignment_list ie state skip writes_in_array =
           l @ [(vbound, e)])
 
       | _ ->
-        printf "Hole in expr : %a (%a)@." pp_fnexpr e pp_typ (type_of e);
+        printf "Hole in expr : %a@." pp_fnexpr e;
+        printf "Type : %a@." pp_typ (type_of e);
         printf "Result: %a@." pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
         try
           let vi_bound = check_option (vi_of vbound) in
