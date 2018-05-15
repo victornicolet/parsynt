@@ -313,6 +313,8 @@ let main () =
     begin
       Loops.verbose := true;
       Canalyst.verbose := true;
+      InnerFuncs.verbose := true;
+      Sketch.Join.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();

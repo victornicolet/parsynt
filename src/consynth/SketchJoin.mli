@@ -3,6 +3,7 @@ open FuncTypes
 
 val join_loop_width : int ref
 val debug : bool ref
+val verbose : bool ref
 val store_solution : prob_rep option -> unit
 val build_join : fnExpr list -> VarSet.t -> fnExpr ->
   (fnExpr * fnExpr) -> fnExpr

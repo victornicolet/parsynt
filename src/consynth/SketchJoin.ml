@@ -24,6 +24,7 @@ open Format
 module IH = Sets.IH
 
 
+let verbose = ref false
 let debug = ref false
 let narrow_array_completions = ref false
 let join_loop_width = ref 5
@@ -274,6 +275,7 @@ and make_assignment_list ie state skip writes_in_array =
              | Some skip_fnv -> v = skip_fnv
              | None -> false) skip
       | _ -> List.mem var skip)
+
     | _ -> List.mem var skip
   in
   List.fold_left
@@ -288,19 +290,24 @@ and make_assignment_list ie state skip writes_in_array =
         | Some func ->
           (* Is it the join function of an inner loop? *)
           (if Conf.is_inner_join_name func.vname then
+             (if !verbose then printf "[INFO] Inline inner join in sketch.@.";
              let new_binds =
                inline_inner_join ie state skip writes_in_array (vbound, st, func, args)
              in
-             (l @ new_binds)
+             (l @ new_binds))
            else
              l @ [(vbound, e)])
         | None ->
           l @ [(vbound, e)])
 
       | _ ->
-        printf "Hole in expr : %a@." pp_fnexpr e;
-        printf "Type : %a@." pp_typ (type_of e);
-        printf "Result: %a@." pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
+        if !verbose then
+          begin
+          printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
+          printf "       Type : %a@." pp_typ (type_of e);
+          printf "       Result: %a@."
+            pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
+          end;
         try
           let vi_bound = check_option (vi_of vbound) in
           if VarSet.mem vi_bound !cur_left_auxiliaries ||
@@ -315,7 +322,7 @@ and make_assignment_list ie state skip writes_in_array =
              | _ ->
                l @ [vbound, fst (make_hole_e ie state e)])
         with Failure s ->
-          Format.eprintf "Failure %s@." s;
+          Format.eprintf "[ERROR] Failure %s@." s;
           let msg =
             Format.sprintf "Check if %s is vi failed." (FPretty.sprintFnexpr e)
           in
@@ -325,7 +332,21 @@ and make_assignment_list ie state skip writes_in_array =
 
 
 and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (wa : bool ref)
-    (vbound, st, f, args) : (fnLVar * fnExpr) list=
+    (vbound, st, f, args) : (fnLVar * fnExpr) list =
+  let strip_record_assignments fexpr =
+    let all_are_record_member =
+      let pred (v, e) =
+        match (v, e) with
+        | FnVariable vi, FnRecordMember(_, s) -> vi.vname = s
+        | _ -> false
+      in
+      List.for_all pred
+    in
+    match fexpr with
+    | FnLetIn (record_assignments, body) ->
+      if all_are_record_member record_assignments then body else fexpr
+    | _ -> fexpr
+  in
   let state_has_array =
     match st with
     | Record slt -> List.exists (fun (s,t) -> is_array_type t) slt
@@ -334,7 +355,11 @@ and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (
   in
   wa := state_has_array;
   let default_join =
-    [(vbound, FnApp(st, Some f, (ListTools.unpair --> fst) (List.map (make_hole_e index state) args)))]
+    [(vbound,
+      FnApp(st,
+            Some f,
+            (ListTools.unpair --> fst)
+              (List.map (make_hole_e index state) args)))]
   in
   match get_solution f.vname with
   | Some (ctx, func) ->
@@ -342,8 +367,8 @@ and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (
       match func with
       | FnLetExpr([(_, FnRec (_, _, (_, b)))])
       | FnLetIn([(_, FnRec (_, _, (_, b)))], _) ->
-        printf "@.Got the join: %a.@." pp_fnexpr b;
-        default_join
+        printf "       Got the join: %a.@." pp_fnexpr b;
+        [(vbound, strip_record_assignments b)]
 
       | _ -> default_join
     end

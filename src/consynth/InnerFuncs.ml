@@ -20,6 +20,8 @@ open FuncTypes
 open Utils
 open Format
 
+let verbose = ref false
+
 (**
    Replaces calls to inner loop function in the outer loop
     by a simplified version using the join of the inner loop or the memoryless
@@ -118,6 +120,10 @@ let replace_by_join problem inner_loops =
       | FnApp (st, Some f, args) ->
         (match inline_join out_index in_info with
          | None ->
+
+           if !verbose then
+             printf "@.[INFO] Inner join %s is not inlined.@." in_info.loop_name;
+
            let capture_state =
              FnRecord (Record (VarSet.record state),
                        List.map mkVarExpr (VarSet.elements state))
@@ -128,7 +134,12 @@ let replace_by_join problem inner_loops =
                    mkVarExpr in_st; mkVarExpr in_end])
 
          | Some inline_join ->
+
+           if !verbose then
+             printf "@.[INFO] Inner join %s is inlined.@." in_info.loop_name;
+
            inline_join)
+
 
       | _ -> rfunc e
     in

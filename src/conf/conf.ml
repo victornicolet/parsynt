@@ -201,7 +201,7 @@ let is_inner_join_name name =
   let elts = Str.split (Str.regexp sep_str) name in
   List.length elts >= 3 &&
   String.sub (elts >> 0) 0 4 = "join" &&
-  String.sub (elts >> 1) 0 2 = ""
+  String.sub (elts >> 1) 0 2 = "L_"
 
 let strip_contextual_prefix s =
   let prefixes =
