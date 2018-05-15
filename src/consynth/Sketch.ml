@@ -546,7 +546,7 @@ let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
 let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
   let struct_name = record_name (VarSet.record state_vars) in
   let reach_consts = handle_special_consts fmt read_vars reach_consts in
-  let s0_sketch_printer =
+  let identity_state_sketch =
     F.pp_print_list
       ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
       (fun fmt vi ->
@@ -557,7 +557,7 @@ let pp_states ?(dynamic=true) fmt state_vars read_vars st0 reach_consts =
     "@[(define %s (%s %a))@]@."
     ident_state_name
     struct_name
-    s0_sketch_printer (VarSet.elements state_vars);
+    identity_state_sketch (VarSet.elements state_vars);
 
   (** Handle special constants such as Infnty and NInfnty to create the
       necessary assertions and symbolic variables *)
