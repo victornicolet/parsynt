@@ -31,6 +31,7 @@ open Format
 open Utils.PpTools
 open Cil2Func
 open Racket
+open Random
 open Synthlib
 open Synthlib2ast
 
@@ -53,6 +54,8 @@ let inner_iterations_limit =
 let auxiliary_vars : fnV IH.t = IH.create 10
 
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
+
+let concrete_sketch = ref false
 
 let mat_w = ref (!inner_iterations_limit)
 let mat_h = ref (!iterations_limit)
@@ -107,13 +110,36 @@ let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
 let rec pp_define_symbolic fmt def =
   let to_v l  = (List.map (fun vi -> vi.vname) l) in
   match def with
-  | DefInteger vil -> F.fprintf fmt "@[(define-symbolic %a integer?)@]@\n"
-                        pp_string_list (to_v vil)
-  | DefReal vil -> F.fprintf fmt "@[(define-symbolic %a real?)@]@\n"
-                     pp_string_list (to_v vil)
+  | DefInteger vil ->
+    if !concrete_sketch then
+        F.fprintf fmt "@[(define-values (%a) (values %a))@]@\n"
+          pp_string_list (to_v vil)
+          (pp_break_sep_list (fun fmt i -> F.fprintf fmt "%i" i))
+          (ListTools.init ((List.length vil) - 1) (fun i -> Random.int 10))
+    else
+        F.fprintf fmt "@[(define-symbolic %a integer?)@]@\n"
+          pp_string_list (to_v vil)
 
-  | DefBoolean vil -> F.fprintf fmt "@[(define-symbolic %a boolean?)@]@\n"
-                        pp_string_list (to_v vil)
+  | DefReal vil ->
+    if !concrete_sketch then
+      F.fprintf fmt "@[(define-values (%a) (values %a))@]@\n"
+        pp_string_list (to_v vil)
+        (pp_break_sep_list (fun fmt i -> F.fprintf fmt "%2.3f" i))
+        (ListTools.init ((List.length vil) - 1) (fun i -> Random.float 10.0))
+    else
+      F.fprintf fmt "@[(define-symbolic %a real?)@]@\n"
+        pp_string_list (to_v vil)
+
+  | DefBoolean vil ->
+    if !concrete_sketch then
+      F.fprintf fmt "@[(define-values (%a) (values %a))@]@\n"
+        pp_string_list (to_v vil)
+        (pp_break_sep_list (fun fmt i -> F.fprintf fmt "%b" i))
+        (ListTools.init ((List.length vil) - 1) (fun i -> Random.bool ()))
+    else
+      F.fprintf fmt "@[(define-symbolic %a boolean?)@]@\n"
+        pp_string_list (to_v vil)
+
   | DefArray vil ->
     List.iter
       (fun (vi, n) ->
@@ -867,6 +893,26 @@ let pp_rosette_sketch_join fmt sketch =
   let bnames =
     List.map (fun vi -> vi.vname) bnd_vars
   in
+  let lbody =
+    List.fold_left
+      (fun lbody inner_loop ->
+         let i_st, i_end = get_bounds inner_loop in
+         let rep1 =
+           replace_expression
+             ~in_subscripts:true
+             ~to_replace:(mkVarExpr i_st)
+             ~by:(FnConst (CInt 0))
+             ~ine:lbody
+         in
+         replace_expression
+           ~in_subscripts:true
+           ~to_replace:(mkVarExpr i_end)
+           ~by:(FnConst (CInt !mat_w))
+           ~ine:rep1
+      )
+      sketch.loop_body
+      sketch.inner_functions
+  in
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.loop_body;
   if List.length sketch.inner_functions > 0 then
@@ -884,7 +930,7 @@ let pp_rosette_sketch_join fmt sketch =
       pp_newline fmt ()
     end;
   pp_newline fmt ();
-  pp_loop fmt idx bnames (sketch.loop_body, state_vars) sketch.reaching_consts struct_name;
+  pp_loop fmt idx bnames (lbody, state_vars) sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
   pp_join fmt (true, sketch.join_sketch, state_vars, get_bounds sketch);
   pp_newline fmt ();

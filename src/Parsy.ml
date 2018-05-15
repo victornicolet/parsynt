@@ -51,6 +51,7 @@ let options = [
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'v', "verbose", (set verbose true), None);
   ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
+  ( 'C', "concrete-sketch", (set Sketch.concrete_sketch true), None);
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
