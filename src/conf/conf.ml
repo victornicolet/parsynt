@@ -175,15 +175,18 @@ let verification_parameters =
 
 
 (* 5 - Naming conventions *)
+let sep_str = "#"
+let name_len = 5
+
 let inner_loop_func_name func lid =
-  "#L_"^(Str.first_chars func 4)^"#"^(string_of_int lid)
+  sep_str^"L_"^(Str.first_chars func name_len)^sep_str^(string_of_int lid)
 
 let is_inner_loop_func_name name =
-  if String.length name > 3 then String.sub name 0 3  = "#L_" else false
+  if String.length name > 3 then String.sub name 0 3 = (sep_str^"L_") else false
 
 let id_of_inner_loop name =
   try
-    let elts =  Str.split (Str.regexp "#") name in
+    let elts =  Str.split (Str.regexp sep_str) name in
     int_of_string (List.nth elts ((List.length elts)-1))
   with e ->
     Format.eprintf "%s%s%s@."
@@ -195,10 +198,10 @@ let join_name fname =   "join"^fname
 let seq_name fname =   "seq:"^fname
 
 let is_inner_join_name name =
-  let elts = Str.split (Str.regexp "#") name in
+  let elts = Str.split (Str.regexp sep_str) name in
   List.length elts >= 3 &&
   String.sub (elts >> 0) 0 4 = "join" &&
-  String.sub (elts >> 1) 0 2 = "L_"
+  String.sub (elts >> 1) 0 2 = ""
 
 let strip_contextual_prefix s =
   let prefixes =

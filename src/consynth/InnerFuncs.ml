@@ -40,8 +40,8 @@ let replace_by_join problem inner_loops =
     match join with
     | FnLetExpr bl ->
       if List.length bl > 0 then
-        failwith "TODO: replace l. vars by state, r.vars by virtual input";
-        Some (FnFun join)
+        (failwith "TODO: replace l. vars by state, r.vars by virtual input";
+        Some (FnFun join))
       else None
     | _ -> None
   in

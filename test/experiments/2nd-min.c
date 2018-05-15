@@ -1,8 +1,8 @@
 /* Returns the second smallest element of an array */
 
 int _2nd_min (int * a, int n) {
-  int m = 0;
-  int m2 = 0;
+  int m = _max_int_;
+  int m2 = _max_int_;
   for(int i = 0; i < n; i++) {
     m2 = min (m2, max (m, a[i]));
     m = min (m, a[i]);

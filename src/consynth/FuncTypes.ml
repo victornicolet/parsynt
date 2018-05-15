@@ -643,7 +643,10 @@ let mkVarExpr ?(offsets = []) vi =
 let declared_tuple_types = SH.create 10
 
 
-let rec tuple_struct_name ?(only_by_type=false) ?(seed = "") (stl : (string * fn_type) list) : string =
+let rec tuple_struct_name
+    ?(only_by_type=false) ?(seed = "")
+    (stl : (string * fn_type) list) : string =
+
   let tl = (ListTools.unpair --> snd) stl in
   let poten_name =
     String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))

@@ -1,6 +1,6 @@
 #include "decl_header.h"
 
-int _max_len_1s (_Bool *a, int n) {
+int _max_length_of_1 (_Bool *a, int n) {
   int cl = 0;
   int ml = 0;
   int c = 0;

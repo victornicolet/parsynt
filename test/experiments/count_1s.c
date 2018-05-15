@@ -1,6 +1,6 @@
 #include "stdbool.h"
 
-int example_count_1s (_Bool * a, int n) {
+int _cnt1s (_Bool * a, int n) {
   int i = 0;
   _Bool f = 0;
   int cnt = 0;

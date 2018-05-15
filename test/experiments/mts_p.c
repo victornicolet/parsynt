@@ -1,4 +1,4 @@
-int example_mts_p (int *a, int n) {
+int _mts_p (int *a, int n) {
   int pos = -1;
   int mts = 0;
 
