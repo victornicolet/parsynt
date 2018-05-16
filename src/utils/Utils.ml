@@ -204,6 +204,12 @@ module ListTools = struct
     | h::t -> List.rev (elt::t)
     | []   -> []
 
+  let some_hd l =
+    if length l > 0 then Some (hd l) else None
+
+  let some_tl l =
+    if length l > 0 then Some (tl l) else None
+
 end
 
 

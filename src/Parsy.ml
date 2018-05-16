@@ -55,6 +55,20 @@ let options = [
   ( 'z', "use-z3", (set use_z3 true), None)]
 
 
+let print_inner_result problem inner_funcs () =
+  List.iter
+    (fun pb ->
+       printf "[INFO] Inner function %s,@.\
+               \tFunction:@.%a@.\
+               \tJoin:@.%a@.\
+               \tIdentity state:%a@."
+         pb.loop_name
+         FPretty.pp_fnexpr pb.loop_body
+         FPretty.pp_fnexpr pb.memless_solution
+         (PpTools.ppimap FPretty.pp_constants) pb.identity_values
+    )
+    inner_funcs
+
 let solution_failed ?(failure = "") problem =
   printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast \
           of the solved problem of %s.@."
@@ -118,16 +132,29 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
         aux_vars
         IM.empty
   in
+  let remap_ident_values maybe_expr_list =
+    match maybe_expr_list with
+    | Some expr_list ->
+      (List.fold_left2
+         (fun imap vid expr ->
+            IM.add vid (scm_to_const expr) imap)
+         IM.empty
+         (VarSet.vids_of_vs problem.scontext.state_vars)
+         expr_list)
+
+      | None -> IM.empty
+  in
+  let solution = ExpressionReduction.normalize problem.scontext translated_join_body in
+  let init_vals = remap_init_values sol_info.Codegen.init_values in
+  let id_vals = remap_ident_values sol_info.Codegen.identity_values in
   if inner then
-    {problem with
-     memless_solution =
-       ExpressionReduction.normalize problem.scontext translated_join_body;
-     init_values = remap_init_values sol_info.Codegen.init_values}
+    {problem with memless_solution = solution;
+                  init_values = init_vals;
+                  identity_values = id_vals}
   else
-    {problem with
-     join_solution =
-       ExpressionReduction.normalize problem.scontext translated_join_body;
-     init_values = remap_init_values sol_info.Codegen.init_values}
+    {problem with join_solution = solution;
+                  init_values = init_vals;
+                  identity_values = id_vals}
 
 
 let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) parent_ctx problem =
@@ -203,15 +230,10 @@ let rec solve_inners problem =
        input sequence if possible.
        - Condition 1: all inner function are solved. *)
     if List.length inner_funcs = List.length problem.inner_functions then
-      (if !verbose then
-         List.iter
-           (fun pb ->
-              printf "Inner function %s,@.Function:@.%a@.Join:@.%a@."
-                pb.loop_name
-                FPretty.pp_fnexpr pb.loop_body
-                FPretty.pp_fnexpr pb.join_solution)
-           inner_funcs;
-       Some (InnerFuncs.replace_by_join problem inner_funcs))
+      begin
+        if !verbose then print_inner_result problem inner_funcs ();
+        Some (InnerFuncs.replace_by_join problem inner_funcs)
+      end
     else
       None
 

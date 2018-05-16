@@ -318,6 +318,7 @@ let func2sketch cfile funcreps =
       join_solution = FnLetExpr ([]);
       memless_solution = FnLetExpr ([]);
       init_values = IM.empty;
+      identity_values = IM.empty;
       func_igu = sigu;
       reaching_consts = s_reach_consts;
       inner_functions = inners;

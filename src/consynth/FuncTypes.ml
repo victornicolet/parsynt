@@ -1321,15 +1321,25 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
                 | _ -> failhere __FILE__ __LOC__ "Parsed make-list without length integer."
               in
               let v = translate (arglist >> 1) in
-              FnVector(Array.make ln v)
+              begin
+                match v with
+                | FnConst c ->
+                  FnConst(CArrayInit(ln, c))
+                | _ ->
+                  FnVector(Array.make ln v)
+              end
+
             | a when is_struct_accessor s ->
               (match arglist with
                | [Id_e s] -> from_accessor a s
                | _ -> failhere __FILE__ __LOC__ "Bad accessor")
+
             | a when is_name_of_struct s ->
               rosette_state_struct_to_fnlet s arglist
+
             | "identity" ->
               translate (arglist >> 0)
+
             | _ ->
               to_fun_app e arglist)
          | _ ->
@@ -1404,6 +1414,10 @@ and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
   let args = to_expression_list scm_expr_list in
   FnApp (Bottom, Some fun_vi, args)
 
+let scm_to_const e =
+  match scm_to_fn e with
+  | FnConst c -> c
+  | _ -> failhere __FILE__ "scm_to_const" "Expected a const."
 
 let force_flat vs fnlet =
   let rec force_aux fnlet subs =
@@ -1531,6 +1545,7 @@ type prob_rep =
     join_solution : fnExpr;
     memless_solution : fnExpr;
     init_values : RAst.expr IM.t;
+    identity_values : constants IM.t;
     func_igu : sigu;
     reaching_consts : fnExpr IM.t;
     inner_functions : prob_rep list;

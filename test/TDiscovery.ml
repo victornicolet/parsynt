@@ -44,6 +44,7 @@ let test_1 () =
       };
       uses_global_bound = false;
       init_values = IM.empty;
+      identity_values = IM.empty;
       func_igu = mts_figu;
       loop_body = mts_func;
       join_sketch = (fun bnds -> sk_tail_state);
