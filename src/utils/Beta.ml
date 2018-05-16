@@ -363,7 +363,7 @@ end
 
 
 
-type jcompletion = { cvi : fnV; cleft : bool; cright : bool;}
+type jcompletion = { cvi : fnV; cleft : bool; cright : bool; crec : bool }
 
 module CSet = Set.Make (struct
     type t = jcompletion
@@ -383,7 +383,7 @@ module CS = struct
   include CSet
   let of_vs vs =
     VarSet.fold
-      (fun vi cset -> CSet.add {cvi = vi; cleft = false; cright = false} cset)
+      (fun vi cset -> CSet.add {cvi = vi; cleft = false; cright = false; crec = false} cset)
       vs CSet.empty
 
 
@@ -391,16 +391,21 @@ module CS = struct
     CSet.fold (fun jc cset -> CSet.add (f jc) cset)
       cs CSet.empty
 
-  let complete_left cs =
+
+  let _L cs =
     CSet.fold (fun jc cset -> CSet.add {jc with cleft = true} cset)
       cs CSet.empty
 
-  let complete_right cs =
+  let _R cs =
     CSet.fold (fun jc cset -> CSet.add {jc with cright = true} cset)
       cs CSet.empty
 
-  let complete_all cs =
+  let _LorR cs =
     map (fun jc -> {jc with cleft = true; cright = true;}) cs
+
+  let _RorRec ?(filt=(fun i -> true)) cs =
+    map (fun jc -> {jc with cleft = false; cright = true; crec = true;})
+      (CSet.filter filt cs)
 
   let to_jc_list cs =
     CSet.fold (fun jc jclist -> jc::jclist)
@@ -416,18 +421,37 @@ module CS = struct
       (fun fmt jc ->
          match jc.cvi.vtype with
          | Vector _ ->
-           (if jc.cleft then
-              fprintf fmt "(list-ref %s%s %s)" lprefix jc.cvi.vname index_string;
-            if jc.cright then
-              fprintf fmt "%s(list-ref %s%s %s)"
-                (if jc.cleft then " " else "") rprefix jc.cvi.vname index_string;)
+           begin match jc.cleft, jc.cright, jc.crec with
+           | true, false, false ->
+             fprintf fmt "(list-ref %s%s %s)" lprefix jc.cvi.vname index_string;
+           | false, true, false ->
+             fprintf fmt "(list-ref %s%s %s)" rprefix jc.cvi.vname index_string;
+           | true, true, false ->
+             fprintf fmt "(list-ref %s%s %s)@;(list-ref %s%s %s)"
+               lprefix jc.cvi.vname index_string
+               rprefix jc.cvi.vname index_string;
+           | false, true, true ->
+             fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)"
+               jc.cvi.vname index_string
+               rprefix jc.cvi.vname index_string;
+           | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
+           end
+
+
          | _ ->
-           (if jc.cleft then
-              fprintf fmt "%s%s" lprefix jc.cvi.vname;
-            if jc.cright then
-              fprintf fmt "%s%s%s"
-                (if jc.cleft then " " else "") rprefix jc.cvi.vname;)
-      )
+                      begin match jc.cleft, jc.cright, jc.crec with
+           | true, false, false ->
+             fprintf fmt "%s%s" lprefix jc.cvi.vname;
+           | false, true, false ->
+             fprintf fmt "%s%s" rprefix jc.cvi.vname;
+           | true, true, false ->
+             fprintf fmt "%s%s@;%s%s"
+               lprefix jc.cvi.vname rprefix jc.cvi.vname;
+           | false, true, true ->
+             fprintf fmt "%s@;%s%s"
+               jc.cvi.vname rprefix jc.cvi.vname;
+           | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
+           end)
       fmt (to_jc_list cs)
 end
 

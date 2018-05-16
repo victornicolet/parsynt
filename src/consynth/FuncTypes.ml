@@ -73,6 +73,7 @@ and fnExpr =
   | FnHoleR of hole_type * CS.t * fnExpr
   | FnChoice of fnExpr list
   | FnVector of fnExpr array
+  | FnArraySet of fnExpr * fnExpr * fnExpr
   | FnRecord of fn_type * (fnExpr list)
   | FnRecordMember of fnExpr * string
   (** Simple translation of Cil exp needed to nest
@@ -218,6 +219,7 @@ and type_of expr =
            | Some var -> (var.vname, type_of e)
            | None -> failontype "Cannot create type of final let-binding.") el)
   | FnChoice _ -> Bottom
+  | FnArraySet (a, _, _) -> type_of a
   | FnRec(_, _, (s, _)) -> s.vtype
 
 
@@ -877,6 +879,18 @@ let rec replace_expression ?(in_subscripts = false)
   transform_expr case case_handler const_handler var_handler exp
 
 
+let to_rec_completions e =
+  transform_expr2 {
+    case = (fun e -> match e with FnHoleL _ | FnHoleR _ -> true | _ -> false);
+    on_case =
+      (fun f e ->
+         match e with
+         | FnHoleL(ht, var, cst, e') -> FnHoleL(ht, var, CS._RorRec cst, e')
+         | FnHoleR(ht, cst, e') -> FnHoleR(ht, CS._RorRec cst, e')
+         | _ -> f e);
+    on_var = identity;
+    on_const = identity
+  } e
 (**
    Replace expression n time. Returns a list of expressions, with all
    the possible combinations.
@@ -1340,8 +1354,15 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
             | "identity" ->
               translate (arglist >> 0)
 
+            | "list-set" ->
+              let a = translate (arglist >> 0) in
+              let i = translate (arglist >> 1) in
+              let e = translate (arglist >> 2) in
+              FnArraySet(a,i,e)
+
             | _ ->
               to_fun_app e arglist)
+
          | _ ->
            translate e)
 
@@ -1850,6 +1871,7 @@ let expr_to_cil fd temps e =
     | FnFun _ | FnRec _ -> failwith "Control flow not supported"
     | FnRecord _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
     | FnRecordMember _ -> failhere __FILE__ "exp_to_cil" "Record member not supported."
+    | FnArraySet _ -> failhere __FILE__ "exp_to_cil" "Array set operation not supported."
     | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
     | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
     | FnVector _ -> failhere __FILE__ "exp_to_cil" "Vector literal not supported."

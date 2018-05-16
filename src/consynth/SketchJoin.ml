@@ -29,6 +29,7 @@ let debug = ref false
 let narrow_array_completions = ref false
 let join_loop_width = ref 5
 
+let optim_use_raw_inner = ref false
 (**
    Solutions of inner loops are stored for inlining.
 *)
@@ -98,14 +99,15 @@ let midx_of_hole =
 (* Some transformations need to be wrapped in a recursive function *)
 let force_wrap = ref false
 
-let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
+let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(skip=[])
     (index_expr : fnExpr)
     (state : VarSet.t)
     (optype : operator_type)
     expression =
   let holt t = (t, optype) in
   let self_rcall =
-    make_holes ~max_depth:max_depth ~is_final:is_final ~is_array:is_array index_expr state
+    make_holes ~max_depth:max_depth ~is_final:is_final ~is_array:is_array  ~skip:skip
+      index_expr state
   in
   let make_hole_variable var vi =
     let t = vi.vtype in
@@ -120,16 +122,16 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
                      List.map
                        (fun (s, mt) ->
                           FnHoleR (holt mt,
-                                   CS.complete_right (CS.of_vs state),
+                                   CS._R (CS.of_vs state),
                                    index_expr))
                        lt), 1
           | _ -> FnVar var, 0
         else
           (if VarSet.mem vi state
            then
-             FnHoleL (holt t, var, CS.complete_all (CS.of_vs state), index_expr), 1
+             FnHoleL (holt t, var, CS._LorR (CS.of_vs state), index_expr), 1
            else
-             FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
+             FnHoleR (holt t, CS._R (CS.of_vs state), index_expr), 1)
   in
   let make_hole_array var sklv expr =
     (match type_of_var sklv with
@@ -146,7 +148,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
           in
           FnHoleL (holt t,
                    FnArray(sklv, expr),
-                   CS.complete_all completion, index_expr),
+                   CS._LorR completion, index_expr),
           1
         else if is_record_type t then
           (* At this point, a variable of record type (not a record expression!) should
@@ -157,7 +159,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
                      List.map
                        (fun (s, mt) ->
                           FnHoleR (holt mt,
-                                   CS.complete_right (CS.of_vs state),
+                                   CS._R (CS.of_vs state),
                                    index_expr))
                        lt),
             1
@@ -165,7 +167,8 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
             FnVar var,
             0
         else
-          FnHoleR (holt t, CS.complete_right (CS.of_vs state), index_expr), 1)
+          FnHoleR (holt t, CS._R (CS.of_vs state), index_expr), 1)
+
      | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
   in
   match expression with
@@ -179,7 +182,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
 
 
   | FnConst c ->
-    let cs = CS.complete_right (CS.of_vs state) in
+    let cs = CS._R (CS.of_vs state) in
     begin
       match c with
       | CInt _ | CInt64 _ -> FnHoleR (holt Integer, cs, index_expr), 1
@@ -226,22 +229,33 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false)
     in
     FnApp (t, vo, new_args), ListTools.intlist_max depths
 
+  | FnArraySet(a, i, e) ->
+    let e', d = self_rcall optype e in
+    FnArraySet(a, i, e'), d
+
   | FnRecordMember _ -> expression, 0
 
   | FnLetExpr bindings ->
     let w_a = ref false in
     let new_bindings =
-      make_assignment_list index_expr state [] w_a bindings
+      make_assignment_list index_expr state skip w_a bindings
     in
     FnLetExpr new_bindings, 0
 
   | FnLetIn (bindings, cont) ->
     let w_a = ref false in
     let new_bindings  =
-      make_assignment_list index_expr state [] w_a bindings
+      make_assignment_list index_expr state skip w_a bindings
     in
+    let to_skip = fst (ListTools.unpair bindings) in
     let new_cont, _ =
-      self_rcall optype cont
+      make_holes
+        ~max_depth:max_depth
+        ~is_final:is_final
+        ~is_array:is_array
+        ~skip:(skip@to_skip)
+        index_expr state
+        optype cont
     in
     FnLetIn (new_bindings, new_cont), 0
 
@@ -313,7 +327,7 @@ and make_assignment_list ie state skip writes_in_array =
           if VarSet.mem vi_bound !cur_left_auxiliaries ||
              VarSet.mem vi_bound !cur_right_auxiliaries  then
             l @ [vbound, FnHoleL (((type_of e), Basic), vbound,
-                         CS.complete_all (CS.of_vs state), ie)]
+                         CS._LorR (CS.of_vs state), ie)]
           else
             (match vi_bound.vtype with
              | Vector _ ->
@@ -331,7 +345,11 @@ and make_assignment_list ie state skip writes_in_array =
 
 
 
-and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (wa : bool ref)
+and inline_inner_join
+    (index : fnExpr)
+    (state : VarSet.t)
+    (skip : fnLVar list)
+    (wa : bool ref)
     (vbound, st, f, args) : (fnLVar * fnExpr) list =
   let strip_record_assignments fexpr =
     let all_are_record_member =
@@ -367,9 +385,11 @@ and inline_inner_join (index : fnExpr) (state : VarSet.t) (skip : fnLVar list) (
       match func with
       | FnLetExpr([(_, FnRec (_, _, (_, b)))])
       | FnLetIn([(_, FnRec (_, _, (_, b)))], _) ->
-        printf "       Got the join: %a.@." pp_fnexpr b;
-        [(vbound, strip_record_assignments b)]
-
+        let assgns = strip_record_assignments b in
+        if !optim_use_raw_inner then
+          [(vbound, assgns )]
+        else
+          [(vbound, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state assgns))]
       | _ -> default_join
     end
   | None ->
@@ -585,7 +605,8 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
 
   if !writes_in_array || !force_wrap then
     let loop_join =
-      wrap_with_loop for_inner outeri state reach_consts base_join
+      wrap_with_loop for_inner outeri state reach_consts
+        (to_rec_completions base_join)
     in
     if !add_drop_choice then
       wrap_with_choice for_inner state loop_join
@@ -593,6 +614,7 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
       loop_join
   else
     (fun (i,j) -> base_join)
+
 
 let build_join i (state : VarSet.t) fnlet =
   match i with
@@ -602,6 +624,7 @@ let build_join i (state : VarSet.t) fnlet =
     set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
   | _ ->
     failhere __FILE__ "build_join" "Multiple inner loops not implemented."
+
 
 let build_for_inner il state reach_consts fnlet =
   let i =

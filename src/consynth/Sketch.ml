@@ -374,12 +374,17 @@ let handle_special_consts fmt input_vars reach_consts =
 (** Pretty print the state structure with an equality predicate. The
     form of the definitions are defined in the Racket module.
 *)
+let defined_structs = SH.create 10
 
 let define_state fmt (struct_name_and_fields : string * string list) =
-  (pp_struct_definition ~transparent:true) fmt struct_name_and_fields;
-  pp_newline fmt ();
-  pp_struct_equality fmt struct_name_and_fields
-
+  if SH.mem defined_structs (fst struct_name_and_fields) then ()
+  else
+    begin
+      SH.add defined_structs (fst struct_name_and_fields) (snd struct_name_and_fields);
+      (pp_struct_definition ~transparent:true) fmt struct_name_and_fields;
+      pp_newline fmt ();
+      pp_struct_equality fmt struct_name_and_fields
+    end
 (** Given a set of variables, pretty print their definitions and return
     a list of strings representing the names of the symbolic variables
     that have been defined.
@@ -795,6 +800,7 @@ let pp_static_loop_bounds fmt index_name =
 
 let pp_rosette_sketch_inner_join fmt parent_context sketch =
   clear_special_consts ();
+  SH.clear defined_structs;
   mat_h := 1;
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
@@ -866,6 +872,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
 
 let pp_rosette_sketch_join fmt sketch =
   clear_special_consts ();
+  SH.clear defined_structs;
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in

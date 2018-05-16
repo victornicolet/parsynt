@@ -285,8 +285,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (record_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> fprintf ppf "@[<hov 2>%a@]"
-             pp_fnexpr e)) el
+         (fun ppf (v,e) -> pp_fnexpr ppf e)) el
 
   | FnLetIn (el, l) ->
     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
@@ -342,6 +341,10 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
            pp_fnexpr fmt l)
       (Array.to_list a)
 
+  | FnArraySet(a,i,e) ->
+    fprintf ppf "@[<v 2>(list-set@;%a@;%a@;%a)@]"
+      pp_fnexpr a pp_fnexpr i pp_fnexpr e
+
   | FnApp (t, vio, argl) ->
     let funname =
       match vio with
@@ -353,16 +356,16 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnHoleR (t, cs, i) ->
     let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a %a %i)@]"
+    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
       hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnHoleL (t, v, cs, i) ->
     let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a %a %i)@]"
+    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
       hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnChoice el ->
-    fp ppf "@[<v 2>(choose %a)@]"
+    fp ppf "@[<v 2>(choose@;%a)@]"
       (pp_print_list ~pp_sep:(fun fmt () -> fp fmt "@;")
          pp_fnexpr) el
 
@@ -496,8 +499,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
       color_default
       (pp_print_list
          ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> fprintf ppf "@[<2>%a@]"
-             cp_fnexpr e)) el
+         (fun ppf (v,e) -> cp_fnexpr ppf e)) el
       (color "red") color_default
 
   | FnLetIn (el, l) ->
@@ -519,6 +521,9 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnConst c -> fp ppf "%s%a%s" (color "cyan")
                    (pp_constants ~for_c:true ~for_dafny:false) c color_default
+
+  | FnArraySet(a,i,e) ->
+    fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
   | FnRecord (t, el) ->
     fp ppf "(Record[%a] %a)" pp_typ t pp_expr_list el
