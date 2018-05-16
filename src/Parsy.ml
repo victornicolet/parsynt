@@ -145,14 +145,15 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
       | None -> IM.empty
   in
   let solution_0 = ExpressionReduction.normalize problem.scontext translated_join_body in
+  let solution = ExpressionReduction.clean problem.scontext solution_0 in
   let init_vals = remap_init_values sol_info.Codegen.init_values in
   let id_vals = remap_ident_values sol_info.Codegen.identity_values in
   if inner then
-    {problem with memless_solution = solution_0;
+    {problem with memless_solution = solution;
                   init_values = init_vals;
                   identity_values = id_vals}
   else
-    {problem with join_solution = solution_0;
+    {problem with join_solution = solution;
                   init_values = init_vals;
                   identity_values = id_vals}
 

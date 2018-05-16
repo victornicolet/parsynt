@@ -235,8 +235,59 @@ let rec normalize ?(linear=false) ctx sklet =
   | e -> reduce_full ~search_linear:linear ctx e
 
 
-(** WIP: normalizing conditional paths.  *)
+let clean_unused_assignments : fnExpr -> fnExpr =
+  let is_rec_mem e =
+    match e with
+    | FnRecordMember _ -> true
+    | _ -> false
+  in
+  let rec remove_to_ignore ignore_list =
+    transform_expr2
+      {
+        case = (fun e -> match e with FnLetIn _ -> true | _ -> false);
+        on_case =
+          (fun f e ->
+             match e with
+             | FnLetIn (bindings, cont) ->
+               let rem_b =
+                 List.filter
+                   (fun (v,e) ->
+                      not (List.mem v ignore_list) || is_rec_mem e)
+                   bindings
+               in
+               let rec_b = (List.map (fun (v,e) -> (v, f e)) rem_b) in
+               begin match rec_b with
+               | [] -> f cont
+               | _ -> FnLetIn(rec_b, f cont) end
 
+             | _ -> failwith "x"
+          );
+        on_var = identity;
+        on_const = identity;
+      }
+  in
+  transform_expr2
+    { case = (fun e -> match e with FnLetIn _ -> true | _ -> false);
+      on_case = (fun f e ->
+          match e with
+          | FnLetIn([(v, FnRec(igu, st, (s, body)))], FnLetExpr(choices)) ->
+            let to_ignore =
+              List.fold_left
+                (fun l (v,e) ->
+                   match e with
+                   | FnRecordMember _ -> l
+                   | _ -> v :: l) [] choices
+            in
+            FnLetIn([(v, FnRec(igu, st, (s, remove_to_ignore to_ignore body)))],
+                    FnLetExpr(choices))
+          | FnLetIn(b, cont) -> FnLetIn(b, f cont)
+          | _ -> failwith "GUarded clause");
+      on_var = identity;
+      on_const = identity;
+    }
+
+let clean ctx e =
+  clean_unused_assignments e
 
 (** Using Rosette to solve other reduction/expression matching problems *)
 let find_function_with_rosette all_vars fe e =
