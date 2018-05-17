@@ -46,12 +46,12 @@ function PosJoin(leftSum : int, leftPos : int, leftMps : int, leftDfLength : int
 
 function SumJoin(leftSum : int, rightSum : int): int
 {
-  ((rightSum - (-12)) + (leftSum - 12))
+  ((leftSum - 1) + (rightSum - (-1)))
 }
 
 function MpsJoin(leftSum : int, leftMps : int, rightSum : int, rightMps : int): int
 {
-  DfMax((rightMps + leftSum), leftMps)
+  DfMax((leftSum + rightMps), leftMps)
 }
 
 
