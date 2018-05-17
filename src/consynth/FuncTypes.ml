@@ -713,22 +713,18 @@ let transform_expr
     (var_handler : fnLVar -> fnLVar)
     (expre : fnExpr) : 'a =
 
-  let rec recurse_aux =
-    function
+  let rec recurse_aux expr =
+    match expr with
     | e when case e ->
       case_handler recurse_aux e
 
     | FnVar v -> FnVar (var_handler v)
+
     | FnConst c -> FnConst (const_handler c)
 
     | FnBinop (op, e1, e2) ->
       FnBinop (op, (recurse_aux e1), (recurse_aux e2))
 
-    | FnCastE (t, e) -> FnCastE (t, recurse_aux e)
-    | FnAlignofE e -> FnAlignofE (recurse_aux e)
-    | FnAddrof e -> FnAddrof (recurse_aux e)
-    | FnSizeofE e -> FnSizeofE (recurse_aux e)
-    | FnStartOf e -> FnStartOf (recurse_aux e)
     | FnUnop (op, e) -> FnUnop (op, recurse_aux e)
 
     | FnApp (a, b, el) ->
@@ -746,9 +742,28 @@ let transform_expr
 
     | FnLetIn (velist, letin) ->
       let in_aux = recurse_aux letin in
-      FnLetIn (List.map (fun (v, e) -> (v, (recurse_aux e))) velist, in_aux)
+      FnLetIn (List.map (fun (v, e) -> (v, recurse_aux e)) velist, in_aux)
 
-    | e -> e
+    | FnHoleL(t, v, cs, e) -> FnHoleL(t, v, cs, recurse_aux e)
+
+    | FnHoleR(t, cs, e) -> FnHoleR(t, cs, recurse_aux e)
+
+    | FnChoice el -> FnChoice (List.map recurse_aux el)
+
+    | FnVector ea -> FnVector (Array.map recurse_aux ea)
+
+    | FnRecord(t, el) -> FnRecord(t, List.map recurse_aux el)
+
+    | FnRecordMember(e, s) -> FnRecordMember(recurse_aux e, s)
+
+    | FnArraySet(a, i, e) -> FnArraySet(recurse_aux a, recurse_aux i, recurse_aux e)
+
+    | FnCastE (t, e) -> FnCastE (t, recurse_aux e)
+    | FnAlignofE e -> FnAlignofE (recurse_aux e)
+    | FnAddrof e -> FnAddrof (recurse_aux e)
+    | FnSizeofE e -> FnSizeofE (recurse_aux e)
+    | FnStartOf e -> FnStartOf (recurse_aux e)
+    | FnSizeof _ | FnAlignof _ | FnAddrofLabel _ | FnSizeofStr _ -> expr
   in
   recurse_aux expre
 
