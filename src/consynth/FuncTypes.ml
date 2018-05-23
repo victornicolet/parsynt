@@ -503,6 +503,7 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
+
 let bind_state ?(prefix="") state_var vs =
   let vars = VarSet.elements vs in
   let structname = record_name (VarSet.record vs) in
@@ -517,8 +518,14 @@ let bind_state ?(prefix="") state_var vs =
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
 
+
 let is_reserved_name s = not (uninterpeted s)
 
+
+let rec var_of_fnvar fnvar =
+  match fnvar with
+  | FnVariable v -> v
+  | FnArray (v, e) -> var_of_fnvar v
 
 (** Get the dependency length of an array variable. We assume very
     simple offset expressions.*)
@@ -1062,6 +1069,7 @@ let complete_with_state stv el =
   in
   let _, velist = ListTools.unpair (IM.bindings map') in
   velist
+
 
 let rec complete_final_state stv func =
   match func with

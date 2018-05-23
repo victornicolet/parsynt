@@ -365,6 +365,14 @@ and inline_inner_join
       if all_are_record_member record_assignments then body else fexpr
     | _ -> fexpr
   in
+  let rec extract body =
+    match body with
+    | FnLetIn (b0, body') -> b0 @ (extract body')
+    | FnLetExpr b -> b
+    | _ ->
+      failhere __FILE__ "extract in inline_inner_join"
+        "Expected bindings, got another expression."
+  in
   let state_has_array =
     match st with
     | Record slt -> List.exists (fun (s,t) -> is_array_type t) slt
@@ -385,11 +393,15 @@ and inline_inner_join
       match func with
       | FnLetExpr([(_, FnRec (_, _, (_, b)))])
       | FnLetIn([(_, FnRec (_, _, (_, b)))], _) ->
-        let assgns = strip_record_assignments b in
+        let assgns = extract (strip_record_assignments b) in
         if !optim_use_raw_inner then
-          [(vbound, assgns )]
+          assgns
         else
-          [(vbound, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state assgns))]
+          List.map
+            (fun (v, e) ->
+               (v, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state e)))
+            assgns
+
       | _ -> default_join
     end
   | None ->
@@ -397,19 +409,81 @@ and inline_inner_join
 
 
 
-and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) =
-  function
-  | FnLetExpr ve_list ->
-    FnLetExpr (make_assignment_list index state skip w_a ve_list)
+and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) e =
+  let rec make_assignments local_skip e =
+    match e with
+    | FnLetExpr ve_list ->
+      (make_assignment_list index state local_skip w_a ve_list)
 
-  | FnLetIn (ve_list, cont) ->
-    let to_skip = fst (ListTools.unpair ve_list) in
-    FnLetIn (
-      make_assignment_list index state skip w_a ve_list,
-      make_join ~index:index ~state:state ~skip:(skip@to_skip) ~w_a:w_a cont)
-  | e -> e
+    | FnLetIn (ve_list, cont) ->
+      let to_skip = fst (ListTools.unpair ve_list) in
+      (make_assignment_list index state skip w_a ve_list) @
+      (List.filter (fun (vb, e) ->
+           match e with
+           | FnVar v when v = vb -> false
+           | _ -> true)
+          (make_assignments (local_skip@to_skip) cont))
 
+    | _ ->
+      failhere __FILE__ "make_join" "make_join called on non-binding expression."
+  in
+  let remap_bindings_to_state bindings =
+    let mapped_bindings =
+      List.fold_left
+        (fun remap (v,e) ->
+           let v = var_of_fnvar v in
+           if VarSet.mem v state then
+             IM.add v.vid e remap
+           else
+             raise Not_found)
+      IM.empty
+      bindings
+    in
+    List.map
+      (fun v ->
+         try
+           (mkVar v, IM.find v.vid mapped_bindings)
+         with Not_found ->
+           (mkVar v, mkVarExpr v))
+      (VarSet.elements state)
+  in
+  let t_inlines =
+    let maybe_inlined_join (v,e) =
+      if is_record_type v.vtype then
+        match e with
+        | FnLetExpr b -> b
+        | FnRecord (t, el) ->
+          (match t with
+           | Record stl ->
+             List.fold_left2 (fun l (s,t) e ->
+                 l@[(mkVar (VarSet.find_by_name state s), e)]) [] stl el
+           | _ -> failwith "Record should have record type information.")
+        | _ -> [(mkVar v,e)]
+      else
+        [(mkVar v,e)]
+    in
+    List.fold_left
+      (fun l (v, e) ->
+         let var = var_of_fnvar v in
+         if VarSet.mem var state then
+           l@[(v, e)]
+         else
+           l@(maybe_inlined_join (var_of_fnvar v,e))
 
+      ) []
+  in
+  let rec clean_unbound_refs =
+    List.filter
+      (fun (v, e) ->
+         match e with
+         | FnRecordMember _ -> false
+         | _ -> true)
+  in
+  try
+    FnLetExpr(((make_assignments []) --> remap_bindings_to_state --> clean_unbound_refs) e)
+  with Not_found ->
+    FnLetIn((make_assignments [] --> clean_unbound_refs --> t_inlines) e,
+            FnLetExpr(List.map (fun v -> (mkVar v, mkVarExpr v)) (VarSet.elements state)))
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
