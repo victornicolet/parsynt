@@ -27,7 +27,9 @@ module IH = Sets.IH
 let verbose = ref false
 let debug = ref false
 let narrow_array_completions = ref false
+let make_flat_join = ref false
 let join_loop_width = ref 5
+
 
 let optim_use_raw_inner = ref false
 (**
@@ -238,14 +240,14 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
   | FnLetExpr bindings ->
     let w_a = ref false in
     let new_bindings =
-      make_assignment_list index_expr state skip w_a bindings
+      make_assignment_list ~index_e:index_expr ~state:state ~skip:skip ~wa:w_a bindings
     in
     FnLetExpr new_bindings, 0
 
   | FnLetIn (bindings, cont) ->
     let w_a = ref false in
     let new_bindings  =
-      make_assignment_list index_expr state skip w_a bindings
+      make_assignment_list ~index_e:index_expr ~state:state ~skip:skip ~wa:w_a bindings
     in
     let to_skip = fst (ListTools.unpair bindings) in
     let new_cont, _ =
@@ -278,7 +280,7 @@ and make_hole_e ?(max_depth = 2) ?(is_array=false) ?(is_final=false)
        state)
      optype e
 
-and make_assignment_list ie state skip writes_in_array =
+and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array =
   let in_skip_list var skip =
     match var with
     | FnVariable v ->
@@ -409,8 +411,8 @@ and inline_inner_join
 
 
 
-and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) e =
-  let rec make_assignments local_skip e =
+and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) body =
+  let rec make_flat_assignments local_skip e =
     match e with
     | FnLetExpr ve_list ->
       (make_assignment_list index state local_skip w_a ve_list)
@@ -422,8 +424,21 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
            match e with
            | FnVar v when v = vb -> false
            | _ -> true)
-          (make_assignments (local_skip@to_skip) cont))
+          (make_flat_assignments (local_skip@to_skip) cont))
 
+    | _ ->
+      failhere __FILE__ "make_join" "make_join called on non-binding expression."
+  in
+  let rec make_assignments local_skip e =
+    match e with
+    | FnLetExpr ve_list ->
+      FnLetExpr (make_assignment_list index state local_skip w_a ve_list)
+
+    | FnLetIn (ve_list, cont) ->
+      let to_skip = fst (ListTools.unpair ve_list) in
+      FnLetIn
+        (make_assignment_list index state skip w_a ve_list,
+         make_assignments (local_skip@to_skip) cont)
     | _ ->
       failhere __FILE__ "make_join" "make_join called on non-binding expression."
   in
@@ -431,9 +446,13 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
     let mapped_bindings =
       List.fold_left
         (fun remap (v,e) ->
-           let v = var_of_fnvar v in
-           if VarSet.mem v state then
-             IM.add v.vid e remap
+           let var = var_of_fnvar v in
+           if VarSet.mem var state then
+             match v with
+             | FnVariable x ->
+               IM.add var.vid e remap
+             | FnArray (a, j) ->
+               IM.add var.vid (FnArraySet (FnVar a, j, e)) remap
            else
              raise Not_found)
       IM.empty
@@ -480,10 +499,21 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
          | _ -> true)
   in
   try
-    FnLetExpr(((make_assignments []) --> remap_bindings_to_state --> clean_unbound_refs) e)
+    begin
+      if !make_flat_join then
+        FnLetExpr(((make_flat_assignments []) --> remap_bindings_to_state --> clean_unbound_refs) body)
+      else
+        make_assignments [] body
+    end
   with Not_found ->
-    FnLetIn((make_assignments [] --> clean_unbound_refs --> t_inlines) e,
-            FnLetExpr(List.map (fun v -> (mkVar v, mkVarExpr v)) (VarSet.elements state)))
+    begin
+      if !make_flat_join then
+        FnLetIn((make_flat_assignments [] --> clean_unbound_refs --> t_inlines) body,
+                FnLetExpr(List.map (fun v -> (mkVar v, mkVarExpr v)) (VarSet.elements state)))
+      else
+       failhere __FILE__ "make_join" "Unexpected failure in non flat mode."
+    end
+
 
 and merge_leaves max_depth (e,d) =
   if d + 1 >= max_depth then
