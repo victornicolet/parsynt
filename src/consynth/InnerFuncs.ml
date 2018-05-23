@@ -150,7 +150,7 @@ let replace_by_join problem inner_loops =
         on_var = (fun v -> v);
       }
     in
-    let new_body = transform_expr2 rpl_transformer lbody in
+    let new_body = transform_expr2 rpl_transformer  lbody in
     let added_inputs =
       IH.fold
         (fun id v vset -> VarSet.add v vset) created_inputs
