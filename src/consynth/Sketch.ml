@@ -743,8 +743,8 @@ let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_
 let define_inner_join fmt lname (state, styp) (ist, iend) join =
   let lstate_var = mkFnVar "$L" styp in
   let rstate_var = mkFnVar "$R" styp in
-  let bind_lstate = bind_state ~prefix:left_state_prefix lstate_var state in
-  let bind_rstate = bind_state ~prefix:right_state_prefix rstate_var state in
+  let bind_lstate = bind_state ~prefix:left_state_prefix ~state_rec:lstate_var ~members:state in
+  let bind_rstate = bind_state ~prefix:right_state_prefix ~state_rec:rstate_var ~members:state in
   let wrapped_join =
     FnLetIn (bind_lstate@bind_rstate, join)
   in

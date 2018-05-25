@@ -504,7 +504,7 @@ let mkVarExpr ?(offsets = []) vi =
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
 
-let bind_state ?(prefix="") state_var vs =
+let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
   let structname = record_name (VarSet.record vs) in
   List.map
@@ -907,8 +907,8 @@ let to_rec_completions e =
     on_case =
       (fun f e ->
          match e with
-         | FnHoleL(ht, var, cst, e') -> FnHoleL(ht, var, CS._RorRec cst, e')
-         | FnHoleR(ht, cst, e') -> FnHoleR(ht, CS._RorRec cst, e')
+         | FnHoleL(ht, var, cst, e') -> FnHoleL(ht, var, CS._LRorRec cst, e')
+         | FnHoleR(ht, cst, e') -> FnHoleR(ht, CS._LRorRec cst, e')
          | _ -> f e);
     on_var = identity;
     on_const = identity

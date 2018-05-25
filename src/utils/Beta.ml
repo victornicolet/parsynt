@@ -403,8 +403,8 @@ module CS = struct
   let _LorR cs =
     map (fun jc -> {jc with cleft = true; cright = true;}) cs
 
-  let _RorRec ?(filt=(fun i -> true)) cs =
-    map (fun jc -> {jc with cleft = false; cright = true; crec = true;})
+  let _LRorRec ?(filt=(fun i -> true)) cs =
+    map (fun jc -> {jc with cleft = true; cright = true; crec = true;})
       (CSet.filter filt cs)
 
   let to_jc_list cs =
@@ -434,6 +434,12 @@ module CS = struct
              fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)"
                jc.cvi.vname index_string
                rprefix jc.cvi.vname index_string;
+           | true, true, true ->
+             fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)@;(list-ref %s%s %s)"
+               jc.cvi.vname index_string
+               rprefix jc.cvi.vname index_string
+               lprefix jc.cvi.vname index_string;
+
            | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end
 
@@ -450,6 +456,10 @@ module CS = struct
            | false, true, true ->
              fprintf fmt "%s@;%s%s"
                jc.cvi.vname rprefix jc.cvi.vname;
+           | true, true, true ->
+             fprintf fmt "%s@;%s%s@;%s%s"
+               jc.cvi.vname rprefix jc.cvi.vname lprefix jc.cvi.vname;
+
            | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end)
       fmt (to_jc_list cs)

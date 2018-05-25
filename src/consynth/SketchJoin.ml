@@ -364,21 +364,25 @@ and inline_inner_join
     in
     match fexpr with
     | FnLetIn (record_assignments, body) ->
-      if all_are_record_member record_assignments then body else fexpr
-    | _ -> fexpr
+      if all_are_record_member record_assignments then Some record_assignments, body else None, fexpr
+    | _ -> None, fexpr
   in
 
-  let rec extract body =
-    let remove_identities bindings =
-      List.filter
-        (fun (v,e) ->
-           match e with
-           | FnVar v' when v = v' -> false
-           | _ -> true) bindings
+  let rec drill body =
+    let drill_bindings bindings =
+              List.map
+          (fun (v, e) ->
+             match e with
+             | FnVar v' when v = v' -> (v,e)
+             | _ -> (v, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state e)))
+          bindings
     in
     match body with
-    | FnLetIn (b0, body') -> b0 @ (extract body')
-    | FnLetExpr b -> remove_identities b
+    | FnLetIn (b0, body') ->
+      FnLetIn(drill_bindings b0, drill body')
+
+    | FnLetExpr b -> FnLetExpr(drill_bindings b)
+
     | _ ->
       failhere __FILE__ "extract in inline_inner_join"
         "Expected bindings, got another expression."
@@ -397,21 +401,23 @@ and inline_inner_join
   | Some (ctx, func) ->
     begin
       match func with
-      | FnLetExpr([(_, FnRec (_, _, (_, b)))])
-      | FnLetIn([(_, FnRec (_, _, (_, b)))], _) ->
-        let assgns = extract (strip_record_assignments b) in
+      | FnLetExpr([(_s, FnRec (igu, (vs, bs), (sarg, b)))])
+      | FnLetIn([(_s, FnRec (igu, (vs, bs), (sarg, b)))], _) ->
         if !optim_use_raw_inner then
-          assgns
+          [vbound, FnRec (igu, (vs, bs), (sarg, b))]
         else
-          List.map
-            (fun (v, e) ->
-               (v, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state e)))
-            assgns
+          let maybe_ra, core_body = strip_record_assignments b in
+          (match maybe_ra with
+          | Some ra ->
+            let core_body' = drill core_body in
+            [vbound, FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body')))]
+          | None ->
+             failhere __FILE__ "inline_inner_join" "Missing bindings in inner join loop body.")
 
-      | _ -> default_join
+      | _ -> failhere __FILE__ "inline_inner_join" "Toplevel form of inner join not recognized."
     end
   | None ->
-    failhere __FILE__ "inline_inner_join" ("Cannot find inner join of %s"
+    failhere __FILE__ "inline_inner_join" "Cannot find inner join."
 
 
 
@@ -596,6 +602,51 @@ let rec inner_optims state letfun  =
      | e -> e)
 
 
+(* Refine completions.
+   - Don't use arrays with cell ref outside loops. *)
+let refine_completions letfun =
+  let in_loops vs =
+    let filter_out_outervs =
+      CS.filter (fun cse -> VarSet.mem cse.cvi vs)
+    in
+    transform_expr2
+      {
+        case = (fun e -> match e with FnHoleR _ | FnHoleL _ -> true | _ -> false);
+        on_case =
+          (fun f e -> match e with
+             | FnHoleR (t, cs, e) ->
+               FnHoleR (t, CS._LRorRec (filter_out_outervs cs), e)
+             | FnHoleL (t, v, cs, e) ->
+               FnHoleL (t, v, CS._LRorRec (filter_out_outervs cs), e)
+             | _ -> e);
+        on_var = identity;
+        on_const = identity;
+      }
+  in
+  let filter_out_arrays cs =
+    CS.filter (fun cse -> not (is_array_type cse.cvi.vtype)) cs
+  in
+  let case e =
+    match e with
+    | FnHoleL _ -> true
+    | FnHoleR _ -> true
+    | FnRec _ -> true
+    | _ -> false
+  in
+  let on_case f e =
+    match e with
+    | FnHoleL (t, v, cs, e) ->
+      FnHoleL (t, v, filter_out_arrays cs, e)
+    | FnHoleR (t, cs, e) ->
+      FnHoleR (t, filter_out_arrays cs, e)
+    | FnRec (igu, (vs,bs), (s, e)) ->
+      FnRec(igu, (vs,bs), (s, in_loops vs e))
+    | _ -> e
+  in
+  transform_expr2
+    {case = case; on_case = on_case; on_const = identity; on_var = identity}
+    letfun
+
 
 let wrap_with_loop i state reach_consts base_join =
   let start_state_valuation =
@@ -655,19 +706,20 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   force_wrap := false;
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
-
-  if (!writes_in_array || !force_wrap) && for_inner then
-    let loop_join =
-      wrap_with_loop outeri state reach_consts
-        (to_rec_completions base_join)
-    in
-    if !add_drop_choice then
-      wrap_with_choice state loop_join
+  let wrapped_join =
+    if (!writes_in_array || !force_wrap) && for_inner then
+      let loop_join =
+        wrap_with_loop outeri state reach_consts
+          (to_rec_completions base_join)
+      in
+      if !add_drop_choice then
+        wrap_with_choice state loop_join
+      else
+        loop_join
     else
-      loop_join
-  else
-    (fun (i,j) -> base_join)
-
+      (fun (i,j) -> base_join)
+  in
+  (fun (i,j) -> refine_completions (wrapped_join (i,j)))
 
 let build_join i (state : VarSet.t) fnlet =
   match i with
