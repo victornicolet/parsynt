@@ -27,7 +27,10 @@ open FuncTypes
 open Utils
 open Utils.PpTools
 
+exception VariableDiscoveryError of string
+
 let debug = ref false
+let verbose = ref false
 let debug_dev = ref true
 
 let _aux_prefix_ = ref "aux"
@@ -126,7 +129,7 @@ let uses stv input_func =
       (fun c -> VarSet.empty) (* Handle constants *)
       (fun v ->
          VarSet.inter
-           (VarSet.singleton (check_option (vi_of v))) stv) (* Variables *)
+           (VarSet.singleton (var_of_fnvar v)) stv) (* Variables *)
   in
   let rec aux_used_stvs stv inpt map =
     match inpt with
@@ -142,7 +145,7 @@ let uses stv input_func =
        function *)
     let vi =
       try
-        check_option (vi_of v)
+        var_of_fnvar v
       with Failure s ->
         FError.exception_on_variable s v
     in
@@ -150,15 +153,22 @@ let uses stv input_func =
   in
   aux_used_stvs stv input_func IM.empty
 
-let rank_by_use uses_map =
+let rank_by_use stv uses_map =
   let num_uses_list =
     List.map
-      (fun (vi, use_set) -> (vi, VarSet.cardinal use_set))
+      (fun (vid, use_set) -> (vid, VarSet.cardinal use_set))
       (IM.bindings uses_map)
   in
-  List.sort
-    (fun (vi, use_num) (vi', use_num')-> compare use_num use_num')
-    num_uses_list
+  let ranked =
+    List.sort
+      (fun (_, use_num) (_, use_num')-> compare use_num use_num')
+      num_uses_list
+  in
+  try
+    List.map (fun (vid, _) -> VarSet.find_by_id stv vid) ranked
+  with Not_found ->
+    eprintf "[ERROR] Some undefined variable in rank_by_use.@.";
+    raise (VariableDiscoveryError "rank_by_use")
 
 
 
@@ -478,8 +488,13 @@ let find_auxiliaries ?(not_last_iteration = true) i
     @return the new problem representation, with the update loop body
     and the updated state variables.
 *)
-let discover_for_id problem varid =
-  aux_prefix (VarSet.find_by_id (problem.scontext.state_vars) varid).vname;
+let discover_for_id problem var =
+  if !verbose then
+    begin
+      printf "[INFO] Discover for variable %s.@." var.vname;
+      printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars
+    end;
+  aux_prefix var.vname;
   let idx_update = get_index_update problem in
 
   (** Fixpoint stops when the set of auxiliary variables is stable,
@@ -510,7 +525,7 @@ let discover_for_id problem varid =
           ~not_last_iteration:(i < !max_exec_no)
           xinfo                 (* Previous state. *)
           { xinfo with state_exprs = expressions} (* Current state. *)
-          (IM.find varid expressions)             (* Expression analyzed. *)
+          (IM.find var.vid expressions)             (* Expression analyzed. *)
           oset                         (* Current auxiliaries, current aux expressions. *)
           inputs
       in
@@ -535,7 +550,7 @@ let discover_for_id problem varid =
     (color "b-blue")
     (pad ~c:'-' (fprintf str_formatter
      "---------------- START UNFOLDINGS for %s ----------------"
-       (VarSet.find_by_id ctx.state_vars varid).vname; flush_str_formatter ())
+       var.vname; flush_str_formatter ())
     80)
     color_default;
 
@@ -567,8 +582,7 @@ let discover_for_id problem varid =
 
   if !debug then
     begin
-      printf "@.DISCOVER for variable %s finished.@."
-        (VarSet.find_by_id ctx.state_vars varid).vname;
+      printf "@.DISCOVER for variable %s finished.@." var.vname;
     end;
   printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
   AuxSet.iter
@@ -596,14 +610,17 @@ let discover_for_id problem varid =
 let timec = ref 0.0
 
 let discover problem =
+  if !verbose then printf "@.[INFO] Starting variable discovery...@.";
   timec := Unix.gettimeofday ();
+  let stv = problem.scontext.state_vars in
   let ranked_stv =
-    rank_by_use (uses problem.scontext.state_vars problem.loop_body) in
+    rank_by_use stv (uses stv  problem.loop_body)
+  in
   (* For each variable, do the auxiliary variable discovery. *)
   let final_problem =
     List.fold_left
-      (fun new_problem  (vid, _) ->
-         discover_for_id new_problem vid)
+      (fun new_problem var ->
+         discover_for_id new_problem var)
       problem
       ranked_stv
   in

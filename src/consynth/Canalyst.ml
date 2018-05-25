@@ -334,7 +334,13 @@ let func2sketch cfile funcreps =
    have been modified.
 *)
 let find_new_variables sketch_rep =
-  let new_sketch = discover sketch_rep in
+  let new_sketch =
+    try
+      discover sketch_rep
+    with VariableDiscoveryError s ->
+      eprintf "[ERROR] Failed to discover new variables.@.";
+      raise (VariableDiscoveryError s)
+  in
   (** Apply some optimization to reduce the size of the function *)
   let nlb_opt = Sketch.Body.optims new_sketch.loop_body in
   let new_loop_body =
