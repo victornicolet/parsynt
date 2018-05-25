@@ -367,28 +367,32 @@ and inline_inner_join
       if all_are_record_member record_assignments then body else fexpr
     | _ -> fexpr
   in
+
   let rec extract body =
+    let remove_identities bindings =
+      List.filter
+        (fun (v,e) ->
+           match e with
+           | FnVar v' when v = v' -> false
+           | _ -> true) bindings
+    in
     match body with
     | FnLetIn (b0, body') -> b0 @ (extract body')
-    | FnLetExpr b -> b
+    | FnLetExpr b -> remove_identities b
     | _ ->
       failhere __FILE__ "extract in inline_inner_join"
         "Expected bindings, got another expression."
   in
+
+
   let state_has_array =
     match st with
     | Record slt -> List.exists (fun (s,t) -> is_array_type t) slt
     | Vector _ -> true
     | _ -> false
   in
+
   wa := state_has_array;
-  let default_join =
-    [(vbound,
-      FnApp(st,
-            Some f,
-            (ListTools.unpair --> fst)
-              (List.map (make_hole_e index state) args)))]
-  in
   match get_solution f.vname with
   | Some (ctx, func) ->
     begin
@@ -407,38 +411,21 @@ and inline_inner_join
       | _ -> default_join
     end
   | None ->
-    default_join
+    failhere __FILE__ "inline_inner_join" ("Cannot find inner join of %s"
 
 
 
 and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) body =
-  let rec make_flat_assignments local_skip e =
-    match e with
-    | FnLetExpr ve_list ->
-      (make_assignment_list index state local_skip w_a ve_list)
-
-    | FnLetIn (ve_list, cont) ->
-      let to_skip = fst (ListTools.unpair ve_list) in
-      (make_assignment_list index state skip w_a ve_list) @
-      (List.filter (fun (vb, e) ->
-           match e with
-           | FnVar v when v = vb -> false
-           | _ -> true)
-          (make_flat_assignments (local_skip@to_skip) cont))
-
-    | _ ->
-      failhere __FILE__ "make_join" "make_join called on non-binding expression."
-  in
   let rec make_assignments local_skip e =
     match e with
     | FnLetExpr ve_list ->
-      FnLetExpr (make_assignment_list index state local_skip w_a ve_list)
+      [make_assignment_list index state local_skip w_a ve_list]
 
     | FnLetIn (ve_list, cont) ->
       let to_skip = fst (ListTools.unpair ve_list) in
-      FnLetIn
-        (make_assignment_list index state skip w_a ve_list,
-         make_assignments (local_skip@to_skip) cont)
+      make_assignment_list index state skip w_a ve_list ::
+      make_assignments (local_skip@to_skip) cont
+
     | _ ->
       failhere __FILE__ "make_join" "make_join called on non-binding expression."
   in
@@ -466,53 +453,16 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
            (mkVar v, mkVarExpr v))
       (VarSet.elements state)
   in
-  let t_inlines =
-    let maybe_inlined_join (v,e) =
-      if is_record_type v.vtype then
-        match e with
-        | FnLetExpr b -> b
-        | FnRecord (t, el) ->
-          (match t with
-           | Record stl ->
-             List.fold_left2 (fun l (s,t) e ->
-                 l@[(mkVar (VarSet.find_by_name state s), e)]) [] stl el
-           | _ -> failwith "Record should have record type information.")
-        | _ -> [(mkVar v,e)]
-      else
-        [(mkVar v,e)]
-    in
-    List.fold_left
-      (fun l (v, e) ->
-         let var = var_of_fnvar v in
-         if VarSet.mem var state then
-           l@[(v, e)]
-         else
-           l@(maybe_inlined_join (var_of_fnvar v,e))
+  if !make_flat_join then
+    FnLetExpr((make_assignments [] --> List.flatten --> remap_bindings_to_state) body)
+  else
+    let bds = List.rev (make_assignments [] body) in
+    match bds with
+    | hd :: (rhd :: rtl) ->
+      List.fold_left (fun cont binds -> FnLetIn(binds, cont)) (FnLetExpr hd) (rhd :: rtl)
+    | [l] -> FnLetExpr l
+    | _ -> FnLetExpr []
 
-      ) []
-  in
-  let rec clean_unbound_refs =
-    List.filter
-      (fun (v, e) ->
-         match e with
-         | FnRecordMember _ -> false
-         | _ -> true)
-  in
-  try
-    begin
-      if !make_flat_join then
-        FnLetExpr(((make_flat_assignments []) --> remap_bindings_to_state --> clean_unbound_refs) body)
-      else
-        make_assignments [] body
-    end
-  with Not_found ->
-    begin
-      if !make_flat_join then
-        FnLetIn((make_flat_assignments [] --> clean_unbound_refs --> t_inlines) body,
-                FnLetExpr(List.map (fun v -> (mkVar v, mkVarExpr v)) (VarSet.elements state)))
-      else
-       failhere __FILE__ "make_join" "Unexpected failure in non flat mode."
-    end
 
 
 and merge_leaves max_depth (e,d) =
@@ -647,8 +597,7 @@ let rec inner_optims state letfun  =
 
 
 
-(* TODO change the limits *)
-let wrap_with_loop for_inner i state reach_consts base_join =
+let wrap_with_loop i state reach_consts base_join =
   let start_state_valuation =
     let lsp =
       VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
@@ -681,7 +630,7 @@ let wrap_with_loop for_inner i state reach_consts base_join =
    the loop body, could be used as a temporary variable in the join loop, but its final value
    is only the value of the right or the top chunk.
 *)
-let wrap_with_choice for_inner state base_join =
+let wrap_with_choice state base_join =
   let special_state_var = mkFnVar (state_var_name state "_fs_") (Record (VarSet.record state)) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let structname = record_name (VarSet.record state) in
@@ -707,13 +656,13 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
 
-  if !writes_in_array || !force_wrap then
+  if (!writes_in_array || !force_wrap) && for_inner then
     let loop_join =
-      wrap_with_loop for_inner outeri state reach_consts
+      wrap_with_loop outeri state reach_consts
         (to_rec_completions base_join)
     in
     if !add_drop_choice then
-      wrap_with_choice for_inner state loop_join
+      wrap_with_choice state loop_join
     else
       loop_join
   else
