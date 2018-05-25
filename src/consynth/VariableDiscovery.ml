@@ -58,8 +58,16 @@ let unfold_index xinfo idx_update =
     xinfo.context.index_vars IM.empty
 
 
-(* Check well-formedness of inputs. *)
+(* Is var reintialized in one of problem's inner loops? *)
+let is_reinitialized problem var =
+  List.exists
+    (fun in_pb ->
+       VarSet.mem var in_pb.scontext.state_vars &&
+       IM.mem var.vid in_pb.reaching_consts)
+    problem.inner_functions
 
+
+(* Check well-formedness of inputs. *)
 let rec check_wf input_function stv  =
   match input_function with
   | FnLetExpr assignments ->
@@ -137,19 +145,14 @@ let uses stv input_func =
       let new_uses = List.fold_left used_in_assignment map velist in
       let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
+
     | FnLetExpr velist -> List.fold_left used_in_assignment map velist
+
     | _ -> failhere __FILE__ "uses"
              "Bad toplevel expr form, recursion should not have reached this."
   and used_in_assignment map (v, expr) =
-    (* Ignore assignment to 'state' it is only a terminal symbol in the
-       function *)
-    let vi =
-      try
-        var_of_fnvar v
-      with Failure s ->
-        FError.exception_on_variable s v
-    in
-    update_map map vi (f_expr expr)
+    let var = var_of_fnvar v in
+    if VarSet.mem var stv then update_map map var (f_expr expr) else map
   in
   aux_used_stvs stv input_func IM.empty
 
@@ -617,13 +620,19 @@ let discover problem =
     rank_by_use stv (uses stv  problem.loop_body)
   in
   (* For each variable, do the auxiliary variable discovery. *)
-  let final_problem =
+  let problem' =
     List.fold_left
-      (fun new_problem var ->
-         discover_for_id new_problem var)
+      (fun problem var ->
+         if is_array_type var.vtype || is_reinitialized problem var then
+           (* Skip auxiliary discovery for array variables and variables that
+              are reinitialized in the loop. *)
+           (if !verbose then printf "[INFO] Skip %s.@." var.vname;
+           problem)
+         else
+           discover_for_id problem var)
       problem
       ranked_stv
   in
   timec := Unix.gettimeofday () -. !timec;
   Format.printf "@.Variable discovery in %.3f s@." !timec;
-  final_problem
+  problem'
