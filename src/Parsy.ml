@@ -50,7 +50,7 @@ let options = [
       Some (fun o_folder -> Conf.output_dir := o_folder));
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'v', "verbose", (set verbose true), None);
-  ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true;
+  ( 'x', "debug-variable-discovery", (ignore(set VariableDiscovery.debug true);
                                       set SymbExe.debug true), None);
   ( 'C', "concrete-sketch", (set Sketch.concrete_sketch true), None);
   ( 'z', "use-z3", (set use_z3 true), None)]
@@ -122,7 +122,7 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
       (** If auxiliaries have been created, the sketch has been solved
           without having to assign them a specific value. We can
           just create placeholders according to their type. *)
-      IH.fold
+      concretize_aux
         (fun vid vi map ->
            IM.add vid
              (match vi.vtype with
@@ -130,7 +130,6 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
               | Boolean -> RAst.Bool_e true
               | Real -> RAst.Int_e 1
               | _ -> RAst.Nil_e) map)
-        aux_vars
         IM.empty
   in
   let remap_ident_values maybe_expr_list =

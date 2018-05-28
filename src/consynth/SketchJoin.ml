@@ -326,8 +326,7 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
           end;
         try
           let vi_bound = check_option (vi_of vbound) in
-          if VarSet.mem vi_bound !cur_left_auxiliaries ||
-             VarSet.mem vi_bound !cur_right_auxiliaries  then
+          if is_left_aux vi_bound || is_right_aux vi_bound  then
             l @ [vbound, FnHoleL (((type_of e), Basic), vbound,
                          CS._LorR (CS.of_vs state), ie)]
           else

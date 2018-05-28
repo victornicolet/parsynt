@@ -1426,7 +1426,7 @@ and rosette_state_struct_to_fnlet sname scm_expr_list =
   with Invalid_argument s ->
     (* Might be an inner state struct. *)
     (try
-       FnRecord(Record(SH.find declared_tuple_types sname), fn_expr_list)
+       FnRecord(Record(get_struct sname), fn_expr_list)
      with Not_found ->
        eprintf "FAILURE :@\n\
                 Failed to translate state in list of bindings, got %i state \

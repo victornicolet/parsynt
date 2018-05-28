@@ -431,7 +431,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
   let pp_index_low_up =
     (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
-          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
+          let start_vi, end_vi = get_index_to_boundary vi in
           Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
   in
   pp_comment fmt "Functional representation of the loop body.";
@@ -455,7 +455,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     let pp_index_up =
       (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
          (fun fmt vi ->
-            let _, end_vi = (IH.find index_to_boundary vi.vid) in
+            let _, end_vi = get_index_to_boundary vi in
             Format.fprintf fmt "%s" end_vi.vname))
     in
     let extract_stv_or_reach_const, bound_state1 =

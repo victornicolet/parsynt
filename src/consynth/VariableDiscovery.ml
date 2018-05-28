@@ -614,6 +614,17 @@ let timec = ref 0.0
 
 let discover problem =
   if !verbose then printf "@.[INFO] Starting variable discovery...@.";
+
+  let problem =
+    if List.length problem.inner_functions > 0 then
+      begin
+        if !verbose then
+          printf "@.[INFO] Preparing body, inlining inner loops.@.";
+        InnerFuncs.inline_inner problem
+      end
+    else
+      problem
+  in
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
   let ranked_stv =

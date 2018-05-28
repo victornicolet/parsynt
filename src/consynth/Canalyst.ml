@@ -333,32 +333,32 @@ let func2sketch cfile funcreps =
    @return a new problem represention where the function and the variables
    have been modified.
 *)
-let find_new_variables sketch_rep =
-  let new_sketch =
+let find_new_variables prob_rep =
+  let new_prob =
     try
-      discover sketch_rep
+      discover prob_rep
     with VariableDiscoveryError s ->
       eprintf "[ERROR] Failed to discover new variables.@.";
       raise (VariableDiscoveryError s)
   in
   (** Apply some optimization to reduce the size of the function *)
-  let nlb_opt = Sketch.Body.optims new_sketch.loop_body in
+  let nlb_opt = Sketch.Body.optims new_prob.loop_body in
   let new_loop_body =
-    complete_final_state new_sketch.scontext.state_vars nlb_opt
+    complete_final_state new_prob.scontext.state_vars nlb_opt
   in
   discover_save ();
   let inner_indexes =
-    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) sketch_rep.inner_functions
+    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) prob_rep.inner_functions
   in
   let join_sketch =
     (fun bnds ->
-       complete_final_state new_sketch.scontext.state_vars
+       complete_final_state new_prob.scontext.state_vars
          ((Sketch.Join.build_join
             inner_indexes
-            new_sketch.scontext.state_vars nlb_opt) bnds))
+            new_prob.scontext.state_vars nlb_opt) bnds))
   in
   {
-    new_sketch with
+    new_prob with
     loop_body = new_loop_body;
     join_sketch = join_sketch;
   }
@@ -375,7 +375,7 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   match solver.name with
   | "Rosette" ->
     begin
-      IH.copy_into d_aux_alltime Sketch.auxiliary_vars;
+      copy_aux_to Sketch.auxiliary_vars;
       Sketch.pp_rosette_sketch parent_context inner fmt sketch_rep
     end
   | _ -> ()

@@ -223,8 +223,8 @@ let rec pp_typ fmt t =
   | Record tl ->
     fpf fmt "{%a}"
       (Format.pp_print_list
-      ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@;")
-      (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t)) tl
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@;")
+         (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t)) tl
   | Function (argt, rett) ->
     fpf fmt "%a -> %a" pp_typ argt pp_typ rett
   | Pair t -> fpf fmt "%a pair" pp_typ t
@@ -262,6 +262,20 @@ let rec is_subtype t tmax =
                   "Cannot subtype: %a <: %a" pp_typ t pp_typ tmax;
                 flush_str_formatter ())
 
+let rec join_types t1 t2 =
+  match t1, t2 with
+  | t1, t2 when t1 = t2 -> t1
+  | Integer, Boolean -> Boolean
+  | Integer, Real | Real, Integer
+  | Num, Real | Real, Num -> Real
+  | Integer, Num | Num, Integer -> Num
+  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
+  | Bottom, t | t, Bottom -> t
+  | _, _ ->
+    failontype (Format.fprintf Format.str_formatter
+                  "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
+                Format.flush_str_formatter () )
+
 
 let rec res_type t =
   match t with
@@ -293,20 +307,6 @@ let is_record_type t =
   match t with
   | Record _ -> true
   | _ -> false
-
-let rec join_types t1 t2 =
-  match t1, t2 with
-  | t1, t2 when t1 = t2 -> t1
-  | Integer, Boolean -> Boolean
-  | Integer, Real | Real, Integer
-  | Num, Real | Real, Num -> Real
-  | Integer, Num | Num, Integer -> Num
-  | Vector (t1', _), Vector(t2', _) -> join_types t1' t2'
-  | Bottom, t | t, Bottom -> t
-  | _, _ ->
-    failontype (Format.fprintf Format.str_formatter
-                  "Cannot join these types %a %a" pp_typ t1 pp_typ t2;
-                Format.flush_str_formatter () )
 
 
 (* -------------------- 2 - VARIABLES MANAGEMENT -------------------- *)
@@ -427,45 +427,45 @@ module CS = struct
          match jc.cvi.vtype with
          | Vector _ ->
            begin match jc.cleft, jc.cright, jc.crec with
-           | true, false, false ->
-             fprintf fmt "(list-ref %s%s %s)" lprefix jc.cvi.vname index_string;
-           | false, true, false ->
-             fprintf fmt "(list-ref %s%s %s)" rprefix jc.cvi.vname index_string;
-           | true, true, false ->
-             fprintf fmt "(list-ref %s%s %s)@;(list-ref %s%s %s)"
-               lprefix jc.cvi.vname index_string
-               rprefix jc.cvi.vname index_string;
-           | false, true, true ->
-             fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)"
-               jc.cvi.vname index_string
-               rprefix jc.cvi.vname index_string;
-           | true, true, true ->
-             fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)@;(list-ref %s%s %s)"
-               jc.cvi.vname index_string
-               rprefix jc.cvi.vname index_string
-               lprefix jc.cvi.vname index_string;
+             | true, false, false ->
+               fprintf fmt "(list-ref %s%s %s)" lprefix jc.cvi.vname index_string;
+             | false, true, false ->
+               fprintf fmt "(list-ref %s%s %s)" rprefix jc.cvi.vname index_string;
+             | true, true, false ->
+               fprintf fmt "(list-ref %s%s %s)@;(list-ref %s%s %s)"
+                 lprefix jc.cvi.vname index_string
+                 rprefix jc.cvi.vname index_string;
+             | false, true, true ->
+               fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)"
+                 jc.cvi.vname index_string
+                 rprefix jc.cvi.vname index_string;
+             | true, true, true ->
+               fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)@;(list-ref %s%s %s)"
+                 jc.cvi.vname index_string
+                 rprefix jc.cvi.vname index_string
+                 lprefix jc.cvi.vname index_string;
 
-           | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
+             | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end
 
 
          | _ ->
-                      begin match jc.cleft, jc.cright, jc.crec with
-           | true, false, false ->
-             fprintf fmt "%s%s" lprefix jc.cvi.vname;
-           | false, true, false ->
-             fprintf fmt "%s%s" rprefix jc.cvi.vname;
-           | true, true, false ->
-             fprintf fmt "%s%s@;%s%s"
-               lprefix jc.cvi.vname rprefix jc.cvi.vname;
-           | false, true, true ->
-             fprintf fmt "%s@;%s%s"
-               jc.cvi.vname rprefix jc.cvi.vname;
-           | true, true, true ->
-             fprintf fmt "%s@;%s%s@;%s%s"
-               jc.cvi.vname rprefix jc.cvi.vname lprefix jc.cvi.vname;
+           begin match jc.cleft, jc.cright, jc.crec with
+             | true, false, false ->
+               fprintf fmt "%s%s" lprefix jc.cvi.vname;
+             | false, true, false ->
+               fprintf fmt "%s%s" rprefix jc.cvi.vname;
+             | true, true, false ->
+               fprintf fmt "%s%s@;%s%s"
+                 lprefix jc.cvi.vname rprefix jc.cvi.vname;
+             | false, true, true ->
+               fprintf fmt "%s@;%s%s"
+                 jc.cvi.vname rprefix jc.cvi.vname;
+             | true, true, true ->
+               fprintf fmt "%s@;%s%s@;%s%s"
+                 jc.cvi.vname rprefix jc.cvi.vname lprefix jc.cvi.vname;
 
-           | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
+             | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end)
       fmt (to_jc_list cs)
 end
@@ -500,7 +500,7 @@ let register_vi (vi : Cil.varinfo) =
 let register_vs (vs : VS.t) = VS.iter register_vi vs
 
 let register_fnv (var : fnV) =
-    if SH.mem _VARS var.vname then
+  if SH.mem _VARS var.vname then
     let vars = SH.find _VARS var.vname in
     SH.replace _VARS var.vname
       (if has_l_id vars var.vid then
@@ -609,9 +609,12 @@ let create_boundary_variables index_set =
        IH.add index_to_boundary index_vi.vid (starti, endi))
     index_set
 
+let get_index_to_boundary vi =
+  IH.find index_to_boundary vi.vid
+
 let left_index_vi vi =
   if IH.length index_to_boundary = 0 then failwith "Empty index!" else ();
-  let l, _ = IH.find index_to_boundary vi.vid in l
+  let l, _ = get_index_to_boundary vi in l
 
 let is_left_index_vi i =
   try
@@ -640,6 +643,10 @@ let is_right_index_vi i =
 
 let aux_vars : fnV IH.t = IH.create 10
 
+let concretize_aux fc =
+  IH.fold fc aux_vars
+
+
 let cur_left_auxiliaries = ref VarSet.empty
 let cur_right_auxiliaries = ref VarSet.empty
 
@@ -649,9 +656,21 @@ let right_aux_ids : int list ref = ref []
 let add_laux_id i = left_aux_ids := i :: !left_aux_ids
 let add_raux_id i = right_aux_ids := i :: !right_aux_ids
 
-let is_left_aux i = List.mem i !left_aux_ids
+let add_left_auxiliary vi =
+  add_laux_id vi.vid;
+  cur_left_auxiliaries:=
+    (VarSet.add vi !cur_left_auxiliaries)
 
-let is_right_aux i = List.mem i !right_aux_ids
+let add_right_auxiliary vi =
+  add_raux_id vi.vid;
+  cur_right_auxiliaries:=
+    (VarSet.add vi !cur_right_auxiliaries)
+
+let is_left_aux_id i = List.mem i !left_aux_ids
+let is_left_aux var = VarSet.mem var !cur_left_auxiliaries
+
+let is_right_aux_id i = List.mem i !right_aux_ids
+let is_right_aux var = VarSet.mem var !cur_right_auxiliaries
 
 let aux_vars_init () =
   IH.clear aux_vars;
@@ -663,6 +682,9 @@ let is_currently_aux vi : bool = IH.mem aux_vars vi.vid
 (* Variable discovery: new variables *)
 let d_aux_alltime : fnV IH.t = IH.create 10
 let d_aux : fnV IH.t = IH.create 10
+
+let copy_aux_to dest =
+  IH.copy_into d_aux_alltime dest
 
 let discover_init () =
   IHTools.add_all d_aux_alltime d_aux;
@@ -720,6 +742,9 @@ let rec record_name
 
 let is_name_of_struct s =
   SH.mem declared_tuple_types s
+
+let get_struct s =
+  SH.find declared_tuple_types s
 
 let rec state_var_name vs maybe =
   let vsnames = VarSet.names vs in

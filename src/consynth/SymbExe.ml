@@ -53,11 +53,13 @@ let create_symbol_map vs=
                             FnVector(
                               ListTools.init !_arsize_
                                 (fun j ->
-                                   FnVar(FnArray(FnArray(FnVariable vi, FnConst (CInt i)),
+                                   FnVar(FnArray(FnArray(FnVariable vi,
+                                                         FnConst (CInt i)),
                                                 FnConst (CInt j)))))))
           else if is_array_type vi.vtype then
             FnVector (ListTools.init !_arsize_
-                         (fun i -> FnVar(FnArray(FnVariable vi, FnConst (CInt i)))))
+                        (fun i -> FnVar(FnArray(FnVariable vi,
+                                                FnConst (CInt i)))))
           else
             FnVar (FnVariable vi))
          map) vs IM.empty
@@ -173,7 +175,8 @@ let pp_env fmt env =
 let add_read_env env e =
   { env with ereads = ES.add e env.ereads}
 
-let up_join eenv1 eenv2 = { eenv1 with ereads = ES.union eenv1.ereads eenv2.ereads }
+let up_join eenv1 eenv2 =
+  { eenv1 with ereads = ES.union eenv1.ereads eenv2.ereads }
 
 let update_indexval env ivar i_intval =
   { env with eiexprs = IM.add ivar.vid (FnConst (CInt i_intval)) env.eiexprs}
@@ -203,17 +206,23 @@ let update_binding ?(offset=(-1)) ?(member="") v e env =
 
 
 (* Parallel bindings *)
-let rec do_bindings (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
+let rec do_bindings
+    (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
   let el, env'' =
     List.fold_left
       (fun (el, uenv) (var, expr) ->
          let v, e', uenv' = do_binding sin uenv (var,expr) in
          (el @ [v, e']), uenv') ([], sin) bindings
   in
-  FnRecord(Record(List.map (fun var -> var.vname, var.vtype) (fst (ListTools.unpair el))),
-           snd (ListTools.unpair el)), env''
+  FnRecord(
+    Record(
+      List.map (fun var -> var.vname, var.vtype) (fst (ListTools.unpair el))),
+    snd (ListTools.unpair el)),
+  env''
 
-and do_binding sin uenv (var, expr) : fnV * fnExpr * ex_env =
+
+and do_binding
+    sin uenv (var, expr) : fnV * fnExpr * ex_env =
   let e, reads = do_expr sin expr in
   match var with
   | FnVariable v ->
@@ -303,7 +312,6 @@ and do_expr sin expr : fnExpr * ex_env =
     if !debug then
       Format.printf "[ERROR] do_expr not implemented for %a" FPretty.pp_fnexpr expr;
     failhere __FILE__ "do_expr" "Match case not implemented."
-
 
 
 and do_set_array env a i e : fnExpr =

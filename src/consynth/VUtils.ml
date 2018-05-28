@@ -59,16 +59,6 @@ let mkAuxF v e f =
   { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }
 
 
-let add_left_auxiliary vi =
-  add_laux_id vi.vid;
-  cur_left_auxiliaries:=
-    (VarSet.add vi !cur_left_auxiliaries)
-
-let add_right_auxiliary vi =
-  add_raux_id vi.vid;
-  cur_right_auxiliaries:=
-    (VarSet.add vi !cur_right_auxiliaries)
-
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
     of state variables and a function.
@@ -105,7 +95,8 @@ let compose xinfo f aux_set =
               (* Replace index by "start index" variable *)
               let aux_expression =
                 add_left_auxiliary v;
-                replace_index_uses left_index_vi xinfo.context.index_vars aux.aexpr
+                replace_index_uses
+                  left_index_vi xinfo.context.index_vars aux.aexpr
               in
               (** If the only the "start index" appears, or the aux variable's
                   expression is only a function of the index/input variable, it
