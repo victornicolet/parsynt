@@ -50,7 +50,8 @@ let options = [
       Some (fun o_folder -> Conf.output_dir := o_folder));
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'v', "verbose", (set verbose true), None);
-  ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true), None);
+  ( 'x', "debug-variable-discovery", (set VariableDiscovery.debug true;
+                                      set SymbExe.debug true), None);
   ( 'C', "concrete-sketch", (set Sketch.concrete_sketch true), None);
   ( 'z', "use-z3", (set use_z3 true), None)]
 
@@ -249,13 +250,19 @@ and solve_problem problem =
       | Some x -> Some x
       | None ->
         message_start_subtask ("Searching auxiliaries for "^problem.loop_name);
-        let problem =
-          Canalyst.find_new_variables problem
+        let problem' =
+          (try
+             Canalyst.find_new_variables problem
+           with VariableDiscovery.VariableDiscoveryError s as e ->
+             eprintf "[ERROR] Received variable discovery errror in aux_solve of solve_problem.@.";
+             eprintf "[ERROR] Skipping problem %s.@." problem.loop_name;
+             message_error_task "Couldn't find auxliary variables...\n";
+             raise e)
         in
         message_done ();
-        match solve_one None problem with
+        match solve_one None problem' with
         | Some x -> Some x
-        | None -> solve_one ~expr_depth:2 None problem
+        | None -> solve_one ~expr_depth:2 None problem'
         (** If the problem is not solved yet, might be because expression
             depth is too limited *)
   in
@@ -339,6 +346,7 @@ let main () =
       Canalyst.verbose := true;
       InnerFuncs.verbose := true;
       Sketch.Join.verbose := true;
+      VariableDiscovery.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();

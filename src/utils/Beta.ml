@@ -341,11 +341,6 @@ struct
     List.map (fun vi -> vi.vid) (FnVs.elements vs)
   let has_vid vs id : bool =
     List.mem id (vids_of_vs vs)
-  let pp_var_names fmt vs =
-    pp_print_list
-      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
-      (fun fmt elt -> fprintf fmt "%s" elt.vname)
-      fmt (FnVs.elements vs)
   let bindings vs =
     List.map (fun elt -> (elt.vid, elt)) (FnVs.elements vs)
   let names vs =
@@ -359,6 +354,16 @@ struct
   let iset vs ilist =
     FnVs.of_list
       (List.filter (fun vi -> List.mem vi.vid ilist) (FnVs.elements vs))
+  let pp_var_names fmt vs =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+      (fun fmt elt -> fprintf fmt "%s" elt.vname)
+      fmt (FnVs.elements vs)
+  let pp_vs fmt vs =
+    fprintf fmt "@[<v 2>%a@]"
+      (PpTools.pp_break_sep_list
+         (fun fmt var -> printf "(%i: %s)" var.vid var.vname))
+      (FnVs.elements vs)
 end
 
 
@@ -403,8 +408,8 @@ module CS = struct
   let _LorR cs =
     map (fun jc -> {jc with cleft = true; cright = true;}) cs
 
-  let _RorRec ?(filt=(fun i -> true)) cs =
-    map (fun jc -> {jc with cleft = false; cright = true; crec = true;})
+  let _LRorRec ?(filt=(fun i -> true)) cs =
+    map (fun jc -> {jc with cleft = true; cright = true; crec = true;})
       (CSet.filter filt cs)
 
   let to_jc_list cs =
@@ -434,6 +439,12 @@ module CS = struct
              fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)"
                jc.cvi.vname index_string
                rprefix jc.cvi.vname index_string;
+           | true, true, true ->
+             fprintf fmt "(list-ref %s %s)@;(list-ref %s%s %s)@;(list-ref %s%s %s)"
+               jc.cvi.vname index_string
+               rprefix jc.cvi.vname index_string
+               lprefix jc.cvi.vname index_string;
+
            | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end
 
@@ -450,6 +461,10 @@ module CS = struct
            | false, true, true ->
              fprintf fmt "%s@;%s%s"
                jc.cvi.vname rprefix jc.cvi.vname;
+           | true, true, true ->
+             fprintf fmt "%s@;%s%s@;%s%s"
+               jc.cvi.vname rprefix jc.cvi.vname lprefix jc.cvi.vname;
+
            | _ -> failhere __FILE__ "pp_cs" "Unexpected completion directive."
            end)
       fmt (to_jc_list cs)
