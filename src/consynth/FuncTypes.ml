@@ -72,7 +72,7 @@ and fnExpr =
   | FnHoleL of hole_type * fnLVar * CS.t * fnExpr
   | FnHoleR of hole_type * CS.t * fnExpr
   | FnChoice of fnExpr list
-  | FnVector of fnExpr array
+  | FnVector of fnExpr list
   | FnArraySet of fnExpr * fnExpr * fnExpr
   | FnRecord of fn_type * (fnExpr list)
   | FnRecordMember of fnExpr * string
@@ -199,7 +199,7 @@ and type_of expr =
     (match ht with (t, ot) -> t)
 
   | FnFun e -> Function(type_of e, type_of e)
-  | FnVector a -> type_of (Array.get a 0)
+  | FnVector a -> type_of (List.nth a 0)
   | FnRecordMember(e, s) ->
     begin
       match type_of e with
@@ -757,7 +757,7 @@ let transform_expr
 
     | FnChoice el -> FnChoice (List.map recurse_aux el)
 
-    | FnVector ea -> FnVector (Array.map recurse_aux ea)
+    | FnVector ea -> FnVector (List.map recurse_aux ea)
 
     | FnRecord(t, el) -> FnRecord(t, List.map recurse_aux el)
 
@@ -1363,7 +1363,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
                 | FnConst c ->
                   FnConst(CArrayInit(ln, c))
                 | _ ->
-                  FnVector(Array.make ln v)
+                  FnVector(ListTools.init ln (fun i -> v))
               end
 
             | a when is_struct_accessor s ->

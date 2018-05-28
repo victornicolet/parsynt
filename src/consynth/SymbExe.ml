@@ -46,13 +46,21 @@ let _arsize_ = ref _MAX_ARRAY_SIZE_
 let create_symbol_map vs=
   VarSet.fold
     (fun vi map ->
-              IM.add vi.vid
-                (if is_array_type vi.vtype then
-                   (FnVector (Array.init !_arsize_
-                                (fun i -> FnVar(FnArray(FnVariable vi, FnConst (CInt i))))))
-                 else
-                   (FnVar (FnVariable vi)))
-                map) vs IM.empty
+       IM.add vi.vid
+         (if is_matrix_type vi.vtype then
+            FnVector (ListTools.init !_arsize_
+                         (fun i ->
+                            FnVector(
+                              ListTools.init !_arsize_
+                                (fun j ->
+                                   FnVar(FnArray(FnArray(FnVariable vi, FnConst (CInt i)),
+                                                FnConst (CInt j)))))))
+          else if is_array_type vi.vtype then
+            FnVector (ListTools.init !_arsize_
+                         (fun i -> FnVar(FnArray(FnVariable vi, FnConst (CInt i)))))
+          else
+            FnVar (FnVariable vi))
+         map) vs IM.empty
 
 
 
@@ -78,46 +86,46 @@ let rec partial_interpret e =
       | _ -> None
     in
     (match e1, e2 with
-    | FnConst (CInt i1), FnConst (CInt i2) ->
-      (match maybe_int_op with
-       | Some fop -> FnConst (CInt (fop i1 i2))
-       | None -> fail_type_error "Expected int.")
+     | FnConst (CInt i1), FnConst (CInt i2) ->
+       (match maybe_int_op with
+        | Some fop -> FnConst (CInt (fop i1 i2))
+        | None -> fail_type_error "Expected int.")
 
-    | FnConst (CBool b1), FnConst (CBool b2) ->
-      (match maybe_bool_op with
-       | Some fop -> FnConst (CBool (fop b1 b2))
-       | None -> fail_type_error "Expected bool.")
+     | FnConst (CBool b1), FnConst (CBool b2) ->
+       (match maybe_bool_op with
+        | Some fop -> FnConst (CBool (fop b1 b2))
+        | None -> fail_type_error "Expected bool.")
 
-    | e', FnConst (CInt i1) ->
-      (match op, i1 with
-       | Plus, 0 -> e'
-       | Minus, 0 -> e'
-       | Times, 1 -> e'
-       | Times, 0 -> FnConst (CInt 0)
-       | Div, 1 -> e'
-       | Div, 0 -> fail_type_error "Division by zero."
-       | _ -> FnBinop (op, e', FnConst (CInt i1)))
+     | e', FnConst (CInt i1) ->
+       (match op, i1 with
+        | Plus, 0 -> e'
+        | Minus, 0 -> e'
+        | Times, 1 -> e'
+        | Times, 0 -> FnConst (CInt 0)
+        | Div, 1 -> e'
+        | Div, 0 -> fail_type_error "Division by zero."
+        | _ -> FnBinop (op, e', FnConst (CInt i1)))
 
-    | FnConst (CInt i0), e' ->
-      (match i0, op with
-       | 0, Plus -> e'
-       | 0, Minus -> FnUnop(Neg, e')
-       | 1, Times -> e'
-       | 0, Times -> FnConst (CInt 0)
-       | 1, Div -> e
-       | 0, Div -> FnConst (CInt 0)
-       | _ -> FnBinop (op, FnConst (CInt i0), e'))
+     | FnConst (CInt i0), e' ->
+       (match i0, op with
+        | 0, Plus -> e'
+        | 0, Minus -> FnUnop(Neg, e')
+        | 1, Times -> e'
+        | 0, Times -> FnConst (CInt 0)
+        | 1, Div -> e
+        | 0, Div -> FnConst (CInt 0)
+        | _ -> FnBinop (op, FnConst (CInt i0), e'))
 
-    | e', FnConst (CBool b)
-    | FnConst (CBool b), e' ->
-      (match op, b with
-       | And, true -> e'
-       | Or, true -> FnConst (CBool true)
-       | And, false -> FnConst (CBool false)
-       | Or, false -> e'
-       | _ -> e)
+     | e', FnConst (CBool b)
+     | FnConst (CBool b), e' ->
+       (match op, b with
+        | And, true -> e'
+        | Or, true -> FnConst (CBool true)
+        | And, false -> FnConst (CBool false)
+        | Or, false -> e'
+        | _ -> e)
 
-    | _ -> e)
+     | _ -> e)
 
 
   | FnUnop (op, e1) ->
@@ -132,9 +140,9 @@ let rec partial_interpret e =
 
   | FnCond(c, e1, e2) ->
     (match partial_interpret c with
-    | FnConst (CBool true) -> e1
-    | FnConst (CBool false) -> e2
-    | _ -> e)
+     | FnConst (CBool true) -> e1
+     | FnConst (CBool false) -> e2
+     | _ -> e)
 
 
   | _ -> e
@@ -151,179 +159,287 @@ type ex_env =
     ereads : ES.t;
   }
 
-let update_binding ?(offset=(-1)) ?(member="") v e ex_env =
-  match v.vtype with
-  | Vector  _ ->
-    begin
-      if offset > -1 then
-        let vec =
-          try
-            IM.find v.vid ex_env.ebexprs
-          with Not_found ->
-            failhere __FILE__ "update_binding" "Unbound array var."
-        in
-        match vec with
-        | FnVector ea ->
-          Array.set ea offset e;
-          {
-            ex_env with
-            ebexprs = IM.add v.vid (FnVector ea) ex_env.ebexprs;
-          }
-        | _ ->
-          failhere __FILE__ "update_binding" "Array var type, not vector expression."
-      else
-        { ex_env with
-          ebound = VarSet.add v ex_env.ebound;
-          ebexprs = IM.add v.vid e ex_env.ebexprs; }
-    end
+let pp_env fmt env =
+  Format.fprintf fmt
+    "@[Bound: %a.@;Exprs: %a@;Indexes: %a@;Exprs: %a@;Reads: %a@]"
+    VarSet.pp_vs env.ebound
+    FPretty.pp_expr_map env.ebexprs
+    VarSet.pp_vs env.eindex
+    FPretty.pp_expr_map env.eiexprs
+    (FPretty.pp_expr_set ~sep:(fun fmt () -> Format.fprintf fmt "@;"))
+    env.ereads
+
+
+let add_read_env env e =
+  { env with ereads = ES.add e env.ereads}
+
+let up_join eenv1 eenv2 = { eenv1 with ereads = ES.union eenv1.ereads eenv2.ereads }
+
+let update_indexval env ivar i_intval =
+  { env with eiexprs = IM.add ivar.vid (FnConst (CInt i_intval)) env.eiexprs}
+
+let update_binding ?(offset=(-1)) ?(member="") v e env =
+  if offset > -1 then
+    let vec =
+      try
+        IM.find v.vid env.ebexprs
+      with Not_found ->
+        failhere __FILE__ "update_binding" "Unbound array var."
+    in
+    match vec with
+    | FnVector ea ->
+      let ea' = ListTools.replace_ith ea offset e in
+      {
+        env with
+        ebexprs = IM.add v.vid (FnVector ea') env.ebexprs;
+      }
+    | _ ->
+      failhere __FILE__ "update_binding" "Array var type, not vector expression."
+  else
+    { env with
+      ebound = VarSet.add v env.ebound;
+      ebexprs = IM.add v.vid e env.ebexprs; }
+
+
+
+(* Parallel bindings *)
+let rec do_bindings (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
+  let el, env'' =
+    List.fold_left
+      (fun (el, uenv) (var, expr) ->
+         let v, e', uenv' = do_binding sin uenv (var,expr) in
+         (el @ [v, e']), uenv') ([], sin) bindings
+  in
+  FnRecord(Record(List.map (fun var -> var.vname, var.vtype) (fst (ListTools.unpair el))),
+           snd (ListTools.unpair el)), env''
+
+and do_binding sin uenv (var, expr) : fnV * fnExpr * ex_env =
+  let e, reads = do_expr sin expr in
+  match var with
+  | FnVariable v ->
+    v, e, up_join (update_binding v e uenv) reads
+
+  | FnArray(FnVariable a, i) ->
+    a, e, up_join (update_binding ~offset:(concrete_index i) a e uenv) reads
+
+  | FnArray _ ->
+    failhere __FILE__ "do_binding" "Setting 2D Array cell not supported."
+
+
+and do_expr sin expr : fnExpr * ex_env =
+  (if !debug then
+    Format.printf "[INFO]\tEnv: %a@.\t Unfold: %a.@.@." pp_env sin FPretty.pp_fnexpr expr);
+  match expr with
+  | FnVar v ->
+    do_var sin v
+
+  | FnConst c ->
+    expr, sin
+
+  | FnLetExpr bindings ->
+    do_bindings sin bindings
+
+  | FnLetIn (bindings, body) ->
+    let _, s' = do_bindings sin bindings in
+    do_expr s' body
+
+  | FnRec(igu, (vs, bs), (s, body)) ->
+    do_loop sin igu (vs,bs) (s,body)
+
+  | FnBinop(op, e1, e2) ->
+    let e1', s1 = do_expr sin e1 in
+    let e2', s2 = do_expr sin e2 in
+    partial_interpret (FnBinop (op, e1', e2')), up_join s1 s2
+
+  | FnUnop(op, e) ->
+    let e', s' = do_expr sin e in
+    partial_interpret (FnUnop (op, e')), s'
+
+  | FnCond(c, et, ef) ->
+    let c', sc' = do_expr sin c in
+    let et', set' = do_expr sin et in
+    let ef', sef' = do_expr sin ef in
+    partial_interpret (FnCond(c', et', ef')), up_join sc' (up_join set' sef')
+
+  | FnArraySet(a, i, e) ->
+    let a', sa' = do_expr sin a in
+    let i', si' = do_expr sin i in
+    let e', se' = do_expr sin e in
+    let sf = up_join sa' (up_join si' se') in
+    let e'' = partial_interpret e' in
+    do_set_array sin a' i' e'', sf
+
+
+  | FnChoice (el) ->
+    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    FnChoice (List.map partial_interpret el'),
+    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+
+  | FnRecordMember (re, s) ->
+    let re', env' = do_expr sin re in
+    (match re' with
+     | FnRecord(Record stl, elist) ->
+       let assoc_list = ListTools.pair stl elist in
+       let _, e' =
+         List.find (fun ((s', t), e') -> s = s') assoc_list
+       in
+       do_expr env' e'
+
+
+     | _ ->  failhere __FILE__ "do_expr (FnRecordMember)"
+               "Expected a record in record member accessor.")
+
+  | FnRecord(rt, el) ->
+    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    FnRecord (rt, List.map partial_interpret el'),
+    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+
+  | FnVector el ->
+    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    FnVector (List.map partial_interpret el'),
+    List.fold_left (fun sf s' -> up_join sf s') sin sl'
 
   | _ ->
-    {
-      ex_env with
-      ebound = VarSet.add v ex_env.ebound;
-      ebexprs = IM.add v.vid e ex_env.ebexprs;
-    }
+    if !debug then
+      Format.printf "[ERROR] do_expr not implemented for %a" FPretty.pp_fnexpr expr;
+    failhere __FILE__ "do_expr" "Match case not implemented."
 
 
 
-let rec unfold new_exprs exec_info func =
-  (* Parallel bindings *)
-  let rec do_bindings (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
-    let join_parallel_results acc_ex_env part_ex_env =
-      acc_ex_env
-    in
-    let es = (List.map (do_binding sin) bindings) in
-    FnRecord (Record (List.map (fun (v, e, env) -> v.vname, type_of e) es),
-              List.map (fun (_, e, _) -> e) es),
-    List.fold_left join_parallel_results sin es
+and do_set_array env a i e : fnExpr =
+  try
 
-  and do_offset i = 0
+    match a with
+    | FnVector e_ar ->
+      FnVector(ListTools.replace_ith e_ar (concrete_index i) e)
 
-  and do_binding sin (var, expr) : fnV * fnExpr * ex_env =
-    let e, reads = do_expr sin expr in
-    match var with
-    | FnVariable v ->
-      v, e, update_binding v e sin
+    | _ ->
+      failhere __FILE__ "do_set_array"
+        "Cannot modify an expression that is not a vector."
 
-    | FnArray(FnVariable a, i) ->
-      a, e, update_binding ~offset:(do_offset i) a e sin
-
-    | FnArray _ ->
-      failhere __FILE__ "do_binding" "Setting 2D Array cell not supported."
+  with exc ->
+    if !debug then
+      Format.printf "[ERROR] Cannot set array: %a[%a] = %a"
+        FPretty.pp_fnexpr a FPretty.pp_fnexpr i FPretty.pp_fnexpr e;
+    raise exc
 
 
-  and do_expr sin expr : fnExpr * ex_env =
-    match expr with
-    | FnLetExpr bindings ->
-      do_bindings sin bindings
+and concrete_index i =
+  match i with
+  | FnConst (CInt i') -> i'
 
-    | FnLetIn (bindings, body) ->
-      let _, s' = do_bindings sin bindings in
-      do_expr s' body
+  | FnConst (CInt64 i') -> Int64.to_int i'
 
-    | FnRec(igu, (vs, bs), (s, body)) ->
-       do_loop sin igu (vs,bs) (s,body)
+  | _ ->
+    failhere __FILE__ "concrete_index"
+      "Cannot use non-concretized indexes in symbolic execution."
 
 
-  and do_var context (state_exprs, v) =
-    match v with
-    | FnVariable vi ->
-      begin
-        (* Is the variable a state variable ?*)
-        if VarSet.has_vid exec_info.context.state_vars vi.vid then
-          try
-            IM.find vi.vid exec_info.state_exprs, ES.empty
-          with Not_found ->
-            (Format.eprintf "@.%sERROR%s \
-                             I was searching for an expression for variable \
-                             id %s%i%s in map %a@."
-               (PpTools.color "red") PpTools.color_default
-               (PpTools.color "red") vi.vid  PpTools.color_default
-               (fun fmt map -> PpTools.ppimap FPretty.pp_fnexpr fmt map)
-               exec_info.state_exprs);
-            exception_on_variable "Expression not found for state variable" v
-        else
-          begin
-            (* Is the variable an index variable ? *)
-            if VarSet.has_vid exec_info.context.index_vars vi.vid then
-              try
-                IM.find vi.vid exec_info.index_exprs, ES.empty
-              with Not_found ->
-                exception_on_variable "Expression not found for index" v
-            else
-              (**
-                 It is a scalar input variable, we have to check if this
-                 variable has been used previously, if not we create a
-                 new variable for this use.
-              *)
-              FnVar v, ES.singleton (FnVar v)
-          end
-      end
-    | FnArray (v', offset_expr) ->
-      begin
-        match v' with
-        | FnVariable vi when VarSet.has_vid exec_info.context.state_vars vi.vid ->
-          (try
-             let vect = IM.find vi.vid exec_info.state_exprs in
-             match unfold_expr exec_info offset_expr, vect with
-             | (FnConst (CInt k), re) , FnVector ar -> Array.get ar k , re
-             | _ ->
-               failhere __FILE__ "exec_var" "Index non ineger or array expression not vector"
-           with Not_found ->
-             failhere __FILE__ "exec_var" "Not found: vector expression.")
-        | _ ->
-          let new_v' =
-            match exec_var exec_info v' with
-            | FnVar v, _-> v
-            | bad_v, _ ->
-              exception_on_expression "Unexpected variable form in exec_var" bad_v
-          in
-          let new_offset, new_reads = unfold_expr exec_info offset_expr in
-          FnVar (FnArray (new_v', new_offset)),
-          ES.union (ES.singleton (FnVar (FnArray (new_v', new_offset))))
-            new_reads
-      end
+and do_var env v : fnExpr * ex_env =
+  match v with
+  | FnVariable vi ->
+    (* It is a state variables - or a variable bound in the environment. *)
+    if IM.mem vi.vid env.ebexprs then
+      IM.find vi.vid env.ebexprs, env
+
+    (* It is an index variable,, also bound in the environment. *)
+    else if IM.mem vi.vid env.eiexprs then
+      IM.find vi.vid env.eiexprs, env
+
+    (* It is an input, that is never bound or modified *)
+    else
+      FnVar v, add_read_env env (FnVar v)
+
+  | FnArray (a, i) ->
+    let a', env' = do_var env a in
+    let i', env'' = do_expr env' i in
+    (* The array accessed can be:
+       - still a variable if it is an input.
+       - the expression form the env if it is a state variable. In this case
+       it has to be a FnVector. *)
+    match a' with
+    | FnVar av ->
+      let e = FnVar (FnArray(av, i')) in
+      e, add_read_env env e
+
+    | FnVector ar ->
+      let i0 = concrete_index i' in
+      List.nth ar i0, env''
+
+    | _ ->
+      failhere __FILE__ "do_var"
+        "An array variable should be an input or a vector."
 
 
-  and do_loop sin (i, g, u) (vs, bs) (s, body) =
-    let indexvar = VarSet.max_elt (used_in_fnexpr u) in
-    (* TODO redo this part correctly *)
-    let i0, iEnd =
-      match i with
-      | FnConst (CInt c) -> c, 0
-      | _ ->
-        (Format.printf "%sAssuming loop is leftwards.%s@."
-           (PpTools.color "blue") PpTools.color_default);
-        0, !_arsize_ - 1
-    in
-    let i0', iEnd' =
-      match g with
-      | FnBinop (Lt, i, FnConst (CInt c))
-      | FnBinop (Gt, FnConst (CInt c), i) ->
-        0, c
-      | FnBinop (Lt, FnConst (CInt c), i)
-      | FnBinop (Gt, i, FnConst (CInt c)) ->
-        c, 0
-      | _ -> 0, !_arsize_
-    in
-    let i0, iEnd = min i0 i0' , max iEnd iEnd' in
-    let current_index = ref 0 in
-    let body_i = replace_expression ~in_subscripts:true
-        ~to_replace:(FnVar (FnVariable indexvar))
-        ~by:(FnConst (CInt !current_index))
-        ~ine:body
-    in
-    let rec exec_loop (new_exprs, read_exprs) sin k =
-      if k >= iEnd then
-        new_exprs, read_exprs
-      else
-        let e', r' = (unfold IM.empty exec_info body_i) in
-        exec_loop (e', r')
-          {exec_info with
-           state_exprs = IM.update_all exec_info.state_exprs e';
-           inputs = ES.union r' exec_info.inputs} (k + 1)
-    in
-    exec_loop (IM.empty, ES.empty) exec_info 0
+and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
+  let indexvar = VarSet.max_elt (used_in_fnexpr u) in
+  (* TODO redo this part correctly *)
+  let i0, iEnd =
+    match i with
+    | FnConst (CInt c) -> c, 0
+    | _ ->
+      (Format.printf "%sAssuming loop is leftwards.%s@."
+         (PpTools.color "blue") PpTools.color_default);
+      0, !_arsize_ - 1
+  in
+  let i0', iEnd' =
+    match g with
+    | FnBinop (Lt, i, FnConst (CInt c))
+    | FnBinop (Gt, FnConst (CInt c), i) ->
+      0, c
+    | FnBinop (Lt, FnConst (CInt c), i)
+    | FnBinop (Gt, i, FnConst (CInt c)) ->
+      c, 0
+    | _ -> 0, !_arsize_
+  in
+  let i0, iEnd = min i0 i0' , max iEnd iEnd' in
+  let get_state vs env =
+    List.map
+      (fun var -> IM.find var.vid env.ebexprs)
+      (VarSet.elements vs)
+  in
+  let rec exec_loop k env body =
+    if k >= iEnd then
+      FnRecord(Record (VarSet.record vs), get_state vs env), env
+    else
+      let _, env' = do_expr (update_indexval env indexvar k) body in
+      exec_loop (k+1) env' body
+  in
+  let env =
+    {sin with
+     ebound = VarSet.add s sin.ebound;
+     ebexprs = IM.add s.vid bs sin.ebexprs;}
+  in
+  let res, env' = exec_loop i0 env body in
+  res, {env' with ebound = VarSet.remove s env.ebound;
+                  ebexprs = IM.remove s.vid env.ebexprs;}
+
+
+let env_from_exec_info (einfo :exec_info) : ex_env =
+  {
+    ebound = einfo.context.state_vars;
+    eindex = einfo.context.index_vars;
+    ebexprs =
+      IM.filter (fun k e -> VarSet.has_vid einfo.context.state_vars k)
+        einfo.state_exprs;
+    eiexprs = einfo.index_exprs;
+    ereads = einfo.inputs;
+  }
+
+
+let unfold (new_exprs : fnExpr IM.t) (exec_info : exec_info) (func : fnExpr) :
+  fnExpr IM.t * ES.t =
+  let env' = env_from_exec_info exec_info in
+  let _, env'' =
+    do_expr env' func
+  in
+  env''.ebexprs, env''.ereads
+
+let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
+  let e', env' =
+    do_expr (env_from_exec_info exec_info) e
+  in
+  e', env'.ereads
 
 
 (** unfold_once : simulate the applciation of a function body to a set of

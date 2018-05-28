@@ -52,6 +52,7 @@ let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
   ( 'g', "debug", (set Local.debug true), None);
   ( 'v', "debug-var", (set VariableDiscovery.debug true), None);
+  ( 'w', "debug-symbex", (set SymbExe.debug true), None);
   ( 't', "test-id", None, Some (fun intid -> tid := (int_of_string intid)));
   ( 'f', "file", None, Some (fun fname -> filename := fname));
 ];;

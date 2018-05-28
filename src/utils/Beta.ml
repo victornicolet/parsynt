@@ -341,11 +341,6 @@ struct
     List.map (fun vi -> vi.vid) (FnVs.elements vs)
   let has_vid vs id : bool =
     List.mem id (vids_of_vs vs)
-  let pp_var_names fmt vs =
-    pp_print_list
-      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
-      (fun fmt elt -> fprintf fmt "%s" elt.vname)
-      fmt (FnVs.elements vs)
   let bindings vs =
     List.map (fun elt -> (elt.vid, elt)) (FnVs.elements vs)
   let names vs =
@@ -359,6 +354,16 @@ struct
   let iset vs ilist =
     FnVs.of_list
       (List.filter (fun vi -> List.mem vi.vid ilist) (FnVs.elements vs))
+  let pp_var_names fmt vs =
+    pp_print_list
+      ~pp_sep:(fun fmt () -> fprintf fmt ", ")
+      (fun fmt elt -> fprintf fmt "%s" elt.vname)
+      fmt (FnVs.elements vs)
+  let pp_vs fmt vs =
+    fprintf fmt "@[<v 2>%a@]"
+      (PpTools.pp_break_sep_list
+         (fun fmt var -> printf "(%i: %s)" var.vid var.vname))
+      (FnVs.elements vs)
 end
 
 
