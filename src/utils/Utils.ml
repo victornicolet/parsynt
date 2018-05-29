@@ -121,6 +121,9 @@ module ListTools = struct
       if i <= 0 then (f 0)::l else (aux_init ((f i)::l) (i -1))
     in aux_init [] len
 
+  let replace_ith (l : 'a list) (k : int) (e : 'a) =
+    List.mapi (fun i e' -> if i = k then e else e') l
+
   let mapoption (f: 'a -> 'b option) (l : 'a list) : 'b list =
     List.map (function Some x -> x | _ -> failwith "x")
       (List.filter is_some (List.map f l))

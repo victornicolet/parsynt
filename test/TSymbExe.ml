@@ -53,13 +53,13 @@ let symbolic_execution_test tname vars ctx funct unfoldings efinal =
          | Linear kl, FnVector ar ->
            (List.iter
               (fun (k, c) ->
-                 if FnConst c = Array.get ar k then () else failwith "X") kl)
-         | _ -> failwith "Z")
+                 if FnConst c = List.nth ar k then () else failwith "X") kl)
+         | _ -> failwith "failed")
       efinal;
     msg_passed ("Test passed: "^tname)
   with Failure s ->
     IM.iter
-      (fun k e -> printf "%a@." cp_fnexpr e) results;
+      (fun k e -> printf "%a [%a]@." cp_fnexpr e pp_typ (type_of e)) results;
     msg_failed (tname^" : "^s)
 
 
@@ -86,19 +86,26 @@ let test_02 () =
   let c = vars#get "c" in
   let sum = vars#get "sum" in
   let i = vars#get "i" in
+  let inloop_state = VarSet.singleton c in
+  let inloop_type = Record(VarSet.record inloop_state) in
+  let state_binder = mkFnVar "_st" inloop_type in
   let funct =
     _letin
       [(FnArray (FnVariable c, sk_zero), sk_zero);
        (FnVariable sum, sk_zero)]
-      (_letin [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)))]
-         (_let [(FnArray (FnVariable c, _ci 2)),
+      (_letin [FnArray (FnVariable c, sk_one), FnVar (FnArray (FnVariable c, sk_zero))]
+         (_letin [FnVariable state_binder,
                   (FnRec (
                       (* Initial value, guard and update of index of the loop. *)
                     (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
                     (* Initial state *)
-                    (VarSet.empty, (FnLetExpr [])),
+                    (inloop_state, FnRecord(inloop_type, [mkVarExpr c])),
                       (* Body of the loop *)
-                         (c, (_let [(FnArray (FnVariable c, _ci 2)), _ci 2]))))]))
+                    (state_binder,
+                     (_letin [FnVariable c, FnRecordMember(mkVarExpr state_binder, c.vname)]
+                        (_letin [(FnArray (FnVariable c, _ci 2)), _ci 2]
+                           (_let []))))))]
+         (_let [FnVariable c, FnRecordMember(mkVarExpr state_binder, c.vname)])))
   in
   symbolic_execution_test "sum1" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])]
@@ -110,21 +117,28 @@ let test_03 () =
   let c = vars#get "c" in
   let sum = vars#get "sum" in
   let i = vars#get "i" in
+  let inst = VarSet.singleton c in
+  let instt = Record (VarSet.record inst) in
+  let xs = mkFnVar "xs" instt in
   let funct =
     _letin
       [(FnArray (FnVariable c, sk_zero), sk_zero);
        (FnVariable sum, sk_zero)]
       (_letin [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)));
                (FnArray (FnVariable c, _ci 2)), (FnVar (FnArray (FnVariable c, sk_zero)))]
-         (_let [(FnArray (FnVariable c, _ci 2)),
-                  (FnRec (
-                      (* Initial value, guard and update of index of the loop. *)
-                    (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
-                    (* Initial state *)
-                    (VarSet.empty, FnLetExpr([])),
-                      (* Body of the loop *)
-                    (c, (_let [(FnArray (FnVariable c, _ci 2)),
-                             (fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one)]))))]))
+         (_let [FnVariable c,
+                (FnRecordMember
+                   (FnRec
+                      (
+                        (* Initial value, guard and update of index of the loop. *)
+                        (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                        (* Initial state *)
+                        (inst, FnRecord(instt, [mkVarExpr c])),
+                        (* Body of the loop *)
+                        (xs, (_letin [FnVariable c, FnRecordMember (mkVarExpr xs, c.vname)]
+                                (_letin [FnArray (FnVariable c, _ci 2),
+                                         fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one]
+                                   (_let [FnVariable c, mkVarExpr c]))))), c.vname))]))
   in
   symbolic_execution_test "sum2" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 10)])]

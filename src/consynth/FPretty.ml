@@ -339,7 +339,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
          pp_print_list
            ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
            pp_fnexpr fmt l)
-      (Array.to_list a)
+      a
 
   | FnArraySet(a,i,e) ->
     fprintf ppf "@[<v 2>(list-set@;%a@;%a@;%a)@]"
@@ -467,6 +467,13 @@ let pp_expr_list fmt el =
   ppli fmt ~sep:" " pp_fnexpr el
 
 
+let pp_expr_map fmt em =
+  fprintf fmt "@[<v>{%a}@]"
+    (fun fmt em ->
+       (IM.iter
+        (fun k e -> fprintf fmt "%i <-- %a;@;" k pp_fnexpr e) em))
+    em
+
 (**
    -----------------------------------------------------------------------------
     Pretty printing with colors and typesetting for better
@@ -486,6 +493,8 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
     in
     fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
 
+and cp_expr_list fmt el =
+  ppli fmt ~sep:"@;" cp_fnexpr el
 
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
@@ -526,7 +535,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
   | FnRecord (t, el) ->
-    fp ppf "(Record[%a] %a)" pp_typ t pp_expr_list el
+    fp ppf "(Record[%a] %a)" pp_typ t cp_expr_list el
 
   | FnRecordMember (r, m) ->
     fp ppf "([%a]-%s %a)" pp_typ (type_of r) m cp_fnexpr r
@@ -539,7 +548,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
            ~pp_sep:(fun fmt () -> fprintf fmt "; ")
            (fun fmt e -> fprintf fmt "%a" cp_fnexpr e)
            fmt l)
-      (Array.to_list a)
+      a
 
   | FnFun l -> cp_fnexpr ppf l
 

@@ -29,28 +29,42 @@ let debug = ref false
 
 type auxiliary =
   {
-    avarinfo : fnV;
+    avar : fnV;
     aexpr : fnExpr;
     afunc : fnExpr;
     depends : VarSet.t;
   }
 
-let add_left_auxiliary vi =
-  add_laux_id vi.vid;
-  cur_left_auxiliaries:=
-    (VarSet.add vi !cur_left_auxiliaries)
 
-let add_right_auxiliary vi =
-  add_raux_id vi.vid;
-  cur_right_auxiliaries:=
-    (VarSet.add vi !cur_right_auxiliaries)
+module AS = Set.Make (struct
+    type t = auxiliary
+    let compare x y = Pervasives.compare x.avar.vid y.avar.vid
+  end)
+
+module AuxSet =
+  (struct
+    include AS
+    let find_id aset id =
+      AS.max_elt (AS.filter (fun e -> e.avar.vid = id) aset)
+    let mem_id id =
+      AS.exists (fun e -> e.avar.vid = id)
+    let vars aset =
+      VarSet.of_list (List.map (fun a -> a.avar) (AS.elements aset))
+  end)
+
+let mkAux v e =
+  { avar = v; aexpr = e; afunc = FnLetExpr([]); depends = VarSet.empty; }
+
+let mkAuxF v e f =
+  { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }
+
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
     of state variables and a function.
 *)
-let compose xinfo f aux_vs aux_ef =
-  let new_ctx = ctx_update_vsets xinfo.context aux_vs in
+let compose xinfo f aux_set =
+  let new_ctx = ctx_update_vsets xinfo.context (AuxSet.vars aux_set) in
   let clean_f = remove_id_binding f in
   let replace_index_uses index_set =
     VarSet.fold
@@ -63,8 +77,8 @@ let compose xinfo f aux_vs aux_ef =
   in
   let new_func, const_exprs =
     let head_assgn, tail_assgn, const_exprs =
-      (IM.fold
-         (fun aux_vid aux (head_assgn_list, tail_assgn_list, const_exprs) ->
+      (AuxSet.fold
+         (fun aux (head_assgn_list, tail_assgn_list, const_exprs)->
             (** Distinguish different cases :
                 - the function is not identity but an accumulator, we add the
                 function 'as is' in the loop body.
@@ -77,11 +91,12 @@ let compose xinfo f aux_vs aux_ef =
                 Analyse expressions to respect dependencies.
             *)
             match aux.afunc with
-            | FnVar (FnVariable v) when v.vid = aux_vid ->
+            | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
               (* Replace index by "start index" variable *)
               let aux_expression =
                 add_left_auxiliary v;
-                replace_index_uses left_index_vi xinfo.context.index_vars aux.aexpr
+                replace_index_uses
+                  left_index_vi xinfo.context.index_vars aux.aexpr
               in
               (** If the only the "start index" appears, or the aux variable's
                   expression is only a function of the index/input variable, it
@@ -110,7 +125,7 @@ let compose xinfo f aux_vs aux_ef =
                   final value of the auxiliary depends only on its
                   "final expression"
               *)
-              let cur_vi = (VarSet.find_by_id aux_vs aux_vid) in
+              let cur_vi = aux.avar in
               let v = (FnVariable cur_vi) in
               let new_const_exprs =
                 const_exprs@
@@ -148,7 +163,7 @@ let compose xinfo f aux_vs aux_ef =
                else
                  head_assgn_list@assgn, tail_assgn_list, new_const_exprs))
 
-         aux_ef ([], [], []))
+         aux_set ([], [], []))
     in
     let f = complete_final_state new_ctx.state_vars
         (compose_tail tail_assgn clean_f)
@@ -160,43 +175,41 @@ let compose xinfo f aux_vs aux_ef =
 
 
 let same_aux old_aux new_aux =
-  if IM.cardinal old_aux != IM.cardinal new_aux
+  if AuxSet.cardinal old_aux != AuxSet.cardinal new_aux
   then false
   else
-    IM.fold
-      (fun n_vid n_aux same ->
+    AuxSet.fold
+      (fun n_aux same ->
          try
-           (let o_aux = IM.find n_vid old_aux in
+           (let o_aux = AuxSet.find_id old_aux n_aux.avar.vid  in
             if o_aux.afunc = n_aux.afunc then true && same else false)
          with Not_found -> false)
       new_aux
       true
 
-let is_already_computed xinfo (aux_id, aux_vs, func_expr) exprs =
+let is_already_computed xinfo aux exprs =
   let candidate_state_variables =
     IM.filter
       (fun i e ->
          (* Replace auxiliary recursive call by state_expr *)
          let e_rep =
            replace_expression ~in_subscripts:false
-             ~to_replace:(FnVar (FnVariable (VarSet.find_by_id aux_vs aux_id )))
+             ~to_replace:(mkVarExpr aux.avar)
              ~by:(FnVar (FnVariable
                            (VarSet.find_by_id xinfo.context.state_vars i)))
-             ~ine:func_expr
+             ~ine:aux.afunc
          in
          e_rep @= e) exprs
   in
   IM.cardinal candidate_state_variables > 0
 
-let remove_duplicate_auxiliaries xinfo (aux_vs, aux_ef) input_func =
+let remove_duplicate_auxiliaries xinfo aux_set input_func =
   let exprs, inputs = unfold_once ~silent:true xinfo input_func in
-  let new_aux_ef =
-    IM.filter
-      (fun vid aux ->
-         not (is_already_computed xinfo (vid, aux_vs, aux.afunc) exprs))
-      aux_ef
-  in
-  (VarSet.filter (fun vi -> IM.mem vi.vid new_aux_ef) aux_vs), new_aux_ef
+  AuxSet.filter
+    (fun aux ->
+       not (is_already_computed xinfo aux exprs))
+    aux_set
+
 
 
 let reduction_with_warning ctx expr =

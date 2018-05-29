@@ -173,3 +173,9 @@ let replace_by_join problem inner_loops =
                 join_sketch = new_sketch;
                 scontext = newctx;
                 loop_body = newbody;}
+
+
+(* Inline joins inline the joins in the outer loop body.
+   Called in VariableDiscovery.
+*)
+let inline_inner problem = problem

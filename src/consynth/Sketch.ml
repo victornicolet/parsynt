@@ -431,7 +431,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
   let pp_index_low_up =
     (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
        (fun fmt vi ->
-          let start_vi, end_vi = (IH.find index_to_boundary vi.vid) in
+          let start_vi, end_vi = get_index_to_boundary vi in
           Format.fprintf fmt "%s %s" start_vi.vname end_vi.vname))
   in
   pp_comment fmt "Functional representation of the loop body.";
@@ -455,7 +455,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     let pp_index_up =
       (F.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ")
          (fun fmt vi ->
-            let _, end_vi = (IH.find index_to_boundary vi.vid) in
+            let _, end_vi = get_index_to_boundary vi in
             Format.fprintf fmt "%s" end_vi.vname))
     in
     let extract_stv_or_reach_const, bound_state1 =
@@ -743,8 +743,8 @@ let pp_synth ?(memoryless=false) fmt s0 bnames state_vars pb_input_vars min_dep_
 let define_inner_join fmt lname (state, styp) (ist, iend) join =
   let lstate_var = mkFnVar "$L" styp in
   let rstate_var = mkFnVar "$R" styp in
-  let bind_lstate = bind_state ~prefix:left_state_prefix lstate_var state in
-  let bind_rstate = bind_state ~prefix:right_state_prefix rstate_var state in
+  let bind_lstate = bind_state ~prefix:left_state_prefix ~state_rec:lstate_var ~members:state in
+  let bind_rstate = bind_state ~prefix:right_state_prefix ~state_rec:rstate_var ~members:state in
   let wrapped_join =
     FnLetIn (bind_lstate@bind_rstate, join)
   in
