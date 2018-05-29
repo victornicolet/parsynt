@@ -519,8 +519,16 @@ let discover_for_id problem var =
         let em, inp =
           unfold_once {xinfo with inputs = ES.empty} problem.main_loop_body
         in
+        if !verbose then
+        printf "[INFO] Unfolding result:@.@[<v 2>%s =@;%a@]@."
+          var.vname cp_fnexpr (IM.find var.vid em);
+
         IM.map (reduction_with_warning xinfo.context) em, inp
       in
+      if !verbose then
+        printf "[INFO] Normalized:@.@[<v 2>%s =@;%a@]@."
+          var.vname cp_fnexpr (IM.find var.vid expressions);
+
       (** Find the new set of auxiliaries by analyzing the expressions at the
           current unfolding level *)
       let oset' =

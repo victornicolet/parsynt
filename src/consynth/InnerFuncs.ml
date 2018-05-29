@@ -183,7 +183,7 @@ let no_join_inlined_body pb =
 (* Inline joins inline the joins in the outer loop body.
    Called in VariableDiscovery.
 *)
-let inline_inner ?(finite=5) problem =
+let inline_inner ?(finite=3) problem =
   if !verbose then
     printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
       FPretty.pp_fnexpr (no_join_inlined_body problem);

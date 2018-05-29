@@ -334,12 +334,11 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnFun l -> pp_fnexpr ppf l
 
   | FnVector a ->
-    fprintf ppf "@[<v 2><%a>@]"
+    fprintf ppf "@[<v 2>{%a}@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
-           pp_fnexpr fmt l)
-      a
+           ~pp_sep:(fun fmt () -> fprintf fmt ";@;")
+           pp_fnexpr fmt l) a
 
   | FnArraySet(a,i,e) ->
     fprintf ppf "@[<v 2>(list-set@;%a@;%a@;%a)@]"
@@ -480,6 +479,31 @@ let pp_expr_map fmt em =
     readability.
     ----------------------------------------------------------------------------
 *)
+let _interp i =
+  let pluses  e =
+    let rec _aux (var, ints) e =
+      match e with
+      | FnBinop (Plus, e1, e2) ->
+        let vars', ints' = _aux (var, ints) e1 in
+        _aux (vars', ints') e2
+      | FnConst (CInt i) -> (var, i::ints)
+      | FnVar v -> (v::var, ints)
+      | _ -> failwith "S"
+    in
+    _aux ([], []) e
+  in
+  try
+    let vars, ints = pluses i in
+    let intval = List.fold_left (+) 0 ints in
+    if List.length vars = 1 then
+      if intval = 0 then
+        FnVar (List.hd vars)
+      else
+        FnBinop (Plus, FnVar (List.hd vars), FnConst (CInt intval))
+    else i
+  with _ -> i
+
+
 
 let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
   match fnlvar with
@@ -488,10 +512,18 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
 
   | FnArray (v, offset) ->
     let offset_str =
-      fprintf str_formatter "%a" pp_fnexpr offset;
+      fprintf str_formatter "%a" cp_index (_interp offset);
       flush_str_formatter ()
     in
     fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
+
+and cp_index fmt i =
+  match i with
+  | FnBinop(op, e1, e2) ->
+    Format.fprintf fmt "%a%s%a"
+      cp_fnexpr e1 (string_of_symb_binop op)
+      cp_fnexpr e2
+  | _ -> cp_fnexpr fmt i
 
 and cp_expr_list fmt el =
   ppli fmt ~sep:"@;" cp_fnexpr el
@@ -582,9 +614,16 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnAlignofE e -> fp ppf "(AlignOfE %a)" cp_fnexpr e
 
   | FnBinop (op, e1, e2) ->
-    fp ppf "@[<hov 1>(%s%s%s@;%a@;%a)@]"
-      (color "b") (string_of_symb_binop op) color_default
-      cp_fnexpr e1 cp_fnexpr e2
+    begin
+      match op with
+      | Max | Min ->
+        fp ppf "@[<hov 1>(%s%s%s@;%a@;%a)@]"
+          (color "b") (string_of_symb_binop op) color_default
+          cp_fnexpr e1 cp_fnexpr e2
+      | _ ->
+        fp ppf "@[<hov 1>(%a@;%s%s%s@;%a)@]"
+          cp_fnexpr e1 (color "b") (string_of_symb_binop op)  color_default cp_fnexpr e2
+    end
 
   | FnUnop (op, e) ->
     fp ppf "@[<hov 1>(%s%s%s %a)@]"

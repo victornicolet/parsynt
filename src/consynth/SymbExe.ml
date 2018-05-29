@@ -229,7 +229,8 @@ and do_binding
     v, e, up_join (update_binding v e uenv) reads
 
   | FnArray(FnVariable a, i) ->
-    a, e, up_join (update_binding ~offset:(concrete_index i) a e uenv) reads
+    let i', s' = do_expr sin i in
+    a, e, up_join (update_binding ~offset:(concrete_index i') a e uenv) reads
 
   | FnArray _ ->
     failhere __FILE__ "do_binding" "Setting 2D Array cell not supported."
@@ -348,6 +349,8 @@ and concrete_index i =
   | FnConst (CInt64 i') -> Int64.to_int i'
 
   | _ ->
+    if !verbose then
+      Format.printf "[ERROR] %a is not concrete." FPretty.pp_fnexpr i;
     failhere __FILE__ "concrete_index"
       "Cannot use non-concretized indexes in symbolic execution."
 
@@ -432,13 +435,14 @@ and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
                   ebexprs = IM.remove s.vid env.ebexprs;}
 
 
+let filter_state einfo em =
+  IM.filter (fun k e -> VarSet.has_vid einfo.context.state_vars k) em
+
 let env_from_exec_info (einfo :exec_info) : ex_env =
   {
     ebound = einfo.context.state_vars;
     eindex = einfo.context.index_vars;
-    ebexprs =
-      IM.filter (fun k e -> VarSet.has_vid einfo.context.state_vars k)
-        einfo.state_exprs;
+    ebexprs = filter_state einfo einfo.state_exprs;
     eiexprs = einfo.index_exprs;
     ereads = einfo.inputs;
   }
@@ -450,7 +454,7 @@ let unfold (new_exprs : fnExpr IM.t) (exec_info : exec_info) (func : fnExpr) :
   let _, env'' =
     do_expr env' func
   in
-  env''.ebexprs, env''.ereads
+  filter_state exec_info env''.ebexprs, env''.ereads
 
 let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
   let e', env' =
