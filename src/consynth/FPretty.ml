@@ -684,6 +684,12 @@ let cp_expr_list fmt el =
     fmt
     el
 
+let cp_expr_map fmt em =
+  fprintf fmt "@[<v>{%a}@]"
+    (fun fmt em ->
+       (IM.iter
+        (fun k e -> fprintf fmt "%i <-- %a;@;" k cp_fnexpr e) em))
+    em
 
 
 (** C-style pretty printing. Useful for printing functional intermediary

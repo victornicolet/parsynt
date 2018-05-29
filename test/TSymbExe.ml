@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
-  *)
+*)
 
 open Beta
 open SymbExe
@@ -70,7 +70,9 @@ let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efi
       msg_passed ("Test passed: "^tname)
     with Failure s ->
       IM.iter
-        (fun k e -> printf "%a [%a]@." cp_fnexpr e pp_typ (type_of e)) results;
+        (fun k e -> printf "@[<v 2>%s : %a =@;%a@]@."
+            (VarSet.find_by_id ctx.state_vars k).vname
+            pp_typ (type_of e) cp_fnexpr e ) results;
       msg_failed (tname^" : "^s)
   end;
   results
@@ -88,7 +90,7 @@ let test_01 () =
          sk_tail_state)
   in
   ignore(symbolic_execution_test "sum0" vars cont funct 1
-    [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0)])])
+           [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0)])])
 
 
 
@@ -101,26 +103,27 @@ let test_02 () =
   let inloop_state = VarSet.singleton c in
   let inloop_type = Record(VarSet.record inloop_state) in
   let state_binder = mkFnVar "_st" inloop_type in
+  let tup = mkFnVar "tup" inloop_type in
   let funct =
     _letin
       [(FnArray (FnVariable c, sk_zero), sk_zero);
        (FnVariable sum, sk_zero)]
-      (_letin [FnArray (FnVariable c, sk_one), FnVar (FnArray (FnVariable c, sk_zero))]
-         (_letin [FnVariable state_binder,
+      (_letin [FnArray (var c, sk_one),  c $ sk_zero]
+         (_letin [var tup,
                   (FnRec (
                       (* Initial value, guard and update of index of the loop. *)
-                    (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
-                    (* Initial state *)
-                    (inloop_state, FnRecord(inloop_type, [mkVarExpr c])),
+                      (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
+                      (* Initial state *)
+                      (inloop_state, FnRecord(inloop_type, [evar c])),
                       (* Body of the loop *)
-                    (state_binder,
-                     (_letin [FnVariable c, FnRecordMember(mkVarExpr state_binder, c.vname)]
-                        (_letin [(FnArray (FnVariable c, _ci 2)), _ci 2]
-                           (_let []))))))]
-         (_let [FnVariable c, FnRecordMember(mkVarExpr state_binder, c.vname)])))
+                      (state_binder,
+                       (_letin [_self state_binder c]
+                          (_letin [(FnArray (var c, _ci 2)), _ci 2]
+                             (_let [var c, evar c]))))))]
+            (_let [_self tup c])))
   in
   ignore(symbolic_execution_test "sum1" vars cont funct 1
-    [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])])
+           [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])])
 
 let test_03 () =
   (* TODO: partial execution for indexes (partial exec for integers) *)
@@ -200,11 +203,11 @@ let test_03bis () =
   let _ =
     symbolic_execution_test "sum3" vars cont funct 1
       [sum.vid,
-        SymbScalar
-             (fplus (a $ (_ci 3))
-                (fplus (a $ (_ci 2))
-                   (fplus (a $ (_ci 1))
-                      (fplus (a $ (_ci 0)) (evar sum)))))]
+       SymbScalar
+         (fplus (a $ (_ci 3))
+            (fplus (a $ (_ci 2))
+               (fplus (a $ (_ci 1))
+                  (fplus (a $ (_ci 0)) (evar sum)))))]
   in
   ()
 
@@ -237,11 +240,11 @@ let test_03ter () =
   let r1 =
     symbolic_execution_test "sum4" vars cont funct 1
       [sum.vid,
-        SymbScalar
-             (fplus (a $$ (evar i, _ci 3))
-                (fplus (a $$ (evar i, _ci 2))
-                   (fplus (a $$ (evar i, _ci 1))
-                      (fplus (a $$ (evar i, _ci 0)) (evar sum)))))]
+       SymbScalar
+         (fplus (a $$ (evar i, _ci 3))
+            (fplus (a $$ (evar i, _ci 2))
+               (fplus (a $$ (evar i, _ci 1))
+                  (fplus (a $$ (evar i, _ci 0)) (evar sum)))))]
   in
   let exec_start_env =
     {
@@ -266,7 +269,7 @@ let test_03ter () =
                            (fplus (a $$ (evar i, _ci 1))
                               (fplus (a $$ (evar i, _ci 0)) (evar sum)))))))))]
   in
-    let exec_start_env =
+  let exec_start_env =
     {
       context = cont;
       state_exprs = r2;
@@ -307,14 +310,14 @@ let test_04 () =
   let bnds = mkFnVar "bound" intype in
   let func =
     (_letin [FnVariable tup,
-           FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
-                 (inctx.state_vars, FnRecord(intype, [evar c; sk_zero; sk_zero])),
-                 (bnds,
-                  (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]
-                     (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j)) (evar sum)))]
-                        (_let [var c, evar c;
-                               var mtr, fmax (c $ (evar j)) (evar mtr);
-                               var sum, evar sum])))))]
+             FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
+                   (inctx.state_vars, FnRecord(intype, [evar c; sk_zero; sk_zero])),
+                   (bnds,
+                    (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]
+                       (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j)) (evar sum)))]
+                          (_let [var c, evar c;
+                                 var mtr, fmax (c $ (evar j)) (evar mtr);
+                                 var sum, evar sum])))))]
        (_let [_self tup c;
               _self tup mtr;
               var mtrl, fmax (evar mtrl) (_inrec tup mtr);
