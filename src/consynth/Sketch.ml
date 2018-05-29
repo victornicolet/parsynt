@@ -41,7 +41,6 @@ module SM = Map.Make (String)
 module Ct = CilTools
 module F = Format
 
-module Body = SketchBody
 module Join = SketchJoin
 
 let iterations_limit =

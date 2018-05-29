@@ -218,7 +218,7 @@ let _test () =
          let ids, igu = check_option figu in
          varset_of_vs ids, igu
        in
-       let so = new Sketch.Body.sketch_builder (varset_of_vs allvars)
+       let so = new Func2Fn.sketch_builder (varset_of_vs allvars)
          (varset_of_vs stv) func figu' in
        so#build;
        let sketch, sigu = check_option so#get_sketch in

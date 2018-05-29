@@ -207,7 +207,7 @@ let func2sketch cfile funcreps =
              with Not_found ->
                Bottom
            in
-           match Sketch.Body.conv_init_expr expect_type cilc with
+           match Func2Fn.conv_init_expr expect_type cilc with
            | Some e -> IM.add vid e m
            | None ->
              eprintf "@.Warning : initial value %s for %s not valid.@."
@@ -230,7 +230,7 @@ let func2sketch cfile funcreps =
       let iset, igu = figu in varset_of_vs iset, igu
     in
     let sketch_obj =
-      new Sketch.Body.sketch_builder var_set state_vars
+      new Func2Fn.sketch_builder var_set state_vars
         func_info.func figu'
     in
     sketch_obj#build;
@@ -345,7 +345,7 @@ let find_new_variables prob_rep =
       raise (VariableDiscoveryError s)
   in
   (** Apply some optimization to reduce the size of the function *)
-  let nlb_opt = Sketch.Body.optims new_prob.main_loop_body in
+  let nlb_opt = Func2Fn.optims new_prob.main_loop_body in
   let new_loop_body =
     complete_final_state new_prob.scontext.state_vars nlb_opt
   in

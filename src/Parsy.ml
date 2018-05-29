@@ -334,7 +334,7 @@ let main () =
       (** Set all the debug flags to true *)
       Cil2Func.debug := true;
       Sketch.debug := true;
-      Sketch.Body.debug := true;
+      Func2Fn.debug := true;
       Sketch.Join.debug := true;
       VariableDiscovery.debug := true;
     end;
