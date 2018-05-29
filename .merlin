@@ -15,6 +15,6 @@ S src/consynth
 S src/codegen
 S src/fpgen
 S src/conf
-S src/utils
+S src/utils/
 S ./
 PKG cil core extlib getopt Z3
