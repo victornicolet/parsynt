@@ -517,7 +517,7 @@ let discover_for_id problem var =
       (** Reduce the depth of the state variables in the expression *)
       let expressions, inputs =
         let em, inp =
-          unfold_once {xinfo with inputs = ES.empty} problem.loop_body
+          unfold_once {xinfo with inputs = ES.empty} problem.main_loop_body
         in
         IM.map (reduction_with_warning xinfo.context) em, inp
       in
@@ -572,7 +572,7 @@ let discover_for_id problem var =
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
   let clean_aux_set =
-    remove_duplicate_auxiliaries init_i aux_set problem.loop_body
+    remove_duplicate_auxiliaries init_i aux_set problem.main_loop_body
   in
 
   VarSet.iter discover_add (AuxSet.vars aux_set);
@@ -595,11 +595,11 @@ let discover_for_id problem var =
     ) clean_aux_set;
 
   let new_ctx, new_loop_body, new_constant_exprs =
-    VUtils.compose init_i problem.loop_body clean_aux_set
+    VUtils.compose init_i problem.main_loop_body clean_aux_set
   in
   discover_init ();
   {problem with scontext = new_ctx;
-               loop_body = new_loop_body }
+               main_loop_body = new_loop_body }
 
 
 
@@ -628,7 +628,7 @@ let discover problem =
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
   let ranked_stv =
-    rank_by_use stv (uses stv  problem.loop_body)
+    rank_by_use stv (uses stv  problem.main_loop_body)
   in
   (* For each variable, do the auxiliary variable discovery. *)
   let problem' =

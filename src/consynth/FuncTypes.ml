@@ -1584,7 +1584,8 @@ type prob_rep =
     scontext : context;
     min_input_size : int;
     uses_global_bound : bool;
-    loop_body : fnExpr;
+    main_loop_body : fnExpr;
+    loop_body_versions : fnExpr SH.t;
     join_sketch : fnExpr * fnExpr -> fnExpr;
     memless_sketch : fnExpr * fnExpr ->  fnExpr;
     join_solution : fnExpr;

@@ -64,7 +64,7 @@ let print_inner_result problem inner_funcs () =
                \tJoin:@.%a@.\
                \tIdentity state:%a@."
          pb.loop_name
-         FPretty.pp_fnexpr pb.loop_body
+         FPretty.pp_fnexpr pb.main_loop_body
          FPretty.pp_fnexpr pb.memless_solution
          (PpTools.ppimap FPretty.pp_constants) pb.identity_values
     )
@@ -346,6 +346,7 @@ let main () =
       InnerFuncs.verbose := true;
       Sketch.Join.verbose := true;
       VariableDiscovery.verbose := true;
+      SymbExe.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();

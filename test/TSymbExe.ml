@@ -29,8 +29,10 @@ open Format
 
 
 type stv_type =
+  | SymbScalar of fnExpr
   | Scalar of constants
   | Linear of (int * constants) list
+  | SymbLinear of (int * fnExpr) list
 
 let symbolic_execution_test tname vars ctx funct unfoldings efinal =
   let indexes =  create_symbol_map ctx.index_vars in
@@ -50,10 +52,15 @@ let symbolic_execution_test tname vars ctx funct unfoldings efinal =
          let e = IM.find vid results in
          match stv_type, e with
          | Scalar c, FnConst c' -> if c = c' then () else failwith "Y"
+         | SymbScalar sc, e -> if e = sc then () else failwith "YY"
          | Linear kl, FnVector ar ->
            (List.iter
               (fun (k, c) ->
                  if FnConst c = List.nth ar k then () else failwith "X") kl)
+         | SymbLinear skl, FnVector ar ->
+           (List.iter
+              (fun (k, c) ->
+                 if c = List.nth ar k then () else failwith "X") skl)
          | _ -> failwith "failed")
       efinal;
     msg_passed ("Test passed: "^tname)
@@ -133,15 +140,72 @@ let test_03 () =
                         (* Initial value, guard and update of index of the loop. *)
                         (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
                         (* Initial state *)
-                        (inst, FnRecord(instt, [mkVarExpr c])),
+                        (inst, FnRecord(instt, [evar c])),
                         (* Body of the loop *)
-                        (xs, (_letin [FnVariable c, FnRecordMember (mkVarExpr xs, c.vname)]
-                                (_letin [FnArray (FnVariable c, _ci 2),
-                                         fplus (FnVar (FnArray (FnVariable c, _ci 2))) sk_one]
-                                   (_let [FnVariable c, mkVarExpr c]))))), c.vname))]))
+                        (xs, (_letin [_self xs c]
+                                (_letin [FnArray (var c,  _ci 2),
+                                         fplus (c $ (_ci 2)) sk_one]
+                                   (_let [var c, evar c]))))), c.vname))]))
   in
   symbolic_execution_test "sum2" vars cont funct 1
     [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 10)])]
+
+
+let test_04 () =
+ (* (let ([tup$ (LoopFunc 0 (lambda (j) (< j 5)) (lambda (j) (+ j 1))
+  *                         ($Vi_ii a c 0 0 i j)
+  *                         (lambda ($6s j) (let ([sum (+ sum
+  *                                                     (list-ref (list-ref a i) j))])
+  *                                            (let ([c (list-set c j (+
+  *                                                                    (list-ref c j)
+  *                                                                    sum))])
+  *                                               ($Vi_ii c
+  *                                                 (max (list-ref c j) mtr)
+  *                                                 sum)))))])
+  *              (let ([c ($Vi_ii-c tup$)][mtr ($Vi_ii-mtr tup$)]
+  *                [sum ($Vi_ii-sum tup$)])  ($Vi_iii c mtr (max mtr mtrl) sum))) *)
+  let vars = vardefs "((sum int) (mtr int) (c int_array) (mtrl int) (a int_int_array) (i int) (j int))" in
+  let cont = make_context vars "((sum mtr mtrl c) (i) (a) (sum mtr mtrl c i j a) (sum mtr mtrl c))" in
+  let c = vars#get "c" in let mtr = vars#get "mtr" in let mtrl = vars#get "mtrl" in
+  let a = vars#get "a" in let sum = vars#get "sum" in
+  let j = vars#get "j" in let i = vars#get "i" in
+  let inctx = make_context vars "((sum mtr c) (j) (a) (sum mtr mtrl c j a) (sum mtr c))" in
+  let intype = Record (VarSet.record inctx.state_vars) in
+  let tup = mkFnVar "tup" intype in
+  let bnds = mkFnVar "bound" intype in
+  let func =
+    (_letin [FnVariable tup,
+           FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
+                 (inctx.state_vars, FnRecord(intype, [evar c; sk_zero; sk_zero])),
+                 (bnds,
+                  (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]
+                     (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j)) (evar sum)))]
+                        (_let [var c, evar c;
+                               var mtr, fmax (c $ (evar j)) (evar mtr);
+                               var sum, evar sum])))))]
+       (_let [_self tup c;
+              _self tup mtr;
+              var mtrl, fmax (evar mtrl) (_inrec tup mtr);
+              _self tup sum]))
+  in
+  symbolic_execution_test "mtrl" vars cont func 2
+    [sum.vid,
+     SymbScalar
+       (fplus  (a $$ (evar i, _ci 4))
+          (fplus (a $$ (evar i, _ci 3))
+             (fplus  (a $$ (evar i, _ci 2))
+                (fplus (a $$ (evar i, _ci 1))
+                   (fplus (a $$ (evar i, _ci 0))
+                      (evar sum))))));
+     c.vid,
+     SymbLinear [
+       0, (fplus (c $ (_ci 0))
+             (fplus (a $$ (evar i, _ci 0)) (evar sum)));
+       1, (fplus (c $ (_ci 1))
+             (fplus  (a $$ (evar i, _ci 1))
+                (fplus (a $$ (evar i, _ci 0)) (evar sum))));
+     ]]
+
 
 
 (* Normalization: file defined tests. *)
@@ -170,4 +234,5 @@ let test () =
   test_01 ();
   test_02 ();
   test_03 ();
+  test_04 ();
   file_defined_tests ()

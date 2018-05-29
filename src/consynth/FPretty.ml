@@ -788,7 +788,7 @@ let rec pp_problem_rep fmt fnetch =
     fnetch.loop_name fnetch.id
     color_default
     (color "b") color_default
-    pp_fnexpr fnetch.loop_body
+    pp_fnexpr fnetch.main_loop_body
     (color "b") color_default
     pp_fnexpr fnetch.join_solution
     (color "b-lightgray")

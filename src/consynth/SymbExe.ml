@@ -23,7 +23,7 @@ open FuncTypes
 
 
 let debug = ref false
-
+let verbose = ref false
 (**
    Structure with the informatino needed during the symbolic execution:
    - context contains variables information (intpurs, state variables)
@@ -278,12 +278,6 @@ and do_expr sin expr : fnExpr * ex_env =
     let e'' = partial_interpret e' in
     do_set_array sin a' i' e'', sf
 
-
-  | FnChoice (el) ->
-    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
-    FnChoice (List.map partial_interpret el'),
-    List.fold_left (fun sf s' -> up_join sf s') sin sl'
-
   | FnRecordMember (re, s) ->
     let re', env' = do_expr sin re in
     (match re' with
@@ -308,8 +302,23 @@ and do_expr sin expr : fnExpr * ex_env =
     FnVector (List.map partial_interpret el'),
     List.fold_left (fun sf s' -> up_join sf s') sin sl'
 
+  | FnApp (t, fo, el) -> expr, sin
+
+  | FnChoice (el) ->
+    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    FnChoice (List.map partial_interpret el'),
+    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+
+  | FnHoleL (ht, v, cs, e) ->
+    let e', s' = do_expr sin e in
+    FnHoleL (ht, v, cs, e'),  s'
+
+  | FnHoleR (ht, cs, e) ->
+    let e', s' = do_expr sin e in
+    FnHoleR (ht, cs, e'), s'
+
   | _ ->
-    if !debug then
+    if !verbose then
       Format.printf "[ERROR] do_expr not implemented for %a" FPretty.pp_fnexpr expr;
     failhere __FILE__ "do_expr" "Match case not implemented."
 

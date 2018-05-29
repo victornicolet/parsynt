@@ -28,6 +28,7 @@ let make_bool_array_varinfo vname =
 let var v = FnVariable v
 let evar v = FnVar (var v)
 
+
 let make_var ?(offsets = []) typ vname =
   match typ with
   | "int" ->
@@ -71,6 +72,8 @@ let _u op e1 = FnUnop (op, e1)
 let _Q c e1 e2 = FnCond (c, e1, e2)
 let _let el = FnLetExpr el
 let _letin el l = FnLetIn (el, l)
+let _inrec r x = FnRecordMember(evar r, x.vname)
+let _self r x = var x, FnRecordMember (evar r, x.vname)
 (* some functions lifted to host language *)
 let fplus e1 e2 = _b e1 Plus e2
 let ftimes e1 e2 = _b e1 Times e2

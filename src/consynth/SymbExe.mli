@@ -3,7 +3,7 @@ open Utils
 open FuncTypes
 
 val debug : bool ref
-
+val verbose : bool ref
 type exec_info =
   {
     context : context;

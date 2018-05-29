@@ -838,11 +838,11 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
       ~in_subscripts:true
       ~to_replace:(FnVar (FnVariable parent_index_var))
       ~by:(FnConst (CInt 0))
-      ~ine:sketch.loop_body
+      ~ine:sketch.main_loop_body
   in
   (* Select the bitwidth for representatin in Rosettte depending on the operators used
      in the loop body. *)
-  pp_current_bitwidth fmt sketch.loop_body;
+  pp_current_bitwidth fmt sketch.main_loop_body;
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
@@ -917,11 +917,11 @@ let pp_rosette_sketch_join fmt sketch =
            ~by:(FnConst (CInt !mat_w))
            ~ine:rep1
       )
-      sketch.loop_body
+      sketch.main_loop_body
       sketch.inner_functions
   in
   (** FPretty configuration for the current sketch *)
-  pp_current_bitwidth fmt sketch.loop_body;
+  pp_current_bitwidth fmt sketch.main_loop_body;
   if List.length sketch.inner_functions > 0 then
     begin
       pp_inner_loops_defs fmt sketch.inner_functions;
