@@ -53,12 +53,18 @@ Library codegen
   CompiledObject: best
   BuildDepends: consynth, cil, sygus, extlib, conf, mutils
 
+Library exact_fp_codegen
+  Path: src/exact_fp_codegen
+  Modules: Tbb_exact_fp
+  CompiledObject: best
+  BuildDepends: consynth, cil, sygus, extlib, conf, mutils
+
 Executable test_main
   Path: test
   MainIs: Main.ml
   CompiledObject: best
   Install: false
-  BuildDepends: cil, getopt, sygus, consynth, conf, codegen, sexplib
+  BuildDepends: cil, getopt, sygus, consynth, conf, codegen,exact_fp_codegen, sexplib
 
 Executable Parsy
   Path: src
@@ -66,4 +72,4 @@ Executable Parsy
   CompiledObject: best
   Install: false
   Build: true
-  BuildDepends: consynth, getopt, codegen, mutils
+  BuildDepends: consynth, getopt, codegen, exact_fp_codegen, mutils

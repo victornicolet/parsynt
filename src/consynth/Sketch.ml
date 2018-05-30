@@ -43,6 +43,8 @@ module F = Format
 
 module Join = SketchJoin
 
+let exact_fp = ref false
+
 let iterations_limit =
   ref  (Conf.get_conf_int "loop_finite_limit")
 
@@ -79,7 +81,7 @@ let reset_matdims() =
 (* Current bitwidth setting *)
 let pp_current_bitwidth fmt func_expr =
   F.fprintf fmt "@.(current-bitwidth %s)@.@."
-    (if analyze_optype func_expr = NonLinear then "6" else "#f")
+    (if !exact_fp then "1" else if analyze_optype func_expr = NonLinear then "6" else "#f")
 
 
 (** A symbolic definition defines a list of values of a given type,

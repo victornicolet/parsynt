@@ -1599,7 +1599,7 @@ type prob_rep =
     init_values : RAst.expr IM.t;
     identity_values : constants IM.t;
     func_igu : sigu;
-    reaching_consts : fnExpr IM.t;
+    mutable reaching_consts : fnExpr IM.t;
     inner_functions : prob_rep list;
   }
 

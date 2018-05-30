@@ -38,11 +38,11 @@ let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 let use_z3 = ref false
-(* let exact_fp = ref false *)
+let exact_fp = ref false 
 
 let options = [
   ( 'd', "dump",  (set Local.dump_sketch true), None);
-  (* ( 'e', "exact-fp", (set exact_fp true), None); *)
+  ( 'e', "exact-fp", (set exact_fp true), None);
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 'g', "debug", (set debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
@@ -288,6 +288,9 @@ let output_tbb_tests (solutions : prob_rep list) =
   in
   printf "@.%s%sGenerating implementations for solved examples..%s@."
     (color "black") (color "b-green") color_default;
+  if !exact_fp then 
+  List.iter (Tbb_exact_fp.output_tbb_test tbb_test_filename) solutions
+  else
   List.iter (Tbb.output_tbb_test tbb_test_filename) solutions
 
 
@@ -349,6 +352,12 @@ let main () =
       SymbExe.verbose := true;
     end;
 
+  if !exact_fp then
+      begin
+          printf "Exact computation mode activated";
+      Sketch.exact_fp := true
+      end;
+
   elapsed_time := Unix.gettimeofday ();
   message_start_task "Parsing C program ...";
   let c_file, loops = C.processFile filename in
@@ -372,6 +381,7 @@ let main () =
   (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem)
      (somes solved));
   (* For each solved problem, generate a TBB implementation *)
+
   output_tbb_tests (somes solved);
   (* If exact_fp is set, generate the exact floating point parallel
      implementation *)

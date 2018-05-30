@@ -1,6 +1,7 @@
 B _build/
 B _build/test
 B _build/src/consynth
+B _build/src/exact_fp_codegen
 B _build/src/codegen
 B _build/src/fpgen
 B _build/src/conf
@@ -13,6 +14,7 @@ S src/sygus
 S src/rawc
 S src/consynth
 S src/codegen
+S src/exact_fp_codegen
 S src/fpgen
 S src/conf
 S src/utils/
