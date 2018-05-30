@@ -182,7 +182,10 @@ and type_of expr =
     begin
       match t with
       | Record st ->
-        Record(List.map2 (fun (s,t) e -> (s, type_of e)) st  el)
+        if List.length st = List.length el then
+          Record(List.map2 (fun (s,t) e -> (s, type_of e)) st  el)
+        else
+          failwith "Record with wrong number of arguments."
       | _ -> failwith "Record has no record type."
     end
   | FnConst c -> type_of_const c
@@ -512,13 +515,11 @@ let mkVarExpr ?(offsets = []) vi =
 
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
-  let structname = record_name (VarSet.record vs) in
   List.map
     (fun v ->
        (FnVariable {v with vname=prefix^v.vname},
-        FnApp(v.vtype,
-              Some (record_accessor structname v),
-              [FnVar (FnVariable state_var)]))) vars
+        FnRecordMember(mkVarExpr state_var, v.vname)))
+    vars
 
 
 

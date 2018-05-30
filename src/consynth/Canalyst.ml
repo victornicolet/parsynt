@@ -136,10 +136,12 @@ type sigu = VS.t * (fnExpr * fnExpr * fnExpr)
 *)
 let cil2func cfile loops =
   Cil2Func.init loops;
+
   let sorted_lps = A.transform_and_sort loops in
+
   let rec translate_loop loop =
     let finfo = init_func_info loop in
-    let stmt = (loop_body loop) in
+
     if !verbose then
       (printf "@.%s=== Loop %i in %s ===%s"
          (color "blue") loop.lid loop.lcontext.host_function.C.vname color_default;
@@ -148,14 +150,23 @@ let cil2func cfile loops =
         printf "@.Identified index variables: %a"
          VS.pvs loop.lvariables.index_vars;
       );
+
+    finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
+
     let func, figu =
       match loop.ligu with
       | Some igu ->
-        Cil2Func.cil2func loop.lvariables stmt igu
+        let in_states =
+          List.map (fun info_in -> (info_in.lid, info_in.lvariables)) finfo.inner_funcs
+        in
+        Cil2Func.cil2func in_states loop.lvariables (loop_body loop) igu
       | None -> Cil2Func.empty_state (), None
     in
 
+    finfo.func <- func;
+    finfo.figu <- figu;
     finfo.reaching_consts <- loop.lcontext.reaching_constants;
+
     if !verbose then
       begin
         printf "@.Reaching constants:@.";
@@ -163,22 +174,20 @@ let cil2func cfile loops =
           (fun k e -> printf "%s = %s@."
               (VS.find_by_id k loop.lvariables.state_vars).Cil.vname
               (CilTools.psprint80 Cil.dn_exp e)
-          ) finfo.reaching_consts
-      end;
-    finfo.func <- func;
-    finfo.figu <- figu;
-    finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
-    if !verbose then
-      let printer =
-        new Cil2Func.cil2func_printer loop.lvariables
-      in
-      (printf "@.[for loop %i in %s]@."
-          loop.lid loop.lcontext.host_function.C.vname;);
-      printer#printlet func;
-      printf "@.";
+          ) finfo.reaching_consts;
+        let printer =
+          new Cil2Func.cil2func_printer loop.lvariables
+        in
+        (printf "@.[for loop %i in %s]@."
+           loop.lid loop.lcontext.host_function.C.vname;);
+        printer#printlet func;
+        printf "@.";
+      end
     else ();
+
     finfo
   in
+
   List.map translate_loop sorted_lps
 
 
@@ -193,11 +202,7 @@ let func2sketch cfile funcreps =
     let inners = List.map transform_func func_info.inner_funcs in
     let var_set = varset_of_vs func_info.lvariables.all_vars in
     let state_vars = varset_of_vs func_info.lvariables.state_vars in
-    let figu =
-      match func_info.figu with
-      | Some f -> f
-      | None -> failhere __FILE__ "func2sketch" "Bad for loop"
-    in
+
     let s_reach_consts =
       IM.fold
         (fun vid cilc m ->
@@ -216,6 +221,7 @@ let func2sketch cfile funcreps =
              m)
         func_info.reaching_consts IM.empty
     in
+
     if !verbose then
       begin
         printf "@.Reaching constants information:@.";
@@ -226,25 +232,32 @@ let func2sketch cfile funcreps =
                FPretty.pp_fnexpr c)
           s_reach_consts
       end;
-    let figu' =
-      let iset, igu = figu in varset_of_vs iset, igu
-    in
-    let sketch_obj =
-      new Func2Fn.sketch_builder var_set state_vars
-        func_info.func figu'
-    in
-    sketch_obj#build;
-    let loop_body, sigu =
-      match sketch_obj#get_sketch with
-      | Some (a,b) ->  a,b
+
+
+    let loop_body, sigu, uses_global_bounds =
+      let f2f =
+        let figu =
+          match func_info.figu with
+          | Some (iset, igu) ->
+            varset_of_vs iset, igu
+          | None -> failhere __FILE__ "func2sketch" "Bad for loop"
+        in
+        new Func2Fn.funct_builder var_set state_vars func_info.func figu
+      in
+      f2f#build;
+      match f2f#get_funct with
+      | Some (a,b) ->  a,b, f2f#get_uses_global_bounds
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
+
     let index_set, _ = sigu in
     aux_vars_init ();
-    Sketch.Join.join_loop_width := !mat_w;
+
     let inner_indexes =
       List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
     in
+
+    Sketch.Join.join_loop_width := !mat_w;
     let join_sk =
       Sketch.Join.build_join
         inner_indexes
@@ -312,7 +325,7 @@ let func2sketch cfile funcreps =
           costly_exprs = ES.empty;
         };
       min_input_size = max_m_sizes;
-      uses_global_bound = sketch_obj#get_uses_global_bounds;
+      uses_global_bound = uses_global_bounds;
       main_loop_body = loop_body;
       loop_body_versions = lversions;
       join_sketch = join_sk;

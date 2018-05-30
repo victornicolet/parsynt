@@ -205,7 +205,8 @@ let inline_inner ?(finite=3) problem =
         FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
       ),
       (in_state, FnRecord(in_type, args)),
-      (in_binder, in_body))
+      (in_binder,
+       FnLetIn (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state, in_body)))
   in
 
   let inline_case e =
