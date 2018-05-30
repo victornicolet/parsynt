@@ -317,7 +317,7 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
           l @ [(vbound, e)])
 
       | _ ->
-        if !verbose then
+        if !verbose && false then
           begin
           printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
           printf "       Type : %a@." pp_typ (type_of e);

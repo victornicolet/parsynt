@@ -46,39 +46,39 @@ let replace_by_join problem inner_loops =
 
         if List.length bl > 0 then
 
-        let rec transform_var : fnLVar -> fnLVar =
-          function
-          | FnVariable vi ->
-            let rvname, _, right = is_right_state_varname vi.vname in
-            let lvname, _, left = is_left_state_varname vi.vname in
-            if left then
-              FnVariable (find_var_name lvname)
-            else if right then
-              let input_like = Conf.seq_name rvname in
-              begin
-                let v = try
-                  find_var_name input_like
-                with Not_found ->
-                  mkFnVar input_like (Vector(vi.vtype, None))
-                in
-                IH.add created_inputs v.vid v;
-                FnArray(FnVariable v, out_index)
-              end
-            else
-              FnVariable vi
+          let rec transform_var : fnLVar -> fnLVar =
+            function
+            | FnVariable vi ->
+              let rvname, _, right = is_right_state_varname vi.vname in
+              let lvname, _, left = is_left_state_varname vi.vname in
+              if left then
+                FnVariable (find_var_name lvname)
+              else if right then
+                let input_like = Conf.seq_name rvname in
+                begin
+                  let v = try
+                      find_var_name input_like
+                    with Not_found ->
+                      mkFnVar input_like (Vector(vi.vtype, None))
+                  in
+                  IH.add created_inputs v.vid v;
+                  FnArray(FnVariable v, out_index)
+                end
+              else
+                FnVariable vi
 
-          | FnArray (v, e) -> FnArray (transform_var v,e)
-        in
-        let jn =
-          transform_expr2
-            {
-              case = (fun e -> false);
-              on_case = (fun f e -> e);
-              on_var = transform_var;
-              on_const = identity;
-            } join
-        in
-        Some jn
+            | FnArray (v, e) -> FnArray (transform_var v,e)
+          in
+          let jn =
+            transform_expr2
+              {
+                case = (fun e -> false);
+                on_case = (fun f e -> e);
+                on_var = transform_var;
+                on_const = identity;
+              } join
+          in
+          Some jn
 
         else None
       end
@@ -160,7 +160,7 @@ let replace_by_join problem inner_loops =
                         used_vars = added_inputs }
   in
   let newbody, newctx =
-    List.fold_left replace (problem.loop_body, problem.scontext) inner_loops
+    List.fold_left replace (problem.main_loop_body, problem.scontext) inner_loops
   in
   let new_sketch =
     Sketch.Join.build_join
@@ -169,13 +169,75 @@ let replace_by_join problem inner_loops =
          problem.inner_functions)
       problem.scontext.state_vars newbody
   in
+  SH.add problem.loop_body_versions "join-not-inlined" problem.main_loop_body;
+  SH.add problem.loop_body_versions "join-inlined" newbody;
   {problem with inner_functions = inner_loops;
                 join_sketch = new_sketch;
                 scontext = newctx;
-                loop_body = newbody;}
+                main_loop_body = newbody;}
 
+let no_join_inlined_body pb =
+  try SH.find pb.loop_body_versions "join-not-inlined"
+  with Not_found -> pb.main_loop_body
 
 (* Inline joins inline the joins in the outer loop body.
    Called in VariableDiscovery.
 *)
-let inline_inner problem = problem
+let inline_inner ?(finite=3) problem =
+  if !verbose then
+    printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
+      FPretty.pp_fnexpr (no_join_inlined_body problem);
+
+  let inner_loop_ids = List.map (fun pin -> pin.id) problem.inner_functions in
+
+  let inline_inner in_info args =
+    let in_body = no_join_inlined_body in_info in
+    let in_state = in_info.scontext.state_vars in
+    let in_type = Record (VarSet.record in_state) in
+    let in_index = VarSet.max_elt in_info.scontext.index_vars in
+    let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
+    if !verbose then
+      printf "[WARNING] Inlined inner function iterates from 0 to %i by default.@." finite;
+    FnRec(
+      (
+        FnConst (CInt 0),
+        FnBinop(Lt, mkVarExpr in_index, FnConst (CInt finite)),
+        FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
+      ),
+      (in_state, FnRecord(in_type, args)),
+      (in_binder, in_body))
+  in
+
+  let inline_case e =
+    match e with
+    | FnApp (st, Some f, args) ->
+      (Conf.is_inner_loop_func_name f.vname) &&
+      (List.mem (Conf.id_of_inner_loop f.vname) inner_loop_ids)
+
+    | _ -> false
+  in
+
+  let inline rfunc e =
+    match e with
+    | FnApp(st, Some f, args) ->
+      inline_inner
+        (List.find (fun pin -> pin.id = (Conf.id_of_inner_loop f.vname)) problem.inner_functions)
+        args
+
+    | _ -> rfunc e
+  in
+  let cur_loop_body = no_join_inlined_body problem in
+  let loop_body' =
+    transform_expr2
+      { case = inline_case;
+        on_case = inline;
+        on_var = identity;
+        on_const = identity } cur_loop_body
+  in
+  if !verbose then
+    printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
+      FPretty.pp_fnexpr loop_body';
+
+  SH.add problem.loop_body_versions "inner-inlined" loop_body';
+  { problem with
+    main_loop_body = loop_body'}

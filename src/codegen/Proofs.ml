@@ -487,7 +487,7 @@ let find_exprs vi solved_sketch =
     | _ -> None
   in
   let flat_function =
-    force_flat solved_sketch.scontext.state_vars solved_sketch.loop_body
+    force_flat solved_sketch.scontext.state_vars solved_sketch.main_loop_body
   in
   (try
      check_option (find_binding vi flat_function)
