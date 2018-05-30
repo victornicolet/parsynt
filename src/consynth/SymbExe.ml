@@ -61,24 +61,24 @@ let add_symbol orig_vi =
 
 
 let replace_symbols_by_vars expr =
-  let rec replace_vars v =
+  let rec r_vars v =
     match v with
     | FnVariable var ->
       if IH.mem symbols_to_vars var.vid then
         FnVariable (IH.find symbols_to_vars var.vid)
       else FnVariable var
-    | FnArray (a, e ) -> FnArray(replace_vars a, replace_symbols e)
-  and replace_symbols e =
+    | FnArray (a, e ) -> FnArray(r_vars a, r_symbols e)
+  and r_symbols e =
     transform_expr2
       {
         case = (fun e -> false);
         on_case = (fun f e -> e);
-        on_var = replace_vars;
+        on_var = r_vars;
         on_const = identity;
       }
       e
   in
-  replace_symbols expr
+  r_symbols expr
 
 
 let replace_vars_by_symbols expr =
@@ -299,8 +299,6 @@ and do_binding bind sin uenv (var, expr) : fnV * fnExpr * ex_env =
 
 
 and do_expr sin expr : fnExpr * ex_env =
-  (if !debug then
-    Format.printf "[INFO]\tEnv: %a@.\t Unfold: %a.@.@." pp_env sin FPretty.pp_fnexpr expr);
   match expr with
   | FnVar v ->
     do_var sin v
@@ -530,13 +528,12 @@ let env_from_exec_info (einfo :exec_info) : ex_env =
     ebexprs =
       IM.map replace_vars_by_symbols
         (filter_state einfo einfo.state_exprs);
-    eiexprs = einfo.index_exprs;
+    eiexprs = IM.map replace_vars_by_symbols einfo.index_exprs;
     ereads = einfo.inputs;
   }
 
 
-let unfold (new_exprs : fnExpr IM.t) (exec_info : exec_info) (func : fnExpr) :
-  fnExpr IM.t * ES.t =
+let unfold (exec_info : exec_info) (func : fnExpr) : fnExpr IM.t * ES.t =
   let env' = env_from_exec_info exec_info in
   let r, env'' =
     do_expr env' func
@@ -570,4 +567,4 @@ let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
 *)
 let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
-  unfold IM.empty exec_info inp_func
+  unfold exec_info inp_func

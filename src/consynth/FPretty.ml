@@ -122,8 +122,8 @@ let string_of_symb_unop ?(fc = true) ?(fd = false) =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
   | Not -> if fd || fc then "!" else "not"
-  | Add1 -> if fd then "1 +" else "add1"
-  | Sub1 -> if fd then "1 +" else "sub1"
+  | Add1 -> if fd || fc then "1 +" else "add1"
+  | Sub1 -> if fd || fc then "1 +" else "sub1"
   | Abs -> if fd then raise Not_prefix else "abs"
   | Floor -> if fd then raise Not_prefix else "floor"
   | Ceiling -> if fd then raise Not_prefix else "ceiling"
