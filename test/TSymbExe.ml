@@ -280,25 +280,32 @@ let test_03ter () =
       inputs = ES.empty;
     }
   in
+  let ip1 = fplus (evar i) sk_one in
   let _ =
     symbolic_execution_test
       ~_xinfo:(Some exec_start_env)
       "sum4, third unfolding" vars cont funct 1
       [sum.vid,
        SymbScalar
-         (fplus (a $$ (fplus (evar i) sk_one, _ci 3))
-            (fplus (a $$ (fplus (evar i) sk_one, _ci 2))
-               (fplus (a $$ (fplus (evar i) sk_one, _ci 1))
-                  (fplus (a $$ (fplus (evar i) sk_one, _ci 0))
-                     (fplus (a $$ (evar i, _ci 3))
-                        (fplus (a $$ (evar i, _ci 2))
-                           (fplus (a $$ (evar i, _ci 1))
-                              (fplus (a $$ (evar i, _ci 0)) (evar sum)))))))))]
+         (fplus (a $$ (fplus ip1 sk_one, _ci 3))
+            (fplus (a $$ (fplus ip1 sk_one, _ci 2))
+               (fplus (a $$ (fplus ip1 sk_one, _ci 1))
+                  (fplus (a $$ (fplus ip1 sk_one, _ci 0))
+                     (fplus (a $$ (ip1, _ci 3))
+                        (fplus (a $$ (ip1, _ci 2))
+                           (fplus (a $$ (ip1, _ci 1))
+                              (fplus (a $$ (ip1, _ci 0))
+                                 (fplus (a $$ (evar i, _ci 3))
+                                    (fplus (a $$ (evar i, _ci 2))
+                                       (fplus (a $$ (evar i, _ci 1))
+                                          (fplus (a $$ (evar i, _ci 0)) (evar sum)
+                                          ))))))))))))]
   in
   ()
 
 
 let test_04 () =
+  SymbExe.verbose := true;
   let vars = vardefs "((sum int) (mtr int) (c int_array) (mtrl int) (a int_int_array) (i int) (j int))" in
   let cont = make_context vars "((sum mtr mtrl c) (i) (a) (sum mtr mtrl c i j a) (sum mtr mtrl c))" in
   let c = vars#get "c" in let mtr = vars#get "mtr" in let mtrl = vars#get "mtrl" in
@@ -311,13 +318,14 @@ let test_04 () =
   let func =
     (_letin [FnVariable tup,
              FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
-                   (inctx.state_vars, FnRecord(intype, [evar c; sk_zero; sk_zero])),
+                   (inctx.state_vars, FnRecord(intype, [sk_zero; sk_zero; evar c])),
                    (bnds,
-                    (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]
-                       (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j)) (evar sum)))]
-                          (_let [var c, evar c;
-                                 var mtr, fmax (c $ (evar j)) (evar mtr);
-                                 var sum, evar sum])))))]
+                    (_letin [_self bnds sum; _self bnds mtr; _self bnds c]
+                       (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]
+                          (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j)) (evar sum)))]
+                             (_let [var c, evar c;
+                                    var mtr, fmax (c $ (evar j)) (evar mtr);
+                                    var sum, evar sum]))))))]
        (_let [_self tup c;
               _self tup mtr;
               var mtrl, fmax (evar mtrl) (_inrec tup mtr);
@@ -331,15 +339,14 @@ let test_04 () =
             (fplus (a $$ (evar i, _ci 3))
                (fplus  (a $$ (evar i, _ci 2))
                   (fplus (a $$ (evar i, _ci 1))
-                     (fplus (a $$ (evar i, _ci 0))
-                        (evar sum))))));
+                     (a $$ (evar i, _ci 0))))));
        c.vid,
        SymbLinear [
          0, (fplus (c $ (_ci 0))
-               (fplus (a $$ (evar i, _ci 0)) (evar sum)));
+               (a $$ (evar i, _ci 0)));
          1, (fplus (c $ (_ci 1))
                (fplus  (a $$ (evar i, _ci 1))
-                  (fplus (a $$ (evar i, _ci 0)) (evar sum))));
+                  (a $$ (evar i, _ci 0))));
        ]]
   in
   (* let _ =

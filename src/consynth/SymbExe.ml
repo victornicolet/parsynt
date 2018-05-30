@@ -47,14 +47,60 @@ let _arsize_ = ref _MAX_ARRAY_SIZE_
 let var_to_symbols = IH.create 10
 let symbols_to_vars = IH.create 10
 
+
+let clear_symbols () =
+  IH.clear var_to_symbols;
+  IH.clear symbols_to_vars
+
+
 let add_symbol orig_vi =
   let var = mkFnVar ("init_"^orig_vi.vname) orig_vi.vtype in
   IH.add var_to_symbols orig_vi.vid var;
   IH.add symbols_to_vars var.vid orig_vi;
   var
 
-let symbols_to_vars expr =
-  transform_exprs2
+
+let replace_symbols_by_vars expr =
+  let rec replace_vars v =
+    match v with
+    | FnVariable var ->
+      if IH.mem symbols_to_vars var.vid then
+        FnVariable (IH.find symbols_to_vars var.vid)
+      else FnVariable var
+    | FnArray (a, e ) -> FnArray(replace_vars a, replace_symbols e)
+  and replace_symbols e =
+    transform_expr2
+      {
+        case = (fun e -> false);
+        on_case = (fun f e -> e);
+        on_var = replace_vars;
+        on_const = identity;
+      }
+      e
+  in
+  replace_symbols expr
+
+
+let replace_vars_by_symbols expr =
+  let rec replace_vars v =
+    match v with
+    | FnVariable var ->
+      if IH.mem var_to_symbols var.vid then
+        FnVariable (IH.find var_to_symbols var.vid)
+      else FnVariable var
+    | FnArray (a, e ) -> FnArray(replace_vars a, replace_symbols e)
+  and replace_symbols e =
+    transform_expr2
+      {
+        case = (fun e -> false);
+        on_case = (fun f e -> e);
+        on_var = replace_vars;
+        on_const = identity;
+      }
+      e
+  in
+  replace_symbols expr
+
 
 let create_symbol_map vs =
   VarSet.fold
@@ -311,12 +357,20 @@ and do_expr sin expr : fnExpr * ex_env =
     in
     e', env'
 
-
-
   | FnRecord(rt, el) ->
     let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
-    FnRecord (rt, List.map partial_interpret el'),
-    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+    let typecheck =
+      match rt with
+      | Record stl ->
+        List.length stl = List.length el' &&
+        List.for_all2 (fun (s,tmax) et -> is_subtype (type_of et) tmax) stl el'
+      | _ -> false
+    in
+    if typecheck then
+      FnRecord (rt, List.map partial_interpret el'),
+      List.fold_left (fun sf s' -> up_join sf s') sin sl'
+    else
+      raise (TypeCheckError (rt, type_of expr, expr))
 
   | FnVector el ->
     let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
@@ -410,6 +464,9 @@ and do_var env v : fnExpr * ex_env =
       List.nth ar i0, env''
 
     | _ ->
+      if !verbose then
+        printf "[ERROR] Received %a instead of input variable or vector.@."
+          FPretty.cp_fnexpr a';
       failhere __FILE__ "do_var"
         "An array variable should be an input or a vector."
 
@@ -470,7 +527,9 @@ let env_from_exec_info (einfo :exec_info) : ex_env =
   {
     ebound = einfo.context.state_vars;
     eindex = einfo.context.index_vars;
-    ebexprs = filter_state einfo einfo.state_exprs;
+    ebexprs =
+      IM.map replace_vars_by_symbols
+        (filter_state einfo einfo.state_exprs);
     eiexprs = einfo.index_exprs;
     ereads = einfo.inputs;
   }
@@ -482,13 +541,13 @@ let unfold (new_exprs : fnExpr IM.t) (exec_info : exec_info) (func : fnExpr) :
   let r, env'' =
     do_expr env' func
   in
-  filter_state exec_info env''.ebexprs, env''.ereads
+  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs, env''.ereads
 
 let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
   let e', env' =
     do_expr (env_from_exec_info exec_info) e
   in
-  e', env'.ereads
+  replace_symbols_by_vars e', env'.ereads
 
 
 (** unfold_once : simulate the applciation of a function body to a set of

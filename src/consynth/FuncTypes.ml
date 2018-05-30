@@ -178,7 +178,13 @@ and type_of_var v =
 and type_of expr =
   match expr with
   | FnVar v -> type_of_var v
-  | FnRecord (t, _) -> t
+  | FnRecord (t, el) ->
+    begin
+      match t with
+      | Record st ->
+        Record(List.map2 (fun (s,t) e -> (s, type_of e)) st  el)
+      | _ -> failwith "Record has no record type."
+    end
   | FnConst c -> type_of_const c
   | FnAddrofLabel _ | FnStartOf _
   | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
@@ -199,7 +205,7 @@ and type_of expr =
     (match ht with (t, ot) -> t)
 
   | FnFun e -> Function(type_of e, type_of e)
-  | FnVector a -> type_of (List.nth a 0)
+  | FnVector a -> Vector(type_of (List.nth a 0), Some (List.length a))
   | FnRecordMember(e, s) ->
     begin
       match type_of e with
