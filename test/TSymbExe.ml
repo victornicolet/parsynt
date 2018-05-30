@@ -331,7 +331,7 @@ let test_04 () =
               var mtrl, fmax (evar mtrl) (_inrec tup mtr);
               _self tup sum]))
   in
-  let _ =
+  let r1 =
     symbolic_execution_test "mtrl" vars cont func 2
       [sum.vid,
        SymbScalar
@@ -349,29 +349,36 @@ let test_04 () =
                   (a $$ (evar i, _ci 0))));
        ]]
   in
-  (* let _ =
-   *   symbolic_execution_test
-   *     ~_xinfo:
-   *       (Some {
-   *           context = cont;
-   *           state_exprs = r1;
-   *           index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
-   *           inputs = ES.empty;
-   *         })
-   *     "mtrl, second unfolding" vars cont func 2
-   *     [sum.vid,
-   *      SymbScalar
-   *       (fplus  (a $$ (fplus (evar i) sk_one, _ci 4))
-   *           (fplus (a $$ (fplus (evar i) sk_one, _ci 3))
-   *              (fplus  (a $$ (fplus (evar i) sk_one, _ci 2))
-   *                 (fplus (a $$ (fplus (evar i) sk_one, _ci 1))
-   *                    (fplus (a $$ (fplus (evar i) sk_one, _ci 0))
-   *                       (fplus  (a $$ (evar i, _ci 4))
-   *                          (fplus (a $$ (evar i, _ci 3))
-   *                             (fplus  (a $$ (evar i, _ci 2))
-   *                                (fplus (a $$ (evar i, _ci 1))
-   *                                   (fplus (a $$ (evar i, _ci 0))
-   *                                      (evar sum)))))))))))] in *)
+  let _ =
+    let iplus1 = fplus (evar i) sk_one in
+    symbolic_execution_test
+      ~_xinfo:
+        (Some {
+            context = cont;
+            state_exprs = r1;
+            index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
+            inputs = ES.empty;
+          })
+      "mtrl, second unfolding" vars cont func 2
+      [sum.vid,
+       SymbScalar
+         (fplus  (a $$ (fplus (evar i) sk_one, _ci 4))
+            (fplus (a $$ (fplus (evar i) sk_one, _ci 3))
+               (fplus  (a $$ (fplus (evar i) sk_one, _ci 2))
+                  (fplus (a $$ (fplus (evar i) sk_one, _ci 1))
+                     (a $$ (fplus (evar i) sk_one, _ci 0))))));
+       c.vid,
+       SymbLinear[
+         0, fplus (fplus (c $ sk_zero)
+                     (a $$ (evar i, sk_zero)))
+                   (a $$ (iplus1, sk_zero));
+         1, fplus
+           (fplus (c $ sk_one)
+              (fplus (a $$ (evar i, sk_one))
+                  (a $$ (evar i, sk_zero))))
+           (fplus (a $$ (iplus1, sk_one))
+              (a $$ (iplus1, sk_zero)))]];
+  in
   ()
 
 
