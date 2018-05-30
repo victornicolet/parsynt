@@ -355,12 +355,12 @@ let make_tbb_class pb =
     class_name_appendix^(String.capitalize (pbname_of_sketch pb))
   in
   let tbb_class = makeEmptyClass class_name in
-  let index_type =
-    TNamed (
-      { tname = iterator_type_name;
-        ttype = iterator_c_typ;
-        treferenced = false;},[])
-  in
+  (* let index_type =
+   *   TNamed (
+   *     { tname = iterator_type_name;
+   *       ttype = iterator_c_typ;
+   *       treferenced = false;},[])
+   * in *)
   let index_var = VarSet.max_elt pb.scontext.index_vars in
   let begin_index_var = left_index_vi index_var in
   let end_index_var = right_index_vi index_var in
@@ -453,7 +453,7 @@ let make_tbb_class pb =
   let tbb_operator =
     let operator_body_printer fmt ()  =
       let mod_loop_body, constant_assignments =
-        remove_constant_assignments pb pb.loop_body
+        remove_constant_assignments pb pb.main_loop_body
       in
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
         constant_assignments

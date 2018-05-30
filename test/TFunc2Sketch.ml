@@ -34,7 +34,7 @@ let test loopsm =
     (fun fname vals ->
        let i0, iN = mkFnVar "i0" Integer, mkFnVar "iN" Integer in
        let vs, igu, func = vals in
-       let builder = new S.Body.sketch_builder vs vs func igu in
+       let builder = new Func2Fn.sketch_builder vs vs func igu in
        builder#build;
        let body_form, sigu = check_option builder#get_sketch in
        printf"%s%s%s : @; %a@." (color "green") fname color_default
