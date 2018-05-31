@@ -824,6 +824,9 @@ let rec print_C_type_2 (var : FuncTypes.fnLVar) : string = match var with
     | FnVariable f -> print_C_type (f.vtype)
     | FnArray (f,e) -> print_C_type_2 f^" []" 
 
+let get_C_type (var : FuncTypes.fnLVar) : Beta.fn_type = match var with
+    | FnVariable f -> f.vtype
+    | _ -> failwith "Not implemented"
 
 (* This function returns the expected type, according to a result type and a unary operation *)
 let expectedTypeUn (op : Beta.symb_unop) (v : FuncTypes.fnLVar) : fn_type = match v with
@@ -907,14 +910,39 @@ let rec print_interval_assignment fmt (v, e) =
 
   | FnCond (c, e1, e2) ->
         let auxVar = make_Fn_Aux_Var Boolean in 
-        fprintf fmt "@[<v>%a @ @ if (%a == True) {@;<0 2>@[<v>%a @] @ } else if (%a == False) {@;<0 2>@[<v>%a @] @ } else if (%a == Undefined) {@;<0 2>@[<v>%a @] @ } @ @ @]"
-    print_interval_declaration (auxVar,c)
-    (pp_c_var ~rhs:false) auxVar
-    print_interval_assignment (v,e1)
-    (pp_c_var ~rhs:false) auxVar
-    print_interval_assignment (v,e2)
-    (pp_c_var ~rhs:false) auxVar
-    print_interval_assignment (v,e1)
+        let t = get_C_type v in
+        (match t with 
+            | Integer ->
+                let undefAuxVar = make_Fn_Aux_Var t in 
+                let undefAuxVar0 = make_Fn_Aux_Var t in 
+                fprintf fmt "@[<v>%a @ @ if (%a == True) {@;<0 2>@[<v>%a @] @ } else if (%a == False) {@;<0 2>@[<v>%a @] @ } else if (%a == Undefined) {@;<0 2>@[<v>%a @ %a @ %a = pos_merge(%a,%a) @] @ } @ @ @]"
+                print_interval_declaration (auxVar,c)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_assignment (v,e1)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_assignment (v,e2)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_declaration (undefAuxVar,e1)
+                print_interval_declaration (undefAuxVar0,e1)
+                (pp_c_var ~rhs:false) v
+                (pp_c_var ~rhs:false) undefAuxVar
+                (pp_c_var ~rhs:false) undefAuxVar0
+            | Real ->
+                let undefAuxVar = make_Fn_Aux_Var t in 
+                let undefAuxVar0 = make_Fn_Aux_Var t in 
+                fprintf fmt "@[<v>%a @ @ if (%a == True) {@;<0 2>@[<v>%a @] @ } else if (%a == False) {@;<0 2>@[<v>%a @] @ } else if (%a == Undefined) {@;<0 2>@[<v>%a @ %a @ %a = in2_merge(%a,%a)] @ } @ @ @]"
+                print_interval_declaration (auxVar,c)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_assignment (v,e1)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_assignment (v,e2)
+                (pp_c_var ~rhs:false) auxVar
+                print_interval_declaration (undefAuxVar,e1)
+                print_interval_declaration (undefAuxVar0,e1)
+                (pp_c_var ~rhs:false) v
+                (pp_c_var ~rhs:false) undefAuxVar
+                (pp_c_var ~rhs:false) undefAuxVar0
+            | _ -> failwith "Not yet implemented") 
 
   | FnApp (t, vo, args) ->
     (match vo with
