@@ -213,8 +213,9 @@ let create_new_aux new_aux_vi expr =
    @param: expr the expression of the auxiliary in the previous unfolding.
    @param: expr' the expression from which to deduce the recursion.
 *)
-let make_rec_calls (var, expr : fnV * fnExpr) (expr' : fnExpr) : fnExpr list =
-  match expr, expr' with
+let make_rec_calls
+    (var, aux_expr : fnV * fnExpr) (expr' : fnExpr) : fnExpr list =
+  match aux_expr, expr' with
   | FnVector el, FnVector el' ->
     assert (List.length el = List.length el');
     let make_cell_rec_call j e =
@@ -228,18 +229,24 @@ let make_rec_calls (var, expr : fnV * fnExpr) (expr' : fnExpr) : fnExpr list =
     in
     List.mapi make_cell_rec_call el
 
-  | _, _ -> replace_many expr (mkVarExpr var) expr' 1
+  | _, _ -> replace_many aux_expr (mkVarExpr var) expr' 1
 
-let update_accu xinfo xinfo_aux aux_set expr candidates aux_set' =
+let update_accu
+    (xinfo : exec_info)
+    (xinfo_aux : exec_info)
+    (expr : fnExpr)
+    (candidates : AuxSet.t)
+    (aux_set' : AuxSet.t)  =
+
   let update_one_accu candidate_aux aux_set' =
     (* Create a new auxiliary to avoid deleting the old one *)
     let new_vi =
       mkFnVar (get_new_name ~base:!_aux_prefix_) (type_of candidate_aux.aexpr)
     in
     (**
-     Replace the old expression of the auxiliary by the auxiliary. Be careful
-       not to add too many recursive calls. Try to replace it only once, to avoid
-       spurious recursive locations.
+       Replace the old expression of the auxiliary by the auxiliary. Be careful
+       not to add too many recursive calls. Try to replace it only once, to
+       avoid spurious recursive locations.
     *)
     let replace_aux = make_rec_calls (new_vi, candidate_aux.aexpr) expr in
     let cexpr = replace_available_vars xinfo xinfo_aux expr in
@@ -254,13 +261,14 @@ let update_accu xinfo xinfo_aux aux_set expr candidates aux_set' =
         depends = used_in_fnexpr new_f;
       }
     in
-    if !debug then
-      printf "@.Updated %s, now has accumulator : %a and expression %a@."
+    if !verbose then
+      printf
+        "[INFO] Updated %s,@;now has accumulator :@;%a@;and expression@;%a@."
         new_vi.vname cp_fnexpr new_f cp_fnexpr cexpr;
 
     AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
   in
-  AuxSet.fold update_one_accu aux_set' candidates
+  update_one_accu (AuxSet.max_elt candidates) aux_set'
 
 let update_with_one_candidate
     ((i, ni) : int * bool)
@@ -343,7 +351,7 @@ let update_with_one_candidate
               printf "@.%s%s Candidate increments some auxiliary.%s@."
                 (color "black") (color "b-green") color_default;
               if !verbose then
-                printf "[INFO] Candidate:@;%a.@.Auxiliaries: %a.@."
+                printf "[INFO] Candidate:@;%a.@.Auxiliaries:@;%a.@."
                   cp_fnexpr candidate AuxSet.pp_aux_set sub_aux;
               (* A subexpression of the expression is an auxiliary variable *)
               let possible_accs = find_accumulator xinfo candidate sub_aux in
@@ -351,7 +359,7 @@ let update_with_one_candidate
               then
                 accumulation_case candidate possible_accs aux_set'
               else if ni then
-                update_accu xinfo xinfo_aux aux_set candidate sub_aux aux_set'
+                update_accu xinfo xinfo_aux candidate sub_aux aux_set'
               else
                 aux_set'
             end
