@@ -183,7 +183,7 @@ let no_join_inlined_body pb =
 (* Inline joins inline the joins in the outer loop body.
    Called in VariableDiscovery.
 *)
-let inline_inner ?(finite=3) problem =
+let inline_inner in_loop_width problem =
   if !verbose then
     printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
       FPretty.pp_fnexpr (no_join_inlined_body problem);
@@ -197,11 +197,11 @@ let inline_inner ?(finite=3) problem =
     let in_index = VarSet.max_elt in_info.scontext.index_vars in
     let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
     if !verbose then
-      printf "[WARNING] Inlined inner function iterates from 0 to %i by default.@." finite;
+      printf "[WARNING] Inlined inner function iterates from 0 to %i by default.@." in_loop_width;
     FnRec(
       (
         FnConst (CInt 0),
-        FnBinop(Lt, mkVarExpr in_index, FnConst (CInt finite)),
+        FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
         FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
       ),
       (in_state, FnRecord(in_type, args)),

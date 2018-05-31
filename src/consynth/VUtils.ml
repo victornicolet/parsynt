@@ -258,3 +258,126 @@ let replace_available_vars xinfo xinfo_aux ce =
            ~ine:ce)
       xinfo_aux.state_exprs
       ce
+
+
+let rec is_stv vset expr =
+  match expr with
+  | FnUnop (_, FnVar v)
+  | FnVar v ->
+    begin
+      try
+        VarSet.mem (check_option (vi_of v)) vset
+      with Failure s -> false
+    end
+  | FnCond (c, e1, e2) -> is_stv vset c
+  | _ -> false
+
+
+let rec collect_state_lvars (expr : fnExpr) : fnLVar =
+  match expr with
+  | FnUnop (_, FnVar v)
+  | FnVar v -> v
+  | FnCond (c, e1, e2) -> collect_state_lvars c
+  | _ -> failwith "Not an stv."
+
+
+let candidates (vset : VarSet.t) (e : fnExpr) =
+  let is_candidate =
+    function
+    | FnBinop (_, e1, e2)
+    | FnCond (_, e1, e2) ->
+      (** One of the operands must be a state variable
+          but not the other *)
+      (is_stv vset e1 && (not (fn_uses vset e2))) ||
+      (is_stv vset e2 && (not (fn_uses vset e1)))
+    (* Special rule for conditionals *)
+    | _ ->  false
+  in
+
+  let handle_candidate f =
+  function
+  | FnBinop (_, e1, e2) ->
+    begin
+      match e1, e2 with
+      | FnCond(c, _, _), estv when is_stv vset estv ->
+        [collect_state_lvars estv, c]
+      | estv, FnCond(c, _, _) when is_stv vset estv ->
+        [collect_state_lvars estv, c]
+      | e, estv  when is_stv vset estv -> [collect_state_lvars estv, e]
+      | estv, e when is_stv vset estv -> [collect_state_lvars estv, e]
+      | _ -> []
+    end
+
+  | FnCond (_, e1, e2) ->
+    if is_stv vset e1 then
+      [collect_state_lvars e1, e2]
+    else
+      [collect_state_lvars e1, e2]
+  | _ ->  []
+  in
+
+  let collected_candidates =
+    rec_expr
+      (fun a b -> a@b)
+      []
+      is_candidate
+      handle_candidate
+      (fun c -> [])
+      (fun v -> [])
+      e
+  in
+  VarSet.fold
+    (fun ve l ->
+       let matching_candidates =
+         List.map (fun (a,b) -> b)
+           (List.filter (fun (s, es) -> ve = var_of_fnvar s)
+              collected_candidates)
+       in (ve, matching_candidates)::l)
+    vset []
+
+
+(** Find in an auxliary set the auxilairies matching EXACTLY the expression *)
+let find_matching_aux (to_match : fnExpr) (auxset : AuxSet.t) =
+  AuxSet.filter (fun aux -> aux.aexpr @= to_match) auxset
+
+
+(**  Returns a list of (vid, (e, f)) where (f,e) is built such that
+     ce = g (e, ...) *)
+let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
+  rec_expr
+    (fun a b -> AuxSet.union a b) AuxSet.empty
+    (fun e ->
+       AuxSet.exists
+         (fun aux -> aux.aexpr @= e) auxs)
+    (fun f e -> find_matching_aux e auxs)
+    (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
+    top_expr
+
+
+(** Check that the function applied to the old expression gives
+    the new expression. *)
+let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
+  AuxSet.filter
+    (fun aux ->
+       let xinfo' =
+         {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
+       in
+       let fe', _ = unfold_expr xinfo' aux.afunc in
+       let fe' = replace_expression (mkVarExpr aux.avar) aux.aexpr fe' in
+       fe' @= ne)
+
+
+let find_computed_expressions
+    (i :int) (xinfo : exec_info) (xinfo_aux : exec_info) (e : fnExpr) : fnExpr =
+  if i > 0 then
+    IM.fold
+      (fun vid e ce ->
+         let vi = VarSet.find_by_id xinfo.context.state_vars vid in
+         replace_AC
+           xinfo_aux.context
+           ~to_replace:(accumulated_subexpression vi e)
+           ~by:(FnVar (FnVariable vi))
+           ~ine:ce)
+      xinfo_aux.state_exprs e
+  else
+    e
