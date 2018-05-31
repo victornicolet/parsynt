@@ -1522,7 +1522,7 @@ module ES = Set.Make (
 
 (** Context for expression analysis *)
 type context = {
-  state_vars : VarSet.t;
+  mutable state_vars : VarSet.t;
   index_vars : VarSet.t;
   used_vars : VarSet.t;
   all_vars : VarSet.t;

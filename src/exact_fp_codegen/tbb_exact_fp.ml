@@ -321,7 +321,7 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
     (VarSet.union pb.scontext.used_vars pb.scontext.state_vars);
   fprintf fmt "@\n";
   (* Index bounds must be prefixed by "my_" *)
-  let b, e = {b with vname = class_member_appendix^b.vname},
+  (*let b, e = {b with vname = class_member_appendix^b.vname},
              {e with vname = class_member_appendix^e.vname}
   in
   (* Bounds intialization *)
@@ -333,7 +333,7 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
      @[%s = r.end();@]@]@\n@\n"
     b.vname iterator_name b.vname b.vname
     e.vname iterator_name e.vname e.vname
-  ;
+  ;*)
   (* Constant assignments *)
   pp_c_a fmt constant_assignments;
   (* Main loop *)
@@ -378,8 +378,8 @@ let make_tbb_class (pb : prob_rep) : cpp_class =
 
   tbb_class.private_vars <- private_vars_of_sketch pb;
   (* Duplicate all integer vars *)
-  let pv : VarSet.t = duplicateIntVars pb in 
-  tbb_class.public_vars <- pv ;
+  pb.scontext.state_vars <- duplicateIntVars pb; 
+  tbb_class.public_vars <- pb.scontext.state_vars ;
   (* If you want to add index vars *)
   (*VarSet.union pv
       (VarSet.of_list [begin_index_var; end_index_var]);*)
@@ -474,7 +474,7 @@ let make_tbb_class (pb : prob_rep) : cpp_class =
         constant_assignments
         (fun fmt () ->
            fprintf fmt "@[%a@]@;"
-             (pp_c_fnlet ~p_id_assign:false)
+             (FPretty_exact_fp.pp_c_fnlet ~p_id_assign:false)
              (rename_bounds (fn_for_c mod_loop_body)))
     in
     let operator_arg =
@@ -502,7 +502,7 @@ let make_tbb_class (pb : prob_rep) : cpp_class =
       cpp_class_members_set := tbb_class.public_vars;
       (* Translate parallel assignments : for now, go with the simplest
          solution which is using temporary variables *)
-      fprintf fmt "%a@\n" (pp_c_fnlet ~p_id_assign:true)
+      fprintf fmt "%a@\n" (FPretty_exact_fp.pp_c_fnlet ~p_id_assign:true)
         (fn_for_c pb.join_solution);
       (* Assign local variable value to class member *)
       VarSet.iter

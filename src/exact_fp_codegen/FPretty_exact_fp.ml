@@ -791,43 +791,32 @@ and pp_c_var ?(rhs = true) fmt v =
 and pp_c_expr_list fmt el =
   ppli fmt ~sep:" " pp_c_expr el
 
+let pp_c_assignment fmt (v, e) =
+  fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
+    v (pp_c_expr ~for_dafny:false) e
+
 (* This function needs to be modified completely for interval arithmetic *)
-let rec pp_c_assignment fmt (v, e) ?(for_dafny = false)=
+let rec print_interval_assignment fmt (v, e) =
   match e with
   | FnVar evar -> 
-  fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
-    v (pp_c_var ~rhs:false) evar
+  fprintf fmt "@[<v> %a = %a;@]" (pp_c_var ~rhs:false)
+    v (pp_c_var ~rhs:true) evar
   | FnConst c ->
     if is_negative c then
-  fprintf fmt "@[<hov 2> %a = (%a);@]" (pp_c_var ~rhs:false)
-    v (pp_constants ~for_c:true ~for_dafny:for_dafny) c
+  fprintf fmt "@[<v> %a = (%a);@]" (pp_c_var ~rhs:false)
+    v (pp_constants ~for_c:true ~for_dafny:false) c
     else
-  fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
-    v (pp_constants ~for_c:true ~for_dafny:for_dafny) c
+  fprintf fmt "@[<v> %a = %a;@]" (pp_c_var ~rhs:false)
+    v (pp_constants ~for_c:true ~for_dafny:false) c
 
 
   (* Unary operators : some of the operators defined are not
-     C operators (or Dafny ones). We have to replace them by functions. *)
+     C operators. We have to replace them by functions. *)
   | FnUnop (op, e1) ->
-    if for_dafny then
-      begin
-        try
-            (* Add temp var, of the goof type *)
-            let tv = mkFnVar "tmp" 
-            fprintf fmt "@[<hov 2> %a; %a = (%s %a); @]"
-
-            (pp_c_assignment ~for_dafny:for_dafny) (tv,e1)
-            (pp_c_var ~rhs:false) v
-            (string_of_symb_unop ~fc:true ~fd:true op)
-            (pp_c_var ~rhs:false) tv
-        with Not_prefix ->
-          fprintf fmt "@[(%s(%a)@]"
-            (check_option (string_of_unop_func ~fc:true ~fd:true op))
-            (pp_c_expr ~for_dafny:for_dafny) e1
-      end
-    else
-      fprintf fmt "@[(%s %a)@]" (string_of_symb_unop ~fc:true op)
-        (pp_c_expr ~for_dafny:for_dafny) e1
+    fprintf fmt "@[<v> %a @ %a = (%s temp);@]"
+    print_interval_assignment (v,e1)
+    (pp_c_var ~rhs:false) v
+    (string_of_symb_unop ~fc:true op)
 
 
   (* Binary operators : some of the binary operators defined
@@ -835,23 +824,25 @@ let rec pp_c_assignment fmt (v, e) ?(for_dafny = false)=
 
   | FnBinop (op, e1, e2) ->
     if is_op_c_fun op then
-      fprintf fmt "@[<hov 2>%s(%a, %a)@]"
+        fprintf fmt "@[<v> %a @ %a @ %a = %s(temp1,temp2);@]"
+        print_interval_assignment (v,e1)
+        print_interval_assignment (v,e2)
+        (pp_c_var ~rhs:false) v
         (string_of_symb_binop ~fd:true op)
-        (pp_c_expr ~for_dafny:for_dafny) e1
-        (pp_c_expr ~for_dafny:for_dafny) e2
+
     else
-      fprintf fmt "@[<hov 2>(%a %s %a)@]"
-        (pp_c_expr ~for_dafny:for_dafny) e1
+        fprintf fmt "@[<v> %a @ %a @ %a = (temp1 %s temp2);@]"
+        print_interval_assignment (v,e1)
+        print_interval_assignment (v,e2)
+        (pp_c_var ~rhs:false) v
         (string_of_symb_binop ~fd:true op)
-        (pp_c_expr ~for_dafny:for_dafny) e2
 
   | FnCond (c, e1, e2) ->
-    (if for_dafny then
-       fprintf fmt "@[<hov 2>(if %a then@;%a else@;%a)@]"
-     else
-       fprintf fmt "@[<hov 2>(%a ?@;%a :@;%a)@]")
-      (pp_c_expr ~for_dafny:for_dafny) c (pp_c_expr ~for_dafny:for_dafny) e1
-      (pp_c_expr ~for_dafny:for_dafny) e2
+          fprintf fmt "@[<v>%a @ if (temp == True) {@[<v 2> @ %a @] @ } else if (temp == False) { @[<v 2> @ %a @] @ } else { @[<v 2> @ %a @] @ } @ @]"
+    print_interval_assignment (v,c)
+    print_interval_assignment (v,e1)
+    print_interval_assignment (v,e2)
+    print_interval_assignment (v,e1)
 
   | FnApp (t, vo, args) ->
     (match vo with
@@ -859,10 +850,6 @@ let rec pp_c_assignment fmt (v, e) ?(for_dafny = false)=
        fprintf fmt "@[%s(%a)@]" vi.vname pp_c_expr_list args
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
-
-  | FnHoleL ((t, _), v , _, _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
-                                 (pp_c_var ~rhs:true) v pp_typ t
-  | FnHoleR ((t, _), _, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_fnexpr e
 
@@ -877,7 +864,7 @@ let pp_c_assignment_list p_id_asgn_list fmt ve_list =
   in
   pp_print_list
     ~pp_sep:(fun fmt () -> fprintf fmt "@;")
-    pp_c_assignment
+    print_interval_assignment
     fmt
     (if p_id_asgn_list then ve_list else filtered_ve_list)
 
