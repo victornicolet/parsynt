@@ -670,7 +670,7 @@ let scprintFnexpr s =
 
 let ecprintFnexpr s = cp_fnexpr err_formatter s
 
-let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
+let cp_expr_set ?(sep = (fun fmt () -> fprintf fmt "; ")) fmt es =
   let elt_list = ES.elements es in
   if List.length elt_list = 0 then
     fprintf fmt "[Empty]"

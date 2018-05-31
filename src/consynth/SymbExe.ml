@@ -538,13 +538,14 @@ let unfold (exec_info : exec_info) (func : fnExpr) : fnExpr IM.t * ES.t =
   let r, env'' =
     do_expr env' func
   in
-  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs, env''.ereads
+  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs,
+  es_transform (replace_symbols_by_vars) env''.ereads
 
 let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
   let e', env' =
     do_expr (env_from_exec_info exec_info) e
   in
-  replace_symbols_by_vars e', env'.ereads
+  replace_symbols_by_vars e', es_transform (replace_symbols_by_vars) env'.ereads
 
 
 (** unfold_once : simulate the applciation of a function body to a set of

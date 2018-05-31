@@ -1521,6 +1521,8 @@ module ES = Set.Make (
     type t = fnExpr
   end)
 
+let es_transform f es =
+  ES.of_list (List.map f (ES.elements es))
 
 (** Context for expression analysis *)
 type context = {
