@@ -129,12 +129,12 @@ let apply_left_identity op t e = e
   (*   | Plus -> _b sk_zero op e *)
   (*   | Times | Div -> _b sk_one op e *)
   (*   | _ -> e *)
-  (* else e *)
+(* else e *)
 (** Flatten trees with a AC spine. Expressions are encoded via function
     applications : the function is named after the operator in the stringhash
     above.
 *)
-let rec flatten_AC expr =
+let rec flatten_AC (expr : fnExpr) =
   let rec flatten cur_op expr =
     match expr with
     | FnBinop (op, e1, e2) when op = cur_op ->
@@ -159,11 +159,45 @@ let rec flatten_AC expr =
   transform_expr filter_exprs flatten_expr identity identity expr
 
 
+let rec normalize_AC (expr : fnExpr) =
+  let remove f all el =
+    List.map f
+      (List.filter
+         (fun e -> not (List.exists (fun r -> e @= r) all)) el)
+  in
+  let case e =
+    match e with
+    | FnApp(vt, Some opf, args) -> true
+    | _ -> false
+  in
+  let on_case f e =
+    match e with
+    | FnApp(vt, Some opf, args) ->
+      let true_op = op_from_name opf.vname in
+      begin match true_op with
+      | Plus ->
+        FnApp(vt, Some opf,
+              remove f [FnConst (CInt 0); FnConst (CInt64 0L)] args)
+      | Times ->
+        FnApp(vt, Some opf,
+              remove f [FnConst (CInt 1); FnConst (CInt64 1L)] args)
+      | And ->
+        FnApp(vt, Some opf, remove f [FnConst (CBool true)] args)
+      | Or ->
+        FnApp(vt, Some opf, remove f [FnConst (CBool false)] args)
+      | _ ->
+        FnApp(vt, Some opf, List.map f args)
+      end
+    | _ -> e
+  in
+  transform_expr2
+    { case = case; on_case = on_case; on_var = identity; on_const = identity}
+    expr
 
 (** Equality under associativity and commutativity. Can be defined
     as structural equality of expressions trees with reordering in flat
     terms *)
-let ( @= ) e1 e2 =
+and ( @= ) e1 e2 =
   let rec aux_eq e1 e2=
   match e1, e2 with
   | FnBinop (op1, e11, e12), FnBinop (op2, e21, e22) ->
@@ -200,9 +234,13 @@ let ( @= ) e1 e2 =
   | FnCond (c1, e11, e12), FnCond (c2, e21, e22) ->
     aux_eq c1 c2 && aux_eq e11 e21 && aux_eq e12 e22
 
+  | FnVector el, FnVector el' ->
+    List.for_all2 aux_eq el el'
+
   | _, _ -> e1 = e2
   in
-  aux_eq (flatten_AC e1) (flatten_AC e2)
+  let t = flatten_AC --> normalize_AC in
+  aux_eq (t e1) (t e2)
 
 
 (* Set of expressions, equipped with the associative and commutative

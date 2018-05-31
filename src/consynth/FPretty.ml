@@ -574,10 +574,10 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
 
  | FnVector a ->
-    fprintf ppf "@[<v 2><%a>@]"
+    fprintf ppf "@[<v><%a>@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; ")
+           ~pp_sep:(fun fmt () -> fprintf fmt ";@;")
            (fun fmt e -> fprintf fmt "%a" cp_fnexpr e)
            fmt l)
       a

@@ -23,6 +23,7 @@ open FuncTypes
 open SymbExe
 open Expressions
 open ExpressionReduction
+open Utils.PpTools
 
 let debug = ref false
 
@@ -35,6 +36,10 @@ type auxiliary =
     depends : VarSet.t;
   }
 
+let pp_auxiliary fmt aux =
+  fprintf fmt
+    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@]@;"
+    aux.avar.vname cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
 
 module AS = Set.Make (struct
     type t = auxiliary
@@ -50,6 +55,59 @@ module AuxSet =
       AS.exists (fun e -> e.avar.vid = id)
     let vars aset =
       VarSet.of_list (List.map (fun a -> a.avar) (AS.elements aset))
+    let rec inters al =
+      match al with
+      | [] -> empty
+      | [a] -> a
+      | hd :: tl -> inter hd (inters tl)
+
+    let exists_vector j f a =
+      exists
+        (fun elt ->
+           match elt.aexpr with
+           | FnVector el ->
+             (List.length el > j &&
+              f (el >> j))
+           | _ -> false) a
+
+    let filter_vector j f a =
+      filter
+        (fun elt ->
+           match elt.aexpr with
+           | FnVector el ->
+             (List.length el > j &&
+              f (el >> j))
+           | _ -> false) a
+
+
+    let add_new_aux
+        (ctx : context) (aux_set : t) (aux_to_add : auxiliary) : t =
+      let same_expr_and_func =
+        filter
+          (fun aux ->
+             let func = replace_AC
+                 ctx
+                 ~to_replace:(mkVarExpr aux.avar)
+                 ~by:(mkVarExpr aux_to_add.avar)
+                 ~ine:aux.afunc
+             in
+             aux.aexpr @= aux_to_add.aexpr && func @= aux_to_add.afunc)
+          aux_set
+      in
+      if cardinal same_expr_and_func > 0 then aux_set
+      else
+        begin
+          printf
+            "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
+            (color "b-green") (color "black") color_default
+            aux_to_add.avar.vname
+            cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
+
+          add aux_to_add aux_set
+        end
+
+    let pp_aux_set fmt a =
+      iter (fun aux -> pp_auxiliary fmt aux) a
   end)
 
 let mkAux v e =
@@ -340,19 +398,38 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
 let find_matching_aux (to_match : fnExpr) (auxset : AuxSet.t) =
   AuxSet.filter (fun aux -> aux.aexpr @= to_match) auxset
 
+let find_matching_vectaux (to_match : fnExpr) (j : int) (auxset : AuxSet.t) =
+  AuxSet.filter_vector j (fun aexpr_j -> aexpr_j @= to_match) auxset
 
-(**  Returns a list of (vid, (e, f)) where (f,e) is built such that
-     ce = g (e, ...) *)
+
 let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
-  rec_expr
-    (fun a b -> AuxSet.union a b) AuxSet.empty
-    (fun e ->
-       AuxSet.exists
-         (fun aux -> aux.aexpr @= e) auxs)
-    (fun f e -> find_matching_aux e auxs)
-    (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
-    top_expr
+  let scalar_subexpr expr =
+    rec_expr
+      (fun a b -> AuxSet.union a b) AuxSet.empty
+      (fun e ->
+         AuxSet.exists
+           (fun aux -> aux.aexpr @= e) auxs)
+      (fun f e -> find_matching_aux e auxs)
+      (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
+      expr
+  in
+  let vector_subexpr expr j =
+    printf "@.Has a[j] = %a@." cp_fnexpr expr;
+    rec_expr
+      (fun a b -> AuxSet.union a b) AuxSet.empty
+      (fun e -> AuxSet.exists_vector j (fun expr_j -> expr_j @= e) auxs)
+      (fun f e -> find_matching_vectaux e j auxs)
+      (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
+      expr
+  in
+  match top_expr with
+  | FnVector el ->
+    AuxSet.inters
+      (List.mapi (fun j ej -> let ass = vector_subexpr ej j in
+                 printf "Vector aux : %a.@." AuxSet.pp_aux_set ass; ass) el)
 
+  | _ ->
+    scalar_subexpr top_expr
 
 (** Check that the function applied to the old expression gives
     the new expression. *)

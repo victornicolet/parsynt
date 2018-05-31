@@ -178,39 +178,15 @@ let rank_by_use stv uses_map =
 
 
 
-let add_new_aux
-    (ctx : context) (aux_to_add : auxiliary) (aux_set : AuxSet.t) : AuxSet.t =
-  let same_expr_and_func =
-    AuxSet.filter
-      (fun aux ->
-         let func = replace_AC
-             ctx
-             ~to_replace:(mkVarExpr aux.avar)
-             ~by:(mkVarExpr aux_to_add.avar)
-             ~ine:aux.afunc
-         in
-         aux.aexpr @= aux_to_add.aexpr && func @= aux_to_add.afunc)
-      aux_set
-  in
-  if AuxSet.cardinal same_expr_and_func > 0 then aux_set
-  else
-    begin
-      printf "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
-        (color "b-green") (color "black") color_default
-        aux_to_add.avar.vname
-        cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
-      AuxSet.add aux_to_add aux_set
-    end
-
-
-(* TODO *)
 let pick_best_recfunc fexpr_l =
   List.hd fexpr_l
 
-let create_new_aux new_aux_vi expr =
-  (* Adding auxiliaries in a smarter way. Since we cannot infer initial values
+
+(** Adding auxiliaries in a smarter way. Since we cannot infer initial values
      now, there is an offset for the discovery. When the aux is supposed to
-     accumulate constant values, this will create a problem. *)
+     accumulate constant values, this will create a problem.
+*)
+let create_new_aux new_aux_vi expr =
   let rec_case = FnVar (FnVariable new_aux_vi) in
   let funcs =
     match expr with
@@ -226,46 +202,65 @@ let create_new_aux new_aux_vi expr =
       afunc = func;
       depends = VarSet.singleton new_aux_vi }
   in
-  List.iter
-    (fun func -> printf "Candidate auxiliary: %a.@." cp_fnexpr func)
-    funcs;
   AuxSet.of_list (List.map new_aux funcs)
 
 
-let function_updater xinfo xinfo_aux aux_set current_expr candidates aux_set' =
-  let aux = AS.max_elt candidates in
-  (* Create a new auxiliary to avoid deleting the old one *)
-  let new_vi = mkFnVar (get_new_name ~base:!_aux_prefix_) (type_of aux.aexpr) in
-  (**
+(**
+   Returns an expression where expr has been replaced by var in expr'. The
+   purpose is to use the result of this to build a recursive function (an
+   accumulator).
+   @param: var the variable that acts as the recursion location.
+   @param: expr the expression of the auxiliary in the previous unfolding.
+   @param: expr' the expression from which to deduce the recursion.
+*)
+let make_rec_calls (var, expr : fnV * fnExpr) (expr' : fnExpr) : fnExpr list =
+  match expr, expr' with
+  | FnVector el, FnVector el' ->
+    assert (List.length el = List.length el');
+    let make_cell_rec_call j e =
+      let ej =
+        replace_many e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
+      in
+      match ej with
+      | hd :: tl -> hd
+      | [] ->
+        failhere __FILE__ "make_rec_calls" "Unexected empty recursion locs."
+    in
+    List.mapi make_cell_rec_call el
+
+  | _, _ -> replace_many expr (mkVarExpr var) expr' 1
+
+let update_accu xinfo xinfo_aux aux_set expr candidates aux_set' =
+  let update_one_accu candidate_aux aux_set' =
+    (* Create a new auxiliary to avoid deleting the old one *)
+    let new_vi =
+      mkFnVar (get_new_name ~base:!_aux_prefix_) (type_of candidate_aux.aexpr)
+    in
+    (**
      Replace the old expression of the auxiliary by the auxiliary. Be careful
-     not to add too many recursive calls. Try to replace it only once, to avoid
-     spurious recursive locations.
-  *)
-  let replace_aux =
-    (replace_many
-      aux.aexpr (FnVar (FnVariable new_vi))
-      current_expr 1)
-  in
-  let cexpr =
-    (** Replace auxiliary recurrence variables by their expression *)
-    replace_available_vars xinfo xinfo_aux current_expr
-  in
-  (** Transform all a(i + ...) into a(i) if i + ... is the
-      current index expression *)
-  let new_f =
-    pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
-  in
-  let dependencies = used_in_fnexpr new_f in
-  let new_auxiliary =
-      { avar = new_vi; aexpr = cexpr;
-        afunc = new_f; depends = dependencies}
-  in
-  if !debug then
-    printf "@.Updated %s, now has accumulator : %a and expression %a@."
-      new_vi.vname cp_fnexpr new_f cp_fnexpr cexpr;
+       not to add too many recursive calls. Try to replace it only once, to avoid
+       spurious recursive locations.
+    *)
+    let replace_aux = make_rec_calls (new_vi, candidate_aux.aexpr) expr in
+    let cexpr = replace_available_vars xinfo xinfo_aux expr in
+    let new_f =
+      pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
+    in
+    let new_auxiliary =
+      {
+        avar = new_vi;
+        aexpr = cexpr;
+        afunc = new_f;
+        depends = used_in_fnexpr new_f;
+      }
+    in
+    if !debug then
+      printf "@.Updated %s, now has accumulator : %a and expression %a@."
+        new_vi.vname cp_fnexpr new_f cp_fnexpr cexpr;
 
-  add_new_aux xinfo.context new_auxiliary aux_set'
-
+    AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
+  in
+  AuxSet.fold update_one_accu aux_set' candidates
 
 let update_with_one_candidate
     ((i, ni) : int * bool)
@@ -281,14 +276,17 @@ let update_with_one_candidate
       let typ = type_of cexpr in
       let new_aux_varinfo = mkFnVar (get_new_name ~base:!_aux_prefix_) typ in
       let new_auxs = create_new_aux new_aux_varinfo cexpr in
+
       if !debug then
         printf "@.Adding new variable %s@;with expression@;%a@."
           new_aux_varinfo.vname
           cp_fnexpr cexpr;
+
       AuxSet.fold
-        (fun new_aux rec_aux_set ->
-           add_new_aux xinfo.context new_aux rec_aux_set)
-        aset' new_auxs
+        (fun aux new_auxs ->
+           AuxSet.add_new_aux xinfo.context new_auxs aux)
+        new_auxs
+        aset'
     else
       aset'
   in
@@ -298,7 +296,7 @@ let update_with_one_candidate
       printf "Variable is incremented after index update %s: %a@."
         aux.avar.vname cp_fnexpr candidate_i;
     let new_aux = { aux with afunc = candidate_i } in
-    add_new_aux xinfo.context new_aux aux_set'
+    AuxSet.add_new_aux xinfo.context aux_set' new_aux
   in
 
   let accumulation_case candidate possible_accs aux_set' =
@@ -310,7 +308,7 @@ let update_with_one_candidate
       { aux with
         aexpr =
           replace_available_vars xinfo xinfo_aux candidate } in
-    add_new_aux xinfo.context new_aux aux_set'
+    AuxSet.add_new_aux xinfo.context aux_set' new_aux
   in
 
   (** Replace subexpressions corresponding to state expressions
@@ -344,16 +342,16 @@ let update_with_one_candidate
             begin
               printf "@.%s%s Candidate increments some auxiliary.%s@."
                 (color "black") (color "b-green") color_default;
+              if !verbose then
+                printf "[INFO] Candidate:@;%a.@.Auxiliaries: %a.@."
+                  cp_fnexpr candidate AuxSet.pp_aux_set sub_aux;
               (* A subexpression of the expression is an auxiliary variable *)
               let possible_accs = find_accumulator xinfo candidate sub_aux in
               if AS.cardinal possible_accs > 0
               then
                 accumulation_case candidate possible_accs aux_set'
-              else
-                (* We have to update the function *)
-              if ni then
-                function_updater
-                  xinfo xinfo_aux aux_set candidate sub_aux aux_set'
+              else if ni then
+                update_accu xinfo xinfo_aux aux_set candidate sub_aux aux_set'
               else
                 aux_set'
             end
