@@ -795,28 +795,86 @@ let pp_c_assignment fmt (v, e) =
   fprintf fmt "@[<hov 2> %a = %a;@]" (pp_c_var ~rhs:false)
     v (pp_c_expr ~for_dafny:false) e
 
-(* This function needs to be modified completely for interval arithmetic *)
+
+(***********************************************************************
+ * This part of the file is implemented by Raphaël Dang-Nhu for lazy computation ***********************************************************)
+
+let globalAuxVarIndex = ref 0
+(* This function generate  auxiliary variables *)
+let make_Fn_Aux_Var typ = 
+  let var_name = "aux"^(string_of_int !globalAuxVarIndex) in
+  let var =
+    { vname = var_name;
+      vtype = typ;
+      vid = 0;
+      vistmp = false;
+      vinit = None;}
+  in
+  globalAuxVarIndex := !globalAuxVarIndex+1;
+  FnVariable var
+
+(* This function prints the type of a variable as a string (for C code generation *)
+let print_C_type (typ : Beta.fn_type) : string = match typ with
+    | Integer -> "long"
+    | Real -> "_mm128d"
+    | Boolean -> "boolean"
+    | _ -> failwith "This fn_type printing function for C has not been implemented"
+
+let rec print_C_type_2 (var : FuncTypes.fnLVar) : string = match var with
+    | FnVariable f -> print_C_type (f.vtype)
+    | FnArray (f,e) -> print_C_type_2 f^" []" 
+
+
+(* This function returns the expected type, according to a result type and a unary operation *)
+let expectedTypeUn (op : Beta.symb_unop) (v : FuncTypes.fnLVar) : fn_type = match v with
+    | FnVariable f -> (match (f.vtype,op) with
+        | (Integer,_) -> Integer
+        | (Real,_) -> Real
+        | (Boolean,_) -> Boolean
+        | _ -> failwith "Case not implemented yet"
+    )
+    | _ -> failwith "Not implemented for array"
+
+let expectedType (op : Beta.symb_binop) (v : FuncTypes.fnLVar) : fn_type*fn_type = match v with
+    | FnVariable f -> (match (f.vtype,op) with
+        | (Integer,_) -> (Integer,Integer)
+        | (Real,_) -> (Real,Real)
+        | (Boolean,Eq) -> (Real,Real)
+        | (Boolean,Lt) -> (Real,Real)
+        | (Boolean,Le) -> (Real,Real)
+        | (Boolean,Gt) -> (Real,Real)
+        | (Boolean,Ge) -> (Real,Real)
+        | (Boolean,Neq) -> (Real,Real)
+        | (Boolean,_) -> (Boolean,Boolean)
+        | _ -> failwith "Case not implemented yet"
+    )
+    | _ -> failwith "Not implemented for array"
+
+(* This function prints an assignment *)
 let rec print_interval_assignment fmt (v, e) =
   match e with
   | FnVar evar -> 
-  fprintf fmt "@[<v> %a = %a;@]" (pp_c_var ~rhs:false)
-    v (pp_c_var ~rhs:true) evar
+  fprintf fmt "@[<v>%a = %a;@]" (pp_c_var ~rhs:false)
+    v (pp_c_var ~rhs:false) evar
   | FnConst c ->
     if is_negative c then
-  fprintf fmt "@[<v> %a = (%a);@]" (pp_c_var ~rhs:false)
+  fprintf fmt "@[<v>%a = (%a);@]" (pp_c_var ~rhs:false)
     v (pp_constants ~for_c:true ~for_dafny:false) c
     else
-  fprintf fmt "@[<v> %a = %a;@]" (pp_c_var ~rhs:false)
+  fprintf fmt "@[<v>%a = %a;@]" (pp_c_var ~rhs:false)
     v (pp_constants ~for_c:true ~for_dafny:false) c
 
 
   (* Unary operators : some of the operators defined are not
      C operators. We have to replace them by functions. *)
   | FnUnop (op, e1) ->
-    fprintf fmt "@[<v> %a @ %a = (%s temp);@]"
-    print_interval_assignment (v,e1)
+    let t = expectedTypeUn op v in
+    let auxVar = make_Fn_Aux_Var t in 
+    fprintf fmt "@[<v>%a @ %a = (%s %a);@]"
+    print_interval_declaration (auxVar,e1)
     (pp_c_var ~rhs:false) v
     (string_of_symb_unop ~fc:true op)
+    (pp_c_var ~rhs:false) auxVar
 
 
   (* Binary operators : some of the binary operators defined
@@ -824,24 +882,38 @@ let rec print_interval_assignment fmt (v, e) =
 
   | FnBinop (op, e1, e2) ->
     if is_op_c_fun op then
-        fprintf fmt "@[<v> %a @ %a @ %a = %s(temp1,temp2);@]"
-        print_interval_assignment (v,e1)
-        print_interval_assignment (v,e2)
+        let (t1,t2) = expectedType op v in
+        let auxVar = make_Fn_Aux_Var t1 in 
+        let auxVar0 = make_Fn_Aux_Var t2 in 
+        fprintf fmt "@[<v>%a @%a @%a = %s(%a,%a);@]"
+        print_interval_declaration (auxVar,e1)
+        print_interval_declaration (auxVar0,e2)
         (pp_c_var ~rhs:false) v
         (string_of_symb_binop ~fd:true op)
+        (pp_c_var ~rhs:false) auxVar
+        (pp_c_var ~rhs:false) auxVar0
 
     else
-        fprintf fmt "@[<v> %a @ %a @ %a = (temp1 %s temp2);@]"
-        print_interval_assignment (v,e1)
-        print_interval_assignment (v,e2)
+        let (t1,t2) = expectedType op v in
+        let auxVar = make_Fn_Aux_Var t1 in 
+        let auxVar0 = make_Fn_Aux_Var t2 in 
+        fprintf fmt "@[<v>%a @ %a @ %a = (%a %s %a);@]"
+        print_interval_declaration (auxVar,e1)
+        print_interval_declaration (auxVar0,e2)
         (pp_c_var ~rhs:false) v
+        (pp_c_var ~rhs:false) auxVar
         (string_of_symb_binop ~fd:true op)
+        (pp_c_var ~rhs:false) auxVar0
 
   | FnCond (c, e1, e2) ->
-          fprintf fmt "@[<v>%a @ if (temp == True) {@[<v 2> @ %a @] @ } else if (temp == False) { @[<v 2> @ %a @] @ } else { @[<v 2> @ %a @] @ } @ @]"
-    print_interval_assignment (v,c)
+        let auxVar = make_Fn_Aux_Var Boolean in 
+        fprintf fmt "@[<v>%a @ @ if (%a == True) {@;<0 2>@[<v>%a @] @ } else if (%a == False) {@;<0 2>@[<v>%a @] @ } else if (%a == Undefined) {@;<0 2>@[<v>%a @] @ } @ @ @]"
+    print_interval_declaration (auxVar,c)
+    (pp_c_var ~rhs:false) auxVar
     print_interval_assignment (v,e1)
+    (pp_c_var ~rhs:false) auxVar
     print_interval_assignment (v,e2)
+    (pp_c_var ~rhs:false) auxVar
     print_interval_assignment (v,e1)
 
   | FnApp (t, vo, args) ->
@@ -852,6 +924,93 @@ let rec print_interval_assignment fmt (v, e) =
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_fnexpr e
+
+(* This function prints a declaration *)
+and print_interval_declaration fmt (v, e) =
+  match e with
+  | FnVar evar -> 
+  fprintf fmt "@[<v>%s %a = %a;@]"
+    (print_C_type_2 v)
+  (pp_c_var ~rhs:false)
+    v (pp_c_var ~rhs:false) evar
+  | FnConst c ->
+    if is_negative c then
+  fprintf fmt "@[<v>%s %a = (%a);@]"
+    (print_C_type_2 v)
+    (pp_c_var ~rhs:false) v
+    (pp_constants ~for_c:true ~for_dafny:false) c
+    else
+  fprintf fmt "@[<v>%s %a = %a;@]"
+    (print_C_type_2 v)
+    (pp_c_var ~rhs:false) v
+    (pp_constants ~for_c:true ~for_dafny:false) c
+
+
+  (* Unary operators : some of the operators defined are not
+     C operators. We have to replace them by functions. *)
+  | FnUnop (op, e1) ->
+    let t = expectedTypeUn op v in
+    let auxVar = make_Fn_Aux_Var t in 
+    fprintf fmt "@[<v>%a @ %s %a = (%s %a);@]"
+    print_interval_declaration (auxVar,e1)
+    (print_C_type_2 v)
+    (pp_c_var ~rhs:false) v
+    (string_of_symb_unop ~fc:true op)
+    (pp_c_var ~rhs:false) auxVar
+
+
+  (* Binary operators : some of the binary operators defined
+     are not C operators, so we need to define them *)
+
+  | FnBinop (op, e1, e2) ->
+    if is_op_c_fun op then
+        let (t1,t2) = expectedType op v in
+        let auxVar = make_Fn_Aux_Var t1 in 
+        let auxVar0 = make_Fn_Aux_Var t2 in 
+        fprintf fmt "@[<v>%a@ %a@ %s %a = %s(%a,%a);@]"
+        print_interval_declaration (auxVar,e1)
+        print_interval_declaration (auxVar0,e2)
+        (print_C_type_2 v)
+        (pp_c_var ~rhs:false) v
+        (string_of_symb_binop ~fd:true op)
+        (pp_c_var ~rhs:false) auxVar
+        (pp_c_var ~rhs:false) auxVar0
+
+    else
+        let (t1,t2) = expectedType op v in
+        let auxVar = make_Fn_Aux_Var t1 in 
+        let auxVar0 = make_Fn_Aux_Var t2 in 
+        fprintf fmt "@[<v>%a@ %a@ %s %a = (%a %s %a);@]"
+        print_interval_declaration (auxVar,e1)
+        print_interval_declaration (auxVar0,e2)
+        (print_C_type_2 v)
+        (pp_c_var ~rhs:false) v
+        (pp_c_var ~rhs:false) auxVar
+        (string_of_symb_binop ~fd:true op)
+        (pp_c_var ~rhs:false) auxVar0
+
+  | FnCond (c, e1, e2) ->
+        let auxVar = make_Fn_Aux_Var Boolean in 
+        fprintf fmt "@[<v>%a @ if (%a == True) {@ @[<v>%a@]} else if (%a == False) { @;<2>%a @ } else if (%a == Undefined) { @;<2>%a @ }@]"
+    print_interval_declaration (auxVar,c)
+    (pp_c_var ~rhs:false) auxVar
+    print_interval_declaration (v,e1)
+    (pp_c_var ~rhs:false) auxVar
+    print_interval_declaration (v,e2)
+    (pp_c_var ~rhs:false) auxVar
+    print_interval_declaration (v,e1)
+
+  | FnApp (t, vo, args) ->
+    (match vo with
+     | Some vi ->
+       fprintf fmt "@[%s(%a)@]" vi.vname pp_c_expr_list args
+     | None ->
+       fprintf fmt "@[%a@]" pp_c_expr_list args)
+
+  | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_fnexpr e
+
+(***************************************************************
+ * End of added part ******************************************)
 
 let pp_c_assignment_list p_id_asgn_list fmt ve_list =
   let filtered_ve_list =
