@@ -321,29 +321,32 @@ let update_with_one_candidate
 
   (** Replace subexpressions corresponding to state expressions
       in the candidate expression *)
-  let candidate =
-    ((find_computed_expressions i xinfo xinfo_aux) -->
+
+  let candidate_expr =
+    let e = find_computed_expressions i xinfo xinfo_aux candidate_expr in
      (reduce_full ~limit:10
-        (ctx_add_cexp xinfo_aux.context in_exprs)))
-      candidate_expr
+        (ctx_add_cexp xinfo_aux.context in_exprs)) e
   in
-  match candidate with
+  if !verbose then
+    printf "[INFO] Candidate: %a.@." cp_fnexpr candidate_expr;
+  match candidate_expr with
   | FnVar (FnVariable vi) ->
     if !debug then
       printf "@.Elim %a, we have it in %s@."
-        cp_fnexpr candidate vi.vname;
+        cp_fnexpr candidate_expr vi.vname;
     aux_set'
 
   | _ ->
     begin
-      match AuxSet.elements (find_matching_aux candidate aux_set) with
+      match AuxSet.elements (find_matching_aux candidate_expr aux_set) with
       | aux :: _ ->
-        assert (aux.aexpr @= candidate);
+        assert (aux.aexpr @= candidate_expr);
         (* The expression is exactly the expression of a aux *)
+        if !verbose then printf "[INFO] No change to auxliary.@.";
         AuxSet.add aux aux_set'
 
       | [] ->
-        let sub_aux = find_subexpr candidate aux_set in
+        let sub_aux = find_subexpr candidate_expr aux_set in
         begin
           if AuxSet.cardinal sub_aux > 0
           then
@@ -351,26 +354,26 @@ let update_with_one_candidate
               printf "@.%s%s Candidate increments some auxiliary.%s@."
                 (color "black") (color "b-green") color_default;
               if !verbose then
-                printf "[INFO] Candidate:@;%a.@.Auxiliaries:@;%a.@."
-                  cp_fnexpr candidate AuxSet.pp_aux_set sub_aux;
+                printf "[INFO] Increments auxiliaries:@;%a.@."
+                  AuxSet.pp_aux_set sub_aux;
               (* A subexpression of the expression is an auxiliary variable *)
-              let possible_accs = find_accumulator xinfo candidate sub_aux in
+              let possible_accs = find_accumulator xinfo candidate_expr sub_aux in
               if AS.cardinal possible_accs > 0
               then
-                accumulation_case candidate possible_accs aux_set'
+                accumulation_case candidate_expr possible_accs aux_set'
               else if ni then
-                update_accu xinfo xinfo_aux candidate sub_aux aux_set'
+                update_accu xinfo xinfo_aux candidate_expr sub_aux aux_set'
               else
                 aux_set'
             end
           else
             (* Check that the auxliary is not jsut an update by replacing
                the current index expression *)
-            let candidate_i = reset_index_expressions xinfo candidate in
+            let candidate_i = reset_index_expressions xinfo candidate_expr in
             begin
               match AS.elements (find_matching_aux candidate_i aux_set) with
               | aux :: _ -> index_update_case aux candidate_i
-              | _ -> new_aux_case candidate aux_set aux_set'
+              | _ -> new_aux_case candidate_expr aux_set aux_set'
             end
         end
     end

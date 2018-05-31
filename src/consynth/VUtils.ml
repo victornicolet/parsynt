@@ -414,7 +414,6 @@ let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
       expr
   in
   let vector_subexpr expr j =
-    printf "@.Has a[j] = %a@." cp_fnexpr expr;
     rec_expr
       (fun a b -> AuxSet.union a b) AuxSet.empty
       (fun e -> AuxSet.exists_vector j (fun expr_j -> expr_j @= e) auxs)
@@ -424,12 +423,11 @@ let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
   in
   match top_expr with
   | FnVector el ->
-    AuxSet.inters
-      (List.mapi (fun j ej -> let ass = vector_subexpr ej j in
-                 printf "Vector aux : %a.@." AuxSet.pp_aux_set ass; ass) el)
+    AuxSet.inters (List.mapi (fun j ej -> vector_subexpr ej j) el)
 
-  | _ ->
-    scalar_subexpr top_expr
+  | _ -> scalar_subexpr top_expr
+
+
 
 (** Check that the function applied to the old expression gives
     the new expression. *)
@@ -441,6 +439,7 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
        in
        let fe', _ = unfold_expr xinfo' aux.afunc in
        let fe' = replace_expression (mkVarExpr aux.avar) aux.aexpr fe' in
+       printf "Accumulation?@;%a==@;%a@.%b@." cp_fnexpr fe' cp_fnexpr ne (fe' @= ne);
        fe' @= ne)
 
 
