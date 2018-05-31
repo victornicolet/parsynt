@@ -257,10 +257,7 @@ let rec is_subtype t tmax =
   | Num, Real | Real, Num -> true
   | Vector (t1', _), Vector(t2', _) -> is_subtype t1' t2'
   | Bottom, Integer -> true
-  | _, _ ->
-    failontype (Format.fprintf str_formatter
-                  "Cannot subtype: %a <: %a" pp_typ t pp_typ tmax;
-                flush_str_formatter ())
+  | _, _ -> false
 
 let rec join_types t1 t2 =
   match t1, t2 with

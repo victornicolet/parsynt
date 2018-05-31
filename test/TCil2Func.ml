@@ -211,17 +211,17 @@ let _test () =
        let stmt = loop_body cl in
        let _, stv = loop_rwset cl in
        let func, figu =
-         C2F.cil2func cl.lvariables stmt igu
+         C2F.cil2func [] cl.lvariables stmt igu
        in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
        let figu' =
          let ids, igu = check_option figu in
          varset_of_vs ids, igu
        in
-       let so = new Sketch.Body.sketch_builder (varset_of_vs allvars)
+       let so = new Func2Fn.funct_builder (varset_of_vs allvars)
          (varset_of_vs stv) func figu' in
        so#build;
-       let sketch, sigu = check_option so#get_sketch in
+       let sketch, sigu = check_option so#get_funct in
        let fname = cl.lcontext.host_function.vname in
        if wf_test_case fname func sketch then
 

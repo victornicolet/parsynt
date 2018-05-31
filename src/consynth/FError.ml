@@ -1,3 +1,4 @@
+open Beta
 open Format
 open FuncTypes
 open FPretty
@@ -44,6 +45,18 @@ let fail_sketch_generation str =
 exception Type_error of string
 let fail_type_error str =
   raise (Type_error str)
+
+exception TypeCheckError of fn_type * fn_type * fnExpr
+
+let () =
+  Printexc.register_printer
+    (function
+      | TypeCheckError (et,ft,e) ->
+        Some (fprintf str_formatter "TypeCheckError(expected %a, received %a - expression : %a)"
+                pp_typ et pp_typ ft pp_fnexpr e;
+             flush_str_formatter ())
+      | _ -> None (* for other exceptions *)
+    )
 
 (** Logging for debugging purposes *)
 let logfile = ref "log"

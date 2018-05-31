@@ -178,7 +178,16 @@ and type_of_var v =
 and type_of expr =
   match expr with
   | FnVar v -> type_of_var v
-  | FnRecord (t, _) -> t
+  | FnRecord (t, el) ->
+    begin
+      match t with
+      | Record st ->
+        if List.length st = List.length el then
+          Record(List.map2 (fun (s,t) e -> (s, type_of e)) st  el)
+        else
+          failwith "Record with wrong number of arguments."
+      | _ -> failwith "Record has no record type."
+    end
   | FnConst c -> type_of_const c
   | FnAddrofLabel _ | FnStartOf _
   | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
@@ -199,7 +208,7 @@ and type_of expr =
     (match ht with (t, ot) -> t)
 
   | FnFun e -> Function(type_of e, type_of e)
-  | FnVector a -> type_of (List.nth a 0)
+  | FnVector a -> Vector(type_of (List.nth a 0), Some (List.length a))
   | FnRecordMember(e, s) ->
     begin
       match type_of e with
@@ -506,13 +515,11 @@ let mkVarExpr ?(offsets = []) vi =
 
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
-  let structname = record_name (VarSet.record vs) in
   List.map
     (fun v ->
        (FnVariable {v with vname=prefix^v.vname},
-        FnApp(v.vtype,
-              Some (record_accessor structname v),
-              [FnVar (FnVariable state_var)]))) vars
+        FnRecordMember(mkVarExpr state_var, v.vname)))
+    vars
 
 
 
@@ -1114,6 +1121,7 @@ and used_in_assignments ve_list =
     (VarSet.empty, VarSet.empty) ve_list
 
 
+
 (** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
 
 
@@ -1584,7 +1592,8 @@ type prob_rep =
     scontext : context;
     min_input_size : int;
     uses_global_bound : bool;
-    loop_body : fnExpr;
+    main_loop_body : fnExpr;
+    loop_body_versions : fnExpr SH.t;
     join_sketch : fnExpr * fnExpr -> fnExpr;
     memless_sketch : fnExpr * fnExpr ->  fnExpr;
     join_solution : fnExpr;

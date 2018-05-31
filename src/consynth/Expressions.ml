@@ -116,8 +116,8 @@ let op_from_name name =
 (** Identity rules *)
 let operators_with_identities : symb_binop list = [Minus; Plus; Times; Div]
 
-let apply_right_identity op t e =
-  if t = Integer || t = Real || t = Num then (_b e op sk_zero) else e
+let apply_right_identity op t e = e
+  (* if t = Integer || t = Real || t = Num then (_b e op sk_zero) else e *)
   (*   match op with *)
   (*   | Plus | Minus -> _b e op sk_zero *)
   (*   | Times | Div -> _b e op sk_one *)

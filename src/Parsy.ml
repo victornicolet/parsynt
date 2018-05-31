@@ -53,7 +53,9 @@ let options = [
   ( 'x', "debug-variable-discovery", (ignore(set VariableDiscovery.debug true);
                                       set SymbExe.debug true), None);
   ( 'C', "concrete-sketch", (set Sketch.concrete_sketch true), None);
-  ( 'z', "use-z3", (set use_z3 true), None)]
+  ( 'z', "use-z3", (set use_z3 true), None);
+  ('I', "discovery-max-iterations", None,
+   Some (fun itmax -> VariableDiscovery.max_exec_no := int_of_string itmax))]
 
 
 let print_inner_result problem inner_funcs () =
@@ -64,7 +66,7 @@ let print_inner_result problem inner_funcs () =
                \tJoin:@.%a@.\
                \tIdentity state:%a@."
          pb.loop_name
-         FPretty.pp_fnexpr pb.loop_body
+         FPretty.pp_fnexpr pb.main_loop_body
          FPretty.pp_fnexpr pb.memless_solution
          (PpTools.ppimap FPretty.pp_constants) pb.identity_values
     )
@@ -334,7 +336,7 @@ let main () =
       (** Set all the debug flags to true *)
       Cil2Func.debug := true;
       Sketch.debug := true;
-      Sketch.Body.debug := true;
+      Func2Fn.debug := true;
       Sketch.Join.debug := true;
       VariableDiscovery.debug := true;
     end;
@@ -346,6 +348,7 @@ let main () =
       InnerFuncs.verbose := true;
       Sketch.Join.verbose := true;
       VariableDiscovery.verbose := true;
+      SymbExe.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();

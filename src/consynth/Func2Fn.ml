@@ -12,7 +12,7 @@ module Ct = CilTools
 
 (**
    The main entry point of the file is build :
-   build a sketch from the Floop (vector of functions
+   build a function from the Floop (vector of functions
    for each state variable representing the ody of the
    loop).
 *)
@@ -243,14 +243,14 @@ let optims fnlet =
   isolate_set_array (apply_rearrange (remove_boolean_ifs fnlet'))
 
 
-(** A class to build the sketch, initialized with a set containing all
+(** A class to build the function, initialized with a set containing all
     variables, the state varaibles, the function in pre-functionalized form,
     and the loop-bounds information.
-    Build the sketch by calling the buuild method, and retrieve it with
-    the get_sketch method.
+    Build the function by calling the buuild method, and retrieve it with
+    the get_function method.
 *)
 
-class sketch_builder
+class funct_builder
     (all_vs : VarSet.t)
     (stv : VarSet.t)
     (func : letin)
@@ -260,7 +260,7 @@ class sketch_builder
     val mutable state_vars = stv
     val mutable func = func
     val mutable figu = _figu
-    val mutable sketch = None
+    val mutable funct = None
     val mutable global_bound =
       let _, (_, guard, _) = _figu in
       match guard with
@@ -528,10 +528,10 @@ class sketch_builder
       let uletin = convert_letin ulet in
       (** TODO implement records to manage index *)
       let gskexpr = convert gexpr in
-      sketch <- Some (optims (convert_letin func),
+      funct <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));
 
-    method get_sketch = sketch
+    method get_funct = funct
     method get_uses_global_bounds = uses_global_bound
   end
 
@@ -566,7 +566,7 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
   | _ -> None
 
 
-(** Transform the converted sketch to a loop body and a join sketch *)
+(** Transform the converted function to a loop body and a join function *)
 
 let rec make_conditional_guards initial_vs letin_form =
   match letin_form with

@@ -223,7 +223,9 @@ let create_new_aux new_aux_vi expr =
       afunc = func;
       depends = VarSet.singleton new_aux_vi }
   in
-  List.iter (fun func -> printf "Candidate: %a.@." pp_fnexpr func) funcs;
+  List.iter
+    (fun func -> printf "Candidate auxiliary: %a.@." cp_fnexpr func)
+    funcs;
   AuxSet.of_list (List.map new_aux funcs)
 
 
@@ -274,7 +276,9 @@ let function_updater xinfo xinfo_aux aux_set current_expr candidates aux_set' =
 *)
 let find_auxiliaries ?(not_last_iteration = true) i
     xinfo xinfo_aux expr (oset : AuxSet.t) input_expressions : AuxSet.t =
+
   let stv = xinfo.context.state_vars in
+
   let rec is_stv expr =
     match expr with
     | FnUnop (_, FnVar v)
@@ -287,6 +291,15 @@ let find_auxiliaries ?(not_last_iteration = true) i
     | FnCond (c, e1, e2) -> is_stv c
     | _ -> false
   in
+
+  let rec collect_stv expr =
+    match expr with
+    | FnUnop (_, FnVar v)
+    | FnVar v -> v
+    | FnCond (c, e1, e2) -> collect_stv c
+    | _ -> failwith "Not an stv."
+  in
+
   let is_candidate expr =
     match expr with
     | FnBinop (_, e1, e2)
@@ -298,35 +311,49 @@ let find_auxiliaries ?(not_last_iteration = true) i
     (* Special rule for conditionals *)
     | _ ->  false
   in
+
   let handle_candidate f =
     function
     | FnBinop (_, e1, e2) ->
       begin
         match e1, e2 with
-        | FnCond(c, _, _), estv when is_stv estv -> [c]
-        | estv, FnCond(c, _, _) when is_stv estv -> [c]
-        | e, estv  when is_stv estv -> [e]
-        | estv, e when is_stv estv -> [e]
+        | FnCond(c, _, _), estv when is_stv estv -> [collect_stv estv, c]
+        | estv, FnCond(c, _, _) when is_stv estv -> [collect_stv estv, c]
+        | e, estv  when is_stv estv -> [collect_stv estv, e]
+        | estv, e when is_stv estv -> [collect_stv estv, e]
         | _ -> []
       end
     | FnCond (_, e1, e2) ->
-      if is_stv e1 then [e2] else [e1]
+      if is_stv e1 then [collect_stv e1, e2] else [collect_stv e1, e2]
     | _ ->  []
   in
-  let candidates e =
-    rec_expr
-      (fun a b -> a@b)
-      []
-      is_candidate
-      handle_candidate
-      (fun c -> [])
-      (fun v -> [])
-      e
+
+  let candidates state e =
+    let collected_candidates =
+      rec_expr
+        (fun a b -> a@b)
+        []
+        is_candidate
+        handle_candidate
+        (fun c -> [])
+        (fun v -> [])
+        e
+    in
+    VarSet.fold
+      (fun ve l ->
+         let matching_candidates =
+           List.map (fun (a,b) -> b)
+             (List.filter (fun (s, es) -> ve = var_of_fnvar s)
+             collected_candidates)
+         in (ve, matching_candidates)::l)
+      state []
   in
+
   (** Find in an auxliary set the auxilairies matching EXACTLY the expression *)
   let find_ce to_match auxset =
     AuxSet.filter (fun aux -> aux.aexpr @= to_match) auxset
   in
+
   (**  Returns a list of (vid, (e, f)) where (f,e) is built such that
        ce = g (e, ...) *)
   let find_subexpr top_expr emap =
@@ -339,6 +366,7 @@ let find_auxiliaries ?(not_last_iteration = true) i
       (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
       top_expr
   in
+
   (** Check that the function applied to the old expression gives
       the new expression. *)
   let match_increment aux_vs ne =
@@ -367,10 +395,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
              (color "green") (fe' @= ne) color_default;
          fe' @= ne)
   in
-  let update_aux aux_set aux_set' candidate_expr =
-    (** Replace subexpressions by their auxliiary *)
-    if !debug then
-      printf "@.Candidate : %a@." cp_fnexpr candidate_expr;
+
+
+  let update_one_candidate aux_set aux_set' candidate_expr =
     (** Replace subexpressions corresponding to state expressions
         in the candidate expression *)
     let current_expr =
@@ -462,7 +489,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
                   if not_last_iteration then
                     let typ = type_of current_expr in
                     let new_aux_varinfo = mkFnVar (get_new_name ~base:!_aux_prefix_) typ in
-                    let new_auxs = create_new_aux new_aux_varinfo current_expr in
+                    let new_auxs =
+                      create_new_aux new_aux_varinfo current_expr
+                    in
                     if !debug then
                       printf "@.Adding new variable %s : %a@."
                         new_aux_varinfo.vname
@@ -478,12 +507,28 @@ let find_auxiliaries ?(not_last_iteration = true) i
           end
       end
   in
-  let candidate_exprs = candidates expr in
+
+  let update_aux aux_set aux_set' (stv, candidates) =
+    if is_array_type stv.vtype then
+      begin
+        printf "Array %s : @.candidates: %a."
+          stv.vname cp_expr_list candidates;
+        failwith "TODO"
+      end
+    else
+      List.fold_left (update_one_candidate aux_set)
+        aux_set' candidates
+  in
+
+  let candidate_exprs = candidates xinfo.context.state_vars expr in
   if !debug then
     printf "Expression to create auxliaries :%a@."
       cp_fnexpr expr;
   List.fold_left (update_aux oset)
     AuxSet.empty candidate_exprs
+
+
+
 
 (** Discover a set a auxiliary variables for a given variable.
     @param sketch the input problem representation.
@@ -517,10 +562,18 @@ let discover_for_id problem var =
       (** Reduce the depth of the state variables in the expression *)
       let expressions, inputs =
         let em, inp =
-          unfold_once {xinfo with inputs = ES.empty} problem.loop_body
+          unfold_once {xinfo with inputs = ES.empty} problem.main_loop_body
         in
+        if !verbose then
+        printf "[INFO] Unfolding result:@.@[<v 2>%s =@;%a@]@."
+          var.vname cp_fnexpr (IM.find var.vid em);
+
         IM.map (reduction_with_warning xinfo.context) em, inp
       in
+      if !verbose then
+        printf "[INFO] Normalized:@.@[<v 2>%s =@;%a@]@."
+          var.vname cp_fnexpr (IM.find var.vid expressions);
+
       (** Find the new set of auxiliaries by analyzing the expressions at the
           current unfolding level *)
       let oset' =
@@ -572,7 +625,7 @@ let discover_for_id problem var =
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
   let clean_aux_set =
-    remove_duplicate_auxiliaries init_i aux_set problem.loop_body
+    remove_duplicate_auxiliaries init_i aux_set problem.main_loop_body
   in
 
   VarSet.iter discover_add (AuxSet.vars aux_set);
@@ -595,11 +648,11 @@ let discover_for_id problem var =
     ) clean_aux_set;
 
   let new_ctx, new_loop_body, new_constant_exprs =
-    VUtils.compose init_i problem.loop_body clean_aux_set
+    VUtils.compose init_i problem.main_loop_body clean_aux_set
   in
   discover_init ();
   {problem with scontext = new_ctx;
-               loop_body = new_loop_body }
+               main_loop_body = new_loop_body }
 
 
 
@@ -628,7 +681,7 @@ let discover problem =
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
   let ranked_stv =
-    rank_by_use stv (uses stv  problem.loop_body)
+    rank_by_use stv (uses stv  problem.main_loop_body)
   in
   (* For each variable, do the auxiliary variable discovery. *)
   let problem' =
