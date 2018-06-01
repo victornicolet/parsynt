@@ -44,16 +44,17 @@ let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efi
         context = ctx;
         state_exprs = state;
         index_exprs = indexes;
+        intermediate_states = IM.empty;
         inputs = ES.empty;
       }
     | Some xinfo -> xinfo
   in
-  let results, inputs = unfold_once ~silent:false xinfo funct in
+  let xinfo' = unfold_once ~silent:false xinfo funct in
   begin
     try
       List.iter
         (fun (vid, stv_type) ->
-           let e = IM.find vid results in
+           let e = IM.find vid xinfo'.state_exprs in
            match stv_type, e with
            | Scalar c, FnConst c' -> if c = c' then () else failwith "Y"
            | SymbScalar sc, e -> if e = sc then () else failwith "YY"
@@ -72,10 +73,10 @@ let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efi
       IM.iter
         (fun k e -> printf "@[<v 2>%s : %a =@;%a@]@."
             (VarSet.find_by_id ctx.state_vars k).vname
-            pp_typ (type_of e) cp_fnexpr e ) results;
+            pp_typ (type_of e) cp_fnexpr e ) xinfo'.state_exprs;
       msg_failed (tname^" : "^s)
   end;
-  results
+  xinfo'
 
 let test_01 () =
   let vars = vardefs "((sum int) (i int) (c int_array) (A int_array))" in
@@ -161,10 +162,8 @@ let test_03 () =
   in
   let exec_start_env =
     {
-      context = cont;
-      state_exprs = r1;
+      r1 with
       index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
-      inputs = ES.empty;
     }
   in
   let _ =
@@ -248,10 +247,8 @@ let test_03ter () =
   in
   let exec_start_env =
     {
-      context = cont;
-      state_exprs = r1;
+      r1 with
       index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
-      inputs = ES.empty;
     }
   in
   let r2 =
@@ -271,13 +268,11 @@ let test_03ter () =
   in
   let exec_start_env =
     {
-      context = cont;
-      state_exprs = r2;
+      r2 with
       index_exprs =
         increment_all_indexes
           (increment_all_indexes
              (create_symbol_map cont.index_vars));
-      inputs = ES.empty;
     }
   in
   let ip1 = fplus (evar i) sk_one in
@@ -354,10 +349,8 @@ let test_04 () =
     symbolic_execution_test
       ~_xinfo:
         (Some {
-            context = cont;
-            state_exprs = r1;
+            r1 with
             index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
-            inputs = ES.empty;
           })
       "mtrl, second unfolding" vars cont func 2
       [sum.vid,

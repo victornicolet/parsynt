@@ -50,13 +50,14 @@ let unfold_index xinfo idx_update =
           all_vars = VarSet.empty;
           costly_exprs = ES.empty;};
       state_exprs = xinfo.index_exprs ;
+      intermediate_states = IM.empty;
       index_exprs = IM.empty ;
       inputs = ES.empty;
     }
   in
-  let full_map, _ = unfold_once ~silent:true ix idx_update in
+  let ix' = unfold_once ~silent:true ix idx_update in
   VarSet.fold
-    (fun vi map -> IM.add vi.vid (IM.find vi.vid full_map) map)
+    (fun vi map -> IM.add vi.vid (IM.find vi.vid ix'.state_exprs) map)
     xinfo.context.index_vars IM.empty
 
 
@@ -220,14 +221,14 @@ let make_rec_calls
     assert (List.length el = List.length el');
     let make_cell_rec_call j e =
       let ej =
-        replace_many e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
+        replace_many_AC e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
       in
       match ej with
       | hd :: tl -> hd
       | [] ->
-        failhere __FILE__ "make_rec_calls" "Unexected empty recursion locs."
+        failhere __FILE__ "make_rec_calls" "Unexpected empty recursion locs."
     in
-    List.mapi make_cell_rec_call el
+    [FnVector(List.mapi make_cell_rec_call el)]
 
   | _, _ -> replace_many aux_expr (mkVarExpr var) expr' 1
 
@@ -249,32 +250,32 @@ let update_accu
        avoid spurious recursive locations.
     *)
     let replace_aux = make_rec_calls (new_vi, candidate_aux.aexpr) expr in
-    let cexpr = replace_available_vars xinfo xinfo_aux expr in
     let new_f =
       pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
     in
+
     let new_auxiliary =
       {
         avar = new_vi;
-        aexpr = cexpr;
+        aexpr = replace_available_vars xinfo xinfo_aux expr;
         afunc = new_f;
         depends = used_in_fnexpr new_f;
       }
     in
     if !verbose then
       printf
-        "[INFO] Updated %s,@;now has accumulator :@;%a@;and expression@;%a@."
-        new_vi.vname cp_fnexpr new_f cp_fnexpr cexpr;
+        "@[<v 4>[INFO] Updated@;%s,@;now has accumulator :@;%a@;and expression@;%a@]@."
+        new_vi.vname cp_fnexpr new_f cp_fnexpr new_auxiliary.aexpr;
 
     AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
   in
   update_one_accu (AuxSet.max_elt candidates) aux_set'
 
+
 let update_with_one_candidate
     ((i, ni) : int * bool)
-    (in_exprs : ES.t)
     (xinfo : exec_info)
-    (xinfo_aux : exec_info)
+    (xinfo_out : exec_info)
     (aux_set : AuxSet.t)
     (aux_set': AuxSet.t)
     (candidate_expr : fnExpr) : AuxSet.t =
@@ -295,8 +296,10 @@ let update_with_one_candidate
            AuxSet.add_new_aux xinfo.context new_auxs aux)
         new_auxs
         aset'
-    else
+    else begin
+      if !verbose then printf "[INFO] Skipped adding new variable.@.";
       aset'
+    end
   in
 
   let index_update_case aux candidate_i =
@@ -315,7 +318,7 @@ let update_with_one_candidate
     let new_aux =
       { aux with
         aexpr =
-          replace_available_vars xinfo xinfo_aux candidate } in
+          replace_available_vars xinfo xinfo_out candidate } in
     AuxSet.add_new_aux xinfo.context aux_set' new_aux
   in
 
@@ -323,15 +326,14 @@ let update_with_one_candidate
       in the candidate expression *)
 
   let candidate_expr', e =
-    let e = find_computed_expressions i xinfo xinfo_aux candidate_expr in
+    let e = find_computed_expressions i xinfo xinfo_out candidate_expr in
      (reduce_full ~limit:i
-        (ctx_add_cexp xinfo_aux.context in_exprs)) e, e
+        (ctx_add_cexp xinfo_out.context xinfo_out.inputs)) e, e
   in
+
   if !verbose then
-    printf "[INFO] Candidate: %a.@.Normalized with %a: %a@."
-      cp_fnexpr candidate_expr
-      (cp_expr_set ~sep:pp_sep_brk) in_exprs
-      cp_fnexpr candidate_expr';
+    (printf "@.[INFO] ===== NEW CANDIDATE =====@.";
+     printf "@[<v 4>[INFO] Candidate expr:@;%a@]@." cp_fnexpr candidate_expr');
 
   match candidate_expr' with
   | FnVar (FnVariable vi) ->
@@ -358,7 +360,7 @@ let update_with_one_candidate
               printf "@.%s%s Candidate increments some auxiliary.%s@."
                 (color "black") (color "b-green") color_default;
               if !verbose then
-                printf "[INFO] Increments auxiliaries:@;%a.@."
+                printf "@[<v 4>[INFO] Increments auxiliaries:@;%a.@]@."
                   AuxSet.pp_aux_set sub_aux;
               (* A subexpression of the expression is an auxiliary variable *)
               let possible_accs = find_accumulator xinfo candidate_expr' sub_aux in
@@ -366,7 +368,7 @@ let update_with_one_candidate
               then
                 accumulation_case candidate_expr' possible_accs aux_set'
               else if ni then
-                update_accu xinfo xinfo_aux candidate_expr' sub_aux aux_set'
+                update_accu xinfo xinfo_out candidate_expr' sub_aux aux_set'
               else
                 aux_set'
             end
@@ -395,11 +397,11 @@ let update_with_one_candidate
     @return A set of auxiliaries.
 *)
 let find_auxiliaries ?(not_last_iteration = true) i
-    xinfo xinfo_aux expr (oset : AuxSet.t) input_expressions : AuxSet.t =
+    xinfo_in xinfo_out expr (oset : AuxSet.t) : AuxSet.t =
   let aux_one_candidate =
     update_with_one_candidate
       (i, not_last_iteration)
-      input_expressions xinfo xinfo_aux
+      xinfo_in xinfo_out
   in
 
   let update_aux aux_set aux_set' (stv, candidates) =
@@ -411,9 +413,9 @@ let find_auxiliaries ?(not_last_iteration = true) i
       List.fold_left (aux_one_candidate aux_set) aux_set' candidates
   in
 
-  let candidate_exprs = candidates xinfo.context.state_vars expr in
+  let candidate_exprs = candidates xinfo_in.context.state_vars expr in
   if !debug then
-    printf "Expression to create auxliaries :%a@."
+    printf "@[<v 4>[DEBUG] Expression to create auxiliaries from:@;%a@]@."
       cp_fnexpr expr;
   List.fold_left (update_aux oset) AuxSet.empty candidate_exprs
 
@@ -430,19 +432,22 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
 
   let xinfo', oset' =
     (** Reduce the depth of the state variables in the expression *)
-    let expressions, inputs =
-      let em, inp =
+    let xinfo1 =
+      let xinfo0 =
         unfold_once {xinfo with inputs = ES.empty} problem.main_loop_body
       in
       if !verbose then
         printf "[INFO] Unfolding result:@.@[<v 2>%s =@;%a@]@."
-          var.vname cp_fnexpr (IM.find var.vid em);
-
-      IM.map (reduction_with_warning xinfo.context) em, inp
+          var.vname cp_fnexpr (IM.find var.vid xinfo0.state_exprs);
+      {
+        xinfo0 with
+        state_exprs =
+         IM.map (reduction_with_warning xinfo.context) xinfo0.state_exprs
+      }
     in
     if !verbose then
       printf "[INFO] Normalized:@.@[<v 2>%s =@;%a@]@."
-        var.vname cp_fnexpr (IM.find var.vid expressions);
+        var.vname cp_fnexpr (IM.find var.vid xinfo1.state_exprs);
 
     (** Find the new set of auxiliaries by analyzing the expressions at the
         current unfolding level *)
@@ -450,14 +455,12 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
       find_auxiliaries i
         ~not_last_iteration:(i < !max_exec_no)
         xinfo
-        { xinfo with state_exprs = expressions}
-        (IM.find var.vid expressions)
+        xinfo1
+        (IM.find var.vid xinfo1.state_exprs)
         oset
-        inputs
     in
-    {xinfo with state_exprs = expressions;
-                index_exprs = unfold_index xinfo idx_update;
-                inputs = inputs },
+    {xinfo1 with
+     index_exprs = unfold_index xinfo1 idx_update},
     oset'
   in
   if (i > !max_exec_no - 1) || (same_aux oset oset')
@@ -499,6 +502,7 @@ let discover_for_id problem var =
       context = ctx;
       state_exprs = create_symbol_map ctx.state_vars;
       index_exprs = create_symbol_map ctx.index_vars;
+      intermediate_states = IM.empty;
       inputs = ES.empty
     }
   in

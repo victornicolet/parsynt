@@ -24,7 +24,7 @@ open FPretty
 open FuncTypes
 open TestUtils
 open Utils
-
+open Utils.ListTools
 (** Hashtable string -> 'a *)
 
 let rec hash_str s =
@@ -861,10 +861,21 @@ let apply_special_rules ctx e =
   in
   factorize ctx e1
 
-let accumulated_subexpression vi e =
+let accumulated_subexpression (vi, j) e =
+  let is_int_const c j =
+    match c with
+    | FnConst (CInt j') -> j' = j
+    | FnConst (CInt64 j') -> Int64.to_int j' = j
+    | _ -> false
+  in
   match e with
   | FnBinop (op, FnVar (FnVariable vi'), acc) when vi = vi' -> acc
   | FnBinop (op, acc, FnVar (FnVariable vi')) when vi = vi' -> acc
+  | FnBinop (op, FnVar (FnArray(FnVariable vi', c)), acc)
+  | FnBinop (op, acc, FnVar (FnArray(FnVariable vi', c))) ->
+    if vi = vi' && is_int_const c j then
+      acc
+    else e
   | _ -> e
 
 
@@ -917,6 +928,38 @@ end
        | _ -> failwith "Unexpected case in replace_AC"
 in
 rebuild_tree_AC ctx (transform_expr case handle_case identity identity flat_in)
+
+
+let rec replace_many_AC ?(in_subscripts = false)
+    ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
+  (* Count how many expressions have to be replaced, and then using a mutable
+     counter replace expressions depending on counter. For each possible
+     combination, give the indexes that have to be replaced. *)
+  let num_occ =
+    rec_expr2
+      {
+        init = 0;
+        join = (fun a b -> a + b);
+        case = (fun e -> e @= tr);
+        on_case = (fun e f -> 1);
+        on_var = (fun v -> 0);
+        on_const = (fun c -> 0);
+      } expr
+  in
+  let repl_indexed il =
+    let cntr = ref 0 in
+    transform_expr2
+      {
+        case = (fun e -> e @= tr);
+        on_var = (fun v -> v);
+        on_case = (fun f e -> incr cntr; if List.mem !cntr il then b else e);
+        on_const = (fun c -> c)
+      }
+      expr
+  in
+  if num_occ <= 0 then [expr] else
+    let index_to_repl = k_combinations n (1 -- num_occ) in
+    List.map repl_indexed index_to_repl
 
 
 (* Other expression properties *)
