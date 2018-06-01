@@ -1,15 +1,12 @@
 #include "stdio.h"
 
-double _mps(double* a, int n) {
-  double sum = 0.;
-  double mps = 0.;
-  long pos = 0;
+int _mps(int* a, int n) {
+  int sum = 0.;
+  int mps = 0.;
+  int pos = 0;
   for(int i = 0; i < n; i++) {
     sum += a[i];
     mps = max(sum,mps);
-    if(sum > mps){
-        pos = i+1;
-    }
   }
   return mps;
 }

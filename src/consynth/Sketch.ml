@@ -81,7 +81,7 @@ let reset_matdims() =
 (* Current bitwidth setting *)
 let pp_current_bitwidth fmt func_expr =
   F.fprintf fmt "@.(current-bitwidth %s)@.@."
-    (if !exact_fp then "1" else if analyze_optype func_expr = NonLinear then "6" else "#f")
+    (if !exact_fp then "#f" else if analyze_optype func_expr = NonLinear then "6" else "#f")
 
 
 (** A symbolic definition defines a list of values of a given type,
