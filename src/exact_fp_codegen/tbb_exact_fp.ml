@@ -147,7 +147,9 @@ let pp_method fmt cmet =
     (fun fmt () ->
        (VarSet.iter
           (fun vi ->
-             fprintf fmt "%s %s;@\n" (Ct.psprint80 dn_type (convtype_of_v vi)) vi.vname))
+             fprintf fmt "%s %s;@\n"
+             (FPretty_exact_fp.print_C_type vi.vtype)
+             vi.vname))
          cmet.mlocals)
     ()
 
@@ -189,7 +191,8 @@ let pp_class fmt cls =
   let pp_members fmt vs =
     VarSet.iter
       (fun vi -> fprintf fmt "@[%s %s%s;@]@;"
-          (Ct.psprint80 Cil.dn_type (convtype_of_v vi)) class_member_appendix vi.vname)
+          (FPretty_exact_fp.print_C_type vi.vtype)
+          class_member_appendix vi.vname)
       vs
   in
   let pp_class_body fmt cls =
@@ -315,7 +318,7 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
   VarSet.iter
     (fun vi ->
        fprintf fmt "%s %s = %s%s;@\n"
-         (Ct.psprint80 dn_type (check_option (ciltyp_of_symb_type vi.vtype)))
+         (FPretty_exact_fp.print_C_type vi.vtype)
          vi.vname
          class_member_appendix vi.vname)
     (VarSet.union pb.scontext.used_vars pb.scontext.state_vars);
@@ -350,16 +353,6 @@ let pp_operator_body fmt pb (i, b, e) constant_assignments ppbody =
     pb.scontext.state_vars
 
 
-(* Function to duplicate all integer vars, by adding a "_leftbound" and a "_rightbound" suffix *)
-let duplicateIntVars (pb: prob_rep) : VarSet.t = 
-    VarSet.fold (fun v n -> match v.vtype with
-    | Integer -> let leftVar = mkFnVar (v.vname^"_leftBound") v.vtype in
-                v.vname <- v.vname^"_rightBound";
-                pb.reaching_consts <- IM.add leftVar.vid (IM.find v.vid pb.reaching_consts) pb.reaching_consts; 
-                VarSet.add leftVar (VarSet.add v n)
-    | _ -> VarSet.add v n ) pb.scontext.state_vars VarSet.empty  
-
-
 let make_tbb_class (pb : prob_rep) : cpp_class =
   let class_name =
     class_name_appendix^(String.capitalize (pbname_of_sketch pb))
@@ -377,8 +370,6 @@ let make_tbb_class (pb : prob_rep) : cpp_class =
   let end_index_var = right_index_vi index_var in
 
   tbb_class.private_vars <- private_vars_of_sketch pb;
-  (* Duplicate all integer vars *)
-  pb.scontext.state_vars <- duplicateIntVars pb; 
   tbb_class.public_vars <- pb.scontext.state_vars ;
   (* If you want to add index vars *)
   (*VarSet.union pv

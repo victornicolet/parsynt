@@ -813,12 +813,45 @@ let make_Fn_Aux_Var typ =
   globalAuxVarIndex := !globalAuxVarIndex+1;
   FnVariable var
 
+(* This function checks if the binary operator exists in C, returns true is it does not exists *)
+let check_interval_binop (op : Beta.symb_binop) (t : Beta.fn_type) = match op with
+  | And -> false
+  | Nand -> false
+  | Or -> false
+  | Nor -> false
+  | Implies -> false
+  | Xor -> false
+  | _ -> true
+
+(* This function prints a binary operator *)  
+let print_interval_binop (t : Beta.fn_type) =
+  function
+  | And -> "&&"
+  | Nand -> "nand" | Or -> "||" | Nor -> "nor" | Implies -> "implies"
+  | Xor -> "xor"
+  (** Integers and reals *)
+  | Plus -> "in2_add" | Minus -> "-" | Times -> "*" | Div -> "/"
+  | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
+  (** Max and min *)
+  | Max -> "max"
+  | Min -> "min"
+  (** Comparison *)
+  | Eq -> "="
+  | Lt -> "in2_lt" | Le -> "in2_le" | Gt -> "in2_gt" | Ge -> "in2_ge"
+  | Neq -> "neq"
+  (** Shift*)
+  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
+  | Expt -> "expt"
+  | UnsafeBinop op -> string_of_unsafe_binop op
+
 (* This function prints the type of a variable as a string (for C code generation *)
-let print_C_type (typ : Beta.fn_type) : string = match typ with
-    | Integer -> "long"
+let rec print_C_type (typ : Beta.fn_type) : string = match typ with
+    | Integer -> "_pos"
     | Real -> "_mm128d"
     | Boolean -> "boolean"
-    | _ -> failwith "This fn_type printing function for C has not been implemented"
+    | Vector (f,_) -> (print_C_type f) ^" []"
+    | List _ -> "List"
+    | _ -> " "
 
 let rec print_C_type_2 (var : FuncTypes.fnLVar) : string = match var with
     | FnVariable f -> print_C_type (f.vtype)
@@ -827,6 +860,48 @@ let rec print_C_type_2 (var : FuncTypes.fnLVar) : string = match var with
 let get_C_type (var : FuncTypes.fnLVar) : Beta.fn_type = match var with
     | FnVariable f -> f.vtype
     | _ -> failwith "Not implemented"
+
+(* Function to print a constant *)
+let rec print_interval_constant ppf =
+  let pp_int ppf i = fprintf ppf "pos_create(%i)" i in
+  let pp_float ppf f = fprintf ppf "in2_create(%10.3f)" f in
+  function
+  | CNil -> fprintf ppf "()"
+  | CInt i -> pp_int ppf i
+  | CInt64 i -> pp_int ppf (Int64.to_int i)
+  | CReal f -> pp_float ppf f
+  | CBool b ->
+      (if b then fprintf ppf "true" else fprintf ppf "false")
+
+  | CBox cst -> fprintf ppf "<Cil.constant>"
+  | CChar c -> fprintf ppf "%c" c
+  | CString s -> fprintf ppf "%s" s
+  | CArrayInit (n, c) -> fprintf ppf "(make-list %i %a)" n print_interval_constant c
+  | CUnop (op, c) ->
+    fprintf ppf "(%s %a)" (string_of_symb_unop op)
+      print_interval_constant  c
+  | CBinop (op, c1, c2) ->
+    if is_op_c_fun op then
+      fprintf ppf "%s(%a,@; %a)" (string_of_symb_binop op)
+        print_interval_constant c1
+        print_interval_constant c2
+    else
+      fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
+        print_interval_constant c1
+        print_interval_constant c2
+
+  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
+  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
+  | Infnty ->
+      fprintf ppf "+inf.0"
+  | NInfnty ->
+      fprintf ppf "-inf.0"
+  | Pi -> fprintf ppf "pi"
+  | Sqrt2 -> fprintf ppf "(sqrt 2)"
+  | Ln2 -> fprintf ppf "(log 2)"
+  | Ln10 -> fprintf ppf "(log 10)"
+  | SqrtPi -> fprintf ppf "(sqrt pi)"
+  | E -> fprintf ppf "(exp 1)"
 
 (* This function returns the expected type, according to a result type and a unary operation *)
 let expectedTypeUn (op : Beta.symb_unop) (v : FuncTypes.fnLVar) : fn_type = match v with
@@ -862,10 +937,10 @@ let rec print_interval_assignment fmt (v, e) =
   | FnConst c ->
     if is_negative c then
   fprintf fmt "@[<v>%a = (%a);@]" (pp_c_var ~rhs:false)
-    v (pp_constants ~for_c:true ~for_dafny:false) c
+    v print_interval_constant c
     else
   fprintf fmt "@[<v>%a = %a;@]" (pp_c_var ~rhs:false)
-    v (pp_constants ~for_c:true ~for_dafny:false) c
+    v print_interval_constant c
 
 
   (* Unary operators : some of the operators defined are not
@@ -884,7 +959,7 @@ let rec print_interval_assignment fmt (v, e) =
      are not C operators, so we need to define them *)
 
   | FnBinop (op, e1, e2) ->
-    if is_op_c_fun op then
+    if check_interval_binop op (get_C_type v) then
         let (t1,t2) = expectedType op v in
         let auxVar = make_Fn_Aux_Var t1 in 
         let auxVar0 = make_Fn_Aux_Var t2 in 
@@ -892,7 +967,7 @@ let rec print_interval_assignment fmt (v, e) =
         print_interval_declaration (auxVar,e1)
         print_interval_declaration (auxVar0,e2)
         (pp_c_var ~rhs:false) v
-        (string_of_symb_binop ~fd:true op)
+        (print_interval_binop (get_C_type v) op)
         (pp_c_var ~rhs:false) auxVar
         (pp_c_var ~rhs:false) auxVar0
 
@@ -905,7 +980,7 @@ let rec print_interval_assignment fmt (v, e) =
         print_interval_declaration (auxVar0,e2)
         (pp_c_var ~rhs:false) v
         (pp_c_var ~rhs:false) auxVar
-        (string_of_symb_binop ~fd:true op)
+        (print_interval_binop (get_C_type v) op)
         (pp_c_var ~rhs:false) auxVar0
 
   | FnCond (c, e1, e2) ->
@@ -966,12 +1041,12 @@ and print_interval_declaration fmt (v, e) =
   fprintf fmt "@[<v>%s %a = (%a);@]"
     (print_C_type_2 v)
     (pp_c_var ~rhs:false) v
-    (pp_constants ~for_c:true ~for_dafny:false) c
+    print_interval_constant c
     else
   fprintf fmt "@[<v>%s %a = %a;@]"
     (print_C_type_2 v)
     (pp_c_var ~rhs:false) v
-    (pp_constants ~for_c:true ~for_dafny:false) c
+    print_interval_constant c
 
 
   (* Unary operators : some of the operators defined are not
@@ -991,7 +1066,7 @@ and print_interval_declaration fmt (v, e) =
      are not C operators, so we need to define them *)
 
   | FnBinop (op, e1, e2) ->
-    if is_op_c_fun op then
+    if check_interval_binop op (get_C_type v) then
         let (t1,t2) = expectedType op v in
         let auxVar = make_Fn_Aux_Var t1 in 
         let auxVar0 = make_Fn_Aux_Var t2 in 
@@ -1000,7 +1075,7 @@ and print_interval_declaration fmt (v, e) =
         print_interval_declaration (auxVar0,e2)
         (print_C_type_2 v)
         (pp_c_var ~rhs:false) v
-        (string_of_symb_binop ~fd:true op)
+        (print_interval_binop (get_C_type v) op)
         (pp_c_var ~rhs:false) auxVar
         (pp_c_var ~rhs:false) auxVar0
 
@@ -1014,7 +1089,7 @@ and print_interval_declaration fmt (v, e) =
         (print_C_type_2 v)
         (pp_c_var ~rhs:false) v
         (pp_c_var ~rhs:false) auxVar
-        (string_of_symb_binop ~fd:true op)
+        (print_interval_binop (get_C_type v) op)
         (pp_c_var ~rhs:false) auxVar0
 
   | FnCond (c, e1, e2) ->
