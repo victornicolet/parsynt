@@ -122,8 +122,8 @@ let string_of_symb_unop ?(fc = true) ?(fd = false) =
   function
   | UnsafeUnop op -> string_of_unsafe_unop op
   | Not -> if fd || fc then "!" else "not"
-  | Add1 -> if fd || fc then "1 +" else "add1"
-  | Sub1 -> if fd || fc then "1 +" else "sub1"
+  | Add1 -> if fd then "1 +" else "add1"
+  | Sub1 -> if fd then "1 +" else "sub1"
   | Abs -> if fd then raise Not_prefix else "abs"
   | Floor -> if fd then raise Not_prefix else "floor"
   | Ceiling -> if fd then raise Not_prefix else "ceiling"
@@ -574,10 +574,10 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
 
 
  | FnVector a ->
-    fprintf ppf "@[<v 2><%a>@]"
+    fprintf ppf "@[<v><%a>@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; ")
+           ~pp_sep:(fun fmt () -> fprintf fmt ";@;")
            (fun fmt e -> fprintf fmt "%a" cp_fnexpr e)
            fmt l)
       a
@@ -670,7 +670,7 @@ let scprintFnexpr s =
 
 let ecprintFnexpr s = cp_fnexpr err_formatter s
 
-let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
+let cp_expr_set ?(sep = (fun fmt () -> fprintf fmt "; ")) fmt es =
   let elt_list = ES.elements es in
   if List.length elt_list = 0 then
     fprintf fmt "[Empty]"

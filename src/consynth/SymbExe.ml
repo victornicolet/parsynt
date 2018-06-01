@@ -35,6 +35,7 @@ let verbose = ref false
 type exec_info =
   { context : context;
     state_exprs : fnExpr IM.t;
+    intermediate_states : (fnExpr list) IM.t;
     index_exprs : fnExpr IM.t;
     inputs : ES.t  }
 
@@ -213,6 +214,51 @@ let rec partial_interpret e =
 
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for unfold_once *)
+let _intermediate_states : fnExpr list ref = ref []
+
+let clear_intermediate_states () =
+  _intermediate_states := []
+
+let add_intermediate_state (i : int) (state : fnExpr) : unit =
+  match state with
+  | FnRecord(Record stl, el) ->
+    if List.length !_intermediate_states = i then
+      _intermediate_states := !_intermediate_states@[state]
+    else
+      (printf "[ERROR] Intermediate states =@;%a,@.i =@;%i,@.state =@;%a@."
+         FPretty.cp_expr_list !_intermediate_states i FPretty.cp_fnexpr state;
+      failwith "Not enough / too many intermediate states.")
+  | _ ->
+    failwith "Cannot add a state that is not a record."
+
+let get_one_intermediate_val (var : fnV) : fnExpr list  =
+  let some_vals =
+    List.mapi
+      (fun i e ->
+         match e with
+         | FnRecord(Record(stl), el) ->
+           assert (List.length stl = List.length el);
+           let res_j =
+             List.filter is_some
+               (List.map2
+                  (fun (s, t) e ->
+                     if s = var.vname then Some e else None) stl el)
+           in
+           begin match res_j with
+             | [] -> None
+             | hd :: tl -> hd
+           end
+         | _ -> None) !_intermediate_states
+  in
+  List.map check_option (List.filter is_some some_vals)
+
+let get_intermediate_values (varset : VarSet.t) : (fnExpr list) IM.t =
+  VarSet.fold
+    (fun var imap ->
+       let ivals = get_one_intermediate_val var in
+       IM.add var.vid ivals imap) varset IM.empty
+
+
 type ex_env =
   {
     ebound : VarSet.t;
@@ -497,17 +543,23 @@ and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let exec_loop k out_env body =
     let rec aux k env body =
       if k >= iEnd then
-        IM.find s.vid env.ebexprs, env
+        begin let record = IM.find s.vid env.ebexprs in
+          add_intermediate_state (k+1) record;
+          record, env
+        end
       else
-        let res, _ = do_expr (update_indexval env indexvar k) body in
-        aux (k+1)
-          {env with
-           ebound = VarSet.singleton s;
-           ebexprs = IM.singleton s.vid res;}
-          body
+        begin let res, _ = do_expr (update_indexval env indexvar k) body in
+          add_intermediate_state (k+1) res;
+          aux (k+1)
+            {env with
+             ebound = VarSet.singleton s;
+             ebexprs = IM.singleton s.vid res;}
+            body
+        end
     in
     let start_env =
       let bs', _ = do_expr sin bs in
+      add_intermediate_state 0 bs';
       {out_env with
        ebound = VarSet.singleton s;
        ebexprs = IM.singleton s.vid bs';}
@@ -534,17 +586,22 @@ let env_from_exec_info (einfo :exec_info) : ex_env =
 
 
 let unfold (exec_info : exec_info) (func : fnExpr) : fnExpr IM.t * ES.t =
+  clear_intermediate_states ();
   let env' = env_from_exec_info exec_info in
   let r, env'' =
     do_expr env' func
   in
-  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs, env''.ereads
+  _intermediate_states := List.map replace_symbols_by_vars !_intermediate_states;
+  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs,
+  es_transform (replace_symbols_by_vars) env''.ereads
 
 let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
+  clear_intermediate_states ();
   let e', env' =
     do_expr (env_from_exec_info exec_info) e
   in
-  replace_symbols_by_vars e', env'.ereads
+  _intermediate_states := List.map replace_symbols_by_vars !_intermediate_states;
+  replace_symbols_by_vars e', es_transform (replace_symbols_by_vars) env'.ereads
 
 
 (** unfold_once : simulate the applciation of a function body to a set of
@@ -567,4 +624,10 @@ let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
 *)
 let unfold_once ?(silent = false) exec_info inp_func =
   if silent then () else incr GenVars.exec_count;
-  unfold exec_info inp_func
+  let new_exprs, inputs = unfold exec_info inp_func in
+  {
+    exec_info with
+    state_exprs = new_exprs;
+    intermediate_states = get_intermediate_values exec_info.context.state_vars;
+    inputs = inputs;
+  }

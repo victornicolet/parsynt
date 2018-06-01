@@ -8,6 +8,7 @@ type exec_info =
   {
     context : context;
     state_exprs : fnExpr IM.t;
+    intermediate_states : fnExpr list IM.t;
     index_exprs : fnExpr IM.t;
     inputs : ES.t
   }
@@ -34,4 +35,5 @@ type exec_info =
 val create_symbol_map : VarSet.t -> fnExpr IM.t
 val unfold : exec_info -> fnExpr-> fnExpr IM.t * ES.t
 val unfold_expr : exec_info -> fnExpr -> fnExpr * ES.t
-val unfold_once : ?silent:bool -> exec_info -> fnExpr -> fnExpr IM.t * ES.t
+val unfold_once : ?silent:bool -> exec_info -> fnExpr -> exec_info
+val get_intermediate_values:  VarSet.t -> (fnExpr list) IM.t

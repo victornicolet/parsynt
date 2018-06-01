@@ -926,7 +926,7 @@ let to_rec_completions e =
 *)
 let rec replace_many ?(in_subscripts = false)
     ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
-  (* Count how many expresions have to be replace, and then using a mutable
+  (* Count how many expressions have to be replaced, and then using a mutable
      counter replace expressions depending on counter. For each possible
      combination, give the indexes that have to be replaced. *)
   let num_occ =
@@ -1521,6 +1521,8 @@ module ES = Set.Make (
     type t = fnExpr
   end)
 
+let es_transform f es =
+  ES.of_list (List.map f (ES.elements es))
 
 (** Context for expression analysis *)
 type context = {

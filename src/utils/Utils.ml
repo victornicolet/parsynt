@@ -28,6 +28,7 @@ module IH = Sets.IH
 module IS = Sets.IS
 module SM = Sets.SM
 module SH = Sets.SH
+module IM = Sets.IM
 
 let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
 
@@ -496,78 +497,6 @@ module IHTools = struct
 
 end
 
-module IntegerMap = Map.Make(struct type t = int let compare = compare end)
-module IM = struct
-  include IntegerMap
-
-  let keyset imt =
-    IS.of_list (List.map (fun (a,b) -> a) (IntegerMap.bindings imt))
-
-  let add_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k add_to then mp else
-           IntegerMap.add k v mp)
-      to_add add_to
-
-  let update_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp -> IntegerMap.add k v mp)
-      to_add add_to
-
-
-  let inter a b =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k a
-         then IntegerMap.add k v b
-         else mp)
-      b
-      IntegerMap.empty
-
-  let is_disjoint ?(non_empty = (fun k v -> true)) a b=
-    try
-      IntegerMap.fold
-        (fun k v bol ->
-           if non_empty k v
-           then
-             (if IntegerMap.mem k a
-              then failwith "iom"
-              else bol)
-           else bol)
-        b
-        true
-    with Failure s -> false
-
-  let disjoint_sets im1 im2 =
-    let im1_in_im2 =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im2 then IntegerMap.add k v map else map)
-        im1 IntegerMap.empty
-    in
-    let im2_in_im1 =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im1 then IntegerMap.add k v map else map)
-        im2 IntegerMap.empty
-    in
-    let im1_only =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im2 then map else IntegerMap.add k v map)
-        im1 IntegerMap.empty
-    in
-    let im2_only =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im1 then map else IntegerMap.add k v map)
-        im2 IntegerMap.empty
-    in
-    im1_in_im2, im2_in_im1, im1_only, im2_only
-
-  let of_ih ih = IH.fold (fun k l m -> IntegerMap.add k l m) ih IntegerMap.empty
-end
 
 module PpTools = struct
   let colorPrefix = "\x1b"

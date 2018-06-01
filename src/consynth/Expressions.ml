@@ -24,7 +24,7 @@ open FPretty
 open FuncTypes
 open TestUtils
 open Utils
-
+open Utils.ListTools
 (** Hashtable string -> 'a *)
 
 let rec hash_str s =
@@ -102,15 +102,15 @@ let get_AC_op op =
   | Or -> fsh "or"
   | _ -> raise Not_found
 
-let op_from_name name =
+let op_from_name name : symb_binop option =
   match name with
-  | "plus" -> Plus
-  | "times" -> Times
-  | "and" -> And
-  | "or" -> Or
-  | "min" -> Min
-  | "max" -> Max
-  | _ -> raise Not_found
+  | "plus" -> Some Plus
+  | "times" -> Some Times
+  | "and" -> Some And
+  | "or" -> Some Or
+  | "min" -> Some Min
+  | "max" -> Some Max
+  | _ -> None
 
 
 (** Identity rules *)
@@ -118,23 +118,24 @@ let operators_with_identities : symb_binop list = [Minus; Plus; Times; Div]
 
 let apply_right_identity op t e = e
   (* if t = Integer || t = Real || t = Num then (_b e op sk_zero) else e *)
-  (*   match op with *)
-  (*   | Plus | Minus -> _b e op sk_zero *)
-  (*   | Times | Div -> _b e op sk_one *)
-  (*   | _ -> e *)
-  (* else e *)
+      (* match op with
+ *       | Plus | Minus -> _b e op sk_zero
+ *       | Times | Div -> _b e op sk_one
+ *       | _ -> e
+         else e *)
+
 let apply_left_identity op t e = e
   (* if t = Integer || t = Real || t = Num then *)
   (*   match op with *)
   (*   | Plus -> _b sk_zero op e *)
   (*   | Times | Div -> _b sk_one op e *)
   (*   | _ -> e *)
-  (* else e *)
+(* else e *)
 (** Flatten trees with a AC spine. Expressions are encoded via function
     applications : the function is named after the operator in the stringhash
     above.
 *)
-let rec flatten_AC expr =
+let rec flatten_AC (expr : fnExpr) =
   let rec flatten cur_op expr =
     match expr with
     | FnBinop (op, e1, e2) when op = cur_op ->
@@ -159,11 +160,49 @@ let rec flatten_AC expr =
   transform_expr filter_exprs flatten_expr identity identity expr
 
 
+let rec normalize_AC (expr : fnExpr) =
+  let remove f all el =
+    List.map f
+      (List.filter
+         (fun e -> not (List.exists (fun r -> e @= r) all)) el)
+  in
+  let case e =
+    match e with
+    | FnApp(vt, Some opf, args) -> true
+    | _ -> false
+  in
+  let on_case f e =
+    match e with
+    | FnApp(vt, Some opf, args) ->
+      let true_op = op_from_name opf.vname in
+      begin match true_op with
+        | Some op ->
+          begin match op with
+            | Plus ->
+              FnApp(vt, Some opf,
+                    remove f [FnConst (CInt 0); FnConst (CInt64 0L)] args)
+            | Times ->
+              FnApp(vt, Some opf,
+                    remove f [FnConst (CInt 1); FnConst (CInt64 1L)] args)
+            | And ->
+              FnApp(vt, Some opf, remove f [FnConst (CBool true)] args)
+            | Or ->
+              FnApp(vt, Some opf, remove f [FnConst (CBool false)] args)
+            | _ ->
+              FnApp(vt, Some opf, List.map f args)
+          end
+        | None -> FnApp(vt, Some opf, List.map f args)
+      end
+    | _ -> e
+  in
+  transform_expr2
+    { case = case; on_case = on_case; on_var = identity; on_const = identity}
+    expr
 
 (** Equality under associativity and commutativity. Can be defined
     as structural equality of expressions trees with reordering in flat
     terms *)
-let ( @= ) e1 e2 =
+and ( @= ) e1 e2 =
   let rec aux_eq e1 e2=
   match e1, e2 with
   | FnBinop (op1, e11, e12), FnBinop (op2, e21, e22) ->
@@ -180,18 +219,21 @@ let ( @= ) e1 e2 =
     if v1 = v2 then
       try
         let op = op_from_name v1.vname in
-        is_commutative op &&
-        List.length el1 = List.length el2 &&
-        (List.for_all
-           (fun elt1 ->
-              List.exists (fun elt2 -> aux_eq elt1 elt2) el2)
-           el1)
-        &&
-        (List.for_all
-           (fun elt2 ->
-              List.exists (fun elt1 -> aux_eq elt1 elt2) el1)
-           el2)
-
+        begin match op with
+          | Some op ->
+            is_commutative op &&
+            List.length el1 = List.length el2 &&
+            (List.for_all
+               (fun elt1 ->
+                  List.exists (fun elt2 -> aux_eq elt1 elt2) el2)
+               el1)
+            &&
+            (List.for_all
+               (fun elt2 ->
+                  List.exists (fun elt1 -> aux_eq elt1 elt2) el1)
+               el2)
+          | None -> el1 = el2
+        end
       with Not_found ->
         el1 = el2
     else
@@ -200,9 +242,13 @@ let ( @= ) e1 e2 =
   | FnCond (c1, e11, e12), FnCond (c2, e21, e22) ->
     aux_eq c1 c2 && aux_eq e11 e21 && aux_eq e12 e22
 
+  | FnVector el, FnVector el' ->
+    List.for_all2 aux_eq el el'
+
   | _, _ -> e1 = e2
   in
-  aux_eq (flatten_AC e1) (flatten_AC e2)
+  let t = flatten_AC --> normalize_AC in
+  aux_eq (t e1) (t e2)
 
 
 (* Set of expressions, equipped with the associative and commutative
@@ -314,7 +360,7 @@ let e_of_ac_op e =
 let op_of_ac_e e =
   match e with
   | FnApp(t, Some f, el) ->
-    Some (op_from_name f.vname)
+   op_from_name f.vname
   | _ -> None
 
 let args_of_ac_e e =
@@ -328,18 +374,22 @@ let rec rebuild_tree_AC ctx =
     match e with
     | FnApp (t, Some f, el) ->
       begin
-        let op = op_from_name f.vname in
-        let el' = List.map rfunc el in
-        let el_ordered =
-             (List.sort (compare_cost ctx) el')
-        in
-        match el_ordered with
-        | hd :: tl ->
-          List.fold_left
-            (fun tree e -> FnBinop (op, e, tree))
-            hd tl
-        | [] -> failhere __FILE__ "rebuild_tree_AC"
-                  "Unexpected length for list in AC conversion"
+        let op_ = op_from_name f.vname in
+        match op_ with
+        | Some op ->
+          let el' = List.map rfunc el in
+          let el_ordered =
+            (List.sort (compare_cost ctx) el')
+          in
+          begin match el_ordered with
+          | hd :: tl ->
+            List.fold_left
+              (fun tree e -> FnBinop (op, e, tree))
+              hd tl
+          | [] -> failhere __FILE__ "rebuild_tree_AC"
+                    "Unexpected length for list in AC conversion"
+          end
+        | None -> failwith "Rebuild_flat_expr : Unexpected case."
       end
 
     | _ -> failwith "Rebuild_flat_expr : Unexpected case."
@@ -512,7 +562,11 @@ let factorize_multi_toplevel ctx e =
   let eres =
     match e' with
     | FnApp (t, Some op, el) ->
-      FnApp(t, Some op, __factorize_multi__ ctx (op_from_name op.vname) el)
+      begin match op_from_name op.vname with
+        | Some op' ->
+          FnApp(t, Some op, __factorize_multi__ ctx op' el)
+        | None -> e'
+      end
     | e -> e'
   in
   let e'' =  rebuild_tree_AC ctx eres in
@@ -639,16 +693,19 @@ let factorize ctx =
   let case e =
     match e with
     | FnApp (_, Some opvar, _) ->
-      (try ignore(op_from_name opvar.vname); true with Not_found -> false)
+      is_some (op_from_name opvar.vname)
     | _ -> false
   in
   let fact rfunc e =
     match e with
     | FnApp (t, Some opvar, el) ->
-      let op = op_from_name opvar.vname in
-      let fact_el = List.map rfunc (__factorize__ ctx op el) in
-      FnApp (t, Some opvar, fact_el)
-
+      let op_ = op_from_name opvar.vname in
+      begin match op_ with
+        | Some op ->
+          let fact_el = List.map rfunc (__factorize__ ctx op el) in
+          FnApp (t, Some opvar, fact_el)
+        | None -> failhere __FILE__ "factorize_all" "bad case"
+      end
     | _ -> failhere __FILE__ "factorize_all" "bad case"
   in
   transform_expr case fact identity identity
@@ -784,7 +841,7 @@ let transform_conj_comps e =
     match e with
     | FnApp (t, Some vi, el) ->
       let el' = List.map rfunc el in
-      let op = op_from_name vi.vname in
+      let op = check_option (op_from_name vi.vname) in
       let new_el = __transform_conj_comps__  op el' in
       (match new_el with
        | [e] -> e
@@ -804,10 +861,21 @@ let apply_special_rules ctx e =
   in
   factorize ctx e1
 
-let accumulated_subexpression vi e =
+let accumulated_subexpression (vi, j) e =
+  let is_int_const c j =
+    match c with
+    | FnConst (CInt j') -> j' = j
+    | FnConst (CInt64 j') -> Int64.to_int j' = j
+    | _ -> false
+  in
   match e with
   | FnBinop (op, FnVar (FnVariable vi'), acc) when vi = vi' -> acc
   | FnBinop (op, acc, FnVar (FnVariable vi')) when vi = vi' -> acc
+  | FnBinop (op, FnVar (FnArray(FnVariable vi', c)), acc)
+  | FnBinop (op, acc, FnVar (FnArray(FnVariable vi', c))) ->
+    if vi = vi' && is_int_const c j then
+      acc
+    else e
   | _ -> e
 
 
@@ -860,6 +928,38 @@ end
        | _ -> failwith "Unexpected case in replace_AC"
 in
 rebuild_tree_AC ctx (transform_expr case handle_case identity identity flat_in)
+
+
+let rec replace_many_AC ?(in_subscripts = false)
+    ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
+  (* Count how many expressions have to be replaced, and then using a mutable
+     counter replace expressions depending on counter. For each possible
+     combination, give the indexes that have to be replaced. *)
+  let num_occ =
+    rec_expr2
+      {
+        init = 0;
+        join = (fun a b -> a + b);
+        case = (fun e -> e @= tr);
+        on_case = (fun e f -> 1);
+        on_var = (fun v -> 0);
+        on_const = (fun c -> 0);
+      } expr
+  in
+  let repl_indexed il =
+    let cntr = ref 0 in
+    transform_expr2
+      {
+        case = (fun e -> e @= tr);
+        on_var = (fun v -> v);
+        on_case = (fun f e -> incr cntr; if List.mem !cntr il then b else e);
+        on_const = (fun c -> c)
+      }
+      expr
+  in
+  if num_occ <= 0 then [expr] else
+    let index_to_repl = k_combinations n (1 -- num_occ) in
+    List.map repl_indexed index_to_repl
 
 
 (* Other expression properties *)

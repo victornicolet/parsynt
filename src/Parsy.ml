@@ -30,12 +30,15 @@ open FuncTypes
 module L = Local
 module C = Canalyst
 module Pf = Proofs
+module ExpRed = ExpressionReduction
+module Cg = Codegen
 
 
 let debug = ref false
 let verbose = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
+let skip_all_before_vardisc = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 let use_z3 = ref false
 (* let exact_fp = ref false *)
@@ -46,6 +49,7 @@ let options = [
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 'g', "debug", (set debug true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
+  ( 'K', "kill-first-inner", (set skip_all_before_vardisc true), None);
   ( 'o', "output-folder", None,
       Some (fun o_folder -> Conf.output_dir := o_folder));
   ( 's', "debug-sketch", (set Sketch.debug true), None);
@@ -68,7 +72,7 @@ let print_inner_result problem inner_funcs () =
          pb.loop_name
          FPretty.pp_fnexpr pb.main_loop_body
          FPretty.pp_fnexpr pb.memless_solution
-         (PpTools.ppimap FPretty.pp_constants) pb.identity_values
+         (ppimap FPretty.pp_constants) pb.identity_values
     )
     inner_funcs
 
@@ -86,17 +90,18 @@ let solution_failed ?(failure = "") problem =
 let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_rep) =
 
   if !verbose then
-    printf "@.%s%sSOLUTION for %s %s:@.%a"
+    printf "@.%s%s[INFO] SOLUTION for %s %s:@.%a"
       (color "green")       (if inner then "(inner loop)" else "")
       lp_name color_default RAst.pp_expr_list parsed;
 
   (* Open and append to stats *)
-  let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
+  let oc = open_out_gen
+      [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
   Printf.fprintf oc "%s,%.3f\n" lp_name racket_elapsed;
   let sol_info =
     try
-      Codegen.get_solved_sketch_info parsed
+      Cg.get_solved_sketch_info parsed
     with _ ->
       (solution_failed problem;
        failwith "Couldn't retrieve solution from parsed ast.")
@@ -104,7 +109,7 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
   let translated_join_body =
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
-    try scm_to_fn sol_info.Codegen.join_body with
+    try scm_to_fn sol_info.Cg.join_body with
     | Failure s ->
       eprintf "[FAILURE] %s@." s;
       failwith "Failed to translate the solution in our \
@@ -146,10 +151,10 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
 
       | None -> IM.empty
   in
-  let solution_0 = ExpressionReduction.normalize problem.scontext translated_join_body in
-  let solution = ExpressionReduction.clean problem.scontext solution_0 in
-  let init_vals = remap_init_values sol_info.Codegen.init_values in
-  let id_vals = remap_ident_values sol_info.Codegen.identity_values in
+  let solution_0 = ExpRed.normalize problem.scontext translated_join_body in
+  let solution = ExpRed.clean problem.scontext solution_0 in
+  let init_vals = remap_init_values sol_info.Cg.init_values in
+  let id_vals = remap_ident_values sol_info.Cg.identity_values in
   if inner then
     {problem with memless_solution = solution;
                   init_values = init_vals;
@@ -267,7 +272,8 @@ and solve_problem problem =
         (** If the problem is not solved yet, might be because expression
             depth is too limited *)
   in
-  maybe_apply aux_solve (solve_inners problem)
+  maybe_apply aux_solve
+    (if !skip_all_before_vardisc then Some problem else solve_inners problem)
 
 
 (** --------------------------------------------------------------------------*)

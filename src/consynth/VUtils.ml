@@ -23,6 +23,7 @@ open FuncTypes
 open SymbExe
 open Expressions
 open ExpressionReduction
+open Utils.PpTools
 
 let debug = ref false
 
@@ -35,6 +36,10 @@ type auxiliary =
     depends : VarSet.t;
   }
 
+let pp_auxiliary fmt aux =
+  fprintf fmt
+    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@]@;"
+    aux.avar.vname cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
 
 module AS = Set.Make (struct
     type t = auxiliary
@@ -50,6 +55,59 @@ module AuxSet =
       AS.exists (fun e -> e.avar.vid = id)
     let vars aset =
       VarSet.of_list (List.map (fun a -> a.avar) (AS.elements aset))
+    let rec inters al =
+      match al with
+      | [] -> empty
+      | [a] -> a
+      | hd :: tl -> inter hd (inters tl)
+
+    let exists_vector j f a =
+      exists
+        (fun elt ->
+           match elt.aexpr with
+           | FnVector el ->
+             (List.length el > j &&
+              f (el >> j))
+           | _ -> false) a
+
+    let filter_vector j f a =
+      filter
+        (fun elt ->
+           match elt.aexpr with
+           | FnVector el ->
+             (List.length el > j &&
+              f (el >> j))
+           | _ -> false) a
+
+
+    let add_new_aux
+        (ctx : context) (aux_set : t) (aux_to_add : auxiliary) : t =
+      let same_expr_and_func =
+        filter
+          (fun aux ->
+             let func = replace_AC
+                 ctx
+                 ~to_replace:(mkVarExpr aux.avar)
+                 ~by:(mkVarExpr aux_to_add.avar)
+                 ~ine:aux.afunc
+             in
+             aux.aexpr @= aux_to_add.aexpr && func @= aux_to_add.afunc)
+          aux_set
+      in
+      if cardinal same_expr_and_func > 0 then aux_set
+      else
+        begin
+          printf
+            "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
+            (color "b-green") (color "black") color_default
+            aux_to_add.avar.vname
+            cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
+
+          add aux_to_add aux_set
+        end
+
+    let pp_aux_set fmt a =
+      iter (fun aux -> pp_auxiliary fmt aux) a
   end)
 
 let mkAux v e =
@@ -144,9 +202,9 @@ let compose xinfo f aux_set =
                  then
                    (* The variable doesn't depend on any other state variable *)
                    (add_right_auxiliary cur_vi;
-                   [v,
-                    replace_index_uses
-                      right_index_vi xinfo.context.index_vars aux.afunc])
+                    [v,
+                     replace_index_uses
+                       right_index_vi xinfo.context.index_vars aux.afunc])
                  else
                    [])
               in
@@ -158,7 +216,7 @@ let compose xinfo f aux_set =
                in
                if dependencies > 0
                then
-                    (* The variable depends on other state variables *)
+                 (* The variable depends on other state variables *)
                  head_assgn_list, tail_assgn_list@assgn, new_const_exprs
                else
                  head_assgn_list@assgn, tail_assgn_list, new_const_exprs))
@@ -204,10 +262,10 @@ let is_already_computed xinfo aux exprs =
   IM.cardinal candidate_state_variables > 0
 
 let remove_duplicate_auxiliaries xinfo aux_set input_func =
-  let exprs, inputs = unfold_once ~silent:true xinfo input_func in
+  let xinfo' = unfold_once ~silent:true xinfo input_func in
   AuxSet.filter
     (fun aux ->
-       not (is_already_computed xinfo aux exprs))
+       not (is_already_computed xinfo aux xinfo'.state_exprs))
     aux_set
 
 
@@ -229,32 +287,241 @@ let reduction_with_warning ctx expr =
 
 
 let reset_index_expressions xinfo aux =
-    IM.fold
-      (fun idx_id idx_expr e ->
-         try
-           (* Replace the index expressions by the index itself *)
-           replace_expression ~in_subscripts:true
-             ~to_replace:idx_expr
-             ~by:(FnVar
-                (FnVariable
-                   (VarSet.find_by_id xinfo.context.index_vars idx_id)))
-             ~ine:e
-         with Not_found ->
-           Format.eprintf "@.Index with id %i not found in %a.@."
-             idx_id VarSet.pp_var_names xinfo.context.index_vars;
-           raise Not_found
-      )
-      xinfo.index_exprs
-      aux
+  IM.fold
+    (fun idx_id idx_expr e ->
+       try
+         (* Replace the index expressions by the index itself *)
+         replace_expression ~in_subscripts:true
+           ~to_replace:idx_expr
+           ~by:(FnVar
+                  (FnVariable
+                     (VarSet.find_by_id xinfo.context.index_vars idx_id)))
+           ~ine:e
+       with Not_found ->
+         Format.eprintf "@.Index with id %i not found in %a.@."
+           idx_id VarSet.pp_var_names xinfo.context.index_vars;
+         raise Not_found
+    )
+    xinfo.index_exprs
+    aux
 
-let replace_available_vars xinfo xinfo_aux ce =
-   IM.fold
+let replace_available_vars
+    (xinfo : exec_info) (xinfo_aux : exec_info) (ce : fnExpr): fnExpr =
+  let aux se expr j =
+    IM.fold
+      (fun vid st_e ine ->
+         let vi = VarSet.find_by_id xinfo.context.state_vars vid in
+         let tr =
+           match vi.vtype with
+           | Vector _ when j >= 0->
+             mkVarExpr ~offsets:[FnConst(CInt j)] vi
+           | _ -> mkVarExpr vi
+         in
+         let by =
+           match st_e with
+           | FnVector stel when j >= 0 ->
+             accumulated_subexpression (vi, j) (stel >> j)
+           | e ->
+             accumulated_subexpression (vi, j) e
+         in
+         replace_AC xinfo_aux.context tr by ine)
+      se
+      expr
+  in
+  match ce with
+  | FnVector el ->
+    FnVector (List.mapi (fun j e -> aux xinfo_aux.state_exprs e j) el)
+  | _ ->
+    aux xinfo_aux.state_exprs ce (-1)
+
+
+let rec is_stv vset expr =
+  match expr with
+  | FnUnop (_, FnVar v)
+  | FnVar v ->
+    begin
+      try
+        VarSet.mem (check_option (vi_of v)) vset
+      with Failure s -> false
+    end
+  | FnCond (c, e1, e2) -> is_stv vset c
+  | _ -> false
+
+
+let rec collect_state_lvars (expr : fnExpr) : fnLVar =
+  match expr with
+  | FnUnop (_, FnVar v)
+  | FnVar v -> v
+  | FnCond (c, e1, e2) -> collect_state_lvars c
+  | _ -> failwith "Not an stv."
+
+
+let candidates (vset : VarSet.t) (e : fnExpr) =
+  let is_candidate =
+    function
+    | FnBinop (_, e1, e2)
+    | FnCond (_, e1, e2) ->
+      (** One of the operands must be a state variable
+          but not the other *)
+      (is_stv vset e1 && (not (fn_uses vset e2))) ||
+      (is_stv vset e2 && (not (fn_uses vset e1)))
+    (* Special rule for conditionals *)
+    | _ ->  false
+  in
+
+  let handle_candidate f =
+    function
+    | FnBinop (_, e1, e2) ->
+      begin
+        match e1, e2 with
+        | FnCond(c, _, _), estv when is_stv vset estv ->
+          [collect_state_lvars estv, c]
+        | estv, FnCond(c, _, _) when is_stv vset estv ->
+          [collect_state_lvars estv, c]
+        | e, estv  when is_stv vset estv -> [collect_state_lvars estv, e]
+        | estv, e when is_stv vset estv -> [collect_state_lvars estv, e]
+        | _ -> []
+      end
+
+    | FnCond (_, e1, e2) ->
+      if is_stv vset e1 then
+        [collect_state_lvars e1, e2]
+      else
+        [collect_state_lvars e1, e2]
+    | _ ->  []
+  in
+
+  let collected_candidates =
+    rec_expr
+      (fun a b -> a@b)
+      []
+      is_candidate
+      handle_candidate
+      (fun c -> [])
+      (fun v -> [])
+      e
+  in
+  VarSet.fold
+    (fun ve l ->
+       let matching_candidates =
+         List.map (fun (a,b) -> b)
+           (List.filter (fun (s, es) -> ve = var_of_fnvar s)
+              collected_candidates)
+       in (ve, matching_candidates)::l)
+    vset []
+
+
+(** Find in an auxliary set the auxilairies matching EXACTLY the expression *)
+let find_matching_aux (to_match : fnExpr) (auxset : AuxSet.t) =
+  AuxSet.filter (fun aux -> aux.aexpr @= to_match) auxset
+
+let find_matching_vectaux (to_match : fnExpr) (j : int) (auxset : AuxSet.t) =
+  AuxSet.filter_vector j (fun aexpr_j -> aexpr_j @= to_match) auxset
+
+
+let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
+  let scalar_subexpr expr =
+    rec_expr
+      (fun a b -> AuxSet.union a b) AuxSet.empty
+      (fun e ->
+         AuxSet.exists
+           (fun aux -> aux.aexpr @= e) auxs)
+      (fun f e -> find_matching_aux e auxs)
+      (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
+      expr
+  in
+  let vector_subexpr expr j =
+    rec_expr
+      (fun a b -> AuxSet.union a b) AuxSet.empty
+      (fun e -> AuxSet.exists_vector j (fun expr_j -> expr_j @= e) auxs)
+      (fun f e -> find_matching_vectaux e j auxs)
+      (fun c ->  AuxSet.empty) (fun v ->  AuxSet.empty)
+      expr
+  in
+  match top_expr with
+  | FnVector el ->
+    AuxSet.inters (List.mapi (fun j ej -> vector_subexpr ej j) el)
+
+  | _ -> scalar_subexpr top_expr
+
+
+
+(** Check that the function applied to the old expression gives
+    the new expression. *)
+let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
+  AuxSet.filter
+    (fun aux ->
+       let xinfo' =
+         {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
+       in
+       let replace_cell aux j e =
+         match aux.aexpr with
+         | FnVector el ->
+           replace_expression
+             (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
+             (el >> j)
+             e
+         | ex ->
+           replace_expression
+             (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
+             ex
+             e
+       in
+       let unfold_op e = fst (unfold_expr xinfo' e) in
+       let e_unfolded =
+           match aux.afunc with
+           | FnVector el ->
+             FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
+           | e ->
+             replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
+       in
+       printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
+         cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
+       e_unfolded @= ne)
+
+
+let find_computed_expressions
+    (i :int) (xinfo : exec_info) (xinfo_aux : exec_info) (e : fnExpr) : fnExpr =
+  let vals_at_j xinfo j =
+    let from_intermediate_vals =
+      IM.map
+        (fun el -> if List.length el > j then Some (el >> j) else None)
+        xinfo.intermediate_states
+    in
+    let from_vectors_of_state =
+      IM.map
+        (fun e ->
+           match e with
+           | FnVector el when List.length el > j -> Some (el >> j)
+           | e -> None)
+        xinfo.state_exprs
+    in
+    IM.map check_option (IM.join_opt from_vectors_of_state from_intermediate_vals)
+  in
+  let aux state_exprs e j =
+    IM.fold
       (fun vid e ce ->
          let vi = VarSet.find_by_id xinfo.context.state_vars vid in
-         replace_AC
-           xinfo_aux.context
-           ~to_replace:(FnVar (FnVariable vi))
-           ~by:(accumulated_subexpression vi e)
-           ~ine:ce)
-      xinfo_aux.state_exprs
-      ce
+         let by =
+           match vi.vtype with
+           | Vector (t,_) -> mkVarExpr ~offsets:[FnConst(CInt j)] vi
+           | _ -> mkVarExpr vi
+         in
+         let tr = (accumulated_subexpression (vi, j) e) in
+         if is_constant tr then
+           ce
+         else
+           replace_AC xinfo_aux.context ~to_replace:tr ~by:by ~ine:ce)
+      state_exprs e
+  in
+  if i > 0 then
+    match e with
+    | FnVector el ->
+      FnVector
+        (List.mapi
+           (fun j e ->
+              aux (vals_at_j xinfo_aux j) e j) el)
+
+    | _ -> aux xinfo_aux.state_exprs e (-1)
+  else
+    e
