@@ -529,9 +529,9 @@ let discover_for_id problem var =
   printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
   AuxSet.iter
     (fun aux ->
-       printf "@.(%i : %s) = (%a,@; %a)@." aux.avar.vid aux.avar.vname
-         cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
-    ) clean_aux_set;
+       printf "@.(%i : %s) = %a@." aux.avar.vid aux.avar.vname
+         cp_fnexpr aux.afunc)
+    clean_aux_set;
 
   let new_ctx, new_loop_body, new_constant_exprs =
     VUtils.compose start_exec_state problem.main_loop_body clean_aux_set
