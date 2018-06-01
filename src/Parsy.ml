@@ -86,12 +86,13 @@ let solution_failed ?(failure = "") problem =
 let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_rep) =
 
   if !verbose then
-    printf "@.%s%sSOLUTION for %s %s:@.%a"
+    printf "@.%s%s[INFO] SOLUTION for %s %s:@.%a"
       (color "green")       (if inner then "(inner loop)" else "")
       lp_name color_default RAst.pp_expr_list parsed;
 
   (* Open and append to stats *)
-  let oc = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
+  let oc = open_out_gen
+      [Open_wronly; Open_append; Open_creat; Open_text]
       0o666 synthTimes in
   Printf.fprintf oc "%s,%.3f\n" lp_name racket_elapsed;
   let sol_info =
