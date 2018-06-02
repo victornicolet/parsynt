@@ -22,6 +22,10 @@ open Format
 
 let verbose = ref false
 
+let _KEY_INNER_INLINED_ = "inner-inlined"
+let _KEY_JOIN_NOT_INLINED_ = "join-not-inlined"
+let _KEY_JOIN_INLINED_ = "join-inlined"
+
 (**
    Replaces calls to inner loop function in the outer loop
     by a simplified version using the join of the inner loop or the memoryless
@@ -169,15 +173,16 @@ let replace_by_join problem inner_loops =
          problem.inner_functions)
       problem.scontext.state_vars newbody
   in
-  SH.add problem.loop_body_versions "join-not-inlined" problem.main_loop_body;
-  SH.add problem.loop_body_versions "join-inlined" newbody;
+  SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
+    problem.main_loop_body;
+  SH.add problem.loop_body_versions _KEY_JOIN_INLINED_ newbody;
   {problem with inner_functions = inner_loops;
                 join_sketch = new_sketch;
                 scontext = newctx;
                 main_loop_body = newbody;}
 
 let no_join_inlined_body pb =
-  try SH.find pb.loop_body_versions "join-not-inlined"
+  try SH.find pb.loop_body_versions _KEY_JOIN_NOT_INLINED_
   with Not_found -> pb.main_loop_body
 
 (* Inline joins inline the joins in the outer loop body.
@@ -197,7 +202,9 @@ let inline_inner in_loop_width problem =
     let in_index = VarSet.max_elt in_info.scontext.index_vars in
     let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
     if !verbose then
-      printf "[WARNING] Inlined inner function iterates from 0 to %i by default.@." in_loop_width;
+      printf
+        "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
+        in_loop_width;
     FnRec(
       (
         FnConst (CInt 0),
@@ -206,7 +213,9 @@ let inline_inner in_loop_width problem =
       ),
       (in_state, FnRecord(in_type, args)),
       (in_binder,
-       FnLetIn (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state, in_body)))
+       FnLetIn
+         (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,
+          in_body)))
   in
 
   let inline_case e =
@@ -239,6 +248,10 @@ let inline_inner in_loop_width problem =
     printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
       FPretty.pp_fnexpr loop_body';
 
-  SH.add problem.loop_body_versions "inner-inlined" loop_body';
+  SH.add problem.loop_body_versions _KEY_INNER_INLINED_ loop_body';
   { problem with
     main_loop_body = loop_body'}
+
+let inner_inlined_body pb =
+  try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
+  with Not_found -> pb.main_loop_body

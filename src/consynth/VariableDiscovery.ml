@@ -533,13 +533,9 @@ let discover_for_id problem var =
          cp_fnexpr aux.afunc)
     clean_aux_set;
 
-  let new_ctx, new_loop_body, new_constant_exprs =
-    VUtils.compose start_exec_state problem.main_loop_body clean_aux_set
-  in
+  let problem' = VUtils.compose problem start_exec_state clean_aux_set in
   discover_init ();
-  {problem with scontext = new_ctx;
-               main_loop_body = new_loop_body }
-
+  problem'
 
 
 (** Main entry point.

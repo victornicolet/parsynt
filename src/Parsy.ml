@@ -266,7 +266,7 @@ and solve_problem problem =
              raise e)
         in
         message_done ();
-        match solve_one None problem' with
+        match (solve_inners =>> (solve_one None)) problem' with
         | Some x -> Some x
         | None -> solve_one ~expr_depth:2 None problem'
         (** If the problem is not solved yet, might be because expression
