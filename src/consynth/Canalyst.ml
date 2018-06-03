@@ -268,7 +268,7 @@ let func2sketch cfile funcreps =
     Sketch.Join.join_loop_width := !mat_w;
     let mless_sk =
       Sketch.Join.build_for_inner
-        [FnVar (FnVariable (VarSet.max_elt index_set))]
+        [mkVarExpr (VarSet.max_elt index_set)]
         state_vars
         s_reach_consts
         loop_body;

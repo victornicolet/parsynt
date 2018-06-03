@@ -127,8 +127,32 @@ let replace_index_uses index_set =
           ~ine:expr))
 
 let add_to_inner_loop_body
-    (inner_loop : prob_rep) (binding : fnLVar * fnExpr) : prob_rep =
-  inner_loop
+    (aux : auxiliary) (inner_loop : prob_rep) (v, e : fnLVar * fnExpr) :
+  prob_rep =
+  let ctx = inner_loop.scontext in
+  let new_stv = VarSet.add aux.avar ctx.state_vars in
+  let new_body =
+    complete_final_state new_stv
+      (compose_tail [v, e] inner_loop.main_loop_body)
+  in
+  printf "New body:@.%a@." pp_fnexpr new_body;
+  {inner_loop with
+   scontext =
+     { ctx with
+       state_vars = new_stv;
+       all_vars = VarSet.add aux.avar ctx.state_vars;
+       used_vars = VarSet.union ctx.used_vars (used_in_fnexpr e);
+     };
+   main_loop_body = new_body;
+   memless_sketch =
+     Sketch.Join.build_from_solution_inner
+       [mkVarExpr (VarSet.max_elt ctx.index_vars)]
+       new_stv
+       inner_loop.reaching_consts
+       (inner_loop.memless_solution, new_body);
+  }
+
+
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
@@ -183,7 +207,10 @@ let compose problem xinfo aux_set =
        hal@assgn, tal
   in
   let compose_case_vector
-      (xinfo : exec_info) (aux : fnV) (el :fnExpr list) (il : prob_rep list) =
+      (xinfo : exec_info)
+      (aux : auxiliary)
+      (el :fnExpr list)
+      (il : prob_rep list) : prob_rep list =
     List.map
       (fun inner_loop ->
          let j = VarSet.max_elt (get_index_varset inner_loop) in
@@ -199,17 +226,15 @@ let compose problem xinfo aux_set =
          if List.length jexprs > 1 &&
             List.for_all (fun e -> e @= (List.hd jexprs)) jexprs
          then
-           (print_endline "TODO";
            let binding =
-             FnVariable aux,
-             FnArraySet(mkVarExpr aux, mkVarExpr j, List.hd jexprs)
+             FnVariable aux.avar,
+             FnArraySet(mkVarExpr aux.avar, mkVarExpr j, List.hd jexprs)
            in
-           add_to_inner_loop_body inner_loop binding)
+           add_to_inner_loop_body aux inner_loop binding
          else
            (printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
-              aux.vname;
-            inner_loop)
-      )
+              aux.avar.vname;
+            inner_loop))
       il
   in
   let new_func, inner_loops =
@@ -237,7 +262,7 @@ let compose problem xinfo aux_set =
               (hl', tl', il)
 
             | FnVector el ->
-              let il' = compose_case_vector xinfo aux.avar el il in
+              let il' = compose_case_vector xinfo aux el il in
               (hl, tl, il')
 
             | _ ->

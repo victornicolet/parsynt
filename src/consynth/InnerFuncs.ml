@@ -41,44 +41,42 @@ let _KEY_JOIN_INLINED_ = "join-inlined"
 
 let replace_by_join problem inner_loops =
   let created_inputs = IH.create 10 in
+  let rec transform_var out_index : fnLVar -> fnLVar =
+    function
+    | FnVariable vi ->
+      let rvname, _, right = is_right_state_varname vi.vname in
+      let lvname, _, left = is_left_state_varname vi.vname in
+      if left then
+        FnVariable (find_var_name lvname)
+      else if right then
+        let input_like = Conf.seq_name rvname in
+        begin
+          let v = try
+              find_var_name input_like
+            with Not_found ->
+              mkFnVar input_like (Vector(vi.vtype, None))
+          in
+          IH.add created_inputs v.vid v;
+          FnArray(FnVariable v, out_index)
+        end
+      else
+        FnVariable vi
+
+    | FnArray (v, e) -> FnArray (transform_var out_index v,e)
+  in
   (* Inline the join only if it is a list of parallel assignments. *)
   let inline_join out_index in_info =
     let join = in_info.memless_solution in
     match join with
     | FnLetExpr bl ->
       begin
-
         if List.length bl > 0 then
-
-          let rec transform_var : fnLVar -> fnLVar =
-            function
-            | FnVariable vi ->
-              let rvname, _, right = is_right_state_varname vi.vname in
-              let lvname, _, left = is_left_state_varname vi.vname in
-              if left then
-                FnVariable (find_var_name lvname)
-              else if right then
-                let input_like = Conf.seq_name rvname in
-                begin
-                  let v = try
-                      find_var_name input_like
-                    with Not_found ->
-                      mkFnVar input_like (Vector(vi.vtype, None))
-                  in
-                  IH.add created_inputs v.vid v;
-                  FnArray(FnVariable v, out_index)
-                end
-              else
-                FnVariable vi
-
-            | FnArray (v, e) -> FnArray (transform_var v,e)
-          in
           let jn =
             transform_expr2
               {
                 case = (fun e -> false);
                 on_case = (fun f e -> e);
-                on_var = transform_var;
+                on_var = transform_var out_index;
                 on_const = identity;
               } join
           in
@@ -181,9 +179,11 @@ let replace_by_join problem inner_loops =
                 scontext = newctx;
                 main_loop_body = newbody;}
 
+
 let no_join_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_JOIN_NOT_INLINED_
   with Not_found -> pb.main_loop_body
+
 
 (* Inline joins inline the joins in the outer loop body.
    Called in VariableDiscovery.

@@ -49,7 +49,7 @@ let store_solution (maybe_solution : prob_rep option) : unit =
 
   | None -> ()
 
-let get_solution (join_name : string) : (context * fnExpr) option =
+let get_inner_solution (join_name : string) : (context * fnExpr) option =
   try
     let (ctx, sol) = SH.find _inner_joins join_name in
     if sol = FnLetExpr ([]) then None else Some (ctx, sol)
@@ -396,10 +396,11 @@ and inline_inner_join
   in
 
   wa := state_has_array;
-  match get_solution f.vname with
+  match get_inner_solution f.vname with
   | Some (ctx, func) ->
     begin
       match func with
+      (* Match shape of solution of inner join.*)
       | FnLetExpr([(_s, FnRec (igu, (vs, bs), (sarg, b)))])
       | FnLetIn([(_s, FnRec (igu, (vs, bs), (sarg, b)))], _) ->
         if !optim_use_raw_inner then
@@ -744,3 +745,18 @@ let build_for_inner il state reach_consts fnlet =
     let sketch = inner_optims state typed_sketch in
     narrow_array_completions := false;
     sketch
+
+
+let rec partial_complete_sketch sketch solution =
+  let arrange sk_b sol_b = sk_b in
+  match sketch, solution with
+  | FnLetIn(sk_b, sk_f) , FnLetIn(sol_b, sol_f) ->
+    FnLetIn (arrange sk_b sol_b, partial_complete_sketch sk_f sol_f)
+
+  | FnLetExpr sk_b, FnLetExpr sol_b ->
+
+    FnLetExpr (arrange sk_b sol_b)
+
+let build_from_solution_inner il state reach_consts (solution, fnlet) =
+  let sketch = build_for_inner il state reach_consts fnlet in
+  (fun (i,j) -> partial_complete_sketch (sketch (i,j)) solution)
