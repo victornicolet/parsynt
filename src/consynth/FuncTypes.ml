@@ -214,10 +214,10 @@ and type_of expr =
       match type_of e with
       | Record slt ->
         (try
-          let _, t0 =
-            List.hd (List.filter (fun (s',t) -> s = s') slt) in
-          t0
-        with _ -> failontype "Record member not found in record type.")
+           let _, t0 =
+             List.hd (List.filter (fun (s',t) -> s = s') slt) in
+           t0
+         with _ -> failontype "Record member not found in record type.")
       | _ -> failontype "Should be a record type inside a record mmeber access."
     end
   | FnLetIn(_, e) -> type_of e
@@ -1271,6 +1271,7 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
   aux_rem_h Unit expr
 
 
+
 let rec scm_to_fn (scm : RAst.expr) : fnExpr =
   let unwrap_fun_e e =
     match e with
@@ -1278,7 +1279,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     | e -> e
   in
   let get_fun_state e =
-        match e with
+    match e with
     | Fun_e (il, e') -> find_var_name (il >> 0)
     | _ -> failwith "get_fun_state only on fun_e"
   in
@@ -1290,11 +1291,12 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
       | Str_e s -> FnConst (CString s)
       | Bool_e b -> FnConst (CBool b)
       | Id_e id ->
-        (match id with
-         | "??" -> FnVar (FnVariable hole_var)
-         | _ ->
-           (let vi = scm_register id in
-            FnVar (FnVariable vi)))
+        begin match id with
+          | "??" -> FnVar (FnVariable hole_var)
+          | _ ->
+            (let vi = scm_register id in
+             FnVar (FnVariable vi))
+        end
       | Nil_e -> FnConst (CNil)
 
       | Binop_e (op, e1, e2) ->
@@ -1327,75 +1329,10 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
         FnCond (cond, le1, le2)
 
       | Apply_e (e, arglist) ->
-        (match e with
-         | Id_e s ->
-           (match s with
-            | "list-ref" ->
-              FnVar (to_array_var arglist)
-
-            | "LoopFunc" ->
-              (if List.length arglist = 5 then
-                 let init = translate (unwrap_fun_e (arglist >> 0)) in
-                 let guard = translate (unwrap_fun_e (arglist >> 1)) in
-                 let update = translate (unwrap_fun_e (arglist >> 2)) in
-                 let __s = get_fun_state (arglist >> 4) in
-                 let stv =
-                   match __s.vtype with
-                   | Record name_type_list ->
-                     VarSet.of_list (List.map (fun (n,t) -> find_var_name n) name_type_list)
-                   | _ -> failhere __FILE__ "translate scm" "Expected a record type."
-                 in
-                 let stv_init =
-                   match arglist >> 3 with
-                   | Apply_e (e, inits) ->
-                     FnRecord(__s.vtype, List.map translate inits)
-                   | _ -> failhere __FILE__ "translate scm" "Expected a record expression."
-                 in
-                 FnRec ((init, guard, update),
-                        (stv, stv_init),
-                        (__s, translate (unwrap_fun_e (arglist >> 4)))
-                       )
-               else
-                 failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
-              )
-
-            | "make-list" ->
-              let ln =
-                match List.hd arglist with
-                | Int_e i -> i
-                | _ -> failhere __FILE__ __LOC__ "Parsed make-list without length integer."
-              in
-              let v = translate (arglist >> 1) in
-              begin
-                match v with
-                | FnConst c ->
-                  FnConst(CArrayInit(ln, c))
-                | _ ->
-                  FnVector(ListTools.init ln (fun i -> v))
-              end
-
-            | a when is_struct_accessor s ->
-              (match arglist with
-               | [Id_e s] -> from_accessor a s
-               | _ -> failhere __FILE__ __LOC__ "Bad accessor")
-
-            | a when is_name_of_struct s ->
-              rosette_state_struct_to_fnlet s arglist
-
-            | "identity" ->
-              translate (arglist >> 0)
-
-            | "list-set" ->
-              let a = translate (arglist >> 0) in
-              let i = translate (arglist >> 1) in
-              let e = translate (arglist >> 2) in
-              FnArraySet(a,i,e)
-
-            | _ ->
-              to_fun_app e arglist)
-
-         | _ ->
-           translate e)
+        begin match e with
+          | Id_e s -> translate_id_func s e arglist
+          | _ -> translate e
+        end
 
 
       | Fun_e (il, e) ->
@@ -1415,6 +1352,75 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     with Not_found ->
       eprintf "expression : %a" pp_expr scm;
       failwith "Variable name not found in current environment."
+
+  and translate_id_func s e arglist =
+    match s with
+    | "list-ref" ->
+      FnVar (to_array_var arglist)
+
+    | "LoopFunc" ->
+      translate_loop arglist
+
+    | "make-list" ->
+      let ln =
+        match List.hd arglist with
+        | Int_e i -> i
+        | _ -> failhere __FILE__ __LOC__
+                 "Parsed make-list without length integer."
+      in
+      let v = translate (arglist >> 1) in
+      begin
+        match v with
+        | FnConst c ->
+          FnConst(CArrayInit(ln, c))
+        | _ ->
+          FnVector(ListTools.init ln (fun i -> v))
+      end
+
+    | a when is_struct_accessor s ->
+      (match arglist with
+       | [Id_e s] -> from_accessor a s
+       | _ -> failhere __FILE__ __LOC__ "Bad accessor")
+
+    | a when is_name_of_struct s ->
+      rosette_state_struct_to_fnlet s arglist
+
+    | "identity" ->
+      translate (arglist >> 0)
+
+    | "list-set" ->
+      let a = translate (arglist >> 0) in
+      let i = translate (arglist >> 1) in
+      let e = translate (arglist >> 2) in
+      FnArraySet(a,i,e)
+
+    | _ ->
+      to_fun_app e arglist
+
+  and translate_loop arglist =
+    if List.length arglist = 5 then
+      let init = translate (unwrap_fun_e (arglist >> 0)) in
+      let guard = translate (unwrap_fun_e (arglist >> 1)) in
+      let update = translate (unwrap_fun_e (arglist >> 2)) in
+      let __s = get_fun_state (arglist >> 4) in
+      let stv =
+        match __s.vtype with
+        | Record name_type_list ->
+          VarSet.of_list (List.map (fun (n,t) -> find_var_name n) name_type_list)
+        | _ -> failhere __FILE__ "translate scm" "Expected a record type."
+      in
+      let stv_init =
+        match arglist >> 3 with
+        | Apply_e (e, inits) ->
+          FnRecord(__s.vtype, List.map translate inits)
+        | _ -> failhere __FILE__ "translate scm" "Expected a record expression."
+      in
+      FnRec ((init, guard, update),
+             (stv, stv_init),
+             (__s, translate (unwrap_fun_e (arglist >> 4)))
+            )
+    else
+      failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
   in
   let fne = translate scm in
   remove_hole_vars fne
@@ -1962,24 +1968,27 @@ let expr_to_cil fd temps e =
     | Some op -> Some op, None
     | None ->
       None,
-      Some (Lval (Var (let fname, t =
-                         match op with
-                         | Floor -> "floor",
-                                    CilTools.simple_fun_type INT [FLOAT]
-                         | Round -> "round",
-                                    CilTools.simple_fun_type INT [FLOAT]
-                         | Truncate -> "truncate",
-                                       CilTools.simple_fun_type INT [FLOAT]
-                         | Abs -> "abs",
-                                  CilTools.simple_fun_type INT [INT]
-                         | Ceiling -> "ceil",
-                                      CilTools.simple_fun_type INT [FLOAT]
-                         | Sgn -> "signof",
-                                  CilTools.simple_fun_type FLOAT [FLOAT]
-                         | _ -> "", CilTools.simple_type BOOL
-                       in
-                       makeVarinfo false fname t),
-                  NoOffset))
+      Some
+        (Lval
+           (Var
+              (let fname, t =
+                 match op with
+                 | Floor -> "floor",
+                            CilTools.simple_fun_type INT [FLOAT]
+                 | Round -> "round",
+                            CilTools.simple_fun_type INT [FLOAT]
+                 | Truncate -> "truncate",
+                               CilTools.simple_fun_type INT [FLOAT]
+                 | Abs -> "abs",
+                          CilTools.simple_fun_type INT [INT]
+                 | Ceiling -> "ceil",
+                              CilTools.simple_fun_type INT [FLOAT]
+                 | Sgn -> "signof",
+                          CilTools.simple_fun_type FLOAT [FLOAT]
+                 | _ -> "", CilTools.simple_type BOOL
+               in
+               makeVarinfo false fname t),
+            NoOffset))
   and constant c =
     match c with
     | CInt i -> Const (CInt64 (Int64.of_int i, IInt, None))
