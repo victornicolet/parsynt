@@ -747,14 +747,19 @@ let build_for_inner il state reach_consts fnlet =
 
 
 let rec partial_complete_sketch sketch solution =
-  let arrange sk_b sol_b = sk_b in
-  match sketch, solution with
+  let arrange sk_b sol_b =
+    List.map2
+      (fun (sk_v, sk_e) (sk_v, sol_e) ->
+         (sk_v, sk_e)) sk_b sol_b
+  in
+  match (sketch, solution) with
   | FnLetIn(sk_b, sk_f) , FnLetIn(sol_b, sol_f) ->
     FnLetIn (arrange sk_b sol_b, partial_complete_sketch sk_f sol_f)
 
   | FnLetExpr sk_b, FnLetExpr sol_b ->
-
     FnLetExpr (arrange sk_b sol_b)
+
+  | _ -> sketch
 
 let build_from_solution_inner il state reach_consts (solution, fnlet) =
   let sketch = build_for_inner il state reach_consts fnlet in

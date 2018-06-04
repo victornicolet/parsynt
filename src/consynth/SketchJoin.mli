@@ -8,3 +8,5 @@ val build_join : fnExpr list -> VarSet.t -> fnExpr ->
   (fnExpr * fnExpr) -> fnExpr
 val build_for_inner : fnExpr list -> VarSet.t -> fnExpr Utils.IM.t -> fnExpr ->
   (fnExpr * fnExpr) -> fnExpr
+val build_from_solution_inner : fnExpr list -> VarSet.t -> fnExpr Utils.IM.t -> fnExpr * fnExpr ->
+  fnExpr * fnExpr -> fnExpr

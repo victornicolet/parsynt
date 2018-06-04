@@ -291,6 +291,7 @@ val is_name_of_struct : string -> bool
 val get_struct : string -> (string * fn_type) list
 val state_var_name : VarSet.t -> string -> string
 
+val record_map : VarSet.t -> (VarSet.elt -> 'a -> 'b) -> 'a Utils.IM.t -> 'b Utils.IM.t
 val record_accessor : string -> fnV -> fnV
 val is_struct_accessor : string -> bool
 

@@ -395,6 +395,14 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   | _ -> ()
 
 
+let fetch_solution
+    ?(solver=Conf.rosette)
+    ?(inner=false)
+    ?(parent_ctx=None)
+    (problem : prob_rep) : float * prob_rep option =
+    0.0, Some problem
+
+
 let store_solution = Join.store_solution
 
 let clear () =

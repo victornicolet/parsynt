@@ -768,3 +768,6 @@ let is_struct_accessor a =
   with
   | Not_found -> false
   | Invalid_argument s -> false
+
+let record_map vs f =
+  IM.mapi (fun i e -> let var = VarSet.find_by_id vs i in f var e)

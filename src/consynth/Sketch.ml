@@ -820,6 +820,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
       ~by:(FnConst (CInt 0))
       ~ine:sketch.main_loop_body
   in
+  Dimensions.set_default ();
   (* Select the bitwidth for representatin in Rosettte depending on the operators used
      in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
@@ -899,6 +900,7 @@ let pp_rosette_sketch_join fmt sketch =
       sketch.main_loop_body
       sketch.inner_functions
   in
+  Dimensions.set_default ();
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
   if List.length sketch.inner_functions > 0 then

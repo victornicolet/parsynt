@@ -59,7 +59,6 @@ and fnLVar =
 
 (* Type for expressions *)
 and fnExpr =
-  | FnLetExpr of (fnLVar * fnExpr) list
   | FnLetIn of (fnLVar * fnExpr) list * fnExpr
   | FnVar of fnLVar
   | FnConst of constants
@@ -74,7 +73,7 @@ and fnExpr =
   | FnChoice of fnExpr list
   | FnVector of fnExpr list
   | FnArraySet of fnExpr * fnExpr * fnExpr
-  | FnRecord of fn_type * (fnExpr list)
+  | FnRecord of VarSet.t * fnExpr IM.t
   | FnRecordMember of fnExpr * string
   (** Simple translation of Cil exp needed to nest
       sub-expressions with state variables *)
@@ -178,16 +177,7 @@ and type_of_var v =
 and type_of expr =
   match expr with
   | FnVar v -> type_of_var v
-  | FnRecord (t, el) ->
-    begin
-      match t with
-      | Record st ->
-        if List.length st = List.length el then
-          Record(List.map2 (fun (s,t) e -> (s, type_of e)) st  el)
-        else
-          failwith "Record with wrong number of arguments."
-      | _ -> failwith "Record has no record type."
-    end
+  | FnRecord (vs, el) -> Record (VarSet.record vs)
   | FnConst c -> type_of_const c
   | FnAddrofLabel _ | FnStartOf _
   | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
@@ -221,12 +211,6 @@ and type_of expr =
       | _ -> failontype "Should be a record type inside a record mmeber access."
     end
   | FnLetIn(_, e) -> type_of e
-  | FnLetExpr(el) ->
-    Record
-      (List.map (fun (v,e) ->
-           match vi_of v with
-           | Some var -> (var.vname, type_of e)
-           | None -> failontype "Cannot create type of final let-binding.") el)
   | FnChoice _ -> Bottom
   | FnArraySet (a, _, _) -> type_of a
   | FnRec(_, _, (s, _)) -> s.vtype
@@ -313,7 +297,7 @@ let is_op_c_fun (op : symb_binop) : bool =
 
 (** The identity function in the functional representation of the func. *)
 let identity_fn =
-  FnLetExpr ([])
+  FnRecord(VarSet.empty, IM.empty)
 
 let identity_state vs =
   List.map (fun v -> (FnVariable v, FnVar(FnVariable v))) (VarSet.elements vs)
@@ -521,7 +505,11 @@ let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
         FnRecordMember(mkVarExpr state_var, v.vname)))
     vars
 
-
+let unwrap_state vs emap =
+  VarSet.fold
+    (fun var bindings ->
+       let expr = IM.find var.vid emap in bindings@[FnVariable var, expr])
+    vs []
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
 
@@ -681,10 +669,9 @@ let rec_expr
     | FnFun letin
     | FnRec (_, _, (_, letin)) -> recurse_aux letin
 
-
-    | FnLetExpr velist ->
-      List.fold_left (fun acc (v, e) -> join acc (recurse_aux e))
-        init velist
+    | FnRecord(vs, emap) ->
+      IM.fold
+        (fun i e acc -> join acc (recurse_aux e)) emap init
 
     | FnLetIn (velist, letin) ->
       let in_aux = recurse_aux letin in
@@ -751,9 +738,6 @@ let transform_expr
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
 
-    | FnLetExpr velist ->
-      FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux e)) velist)
-
     | FnLetIn (velist, letin) ->
       let in_aux = recurse_aux letin in
       FnLetIn (List.map (fun (v, e) -> (v, recurse_aux e)) velist, in_aux)
@@ -766,7 +750,7 @@ let transform_expr
 
     | FnVector ea -> FnVector (List.map recurse_aux ea)
 
-    | FnRecord(t, el) -> FnRecord(t, List.map recurse_aux el)
+    | FnRecord(t, el) -> FnRecord(t, IM.map recurse_aux el)
 
     | FnRecordMember(e, s) -> FnRecordMember(recurse_aux e, s)
 
@@ -820,8 +804,8 @@ let transform_expr_flag
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux flag c, recurse_aux flag l1, recurse_aux flag l2)
 
-    | FnLetExpr velist ->
-      FnLetExpr (List.map (fun (v, e) -> (v, recurse_aux flag e)) velist)
+    | FnRecord (vs, emap) ->
+      FnRecord (vs, IM.map (recurse_aux flag) emap)
 
     | FnLetIn (velist, letin) ->
       let in_aux = recurse_aux flag letin in
@@ -874,8 +858,8 @@ let transform_bindings (tr : ast_var_transformer) =
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
 
-    | FnLetExpr velist ->
-      FnLetExpr (List.map (fun (v, e) -> tr.ctx := v; (v, recurse_aux e)) velist)
+    | FnRecord (vs, emap) ->
+      FnRecord (vs, record_map vs (fun v e -> tr.ctx := FnVariable v; recurse_aux e) emap)
 
     | FnLetIn (velist, letin) ->
       let in_aux = recurse_aux letin in
@@ -1034,14 +1018,14 @@ let rec remove_id_binding func =
       (fun (v,e) -> not (e = FnVar v)) el
   in
   match func with
-  | FnLetExpr el -> FnLetExpr (aux_rem_from_list el)
   | FnLetIn (el, c) -> FnLetIn (aux_rem_from_list el, remove_id_binding c)
   | _ -> func
 
 let rec compose func1 func2 =
   match func1 with
-  | FnLetExpr el -> FnLetIn (el, func2)
   | FnLetIn (el, c) -> FnLetIn (el, compose c func2)
+  | FnRecord(vs, emap) ->
+    FnLetIn(unwrap_state vs emap, func1)
   | _ -> func1
 
 let compose_head assignments func =
@@ -1054,8 +1038,8 @@ let rec compose_tail assignments func =
   | [] -> func
   | _ ->
     match func with
-    | FnLetExpr el ->
-      FnLetIn (el, FnLetExpr assignments)
+    | FnRecord (va, emap) ->
+      FnLetIn (unwrap_state vs emap , FnLetExpr assignments)
     | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
     | _ -> func
 
