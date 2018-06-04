@@ -28,7 +28,6 @@ let verbose = ref false
 let debug = ref false
 let narrow_array_completions = ref false
 let make_flat_join = ref false
-let join_loop_width = ref 5
 
 
 let optim_use_raw_inner = ref false

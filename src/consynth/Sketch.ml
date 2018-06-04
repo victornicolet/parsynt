@@ -43,11 +43,6 @@ module F = Format
 
 module Join = SketchJoin
 
-let iterations_limit =
-  ref  (Conf.get_conf_int "loop_finite_limit")
-
-let inner_iterations_limit =
-  ref (Conf.get_conf_int "inner_loop_finite_limit")
 
 
 let auxiliary_vars : fnV IH.t = IH.create 10
@@ -55,14 +50,6 @@ let auxiliary_vars : fnV IH.t = IH.create 10
 let debug = ref (bool_of_string (Conf.get_conf_string "debug_sketch"))
 
 let concrete_sketch = ref false
-
-let mat_w = ref (!inner_iterations_limit)
-let mat_h = ref (!iterations_limit)
-
-let reset_matdims() =
-  mat_w := !inner_iterations_limit;
-  mat_h := !iterations_limit
-
 
 
 
@@ -149,7 +136,7 @@ let rec pp_define_symbolic fmt def =
                | Integer -> DefInteger vars
                | Real -> DefReal vars
                | Boolean -> DefBoolean vars
-               | Record r -> DefRecord (List.map (fun vi -> vi, r, (n, !mat_w)) vars)
+               | Record r -> DefRecord (List.map (fun vi -> vi, r, (n, Dimensions.width ())) vars)
                | _ -> DefEmpty)
             with BadType s ->
               failhere __FILE__ "pp_define_symbolic" s);
@@ -220,10 +207,10 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
             | Vector (v, _) ->
               (* Support up to 2-dimensional arrays. *)
               (match v with
-               | Vector (v2, _) -> DefMatrix [(vi, !mat_h, !mat_w)]
-               | _ -> DefArray [(vi, if inner then !mat_w else !mat_h)])
+               | Vector (v2, _) -> DefMatrix [(vi, Dimensions.height (), Dimensions.width ())]
+               | _ -> DefArray [(vi, if inner then Dimensions.width () else Dimensions.height ())])
             | Record rt ->
-              DefRecord [(vi, rt, (!mat_h, !mat_w))]
+              DefRecord [(vi, rt, Dimensions.dims () )]
             | _ ->
               (F.eprintf "Unsupported type for variable %s.\
                           This will lead to errors in the sketch."
@@ -236,11 +223,13 @@ let rec input_symbols_of_vs vs =
     (fun vi symbs ->
        match vi.vtype with
        | Vector(Vector _, _) ->
-         symbs@(List.flatten (gen_mat_cell_vars ~num_lines:!mat_h ~num_cols:!mat_w vi))
+         symbs@(List.flatten (gen_mat_cell_vars
+                                ~num_lines:(Dimensions.height ())
+                                ~num_cols:(Dimensions.width ()) vi))
        | Vector(Record r, _) ->
-         symbs@(gen_record_array_cells ~num_records:!mat_h r vi)
+         symbs@(gen_record_array_cells ~num_records:(Dimensions.height ()) r vi)
        | Vector(t, _) ->
-         symbs@(gen_array_cell_vars ~num_cells:!mat_w vi)
+         symbs@(gen_array_cell_vars ~num_cells:(Dimensions.width ()) vi)
        | _ ->
          vi::symbs)
     vs []
@@ -253,7 +242,7 @@ and gen_record_array_cells ~num_records:n r vi =
            {vi with vname = vi.vname^"$"^(string_of_int i)^"-"^n}
          in
          match t with
-         | Vector(t', _) -> l@(gen_array_cell_vars ~num_cells:!mat_w ith_vi_field)
+         | Vector(t', _) -> l@(gen_array_cell_vars ~num_cells:(Dimensions.width ()) ith_vi_field)
          | _ -> ith_vi_field::l) [] r
   in
   List.flatten (ListTools.init (n - 1) ith_cell)
@@ -296,7 +285,8 @@ let base_init_value_choice fmt (reaching_consts, vi) =
          (get_conf_string "rosette_base_init_values"))
   in
   match vi.vtype with
-  | Vector(v, on) -> F.fprintf fmt "(make-list %i %a)" !mat_w  base_value ()
+  | Vector(v, on) ->
+    F.fprintf fmt "(make-list %i %a)" (Dimensions.width ())  base_value ()
   | _ -> base_value fmt ()
 
 
@@ -444,7 +434,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_index_low_up index_list (* List of local lower and upper bounds - args *)
       pp_string_list bnames
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
-      (if inner then !inner_iterations_limit else !iterations_limit)
+      (if inner then Dimensions.inner_iterations_limit else Dimensions.iterations_limit)
       (Conf.get_conf_string "rosette_state_param_name")
       pp_loop_body (index_name, loop_body, state_vars, sname)
 
@@ -484,7 +474,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_expr_list extract_stv_or_reach_const
       (* Line 3: loop construct and loop body. *)
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
-      (if inner then !inner_iterations_limit else !iterations_limit)
+      (if inner then Dimensions.inner_iterations_limit else Dimensions.iterations_limit)
       bound_state1.vname
       pp_loop_body (index_name, loop_body, state_vars, sname)
 
@@ -528,7 +518,7 @@ let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
   let rstate_name = sname^"R" in
   let ist, ien = bnd_args in
   let st_start, st_end =
-    if fixed then FnConst(CInt 0), FnConst(CInt !mat_w)
+    if fixed then FnConst(CInt 0), FnConst(CInt (Dimensions.width ()))
     else mkVarExpr ist, mkVarExpr ien
   in
   Format.fprintf fmt
@@ -658,45 +648,6 @@ let pp_input_state_definitions ?(inner=false) fmt state_vars reach_consts =
   symbolic_vars
 
 
-(** Pretty print one verification condition, the loop
-    from a starting index to an end index is split over a index
-    i_m between the two.
-    @param s0 The name of the inital state.
-    @param i_st The starting index for this instance.
-    @param i_m The splitting index for this instance.
-    @param i_end The end index for this instance.
-*)
-let pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
-  let bnds = (bnm, i_st, i_m, i_end) in
-  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
-    Format.fprintf fmt
-      "@[<hov 2>(%s-eq?@;%a@;(%s %a %a %d %d))@]"
-      struct_name
-      pp_join_body_app (body_name, s0, bnds, i_st, i_end)
-      join_name
-      pp_join_body_app (body_name, s0, bnds, i_st, i_m)
-      pp_join_body_app (body_name, init_state_name, bnds, i_m, i_end)
-      i_st
-      i_end
-  else
-    ()
-
-
-let pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
-  if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len
-     && i_end <= !inner_iterations_limit
-  then
-    Format.fprintf fmt
-      "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a 0 %d))@]"
-      struct_name
-      pp_mless_body_app (body_name, init_state_name, i_end)
-      join_name
-      init_state_name i_end
-      pp_mless_body_app (body_name, s0, i_end)
-      i_end
-  else
-    ()
-
 (** Pretty print the whole body of the synthesis problem. (The set of
     verification conditions is hardcoded here now, we have to change that).
     @param s0 The name of the initial state.
@@ -705,7 +656,37 @@ let pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) 
     have a universal quantifier over.
 *)
 let pp_synth_body ?(m=false) fmt (s0, bnm, struct_name, defined_input_vars, min_dep_len) =
+  let pp_join_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
+    let bnds = (bnm, i_st, i_m, i_end) in
+    if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len then
+      Format.fprintf fmt
+        "@[<hov 2>(%s-eq?@;%a@;(%s %a %a %d %d))@]"
+        struct_name
+        pp_join_body_app (body_name, s0, bnds, i_st, i_end)
+        join_name
+        pp_join_body_app (body_name, s0, bnds, i_st, i_m)
+        pp_join_body_app (body_name, init_state_name, bnds, i_m, i_end)
+        i_st
+        i_end
+    else
+      ()
+  in
 
+  let pp_mless_verification_condition fmt struct_name (s0, bnm, i_st, i_m, i_end) min_dep_len =
+    if i_m - i_st >= min_dep_len && i_end - i_m >= min_dep_len
+       && i_end <= Dimensions.inner_iterations_limit
+    then
+      Format.fprintf fmt
+        "@[<hov 2>(%s-eq?@;%a@;(%s (%s %d) %a 0 %d))@]"
+        struct_name
+        pp_mless_body_app (body_name, init_state_name, i_end)
+        join_name
+        init_state_name i_end
+        pp_mless_body_app (body_name, s0, i_end)
+        i_end
+    else
+      ()
+  in
   Format.fprintf fmt
     "@[<hov 2>#:forall @[<hov 2>(list %a)@]@]@\n"
     pp_defined_input defined_input_vars;
@@ -801,7 +782,6 @@ let pp_static_loop_bounds fmt index_name =
 let pp_rosette_sketch_inner_join fmt parent_context sketch =
   clear_special_consts ();
   SH.clear defined_structs;
-  mat_h := 1;
   let min_dep_len = sketch.min_input_size in
   (** State variables *)
   let state_vars = sketch.scontext.state_vars in
@@ -866,8 +846,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_newline fmt ();
   pp_synth ~memoryless:true fmt st0 bnames struct_name (VarSet.union read_vars additional_symbols)
     (* (VarSet.union read_vars additional_symbols) *)
-    min_dep_len;
-  reset_matdims ()
+    min_dep_len
 
 
 let pp_rosette_sketch_join fmt sketch =
@@ -914,7 +893,7 @@ let pp_rosette_sketch_join fmt sketch =
          replace_expression
            ~in_subscripts:true
            ~to_replace:(mkVarExpr i_end)
-           ~by:(FnConst (CInt !mat_w))
+           ~by:(FnConst (CInt (Dimensions.width ())))
            ~ine:rep1
       )
       sketch.main_loop_body
@@ -945,8 +924,7 @@ let pp_rosette_sketch_join fmt sketch =
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth fmt st0 bnames struct_name read_vars min_dep_len;
-  reset_matdims ()
+  pp_synth fmt st0 bnames struct_name read_vars min_dep_len
 
 
 

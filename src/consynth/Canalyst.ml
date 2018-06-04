@@ -257,7 +257,6 @@ let func2sketch cfile funcreps =
       List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
     in
 
-    Sketch.Join.join_loop_width := !mat_w;
     let join_sk =
       Sketch.Join.build_join
         inner_indexes
@@ -265,7 +264,6 @@ let func2sketch cfile funcreps =
         loop_body
     in
     (* Set the loop width for the join *)
-    Sketch.Join.join_loop_width := !mat_w;
     let mless_sk =
       Sketch.Join.build_for_inner
         [mkVarExpr (VarSet.max_elt index_set)]
