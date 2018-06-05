@@ -13,7 +13,7 @@ let printing_sketch = ref false
 let holes_expr_depth = ref 1
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
-
+let assume_join_map = ref true
 
 let state_vars = ref VS.empty
 
@@ -70,9 +70,16 @@ let string_of_opchoice oct =
 
 
 let make_index_completion_string f e =
-  fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
-  flush_str_formatter ()
-
+  if !assume_join_map then
+    begin
+      fprintf str_formatter "%a" f e;
+      flush_str_formatter ()
+    end
+  else
+    begin
+      fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
+      flush_str_formatter ()
+    end
 (** Pretty-printing operators *)
 
 let string_of_unsafe_binop =
@@ -343,14 +350,20 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_fnexpr) argl
 
   | FnHoleR (t, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnHoleL (t, v, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnChoice el ->
     fp ppf "@[<v 2>(choose@;%a)@]"

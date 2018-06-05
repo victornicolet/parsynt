@@ -64,7 +64,7 @@ let replace_by_join problem inner_loops =
 
     | FnArray (v, e) -> FnArray (transform_var out_index v,e)
   in
-  (* Inline the join only if it is a list of parallel assignments. *)
+  (* Inline the join only if it is only a record expression. *)
   let inline_join out_index in_info =
     let join = in_info.memless_solution in
     match join with
@@ -184,9 +184,7 @@ let no_join_inlined_body pb =
   with Not_found -> pb.main_loop_body
 
 
-(* Inline joins inline the joins in the outer loop body.
-   Called in VariableDiscovery.
-*)
+
 let inline_inner in_loop_width problem =
   if !verbose then
     printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
@@ -205,17 +203,15 @@ let inline_inner in_loop_width problem =
       printf
         "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
         in_loop_width;
-    FnRec(
-      (
+    FnRec((
         FnConst (CInt 0),
         FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
-        FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
-      ),
-      (in_state, FnRecord(in_state, map_args)),
-      (in_binder,
-       FnLetIn
-         (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,
-          in_body)))
+        FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))),
+        (in_state, FnRecord(in_state, map_args)),
+        (in_binder,
+         FnLetIn
+           (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,
+            in_body)))
   in
 
   let inline_case e =
