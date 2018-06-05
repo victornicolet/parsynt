@@ -987,6 +987,7 @@ let rec replace_expression_in_subscripts
   transform_expr case case_handler const_handler var_handler exp
 
 let replace_all_subs ~tr:el ~by:oe ~ine:e =
+  assert (List.length el = List.length oe);
   List.fold_left2
     (fun ne tr b ->
        replace_expression_in_subscripts
@@ -1413,19 +1414,21 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
       let stv =
         match __s.vtype with
         | Record (name, member_type_list) ->
-          VarSet.of_list
-            (List.map (fun (n,t) -> find_var_name n) member_type_list)
+          snd (get_struct name)
 
         | _ -> failhere __FILE__ "translate scm" "Expected a record type."
       in
       let stv_init =
         match arglist >> 3 with
         | Apply_e (e, inits) ->
-          FnRecord(stv,
-                   List.fold_left2
-                     (fun emap v e -> IM.add v.vid (translate e) emap)
-                     IM.empty (VarSet.elements stv) inits)
-
+          begin try
+              FnRecord(stv,
+                       List.fold_left2
+                         (fun emap v e -> IM.add v.vid (translate e) emap)
+                         IM.empty (VarSet.elements stv) inits)
+            with Invalid_argument _ ->
+              failhere __FILE__ "translate_loop" "Mismatch in state vars/ args."
+          end
         | _ -> failhere __FILE__ "translate scm" "Expected a record expression."
       in
       FnRec ((init, guard, update),
@@ -1446,10 +1449,10 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
 and rosette_state_struct_to_fnlet sname scm_expr_list =
   let stv_vars_list = VarSet.elements join_info.initial_state_vars in
   let fn_expr_list = to_expression_list scm_expr_list in
-  let id_expr_binds =
-    ListTools.pair (List.map (fun vi -> vi.vid) stv_vars_list) fn_expr_list
-  in
   try
+    let id_expr_binds =
+      ListTools.pair (List.map (fun vi -> vi.vid) stv_vars_list) fn_expr_list
+    in
     FnRecord (join_info.initial_state_vars, IM.of_alist id_expr_binds)
   with Invalid_argument s ->
     (* Might be an inner state struct. *)

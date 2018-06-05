@@ -800,7 +800,7 @@ let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
 let print_c_let = pp_c_fnlet std_formatter
 let print_c_expr = pp_c_expr std_formatter
 
-let rec pp_problem_rep fmt fnetch =
+let rec pp_problem_rep ?(inner=false) fmt fnetch =
   fprintf fmt "@[<v 2>%s%sSummary for %s (%i) :%s@;\
                %sLoop body :%s@;%a@;\
                %sJoin:%s@;%a\n @;\
@@ -811,13 +811,14 @@ let rec pp_problem_rep fmt fnetch =
     (color "b") color_default
     pp_fnexpr fnetch.main_loop_body
     (color "b") color_default
-    pp_fnexpr fnetch.join_solution
+    pp_fnexpr
+    (if inner then fnetch.memless_solution else fnetch.join_solution)
     (color "b-lightgray")
     (fun fmt () ->
        if List.length fnetch.inner_functions > 0 then
          fprintf fmt "@[<v 2>%sInner functions:%s\n@;%a@]"
            (color "b-blue") color_default
-           (pp_print_list ~pp_sep:pp_sep_brk pp_problem_rep)
+           (pp_print_list ~pp_sep:pp_sep_brk (pp_problem_rep ~inner:true))
            fnetch.inner_functions
        else
          ()) ()

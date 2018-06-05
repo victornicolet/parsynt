@@ -119,11 +119,15 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
   let remap_init_values maybe_expr_list =
     match maybe_expr_list with
     | Some expr_list ->
-      List.fold_left2
-        (fun map vid ast_expr ->
-           IM.add vid ast_expr map)
-        IM.empty
-        (VarSet.vids_of_vs problem.scontext.state_vars) expr_list
+      begin try
+          List.fold_left2
+            (fun map vid ast_expr ->
+               IM.add vid ast_expr map)
+            IM.empty
+            (VarSet.vids_of_vs problem.scontext.state_vars) expr_list
+        with Invalid_argument e ->
+          failhere __FILE__ "remap_init_values" "Invalid_argument"
+      end
 
     | None ->
       (** If auxiliaries have been created, the sketch has been solved
@@ -142,14 +146,17 @@ let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_
   let remap_ident_values maybe_expr_list =
     match maybe_expr_list with
     | Some expr_list ->
-      (List.fold_left2
-         (fun imap vid expr ->
-            IM.add vid (scm_to_const expr) imap)
-         IM.empty
-         (VarSet.vids_of_vs problem.scontext.state_vars)
-         expr_list)
-
-      | None -> IM.empty
+      begin try
+          (List.fold_left2
+             (fun imap vid expr ->
+                IM.add vid (scm_to_const expr) imap)
+             IM.empty
+             (VarSet.vids_of_vs problem.scontext.state_vars)
+             expr_list)
+        with Invalid_argument e ->
+          failhere __FILE__ "remap_ident_values" "Invalid_argument"
+      end
+    | None -> IM.empty
   in
   let solution_0 = ExpRed.normalize problem.scontext translated_join_body in
   let solution = ExpRed.clean problem.scontext solution_0 in
