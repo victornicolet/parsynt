@@ -68,9 +68,9 @@ let replace_by_join problem inner_loops =
   let inline_join out_index in_info =
     let join = in_info.memless_solution in
     match join with
-    | FnLetExpr bl ->
+    | FnRecord(vs, emap) ->
       begin
-        if List.length bl > 0 then
+        if IM.cardinal emap > 0 then
           let jn =
             transform_expr2
               {
@@ -91,7 +91,7 @@ let replace_by_join problem inner_loops =
     let out_index = mkVarExpr (VarSet.max_elt ctx.index_vars) in
     (* Create a sequence type for the input of the inner loop. *)
     let state = in_info.scontext.state_vars in
-    let inner_styp = Record (VarSet.record state) in
+    let inner_styp = record_type state in
 
     let seq_inner = Vector (inner_styp, None) in
     let new_seq =
@@ -127,8 +127,7 @@ let replace_by_join problem inner_loops =
              printf "@.[INFO] Inner join %s is not inlined.@." in_info.loop_name;
 
            let capture_state =
-             FnRecord (Record (VarSet.record state),
-                       List.map mkVarExpr (VarSet.elements state))
+             FnRecord (state, identity_map state)
            in
            let index = VarSet.max_elt problem.scontext.index_vars in
            FnApp (inner_styp, Some new_joinf,
@@ -198,9 +197,10 @@ let inline_inner in_loop_width problem =
   let inline_inner in_info args =
     let in_body = no_join_inlined_body in_info in
     let in_state = in_info.scontext.state_vars in
-    let in_type = Record (VarSet.record in_state) in
+    let in_type = record_type in_state in
     let in_index = VarSet.max_elt in_info.scontext.index_vars in
     let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
+    let map_args = IM.of_alist (List.combine (VarSet.vids_of_vs in_state) args) in
     if !verbose then
       printf
         "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
@@ -211,7 +211,7 @@ let inline_inner in_loop_width problem =
         FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
         FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
       ),
-      (in_state, FnRecord(in_type, args)),
+      (in_state, FnRecord(in_state, map_args)),
       (in_binder,
        FnLetIn
          (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,

@@ -49,7 +49,7 @@ type fn_type =
   | Real
   | Boolean
   (** Type tuple *)
-  | Record of (string * fn_type) list
+  | Record of string * (string * fn_type) list
   (** Other lifted types *)
   | Bitvector of int
   (** A function in Rosette is an uninterpreted function *)
@@ -192,7 +192,7 @@ and type_of_args argslisto =
     match symb_types_list with
     | [] -> Unit
     | [st] -> st
-    | _ -> Record (List.combine argnames symb_types_list)
+    | _ -> Record ("args", List.combine argnames symb_types_list)
   with Failure s -> Unit
 
 let rec type_of_cilconst c =
@@ -215,8 +215,6 @@ let rec ciltyp_of_symb_type =
 
 
 
-let recordtype_of_vs vs =
-  Record (List.map (fun vi -> vi.Cil.vname, (type_of_ciltyp vi.Cil.vtype)) (VS.varlist vs))
 
 let rec pp_typ fmt t =
   let fpf = Format.fprintf in
@@ -228,8 +226,9 @@ let rec pp_typ fmt t =
   | Num -> fpf fmt "num"
   | Boolean -> fpf fmt "boolean"
   | Vector (vt, _) -> fpf fmt "%a[]" pp_typ vt
-  | Record tl ->
-    fpf fmt "{%a}"
+  | Record (name, tl) ->
+    fpf fmt "struct %s {%a}"
+      name
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@;")
          (fun fmt (s,t) -> fprintf fmt "%s: %a" s pp_typ t)) tl
@@ -252,7 +251,7 @@ let rec shstr_of_type t =
   | Num -> "n"
   | Boolean -> "b"
   | Vector (vt, _) -> "V"^(shstr_of_type vt)^"_"
-  | Record tl -> String.concat "" ("T" :: List.map (fun (_, t) -> shstr_of_type t) tl)
+  | Record (name, tl) -> "R"^name
   | Function (argt, rett) -> "F"^(shstr_of_type argt)^"_"^(shstr_of_type rett)^"_"
   | _ ->
     pp_typ err_formatter t;
@@ -719,9 +718,8 @@ let rosette_prefix_struct = Conf.get_conf_string "rosette_struct_name"
 let declared_tuple_types = SH.create 10
 
 let rec record_name
-    ?(only_by_type=false) ?(seed = "")
-    ((stl, vs) : (string * fn_type) list * VarSet.t) : string =
-
+    ?(only_by_type=false) ?(seed = "") (vs : VarSet.t) : string =
+  let stl = VarSet.record vs in
   let tl = (ListTools.unpair --> snd) stl in
   let poten_name =
     String.concat seed ([rosette_prefix_struct]@(List.map shstr_of_type tl))
@@ -730,12 +728,17 @@ let rec record_name
     poten_name
   else if SH.mem declared_tuple_types poten_name then
     let stl', vs' = SH.find declared_tuple_types poten_name in
-    if stl = stl' && vs = vs' then poten_name
+    if VarSet.equal vs vs' then poten_name
     else
-      record_name ~seed:(seed^"_") (stl, vs)
+      record_name ~seed:(seed^"_") vs
   else
     (SH.add declared_tuple_types poten_name (stl, vs);
      poten_name)
+
+let record_type (vs : VarSet.t) : fn_type =
+  let tl = VarSet.record vs in
+  let name = record_name vs in
+  Record(name, tl)
 
 let is_name_of_struct s =
   SH.mem declared_tuple_types s

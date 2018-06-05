@@ -495,7 +495,7 @@ class funct_builder
                  this record variable.
               *)
               let varset = varset_of_vs vil in
-              let rec_var = mkFnVar "tup$" (Record (VarSet.record varset)) in
+              let rec_var = mkFnVar "tup$" (record_type varset) in
               let restore_stvs_bindings =
                 List.map
                   (fun var -> (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
@@ -518,7 +518,7 @@ class funct_builder
                     convert_letin let_else)
           in
           let cbody_state, _ = used_in_fnlet cond_body in
-          let rec_var = mkFnVar "tup$" (Record (VarSet.record cbody_state)) in
+          let rec_var = mkFnVar "tup$" (record_type cbody_state) in
           let restore_stvs_bindings =
             List.map
               (fun var ->

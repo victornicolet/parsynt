@@ -177,7 +177,8 @@ and type_of_var v =
 and type_of expr =
   match expr with
   | FnVar v -> type_of_var v
-  | FnRecord (vs, el) -> Record (VarSet.record vs)
+  | FnRecord (vs, el) ->
+    let stl = VarSet.record vs in Record (record_name vs, stl)
   | FnConst c -> type_of_const c
   | FnAddrofLabel _ | FnStartOf _
   | FnSizeof _ | FnSizeofE _ | FnSizeofStr _
@@ -202,10 +203,10 @@ and type_of expr =
   | FnRecordMember(e, s) ->
     begin
       match type_of e with
-      | Record slt ->
+      | Record (s, stl) ->
         (try
            let _, t0 =
-             List.hd (List.filter (fun (s',t) -> s = s') slt) in
+             List.hd (List.filter (fun (s',t) -> s = s') stl) in
            t0
          with _ -> failontype "Record member not found in record type.")
       | _ -> failontype "Should be a record type inside a record mmeber access."
@@ -1411,9 +1412,9 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
       let __s = get_fun_state (arglist >> 4) in
       let stv =
         match __s.vtype with
-        | Record name_type_list ->
+        | Record (name, member_type_list) ->
           VarSet.of_list
-            (List.map (fun (n,t) -> find_var_name n) name_type_list)
+            (List.map (fun (n,t) -> find_var_name n) member_type_list)
 
         | _ -> failhere __FILE__ "translate scm" "Expected a record type."
       in

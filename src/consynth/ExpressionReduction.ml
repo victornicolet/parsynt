@@ -229,8 +229,9 @@ let rec normalize ?(linear=false) ctx sklet =
   | FnLetIn (ve_list, letin) ->
     FnLetIn (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list,
              normalize ctx letin)
-  | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
+  | FnRecord(vs, emap) ->
+    let ve_list = unwrap_state vs emap in
+    wrap_state (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
 
   | e -> reduce_full ~search_linear:linear ctx e
 
@@ -270,7 +271,8 @@ let clean_unused_assignments : fnExpr -> fnExpr =
     { case = (fun e -> match e with FnLetIn _ -> true | _ -> false);
       on_case = (fun f e ->
           match e with
-          | FnLetIn([(v, FnRec(igu, st, (s, body)))], FnLetExpr(choices)) ->
+          | FnLetIn([(v, FnRec(igu, st, (s, body)))], FnRecord(rvs, remap)) ->
+            let choices = unwrap_state rvs remap in
             let to_ignore =
               List.fold_left
                 (fun l (v,e) ->
@@ -279,9 +281,9 @@ let clean_unused_assignments : fnExpr -> fnExpr =
                    | _ -> v :: l) [] choices
             in
             FnLetIn([(v, FnRec(igu, st, (s, remove_to_ignore to_ignore body)))],
-                    FnLetExpr(choices))
+                    wrap_state choices)
           | FnLetIn(b, cont) -> FnLetIn(b, f cont)
-          | _ -> failwith "GUarded clause");
+          | _ -> failwith "Guarded clause");
       on_var = identity;
       on_const = identity;
     }

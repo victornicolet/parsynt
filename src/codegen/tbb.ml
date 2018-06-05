@@ -271,10 +271,6 @@ let remove_constant_assignments sktch sklet =
   in
   let rec aux sklet c_a =
     match sklet with
-    | FnLetExpr ve_list ->
-      let ve_list0, c_a0 = rem_from_ve_list ve_list in
-      FnLetExpr ve_list0, c_a@c_a0
-
     | FnLetIn (ve_list, letin) ->
       let ve_list0, c_a0 = rem_from_ve_list ve_list in
       let letin0, c_a1 = aux letin (c_a@c_a0) in

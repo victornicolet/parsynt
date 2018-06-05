@@ -337,11 +337,11 @@ and depth_c_func ctx func =
          (0, 0)
          (List.map (fun (v, e) -> depth_cost ctx e) velist)) in
     ((max max_de (if dl' > 0 then dl' + 1 else 0)), sum_c + cl')
-  | FnLetExpr velist ->
+  | FnRecord (vs, emap) ->
     (List.fold_left
        (fun (mde, sec) (de, ec) -> (max mde de, sec + ec))
        (0, 0)
-       (List.map (fun (v, e) -> depth_cost ctx e) velist))
+       (List.map (fun (v, e) -> depth_cost ctx e) (unwrap_state vs emap)))
   | _ -> (0,0)
 
 let cost ctx expr =

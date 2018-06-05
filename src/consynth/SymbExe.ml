@@ -221,7 +221,7 @@ let clear_intermediate_states () =
 
 let add_intermediate_state (i : int) (state : fnExpr) : unit =
   match state with
-  | FnRecord(Record stl, el) ->
+  | FnRecord(vs, el) ->
     if List.length !_intermediate_states = i then
       _intermediate_states := !_intermediate_states@[state]
     else
@@ -236,19 +236,14 @@ let get_one_intermediate_val (var : fnV) : fnExpr list  =
     List.mapi
       (fun i e ->
          match e with
-         | FnRecord(Record(stl), el) ->
-           assert (List.length stl = List.length el);
-           let res_j =
-             List.filter is_some
-               (List.map2
-                  (fun (s, t) e ->
-                     if s = var.vname then Some e else None) stl el)
-           in
-           begin match res_j with
-             | [] -> None
-             | hd :: tl -> hd
+         | FnRecord(vs, emap) ->
+           assert (VarSet.cardinal vs = IM.cardinal emap);
+           begin try
+               Some (IM.find var.vid emap)
+             with Not_found -> None
            end
-         | _ -> None) !_intermediate_states
+         | _ -> None)
+      !_intermediate_states
   in
   List.map check_option (List.filter is_some some_vals)
 
@@ -322,9 +317,8 @@ let rec do_bindings
          (el @ [v, e']), uenv') ([], sin) bindings
   in
   FnRecord(
-    Record(
-      List.map (fun var -> var.vname, var.vtype) (fst (ListTools.unpair el))),
-    snd (ListTools.unpair el)),
+    VarSet.of_list (fst (ListTools.unpair el)),
+    List.fold_left (fun emap (var,expr) -> IM.add var.vid expr emap) IM.empty el),
   env''
 
 
@@ -351,9 +345,6 @@ and do_expr sin expr : fnExpr * ex_env =
 
   | FnConst c ->
     expr, sin
-
-  | FnLetExpr bindings ->
-    do_bindings true sin bindings
 
   | FnLetIn (bindings, body) ->
     let _, s' = do_bindings true sin bindings in
@@ -389,32 +380,27 @@ and do_expr sin expr : fnExpr * ex_env =
     let re', env' = do_expr sin re in
     let e', env' =
       (match re' with
-       | FnRecord(Record stl, elist) ->
-         let assoc_list = ListTools.pair stl elist in
-         let _, e' =
-           List.find (fun ((s', t), e') -> s = s') assoc_list
-         in
-         do_expr env' e'
+       | FnRecord(vs, emap) ->
+         let e'' = IM.find (VarSet.find_by_name vs s).vid emap in
+         do_expr env' e''
 
        | _ ->  failhere __FILE__ "do_expr (FnRecordMember)"
                  "Expected a record in record member accessor.")
     in
     e', env'
 
-  | FnRecord(rt, el) ->
-    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+  | FnRecord(vs, emap) ->
+    let emap' = IM.map (do_expr sin) emap in
+    let keys, esl' = ListTools.unpair (IM.to_alist emap') in
+    let el', sl' = ListTools.unpair esl' in
     let typecheck =
-      match rt with
-      | Record stl ->
-        List.length stl = List.length el' &&
-        List.for_all2 (fun (s,tmax) et -> is_subtype (type_of et) tmax) stl el'
-      | _ -> false
+      VarSet.cardinal vs = List.length el'
     in
     if typecheck then
-      FnRecord (rt, List.map partial_interpret el'),
+      FnRecord (vs, IM.map fst emap'),
       List.fold_left (fun sf s' -> up_join sf s') sin sl'
     else
-      raise (TypeCheckError (rt, type_of expr, expr))
+      raise (TypeCheckError (record_type vs, type_of expr, expr))
 
   | FnVector el ->
     let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
@@ -591,9 +577,15 @@ let unfold (exec_info : exec_info) (func : fnExpr) : fnExpr IM.t * ES.t =
   let r, env'' =
     do_expr env' func
   in
+  let env_final =
+    match r with
+    | FnRecord (vs, emap) ->
+      { env'' with ebexprs = IM.update_all env''.ebexprs emap }
+    | _ -> env''
+  in
   _intermediate_states := List.map replace_symbols_by_vars !_intermediate_states;
-  (filter_state exec_info --> IM.map replace_symbols_by_vars) env''.ebexprs,
-  es_transform (replace_symbols_by_vars) env''.ereads
+  (filter_state exec_info --> IM.map replace_symbols_by_vars) env_final.ebexprs,
+  es_transform (replace_symbols_by_vars) env_final.ereads
 
 let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
   clear_intermediate_states ();

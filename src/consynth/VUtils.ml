@@ -111,7 +111,7 @@ module AuxSet =
   end)
 
 let mkAux v e =
-  { avar = v; aexpr = e; afunc = FnLetExpr([]); depends = VarSet.empty; }
+  { avar = v; aexpr = e; afunc = wrap_state []; depends = VarSet.empty; }
 
 let mkAuxF v e f =
   { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }

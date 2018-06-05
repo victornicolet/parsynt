@@ -37,7 +37,7 @@ type fn_type =
   | Real
   | Boolean
   (** Type tuple *)
-  | Record of (string * fn_type) list
+  | Record of string * (string * fn_type) list
   (** Other lifted types *)
   | Bitvector of int
   (** A function in Rosette is an uninterpreted function *)
@@ -126,7 +126,6 @@ val type_of_args : (string * Cil.typ * Cil.attribute list) list option
 val type_of_cilconst : Cil.constant -> fn_type
 val ciltyp_of_symb_type : fn_type -> Cil.typ option
 
-val recordtype_of_vs : Utils.VS.t -> fn_type
 
 val pp_typ : Format.formatter -> fn_type -> unit
 
@@ -284,9 +283,8 @@ val discover_clear : unit -> unit
 val discover_add : fnV -> unit
 val discover_save : unit -> unit
 
-val record_name : ?only_by_type:bool -> ?seed:string ->
-  (string * fn_type) list * VarSet.t -> string
-
+val record_name : ?only_by_type:bool -> ?seed:string -> VarSet.t -> string
+val record_type : VarSet.t ->  fn_type
 val is_name_of_struct : string -> bool
 val get_struct : string -> (string * fn_type) list * VarSet.t
 val state_var_name : VarSet.t -> string -> string

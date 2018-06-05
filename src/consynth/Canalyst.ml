@@ -329,8 +329,8 @@ let func2sketch cfile funcreps =
       join_sketch = join_sk;
       memless_sketch = mless_sk;
       (* No solution for now! *)
-      join_solution = FnLetExpr ([]);
-      memless_solution = FnLetExpr ([]);
+      join_solution = wrap_state [];
+      memless_solution = wrap_state [];
       init_values = IM.empty;
       identity_values = IM.empty;
       func_igu = sigu;

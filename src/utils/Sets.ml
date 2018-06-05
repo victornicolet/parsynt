@@ -124,6 +124,9 @@ module IM = struct
 
   let of_ih ih = IH.fold add ih empty
 
+  let to_alist im =
+    fold (fun i a l -> (i, a)::l) im []
+
   let of_alist alist =
     List.fold_left (fun emap (i, e) -> add i e emap) empty alist
 end

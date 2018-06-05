@@ -73,7 +73,7 @@ let is_reinitialized problem var =
 (* Check well-formedness of inputs. *)
 let rec check_wf input_function stv  =
   match input_function with
-  | FnLetExpr assignments ->
+  | FnRecord (vs, emap) ->
     input_function
   | FnLetIn (assignments, skletexpr) ->
     failwith "TODO : body with inner dependencies"
@@ -149,7 +149,12 @@ let uses stv input_func =
       let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
 
-    | FnLetExpr velist -> List.fold_left used_in_assignment map velist
+    | FnRecord (vs, emap) ->
+      IM.fold
+        (fun i e map' ->
+           used_in_assignment map' (FnVariable(VarSet.find_by_id vs i), e))
+        emap
+        map
 
     | _ -> failhere __FILE__ "uses"
              "Bad toplevel expr form, recursion should not have reached this."

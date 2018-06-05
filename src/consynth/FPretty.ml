@@ -158,15 +158,15 @@ and pp_symb_type_aux ppf t =
     begin
       match t with
       | Unit -> fprintf ppf "unit"
-      | Record tl ->
-        fprintf ppf "(%a)"
+      | Record (s, tl) ->
+        fprintf ppf "(%s | %a)"
+          s
           (fun ppf l ->
              pp_print_list
                ~pp_sep:(fun ppf () -> fprintf ppf ",")
                (fun ppf (s, ty) -> fprintf ppf "%s: %a" s pp_symb_type ty)
                ppf
-               l)
-          tl
+               l) tl
 
       | Bitvector  i ->
         fprintf ppf "(bitvector %i)" i
@@ -305,14 +305,14 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
   | FnRecord (vs, exprs) ->
-    let record_name = record_name ((VarSet.record vs), vs) in
-    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr)
+    let rname = record_name vs in
+    fp ppf "(%s %a)" rname (pp_break_sep_list pp_fnexpr)
       (snd (ListTools.unpair (unwrap_state vs exprs)))
 
   | FnRecordMember (record, mname) ->
     let record_name =
       match type_of record with
-      | Record stl -> record_name stl
+      | Record (name, stl) -> name
       | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
@@ -544,7 +544,7 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
   | FnRecord (vs, emap) ->
-    fp ppf "(Record[%s] %a)" (record_name (VarSet.record vs))
+    fp ppf "(Record[%s] %a)" (record_name vs)
       cp_expr_list (snd (ListTools.unpair (unwrap_state vs emap)))
 
   | FnRecordMember (r, m) ->
