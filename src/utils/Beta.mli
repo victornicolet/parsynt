@@ -284,11 +284,11 @@ val discover_clear : unit -> unit
 val discover_add : fnV -> unit
 val discover_save : unit -> unit
 
-val record_name : ?only_by_type:bool -> ?seed:string -> (string * fn_type) list
-  -> string
+val record_name : ?only_by_type:bool -> ?seed:string ->
+  (string * fn_type) list * VarSet.t -> string
 
 val is_name_of_struct : string -> bool
-val get_struct : string -> (string * fn_type) list
+val get_struct : string -> (string * fn_type) list * VarSet.t
 val state_var_name : VarSet.t -> string -> string
 
 val record_map : VarSet.t -> (VarSet.elt -> 'a -> 'b) -> 'a Utils.IM.t -> 'b Utils.IM.t

@@ -299,8 +299,10 @@ let is_op_c_fun (op : symb_binop) : bool =
 let identity_fn =
   FnRecord(VarSet.empty, IM.empty)
 
-let identity_state vs =
-  List.map (fun v -> (FnVariable v, FnVar(FnVariable v))) (VarSet.elements vs)
+let identity_map vs =
+  VarSet.fold
+    (fun var emap -> IM.add var.vid (FnVar (FnVariable var)) emap)
+    vs IM.empty
 
 (** Translate C Standard Library function names in
     functions supported by Rosette
@@ -496,6 +498,11 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
+let rec var_of_fnvar fnvar =
+  match fnvar with
+  | FnVariable v -> v
+  | FnArray (v, e) -> var_of_fnvar v
+
 
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
@@ -505,22 +512,30 @@ let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
         FnRecordMember(mkVarExpr state_var, v.vname)))
     vars
 
-let unwrap_state vs emap =
+let unwrap_state (vs : VarSet.t) (emap : fnExpr IM.t) : (fnLVar * fnExpr) list =
   VarSet.fold
     (fun var bindings ->
        let expr = IM.find var.vid emap in bindings@[FnVariable var, expr])
     vs []
+
+let wrap_state (bindings : (fnLVar * fnExpr) list) : fnExpr =
+  let rec rewrap_binding (lvar, e) =
+    match lvar with
+    | FnVariable var -> (var, e)
+    | FnArray(lvar, i) -> rewrap_binding (lvar, FnArraySet(FnVar(lvar), i, e))
+  in
+  let vl = List.map rewrap_binding bindings in
+  let vs = VarSet.of_list (fst (ListTools.unpair vl)) in
+  let emap =
+    List.fold_left (fun emap (v, e) -> IM.add v.vid e emap) IM.empty vl
+  in
+  FnRecord(vs, emap)
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
 
 
 let is_reserved_name s = not (uninterpeted s)
 
-
-let rec var_of_fnvar fnvar =
-  match fnvar with
-  | FnVariable v -> v
-  | FnArray (v, e) -> var_of_fnvar v
 
 (** Get the dependency length of an array variable. We assume very
     simple offset expressions.*)
@@ -1038,8 +1053,8 @@ let rec compose_tail assignments func =
   | [] -> func
   | _ ->
     match func with
-    | FnRecord (va, emap) ->
-      FnLetIn (unwrap_state vs emap , FnLetExpr assignments)
+    | FnRecord (vs, emap) ->
+      FnLetIn (unwrap_state vs emap , wrap_state assignments)
     | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
     | _ -> func
 
@@ -1062,14 +1077,22 @@ let complete_with_state stv el =
   velist
 
 
-let rec complete_final_state stv func =
+let rec complete_final_state (vars : VarSet.t) (func : fnExpr) : fnExpr =
   match func with
-  | FnLetExpr el -> FnLetExpr (complete_with_state stv el)
-  | FnLetIn (el, l) -> FnLetIn (el, complete_final_state stv l)
+  | FnRecord (vs, emap) ->
+    let to_add = VarSet.diff vars vs in
+    FnRecord(
+      VarSet.union vars vs,
+      VarSet.fold
+        (fun var emap' -> IM.add var.vid (mkVarExpr var) emap')
+        to_add emap)
+
+  | FnLetIn (el, l) -> FnLetIn (el, complete_final_state vars l)
+
   | _ -> func
 
 
-let rec used_in_fnexpr e : VarSet.t =
+let rec used_in_fnexpr (expr : fnExpr): VarSet.t =
   let join = VarSet.union in
   let init = VarSet.empty in
   let case e = false in
@@ -1081,7 +1104,7 @@ let rec used_in_fnexpr e : VarSet.t =
       VarSet.union (var_handler v0) (used_in_fnexpr e)
   in
   let const_handler c = VarSet.empty in
-  rec_expr join init case case_h const_handler var_handler e
+  rec_expr join init case case_h const_handler var_handler expr
 
 
 let rec used_in_fnlet  =
@@ -1090,8 +1113,6 @@ let rec used_in_fnlet  =
     let bs1, us1 = (used_in_fnlet letin) in
     let bs2, us2 = (used_in_assignments ve_list) in
     (VarSet.union bs1 bs2, VarSet.union us1 us2)
-  | FnLetExpr ve_list ->
-    used_in_assignments ve_list
   | e -> (VarSet.empty, used_in_fnexpr e)
 
 and used_in_assignments ve_list =
@@ -1245,8 +1266,9 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
     | FnApp (t, vo, el) ->
       FnApp (t, vo, List.map (fun e -> aux_rem_h Unit e) el)
 
-    | FnLetExpr ve_list ->
-      FnLetExpr (List.map (fun (v, e) ->  (v, aux_rem_h Unit  e)) ve_list)
+    | FnRecord (vs, emap) ->
+      FnRecord (vs, IM.map (fun e -> aux_rem_h Unit e) emap)
+
     | FnLetIn (ve_list, letin) ->
       FnLetIn ((List.map (fun (v, e) ->  (v, aux_rem_h Unit e)) ve_list),
                aux_rem_h Unit letin)
@@ -1390,19 +1412,24 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
       let stv =
         match __s.vtype with
         | Record name_type_list ->
-          VarSet.of_list (List.map (fun (n,t) -> find_var_name n) name_type_list)
+          VarSet.of_list
+            (List.map (fun (n,t) -> find_var_name n) name_type_list)
+
         | _ -> failhere __FILE__ "translate scm" "Expected a record type."
       in
       let stv_init =
         match arglist >> 3 with
         | Apply_e (e, inits) ->
-          FnRecord(__s.vtype, List.map translate inits)
+          FnRecord(stv,
+                   List.fold_left2
+                     (fun emap v e -> IM.add v.vid (translate e) emap)
+                     IM.empty (VarSet.elements stv) inits)
+
         | _ -> failhere __FILE__ "translate scm" "Expected a record expression."
       in
       FnRec ((init, guard, update),
              (stv, stv_init),
-             (__s, translate (unwrap_fun_e (arglist >> 4)))
-            )
+             (__s, translate (unwrap_fun_e (arglist >> 4))))
     else
       failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
   in
@@ -1418,13 +1445,18 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
 and rosette_state_struct_to_fnlet sname scm_expr_list =
   let stv_vars_list = VarSet.elements join_info.initial_state_vars in
   let fn_expr_list = to_expression_list scm_expr_list in
+  let id_expr_binds =
+    ListTools.pair (List.map (fun vi -> vi.vid) stv_vars_list) fn_expr_list
+  in
   try
-    FnLetExpr (ListTools.pair (List.map (fun vi -> FnVariable vi) stv_vars_list)
-                 fn_expr_list)
+    FnRecord (join_info.initial_state_vars, IM.of_alist id_expr_binds)
   with Invalid_argument s ->
     (* Might be an inner state struct. *)
     (try
-       FnRecord(Record(get_struct sname), fn_expr_list)
+       let _, vs = get_struct sname in
+       FnRecord(vs,
+                IM.of_alist
+                  (ListTools.pair (VarSet.vids_of_vs vs) fn_expr_list))
      with Not_found ->
        eprintf "FAILURE :@\n\
                 Failed to translate state in list of bindings, got %i state \
@@ -1432,7 +1464,10 @@ and rosette_state_struct_to_fnlet sname scm_expr_list =
                 ---> Did you initialize the join_info before using scm_to_fn ?"
          (VarSet.cardinal join_info.initial_state_vars)
          (List.length fn_expr_list);
-       failwith "Failure in rosette_state_struct_to_fnlet.")
+       failwith "Failure in rosette_state_struct_to_fnlet."
+        | _ ->
+          failhere __FILE__ "rosette_state_struct_to_fnlet"
+            "Failed to guess state.")
 
 and to_expression_list scm_expr_list =
   List.map scm_to_fn scm_expr_list
@@ -1475,22 +1510,22 @@ let force_flat vs fnlet =
               with Failure s -> new_subs)
            subs ve_list)
 
-    | FnLetExpr ve_list ->
-      let subs_copy = subs in
+    | FnRecord (vs, emap) ->
       let final_subs =
-        (List.fold_left
-           (fun new_subs (v,e) ->
-              try
-                let vi = co (vi_of v)  in
-                IM.add vi.vid (apply_substutions subs e) new_subs
-              with Failure s -> new_subs)
-           subs_copy ve_list)
+        IM.fold
+          (fun i e new_subs ->
+             try
+               IM.add i (apply_substutions subs e) new_subs
+             with Failure s -> new_subs)
+          emap subs
       in
-      FnLetExpr
-        (IM.fold
-           (fun vid e ve_list ->
-              ve_list@[(FnVariable (VarSet.find_by_id vs vid), e)])
-           final_subs [])
+      FnRecord
+        (vs,
+         IM.fold
+           (fun vid e emap ->
+              IM.add (VarSet.find_by_id vs vid).vid e emap)
+           final_subs
+           IM.empty)
     | _ -> failhere __FILE__ "force_flat" "Not a proper function."
   in
   let start_sub =
@@ -1689,9 +1724,10 @@ let rec pass_remove_special_ops e =
           FnLetIn (List.map (fun (v, e) ->
               (v, pass_remove_special_ops e)) ve_list,
                    pass_remove_special_ops letin)
-        | FnLetExpr ve_list ->
-          FnLetExpr (List.map (fun (v, e) ->
-              (v, pass_remove_special_ops e)) ve_list)
+
+        | FnRecord (vs, emap) ->
+          FnRecord (vs,
+                    IM.map (fun e -> pass_remove_special_ops e) emap)
 
         | _ -> failwith "Bad rec case.") identity identity) e
 
@@ -1739,32 +1775,36 @@ let rec pass_sequentialize fnlet =
     function
     | FnLetIn (ve_list, letin) ->
       reorganize ve_list (pass_sequentialize letin)
-    | FnLetExpr ve_list ->
-      reorganize ve_list (FnLetExpr [])
+    | FnRecord (vs , emap) ->
+      reorganize (unwrap_state vs emap) (FnRecord(vs, identity_map vs))
     | e -> e
   in
   let rec remove_empty_lets =
     function
     | FnLetIn (ve_list, letin) ->
-      (match remove_empty_lets letin with
+      begin match remove_empty_lets letin with
        | Some let_tail ->
-         (match ve_list with
+         begin match ve_list with
           | [] -> Some let_tail
-          | _ -> Some (FnLetIn (ve_list, let_tail)))
+          | _ -> Some (FnLetIn (ve_list, let_tail))
+         end
        | None ->
-         (match ve_list with
+         begin match ve_list with
           | [] -> None
-          | _ -> Some (FnLetExpr ve_list)))
-
-    | FnLetExpr ve_list ->
-      (match ve_list with
-       | [] -> None
-       | _ -> Some (FnLetExpr ve_list))
+          | _ -> Some (wrap_state ve_list)
+         end
+      end
+    | FnRecord (vs, emap) ->
+      begin if IM.cardinal emap = 0 then
+          None
+        else
+          Some (FnRecord (vs, emap))
+      end
     | e -> Some e
   in
   match remove_empty_lets (sequentialize_parallel_moves fnlet) with
   | Some fnlet -> fnlet
-  | None -> FnLetExpr []
+  | None -> FnRecord(VarSet.empty, IM.empty)
 
 
 let fn_for_c fnlet =
@@ -1897,7 +1937,6 @@ let expr_to_cil fd temps e =
     | FnRecord _  -> failhere __FILE__ "fnvar_to_lval" "Tuple and vectors not yet implemented."
     | FnRecordMember _ -> failhere __FILE__ "exp_to_cil" "Record member not supported."
     | FnArraySet _ -> failhere __FILE__ "exp_to_cil" "Array set operation not supported."
-    | FnLetExpr _ -> failhere __FILE__ "exp_to_cil" "Let expr not supported."
     | FnLetIn  _ -> failhere __FILE__ "exp_to_cil" "Let in not supported."
     | FnVector _ -> failhere __FILE__ "exp_to_cil" "Vector literal not supported."
     | FnChoice _ -> failhere __FILE__ "exp_to_cil" "Choice leaking to cil translation."
@@ -2043,7 +2082,8 @@ let fnlet_to_stmts fd fnlet =
           (List.sort sort_nb_used_vars asgn_li)
       in
       translate_let letin a_block
-    | FnLetExpr a_list ->
+    | FnRecord(vs, emap) ->
+      let a_list = unwrap_state vs emap in
       add_assignments instr_li_stmt (List.sort sort_nb_used_vars a_list)
 
     | _ -> instr_li_stmt

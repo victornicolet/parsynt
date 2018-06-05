@@ -65,8 +65,16 @@ type fn_type =
   (** User-defined structures *)
   | Struct of fn_type
 
+and fnV = {
+  mutable vname : string;
+  mutable vtype : fn_type;
+  vinit : constants option;
+  mutable vid : int;
+  mutable vistmp : bool;
+}
 
-type symb_unop =
+
+and symb_unop =
   | Not | Add1 | Sub1
   | Abs | Floor | Ceiling | Truncate | Round
   | Neg
@@ -310,14 +318,6 @@ let is_record_type t =
 
 let _GLOB_VARIDS = ref 3000
 let _new_id () = incr _GLOB_VARIDS; !_GLOB_VARIDS
-
-type fnV = {
-  mutable vname : string;
-  mutable vtype : fn_type;
-  vinit : constants option;
-  mutable vid : int;
-  mutable vistmp : bool;
-}
 
 
 module FnVs =
@@ -720,7 +720,7 @@ let declared_tuple_types = SH.create 10
 
 let rec record_name
     ?(only_by_type=false) ?(seed = "")
-    (stl : (string * fn_type) list) : string =
+    ((stl, vs) : (string * fn_type) list * VarSet.t) : string =
 
   let tl = (ListTools.unpair --> snd) stl in
   let poten_name =
@@ -729,12 +729,12 @@ let rec record_name
   if only_by_type then
     poten_name
   else if SH.mem declared_tuple_types poten_name then
-    let stl' = SH.find declared_tuple_types poten_name in
-    if stl = stl' then poten_name
+    let stl', vs' = SH.find declared_tuple_types poten_name in
+    if stl = stl' && vs = vs' then poten_name
     else
-      record_name ~seed:(seed^"_") stl
+      record_name ~seed:(seed^"_") (stl, vs)
   else
-    (SH.add declared_tuple_types poten_name stl;
+    (SH.add declared_tuple_types poten_name (stl, vs);
      poten_name)
 
 let is_name_of_struct s =

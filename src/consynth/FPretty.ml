@@ -280,13 +280,6 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[<hov 2>(%s %a)@]"
-      (record_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> pp_fnexpr ppf e)) el
-
   | FnLetIn (el, l) ->
     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
        (fun ppf el ->
@@ -311,14 +304,10 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
-  | FnRecord (rt, exprs) ->
-    let stl =
-      match rt with
-      | Record stl -> stl
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record."
-    in
-    let record_name = record_name stl in
-    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr) exprs
+  | FnRecord (vs, exprs) ->
+    let record_name = record_name ((VarSet.record vs), vs) in
+    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr)
+      (snd (ListTools.unpair (unwrap_state vs exprs)))
 
   | FnRecordMember (record, mname) ->
     let record_name =
@@ -531,18 +520,6 @@ and cp_expr_list fmt el =
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
-      (color "red") color_default
-      (color "b")
-      (record_name ~only_by_type:true
-         (List.map (fun (v,e) -> let tv = type_of_var v in shstr_of_type tv, tv) el))
-      color_default
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> cp_fnexpr ppf e)) el
-      (color "red") color_default
-
   | FnLetIn (el, l) ->
     fprintf ppf "%s(%slet%s @[<v 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
       (* Opening parenthesis *)
@@ -566,8 +543,9 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnArraySet(a,i,e) ->
     fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
-  | FnRecord (t, el) ->
-    fp ppf "(Record[%a] %a)" pp_typ t cp_expr_list el
+  | FnRecord (vs, emap) ->
+    fp ppf "(Record[%s] %a)" (record_name (VarSet.record vs))
+      cp_expr_list (snd (ListTools.unpair (unwrap_state vs emap)))
 
   | FnRecordMember (r, m) ->
     fp ppf "([%a]-%s %a)" pp_typ (type_of r) m cp_fnexpr r
@@ -812,8 +790,6 @@ let pp_c_assignment_list p_id_asgn_list fmt ve_list =
 
 let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
   match fnlet with
-  | FnLetExpr assgn_list ->
-    fprintf fmt "@[%a@]" (pp_c_assignment_list p_id_assign) assgn_list
   | FnLetIn (assgn_list, fnlet') ->
     fprintf fmt "@[%a@;%a@]"
       (pp_c_assignment_list p_id_assign) assgn_list
