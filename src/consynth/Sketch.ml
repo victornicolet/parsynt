@@ -389,15 +389,15 @@ let pp_symbolic_definitions_of ?(inner=false) fmt except_vars vars =
     the state of the loop (valuation of the state variables).
 *)
 
-let pp_loop_body fmt (index_name, loop_body, state_vars, state_struct_name) =
-  let state_arg_name = "__s" in
-  let field_names = VarSet.names state_vars in
-  Format.fprintf fmt "@[<hov 2>(lambda (%s %s)@;(let@;(%a)@;%a))@]"
-    state_arg_name
+let pp_loop_body fmt (index_name, loop_body, state_vars) =
+  let state_arg = mkFnVar (get_new_name ~base:"__s") (record_type state_vars) in
+  let body_with_assigned_vars =
+    FnLetIn(bind_state state_arg state_vars, loop_body)
+  in
+  Format.fprintf fmt "@[<hov 2>(lambda (%s %s)@;%a)@]"
+    state_arg.vname
     index_name
-    (pp_assignments state_struct_name state_arg_name)
-    (ListTools.pair field_names field_names)
-    pp_fnexpr loop_body
+    pp_fnexpr body_with_assigned_vars
 
 (** Pretty print the whole loop wrapped in a Racket macro Loop and a function
     deifinition. The name of this function is set in the variable body_name of
@@ -433,7 +433,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
       (if inner then Dimensions.inner_iterations_limit else Dimensions.iterations_limit)
       (Conf.get_conf_string "rosette_state_param_name")
-      pp_loop_body (index_name, loop_body, state_vars, sname)
+      pp_loop_body (index_name, loop_body, state_vars)
 
 
   else
@@ -473,7 +473,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
       pp_index_low_up index_list (* List of local lower and upper bounds - loop *)
       (if inner then Dimensions.inner_iterations_limit else Dimensions.iterations_limit)
       bound_state1.vname
-      pp_loop_body (index_name, loop_body, state_vars, sname)
+      pp_loop_body (index_name, loop_body, state_vars)
 
 
 
@@ -483,23 +483,18 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
     @param lstate_name The name of the left state argument of the join.
     @param rstate_name The name of the right state argument of the join.
 *)
-let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
-  let sname = record_name state_vars in
-  let left_state_vars = VarSet.add_prefix state_vars
-      (Conf.get_conf_string "rosette_join_left_state_prefix") in
-  let right_state_vars = VarSet.add_prefix state_vars
-      (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let lvar_names = VarSet.names left_state_vars in
-  let rvar_names = VarSet.names right_state_vars in
-  let field_names = VarSet.names state_vars in
+let pp_join_body fmt (join_body, state_vars, lstate, rstate) =
+  let lpref = Conf.get_conf_string "rosette_join_left_state_prefix" in
+  let rpref = Conf.get_conf_string "rosette_join_right_state_prefix" in
+  let body_with_bound_vars =
+    FnLetIn(
+      bind_state ~prefix:lpref ~state_rec:lstate ~members:state_vars,
+      FnLetIn(
+        bind_state ~prefix:rpref ~state_rec:rstate ~members:state_vars,
+        join_body))
+  in
   printing_sketch := true;
-  Format.fprintf fmt
-    "@[<hov 2>(let@;(%a@;%a)@;%a)@]"
-    (pp_assignments sname lstate_name)
-    (ListTools.pair lvar_names field_names)
-    (pp_assignments sname rstate_name)
-    (ListTools.pair rvar_names field_names)
-    pp_fnexpr join_body;
+  pp_fnexpr fmt body_with_bound_vars;
   printing_sketch := false
 
 
@@ -510,17 +505,19 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param state_vars The set of state variables.
 *)
 let pp_join fmt (inner, sketch) =
+  let lstate_name = Conf.get_conf_string "rosette_join_left_state_name" in
+  let rstate_name = Conf.get_conf_string "rosette_join_right_state_name" in
   let join_body = if inner then sketch.memless_sketch else sketch.join_sketch in
   let state_vars = sketch.scontext.state_vars in
-  let sname = record_name state_vars in
-  let lstate_name = sname^"L" in
-  let rstate_name = sname^"R" in
+  let stype = record_type state_vars in
+  let lstate = mkFnVar (get_new_name ~base:lstate_name) stype in
+  let rstate = mkFnVar (get_new_name ~base:rstate_name) stype in
   let ist, ien = get_bounds sketch in
-  let st_start, st_end = Dimensions.bounds true sketch in
+  let st_start, st_end = Dimensions.bounds (not inner) sketch in
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
-    join_name  lstate_name rstate_name ist.vname ien.vname
-    pp_join_body (join_body (st_start, st_end), state_vars, lstate_name, rstate_name)
+    join_name  lstate.vname rstate.vname ist.vname ien.vname
+    pp_join_body (join_body (st_start, st_end), state_vars, lstate, rstate)
 
 (** Some state definitons *)
 

@@ -11,6 +11,10 @@ module Lt = ListTools
 
 exception Expr_exn of expr list
 
+let lstate_name = Conf.get_conf_string "rosette_join_left_state_name"
+let rstate_name = Conf.get_conf_string "rosette_join_right_state_name"
+
+
 (** In the join, remove the "state structure" assignments. *)
 let is_struct_assgn (id,e) =
   let rsn = Cf.get_conf_string "rosette_struct_name" in
@@ -25,8 +29,8 @@ let is_struct_assgn (id,e) =
      | [hd] ->
        (match hd with
         | Id_e id ->
-          (str_begins_with rsn id && str_ends_with "L" id) ||
-          (str_begins_with rsn id && str_ends_with "R" id)
+          (str_begins_with lstate_name id) ||
+          (str_begins_with rstate_name id)
         | _ -> false)
      | _ -> false)
   | _ -> false
@@ -46,15 +50,12 @@ let rec rem_struct_assigns (e : RAst.expr) =
 (* Identify the join function and return its body *)
 let identify_join_func e =
   let join_name = Cf.get_conf_string "rosette_join_name" in
-  let rosette_struct = Cf.get_conf_string "rosette_struct_name" in
   match e with
   | Def_e (id_list, body) ->
-    L.length id_list = 5 &&
-    (L.nth id_list 0 = join_name ) &&
-    (let l1 = L.nth id_list 1 in
-     str_begins_with rosette_struct l1 && str_ends_with "L" l1) &&
-    (let l2 = L.nth id_list 2 in
-     str_begins_with rosette_struct l2 && str_ends_with "R" l2)
+    (L.length id_list = 5) &&
+    (id_list >> 0 = join_name ) &&
+    (str_begins_with lstate_name (id_list >> 1)) &&
+    (str_begins_with rstate_name (id_list >> 2))
 
   | _ -> false
 

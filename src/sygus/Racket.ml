@@ -25,10 +25,10 @@ open Utils.PpTools
 
 type racket_struct = string * (string list)
 
-let silent_racket_command_string target =
+let silent_racket_command_string (target : string) : string =
   "racket "^target^"> /dev/null"
 
-let err_handler_sketch i =
+let err_handler_sketch i : unit =
   eprintf "%sError%s while running racket on sketch.@."
     (color "red") color_default
 
@@ -58,13 +58,6 @@ let pp_struct_equality fmt (sname, fields) =
        (fun f s ->
           fprintf f "@[<2>(eq? (%s-%s s1) (%s-%s s2))@]@;"
             sname s sname s)) fields
-
-
-let pp_assignments state_struct_name state_name fmt =
-  pp_print_list
-    ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;")
-    (fun fmt (var_name, field_name) -> Format.fprintf fmt "[%s (%s-%s %s)]"
-        var_name state_struct_name field_name state_name) fmt
 
 
 let pp_comment fmt str =
@@ -301,6 +294,6 @@ and partial_eval_arith e =
    This is only basic simplification, the rest will be done in the normalized
    sk form.
  *)
-let simplify_parse_scm s =
-  List.map (clean --> partial_eval_arith --> partial_eval)
+let parse_scm (s : string) : RAst.expr list =
+  (* List.map (clean --> partial_eval_arith --> partial_eval) *)
     (Rparser.main Rlexer.token (Lexing.from_string s))
