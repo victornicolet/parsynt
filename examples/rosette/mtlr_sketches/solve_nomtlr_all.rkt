@@ -167,27 +167,27 @@
                                         ;; (+ (list-ref c j) (list-ref r.c j))
                                         )])
                        (let ([colmax (list-set colmax j
-                                        (max
-                                         (NumExprBasic
-                                          (list-ref colmax j)
-                                          (list-ref r.colmax j)
-                                          (list-ref l.colmax j)
-                                          (list-ref c j)
-                                          (list-ref r.c j)
-                                          (list-ref l.c j)
-                                          1)
-                                         (NumExprBasic
-                                          (list-ref colmax j)
-                                          (list-ref r.colmax j)
-                                          (list-ref l.colmax j)
-                                          (list-ref c j)
-                                          (list-ref r.c j)
-                                          (list-ref l.c j)
-                                          1)))
-                              ;; (list-set colmax j (max (list-ref colmax j)
-                              ;;                         (+ (list-ref l.c j)
-                              ;;                            (list-ref r.colmax j))))
-                              ])
+                                               (max
+                                                (NumExprBasic
+                                                 (list-ref colmax j)
+                                                 (list-ref r.colmax j)
+                                                 (list-ref l.colmax j)
+                                                 (list-ref c j)
+                                                 (list-ref r.c j)
+                                                 (list-ref l.c j)
+                                                 1)
+                                                (NumExprBasic
+                                                 (list-ref colmax j)
+                                                 (list-ref r.colmax j)
+                                                 (list-ref l.colmax j)
+                                                 (list-ref c j)
+                                                 (list-ref r.c j)
+                                                 (list-ref l.c j)
+                                                 1)))
+                                     ;; (list-set colmax j (max (list-ref colmax j)
+                                     ;;                         (+ (list-ref l.c j)
+                                     ;;                            (list-ref r.colmax j))))
+                                     ])
                          ($Vi_Vi_ii c colmax
                                     ;; (max mtr (list-ref c j))
                                     (max
