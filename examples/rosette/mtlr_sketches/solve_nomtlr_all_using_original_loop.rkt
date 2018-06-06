@@ -20,9 +20,9 @@
 (define-symbolic a$2$0 a$2$1 a$2$2 a$2$3 a$2$4 integer?)
 (define a$2 (list a$2$0 a$2$1 a$2$2 a$2$3 a$2$4))
 (define-symbolic a$3$0 a$3$1 a$3$2 a$3$3 a$3$4 integer?)
-;; (define a$3 (list a$3$0 a$3$1 a$3$2 a$3$3 a$3$4))
-;; (define-symbolic a$4$0 a$4$1 a$4$2 a$4$3 a$4$4 integer?)
-;; (define a$4 (list a$4$0 a$4$1 a$4$2 a$4$3 a$4$4))
+(define a$3 (list a$3$0 a$3$1 a$3$2 a$3$3 a$3$4))
+(define-symbolic a$4$0 a$4$1 a$4$2 a$4$3 a$4$4 integer?)
+(define a$4 (list a$4$0 a$4$1 a$4$2 a$4$3 a$4$4))
 ;; (define-symbolic a$5$0 a$5$1 a$5$2 a$5$3 a$5$4 integer?)
 ;; (define a$5 (list a$5$0 a$5$1 a$5$2 a$5$3 a$5$4))
 ;; (define-symbolic a$6$0 a$6$1 a$6$2 a$6$3 a$6$4 integer?)
@@ -36,8 +36,8 @@
            a$0
            a$1
            a$2
-           ;; a$3
-           ;; a$4
+           a$3
+           a$4
            ;; a$5
            ;; a$6
            ;; a$7
@@ -182,8 +182,8 @@
                #:forall (list a$0$0 a$0$1 a$0$2 a$0$3 a$0$4
                               a$1$0 a$1$1 a$1$2 a$1$3 a$1$4
                               a$2$0 a$2$1 a$2$2 a$2$3 a$2$4
-                              ;; a$3$0 a$3$1 a$3$2 a$3$3 a$3$4
-                              ;; a$4$0 a$4$1 a$4$2 a$4$3 a$4$4
+                              a$3$0 a$3$1 a$3$2 a$3$3 a$3$4
+                              a$4$0 a$4$1 a$4$2 a$4$3 a$4$4
                               ;; a$5$0 a$5$1 a$5$2 a$5$3 a$5$4
                               ;; a$6$0 a$6$1 a$6$2 a$6$3 a$6$4
                               ;; a$7$0 a$7$1 a$7$2 a$7$3 a$7$4
@@ -198,15 +198,48 @@
                                                     ($_initial 0 3) 0 3)
                                                    (__join__ (__loop_body__ ($_initial 0 2) 0 2)
                                                              (__loop_body__ ($_initial 2 3) 2 3) 0 3))
-                                    ;; ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
-                                    ;;                (__join__ (__loop_body__ ($_initial 0 1) 0 1 )
-                                    ;;                          (__loop_body__ ($_initial 1 5) 1 5 ) 0 5))
-                                    ;; ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
-                                    ;;                (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
-                                    ;;                          (__loop_body__ ($_initial 2 5) 2 5 ) 0 5))
-                                    ;; ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 4) 0 4 )
-                                    ;;                (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
-                                    ;;                          (__loop_body__ ($_initial 2 4) 2 4 ) 0 4))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
+                                                   (__join__ (__loop_body__ ($_initial 0 1) 0 1 )
+                                                             (__loop_body__ ($_initial 1 5) 1 5 ) 0 5))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
+                                                   (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
+                                                             (__loop_body__ ($_initial 2 5) 2 5 ) 0 5))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 4) 0 4 )
+                                                   (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
+                                                             (__loop_body__ ($_initial 2 4) 2 4 ) 0 4))
                                     )))))
 
 (if (sat? odot) (print-forms odot) (core odot))
+
+;; cpu time: 504 real time: 50374 gc time: 48
+;; /home/nicolet/repositories/parsynth/examples/rosette/mtlr_sketches/solve_nomtlr_all_using_original_loop.rkt:86:0
+;; '(define (__join__ $Vi_Vi_iiL $Vi_Vi_iiR i_start i_end)
+;;    (let ((l.c ($Vi_Vi_ii-c $Vi_Vi_iiL))
+;;          (l.colmax ($Vi_Vi_ii-colmax $Vi_Vi_iiL))
+;;          (l.mtr ($Vi_Vi_ii-mtr $Vi_Vi_iiL))
+;;          (l.sum ($Vi_Vi_ii-sum $Vi_Vi_iiL))
+;;          (r.c ($Vi_Vi_ii-c $Vi_Vi_iiR))
+;;          (r.colmax ($Vi_Vi_ii-colmax $Vi_Vi_iiR))
+;;          (r.mtr ($Vi_Vi_ii-mtr $Vi_Vi_iiR))
+;;          (r.sum ($Vi_Vi_ii-sum $Vi_Vi_iiR)))
+;;      (let ((tup$
+;;             (LoopFunc
+;;              0
+;;              (lambda (j) (< j 5))
+;;              (lambda (j) (add1 j))
+;;              ($Vi_Vi_ii l.c l.colmax 0 0)
+;;              (lambda (__s j)
+;;                (let ((c ($Vi_Vi_ii-c __s))
+;;                      (colmax ($Vi_Vi_ii-colmax __s))
+;;                      (mtr ($Vi_Vi_ii-mtr __s))
+;;                      (sum ($Vi_Vi_ii-sum __s)))
+;;                  (let ((c (list-set c j (+ (list-ref r.c j) (list-ref c j)))))
+;;                    (let ((colmax
+;;                           (list-set
+;;                            colmax
+;;                            j
+;;                            (max
+;;                             (+ (list-ref r.colmax j) (list-ref l.c j))
+;;                             (list-ref l.colmax j)))))
+;;                      ($Vi_Vi_ii c colmax (max mtr (list-ref c j)) r.sum))))))))
+;;        tup$)))
