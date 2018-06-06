@@ -22,6 +22,10 @@ open Format
 
 let verbose = ref false
 
+let _KEY_INNER_INLINED_ = "inner-inlined"
+let _KEY_JOIN_NOT_INLINED_ = "join-not-inlined"
+let _KEY_JOIN_INLINED_ = "join-inlined"
+
 (**
    Replaces calls to inner loop function in the outer loop
     by a simplified version using the join of the inner loop or the memoryless
@@ -37,44 +41,42 @@ let verbose = ref false
 
 let replace_by_join problem inner_loops =
   let created_inputs = IH.create 10 in
-  (* Inline the join only if it is a list of parallel assignments. *)
+  let rec transform_var out_index : fnLVar -> fnLVar =
+    function
+    | FnVariable vi ->
+      let rvname, _, right = is_right_state_varname vi.vname in
+      let lvname, _, left = is_left_state_varname vi.vname in
+      if left then
+        FnVariable (find_var_name lvname)
+      else if right then
+        let input_like = Conf.seq_name rvname in
+        begin
+          let v = try
+              find_var_name input_like
+            with Not_found ->
+              mkFnVar input_like (Vector(vi.vtype, None))
+          in
+          IH.add created_inputs v.vid v;
+          FnArray(FnVariable v, out_index)
+        end
+      else
+        FnVariable vi
+
+    | FnArray (v, e) -> FnArray (transform_var out_index v,e)
+  in
+  (* Inline the join only if it is only a record expression. *)
   let inline_join out_index in_info =
     let join = in_info.memless_solution in
     match join with
-    | FnLetExpr bl ->
+    | FnRecord(vs, emap) ->
       begin
-
-        if List.length bl > 0 then
-
-          let rec transform_var : fnLVar -> fnLVar =
-            function
-            | FnVariable vi ->
-              let rvname, _, right = is_right_state_varname vi.vname in
-              let lvname, _, left = is_left_state_varname vi.vname in
-              if left then
-                FnVariable (find_var_name lvname)
-              else if right then
-                let input_like = Conf.seq_name rvname in
-                begin
-                  let v = try
-                      find_var_name input_like
-                    with Not_found ->
-                      mkFnVar input_like (Vector(vi.vtype, None))
-                  in
-                  IH.add created_inputs v.vid v;
-                  FnArray(FnVariable v, out_index)
-                end
-              else
-                FnVariable vi
-
-            | FnArray (v, e) -> FnArray (transform_var v,e)
-          in
+        if IM.cardinal emap > 0 then
           let jn =
             transform_expr2
               {
                 case = (fun e -> false);
                 on_case = (fun f e -> e);
-                on_var = transform_var;
+                on_var = transform_var out_index;
                 on_const = identity;
               } join
           in
@@ -89,7 +91,7 @@ let replace_by_join problem inner_loops =
     let out_index = mkVarExpr (VarSet.max_elt ctx.index_vars) in
     (* Create a sequence type for the input of the inner loop. *)
     let state = in_info.scontext.state_vars in
-    let inner_styp = Record (VarSet.record state) in
+    let inner_styp = record_type state in
 
     let seq_inner = Vector (inner_styp, None) in
     let new_seq =
@@ -125,8 +127,7 @@ let replace_by_join problem inner_loops =
              printf "@.[INFO] Inner join %s is not inlined.@." in_info.loop_name;
 
            let capture_state =
-             FnRecord (Record (VarSet.record state),
-                       List.map mkVarExpr (VarSet.elements state))
+             FnRecord (state, identity_map state)
            in
            let index = VarSet.max_elt problem.scontext.index_vars in
            FnApp (inner_styp, Some new_joinf,
@@ -169,20 +170,21 @@ let replace_by_join problem inner_loops =
          problem.inner_functions)
       problem.scontext.state_vars newbody
   in
-  SH.add problem.loop_body_versions "join-not-inlined" problem.main_loop_body;
-  SH.add problem.loop_body_versions "join-inlined" newbody;
+  SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
+    problem.main_loop_body;
+  SH.add problem.loop_body_versions _KEY_JOIN_INLINED_ newbody;
   {problem with inner_functions = inner_loops;
                 join_sketch = new_sketch;
                 scontext = newctx;
                 main_loop_body = newbody;}
 
+
 let no_join_inlined_body pb =
-  try SH.find pb.loop_body_versions "join-not-inlined"
+  try SH.find pb.loop_body_versions _KEY_JOIN_NOT_INLINED_
   with Not_found -> pb.main_loop_body
 
-(* Inline joins inline the joins in the outer loop body.
-   Called in VariableDiscovery.
-*)
+
+
 let inline_inner in_loop_width problem =
   if !verbose then
     printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
@@ -193,20 +195,23 @@ let inline_inner in_loop_width problem =
   let inline_inner in_info args =
     let in_body = no_join_inlined_body in_info in
     let in_state = in_info.scontext.state_vars in
-    let in_type = Record (VarSet.record in_state) in
+    let in_type = record_type in_state in
     let in_index = VarSet.max_elt in_info.scontext.index_vars in
     let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
+    let map_args = IM.of_alist (List.combine (VarSet.vids_of_vs in_state) args) in
     if !verbose then
-      printf "[WARNING] Inlined inner function iterates from 0 to %i by default.@." in_loop_width;
-    FnRec(
-      (
+      printf
+        "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
+        in_loop_width;
+    FnRec((
         FnConst (CInt 0),
         FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
-        FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))
-      ),
-      (in_state, FnRecord(in_type, args)),
-      (in_binder,
-       FnLetIn (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state, in_body)))
+        FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))),
+        (in_state, FnRecord(in_state, map_args)),
+        (in_binder,
+         FnLetIn
+           (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,
+            in_body)))
   in
 
   let inline_case e =
@@ -239,6 +244,10 @@ let inline_inner in_loop_width problem =
     printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
       FPretty.pp_fnexpr loop_body';
 
-  SH.add problem.loop_body_versions "inner-inlined" loop_body';
+  SH.add problem.loop_body_versions _KEY_INNER_INLINED_ loop_body';
   { problem with
     main_loop_body = loop_body'}
+
+let inner_inlined_body pb =
+  try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
+  with Not_found -> pb.main_loop_body

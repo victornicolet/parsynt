@@ -66,19 +66,12 @@ module IM = struct
   include IntegerMap
 
   let keyset imt =
-    IS.of_list (List.map (fun (a,b) -> a) (IntegerMap.bindings imt))
+    IS.of_list (List.map (fun (a,b) -> a) (bindings imt))
 
   let add_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k add_to then mp else
-           IntegerMap.add k v mp)
-      to_add add_to
+    fold (fun k v mp -> if mem k add_to then mp else add k v mp) to_add add_to
 
-  let update_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp -> IntegerMap.add k v mp)
-      to_add add_to
+  let update_all add_to to_add = fold add to_add add_to
 
   let join_opt map_a map_b =
     let f k a = match a with Some x -> true | None -> false in
@@ -88,23 +81,15 @@ module IM = struct
 
 
   let inter a b =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k a
-         then IntegerMap.add k v b
-         else mp)
-      b
-      IntegerMap.empty
+    fold (fun k v mp -> if mem k a then add k v b else mp) b empty
 
   let is_disjoint ?(non_empty = (fun k v -> true)) a b=
     try
-      IntegerMap.fold
+      fold
         (fun k v bol ->
            if non_empty k v
            then
-             (if IntegerMap.mem k a
-              then failwith "iom"
-              else bol)
+             (if mem k a then failwith "iom" else bol)
            else bol)
         b
         true
@@ -112,30 +97,36 @@ module IM = struct
 
   let disjoint_sets im1 im2 =
     let im1_in_im2 =
-      IntegerMap.fold
+      fold
         (fun k v map ->
-           if IntegerMap.mem k im2 then IntegerMap.add k v map else map)
-        im1 IntegerMap.empty
+           if mem k im2 then add k v map else map)
+        im1 empty
     in
     let im2_in_im1 =
-      IntegerMap.fold
+      fold
         (fun k v map ->
-           if IntegerMap.mem k im1 then IntegerMap.add k v map else map)
-        im2 IntegerMap.empty
+           if mem k im1 then add k v map else map)
+        im2 empty
     in
     let im1_only =
-      IntegerMap.fold
+      fold
         (fun k v map ->
-           if IntegerMap.mem k im2 then map else IntegerMap.add k v map)
-        im1 IntegerMap.empty
+           if mem k im2 then map else add k v map)
+        im1 empty
     in
     let im2_only =
-      IntegerMap.fold
+      fold
         (fun k v map ->
-           if IntegerMap.mem k im1 then map else IntegerMap.add k v map)
-        im2 IntegerMap.empty
+           if mem k im1 then map else add k v map)
+        im2 empty
     in
     im1_in_im2, im2_in_im1, im1_only, im2_only
 
-  let of_ih ih = IH.fold (fun k l m -> IntegerMap.add k l m) ih IntegerMap.empty
+  let of_ih ih = IH.fold add ih empty
+
+  let to_alist im =
+    fold (fun i a l -> (i, a)::l) im []
+
+  let of_alist alist =
+    List.fold_left (fun emap (i, e) -> add i e emap) empty alist
 end

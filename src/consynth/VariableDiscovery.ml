@@ -73,7 +73,7 @@ let is_reinitialized problem var =
 (* Check well-formedness of inputs. *)
 let rec check_wf input_function stv  =
   match input_function with
-  | FnLetExpr assignments ->
+  | FnRecord (vs, emap) ->
     input_function
   | FnLetIn (assignments, skletexpr) ->
     failwith "TODO : body with inner dependencies"
@@ -149,7 +149,12 @@ let uses stv input_func =
       let letin_uses = aux_used_stvs stv letin IM.empty in
       IM.merge merge_union new_uses letin_uses
 
-    | FnLetExpr velist -> List.fold_left used_in_assignment map velist
+    | FnRecord (vs, emap) ->
+      IM.fold
+        (fun i e map' ->
+           used_in_assignment map' (FnVariable(VarSet.find_by_id vs i), e))
+        emap
+        map
 
     | _ -> failhere __FILE__ "uses"
              "Bad toplevel expr form, recursion should not have reached this."
@@ -529,17 +534,13 @@ let discover_for_id problem var =
   printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
   AuxSet.iter
     (fun aux ->
-       printf "@.(%i : %s) = (%a,@; %a)@." aux.avar.vid aux.avar.vname
-         cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
-    ) clean_aux_set;
+       printf "@.(%i : %s) = %a@." aux.avar.vid aux.avar.vname
+         cp_fnexpr aux.afunc)
+    clean_aux_set;
 
-  let new_ctx, new_loop_body, new_constant_exprs =
-    VUtils.compose start_exec_state problem.main_loop_body clean_aux_set
-  in
+  let problem' = VUtils.compose problem start_exec_state clean_aux_set in
   discover_init ();
-  {problem with scontext = new_ctx;
-               main_loop_body = new_loop_body }
-
+  problem'
 
 
 (** Main entry point.

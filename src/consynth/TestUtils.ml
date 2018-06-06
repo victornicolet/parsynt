@@ -52,7 +52,7 @@ let rec vi_of_var =
 
 (* Fnetch type expression *)
 let sk_tail_state =
-  FnLetExpr ([])
+  wrap_state []
 
 let increment_all_indexes index_exprs =
   IM.fold
@@ -70,7 +70,7 @@ let _cb b = FnConst (CBool b)
 let _b e1 op e2 = FnBinop (op, e1, e2)
 let _u op e1 = FnUnop (op, e1)
 let _Q c e1 e2 = FnCond (c, e1, e2)
-let _let el = FnLetExpr el
+let _let el = wrap_state el
 let _letin el l = FnLetIn (el, l)
 let _inrec r x = FnRecordMember(evar r, x.vname)
 let _self r x = var x, FnRecordMember (evar r, x.vname)

@@ -87,8 +87,9 @@ let test_01 () =
     _letin
       [(FnArray (FnVariable c, sk_zero), sk_zero);
        (FnVariable sum, sk_zero)]
-      (_letin [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)))]
-         sk_tail_state)
+      (_letin
+         [(FnArray (FnVariable c, sk_one)), (FnVar (FnArray (FnVariable c, sk_zero)))]
+         (FnRecord(cont.state_vars, identity_map cont.state_vars)))
   in
   ignore(symbolic_execution_test "sum0" vars cont funct 1
            [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0)])])
@@ -102,7 +103,7 @@ let test_02 () =
   let sum = vars#get "sum" in
   let i = vars#get "i" in
   let inloop_state = VarSet.singleton c in
-  let inloop_type = Record(VarSet.record inloop_state) in
+  let inloop_type = record_type inloop_state in
   let state_binder = mkFnVar "_st" inloop_type in
   let tup = mkFnVar "tup" inloop_type in
   let funct =
@@ -115,13 +116,13 @@ let test_02 () =
                       (* Initial value, guard and update of index of the loop. *)
                       (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
                       (* Initial state *)
-                      (inloop_state, FnRecord(inloop_type, [evar c])),
+                      (inloop_state, FnRecord(inloop_state, IM.of_alist [c.vid, evar c])),
                       (* Body of the loop *)
                       (state_binder,
                        (_letin [_self state_binder c]
                           (_letin [(FnArray (var c, _ci 2)), _ci 2]
                              (_let [var c, evar c]))))))]
-            (_let [_self tup c])))
+            (evar tup)))
   in
   ignore(symbolic_execution_test "sum1" vars cont funct 1
            [(sum.vid, Scalar (CInt 0));(c.vid, Linear [(0, CInt 0); (1,CInt 0); (2, CInt 2)])])
@@ -134,7 +135,7 @@ let test_03 () =
   let sum = vars#get "sum" in
   let i = vars#get "i" in
   let inst = VarSet.singleton c in
-  let instt = Record (VarSet.record inst) in
+  let instt = record_type inst in
   let xs = mkFnVar "xs" instt in
   let funct =
     _letin
@@ -149,7 +150,7 @@ let test_03 () =
                         (* Initial value, guard and update of index of the loop. *)
                         (_ci 0, (flt (evar i) (_ci 10)),(fplus (evar i) sk_one)),
                         (* Initial state *)
-                        (inst, FnRecord(instt, [evar c])),
+                        (inst, FnRecord(inst, IM.of_alist [c.vid, evar c])),
                         (* Body of the loop *)
                         (xs, (_letin [_self xs c]
                                 (_letin [FnArray (var c,  _ci 2),
@@ -182,7 +183,7 @@ let test_03bis () =
   let i = vars#get "i" in
   let a = vars#get "A" in
   let inst = VarSet.singleton sum in
-  let instt = Record (VarSet.record inst) in
+  let instt = record_type inst in
   let xs = mkFnVar "xs" instt in
   let tup = mkFnVar "tup" instt in
   let funct =
@@ -193,7 +194,7 @@ let test_03bis () =
              (* Initial value, guard and update of index of the loop. *)
              (_ci 0, (flt (evar i) (_ci 4)),(fplus (evar i) sk_one)),
              (* Initial state *)
-             (inst, FnRecord(instt, [evar sum])),
+             (inst, FnRecord(inst, IM.of_alist [sum.vid, evar sum])),
              (* Body of the loop *)
              (xs, (_letin [_self xs sum]
                      (_let [var sum, fplus (a $ (evar i)) (evar sum)])))))]
@@ -219,7 +220,7 @@ let test_03ter () =
   let j = vars#get "j" in
   let a = vars#get "A" in
   let inst = VarSet.singleton sum in
-  let instt = Record (VarSet.record inst) in
+  let instt = record_type inst in
   let xs = mkFnVar "xs" instt in
   let tup = mkFnVar "tup" instt in
   let funct =
@@ -230,7 +231,7 @@ let test_03ter () =
              (* Initial value, guard and update of index of the loop. *)
              (_ci 0, (flt (evar j) (_ci 4)), (fplus (evar j) sk_one)),
              (* Initial state *)
-             (inst, FnRecord(instt, [evar sum])),
+             (inst, FnRecord(inst, IM.of_alist [sum.vid, evar sum])),
              (* Body of the loop *)
              (xs, (_letin [_self xs sum]
                      (_let [var sum, fplus (a $$ (evar i, evar j)) (evar sum)])))))]
@@ -307,13 +308,14 @@ let test_04 () =
   let a = vars#get "a" in let sum = vars#get "sum" in
   let j = vars#get "j" in let i = vars#get "i" in
   let inctx = make_context vars "((sum mtr c) (j) (a) (sum mtr mtrl c j a) (sum mtr c))" in
-  let intype = Record (VarSet.record inctx.state_vars) in
+  let intype = record_type inctx.state_vars in
   let tup = mkFnVar "tup" intype in
   let bnds = mkFnVar "bound" intype in
   let func =
     (_letin [FnVariable tup,
              FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
-                   (inctx.state_vars, FnRecord(intype, [sk_zero; sk_zero; evar c])),
+                   (inctx.state_vars, FnRecord(inctx.state_vars,
+                                               IM.of_alist [sum.vid, sk_zero; mtr.vid, sk_zero;c.vid, evar c])),
                    (bnds,
                     (_letin [_self bnds sum; _self bnds mtr; _self bnds c]
                        (_letin [var sum, fplus (a $$ (evar i, evar j)) (evar sum)]

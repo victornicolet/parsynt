@@ -111,37 +111,143 @@ module AuxSet =
   end)
 
 let mkAux v e =
-  { avar = v; aexpr = e; afunc = FnLetExpr([]); depends = VarSet.empty; }
+  { avar = v; aexpr = e; afunc = wrap_state []; depends = VarSet.empty; }
 
 let mkAuxF v e f =
   { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }
+
+
+let replace_index_uses index_set =
+  VarSet.fold
+    (fun index expr ->
+       (replace_expression
+          ~in_subscripts:true
+          ~to_replace:(mkVarExpr index)
+          ~by:(mkVarExpr (index_set index))
+          ~ine:expr))
+
+let add_to_inner_loop_body
+    (aux : auxiliary) (inner_loop : prob_rep) (v, e : fnLVar * fnExpr) :
+  prob_rep =
+  let ctx = inner_loop.scontext in
+  let new_stv = VarSet.add aux.avar ctx.state_vars in
+  let new_body =
+    complete_final_state new_stv
+      (compose_tail [v, e] inner_loop.main_loop_body)
+  in
+  printf "New body:@.%a@." pp_fnexpr new_body;
+  {inner_loop with
+   scontext =
+     { ctx with
+       state_vars = new_stv;
+       all_vars = VarSet.add aux.avar ctx.state_vars;
+       used_vars = VarSet.union ctx.used_vars (used_in_fnexpr e);
+     };
+   main_loop_body = new_body;
+   memless_sketch =
+     Sketch.Join.build_from_solution_inner
+       [mkVarExpr (VarSet.max_elt ctx.index_vars)]
+       new_stv
+       inner_loop.reaching_consts
+       (inner_loop.memless_solution, new_body);
+  }
+
 
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
     of state variables and a function.
 *)
-let compose xinfo f aux_set =
+let compose problem xinfo aux_set =
+  let f = InnerFuncs.no_join_inlined_body problem in
   let new_ctx = ctx_update_vsets xinfo.context (AuxSet.vars aux_set) in
   let clean_f = remove_id_binding f in
-  let replace_index_uses index_set =
-    VarSet.fold
-      (fun index expr ->
-         (replace_expression
-            ~in_subscripts:true
-            ~to_replace:(mkVarExpr index)
-            ~by:(mkVarExpr (index_set index))
-            ~ine:expr))
+  let compose_case_single xinfo aux (hal, tal) v =
+    (* Replace index by "start index" variable *)
+    let aux_expression =
+      add_left_auxiliary v;
+      replace_index_uses
+        left_index_vi xinfo.context.index_vars aux.aexpr
+    in
+    (** If the only the "start index" appears, or the aux variable's
+        expression is only a function of the index/input variable, it
+        can be removed from the loop *)
+    if
+      begin
+        let used_vars = used_in_fnexpr aux_expression in
+        let not_read_vars =
+          VarSet.diff used_vars
+            (VarSet.diff xinfo.context.all_vars new_ctx.state_vars)
+        in
+        let not_read_not_index =
+          VarSet.diff not_read_vars new_ctx.index_vars in
+        (** No other variables than read-only or index *)
+        VarSet.cardinal not_read_not_index = 0
+      end
+    then
+      hal@[(FnVariable v, aux_expression)],
+      tal
+    else
+      hal@[(FnVariable v, aux_expression)], tal
   in
-  let new_func, const_exprs =
-    let head_assgn, tail_assgn, const_exprs =
+  let compose_case_default xinfo aux (hal, tal) =
+    let cur_vi = aux.avar in
+    let v = (FnVariable cur_vi) in
+    let assgn =
+       [v, aux.afunc]
+     in
+     let dependencies =
+       VarSet.cardinal (VarSet.inter aux.depends xinfo.context.state_vars)
+     in
+     if dependencies > 0
+     then
+       (* The variable depends on other state variables *)
+       hal, tal@assgn
+     else
+       hal@assgn, tal
+  in
+  let compose_case_vector
+      (xinfo : exec_info)
+      (aux : auxiliary)
+      (el :fnExpr list)
+      (il : prob_rep list) : prob_rep list =
+    List.map
+      (fun inner_loop ->
+         let j = VarSet.max_elt (get_index_varset inner_loop) in
+         let jexprs =
+           List.mapi
+             (fun i e ->
+                replace_expression
+                  ~in_subscripts:true
+                  ~to_replace:(FnConst (CInt i))
+                  ~by:(mkVarExpr j)
+                  ~ine:e) el
+         in
+         if List.length jexprs > 1 &&
+            List.for_all (fun e -> e @= (List.hd jexprs)) jexprs
+         then
+           let binding =
+             FnVariable aux.avar,
+             FnArraySet(mkVarExpr aux.avar, mkVarExpr j, List.hd jexprs)
+           in
+           add_to_inner_loop_body aux inner_loop binding
+         else
+           (printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
+              aux.avar.vname;
+            inner_loop))
+      il
+  in
+  let new_func, inner_loops =
+    let head_assgn, tail_assgn, inner_loops =
       (AuxSet.fold
-         (fun aux (head_assgn_list, tail_assgn_list, const_exprs)->
+         (fun aux (hl, tl, il)->
             (** Distinguish different cases :
                 - the function is not identity but an accumulator, we add the
                 function 'as is' in the loop body.
                 TODO : graph analysis to place the let-binding at the right
                 position.
+                - the function is a vector. Deduce the recursion to add in the
+                inner loop.
                 - the function f is the identity, then the auxliary variable
                 depends on a finite prefix of the inputs. The expression depends
                 on the starting index
@@ -150,85 +256,39 @@ let compose xinfo f aux_set =
             *)
             match aux.afunc with
             | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
-              (* Replace index by "start index" variable *)
-              let aux_expression =
-                add_left_auxiliary v;
-                replace_index_uses
-                  left_index_vi xinfo.context.index_vars aux.aexpr
+              let hl', tl' =
+                compose_case_single xinfo aux (hl, tl) v
               in
-              (** If the only the "start index" appears, or the aux variable's
-                  expression is only a function of the index/input variable, it
-                  can be removed from the loop *)
-              if
-                begin
-                  let used_vars = used_in_fnexpr aux_expression in
-                  let not_read_vars =
-                    VarSet.diff used_vars
-                      (VarSet.diff xinfo.context.all_vars new_ctx.state_vars)
-                  in
-                  let not_read_not_index =
-                    VarSet.diff not_read_vars new_ctx.index_vars in
-                  (** No other variables than read-only or index *)
-                  VarSet.cardinal not_read_not_index = 0
-                end
-              then
-                head_assgn_list@[(FnVariable v, aux_expression)],
-                tail_assgn_list,
-                const_exprs@[FnVariable v, aux_expression]
-              else
-                head_assgn_list@[(FnVariable v, aux_expression)],
-                tail_assgn_list, const_exprs
+              (hl', tl', il)
+
+            | FnVector el ->
+              let il' = compose_case_vector xinfo aux el il in
+              (hl, tl, il')
+
             | _ ->
+              let hl', tl' =
+                compose_case_default xinfo aux (hl, tl)
+              in
+              (hl', tl', il)
               (** If the function depends only on index and read variables, the
                   final value of the auxiliary depends only on its
                   "final expression"
               *)
-              let cur_vi = aux.avar in
-              let v = (FnVariable cur_vi) in
-              let new_const_exprs =
-                const_exprs@
-                (if
-                  begin
-                    let used_vars = used_in_fnexpr aux.afunc in
-                    let not_read_vars =
-                      VarSet.diff used_vars
-                        (VarSet.diff xinfo.context.all_vars xinfo.context.state_vars)
-                    in
-                    let not_read_not_index =
-                      VarSet.diff not_read_vars xinfo.context.index_vars in
-                    (** No other variables than read-only or index *)
-                    VarSet.cardinal not_read_not_index = 0
-                  end
-                 then
-                   (* The variable doesn't depend on any other state variable *)
-                   (add_right_auxiliary cur_vi;
-                    [v,
-                     replace_index_uses
-                       right_index_vi xinfo.context.index_vars aux.afunc])
-                 else
-                   [])
-              in
-              (let assgn =
-                 [v, aux.afunc]
-               in
-               let dependencies =
-                 VarSet.cardinal (VarSet.inter aux.depends xinfo.context.state_vars)
-               in
-               if dependencies > 0
-               then
-                 (* The variable depends on other state variables *)
-                 head_assgn_list, tail_assgn_list@assgn, new_const_exprs
-               else
-                 head_assgn_list@assgn, tail_assgn_list, new_const_exprs))
+         )
 
-         aux_set ([], [], []))
+         aux_set ([], [], problem.inner_functions))
     in
     let f = complete_final_state new_ctx.state_vars
         (compose_tail tail_assgn clean_f)
     in
-    (compose_head head_assgn f), const_exprs
+    (compose_head head_assgn f), inner_loops
   in
-  (new_ctx, new_func, const_exprs)
+  {
+    problem with
+    scontext = new_ctx;
+    main_loop_body = new_func;
+    inner_functions = inner_loops;
+  }
 
 
 
@@ -469,11 +529,11 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
        in
        let unfold_op e = fst (unfold_expr xinfo' e) in
        let e_unfolded =
-           match aux.afunc with
-           | FnVector el ->
-             FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
-           | e ->
-             replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
+         match aux.afunc with
+         | FnVector el ->
+           FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
+         | e ->
+           replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
        in
        printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
          cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
@@ -525,3 +585,25 @@ let find_computed_expressions
     | _ -> aux xinfo_aux.state_exprs e (-1)
   else
     e
+
+let new_const_exprs xinfo aux cur_vi v =
+  (if
+    begin
+      let used_vars = used_in_fnexpr aux.afunc in
+      let not_read_vars =
+        VarSet.diff used_vars
+          (VarSet.diff xinfo.context.all_vars xinfo.context.state_vars)
+      in
+      let not_read_not_index =
+        VarSet.diff not_read_vars xinfo.context.index_vars in
+      (** No other variables than read-only or index *)
+      VarSet.cardinal not_read_not_index = 0
+    end
+   then
+     (* The variable doesn't depend on any other state variable *)
+     (add_right_auxiliary cur_vi;
+      [v,
+       replace_index_uses
+         right_index_vi xinfo.context.index_vars aux.afunc])
+   else
+     [])

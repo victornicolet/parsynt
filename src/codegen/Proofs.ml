@@ -482,8 +482,8 @@ let find_exprs vi solved_sketch =
       (match ret_binding vi ve_list with
        | Some e -> Some e
        | None -> find_binding vi letin)
-    | FnLetExpr ve_list ->
-      ret_binding vi ve_list
+    | FnRecord (vs, emap) ->
+      ret_binding vi (unwrap_state vs emap)
     | _ -> None
   in
   let flat_function =

@@ -257,7 +257,6 @@ let func2sketch cfile funcreps =
       List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
     in
 
-    Sketch.Join.join_loop_width := !mat_w;
     let join_sk =
       Sketch.Join.build_join
         inner_indexes
@@ -265,10 +264,9 @@ let func2sketch cfile funcreps =
         loop_body
     in
     (* Set the loop width for the join *)
-    Sketch.Join.join_loop_width := !mat_w;
     let mless_sk =
       Sketch.Join.build_for_inner
-        [FnVar (FnVariable (VarSet.max_elt index_set))]
+        [mkVarExpr (VarSet.max_elt index_set)]
         state_vars
         s_reach_consts
         loop_body;
@@ -331,8 +329,8 @@ let func2sketch cfile funcreps =
       join_sketch = join_sk;
       memless_sketch = mless_sk;
       (* No solution for now! *)
-      join_solution = FnLetExpr ([]);
-      memless_solution = FnLetExpr ([]);
+      join_solution = wrap_state [];
+      memless_solution = wrap_state [];
       init_values = IM.empty;
       identity_values = IM.empty;
       func_igu = sigu;
@@ -395,6 +393,14 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
       Sketch.pp_rosette_sketch parent_context inner fmt sketch_rep
     end
   | _ -> ()
+
+
+let fetch_solution
+    ?(solver=Conf.rosette)
+    ?(inner=false)
+    ?(parent_ctx=None)
+    (problem : prob_rep) : float * prob_rep option =
+    0.0, Some problem
 
 
 let store_solution = Join.store_solution

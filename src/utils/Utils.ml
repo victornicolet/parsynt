@@ -236,6 +236,13 @@ let check_option ao =
 
 let somes l = List.map check_option (List.filter is_some l)
 
+let (=>>) (f: 'a -> 'b option) (g : 'b -> 'c option): 'a -> 'c option =
+  (fun x ->
+     match f x with
+     | Some y -> g y
+     | None -> None)
+
+
 let maybe_apply (f:'a->'b) (v: 'a option) : 'b option =
   match v with
   | Some a -> Some (f a)

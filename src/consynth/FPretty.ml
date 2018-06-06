@@ -13,11 +13,12 @@ let printing_sketch = ref false
 let holes_expr_depth = ref 1
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
-
+let assume_join_map = ref true
 
 let state_vars = ref VS.empty
 
-let rosette_loop_macro_name = Conf.get_conf_string "rosette_func_loop_macro_name"
+let rosette_loop_macro_name =
+  Conf.get_conf_string "rosette_func_loop_macro_name"
 
 let reinit ?(ed = 1) ?(use_nl = false) =
   printing_sketch := false;
@@ -70,9 +71,16 @@ let string_of_opchoice oct =
 
 
 let make_index_completion_string f e =
-  fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
-  flush_str_formatter ()
-
+  if !assume_join_map then
+    begin
+      fprintf str_formatter "%a" f e;
+      flush_str_formatter ()
+    end
+  else
+    begin
+      fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
+      flush_str_formatter ()
+    end
 (** Pretty-printing operators *)
 
 let string_of_unsafe_binop =
@@ -158,15 +166,15 @@ and pp_symb_type_aux ppf t =
     begin
       match t with
       | Unit -> fprintf ppf "unit"
-      | Record tl ->
-        fprintf ppf "(%a)"
+      | Record (s, tl) ->
+        fprintf ppf "(%s | %a)"
+          s
           (fun ppf l ->
              pp_print_list
                ~pp_sep:(fun ppf () -> fprintf ppf ",")
                (fun ppf (s, ty) -> fprintf ppf "%s: %a" s pp_symb_type ty)
                ppf
-               l)
-          tl
+               l) tl
 
       | Bitvector  i ->
         fprintf ppf "(bitvector %i)" i
@@ -280,13 +288,6 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[<hov 2>(%s %a)@]"
-      (record_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> pp_fnexpr ppf e)) el
-
   | FnLetIn (el, l) ->
     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
        (fun ppf el ->
@@ -300,8 +301,10 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
                      Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a %a)]@]"
                        pp_fnlvar a pp_fnlvar a pp_fnexpr i pp_fnexpr e
                    | FnArray(a', k) ->
-                     Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
-                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar a pp_fnexpr i pp_fnexpr e
+                     Format.fprintf ppf
+                       "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
+                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar
+                       a pp_fnexpr i pp_fnexpr e
                   )
                 | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
@@ -311,20 +314,17 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
-  | FnRecord (rt, exprs) ->
-    let stl =
-      match rt with
-      | Record stl -> stl
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record."
-    in
-    let record_name = record_name stl in
-    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr) exprs
+  | FnRecord (vs, exprs) ->
+    let rname = record_name vs in
+    fp ppf "(%s %a)" rname (pp_break_sep_list pp_fnexpr)
+      (snd (ListTools.unpair (unwrap_state vs exprs)))
 
   | FnRecordMember (record, mname) ->
     let record_name =
       match type_of record with
-      | Record stl -> record_name stl
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
+      | Record (name, stl) -> name
+      | _ -> failhere __FILE__ "pp_fnexpr"
+               "Not record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
 
@@ -354,14 +354,20 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_fnexpr) argl
 
   | FnHoleR (t, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnHoleL (t, v, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnChoice el ->
     fp ppf "@[<v 2>(choose@;%a)@]"
@@ -531,18 +537,6 @@ and cp_expr_list fmt el =
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
-      (color "red") color_default
-      (color "b")
-      (record_name ~only_by_type:true
-         (List.map (fun (v,e) -> let tv = type_of_var v in shstr_of_type tv, tv) el))
-      color_default
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> cp_fnexpr ppf e)) el
-      (color "red") color_default
-
   | FnLetIn (el, l) ->
     fprintf ppf "%s(%slet%s @[<v 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
       (* Opening parenthesis *)
@@ -566,8 +560,9 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnArraySet(a,i,e) ->
     fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
-  | FnRecord (t, el) ->
-    fp ppf "(Record[%a] %a)" pp_typ t cp_expr_list el
+  | FnRecord (vs, emap) ->
+    fp ppf "(Record[%s] %a)" (record_name vs)
+      cp_expr_list (snd (ListTools.unpair (unwrap_state vs emap)))
 
   | FnRecordMember (r, m) ->
     fp ppf "([%a]-%s %a)" pp_typ (type_of r) m cp_fnexpr r
@@ -812,8 +807,6 @@ let pp_c_assignment_list p_id_asgn_list fmt ve_list =
 
 let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
   match fnlet with
-  | FnLetExpr assgn_list ->
-    fprintf fmt "@[%a@]" (pp_c_assignment_list p_id_assign) assgn_list
   | FnLetIn (assgn_list, fnlet') ->
     fprintf fmt "@[%a@;%a@]"
       (pp_c_assignment_list p_id_assign) assgn_list
@@ -824,7 +817,7 @@ let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
 let print_c_let = pp_c_fnlet std_formatter
 let print_c_expr = pp_c_expr std_formatter
 
-let rec pp_problem_rep fmt fnetch =
+let rec pp_problem_rep ?(inner=false) fmt fnetch =
   fprintf fmt "@[<v 2>%s%sSummary for %s (%i) :%s@;\
                %sLoop body :%s@;%a@;\
                %sJoin:%s@;%a\n @;\
@@ -835,13 +828,14 @@ let rec pp_problem_rep fmt fnetch =
     (color "b") color_default
     pp_fnexpr fnetch.main_loop_body
     (color "b") color_default
-    pp_fnexpr fnetch.join_solution
+    pp_fnexpr
+    (if inner then fnetch.memless_solution else fnetch.join_solution)
     (color "b-lightgray")
     (fun fmt () ->
        if List.length fnetch.inner_functions > 0 then
          fprintf fmt "@[<v 2>%sInner functions:%s\n@;%a@]"
            (color "b-blue") color_default
-           (pp_print_list ~pp_sep:pp_sep_brk pp_problem_rep)
+           (pp_print_list ~pp_sep:pp_sep_brk (pp_problem_rep ~inner:true))
            fnetch.inner_functions
        else
          ()) ()

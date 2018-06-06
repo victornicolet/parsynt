@@ -116,13 +116,7 @@
 (define seq:#L__mtl#6
   (list seq:#L__mtl#6$0 seq:#L__mtl#6$1 seq:#L__mtl#6$2 seq:#L__mtl#6$3 seq:#L__mtl#6$4 seq:#L__mtl#6$5 seq:#L__mtl#6$6 seq:#L__mtl#6$7 seq:#L__mtl#6$8))
 
-(struct $Vi_Vi_iii (c colmax mtr mtrl sum) #:transparent)
-(define ($Vi_Vi_iii-eq? s1 s2) (and (eq? ($Vi_Vi_iii-c s1) ($Vi_Vi_iii-c s2))
-                                    (eq? ($Vi_Vi_iii-colmax s1) ($Vi_Vi_iii-colmax s2))
-                                    (eq? ($Vi_Vi_iii-mtr s1) ($Vi_Vi_iii-mtr s2))
-                                    (eq? ($Vi_Vi_iii-mtrl s1) ($Vi_Vi_iii-mtrl s2))
-                                    (eq? ($Vi_Vi_iii-sum s1) ($Vi_Vi_iii-sum s2))
-                                    ))
+
 ;;Defining inner join function for outer loop.
 (define (join#L__mtl#6 $L $R j_start j_end)
   (let ([l.c ($Vi_Vi_ii-c $L)][l.colmax ($Vi_Vi_ii-colmax $L)]
@@ -155,120 +149,79 @@
 ;;Functional representation of the loop body.
 (define (__loop_body__ s i_begin_ i_end_ )
   (Loop i_begin_ i_end_ 9 s
-        (lambda (__s i) (let ([c ($Vi_Vi_iii-c __s)]
-                              [colmax ($Vi_Vi_iii-colmax __s)] [mtr ($Vi_Vi_iii-mtr __s)]
-                              [mtrl ($Vi_Vi_iii-mtrl __s)] [sum ($Vi_Vi_iii-sum __s)])
+        (lambda (__s i) (let ([c ($Vi_Vi_ii-c __s)]
+                              [colmax ($Vi_Vi_ii-colmax __s)]
+                              [mtr ($Vi_Vi_ii-mtr __s)]
+                              [sum ($Vi_Vi_ii-sum __s)])
                           (let ([tup$ (join#L__mtl#6 ($Vi_Vi_ii c colmax mtr
                                                                 sum) (list-ref seq:#L__mtl#6 i) 0 5)])
-                            (let ([c ($Vi_Vi_ii-c tup$)][colmax ($Vi_Vi_ii-colmax tup$)]
-                                                        [mtr ($Vi_Vi_ii-mtr tup$)][sum ($Vi_Vi_ii-sum tup$)])
-                              ($Vi_Vi_iii c colmax mtr (max mtr mtrl) sum)))))))
+                            tup$)))))
 
 ;;Wrapping for the sketch of the join.
-(define (__join__ $Vi_Vi_iiiL $Vi_Vi_iiiR i_start i_end)
-  (let ([l.c ($Vi_Vi_iii-c $Vi_Vi_iiiL)]
-        [l.colmax ($Vi_Vi_iii-colmax $Vi_Vi_iiiL)]
-        [l.mtr ($Vi_Vi_iii-mtr $Vi_Vi_iiiL)]
-        [l.mtrl ($Vi_Vi_iii-mtrl $Vi_Vi_iiiL)]
-        [l.sum ($Vi_Vi_iii-sum $Vi_Vi_iiiL)] [r.c ($Vi_Vi_iii-c $Vi_Vi_iiiR)]
-        [r.colmax ($Vi_Vi_iii-colmax $Vi_Vi_iiiR)]
-        [r.mtr ($Vi_Vi_iii-mtr $Vi_Vi_iiiR)]
-        [r.mtrl ($Vi_Vi_iii-mtrl $Vi_Vi_iiiR)]
-        [r.sum ($Vi_Vi_iii-sum $Vi_Vi_iiiR)])
-    (let ([tup$ (LoopFunc
-                 0
-                 (lambda (j) (< j 5))
-                 (lambda (j) (add1 j))
-                 ($Vi_Vi_iii l.c l.colmax 0 l.mtrl 0)
-                 (lambda (__s j)
-                   (let ([c ($Vi_Vi_iii-c __s)]
-                         [colmax ($Vi_Vi_iii-colmax __s)]
-                         [mtr ($Vi_Vi_iii-mtr __s)]
-                         [mtrl ($Vi_Vi_iii-mtrl __s)]
-                         [sum ($Vi_Vi_iii-sum __s)])
-                     (let ([c (list-set
-                               c
-                               j
-                               (+
-                                (NumExprBasic
-                                 (list-ref colmax j)
-                                 (list-ref r.colmax j)
-                                 (list-ref l.colmax j)
-                                 (list-ref c j)
-                                 (list-ref r.c j)
-                                 (list-ref l.c j)
-                                 1)
-                                (NumExprBasic
-                                 (list-ref r.colmax j)
-                                 (list-ref r.c j)
-                                 1)))])
-                       (let ([colmax (list-set
-                                      colmax
-                                      j
-                                      (max
-                                       (NumExprBasic
-                                        (list-ref colmax j)
-                                        (list-ref r.colmax j)
-                                        (list-ref l.colmax j)
-                                        (list-ref c j)
-                                        (list-ref r.c j)
-                                        (list-ref l.c j)
-                                        1)
-                                       (NumExprBasic
-                                        (list-ref colmax j)
-                                        (list-ref r.colmax j)
-                                        (list-ref l.colmax j)
-                                        (list-ref c j)
-                                        (list-ref r.c j)
-                                        (list-ref l.c j)
-                                        1)))])
-                         ($Vi_Vi_iii c colmax
-                                     (max
-                                      (NumExprBasic
-                                       mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
-                                       (list-ref colmax j)
-                                       (list-ref r.colmax j)
-                                       (list-ref l.colmax j)
-                                       (list-ref c j)
-                                       (list-ref r.c j)
-                                       (list-ref l.c j)
-                                       1)
-                                      (NumExprBasic
-                                       mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
-                                       (list-ref colmax j)
-                                       (list-ref r.colmax j)
-                                       (list-ref l.colmax j)
-                                       (list-ref c j)
-                                       (list-ref r.c j)
-                                       (list-ref l.c j)
-                                       1))
-                                     (max
-                                      (NumExprBasic
-                                       mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
-                                       (list-ref colmax j)
-                                       (list-ref r.colmax j)
-                                       (list-ref l.colmax j)
-                                       (list-ref c j)
-                                       (list-ref r.c j)
-                                       (list-ref l.c j)
-                                       1)
-                                      (NumExprBasic
-                                       mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
-                                       (list-ref colmax j)
-                                       (list-ref r.colmax j)
-                                       (list-ref l.colmax j)
-                                       (list-ref c j)
-                                       (list-ref r.c j)
-                                       (list-ref l.c j)
-                                       1))
-                                     r.sum))))))])
-      tup$ )))
+(define (__join__ $Vi_Vi_iiL $Vi_Vi_iiR i_start i_end)
+  (let ([l.c ($Vi_Vi_ii-c $Vi_Vi_iiL)]
+        [l.colmax ($Vi_Vi_ii-colmax $Vi_Vi_iiL)]
+        [l.mtr ($Vi_Vi_ii-mtr $Vi_Vi_iiL)]
+        [l.sum ($Vi_Vi_ii-sum $Vi_Vi_iiL)]
+        [r.c ($Vi_Vi_ii-c $Vi_Vi_iiR)]
+        [r.colmax ($Vi_Vi_ii-colmax $Vi_Vi_iiR)]
+        [r.mtr ($Vi_Vi_ii-mtr $Vi_Vi_iiR)]
+        [r.sum ($Vi_Vi_ii-sum $Vi_Vi_iiR)])
+    (let ([tup$ (LoopFunc 0 (lambda (j) (< j 5))
+                          (lambda (j) (add1 j)) ($Vi_Vi_ii l.c l.colmax 0 0)
+                          (lambda (__s j) (let ([c ($Vi_Vi_ii-c __s)]
+                                                [colmax ($Vi_Vi_ii-colmax __s)]
+                                                [mtr ($Vi_Vi_ii-mtr __s)]
+                                                [sum ($Vi_Vi_ii-sum __s)])
+                                            (let ([c (list-set
+                                                      c
+                                                      j
+                                                      (+ (list-ref c j) (list-ref r.c j)))])
+                                              (let ([colmax (list-set
+                                                             colmax
+                                                             j
+                                                             (max
+                                                              (NumExprBasic
+                                                               sum
+                                                               r.sum
+                                                               l.sum
+                                                               mtr
+                                                               r.mtr
+                                                               l.mtr
+                                                               (list-ref colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref r.colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref l.colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref c (choose (add1 j) (sub1 j) j))
+                                                               (list-ref r.c (choose (add1 j) (sub1 j) j))
+                                                               (list-ref l.c (choose (add1 j) (sub1 j) j))
+                                                               1)
+                                                              (NumExprBasic
+                                                               (list-ref colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref r.colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref l.colmax (choose (add1 j) (sub1 j) j))
+                                                               (list-ref c (choose (add1 j) (sub1 j) j))
+                                                               (list-ref r.c (choose (add1 j) (sub1 j) j))
+                                                               (list-ref l.c (choose (add1 j) (sub1 j) j))
+                                                               1)
+                                                               ;; (choose (add1 j) (sub1 j) j))
+                                                              ;; (+ (list-ref l.c j) (list-ref r.colmax j))
+                                                              ;; (list-ref colmax j)
+                                                              )
+                                                             )])
+                                                ($Vi_Vi_ii c colmax
+                                                           (max mtr (list-ref c j))
+                                                           sum))))))])
+      (let ([c ($Vi_Vi_ii-c tup$)]
+            [colmax ($Vi_Vi_ii-colmax tup$)]
+            [mtr ($Vi_Vi_ii-mtr tup$)]
+            [sum ($Vi_Vi_ii-sum tup$)])
+        ($Vi_Vi_ii c colmax mtr r.sum)))))
 
 
 
 ;;Symbolic input state and synthesized id state
-(define $_identity ($Vi_Vi_iii (make-list 5 0) (make-list 5 (choose 0 #t #f)) (choose 0 #t #f 0) (choose 0 #t #f 0) (choose 0 #t #f 0)))
-(define ($_initial _begin_ end) ($Vi_Vi_iii (make-list 5 0) (make-list 5 0) 0 0 0))
+(define $_identity ($Vi_Vi_ii (make-list 5 0) (make-list 5 0) 0 0))
+(define ($_initial _begin_ end) ($Vi_Vi_ii (make-list 5 0) (make-list 5 0) 0 0))
 ;;Actual synthesis work happens here
 
 (define odot (time
@@ -319,17 +272,19 @@
                               seq:#L__mtl#6$8-colmax$1 seq:#L__mtl#6$8-colmax$2
                               seq:#L__mtl#6$8-colmax$3 seq:#L__mtl#6$8-colmax$4)
                #:guarantee (assert (and
-                                    ($Vi_Vi_iii-eq? (__loop_body__ ($_initial 0 2) 0 2 )
-                                                    (__join__ (__loop_body__ ($_initial 0 1) 0 1 )
-                                                              (__loop_body__ ($_initial 1 2) 1 2 ) 0 2))
-                                    ($Vi_Vi_iii-eq? (__loop_body__ ($_initial 0 7) 0 7 )
-                                                    (__join__ (__loop_body__ ($_initial 0 1) 0 1 )
-                                                              (__loop_body__ ($_initial 1 7) 1 7 ) 0 7))
-                                    ($Vi_Vi_iii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
-                                                    (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
-                                                              (__loop_body__ ($_initial 2 5) 2 5 ) 0 5))
-                                    ($Vi_Vi_iii-eq? (__loop_body__ ($_initial 0 4) 0 4 )
-                                                    (__join__ (__loop_body__ ($_initial 0 2) 0 2 )
-                                                              (__loop_body__ ($_initial 2 4) 2 4 ) 0 4)))))))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 2) 0 2 )
+                                                   (__join__ (__loop_body__ ($_initial 0 1) 0 1 ) (__loop_body__ ($_initial 1 2) 1 2 ) 0 2))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 7) 0 7 )
+                                                   (__join__ (__loop_body__ ($_initial 0 1) 0 1 ) (__loop_body__ ($_initial 1 7) 1 7 ) 0 7))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 5) 0 5 )
+                                                   (__join__ (__loop_body__ ($_initial 0 2) 0 2 ) (__loop_body__ ($_initial 2 5) 2 5 ) 0 5))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 8) 0 8 )
+                                                   (__join__ (__loop_body__ ($_initial 0 5) 0 5 ) (__loop_body__ ($_initial 5 8) 5 8 ) 0 8))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 9) 0 9 )
+                                                   (__join__ (__loop_body__ ($_initial 0 3) 0 3 ) (__loop_body__ ($_initial 3 9) 3 9 ) 0 9))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 3) 0 3 )
+                                                   (__join__ (__loop_body__ ($_initial 0 2) 0 2 ) (__loop_body__ ($_initial 2 3) 2 3 ) 0 3))
+                                    ($Vi_Vi_ii-eq? (__loop_body__ ($_initial 0 4) 0 4 )
+                                                   (__join__ (__loop_body__ ($_initial 0 2) 0 2 ) (__loop_body__ ($_initial 2 4) 2 4 ) 0 4)))))))
 
 (if (sat? odot) (print-forms odot) (core odot))
