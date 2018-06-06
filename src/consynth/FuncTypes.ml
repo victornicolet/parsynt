@@ -1279,7 +1279,6 @@ let remove_hole_vars (expr: fnExpr) : fnExpr =
   aux_rem_h Unit expr
 
 
-
 let rec scm_to_fn (scm : RAst.expr) : fnExpr =
   let unwrap_fun_e e =
     match e with
@@ -1437,8 +1436,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
     else
       failhere __FILE__ "scm_to_fn" "LoopFunc macro with more than 5 args."
   in
-  let fne = translate scm in
-  remove_hole_vars fne
+  translate scm
 
 (** Structure translation is parameterized by the current information
     loaded in the join_info. The order had been created using the order in

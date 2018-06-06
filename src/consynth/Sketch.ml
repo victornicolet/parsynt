@@ -509,15 +509,14 @@ let pp_join_body fmt (join_body, state_vars, lstate_name, rstate_name) =
     @param join_body The function of the join.
     @param state_vars The set of state variables.
 *)
-let pp_join fmt (fixed, join_body, state_vars, bnd_args) =
+let pp_join fmt (inner, sketch) =
+  let join_body = if inner then sketch.memless_sketch else sketch.join_sketch in
+  let state_vars = sketch.scontext.state_vars in
   let sname = record_name state_vars in
   let lstate_name = sname^"L" in
   let rstate_name = sname^"R" in
-  let ist, ien = bnd_args in
-  let st_start, st_end =
-    if fixed then FnConst(CInt 0), FnConst(CInt (Dimensions.width ()))
-    else mkVarExpr ist, mkVarExpr ien
-  in
+  let ist, ien = get_bounds sketch in
+  let st_start, st_end = Dimensions.bounds true sketch in
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
     join_name  lstate_name rstate_name ist.vname ien.vname
@@ -834,7 +833,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars)
     sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
-  pp_join fmt (false, sketch.memless_sketch, state_vars, get_bounds sketch);
+  pp_join fmt (true, sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   let additional_symbols =
@@ -917,7 +916,7 @@ let pp_rosette_sketch_join fmt sketch =
   pp_newline fmt ();
   pp_loop fmt idx bnames (lbody, state_vars) sketch.reaching_consts struct_name;
   pp_comment fmt "Wrapping for the sketch of the join.";
-  pp_join fmt (true, sketch.join_sketch, state_vars, get_bounds sketch);
+  pp_join fmt (false, sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   pp_states fmt state_vars read_vars st0 sketch.reaching_consts;

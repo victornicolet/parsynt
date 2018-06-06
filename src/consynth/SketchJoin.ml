@@ -758,3 +758,42 @@ let rec partial_complete_sketch sketch solution =
 let build_from_solution_inner il state reach_consts (solution, fnlet) =
   let sketch = build_for_inner il state reach_consts fnlet in
   (fun (i,j) -> partial_complete_sketch (sketch (i,j)) solution)
+
+let match_hole_to_completion
+    (sketch : fnExpr) (solution : fnExpr) : fnExpr option =
+  if !verbose then
+    printf "@[<v 4>[INFO] Sketch:@;%a@;Solution:@;%a@]@."
+      pp_fnexpr sketch pp_fnexpr solution;
+  let rec mhc h c =
+    match h, c with
+    | FnHoleL(t, v, cs, i), e ->
+      if !verbose then
+        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
+      e
+    | FnHoleR(t, cs, i), e ->
+      if !verbose then
+        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
+      e
+    | FnBinop(op, e1, e2), FnBinop(op', e1', e2') when op = op' ->
+      FnBinop(op, mhc e1 e1', mhc e2 e2')
+    | FnUnop(op, e), FnUnop(op', e') when op = op' ->
+      FnUnop(op, mhc e e')
+    | FnCond(c, t, f), FnCond(c', t', f') ->
+      FnCond(mhc c c', mhc t t', mhc f f')
+
+    | FnLetIn (bindings, cont), FnLetIn (bindings', cont') ->
+      FnLetIn (List.map2 (fun (v,e) (v',e') -> (v, mhc e e')) bindings bindings',
+               mhc cont cont')
+    | FnRecord(vs, emap), FnRecord(vs', emap') ->
+      FnRecord(vs, IM.of_alist (List.map2 (fun (i,e) (i',e') -> (i, mhc e e'))
+                                  (IM.to_alist emap) (IM.to_alist emap')))
+    | e, e' when e = e' -> e
+    | _ ->
+      if !verbose then
+        printf "[INFO] ==== Solution and sketch do not match. ====@.";
+      failwith "Mistmatch."
+  in
+  try
+    Some (mhc sketch solution)
+  with _ ->
+    None

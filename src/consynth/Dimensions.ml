@@ -14,7 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
+open FuncTypes
+open Beta
 
 let iterations_limit = Conf.get_conf_int "loop_finite_limit"
 
@@ -41,3 +42,8 @@ set_default ()
 let width () = !mat_w
 let height () = !mat_h
 let dims () = (!mat_h , !mat_w)
+
+let bounds (fixed : bool) (sketch : prob_rep) : fnExpr * fnExpr =
+  let ist, ien = get_bounds sketch in
+  if fixed then FnConst(CInt 0), FnConst(CInt (width ()))
+  else mkVarExpr ist, mkVarExpr ien

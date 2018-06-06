@@ -25,12 +25,11 @@ open Utils
 open Utils.PpTools
 open Getopt
 open FuncTypes
-
+open Solve
 
 module L = Local
 module C = Canalyst
 module Pf = Proofs
-module ExpRed = ExpressionReduction
 module Cg = Codegen
 
 
@@ -39,7 +38,7 @@ let verbose = ref false
 let elapsed_time = ref 0.0
 let skip_first_solve = ref false
 let skip_all_before_vardisc = ref false
-let synthTimes = (Conf.get_conf_string "synth_times_log")
+
 let use_z3 = ref false
 (* let exact_fp = ref false *)
 
@@ -75,148 +74,6 @@ let print_inner_result problem inner_funcs () =
          (ppimap FPretty.pp_constants) pb.identity_values
     )
     inner_funcs
-
-let solution_failed ?(failure = "") problem =
-  printf "@.%sFAILED:%s Couldn't retrieve the solution from the parsed ast \
-          of the solved problem of %s.@."
-    (color "red") color_default problem.loop_name;
-  if failure = "" then ()
-  else
-    (eprintf "@.[FAILURE] %s@." failure;
-     failhere __FILE__ "solution_failed" problem.loop_name)
-
-
-
-let solution_found ?(inner=false) racket_elapsed lp_name parsed (problem : prob_rep) =
-
-  if !verbose then
-    printf "@.%s%s[INFO] SOLUTION for %s %s:@.%a"
-      (color "green")       (if inner then "(inner loop)" else "")
-      lp_name color_default RAst.pp_expr_list parsed;
-
-  (* Open and append to stats *)
-  let oc = open_out_gen
-      [Open_wronly; Open_append; Open_creat; Open_text]
-      0o666 synthTimes in
-  Printf.fprintf oc "%s,%.3f\n" lp_name racket_elapsed;
-  let sol_info =
-    try
-      Cg.get_solved_sketch_info parsed
-    with _ ->
-      (solution_failed problem;
-       failwith "Couldn't retrieve solution from parsed ast.")
-  in
-  let translated_join_body =
-    init_scm_translate
-      problem.scontext.all_vars problem.scontext.state_vars;
-    try scm_to_fn sol_info.Cg.join_body with
-    | Failure s ->
-      eprintf "[FAILURE] %s@." s;
-      failwith "Failed to translate the solution in our \
-                intermediate representation."
-  in
-  init_scm_translate problem.scontext.all_vars problem.scontext.state_vars;
-  let remap_init_values maybe_expr_list =
-    match maybe_expr_list with
-    | Some expr_list ->
-      begin try
-          List.fold_left2
-            (fun map vid ast_expr ->
-               IM.add vid ast_expr map)
-            IM.empty
-            (VarSet.vids_of_vs problem.scontext.state_vars) expr_list
-        with Invalid_argument e ->
-          failhere __FILE__ "remap_init_values" "Invalid_argument"
-      end
-
-    | None ->
-      (** If auxiliaries have been created, the sketch has been solved
-          without having to assign them a specific value. We can
-          just create placeholders according to their type. *)
-      concretize_aux
-        (fun vid vi map ->
-           IM.add vid
-             (match vi.vtype with
-              | Integer -> RAst.Int_e 0
-              | Boolean -> RAst.Bool_e true
-              | Real -> RAst.Int_e 1
-              | _ -> RAst.Nil_e) map)
-        IM.empty
-  in
-  let remap_ident_values maybe_expr_list =
-    match maybe_expr_list with
-    | Some expr_list ->
-      begin try
-          (List.fold_left2
-             (fun imap vid expr ->
-                IM.add vid (scm_to_const expr) imap)
-             IM.empty
-             (VarSet.vids_of_vs problem.scontext.state_vars)
-             expr_list)
-        with Invalid_argument e ->
-          failhere __FILE__ "remap_ident_values" "Invalid_argument"
-      end
-    | None -> IM.empty
-  in
-  let solution_0 = ExpRed.normalize problem.scontext translated_join_body in
-  let solution = ExpRed.clean problem.scontext solution_0 in
-  let init_vals = remap_init_values sol_info.Cg.init_values in
-  let id_vals = remap_ident_values sol_info.Cg.identity_values in
-  if inner then
-    {problem with memless_solution = solution;
-                  init_values = init_vals;
-                  identity_values = id_vals}
-  else
-    {problem with join_solution = solution;
-                  init_values = init_vals;
-                  identity_values = id_vals}
-
-
-let rec solve_one ?(inner=false) ?(solver = Conf.rosette) ?(expr_depth = 1) parent_ctx problem =
-  (* Set the expression depth of the sketch printer.*)
-  FPretty.holes_expr_depth := expr_depth;
-  let lp_name = problem.loop_name in
-  try
-    message_start_subtask ("Solving sketch for "^problem.loop_name);
-    (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
-    let racket_elapsed, parsed =
-      L.compile_and_fetch solver
-        ~print_err_msg:Racket.err_handler_sketch
-        (C.pp_sketch ~inner:inner ~parent_context:parent_ctx solver)
-        problem
-    in
-    if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
-      (* We get an "unsat" answer : add loop to auxiliary discovery *)
-      begin
-        printf
-          "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
-          (color "orange") color_default lp_name;
-        if !FPretty.skipped_non_linear_operator then
-          (** Try with non-linear operators. *)
-          (FPretty.reinit ~ed:expr_depth ~use_nl:true;
-           solve_one parent_ctx problem)
-        else
-          (FPretty.reinit ~ed:expr_depth ~use_nl:false;
-           None)
-      end
-    else
-      (* A solution has been found *)
-      begin
-        try
-          let sol = Some (solution_found ~inner:inner racket_elapsed lp_name parsed problem) in
-          if inner then
-            C.store_solution sol;
-          sol
-        with Failure s ->
-          solution_failed ~failure:s problem;
-          None
-      end
-  with Failure s ->
-    begin
-      solution_failed ~failure:s problem;
-      None
-    end
-
 
 (**
    Recursively solve the inner loops using different tactics.
@@ -356,6 +213,7 @@ let main () =
 
   if !verbose then
     begin
+      Solve.verbose := true;
       Loops.verbose := true;
       Canalyst.verbose := true;
       InnerFuncs.verbose := true;

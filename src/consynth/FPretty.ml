@@ -17,7 +17,8 @@ let assume_join_map = ref true
 
 let state_vars = ref VS.empty
 
-let rosette_loop_macro_name = Conf.get_conf_string "rosette_func_loop_macro_name"
+let rosette_loop_macro_name =
+  Conf.get_conf_string "rosette_func_loop_macro_name"
 
 let reinit ?(ed = 1) ?(use_nl = false) =
   printing_sketch := false;
@@ -300,8 +301,10 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
                      Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a %a)]@]"
                        pp_fnlvar a pp_fnlvar a pp_fnexpr i pp_fnexpr e
                    | FnArray(a', k) ->
-                     Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
-                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar a pp_fnexpr i pp_fnexpr e
+                     Format.fprintf ppf
+                       "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
+                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar
+                       a pp_fnexpr i pp_fnexpr e
                   )
                 | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
@@ -320,7 +323,8 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
     let record_name =
       match type_of record with
       | Record (name, stl) -> name
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
+      | _ -> failhere __FILE__ "pp_fnexpr"
+               "Not record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
 

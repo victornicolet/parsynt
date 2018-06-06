@@ -126,10 +126,10 @@
 ;;Defining inner join function for outer loop.
 (define (join#L__mtl#6 $L $R j_start j_end)
   (let ([l.c ($Vi_Vi_ii-c $L)][l.colmax ($Vi_Vi_ii-colmax $L)]
-                              [l.mtr ($Vi_Vi_ii-mtr $L)][l.sum ($Vi_Vi_ii-sum $L)]
-                              [r.c ($Vi_Vi_ii-c $R)][r.colmax ($Vi_Vi_ii-colmax $R)]
-                              [r.mtr ($Vi_Vi_ii-mtr $R)][r.sum ($Vi_Vi_ii-sum $R)])
-    (let ([_fs_0 (LoopFunc j_start (lambda (j) (< j j_end))
+        [l.mtr ($Vi_Vi_ii-mtr $L)][l.sum ($Vi_Vi_ii-sum $L)]
+        [r.c ($Vi_Vi_ii-c $R)][r.colmax ($Vi_Vi_ii-colmax $R)]
+        [r.mtr ($Vi_Vi_ii-mtr $R)][r.sum ($Vi_Vi_ii-sum $R)])
+    (let ([_fs_0 (LoopFunc 0 (lambda (j) (< j 5))
                            (lambda (j) (add1 j)) ($Vi_Vi_ii l.c l.colmax 0 0)
                            (lambda (__s j) (let ([c ($Vi_Vi_ii-c __s)]
                                                  [colmax ($Vi_Vi_ii-colmax __s)]
@@ -161,7 +161,7 @@
                           (let ([tup$ (join#L__mtl#6 ($Vi_Vi_ii c colmax mtr
                                                                 sum) (list-ref seq:#L__mtl#6 i) 0 5)])
                             (let ([c ($Vi_Vi_ii-c tup$)][colmax ($Vi_Vi_ii-colmax tup$)]
-                                                        [mtr ($Vi_Vi_ii-mtr tup$)][sum ($Vi_Vi_ii-sum tup$)])
+                                  [mtr ($Vi_Vi_ii-mtr tup$)][sum ($Vi_Vi_ii-sum tup$)])
                               ($Vi_Vi_iii c colmax mtr (max mtr mtrl) sum)))))))
 
 ;;Wrapping for the sketch of the join.
@@ -212,16 +212,27 @@
                                      ;;   (list-ref r.c j)
                                      ;;   (list-ref l.c j)
                                      ;;   1))
+                                     ;; (max
+                                     ;;  (NumExprBasic
+                                     ;;   mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
+                                     ;;   (list-ref colmax j)
+                                     ;;   (list-ref r.colmax j)
+                                     ;;   (list-ref l.colmax j)
+                                     ;;   (list-ref c j)
+                                     ;;   (list-ref r.c j)
+                                     ;;   (list-ref l.c j)
+                                     ;;   1)
+                                     ;;  (NumExprBasic
+                                     ;;   mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
+                                     ;;   (list-ref colmax j)
+                                     ;;   (list-ref r.colmax j)
+                                     ;;   (list-ref l.colmax j)
+                                     ;;   (list-ref c j)
+                                     ;;   (list-ref r.c j)
+                                     ;;   (list-ref l.c j)
+                                     ;;   1))
                                      (max
-                                      (NumExprBasic
-                                       mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
-                                       (list-ref colmax j)
-                                       (list-ref r.colmax j)
-                                       (list-ref l.colmax j)
-                                       (list-ref c j)
-                                       (list-ref r.c j)
-                                       (list-ref l.c j)
-                                       1)
+                                      mtrl
                                       (NumExprBasic
                                        mtr mtrl l.mtr r.mtr l.mtrl r.mtrl
                                        (list-ref colmax j)
@@ -231,6 +242,7 @@
                                        (list-ref r.c j)
                                        (list-ref l.c j)
                                        1))
+
                                      r.sum))))))])
       tup$)))
 
