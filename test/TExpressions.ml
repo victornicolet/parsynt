@@ -355,6 +355,20 @@ let test_local_normal_test () =
        (ListTools.pair loc_res expr0);
      msg_failed tname)
 
+let test_peval_01 () =
+  let v = mkFnVar "intvar" Integer in
+  let e = FnUnop(Sub1, FnConst(CInt 2)) in
+  let e1 =
+    FnBinop (Plus, FnBinop (Plus, FnConst (CInt (-1)), evar v),
+                    FnUnop(Sub1, FnConst(CInt 2)))
+  in
+  if (peval e = FnConst (CInt 1) &&
+   peval e1 =
+       FnBinop (Plus, FnBinop (Plus, FnConst (CInt (-1)), evar v),
+                _ci 1))
+  then msg_passed "Test peval 1 passed."
+  else msg_failed "Test peval 1 : partial evaluation."
+
 
 (* Normalization: file defined tests. *)
 let test_load filename =
@@ -384,5 +398,6 @@ let test () =
   test_normalize_expression_03 ();
   test_normalize_expression_04 ();
   test_normalize_expression_05 ();
+  test_peval_01 ();
   file_defined_tests ();
   test_local_normal_test ()

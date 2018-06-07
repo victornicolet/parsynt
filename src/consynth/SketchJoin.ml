@@ -22,7 +22,7 @@ open Utils
 open FPretty
 open Format
 module IH = Sets.IH
-
+module E = Expressions
 
 let verbose = ref false
 let debug = ref false
@@ -771,8 +771,8 @@ let match_hole_to_completion
     | FnHoleR _, e
     | FnChoice _, e ->
       if !verbose then
-        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
-      e
+        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr (E.peval c);
+      E.peval e
 
     | FnBinop(op, e1, e2), FnBinop(op', e1', e2') when op = op' ->
       FnBinop(op, mhc e1 e1', mhc e2 e2')
@@ -797,6 +797,6 @@ let match_hole_to_completion
       failwith "Mistmatch."
   in
   try
-    Some (mhc sketch solution)
+    Some (E.peval (mhc sketch solution))
   with _ ->
     None

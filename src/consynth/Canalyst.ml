@@ -377,6 +377,7 @@ let find_new_variables prob_rep =
     join_sketch = join_sketch;
   }
 
+
 let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   let parent_context =
     if inner then

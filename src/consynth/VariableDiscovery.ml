@@ -486,7 +486,8 @@ let discover_for_id problem var =
   if !verbose then
     begin
       printf "[INFO] Discover for variable %s.@." var.vname;
-      printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars
+      printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars;
+      printf "       Function: %a.@." pp_fnexpr problem.main_loop_body;
     end;
   aux_prefix var.vname;
 
@@ -555,15 +556,15 @@ let timec = ref 0.0
 let discover problem =
   if !verbose then printf "@.[INFO] Starting variable discovery...@.";
 
-  let problem =
-    if List.length problem.inner_functions > 0 then
+  let prepare pb =
+    if List.length pb.inner_functions > 0 then
       begin
         if !verbose then
           printf "@.[INFO] Preparing body, inlining inner loops.@.";
-        InnerFuncs.inline_inner !symbex_inner_loop_width problem
+        InnerFuncs.inline_inner !symbex_inner_loop_width pb
       end
     else
-      problem
+      pb
   in
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
@@ -580,7 +581,7 @@ let discover problem =
            (if !verbose then printf "[INFO] Skip %s.@." var.vname;
            problem)
          else
-           discover_for_id problem var)
+           discover_for_id (prepare problem) var)
       problem
       ranked_stv
   in

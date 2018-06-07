@@ -322,6 +322,8 @@ let symb_unop_of_fname =
   | "nearbyint" | "nearbyintf" | "nearbyintl"
   | "llround" | "llroundf" | "llroundl"
   | "rint" | "rintf" | "rintl" -> Some Round
+  | "sub1" -> Some Sub1
+  | "add1" -> Some Add1
   | _ -> None
 
 let symb_binop_of_fname : string -> symb_binop option =
@@ -1484,14 +1486,26 @@ and to_array_var scm_expr_list =
   mkVar ~offsets:offset_list array_varinfo
 
 and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
-  let fun_vi =
+  try
+    let args = to_expression_list scm_expr_list in
     match fun_expr with
     | Id_e fun_name ->
-      scm_register fun_name
+      begin match symb_binop_of_fname fun_name,
+                  symb_unop_of_fname fun_name
+        with
+        | Some binop, _ ->
+          FnBinop(binop, args >> 0, args >> 1)
+        | _ , Some unop ->
+          FnUnop(unop, args >> 0)
+
+        | None , None ->
+          let fun_vi = scm_register fun_name in
+          FnApp (Bottom, Some fun_vi, args)
+      end
     | _ -> raise (Failure (errmsg_unexpected_expr "identifier" fun_expr))
-  in
-  let args = to_expression_list scm_expr_list in
-  FnApp (Bottom, Some fun_vi, args)
+  with _ ->
+    failhere __FILE__ "to_fun_app" "Error in function translation."
+
 
 let scm_to_const e =
   match scm_to_fn e with

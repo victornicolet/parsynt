@@ -80,7 +80,10 @@ let solution_found
     try
       let solver_sol = scm_to_fn sol_info.Cg.join_body in
       match Sketch.Join.match_hole_to_completion join_sketch solver_sol with
-      | Some precise_sol -> precise_sol
+      | Some precise_sol ->
+        (Expressions.enormalize
+          problem.scontext
+          precise_sol)
       | None -> remove_hole_vars solver_sol
     with
     | Failure s ->

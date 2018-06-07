@@ -384,8 +384,11 @@ and do_expr sin expr : fnExpr * ex_env =
          let e'' = IM.find (VarSet.find_by_name vs s).vid emap in
          do_expr env' e''
 
-       | _ ->  failhere __FILE__ "do_expr (FnRecordMember)"
-                 "Expected a record in record member accessor.")
+       | _ ->
+         if !verbose then
+           printf "[ERROR] %a@." FPretty.pp_fnexpr expr;
+         failhere __FILE__ "do_expr (FnRecordMember)"
+           "Expected a record in record member accessor.")
     in
     e', env'
 
