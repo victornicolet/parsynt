@@ -761,19 +761,19 @@ let build_from_solution_inner il state reach_consts (solution, fnlet) =
 
 let match_hole_to_completion
     (sketch : fnExpr) (solution : fnExpr) : fnExpr option =
+
   if !verbose then
     printf "@[<v 4>[INFO] Sketch:@;%a@;Solution:@;%a@]@."
       pp_fnexpr sketch pp_fnexpr solution;
   let rec mhc h c =
     match h, c with
-    | FnHoleL(t, v, cs, i), e ->
+    | FnHoleL _, e
+    | FnHoleR _, e
+    | FnChoice _, e ->
       if !verbose then
         printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
       e
-    | FnHoleR(t, cs, i), e ->
-      if !verbose then
-        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
-      e
+
     | FnBinop(op, e1, e2), FnBinop(op', e1', e2') when op = op' ->
       FnBinop(op, mhc e1 e1', mhc e2 e2')
     | FnUnop(op, e), FnUnop(op', e') when op = op' ->
@@ -790,7 +790,10 @@ let match_hole_to_completion
     | e, e' when e = e' -> e
     | _ ->
       if !verbose then
-        printf "[INFO] ==== Solution and sketch do not match. ====@.";
+        begin
+          printf "[INFO] ==== Solution and sketch do not match. ====@.";
+          printf "       @[<v 4>%a@;!=@;%a@]@." pp_fnexpr h pp_fnexpr c;
+        end;
       failwith "Mistmatch."
   in
   try
