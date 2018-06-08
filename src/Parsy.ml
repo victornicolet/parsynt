@@ -81,19 +81,21 @@ let print_inner_result problem inner_funcs () =
    @return Some problem if all the inner functions can be paralleized or
    made memoryless. None if not.
 *)
-let rec solve_inners problem =
+let rec solve_inners (problem : prob_rep) : prob_rep option =
   if List.length problem.inner_functions = 0 then
     Some problem
   else
     let solve_inner_problem inpb =
-      let start = Unix.gettimeofday () in
-      let maybe_solution = solve_one ~inner:true (Some problem.scontext) inpb in
-      let elapsed = Unix.gettimeofday () -. start in
-      message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
-      maybe_solution
+      if is_empty_record inpb.memless_solution then
+        let start = Unix.gettimeofday () in
+        let maybe_solution = solve_one ~inner:true (Some problem.scontext) inpb in
+        let elapsed = Unix.gettimeofday () -. start in
+        message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
+        maybe_solution
+      else Some inpb
     in
     (* Solve the inner functions. *)
-    message_start_subtask ("Solving inner loops of "^problem.loop_name);
+    message_start_subtask ("Solvinng inner loops of "^problem.loop_name);
     let inner_funcs =
       somes (List.map solve_inner_problem problem.inner_functions)
     in

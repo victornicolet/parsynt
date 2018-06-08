@@ -501,11 +501,18 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
-let rec var_of_fnvar fnvar =
+let rec var_of_fnvar (fnvar : fnLVar) : fnV =
   match fnvar with
   | FnVariable v -> v
   | FnArray (v, e) -> var_of_fnvar v
 
+
+let empty_record : fnExpr = FnRecord(VarSet.empty, IM.empty)
+
+let is_empty_record (expr : fnExpr) : bool =
+  match expr with
+  | FnRecord(vs, im) -> VarSet.is_empty vs && IM.is_empty im
+  | _ -> false
 
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in

@@ -132,84 +132,86 @@ let pe s e =
 (** Partial interpretation: produces simplified expression. *)
 
 let rec partial_interpret e =
-  match e with
-  | FnBinop(op, e1, e2) ->
-    let maybe_int_op =
-      match op with
-      | Plus -> Some (fun a b -> a + b)
-      | Minus -> Some (fun a b -> a - b)
-      | Times -> Some (fun a b -> a * b)
-      | Div -> Some (fun a b -> a / b)
-      | _ -> None
-    in
-    let maybe_bool_op =
-      match op with
-      | And -> Some (fun a b -> a && b)
-      | Or -> Some (fun a b -> a && b)
-      | Xor -> Some (fun a b -> (a && b) || ((not a) && (not b)))
-      | _ -> None
-    in
-    (match e1, e2 with
-     | FnConst (CInt i1), FnConst (CInt i2) ->
-       (match maybe_int_op with
-        | Some fop -> FnConst (CInt (fop i1 i2))
-        | None -> fail_type_error "Expected int.")
+  let symb_inter e =
+    match e with
+    | FnBinop(op, e1, e2) ->
+      let maybe_int_op =
+        match op with
+        | Plus -> Some (fun a b -> a + b)
+        | Minus -> Some (fun a b -> a - b)
+        | Times -> Some (fun a b -> a * b)
+        | Div -> Some (fun a b -> a / b)
+        | _ -> None
+      in
+      let maybe_bool_op =
+        match op with
+        | And -> Some (fun a b -> a && b)
+        | Or -> Some (fun a b -> a && b)
+        | Xor -> Some (fun a b -> (a && b) || ((not a) && (not b)))
+        | _ -> None
+      in
+      (match e1, e2 with
+       | FnConst (CInt i1), FnConst (CInt i2) ->
+         (match maybe_int_op with
+          | Some fop -> FnConst (CInt (fop i1 i2))
+          | None -> fail_type_error "Expected int.")
 
-     | FnConst (CBool b1), FnConst (CBool b2) ->
-       (match maybe_bool_op with
-        | Some fop -> FnConst (CBool (fop b1 b2))
-        | None -> fail_type_error "Expected bool.")
+       | FnConst (CBool b1), FnConst (CBool b2) ->
+         (match maybe_bool_op with
+          | Some fop -> FnConst (CBool (fop b1 b2))
+          | None -> fail_type_error "Expected bool.")
 
-     | e', FnConst (CInt i1) ->
-       (match op, i1 with
-        | Plus, 0 -> e'
-        | Minus, 0 -> e'
-        | Times, 1 -> e'
-        | Times, 0 -> FnConst (CInt 0)
-        | Div, 1 -> e'
-        | Div, 0 -> fail_type_error "Division by zero."
-        | _ -> FnBinop (op, e', FnConst (CInt i1)))
+       | e', FnConst (CInt i1) ->
+         (match op, i1 with
+          | Plus, 0 -> e'
+          | Minus, 0 -> e'
+          | Times, 1 -> e'
+          | Times, 0 -> FnConst (CInt 0)
+          | Div, 1 -> e'
+          | Div, 0 -> fail_type_error "Division by zero."
+          | _ -> FnBinop (op, e', FnConst (CInt i1)))
 
-     | FnConst (CInt i0), e' ->
-       (match i0, op with
-        | 0, Plus -> e'
-        | 0, Minus -> FnUnop(Neg, e')
-        | 1, Times -> e'
-        | 0, Times -> FnConst (CInt 0)
-        | 1, Div -> e
-        | 0, Div -> FnConst (CInt 0)
-        | _ -> FnBinop (op, FnConst (CInt i0), e'))
+       | FnConst (CInt i0), e' ->
+         (match i0, op with
+          | 0, Plus -> e'
+          | 0, Minus -> FnUnop(Neg, e')
+          | 1, Times -> e'
+          | 0, Times -> FnConst (CInt 0)
+          | 1, Div -> e
+          | 0, Div -> FnConst (CInt 0)
+          | _ -> FnBinop (op, FnConst (CInt i0), e'))
 
-     | e', FnConst (CBool b)
-     | FnConst (CBool b), e' ->
-       (match op, b with
-        | And, true -> e'
-        | Or, true -> FnConst (CBool true)
-        | And, false -> FnConst (CBool false)
-        | Or, false -> e'
-        | _ -> e)
+       | e', FnConst (CBool b)
+       | FnConst (CBool b), e' ->
+         (match op, b with
+          | And, true -> e'
+          | Or, true -> FnConst (CBool true)
+          | And, false -> FnConst (CBool false)
+          | Or, false -> e'
+          | _ -> e)
 
-     | _ -> e)
-
-
-  | FnUnop (op, e1) ->
-    (match op, e1 with
-     | Neg, FnConst (CInt i1) -> FnConst (CInt (- i1))
-     | Not, FnConst (CBool b) -> FnConst (CBool (not b))
-     | Abs, FnConst (CInt i1) -> FnConst (CInt (abs i1))
-     | Add1, FnConst (CInt i1) -> FnConst (CInt (i1 + 1))
-     | Sub1, FnConst (CInt i1) -> FnConst (CInt (i1 - 1))
-     | _ -> e)
+       | _ -> e)
 
 
-  | FnCond(c, e1, e2) ->
-    (match partial_interpret c with
-     | FnConst (CBool true) -> e1
-     | FnConst (CBool false) -> e2
-     | _ -> e)
+    | FnUnop (op, e1) ->
+      (match op, e1 with
+       | Neg, FnConst (CInt i1) -> FnConst (CInt (- i1))
+       | Not, FnConst (CBool b) -> FnConst (CBool (not b))
+       | Abs, FnConst (CInt i1) -> FnConst (CInt (abs i1))
+       | Add1, FnConst (CInt i1) -> FnConst (CInt (i1 + 1))
+       | Sub1, FnConst (CInt i1) -> FnConst (CInt (i1 - 1))
+       | _ -> e)
 
 
-  | _ -> e
+    | FnCond(c, e1, e2) ->
+      (match partial_interpret c with
+       | FnConst (CBool true) -> e1
+       | FnConst (CBool false) -> e2
+       | _ -> e)
+    | _ -> e
+  in
+  peval (symb_inter e)
+
 
 
 (** --------------------------------------------------------------------------*)

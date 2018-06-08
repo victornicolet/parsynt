@@ -11,7 +11,7 @@ int _mbotstrip(int **a, int m, int n){
 		  strip_sum += a[i][j];
 		}
 	  max_bot_strip = max(max_bot_strip + strip_sum, 0);
-	  max_strip = max(max_strip, max_bot_strip);
+	  max_strip = max(max_bot_strip, max_strip);
 	}
   return max_strip;
 }
