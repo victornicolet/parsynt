@@ -445,7 +445,7 @@ let pp_loop ?(inner=false) ?(dynamic=true) fmt index_set bnames (loop_body, stat
             Format.fprintf fmt "%s" end_vi.vname))
     in
     let extract_stv_or_reach_const, bound_state1 =
-      let state_var_name = state_var_name state_vars (Conf.get_conf_string "rosette_state_param_name") in
+      let state_var_name = get_new_name ~base:(Conf.get_conf_string "rosette_state_param_name") in
       let state_var = mkFnVar state_var_name (record_type state_vars) in
       List.map
         (fun v ->

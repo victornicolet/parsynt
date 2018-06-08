@@ -224,11 +224,20 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   in
 
   let inline_join in_info args =
+    let j_start, j_end = get_bounds in_info in
+    let repl_start e =
+      replace_expression ~in_subscripts:true
+        ~to_replace:(mkVarExpr j_start) ~by:(FnConst (CInt 0)) ~ine:e
+    in
+    let repl_end e =
+      replace_expression ~in_subscripts:true
+        ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
+    in
     let in_body =
       transform_rl_vars
         created_inputs
         (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
-        in_info.memless_solution
+        ((repl_start --> repl_end) in_info.memless_solution)
     in
     if !verbose then
       printf

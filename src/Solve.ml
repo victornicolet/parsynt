@@ -72,7 +72,8 @@ let solution_found
   let translated_join_body =
     let join_sketch =
       if inner then
-        problem.memless_sketch (Dimensions.bounds inner problem)
+        problem.memless_sketch
+          (let i0, ie = get_bounds problem in mkVarExpr i0, mkVarExpr ie)
       else problem.join_sketch (Dimensions.bounds inner problem)
     in
     init_scm_translate

@@ -224,16 +224,20 @@ let make_rec_calls
   match aux_expr, expr' with
   | FnVector el, FnVector el' ->
     assert (List.length el = List.length el');
-    let make_cell_rec_call j e =
-      let ej =
+    let make_cell_rec_call vecs (j, e) =
+      let rcalls =
         replace_many_AC e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
       in
-      match ej with
-      | hd :: tl -> hd
-      | [] ->
-        failhere __FILE__ "make_rec_calls" "Unexpected empty recursion locs."
+      if List.length vecs = 0 then
+        List.map (fun rcall -> [rcall]) rcalls
+      else if List.length vecs <= List.length rcalls then
+        List.map2 (fun vec rcall -> vec@[rcall]) vecs (ListTools.take (List.length vecs) rcalls)
+      else
+        List.map2 (fun vec rcall -> vec@[rcall]) (ListTools.take (List.length rcalls) vecs) rcalls
+
     in
-    [FnVector(List.mapi make_cell_rec_call el)]
+    List.map (fun l -> FnVector l)
+      (List.fold_left make_cell_rec_call [] (List.mapi (fun i e -> (i,e)) el))
 
   | _, _ -> replace_many aux_expr (mkVarExpr var) expr' 1
 

@@ -132,9 +132,7 @@ let rec concrete_eval (expr : fnExpr) : fnExpr =
       | _ -> expr
     end
 
-  | _ ->
-    printf "Skipped %a@." pp_fnexpr expr;
-    expr
+  | _ -> expr
 
 
 let conv_ints =
@@ -833,8 +831,8 @@ let transform_all_comparisons expr =
     match e with
     | FnBinop (cop, e1, e2) ->
       (match cop with
-       | Lt -> FnBinop (Gt, rfunc e1, rfunc e2)
-       | Le -> FnBinop (Ge, rfunc e1, rfunc e2)
+       | Lt -> FnBinop (Gt, rfunc e2, rfunc e1)
+       | Le -> FnBinop (Ge, rfunc e2, rfunc e1)
        | _ -> failwith "Not a special recursive case")
     | _ -> failwith "Not a special recursive case"
   in

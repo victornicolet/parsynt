@@ -746,14 +746,6 @@ let is_name_of_struct s =
 let get_struct s =
   SH.find declared_tuple_types s
 
-let rec state_var_name vs maybe =
-  let vsnames = VarSet.names vs in
-  if List.mem maybe vsnames then
-    state_var_name vs ("_st_"^maybe)
-  else
-    (register maybe;
-     maybe)
-
 let record_accessor s v =
   {
     vname = s^"-"^v.vname;

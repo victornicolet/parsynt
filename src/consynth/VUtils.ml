@@ -232,7 +232,8 @@ let compose problem xinfo aux_set =
            in
            add_to_inner_loop_body aux inner_loop binding
          else
-           (printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
+           (if !debug then
+              printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
               aux.avar.vname;
             inner_loop))
       il
@@ -467,7 +468,7 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
          List.map (fun (a,b) -> b)
            (List.filter (fun (s, es) -> ve = var_of_fnvar s)
               collected_candidates)
-       in (ve, matching_candidates)::l)
+       in (ve, List.rev matching_candidates)::l)
     vset []
 
 
