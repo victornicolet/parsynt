@@ -41,7 +41,113 @@ module SH = Hashtbl.Make
     end)
 
 
+(* Other expression properties *)
+let is_constant expr =
+  rec_expr2
+    { join = (fun a b -> a && b) ;
+      init = true;
+      case = (fun e -> false);
+      on_case = (fun f e -> true);
+      on_const = (fun c -> true);
+      on_var = (fun v -> false);
+    }
+    expr
 
+
+type optyp =
+  | BinInt of (int -> int -> int)
+  | UnInt of (int -> int)
+  | BinBool of (bool -> bool -> bool)
+  | UnBool of (bool -> bool)
+  | Comp of (int -> int -> bool)
+  | NotInterpreted
+
+let rec concrete_eval (expr : fnExpr) : fnExpr =
+  assert (is_constant expr);
+  match expr with
+  | FnBinop(op, e1, e2) ->
+    begin
+      let concr_op =
+        match op with
+        | Plus -> BinInt (+)
+        | Minus -> BinInt (-)
+        | Times -> BinInt ( * )
+        | Max -> BinInt max
+        | Min -> BinInt min
+        | Div -> BinInt (/)
+        | And -> BinBool (&&)
+        | Or -> BinBool (||)
+        | Lt -> Comp (<)
+        | Gt -> Comp (>)
+        | Le -> Comp (<=)
+        | Ge -> Comp (>=)
+        | Eq -> Comp (=)
+        | Neq -> Comp (!=)
+        | _ -> NotInterpreted
+      in
+      match concr_op, concrete_eval e1, concrete_eval e2 with
+      | BinInt o, FnConst(CInt i1), FnConst(CInt i2) ->
+        FnConst (CInt (o i1 i2))
+
+      | BinBool b, FnConst(CBool b1), FnConst(CBool b2) ->
+        FnConst (CBool (b b1 b2))
+
+      | Comp c, FnConst (CInt i1), FnConst (CInt i2) ->
+        FnConst (CBool (c i1 i2))
+
+      | _ -> expr
+    end
+
+  | FnUnop(op, e1) ->
+    begin
+      let concr_op =
+        match op with
+        | Neg -> UnInt (fun i -> -i)
+        | Add1 -> UnInt (fun i -> i + 1)
+        | Sub1 -> UnInt (fun i -> i - 1)
+        | Not -> UnBool not
+        | Abs -> UnInt abs
+        | _ -> NotInterpreted
+      in
+      match concr_op, concrete_eval e1 with
+      | UnInt o, FnConst(CInt i1) ->
+          FnConst (CInt (o i1))
+
+      | UnBool b, FnConst(CBool b1) ->
+        FnConst (CBool (b b1))
+
+      | _ -> expr
+    end
+
+  | FnConst c ->
+    begin match c with
+    | CInt64 i64 -> FnConst (CInt (Int64.to_int i64))
+    | _ -> expr
+    end
+
+  | FnCond (c, e1, e2) ->
+    begin match concrete_eval c with
+      | FnConst (CBool true) -> concrete_eval e1
+      | FnConst (CBool false) -> concrete_eval e2
+      | _ -> expr
+    end
+
+  | _ -> expr
+
+
+let conv_ints =
+  function
+  | CInt64 i64 -> CInt (Int64.to_int i64)
+  | c -> c
+
+
+let peval (expr : fnExpr) : fnExpr =
+  transform_expr2
+    { case = is_constant;
+      on_case = (fun f e -> concrete_eval e);
+      on_var = identity;
+      on_const = conv_ints}
+    expr
 
 (** List different types of operators:
     - comparison operators
@@ -247,7 +353,7 @@ and ( @= ) e1 e2 =
 
   | _, _ -> e1 = e2
   in
-  let t = flatten_AC --> normalize_AC in
+  let t = flatten_AC --> normalize_AC --> peval in
   aux_eq (t e1) (t e2)
 
 
@@ -725,8 +831,8 @@ let transform_all_comparisons expr =
     match e with
     | FnBinop (cop, e1, e2) ->
       (match cop with
-       | Lt -> FnBinop (Gt, rfunc e1, rfunc e2)
-       | Le -> FnBinop (Ge, rfunc e1, rfunc e2)
+       | Lt -> FnBinop (Gt, rfunc e2, rfunc e1)
+       | Le -> FnBinop (Ge, rfunc e2, rfunc e1)
        | _ -> failwith "Not a special recursive case")
     | _ -> failwith "Not a special recursive case"
   in
@@ -962,14 +1068,7 @@ let rec replace_many_AC ?(in_subscripts = false)
     List.map repl_indexed index_to_repl
 
 
-(* Other expression properties *)
-let is_constant expr =
-  rec_expr2
-    { join = (fun a b -> a && b) ;
-      init = true;
-      case = (fun e -> false);
-      on_case = (fun f e -> true);
-      on_const = (fun c -> true);
-      on_var = (fun v -> false);
-    }
-    expr
+
+let enormalize (ctx : context) (expr : fnExpr) : fnExpr =
+  let one_step = flatten_AC --> normalize_AC --> rebuild_tree_AC ctx --> peval in
+  one_step (one_step expr)

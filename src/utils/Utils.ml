@@ -198,6 +198,14 @@ module ListTools = struct
   let last list =
     List.nth list ((List.length list) - 1)
 
+  let take n l =
+    let rec _t i l r =
+      if i <= 0 then l
+      else _t (i - 1) (l@[List.hd r]) (List.tl r)
+    in
+    if n < List.length l then _t n [] l else l
+
+
   let remove_last list =
     match (List.rev list) with
     | h::t -> List.rev t

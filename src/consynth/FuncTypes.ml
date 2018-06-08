@@ -322,6 +322,8 @@ let symb_unop_of_fname =
   | "nearbyint" | "nearbyintf" | "nearbyintl"
   | "llround" | "llroundf" | "llroundl"
   | "rint" | "rintf" | "rintl" -> Some Round
+  | "sub1" -> Some Sub1
+  | "add1" -> Some Add1
   | _ -> None
 
 let symb_binop_of_fname : string -> symb_binop option =
@@ -499,11 +501,18 @@ let mkVarExpr ?(offsets = []) vi =
   | Some c -> FnConst c
   | None -> FnVar (mkVar ~offsets:offsets vi)
 
-let rec var_of_fnvar fnvar =
+let rec var_of_fnvar (fnvar : fnLVar) : fnV =
   match fnvar with
   | FnVariable v -> v
   | FnArray (v, e) -> var_of_fnvar v
 
+
+let empty_record : fnExpr = FnRecord(VarSet.empty, IM.empty)
+
+let is_empty_record (expr : fnExpr) : bool =
+  match expr with
+  | FnRecord(vs, im) -> VarSet.is_empty vs && IM.is_empty im
+  | _ -> false
 
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
@@ -748,8 +757,9 @@ let transform_expr
       FnApp (a, b, List.map (fun e -> recurse_aux e) el)
 
     | FnFun letin -> FnFun (recurse_aux letin)
-    | FnRec (igu, (inner_state, init_inner_state), (s, letin)) ->
-      FnRec (igu, (inner_state, recurse_aux init_inner_state), (s, recurse_aux letin))
+    | FnRec ((i,g,u), (inner_state, init_inner_state), (s, letin)) ->
+      FnRec ((recurse_aux i, recurse_aux g, recurse_aux u),
+             (inner_state, recurse_aux init_inner_state), (s, recurse_aux letin))
 
     | FnCond (c, l1, l2) ->
       FnCond (recurse_aux c, recurse_aux l1, recurse_aux l2)
@@ -1204,26 +1214,23 @@ let init_scm_translate all_vs state_vs =
     Create adequate variables when not existing, and memorizes
     which variable are in use.
 *)
-let scm_register s =
+let scm_find_varname s =
   let pure_varname, is_class_member, is_right_state_mem =
-    is_right_state_varname s in
-  let varinfo : fnV =
-    try
-      SH.find join_info.used_vars pure_varname
-    with Not_found ->
-      begin
-        let newly_used_vi =
-          try
-            VarSet.find_by_name join_info.initial_vars pure_varname
-          with
-          | Not_found ->
-            mkFnVar pure_varname Bottom
-        in
-        SH.add join_info.used_vars pure_varname newly_used_vi;
-        newly_used_vi
-      end
+    is_right_state_varname s
   in
-  {varinfo with vname = s}
+  try
+    let varinfo : fnV =
+      find_var_name pure_varname
+    in
+    {varinfo with vname = s}
+  with Not_found ->
+    begin
+      printf "[WARNING] Did not find variable %s when parsing solution of solver.@." pure_varname;
+      printf "          Continuing anyway ...@.";
+      mkFnVar (get_new_name ~base:s) Bottom
+    end
+
+
 
 let hole_var_name = "??_hole"
 let hole_var = mkFnVar hole_var_name Bottom
@@ -1301,7 +1308,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
         begin match id with
           | "??" -> FnVar (FnVariable hole_var)
           | _ ->
-            (let vi = scm_register id in
+            (let vi = scm_find_varname id in
              FnVar (FnVariable vi))
         end
       | Nil_e -> FnConst (CNil)
@@ -1322,7 +1329,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
         let fn_bindings = List.map
             (fun (ids, e) ->
                let  exp = translate e in
-               let vi = scm_register ids in
+               let vi = scm_find_varname ids in
                (FnVariable vi, exp))
             bindings
         in
@@ -1477,21 +1484,33 @@ and to_expression_list scm_expr_list =
 and to_array_var scm_expr_list =
   let array_varinfo =
     match scm_expr_list >> 0 with
-    | Id_e varname -> scm_register varname
+    | Id_e varname -> scm_find_varname varname
     | e -> raise (Failure (errmsg_unexpected_expr "identifier" e))
   in
   let offset_list = to_expression_list (List.tl scm_expr_list) in
   mkVar ~offsets:offset_list array_varinfo
 
 and to_fun_app ?(typ = Bottom) fun_expr scm_expr_list =
-  let fun_vi =
+  try
+    let args = to_expression_list scm_expr_list in
     match fun_expr with
     | Id_e fun_name ->
-      scm_register fun_name
+      begin match symb_binop_of_fname fun_name,
+                  symb_unop_of_fname fun_name
+        with
+        | Some binop, _ ->
+          FnBinop(binop, args >> 0, args >> 1)
+        | _ , Some unop ->
+          FnUnop(unop, args >> 0)
+
+        | None , None ->
+          let fun_vi = scm_find_varname fun_name in
+          FnApp (Bottom, Some fun_vi, args)
+      end
     | _ -> raise (Failure (errmsg_unexpected_expr "identifier" fun_expr))
-  in
-  let args = to_expression_list scm_expr_list in
-  FnApp (Bottom, Some fun_vi, args)
+  with _ ->
+    failhere __FILE__ "to_fun_app" "Error in function translation."
+
 
 let scm_to_const e =
   match scm_to_fn e with

@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -329,8 +329,8 @@ let func2sketch cfile funcreps =
       join_sketch = join_sk;
       memless_sketch = mless_sk;
       (* No solution for now! *)
-      join_solution = wrap_state [];
-      memless_solution = wrap_state [];
+      join_solution = empty_record;
+      memless_solution = empty_record;
       init_values = IM.empty;
       identity_values = IM.empty;
       func_igu = sigu;
@@ -376,6 +376,7 @@ let find_new_variables prob_rep =
     main_loop_body = new_loop_body;
     join_sketch = join_sketch;
   }
+
 
 let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   let parent_context =

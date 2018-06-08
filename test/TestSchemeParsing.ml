@@ -29,7 +29,7 @@ type test_unit =
 let pp_test_unit t =
   printf "Test for %s...@." t.name;
   try
-    let res = Racket.simplify_parse_scm t.body in
+    let res = Racket.parse_scm t.body in
     printf "Success : %a@." RAst.pp_expr_list res
   with e ->
     printf "Failure.@.";

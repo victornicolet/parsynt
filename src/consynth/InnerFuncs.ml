@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -26,6 +26,40 @@ let _KEY_INNER_INLINED_ = "inner-inlined"
 let _KEY_JOIN_NOT_INLINED_ = "join-not-inlined"
 let _KEY_JOIN_INLINED_ = "join-inlined"
 
+let transform_rl_vars cr_i out_index : fnExpr -> fnExpr =
+  let rec _tv v =
+    match v with
+    | FnVariable vi ->
+      let rvname, _, right = is_right_state_varname vi.vname in
+      let lvname, _, left = is_left_state_varname vi.vname in
+      if left then
+        FnVariable (find_var_name lvname)
+      else if right then
+        let input_like = Conf.seq_name rvname in
+        begin
+          let v = try
+              find_var_name input_like
+            with Not_found ->
+              mkFnVar input_like (Vector(vi.vtype, None))
+          in
+          IH.add cr_i v.vid v;
+          FnArray(FnVariable v, out_index)
+        end
+      else
+        FnVariable vi
+
+    | FnArray (v, e) -> FnArray (_tv v,e)
+  in
+  transform_expr2
+    {
+      case = (fun e -> false);
+      on_case = (fun f e -> e);
+      on_var = _tv;
+      on_const = identity;
+    }
+
+
+
 (**
    Replaces calls to inner loop function in the outer loop
     by a simplified version using the join of the inner loop or the memoryless
@@ -41,51 +75,7 @@ let _KEY_JOIN_INLINED_ = "join-inlined"
 
 let replace_by_join problem inner_loops =
   let created_inputs = IH.create 10 in
-  let rec transform_var out_index : fnLVar -> fnLVar =
-    function
-    | FnVariable vi ->
-      let rvname, _, right = is_right_state_varname vi.vname in
-      let lvname, _, left = is_left_state_varname vi.vname in
-      if left then
-        FnVariable (find_var_name lvname)
-      else if right then
-        let input_like = Conf.seq_name rvname in
-        begin
-          let v = try
-              find_var_name input_like
-            with Not_found ->
-              mkFnVar input_like (Vector(vi.vtype, None))
-          in
-          IH.add created_inputs v.vid v;
-          FnArray(FnVariable v, out_index)
-        end
-      else
-        FnVariable vi
 
-    | FnArray (v, e) -> FnArray (transform_var out_index v,e)
-  in
-  (* Inline the join only if it is only a record expression. *)
-  let inline_join out_index in_info =
-    let join = in_info.memless_solution in
-    match join with
-    | FnRecord(vs, emap) ->
-      begin
-        if IM.cardinal emap > 0 then
-          let jn =
-            transform_expr2
-              {
-                case = (fun e -> false);
-                on_case = (fun f e -> e);
-                on_var = transform_var out_index;
-                on_const = identity;
-              } join
-          in
-          Some jn
-
-        else None
-      end
-    | _ -> None
-  in
   let replace (lbody, ctx) in_info =
     IH.clear created_inputs;
     let out_index = mkVarExpr (VarSet.max_elt ctx.index_vars) in
@@ -109,6 +99,21 @@ let replace_by_join problem inner_loops =
        These were only placeholders introdced at the Cil intermediate
        representation.
     *)
+
+    (* Inline the join only if it is only a record expression. *)
+    let inline_join out_index in_info =
+      let join = in_info.memless_solution in
+      match join with
+      | FnRecord(vs, emap) ->
+        begin
+          if IM.cardinal emap > 0 then
+            let jn = transform_rl_vars created_inputs out_index join in
+            Some jn
+
+          else None
+        end
+      | _ -> None
+    in
     let rpl_case e =
       match e with
       | FnApp (st, Some f, args) ->
@@ -185,12 +190,13 @@ let no_join_inlined_body pb =
 
 
 
-let inline_inner in_loop_width problem =
+let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
       FPretty.pp_fnexpr (no_join_inlined_body problem);
 
   let inner_loop_ids = List.map (fun pin -> pin.id) problem.inner_functions in
+  let created_inputs = IH.create 5 in
 
   let inline_inner in_info args =
     let in_body = no_join_inlined_body in_info in
@@ -203,7 +209,8 @@ let inline_inner in_loop_width problem =
       printf
         "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
         in_loop_width;
-    FnRec((
+    let inlined =
+      FnRec((
         FnConst (CInt 0),
         FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
         FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))),
@@ -212,7 +219,33 @@ let inline_inner in_loop_width problem =
          FnLetIn
            (bind_state ~prefix:"" ~state_rec:in_binder ~members:in_state,
             in_body)))
+    in
+    inlined
   in
+
+  let inline_join in_info args =
+    let j_start, j_end = get_bounds in_info in
+    let repl_start e =
+      replace_expression ~in_subscripts:true
+        ~to_replace:(mkVarExpr j_start) ~by:(FnConst (CInt 0)) ~ine:e
+    in
+    let repl_end e =
+      replace_expression ~in_subscripts:true
+        ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
+    in
+    let in_body =
+      transform_rl_vars
+        created_inputs
+        (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
+        ((repl_start --> repl_end) in_info.memless_solution)
+    in
+    if !verbose then
+      printf
+        "[WARNING] Inlined inner join iterates from 0 to %i by default.@."
+        in_loop_width;
+    in_body
+  in
+
 
   let inline_case e =
     match e with
@@ -226,7 +259,7 @@ let inline_inner in_loop_width problem =
   let inline rfunc e =
     match e with
     | FnApp(st, Some f, args) ->
-      inline_inner
+      (if inline_pick_join then inline_join else inline_inner)
         (List.find (fun pin -> pin.id = (Conf.id_of_inner_loop f.vname)) problem.inner_functions)
         args
 
@@ -244,9 +277,18 @@ let inline_inner in_loop_width problem =
     printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
       FPretty.pp_fnexpr loop_body';
 
+  let new_vars =
+    IH.fold (fun k v vs -> VarSet.add v vs) created_inputs VarSet.empty
+  in
   SH.add problem.loop_body_versions _KEY_INNER_INLINED_ loop_body';
   { problem with
-    main_loop_body = loop_body'}
+    main_loop_body = loop_body';
+    scontext =
+      {problem.scontext with
+       used_vars = VarSet.union problem.scontext.used_vars new_vars;
+       all_vars = VarSet.union problem.scontext.all_vars new_vars;
+      }
+  }
 
 let inner_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_INNER_INLINED_

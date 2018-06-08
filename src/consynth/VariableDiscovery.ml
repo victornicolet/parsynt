@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -224,16 +224,20 @@ let make_rec_calls
   match aux_expr, expr' with
   | FnVector el, FnVector el' ->
     assert (List.length el = List.length el');
-    let make_cell_rec_call j e =
-      let ej =
+    let make_cell_rec_call vecs (j, e) =
+      let rcalls =
         replace_many_AC e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
       in
-      match ej with
-      | hd :: tl -> hd
-      | [] ->
-        failhere __FILE__ "make_rec_calls" "Unexpected empty recursion locs."
+      if List.length vecs = 0 then
+        List.map (fun rcall -> [rcall]) rcalls
+      else if List.length vecs <= List.length rcalls then
+        List.map2 (fun vec rcall -> vec@[rcall]) vecs (ListTools.take (List.length vecs) rcalls)
+      else
+        List.map2 (fun vec rcall -> vec@[rcall]) (ListTools.take (List.length rcalls) vecs) rcalls
+
     in
-    [FnVector(List.mapi make_cell_rec_call el)]
+    List.map (fun l -> FnVector l)
+      (List.fold_left make_cell_rec_call [] (List.mapi (fun i e -> (i,e)) el))
 
   | _, _ -> replace_many aux_expr (mkVarExpr var) expr' 1
 
@@ -486,7 +490,8 @@ let discover_for_id problem var =
   if !verbose then
     begin
       printf "[INFO] Discover for variable %s.@." var.vname;
-      printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars
+      printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars;
+      printf "       Function: %a.@." pp_fnexpr problem.main_loop_body;
     end;
   aux_prefix var.vname;
 
@@ -555,15 +560,15 @@ let timec = ref 0.0
 let discover problem =
   if !verbose then printf "@.[INFO] Starting variable discovery...@.";
 
-  let problem =
-    if List.length problem.inner_functions > 0 then
+  let prepare pb =
+    if List.length pb.inner_functions > 0 then
       begin
         if !verbose then
           printf "@.[INFO] Preparing body, inlining inner loops.@.";
-        InnerFuncs.inline_inner !symbex_inner_loop_width problem
+        InnerFuncs.inline_inner !symbex_inner_loop_width pb
       end
     else
-      problem
+      pb
   in
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
@@ -580,7 +585,7 @@ let discover problem =
            (if !verbose then printf "[INFO] Skip %s.@." var.vname;
            problem)
          else
-           discover_for_id problem var)
+           discover_for_id (prepare problem) var)
       problem
       ranked_stv
   in

@@ -22,7 +22,7 @@ open Utils
 open FPretty
 open Format
 module IH = Sets.IH
-
+module E = Expressions
 
 let verbose = ref false
 let debug = ref false
@@ -675,7 +675,7 @@ let wrap_with_loop i state reach_consts base_join =
    is only the value of the right or the top chunk.
 *)
 let wrap_with_choice state base_join =
-  let special_state_var = mkFnVar (state_var_name state "_fs_") (record_type state) in
+  let special_state_var = mkFnVar (get_new_name ~base:"_fs_") (record_type state) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let structname = record_name state in
   let final_choices =
@@ -764,16 +764,25 @@ let match_hole_to_completion
   if !verbose then
     printf "@[<v 4>[INFO] Sketch:@;%a@;Solution:@;%a@]@."
       pp_fnexpr sketch pp_fnexpr solution;
-  let rec mhc h c =
+
+  let rec match_binding (v, e) (v', e') =
+    match v, v' with
+    | FnArray(av, ie), FnVariable var' ->
+      (v', mhc (FnArraySet(FnVar av, ie, e)) e')
+    | _, _ -> (v, mhc e e')
+
+  and mhc h c =
     match h, c with
-    | FnHoleL(t, v, cs, i), e ->
+    | FnHoleL _, e
+    | FnHoleR _, e
+    | FnChoice _, e ->
       if !verbose then
-        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
-      e
-    | FnHoleR(t, cs, i), e ->
-      if !verbose then
-        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr c;
-      e
+        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr (E.peval c);
+      E.peval e
+
+    | FnArraySet(ae, ie, e), FnArraySet(ae', ie', e') ->
+      FnArraySet(mhc ae ae', mhc ie ie', mhc e e')
+
     | FnBinop(op, e1, e2), FnBinop(op', e1', e2') when op = op' ->
       FnBinop(op, mhc e1 e1', mhc e2 e2')
     | FnUnop(op, e), FnUnop(op', e') when op = op' ->
@@ -781,19 +790,26 @@ let match_hole_to_completion
     | FnCond(c, t, f), FnCond(c', t', f') ->
       FnCond(mhc c c', mhc t t', mhc f f')
 
+    | FnRec((i,g,u),(vs,bs),(s, body)), FnRec((i',g',u'),(vs', bs'),(s', body')) ->
+      FnRec((mhc i i', mhc g g', mhc u u'), (vs', bs'), (s', mhc body body'))
+
     | FnLetIn (bindings, cont), FnLetIn (bindings', cont') ->
-      FnLetIn (List.map2 (fun (v,e) (v',e') -> (v, mhc e e')) bindings bindings',
+      FnLetIn (List.map2 match_binding bindings bindings',
                mhc cont cont')
     | FnRecord(vs, emap), FnRecord(vs', emap') ->
       FnRecord(vs, IM.of_alist (List.map2 (fun (i,e) (i',e') -> (i, mhc e e'))
                                   (IM.to_alist emap) (IM.to_alist emap')))
     | e, e' when e = e' -> e
+
     | _ ->
       if !verbose then
-        printf "[INFO] ==== Solution and sketch do not match. ====@.";
+        begin
+          printf "[INFO] ==== Solution and sketch do not match. ====@.";
+          printf "       @[<v 4>%a@;!=@;%a@]@." pp_fnexpr h pp_fnexpr c;
+        end;
       failwith "Mistmatch."
   in
   try
-    Some (mhc sketch solution)
+    Some (E.peval (mhc sketch solution))
   with _ ->
     None

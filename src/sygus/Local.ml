@@ -144,7 +144,7 @@ let fetch_solution ?(solver=rosette) filename =
   | "Rosette" ->
     let parsed =
       try
-        Racket.simplify_parse_scm (Std.input_file filename)
+        Racket.parse_scm (Std.input_file filename)
       with e ->
         (let err_code = Sys.command ("cat "^filename) in
          Format.printf "@.cat %s : %i@." filename err_code;

@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -152,7 +152,12 @@ let add_to_inner_loop_body
        (inner_loop.memless_solution, new_body);
   }
 
-
+let clear_solution (prob : prob_rep) : prob_rep =
+  {
+    prob with
+    memless_solution = empty_record;
+    join_solution = empty_record;
+  }
 
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
@@ -230,9 +235,11 @@ let compose problem xinfo aux_set =
              FnVariable aux.avar,
              FnArraySet(mkVarExpr aux.avar, mkVarExpr j, List.hd jexprs)
            in
-           add_to_inner_loop_body aux inner_loop binding
+           clear_solution (add_to_inner_loop_body aux inner_loop binding)
+
          else
-           (printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
+           (if !debug then
+              printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
               aux.avar.vname;
             inner_loop))
       il
@@ -467,7 +474,7 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
          List.map (fun (a,b) -> b)
            (List.filter (fun (s, es) -> ve = var_of_fnvar s)
               collected_candidates)
-       in (ve, matching_candidates)::l)
+       in (ve, List.rev matching_candidates)::l)
     vset []
 
 

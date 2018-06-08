@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -132,84 +132,86 @@ let pe s e =
 (** Partial interpretation: produces simplified expression. *)
 
 let rec partial_interpret e =
-  match e with
-  | FnBinop(op, e1, e2) ->
-    let maybe_int_op =
-      match op with
-      | Plus -> Some (fun a b -> a + b)
-      | Minus -> Some (fun a b -> a - b)
-      | Times -> Some (fun a b -> a * b)
-      | Div -> Some (fun a b -> a / b)
-      | _ -> None
-    in
-    let maybe_bool_op =
-      match op with
-      | And -> Some (fun a b -> a && b)
-      | Or -> Some (fun a b -> a && b)
-      | Xor -> Some (fun a b -> (a && b) || ((not a) && (not b)))
-      | _ -> None
-    in
-    (match e1, e2 with
-     | FnConst (CInt i1), FnConst (CInt i2) ->
-       (match maybe_int_op with
-        | Some fop -> FnConst (CInt (fop i1 i2))
-        | None -> fail_type_error "Expected int.")
+  let symb_inter e =
+    match e with
+    | FnBinop(op, e1, e2) ->
+      let maybe_int_op =
+        match op with
+        | Plus -> Some (fun a b -> a + b)
+        | Minus -> Some (fun a b -> a - b)
+        | Times -> Some (fun a b -> a * b)
+        | Div -> Some (fun a b -> a / b)
+        | _ -> None
+      in
+      let maybe_bool_op =
+        match op with
+        | And -> Some (fun a b -> a && b)
+        | Or -> Some (fun a b -> a && b)
+        | Xor -> Some (fun a b -> (a && b) || ((not a) && (not b)))
+        | _ -> None
+      in
+      (match e1, e2 with
+       | FnConst (CInt i1), FnConst (CInt i2) ->
+         (match maybe_int_op with
+          | Some fop -> FnConst (CInt (fop i1 i2))
+          | None -> fail_type_error "Expected int.")
 
-     | FnConst (CBool b1), FnConst (CBool b2) ->
-       (match maybe_bool_op with
-        | Some fop -> FnConst (CBool (fop b1 b2))
-        | None -> fail_type_error "Expected bool.")
+       | FnConst (CBool b1), FnConst (CBool b2) ->
+         (match maybe_bool_op with
+          | Some fop -> FnConst (CBool (fop b1 b2))
+          | None -> fail_type_error "Expected bool.")
 
-     | e', FnConst (CInt i1) ->
-       (match op, i1 with
-        | Plus, 0 -> e'
-        | Minus, 0 -> e'
-        | Times, 1 -> e'
-        | Times, 0 -> FnConst (CInt 0)
-        | Div, 1 -> e'
-        | Div, 0 -> fail_type_error "Division by zero."
-        | _ -> FnBinop (op, e', FnConst (CInt i1)))
+       | e', FnConst (CInt i1) ->
+         (match op, i1 with
+          | Plus, 0 -> e'
+          | Minus, 0 -> e'
+          | Times, 1 -> e'
+          | Times, 0 -> FnConst (CInt 0)
+          | Div, 1 -> e'
+          | Div, 0 -> fail_type_error "Division by zero."
+          | _ -> FnBinop (op, e', FnConst (CInt i1)))
 
-     | FnConst (CInt i0), e' ->
-       (match i0, op with
-        | 0, Plus -> e'
-        | 0, Minus -> FnUnop(Neg, e')
-        | 1, Times -> e'
-        | 0, Times -> FnConst (CInt 0)
-        | 1, Div -> e
-        | 0, Div -> FnConst (CInt 0)
-        | _ -> FnBinop (op, FnConst (CInt i0), e'))
+       | FnConst (CInt i0), e' ->
+         (match i0, op with
+          | 0, Plus -> e'
+          | 0, Minus -> FnUnop(Neg, e')
+          | 1, Times -> e'
+          | 0, Times -> FnConst (CInt 0)
+          | 1, Div -> e
+          | 0, Div -> FnConst (CInt 0)
+          | _ -> FnBinop (op, FnConst (CInt i0), e'))
 
-     | e', FnConst (CBool b)
-     | FnConst (CBool b), e' ->
-       (match op, b with
-        | And, true -> e'
-        | Or, true -> FnConst (CBool true)
-        | And, false -> FnConst (CBool false)
-        | Or, false -> e'
-        | _ -> e)
+       | e', FnConst (CBool b)
+       | FnConst (CBool b), e' ->
+         (match op, b with
+          | And, true -> e'
+          | Or, true -> FnConst (CBool true)
+          | And, false -> FnConst (CBool false)
+          | Or, false -> e'
+          | _ -> e)
 
-     | _ -> e)
-
-
-  | FnUnop (op, e1) ->
-    (match op, e1 with
-     | Neg, FnConst (CInt i1) -> FnConst (CInt (- i1))
-     | Not, FnConst (CBool b) -> FnConst (CBool (not b))
-     | Abs, FnConst (CInt i1) -> FnConst (CInt (abs i1))
-     | Add1, FnConst (CInt i1) -> FnConst (CInt (i1 + 1))
-     | Sub1, FnConst (CInt i1) -> FnConst (CInt (i1 - 1))
-     | _ -> e)
+       | _ -> e)
 
 
-  | FnCond(c, e1, e2) ->
-    (match partial_interpret c with
-     | FnConst (CBool true) -> e1
-     | FnConst (CBool false) -> e2
-     | _ -> e)
+    | FnUnop (op, e1) ->
+      (match op, e1 with
+       | Neg, FnConst (CInt i1) -> FnConst (CInt (- i1))
+       | Not, FnConst (CBool b) -> FnConst (CBool (not b))
+       | Abs, FnConst (CInt i1) -> FnConst (CInt (abs i1))
+       | Add1, FnConst (CInt i1) -> FnConst (CInt (i1 + 1))
+       | Sub1, FnConst (CInt i1) -> FnConst (CInt (i1 - 1))
+       | _ -> e)
 
 
-  | _ -> e
+    | FnCond(c, e1, e2) ->
+      (match partial_interpret c with
+       | FnConst (CBool true) -> e1
+       | FnConst (CBool false) -> e2
+       | _ -> e)
+    | _ -> e
+  in
+  peval (symb_inter e)
+
 
 
 (** --------------------------------------------------------------------------*)
@@ -283,7 +285,7 @@ let up_join eenv1 eenv2 =
 let update_indexval env ivar i_intval =
   { env with eiexprs = IM.add ivar.vid (FnConst (CInt i_intval)) env.eiexprs}
 
-let update_binding ?(offset=(-1)) ?(member="") v e env =
+let update_binding ?(offset=(-1)) v e env =
   if offset > -1 then
     let vec =
       try
@@ -309,88 +311,84 @@ let update_binding ?(offset=(-1)) ?(member="") v e env =
 
 (* Parallel bindings *)
 let rec do_bindings
-    bind (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
-  let el, env'' =
+    (sin : ex_env) (bindings : (fnLVar * fnExpr) list) : fnExpr * ex_env =
+  let out_env =
     List.fold_left
-      (fun (el, uenv) (var, expr) ->
-         let v, e', uenv' = do_binding bind sin uenv (var,expr) in
-         (el @ [v, e']), uenv') ([], sin) bindings
+      (fun uenv (var, expr) -> do_binding sin uenv (var,expr)) sin bindings
   in
-  FnRecord(
-    VarSet.of_list (fst (ListTools.unpair el)),
-    List.fold_left (fun emap (var,expr) -> IM.add var.vid expr emap) IM.empty el),
-  env''
+  FnRecord(VarSet.empty, IM.empty), out_env
 
 
-and do_binding bind sin uenv (var, expr) : fnV * fnExpr * ex_env =
+and do_binding sin uenv (var, expr) : ex_env =
   let e, reads = do_expr sin expr in
   match var with
   | FnVariable v ->
-    v, e, up_join (if bind then update_binding v e uenv else uenv) reads
+    up_join (update_binding v e uenv) reads
 
   | FnArray(FnVariable a, i) ->
     let i', s' = do_expr sin i in
-    a, e, up_join (if bind then
-                     update_binding ~offset:(concrete_index i') a e uenv
-                   else uenv) reads
+    up_join (update_binding ~offset:(concrete_index i') a e uenv) reads
 
   | FnArray _ ->
     failhere __FILE__ "do_binding" "Setting 2D Array cell not supported."
 
 
-and do_expr sin expr : fnExpr * ex_env =
+and do_expr env expr : fnExpr * ex_env =
   match expr with
   | FnVar v ->
-    do_var sin v
+    do_var env v
 
   | FnConst c ->
-    expr, sin
+    expr, env
 
   | FnLetIn (bindings, body) ->
-    let _, s' = do_bindings true sin bindings in
+    let _, s' = do_bindings env bindings in
     do_expr s' body
 
   | FnRec(igu, (vs, bs), (s, body)) ->
-    do_loop sin igu (vs,bs) (s,body)
+    do_loop env igu (vs,bs) (s,body)
 
   | FnBinop(op, e1, e2) ->
-    let e1', s1 = do_expr sin e1 in
-    let e2', s2 = do_expr sin e2 in
+    let e1', s1 = do_expr env e1 in
+    let e2', s2 = do_expr env e2 in
     partial_interpret (FnBinop (op, e1', e2')), up_join s1 s2
 
   | FnUnop(op, e) ->
-    let e', s' = do_expr sin e in
+    let e', s' = do_expr env e in
     partial_interpret (FnUnop (op, e')), s'
 
   | FnCond(c, et, ef) ->
-    let c', sc' = do_expr sin c in
-    let et', set' = do_expr sin et in
-    let ef', sef' = do_expr sin ef in
+    let c', sc' = do_expr env c in
+    let et', set' = do_expr env et in
+    let ef', sef' = do_expr env ef in
     partial_interpret (FnCond(c', et', ef')), up_join sc' (up_join set' sef')
 
   | FnArraySet(a, i, e) ->
-    let a', sa' = do_expr sin a in
-    let i', si' = do_expr sin i in
-    let e', se' = do_expr sin e in
+    let a', sa' = do_expr env a in
+    let i', si' = do_expr env i in
+    let e', se' = do_expr env e in
     let sf = up_join sa' (up_join si' se') in
     let e'' = partial_interpret e' in
     do_set_array sin a' i' e'', sf
 
   | FnRecordMember (re, s) ->
-    let re', env' = do_expr sin re in
+    let re', env' = do_expr env re in
     let e', env' =
       (match re' with
        | FnRecord(vs, emap) ->
          let e'' = IM.find (VarSet.find_by_name vs s).vid emap in
          do_expr env' e''
 
-       | _ ->  failhere __FILE__ "do_expr (FnRecordMember)"
-                 "Expected a record in record member accessor.")
+       | _ ->
+         if !verbose then
+           printf "[ERROR] %a@." FPretty.pp_fnexpr (FnRecordMember(re',s));
+         failhere __FILE__ "do_expr (FnRecordMember)"
+           "Expected a record in record member accessor.")
     in
     e', env'
 
   | FnRecord(vs, emap) ->
-    let emap' = IM.map (do_expr sin) emap in
+    let emap' = IM.map (do_expr env) emap in
     let keys, esl' = ListTools.unpair (IM.to_alist emap') in
     let el', sl' = ListTools.unpair esl' in
     let typecheck =
@@ -398,28 +396,28 @@ and do_expr sin expr : fnExpr * ex_env =
     in
     if typecheck then
       FnRecord (vs, IM.map fst emap'),
-      List.fold_left (fun sf s' -> up_join sf s') sin sl'
+      List.fold_left (fun sf s' -> up_join sf s') env sl'
     else
       raise (TypeCheckError (record_type vs, type_of expr, expr))
 
   | FnVector el ->
-    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    let el', sl' = ListTools.unpair (List.map (do_expr env) el) in
     FnVector (List.map partial_interpret el'),
-    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+    List.fold_left (fun sf s' -> up_join sf s') env sl'
 
-  | FnApp (t, fo, el) -> expr, sin
+  | FnApp (t, fo, el) -> expr, env
 
   | FnChoice (el) ->
-    let el', sl' = ListTools.unpair (List.map (do_expr sin) el) in
+    let el', sl' = ListTools.unpair (List.map (do_expr env) el) in
     FnChoice (List.map partial_interpret el'),
-    List.fold_left (fun sf s' -> up_join sf s') sin sl'
+    List.fold_left (fun sf s' -> up_join sf s') env sl'
 
   | FnHoleL (ht, v, cs, e) ->
-    let e', s' = do_expr sin e in
+    let e', s' = do_expr env e in
     FnHoleL (ht, v, cs, e'),  s'
 
   | FnHoleR (ht, cs, e) ->
-    let e', s' = do_expr sin e in
+    let e', s' = do_expr env e in
     FnHoleR (ht, cs, e'), s'
 
   | _ ->
@@ -501,7 +499,7 @@ and do_var env v : fnExpr * ex_env =
         "An array variable should be an input or a vector."
 
 
-and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
+and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
 
   let i0, iEnd =
@@ -515,11 +513,11 @@ and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
 
   let i0', iEnd' =
     match g with
-    | FnBinop (Lt, i, FnConst (CInt c))
-    | FnBinop (Gt, FnConst (CInt c), i) ->
+    | FnBinop (Lt, _, FnConst (CInt c))
+    | FnBinop (Gt, FnConst (CInt c), _) ->
       0, c
-    | FnBinop (Lt, FnConst (CInt c), i)
-    | FnBinop (Gt, i, FnConst (CInt c)) ->
+    | FnBinop (Lt, FnConst (CInt c), _)
+    | FnBinop (Gt, _, FnConst (CInt c)) ->
       c, 0
     | _ -> 0, !_arsize_
   in
@@ -544,7 +542,7 @@ and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
         end
     in
     let start_env =
-      let bs', _ = do_expr sin bs in
+      let bs', _ = do_expr env bs in
       add_intermediate_state 0 bs';
       {out_env with
        ebound = VarSet.singleton s;
@@ -553,7 +551,7 @@ and do_loop sin (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
     let res_final, env_final = aux k start_env body in
     res_final, env_final
   in
-  exec_loop i0 sin body
+  exec_loop i0 env body
 
 
 let filter_state einfo em =
