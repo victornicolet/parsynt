@@ -44,7 +44,11 @@ let store_solution (maybe_solution : prob_rep option) : unit =
     let solution_expr = sol.memless_solution in
     if solution_expr = FnRecord(VarSet.empty, IM.empty) then
       eprintf "[WARNING] Store empty solution? Loop: %s@." sol.loop_name;
-    SH.add _inner_joins (Conf.join_name sol.loop_name) (sol.scontext, sol.memless_solution)
+    if !verbose then
+      printf "@.[INFO] Store inner join solution %s.@."
+        (Conf.join_name sol.loop_name);
+    SH.add _inner_joins (Conf.join_name sol.loop_name)
+      (sol.scontext, sol.memless_solution)
 
   | None -> ()
 
@@ -302,7 +306,8 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
           (if Conf.is_inner_join_name func.vname then
              (if !verbose then printf "[INFO] Inline inner join in sketch.@.";
              let new_binds =
-               inline_inner_join ie state skip writes_in_array (vbound, st, func, args)
+               inline_inner_join ie state skip writes_in_array
+                 (vbound, st, func, args)
              in
              (l @ new_binds))
            else
@@ -357,7 +362,10 @@ and inline_inner_join
     in
     match fexpr with
     | FnLetIn (record_assignments, body) ->
-      if all_are_record_member record_assignments then Some record_assignments, body else None, fexpr
+      if all_are_record_member record_assignments then
+        Some record_assignments, body
+      else
+        None, fexpr
     | _ -> None, fexpr
   in
 
@@ -403,18 +411,28 @@ and inline_inner_join
           (match maybe_ra with
           | Some ra ->
             let core_body' = drill core_body in
-            [vbound, FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body')))]
-          | None ->
-             failhere __FILE__ "inline_inner_join" "Missing bindings in inner join loop body.")
+            let to_inline =
+              [vbound, FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body')))]
+            in
+            if !verbose then
+              printf "@[<v 4>[INFO] INLINE THIS: %a@]@." pp_fnexpr
+                (FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body'))));
+            to_inline
 
-      | _ -> failhere __FILE__ "inline_inner_join" "Toplevel form of inner join not recognized."
+          | None ->
+            failhere __FILE__ "inline_inner_join"
+              "Missing bindings in inner join loop body.")
+
+      | _ -> failhere __FILE__ "inline_inner_join"
+               "Toplevel form of inner join not recognized."
     end
   | None ->
-    failhere __FILE__ "inline_inner_join" "Cannot find inner join."
+    failhere __FILE__ "inline_inner_join" ("Cannot find inner join "^f.vname)
 
 
 
-and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: bool ref) body =
+and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list)
+    ~(w_a: bool ref) body =
   let rec make_assignments local_skip e =
     match e with
     | FnRecord (vs, emap) ->
@@ -426,7 +444,8 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list) ~(w_a: 
       make_assignments (local_skip@to_skip) cont
 
     | _ ->
-      failhere __FILE__ "make_join" "make_join called on non-binding expression."
+      failhere __FILE__ "make_join"
+        "make_join called on non-binding expression."
   in
   let remap_bindings_to_state bindings =
     let mapped_bindings =
@@ -667,29 +686,31 @@ let wrap_with_loop i state reach_consts base_join =
 
 
 (**
-   Add a choice after the join to enable 'dropping' variables. Can be useful when the join
-   is a loop and one of the variables's join function is more naturally expressed as a
-   constant time function rather than a function of a list.
-   Avoids problems especially when the variable is always initialized at the beginning of
-   the loop body, could be used as a temporary variable in the join loop, but its final value
-   is only the value of the right or the top chunk.
+   Add a choice after the join to enable 'dropping' variables. Can be useful
+   when the join  is a loop and one of the variables's join function is more
+   naturally expressed as a constant time function rather than a function of a
+   list. Avoids problems especially when the variable is always initialized at
+   the beginning of the loop body, could be used as a temporary variable in the
+   join loop, but its final value is only the value of the right or the top
+   chunk.
 *)
 let wrap_with_choice state base_join =
-  let special_state_var = mkFnVar (get_new_name ~base:"_fs_") (record_type state) in
+  let binder = mkFnVar "loop_res" (record_type state) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
-  let structname = record_name state in
   let final_choices =
     List.map
       (fun v ->
-         let accessor = record_accessor structname v in
          let rightval = {v with vname = rprefix ^ v.vname} in
          (mkVar v, FnChoice(
-           [FnApp(v.vtype, Some accessor, [mkVarExpr special_state_var]);
-            mkVarExpr rightval])))
+             [FnRecordMember(mkVarExpr binder, v.vname);
+              mkVarExpr rightval])))
       (VarSet.elements state)
   in
-  (fun (i, j) ->
-     FnLetIn([(mkVar special_state_var, base_join (i,j))], wrap_state final_choices))
+  let wrap old_join =
+    FnLetIn([(FnVariable binder, old_join)],
+            wrap_state final_choices)
+  in
+  (fun(i,j) -> wrap (base_join (i,j)))
 
 
 let add_drop_choice = ref true

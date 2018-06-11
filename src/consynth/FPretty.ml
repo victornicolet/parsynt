@@ -316,7 +316,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnRecord (vs, exprs) ->
     let rname = record_name vs in
-    fp ppf "(%s %a)" rname (pp_break_sep_list pp_fnexpr)
+    fp ppf "@[<v 2>(%s@;%a)@]" rname (pp_break_sep_list pp_fnexpr)
       (snd (ListTools.unpair (unwrap_state vs exprs)))
 
   | FnRecordMember (record, mname) ->

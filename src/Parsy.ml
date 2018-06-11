@@ -88,9 +88,12 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
     let solve_inner_problem inpb =
       if is_empty_record inpb.memless_solution then
         let start = Unix.gettimeofday () in
-        let maybe_solution = solve_one ~inner:true (Some problem.scontext) inpb in
+        let maybe_solution =
+          solve_one ~inner:true (Some problem.scontext) inpb
+        in
         let elapsed = Unix.gettimeofday () -. start in
-        message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
+        message_info (fun () ->
+            printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
         maybe_solution
       else Some inpb
     in

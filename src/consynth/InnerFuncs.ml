@@ -92,7 +92,10 @@ let replace_by_join problem inner_loops =
     let new_joinf_typ = Function (inner_styp, inner_styp) in
     (* The function corresponding to the join. *)
     let new_joinf =
-      mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
+      try
+        find_var_name (Conf.join_name in_info.loop_name)
+      with Not_found ->
+        mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
     let in_st, in_end = get_bounds in_info in
     (* Replace the function application corresponding to the inner loop.
@@ -293,3 +296,17 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
 let inner_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
   with Not_found -> pb.main_loop_body
+
+let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) =
+  let upd body (old_inner, new_inner) =
+    let case e =
+      match e with
+      | FnVar v ->
+        begin match v.vtype with
+          | Record
+    in
+    transform_expr
+      {
+        case
+  in
+  List.fold_left upd body inners

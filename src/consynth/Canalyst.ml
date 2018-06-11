@@ -271,6 +271,7 @@ let func2sketch cfile funcreps =
         s_reach_consts
         loop_body;
     in
+
     incr no_sketches;
     create_boundary_variables index_set;
     (* Input size from reaching definitions, min_int dependencies,
@@ -303,6 +304,7 @@ let func2sketch cfile funcreps =
        This structure should be containing all the information to call the solver
        and the auxiliary discovery methods.
     *)
+
     let lversions = SH.create 10 in
     SH.add lversions "orig" loop_body;
     {
@@ -371,10 +373,27 @@ let find_new_variables prob_rep =
             inner_indexes
             new_prob.scontext.state_vars nlb_opt) bnds))
   in
+  let inners =
+    List.map
+      (fun inpb ->
+         {inpb with
+          memless_sketch =
+            Sketch.Join.build_for_inner
+              (List.map mkVarExpr (VarSet.elements (get_index_varset inpb)))
+              inpb.scontext.state_vars
+              inpb.reaching_consts
+              inpb.main_loop_body
+         }) new_prob.inner_functions
+  in
+  let new_loop_body =
+    update_inners_in_body (List.combine prob_rep.inner_functions inners) new_loop_body
+  in
+  SH.clear new_prob.loop_body_versions;
   {
     new_prob with
     main_loop_body = new_loop_body;
     join_sketch = join_sketch;
+    inner_functions = inners;
   }
 
 
@@ -383,7 +402,8 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
     if inner then
       (match parent_context with
        | Some context -> context
-       | None -> failhere __FILE__ "pp_sketch" "Parent context not provided for child loop.")
+       | None -> failhere __FILE__ "pp_sketch"
+                   "Parent context not provided for child loop.")
     else
       mk_ctx VarSet.empty VarSet.empty
   in
