@@ -735,19 +735,19 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   in
   (fun (i,j) -> refine_completions (wrapped_join (i,j)))
 
-let build_join i (state : VarSet.t) fnlet =
-  match i with
-  | [] ->
-    set_types_and_varsets (make_loop_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
-  | [i] ->
-    set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
-  | _ ->
-    failhere __FILE__ "build_join" "Multiple inner loops not implemented."
-
-
-let build_for_inner il state reach_consts fnlet =
+let build_join ~inner:is_inner i (state : VarSet.t) (reach_consts : fnExpr IM.t) fnlet =
+  if is_inner then
+    begin match i with
+      | [] ->
+        set_types_and_varsets (make_loop_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
+      | [i] ->
+        set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
+      | _ ->
+        failhere __FILE__ "build_join" "Multiple inner loops not implemented."
+    end
+  else
   let i =
-    match il with
+    match i with
     | [i] -> i
     | [] -> FnConst (CInt 0)
     | _ ->
@@ -759,26 +759,6 @@ let build_for_inner il state reach_consts fnlet =
     let sketch = inner_optims state typed_sketch in
     narrow_array_completions := false;
     sketch
-
-
-let rec partial_complete_sketch sketch solution =
-  let arrange sk_b sol_b =
-    List.map2
-      (fun (sk_v, sk_e) (sk_v, sol_e) ->
-         (sk_v, sk_e)) sk_b sol_b
-  in
-  match (sketch, solution) with
-  | FnLetIn(sk_b, sk_f) , FnLetIn(sol_b, sol_f) ->
-    FnLetIn (arrange sk_b sol_b, partial_complete_sketch sk_f sol_f)
-
-  | FnRecord (sk_vs, sk_b), FnRecord (sol_vs, sol_b) ->
-    FnRecord (sk_vs, sk_b)
-
-  | _ -> sketch
-
-let build_from_solution_inner il state reach_consts (solution, fnlet) =
-  let sketch = build_for_inner il state reach_consts fnlet in
-  (fun (i,j) -> partial_complete_sketch (sketch (i,j)) solution)
 
 let match_hole_to_completion
     (sketch : fnExpr) (solution : fnExpr) : fnExpr option =

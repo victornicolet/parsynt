@@ -145,12 +145,6 @@ let add_to_inner_loop_body
         used_vars = VarSet.union ctx.used_vars (used_in_fnexpr e);
       };
     main_loop_body = new_body;
-    memless_sketch =
-      Sketch.Join.build_from_solution_inner
-        [mkVarExpr (VarSet.max_elt ctx.index_vars)]
-        new_stv
-        inner_loop.reaching_consts
-        (inner_loop.memless_solution, new_body);
   }
 
 let clear_solution (prob : prob_rep) : prob_rep =

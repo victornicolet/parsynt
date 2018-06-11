@@ -173,10 +173,13 @@ let replace_by_join problem inner_loops =
   in
   let new_sketch =
     Sketch.Join.build_join
+      ~inner:false
       (List.map
          (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
          problem.inner_functions)
-      problem.scontext.state_vars newbody
+      problem.scontext.state_vars
+      problem.reaching_consts
+      newbody
   in
   SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
     problem.main_loop_body;
@@ -299,14 +302,59 @@ let inner_inlined_body pb =
 
 let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) =
   let upd body (old_inner, new_inner) =
+    let old_rname = record_name old_inner.scontext.state_vars in
+    let all_record_accessors l =
+      if
+        List.length l > 0 &&
+        List.for_all
+          (fun (v,e) ->
+             match e with
+             | FnRecordMember(ev, s) -> true
+             | _ -> false) l
+      then
+        begin
+          match List.hd l with
+          | _, FnRecordMember(FnVar(FnVariable var), _) -> Some var
+          | _ -> None
+        end
+      else
+        None
+    in
     let case e =
       match e with
-      | FnVar v ->
+      | FnVar (FnVariable v) ->
         begin match v.vtype with
-          | Record
+          | Record (ols, _) when ols = old_rname -> true
+          | t -> false
+        end
+      | FnLetIn _ -> true
+      | _ -> false
     in
-    transform_expr
+    let on_case f e =
+      match e with
+      | FnVar (FnVariable v) ->
+        let typ = match v.vtype with
+          | Record (ols, _) when ols = old_rname ->
+            record_type new_inner.scontext.state_vars
+          | t -> t
+        in FnVar(FnVariable {v with vtype = typ})
+      | FnLetIn(binds, expr) ->
+        begin match all_record_accessors binds with
+          | Some x ->
+            let x' = {x with vtype = record_type new_inner.scontext.state_vars} in
+            FnLetIn(bind_state x' new_inner.scontext.state_vars, f expr)
+          | None ->
+            FnLetIn(List.map (fun (v,e) -> (v, f e)) binds, f expr)
+        end
+      | _ -> e
+    in
+    transform_expr2
       {
-        case
+        case = case;
+        on_case = on_case;
+        on_var = identity;
+        on_const = identity;
+      }
+      body
   in
   List.fold_left upd body inners
