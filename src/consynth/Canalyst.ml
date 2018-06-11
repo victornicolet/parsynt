@@ -267,7 +267,7 @@ let func2sketch cfile funcreps =
     (* Set the loop width for the join *)
     let mless_sk =
       Sketch.Join.build_join ~inner:true
-        [mkVarExpr (VarSet.max_elt index_set)]
+        (List.map mkVarExpr (VarSet.elements index_set))
         state_vars
         s_reach_consts
         loop_body

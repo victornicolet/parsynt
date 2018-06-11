@@ -47,6 +47,7 @@ let options = [
   (* ( 'e', "exact-fp", (set exact_fp true), None); *)
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 'g', "debug", (set debug true), None);
+  ( 'i', "incremental", (set Solve.solve_incrementally true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'K', "kill-first-inner", (set skip_all_before_vardisc true), None);
   ( 'o', "output-folder", None,

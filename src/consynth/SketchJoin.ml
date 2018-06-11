@@ -292,56 +292,62 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
 
     | _ -> List.mem var skip
   in
-  List.fold_left
-    (fun l (vbound, e) ->
-      match e with
-      | FnVar v when v = vbound && in_skip_list v skip -> l @ [v, e]
+  let add_assignments l (vbound,e) =
+    match e with
+    | FnVar v when v = vbound && in_skip_list v skip -> l @ [v, e]
 
-      | FnConst c -> l @ [vbound, e]
+    | FnConst c -> l @ [vbound, e]
 
-      | FnApp (st, f, args) ->
-        (match f with
+    | FnApp (st, f, args) ->
+      begin match f with
         | Some func ->
           (* Is it the join function of an inner loop? *)
-          (if Conf.is_inner_join_name func.vname then
-             (if !verbose then printf "[INFO] Inline inner join in sketch.@.";
-             let new_binds =
-               inline_inner_join ie state skip writes_in_array
-                 (vbound, st, func, args)
-             in
-             (l @ new_binds))
-           else
-             l @ [(vbound, e)])
+          begin if Conf.is_inner_join_name func.vname then
+              (if !verbose then printf "[INFO] Inline inner join in sketch.@.";
+               let new_binds =
+                 inline_inner_join ie state skip writes_in_array
+                   (vbound, st, func, args)
+               in
+               (l @ new_binds))
+            else
+              l @ [(vbound, e)]
+          end
         | None ->
-          l @ [(vbound, e)])
+          l @ [(vbound, e)]
+      end
 
-      | _ ->
+    | _ ->
+      begin
         if !verbose && false then
           begin
-          printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
-          printf "       Type : %a@." pp_typ (type_of e);
-          printf "       Result: %a@."
-            pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
+            printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
+            printf "       Type : %a@." pp_typ (type_of e);
+            printf "       Result: %a@."
+              pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
           end;
         try
           let vi_bound = check_option (vi_of vbound) in
           if is_left_aux vi_bound || is_right_aux vi_bound  then
+
             l @ [vbound, FnHoleL (((type_of e), Basic), vbound,
-                         CS._LorR (CS.of_vs state), ie)]
+                                  CS._LorR (CS.of_vs state), ie)]
           else
-            (match vi_bound.vtype with
-             | Vector _ ->
-               writes_in_array := true;
-               l @ [vbound, fst (make_hole_e ~is_array:true ie state e)]
-             | _ ->
-               l @ [vbound, fst (make_hole_e ie state e)])
+            begin match vi_bound.vtype with
+              | Vector _ ->
+                writes_in_array := true;
+                l @ [vbound, fst (make_hole_e ~is_array:true ie state e)]
+              | _ ->
+                l @ [vbound, fst (make_hole_e ie state e)]
+            end
         with Failure s ->
           Format.eprintf "[ERROR] Failure %s@." s;
           let msg =
             Format.sprintf "Check if %s is vi failed." (FPretty.sprintFnexpr e)
           in
           failhere __FILE__ "make_assignment_list"  msg
-    ) []
+      end
+  in
+  List.fold_left add_assignments []
 
 
 
@@ -716,7 +722,7 @@ let wrap_with_choice state base_join =
 let add_drop_choice = ref true
 
 
-let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
+let make_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   force_wrap := false;
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
@@ -735,30 +741,41 @@ let make_loop_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
   in
   (fun (i,j) -> refine_completions (wrapped_join (i,j)))
 
-let build_join ~inner:is_inner i (state : VarSet.t) (reach_consts : fnExpr IM.t) fnlet =
+
+
+let build_join
+    ~inner:is_inner
+    (ind_l : fnExpr list)
+    (state : VarSet.t)
+    (reach_consts : fnExpr IM.t)
+    (fnlet : fnExpr) : fnExpr * fnExpr -> fnExpr =
   if is_inner then
-    begin match i with
+    begin
+      let i =
+        match ind_l with
+        | [i] -> i
+        | [] -> FnConst (CInt 0)
+        | _ ->
+          failhere __FILE__ "build_for_inner" "Multiple inner loops not implemented."
+      in
+      narrow_array_completions := true;
+      let raw_sketch = make_wrapped_join ~for_inner:true i state reach_consts fnlet in
+      let typed_sketch = set_types_and_varsets raw_sketch in
+      let sketch = inner_optims state typed_sketch in
+      narrow_array_completions := false;
+      sketch
+    end
+
+  else
+    begin match ind_l with
       | [] ->
-        set_types_and_varsets (make_loop_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
+        set_types_and_varsets (make_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
       | [i] ->
-        set_types_and_varsets (make_loop_wrapped_join i state IM.empty fnlet)
+        set_types_and_varsets (make_wrapped_join i state IM.empty fnlet)
       | _ ->
         failhere __FILE__ "build_join" "Multiple inner loops not implemented."
     end
-  else
-  let i =
-    match i with
-    | [i] -> i
-    | [] -> FnConst (CInt 0)
-    | _ ->
-      failhere __FILE__ "build_for_inner" "Multiple inner loops not implemented."
-  in
-  narrow_array_completions := true;
-    let raw_sketch = make_loop_wrapped_join ~for_inner:true i state reach_consts fnlet in
-    let typed_sketch = set_types_and_varsets raw_sketch in
-    let sketch = inner_optims state typed_sketch in
-    narrow_array_completions := false;
-    sketch
+
 
 let match_hole_to_completion
     (sketch : fnExpr) (solution : fnExpr) : fnExpr option =

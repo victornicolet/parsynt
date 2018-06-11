@@ -19,17 +19,20 @@
 
 open Beta
 open Conf
-open Str
 open Format
+open FuncTypes
+open Incremental
+open Str
 open Utils
 open Utils.PpTools
-open FuncTypes
+
 
 module Cg = Codegen
 module ExpRed = ExpressionReduction
 module L = Local
 module C = Canalyst
 
+let solve_incrementally = ref false
 let verbose = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
 
@@ -176,6 +179,17 @@ let call_solver ?(inner=false) (ctx : context option) (pb : prob_rep) :
     end
 
 
+let call_solver_incremental ?(inner=false) (ctx : context option) (pb : prob_rep) :
+  float * prob_rep option =
+  let increments = get_increments pb in
+  try
+    List.fold_left
+      (fun (et, solution) incr_pb ->
+         let part_pb = complete_increment incr_pb solution in
+         match call_solver ~inner:inner ctx part_pb with
+         | et', Some sol -> et +. et', Some sol
+         | et', None -> raise Not_found) (0., None) increments
+  with Not_found -> -1.0, None
 
 let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   (* Set the expression depth of the sketch printer.*)
@@ -184,7 +198,10 @@ let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
     (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
-    let racket_elapsed, parsed = call_solver ~inner:inner parent_ctx problem in
+    let racket_elapsed, parsed =
+      (if !solve_incrementally then call_solver_incremental else call_solver)
+        ~inner:inner parent_ctx problem
+    in
     match parsed with
     | None ->
       begin
