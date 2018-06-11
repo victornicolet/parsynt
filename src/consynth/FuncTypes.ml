@@ -1066,7 +1066,8 @@ let rec compose_tail assignments func =
   | _ ->
     match func with
     | FnRecord (vs, emap) ->
-      FnLetIn (unwrap_state vs emap , wrap_state assignments)
+      let bindings = unwrap_state vs emap in
+      remove_id_binding (FnLetIn (bindings, wrap_state assignments))
     | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
     | _ -> func
 
@@ -1585,6 +1586,12 @@ let mk_ctx vs stv = {
   used_vars = VarSet.diff stv vs;
   all_vars = vs;
   costly_exprs = ES.empty
+}
+
+let ctx_inter (ctx : context) (vs : VarSet.t) : context = {
+  ctx with
+  state_vars = VarSet.inter vs ctx.state_vars;
+  index_vars = ctx.index_vars;
 }
 
 

@@ -536,11 +536,13 @@ let discover_for_id problem var =
     begin
       printf "@.DISCOVER for variable %s finished.@." var.vname;
     end;
-  printf "@.%sNEW VARIABLES :%s@." (color "b") color_default;
-  AuxSet.iter
-    (fun aux ->
-       printf "@.(%i : %s) = %a@." aux.avar.vid aux.avar.vname
-         cp_fnexpr aux.afunc)
+  printf "@.@[<v 4>%sNEW VARIABLES :%s%a@]@."
+    (color "b") color_default
+    (fun fmt a ->
+       AuxSet.iter
+         (fun aux ->
+            printf "@.(%i : %s) = %a@." aux.avar.vid aux.avar.vname
+              cp_fnexpr aux.afunc) a)
     clean_aux_set;
 
   let problem' = VUtils.compose problem start_exec_state clean_aux_set in

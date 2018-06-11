@@ -92,7 +92,10 @@ let replace_by_join problem inner_loops =
     let new_joinf_typ = Function (inner_styp, inner_styp) in
     (* The function corresponding to the join. *)
     let new_joinf =
-      mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
+      try
+        find_var_name (Conf.join_name in_info.loop_name)
+      with Not_found ->
+        mkFnVar (Conf.join_name in_info.loop_name) new_joinf_typ
     in
     let in_st, in_end = get_bounds in_info in
     (* Replace the function application corresponding to the inner loop.
@@ -170,10 +173,13 @@ let replace_by_join problem inner_loops =
   in
   let new_sketch =
     Sketch.Join.build_join
+      ~inner:false
       (List.map
          (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
          problem.inner_functions)
-      problem.scontext.state_vars newbody
+      problem.scontext.state_vars
+      problem.reaching_consts
+      newbody
   in
   SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
     problem.main_loop_body;
@@ -293,3 +299,62 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
 let inner_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
   with Not_found -> pb.main_loop_body
+
+let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) =
+  let upd body (old_inner, new_inner) =
+    let old_rname = record_name old_inner.scontext.state_vars in
+    let all_record_accessors l =
+      if
+        List.length l > 0 &&
+        List.for_all
+          (fun (v,e) ->
+             match e with
+             | FnRecordMember(ev, s) -> true
+             | _ -> false) l
+      then
+        begin
+          match List.hd l with
+          | _, FnRecordMember(FnVar(FnVariable var), _) -> Some var
+          | _ -> None
+        end
+      else
+        None
+    in
+    let case e =
+      match e with
+      | FnVar (FnVariable v) ->
+        begin match v.vtype with
+          | Record (ols, _) when ols = old_rname -> true
+          | t -> false
+        end
+      | FnLetIn _ -> true
+      | _ -> false
+    in
+    let on_case f e =
+      match e with
+      | FnVar (FnVariable v) ->
+        let typ = match v.vtype with
+          | Record (ols, _) when ols = old_rname ->
+            record_type new_inner.scontext.state_vars
+          | t -> t
+        in FnVar(FnVariable {v with vtype = typ})
+      | FnLetIn(binds, expr) ->
+        begin match all_record_accessors binds with
+          | Some x ->
+            let x' = {x with vtype = record_type new_inner.scontext.state_vars} in
+            FnLetIn(bind_state x' new_inner.scontext.state_vars, f expr)
+          | None ->
+            FnLetIn(List.map (fun (v,e) -> (v, f e)) binds, f expr)
+        end
+      | _ -> e
+    in
+    transform_expr2
+      {
+        case = case;
+        on_case = on_case;
+        on_var = identity;
+        on_const = identity;
+      }
+      body
+  in
+  List.fold_left upd body inners

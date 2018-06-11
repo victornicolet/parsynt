@@ -258,19 +258,21 @@ let func2sketch cfile funcreps =
     in
 
     let join_sk =
-      Sketch.Join.build_join
+      Sketch.Join.build_join ~inner:false
         inner_indexes
         state_vars
+        s_reach_consts
         loop_body
     in
     (* Set the loop width for the join *)
     let mless_sk =
-      Sketch.Join.build_for_inner
-        [mkVarExpr (VarSet.max_elt index_set)]
+      Sketch.Join.build_join ~inner:true
+        (List.map mkVarExpr (VarSet.elements index_set))
         state_vars
         s_reach_consts
-        loop_body;
+        loop_body
     in
+
     incr no_sketches;
     create_boundary_variables index_set;
     (* Input size from reaching definitions, min_int dependencies,
@@ -303,6 +305,7 @@ let func2sketch cfile funcreps =
        This structure should be containing all the information to call the solver
        and the auxiliary discovery methods.
     *)
+
     let lversions = SH.create 10 in
     SH.add lversions "orig" loop_body;
     {
@@ -356,25 +359,52 @@ let find_new_variables prob_rep =
       raise (VariableDiscoveryError s)
   in
   (** Apply some optimization to reduce the size of the function *)
-  let nlb_opt = Func2Fn.optims new_prob.main_loop_body in
-  let new_loop_body =
-    complete_final_state new_prob.scontext.state_vars nlb_opt
-  in
   discover_save ();
   let inner_indexes =
-    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) prob_rep.inner_functions
+    List.map
+      (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
+      prob_rep.inner_functions
   in
+
+  let inners =
+    List.map
+      (fun inpb ->
+         {inpb with
+          memless_sketch =
+            Sketch.Join.build_join
+              ~inner:true
+              (List.map mkVarExpr (VarSet.elements (get_index_varset inpb)))
+              inpb.scontext.state_vars
+              inpb.reaching_consts
+              inpb.main_loop_body
+         }) new_prob.inner_functions
+  in
+
+  let new_loop_body =
+    let nlb_opt = Func2Fn.optims new_prob.main_loop_body in
+    let nlb =
+      complete_final_state new_prob.scontext.state_vars nlb_opt
+    in
+    InnerFuncs.update_inners_in_body
+      (List.combine prob_rep.inner_functions inners) nlb
+  in
+
   let join_sketch =
     (fun bnds ->
        complete_final_state new_prob.scontext.state_vars
          ((Sketch.Join.build_join
-            inner_indexes
-            new_prob.scontext.state_vars nlb_opt) bnds))
+             ~inner:false
+             inner_indexes
+             new_prob.scontext.state_vars
+             new_prob.reaching_consts
+             new_loop_body) bnds))
   in
+  SH.clear new_prob.loop_body_versions;
   {
     new_prob with
     main_loop_body = new_loop_body;
     join_sketch = join_sketch;
+    inner_functions = inners;
   }
 
 
@@ -383,7 +413,8 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
     if inner then
       (match parent_context with
        | Some context -> context
-       | None -> failhere __FILE__ "pp_sketch" "Parent context not provided for child loop.")
+       | None -> failhere __FILE__ "pp_sketch"
+                   "Parent context not provided for child loop.")
     else
       mk_ctx VarSet.empty VarSet.empty
   in

@@ -47,6 +47,7 @@ let options = [
   (* ( 'e', "exact-fp", (set exact_fp true), None); *)
   ( 'f', "debug-func", (set Cil2Func.debug true), None);
   ( 'g', "debug", (set debug true), None);
+  ( 'i', "incremental", (set Solve.solve_incrementally true), None);
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'K', "kill-first-inner", (set skip_all_before_vardisc true), None);
   ( 'o', "output-folder", None,
@@ -88,9 +89,12 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
     let solve_inner_problem inpb =
       if is_empty_record inpb.memless_solution then
         let start = Unix.gettimeofday () in
-        let maybe_solution = solve_one ~inner:true (Some problem.scontext) inpb in
+        let maybe_solution =
+          solve_one ~inner:true (Some problem.scontext) inpb
+        in
         let elapsed = Unix.gettimeofday () -. start in
-        message_info (fun () -> printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
+        message_info (fun () ->
+            printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
         maybe_solution
       else Some inpb
     in
