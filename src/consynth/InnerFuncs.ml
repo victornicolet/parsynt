@@ -171,23 +171,17 @@ let replace_by_join problem inner_loops =
   let newbody, newctx =
     List.fold_left replace (problem.main_loop_body, problem.scontext) inner_loops
   in
-  let new_sketch =
-    Sketch.Join.build_join
-      ~inner:false
-      (List.map
-         (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
-         problem.inner_functions)
-      problem.scontext.state_vars
-      problem.reaching_consts
-      newbody
-  in
+
   SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
     problem.main_loop_body;
   SH.add problem.loop_body_versions _KEY_JOIN_INLINED_ newbody;
-  {problem with inner_functions = inner_loops;
-                join_sketch = new_sketch;
-                scontext = newctx;
-                main_loop_body = newbody;}
+
+  Sketch.Join.sketch_join
+    {
+      problem with
+      inner_functions = inner_loops;
+      scontext = newctx;
+      main_loop_body = newbody;}
 
 
 let no_join_inlined_body pb =

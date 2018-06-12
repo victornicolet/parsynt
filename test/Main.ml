@@ -31,7 +31,6 @@ module C2F = Cil2Func
 
 (** Different test modules *)
 module TC2F = TCil2Func
-module TF2S = TFunc2Sketch
 module TGDef = TGenDefs
 module TSbx = TSymbExe
 module TScm = TestSchemeParsing

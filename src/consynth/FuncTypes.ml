@@ -481,6 +481,8 @@ let is_exp_function ef =
 
   | _ -> false,  None , Cil.typeOf ef
 
+
+let fn_zero = FnConst(CInt 0)
 (**
    Generate a FnVar expression from a variable, with possible offsets
    for arrays. Checks first if the name of the variable is a predefined
@@ -1139,6 +1141,16 @@ and used_in_assignments ve_list =
     (VarSet.empty, VarSet.empty) ve_list
 
 
+let has_loop (e : fnExpr) : bool =
+  let loopcons = (fun f e -> match e with FnRec _ -> true | _ -> false) in
+  rec_expr2
+    { join = (||);
+      init = false;
+      case = loopcons identity;
+      on_case = loopcons;
+      on_var = (fun e -> false);
+      on_const = (fun e -> false); }
+    e
 
 (** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
 

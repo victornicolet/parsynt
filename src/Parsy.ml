@@ -226,6 +226,7 @@ let main () =
       Sketch.Join.verbose := true;
       VariableDiscovery.verbose := true;
       SymbExe.verbose := true;
+      Incremental.verbose := true;
     end;
 
   elapsed_time := Unix.gettimeofday ();
