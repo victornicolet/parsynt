@@ -296,11 +296,15 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
       }
   }
 
+
 let inner_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
   with Not_found -> pb.main_loop_body
 
-let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) =
+
+let update_inners_in_body
+    (inners : (prob_rep * prob_rep) list)
+    (body : fnExpr) : fnExpr =
   let upd body (old_inner, new_inner) =
     let old_rname = record_name old_inner.scontext.state_vars in
     let all_record_accessors l =
@@ -327,7 +331,9 @@ let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) 
           | Record (ols, _) when ols = old_rname -> true
           | t -> false
         end
+
       | FnLetIn _ -> true
+
       | _ -> false
     in
     let on_case f e =
@@ -338,10 +344,13 @@ let update_inners_in_body (inners : (prob_rep * prob_rep) list) (body : fnExpr) 
             record_type new_inner.scontext.state_vars
           | t -> t
         in FnVar(FnVariable {v with vtype = typ})
+
       | FnLetIn(binds, expr) ->
         begin match all_record_accessors binds with
           | Some x ->
-            let x' = {x with vtype = record_type new_inner.scontext.state_vars} in
+            let x' =
+              {x with vtype = record_type new_inner.scontext.state_vars}
+            in
             FnLetIn(bind_state x' new_inner.scontext.state_vars, f expr)
           | None ->
             FnLetIn(List.map (fun (v,e) -> (v, f e)) binds, f expr)

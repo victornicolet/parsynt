@@ -21,7 +21,7 @@ open FuncTypes
 open Utils
 
 let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
-  let udpate_rectype name stl =
+  let update_rectype name stl =
     let stl' =
       List.filter
         (fun (s,t) ->
@@ -61,7 +61,8 @@ let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
     | FnVariable var ->
       begin
         match var.vtype with
-        | Record (name, stl) -> v
+        | Record (name, stl) ->
+          FnVariable {var with vtype = update_rectype name stl}
         | _ -> v
       end
     | _ -> v
@@ -91,7 +92,12 @@ let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
     | _ -> e
   in
   transform_expr2
-    { case = cases; on_case = restrict_body; on_var = restrict_var; on_const = identity}
+    {
+      case = cases;
+      on_case = restrict_body;
+      on_var = restrict_var;
+      on_const = identity
+    }
     func
 
 
@@ -105,8 +111,54 @@ let restrict (problem : prob_rep) (variables : VarSet.t) : prob_rep =
   }
 
 
+let collect_dependencies vars func =
+  let join_depmap a b =
+    IM.fold
+      (fun k be map' ->
+         if IM.mem k map' then map' else
+           IM.add k be map')
+      b
+      (IM.fold
+         (fun k ae map' ->
+            try
+              IM.add k (VarSet.union ae (IM.find k b)) map'
+            with Not_found ->
+              IM.add k ae map') a IM.empty)
+  in
+  let case e =
+    match e with
+    | FnLetIn _ | FnRecord _ -> true
+    | _ -> false
+  in
+  let on_case f e =
+    match e with
+    | FnLetIn (bindings, cont) ->
+      join_depmap
+        (IM.of_alist
+           (List.map
+              (fun (v, e) ->
+                 let var = var_of_fnvar v in
+                 (var.vid, VarSet.inter vars (used_in_fnexpr e)))
+              bindings))
+        (f e)
+
+    | FnRecord (vs, emap) -> IM.empty
+  in
+  rec_expr2
+    {
+      join = join_depmap;
+      on_case = on_case;
+      case = case;
+      init = IM.empty;
+      on_var = (fun c -> IM.empty);
+      on_const = (fun c -> IM.empty);
+    }
+
 let get_dependent_subsets (problem : prob_rep) : VarSet.t list =
-  [problem.scontext.state_vars]
+  let dep_map =
+    collect_dependencies problem.scontext.state_vars problem.main_loop_body
+  in
+  rank_and_cluster problem.scontext.state_vars dep_map
 
 let get_increments (problem : prob_rep) : prob_rep list =
   let subsets = get_dependent_subsets problem in
