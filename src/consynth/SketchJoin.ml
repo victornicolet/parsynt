@@ -777,6 +777,43 @@ let build_join
     end
 
 
+let sketch_join problem =
+  let inner_indexes =
+    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
+      problem.inner_functions
+  in
+
+  {
+    problem with
+    join_sketch =
+      (fun bnds ->
+         complete_final_state problem.scontext.state_vars
+           ((build_join ~inner:false
+               inner_indexes
+               problem.scontext.state_vars
+               problem.reaching_consts
+               problem.main_loop_body) bnds))
+  }
+
+
+
+
+let sketch_inner_join problem =
+  let index_set = get_index_varset problem in
+  {
+    problem with
+    memless_sketch =
+      (fun bnds ->
+         complete_final_state problem.scontext.state_vars
+           ((build_join ~inner:true
+               (List.map mkVarExpr (VarSet.elements index_set))
+               problem.scontext.state_vars
+               problem.reaching_consts
+               problem.main_loop_body) bnds))
+  }
+
+
+
 let match_hole_to_completion
     (sketch : fnExpr) (solution : fnExpr) : fnExpr option =
   if !verbose then

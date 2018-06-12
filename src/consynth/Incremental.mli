@@ -20,5 +20,6 @@ open Beta
 open FuncTypes
 open Utils
 
+val verbose : bool ref
 val get_increments : prob_rep -> prob_rep list
-val complete_increment : prob_rep -> prob_rep option -> prob_rep
+val complete_increment : inner:bool -> prob_rep -> prob_rep option -> prob_rep

@@ -48,8 +48,6 @@ let parseOneFile (fname : string) : C.file =
     failhere __FILE__ "parseOneFile" "Error while parsing input file,\
               the filename might contain errors"
 
-
-
 let processFile fileName =
   C.initCIL ();
   C.insertImplicitCasts := false;
@@ -253,25 +251,6 @@ let func2sketch cfile funcreps =
     let index_set, _ = sigu in
     aux_vars_init ();
 
-    let inner_indexes =
-      List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
-    in
-
-    let join_sk =
-      Sketch.Join.build_join ~inner:false
-        inner_indexes
-        state_vars
-        s_reach_consts
-        loop_body
-    in
-    (* Set the loop width for the join *)
-    let mless_sk =
-      Sketch.Join.build_join ~inner:true
-        (List.map mkVarExpr (VarSet.elements index_set))
-        state_vars
-        s_reach_consts
-        loop_body
-    in
 
     incr no_sketches;
     create_boundary_variables index_set;
@@ -308,38 +287,41 @@ let func2sketch cfile funcreps =
 
     let lversions = SH.create 10 in
     SH.add lversions "orig" loop_body;
-    {
-      id = func_info.lid;
-      host_function =
-        (mkFuncDec
-           (try check_option
-               (get_fun cfile func_info.host_function.Cil.vname)
-        with Failure s -> (eprintf "Failure : %s@." s;
-                           failhere __FILE__ "func2sketch"
-                             "Failed to get host function.")));
-      loop_name = func_info.loop_name;
-      scontext =
-        { state_vars = state_vars;
-          index_vars = index_set;
-          used_vars = varset_of_vs func_info.lvariables.used_vars;
-          all_vars = varset_of_vs func_info.lvariables.all_vars;
-          costly_exprs = ES.empty;
-        };
-      min_input_size = max_m_sizes;
-      uses_global_bound = uses_global_bounds;
-      main_loop_body = loop_body;
-      loop_body_versions = lversions;
-      join_sketch = join_sk;
-      memless_sketch = mless_sk;
-      (* No solution for now! *)
-      join_solution = empty_record;
-      memless_solution = empty_record;
-      init_values = IM.empty;
-      identity_values = IM.empty;
-      func_igu = sigu;
-      reaching_consts = s_reach_consts;
-      inner_functions = inners;
-    }
+    let fn_pb =
+      {
+        id = func_info.lid;
+        host_function =
+          (mkFuncDec
+             (try check_option
+                    (get_fun cfile func_info.host_function.Cil.vname)
+              with Failure s -> (eprintf "Failure : %s@." s;
+                                 failhere __FILE__ "func2sketch"
+                                   "Failed to get host function.")));
+        loop_name = func_info.loop_name;
+        scontext =
+          { state_vars = state_vars;
+            index_vars = index_set;
+            used_vars = varset_of_vs func_info.lvariables.used_vars;
+            all_vars = varset_of_vs func_info.lvariables.all_vars;
+            costly_exprs = ES.empty;
+          };
+        min_input_size = max_m_sizes;
+        uses_global_bound = uses_global_bounds;
+        main_loop_body = loop_body;
+        loop_body_versions = lversions;
+        join_sketch = (fun e -> empty_record);
+        memless_sketch = (fun e -> empty_record);
+        (* No solution for now! *)
+        join_solution = empty_record;
+        memless_solution = empty_record;
+        init_values = IM.empty;
+        identity_values = IM.empty;
+        func_igu = sigu;
+        reaching_consts = s_reach_consts;
+        inner_functions = inners;
+      }
+    in
+    Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
   List.map transform_func funcreps
 
@@ -360,24 +342,9 @@ let find_new_variables prob_rep =
   in
   (** Apply some optimization to reduce the size of the function *)
   discover_save ();
-  let inner_indexes =
-    List.map
-      (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
-      prob_rep.inner_functions
-  in
 
   let inners =
-    List.map
-      (fun inpb ->
-         {inpb with
-          memless_sketch =
-            Sketch.Join.build_join
-              ~inner:true
-              (List.map mkVarExpr (VarSet.elements (get_index_varset inpb)))
-              inpb.scontext.state_vars
-              inpb.reaching_consts
-              inpb.main_loop_body
-         }) new_prob.inner_functions
+    List.map Sketch.Join.sketch_inner_join new_prob.inner_functions
   in
 
   let new_loop_body =
@@ -389,21 +356,10 @@ let find_new_variables prob_rep =
       (List.combine prob_rep.inner_functions inners) nlb
   in
 
-  let join_sketch =
-    (fun bnds ->
-       complete_final_state new_prob.scontext.state_vars
-         ((Sketch.Join.build_join
-             ~inner:false
-             inner_indexes
-             new_prob.scontext.state_vars
-             new_prob.reaching_consts
-             new_loop_body) bnds))
-  in
   SH.clear new_prob.loop_body_versions;
-  {
+  Sketch.Join.sketch_join {
     new_prob with
     main_loop_body = new_loop_body;
-    join_sketch = join_sketch;
     inner_functions = inners;
   }
 

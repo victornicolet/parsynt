@@ -83,12 +83,13 @@ let solution_found
       problem.scontext.all_vars problem.scontext.state_vars;
     try
       let solver_sol = scm_to_fn sol_info.Cg.join_body in
-      match Sketch.Join.match_hole_to_completion join_sketch solver_sol with
-      | Some precise_sol ->
-        (Expressions.enormalize
-          problem.scontext
-          precise_sol)
-      | None -> remove_hole_vars solver_sol
+      remove_hole_vars
+        (match Sketch.Join.match_hole_to_completion join_sketch solver_sol with
+         | Some precise_sol ->
+           (Expressions.enormalize
+              problem.scontext
+              precise_sol)
+         | None -> solver_sol)
     with
     | Failure s ->
       eprintf "[FAILURE] %s@." s;
@@ -185,7 +186,16 @@ let call_solver_incremental ?(inner=false) (ctx : context option) (pb : prob_rep
   try
     List.fold_left
       (fun (et, solution) incr_pb ->
-         let part_pb = complete_increment incr_pb solution in
+         let part_pb = complete_increment ~inner:inner incr_pb solution in
+
+         if !verbose then
+           printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
+             incr_pb.loop_name
+             FPretty.pp_fnexpr part_pb.main_loop_body
+             FPretty.pp_fnexpr (if inner then
+                                  (part_pb.memless_sketch (fn_zero, fn_zero))
+                                else
+                                  (part_pb.join_sketch (fn_zero, fn_zero)));
          match call_solver ~inner:inner ctx part_pb with
          | et', Some sol -> et +. et', Some sol
          | et', None -> raise Not_found) (0., None) increments
