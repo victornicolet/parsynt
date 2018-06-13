@@ -682,7 +682,7 @@ let wrap_with_loop i state reach_consts base_join =
     in
     (wrap_state stv_or_cst)
   in
-  let state_binder = mkFnVar "__s" (record_type state) in
+  let state_binder = special_binder (record_type state) in
   (fun (i_start, i_end) ->
      FnRec ((i_start,
              FnBinop (Lt, i, i_end),

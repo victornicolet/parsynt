@@ -75,9 +75,10 @@ let solution_found
   let translated_join_body =
     let join_sketch =
       if inner then
-        problem.memless_sketch
-          (let i0, ie = get_bounds problem in mkVarExpr i0, mkVarExpr ie)
-      else problem.join_sketch (Dimensions.bounds inner problem)
+        let i0, ie = get_bounds problem in
+        problem.memless_sketch (mkVarExpr i0, mkVarExpr ie)
+      else
+        problem.join_sketch (Dimensions.bounds inner problem)
     in
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
@@ -187,7 +188,6 @@ let call_solver_incremental ?(inner=false) (ctx : context option) (pb : prob_rep
     List.fold_left
       (fun (et, solution) incr_pb ->
          let part_pb = complete_increment ~inner:inner incr_pb solution in
-
          if !verbose then
            printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
              incr_pb.loop_name

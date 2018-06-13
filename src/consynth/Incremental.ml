@@ -272,6 +272,53 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   _c sketch solution
 
 
+let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
+  let projected_name = ref "" in
+  let on_variable var =
+    match var.vtype with
+    | Record(name, stl) ->
+      {var with
+       vtype = Record(!projected_name,
+                      List.filter (fun (s,t) ->
+                          try let _ = VarSet.find_by_name variables s in false with Not_found -> true) stl)}
+    | _ -> var
+  in
+  let case e =
+    match e with
+    | FnLetIn _ -> true
+    | FnRecord _ -> true
+    | FnRec _ -> true
+    | _ -> false
+  in
+  let on_case f e =
+    match e with
+    | FnLetIn (bindings, expr) ->
+      FnLetIn (
+        List.map
+          (fun (v, ve) -> (v, f ve))
+          (List.filter (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables)) bindings),
+        f expr)
+
+    | FnRecord (vs, emap) ->
+      FnRecord (VarSet.diff vs variables,
+                IM.filter (fun k e -> not (VarSet.has_vid variables k)) emap)
+
+    | FnRec (igu, (vs, bs), (s, body)) ->
+      projected_name := record_name (VarSet.diff vs variables);
+      FnRec (igu, (VarSet.diff vs variables, f bs), (on_variable s, f body))
+
+    | _ -> failwith "on_case failure"
+  in
+  let on_var v =
+    match v with
+    | FnVariable var ->
+      FnVariable (on_variable var)
+    | _ -> v
+  in
+  transform_expr2
+    { case = case; on_case = on_case; on_var = on_var; on_const = identity } sketch
+
+
 let complete_increment ~inner:(inner:bool) (increment : prob_rep) (sol : prob_rep option) : prob_rep =
   match sol with
   | Some sol ->
@@ -292,7 +339,9 @@ let complete_increment ~inner:(inner:bool) (increment : prob_rep) (sol : prob_re
                a constant join from the sketch and append the
                join at the beginning.
             *)
-            incr_sketch
+            (fun bnd ->
+               compose prev_solution
+                 (remove_from_loop_state sol.scontext.state_vars (incr_sketch bnd)))
         end
       else
         (* The incremental sketch is scalar. The prev solution should be too. *)
