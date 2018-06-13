@@ -181,7 +181,10 @@ let call_solver ?(inner=false) (ctx : context option) (pb : prob_rep) :
     end
 
 
-let call_solver_incremental ?(inner=false) (ctx : context option) (pb : prob_rep) :
+let call_solver_incremental
+    ?(inner=false)
+    (ctx : context option)
+    (pb : prob_rep) :
   float * prob_rep option =
   let increments = get_increments pb in
   try
@@ -207,7 +210,8 @@ let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   let lp_name = problem.loop_name in
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
-    (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
+    (* Compile the sketch to a Racket file, call Rosette, and parse the
+       solution. *)
     let racket_elapsed, parsed =
       (if !solve_incrementally then call_solver_incremental else call_solver)
         ~inner:inner parent_ctx problem

@@ -701,7 +701,7 @@ let wrap_with_loop i state reach_consts base_join =
    chunk.
 *)
 let wrap_with_choice state base_join =
-  let binder = mkFnVar "loop_res" (record_type state) in
+  let binder = loop_res_binder (record_type state) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let final_choices =
     List.map

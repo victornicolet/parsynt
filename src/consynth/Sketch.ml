@@ -362,8 +362,10 @@ let handle_special_consts fmt input_vars reach_consts =
 *)
 let defined_structs = SH.create 10
 
-let define_state fmt (struct_name_and_fields : string * string list) =
-  if SH.mem defined_structs (fst struct_name_and_fields) then ()
+let define_struct fmt (struct_name_and_fields : string * string list) =
+  if SH.mem defined_structs (fst struct_name_and_fields) ||
+     List.length (snd struct_name_and_fields) = 0
+  then ()
   else
     begin
       SH.add defined_structs (fst struct_name_and_fields) (snd struct_name_and_fields);
@@ -507,17 +509,23 @@ let pp_join_body fmt (join_body, state_vars, lstate, rstate) =
 let pp_join fmt (inner, sketch) =
   let lstate_name = Conf.get_conf_string "rosette_join_left_state_name" in
   let rstate_name = Conf.get_conf_string "rosette_join_right_state_name" in
-  let join_body = if inner then sketch.memless_sketch else sketch.join_sketch in
   let state_vars = sketch.scontext.state_vars in
   let stype = record_type state_vars in
   let lstate = mkFnVar (get_new_name ~base:lstate_name) stype in
   let rstate = mkFnVar (get_new_name ~base:rstate_name) stype in
   let ist, ien = get_bounds sketch in
   let st_start, st_end = Dimensions.bounds (not inner) sketch in
+  let jbody =
+    let j =
+      if inner then sketch.memless_sketch else sketch.join_sketch
+    in
+    j (st_start, st_end)
+  in
+  define_struct fmt !Incremental.incremental_struct;
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
     join_name  lstate.vname rstate.vname ist.vname ien.vname
-    pp_join_body (join_body (st_start, st_end), state_vars, lstate, rstate)
+    pp_join_body (jbody, state_vars, lstate, rstate)
 
 (** Some state definitons *)
 
@@ -734,7 +742,7 @@ let pp_inner_def fmt pb =
   let inner_struct_name = record_name stv in
   (* Define state struct type. *)
   pp_comment fmt "Defining struct for state of the inner loop.";
-  define_state fmt (inner_struct_name, VarSet.names stv);
+  define_struct fmt (inner_struct_name, VarSet.names stv);
   pp_newline fmt ()
 
 let pp_inner_loops_defs fmt inner_loop_list =
@@ -814,8 +822,8 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
       ~ine:sketch.main_loop_body
   in
   Dimensions.set_default ();
-  (* Select the bitwidth for representatin in Rosettte depending on the operators used
-     in the loop body. *)
+  (* Select the bitwidth for representatin in Rosettte depending on the
+     operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
@@ -823,7 +831,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   *)
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  define_state fmt (struct_name, VarSet.names state_vars);
+  define_struct fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
@@ -838,7 +846,8 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
-  pp_synth ~memoryless:true fmt st0 bnames struct_name (VarSet.union read_vars additional_symbols)
+  pp_synth ~memoryless:true fmt st0 bnames struct_name
+    (VarSet.union read_vars additional_symbols)
     (* (VarSet.union read_vars additional_symbols) *)
     min_dep_len
 
@@ -903,7 +912,7 @@ let pp_rosette_sketch_join fmt sketch =
     end;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  define_state fmt (struct_name, VarSet.names state_vars);
+  define_struct fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
   if List.length sketch.inner_functions > 0 then
     begin

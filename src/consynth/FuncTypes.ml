@@ -1042,10 +1042,10 @@ let analyze_optype (e : fnExpr) : operator_type = rec_expr2 optype_rec e
 
 
 
-let rec remove_empty_lets : fnExpr -> fnExpr option =
+let rec remove_empty_binds : fnExpr -> fnExpr option =
   function
   | FnLetIn (ve_list, letin) ->
-    begin match remove_empty_lets letin with
+    begin match remove_empty_binds letin with
       | Some let_tail ->
         begin match ve_list with
           | [] -> Some let_tail
@@ -1065,6 +1065,16 @@ let rec remove_empty_lets : fnExpr -> fnExpr option =
     end
   | e -> Some e
 
+let rec remove_empty_lets : fnExpr -> fnExpr =
+  function
+  | FnLetIn(b,e) ->
+    let e' = remove_empty_lets e in
+    begin match b with
+    | [] -> e'
+    | _ -> FnLetIn (b, e')
+    end
+  | e -> e
+
 
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
@@ -1080,7 +1090,8 @@ let rec compose func1 func2 =
   match func1 with
   | FnLetIn (el, c) -> FnLetIn (el, compose c func2)
   | FnRecord(vs, emap) ->
-    remove_id_binding (FnLetIn(unwrap_state vs emap, func2))
+    (remove_id_binding --> remove_empty_lets)
+      (FnLetIn(unwrap_state vs emap, func2))
   | _ -> func2
 
 let compose_head assignments func =
@@ -1470,7 +1481,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
           begin try
               FnRecord(stv,
                        List.fold_left2
-                         (fun emap v e -> IM.add v.vid (translate e) emap)
+                         (fun emap v ei -> IM.add v.vid (translate ei) emap)
                          IM.empty (VarSet.elements stv) inits)
             with Invalid_argument _ ->
               failhere __FILE__ "translate_loop" "Mismatch in state vars/ args."
@@ -1846,7 +1857,7 @@ let rec pass_sequentialize fnlet =
       reorganize (unwrap_state vs emap) (FnRecord(vs, identity_map vs))
     | e -> e
   in
-  match remove_empty_lets (sequentialize_parallel_moves fnlet) with
+  match remove_empty_binds (sequentialize_parallel_moves fnlet) with
   | Some fnlet -> fnlet
   | None -> FnRecord(VarSet.empty, IM.empty)
 

@@ -22,6 +22,8 @@ open Utils
 
 let verbose = ref false
 
+let incremental_struct = ref ("", [])
+
 let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
   let update_rectype name stl =
     let stl' =
@@ -274,52 +276,113 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
 
 let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
   let projected_name = ref "" in
+  let record_proj stl =
+    (Record (!projected_name,
+             List.filter (fun (s,t) ->
+                 try let _ =
+                       VarSet.find_by_name variables s in false
+                 with Not_found -> true) stl))
+  in
   let on_variable var =
     match var.vtype with
     | Record(name, stl) ->
-      {var with
-       vtype = Record(!projected_name,
-                      List.filter (fun (s,t) ->
-                          try let _ = VarSet.find_by_name variables s in false with Not_found -> true) stl)}
+      special_binder (record_proj stl)
     | _ -> var
   in
-  let case e =
-    match e with
-    | FnLetIn _ -> true
-    | FnRecord _ -> true
-    | FnRec _ -> true
-    | _ -> false
+  let change_binder_type =
+    transform_expr2
+      { case = (fun e -> false); on_case = (fun f e -> e); on_const = identity;
+        on_var =
+          (fun v ->
+             match v with
+             | FnVariable var ->
+               begin match var.vtype with
+                 | Record (name, stl) ->
+                   FnVariable { var with vtype = record_proj stl }
+                 | _ -> v
+               end
+             | _ -> v)}
   in
-  let on_case f e =
-    match e with
-    | FnLetIn (bindings, expr) ->
-      FnLetIn (
-        List.map
-          (fun (v, ve) -> (v, f ve))
-          (List.filter (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables)) bindings),
-        f expr)
+  let transform_loopb body =
+    let case e =
+      match e with
+      | FnLetIn _ -> true
+      | FnRecord _ -> true
+      | FnRec _ -> true
+      | _ -> false
+    in
+    let on_case f e =
+      match e with
+      | FnLetIn (bindings, expr) ->
+        FnLetIn (
+          List.map
+            (fun (v, ve) -> (v, f ve))
+            (List.filter
+               (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables))
+               bindings),
+          f expr)
 
-    | FnRecord (vs, emap) ->
-      FnRecord (VarSet.diff vs variables,
-                IM.filter (fun k e -> not (VarSet.has_vid variables k)) emap)
+      | FnRecord (vs, emap) ->
+        FnRecord (VarSet.diff vs variables,
+                  IM.filter (fun k e -> not (VarSet.has_vid variables k)) emap)
 
-    | FnRec (igu, (vs, bs), (s, body)) ->
-      projected_name := record_name (VarSet.diff vs variables);
-      FnRec (igu, (VarSet.diff vs variables, f bs), (on_variable s, f body))
-
-    | _ -> failwith "on_case failure"
+      | _ -> failwith "on_case failure"
+    in
+    let on_var v =
+      match v with
+      | FnVariable var ->
+        FnVariable (on_variable var)
+      | _ -> v
+    in
+    transform_expr2
+      { case = case; on_case = on_case; on_var = on_var; on_const = identity }
+      body
   in
-  let on_var v =
-    match v with
-    | FnVariable var ->
-      FnVariable (on_variable var)
-    | _ -> v
+  let diffset = rec_expr2
+    {
+      join = VarSet.union;
+      init = VarSet.empty;
+      case = (fun e -> match e with FnRec _ -> true | _ -> false);
+      on_case =
+        (fun f e ->
+           match e with
+           | FnRec (_,(vs, _), _) ->  VarSet.diff vs variables
+           | _ -> failwith "on-case failure, not FnRec");
+      on_var = (fun v -> VarSet.empty);
+      on_const = (fun v -> VarSet.empty);
+    } sketch
   in
+  begin if not (VarSet.is_empty diffset) then
+      let sname = record_name diffset in
+      projected_name := sname;
+      incremental_struct := (sname, VarSet.names diffset);
+  end;
+
   transform_expr2
-    { case = case; on_case = on_case; on_var = on_var; on_const = identity } sketch
+    { case = (fun e -> match e with FnRec _ | FnRecord _ -> true | _ -> false);
+      on_case =
+        (fun f e ->
+           match e with
+           | FnRec (igu, (vs, bs), (s, body)) ->
+             FnRec (igu, (VarSet.diff vs variables, transform_loopb bs),
+                    (on_variable s, remove_empty_lets (transform_loopb body)))
+
+           | FnRecord (vs, emap) ->
+             FnRecord(vs,
+                      IM.mapi (fun k e ->
+                          try mkVarExpr (VarSet.find_by_id variables k)
+                          with Not_found -> change_binder_type e) emap)
+           | _  -> failwith "on-case failure");
+      on_var = identity;
+      on_const = identity;
+    } sketch
 
 
-let complete_increment ~inner:(inner:bool) (increment : prob_rep) (sol : prob_rep option) : prob_rep =
+
+let complete_increment
+    ~inner:(inner:bool)
+    (increment : prob_rep)
+    (sol : prob_rep option) : prob_rep =
   match sol with
   | Some sol ->
     let prev_solution =
@@ -341,7 +404,9 @@ let complete_increment ~inner:(inner:bool) (increment : prob_rep) (sol : prob_re
             *)
             (fun bnd ->
                compose prev_solution
-                 (remove_from_loop_state sol.scontext.state_vars (incr_sketch bnd)))
+                 (remove_from_loop_state
+                    sol.scontext.state_vars
+                    (incr_sketch bnd)))
         end
       else
         (* The incremental sketch is scalar. The prev solution should be too. *)
