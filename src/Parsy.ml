@@ -110,7 +110,8 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
     if List.length inner_funcs = List.length problem.inner_functions then
       begin
         if !verbose then print_inner_result problem inner_funcs ();
-        Some (InnerFuncs.replace_by_join problem inner_funcs)
+        Some (Sketch.Join.sketch_join
+                (InnerFuncs.replace_by_join problem inner_funcs))
       end
     else
       None

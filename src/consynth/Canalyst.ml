@@ -309,8 +309,8 @@ let func2sketch cfile funcreps =
         uses_global_bound = uses_global_bounds;
         main_loop_body = loop_body;
         loop_body_versions = lversions;
-        join_sketch = (fun e -> empty_record);
-        memless_sketch = (fun e -> empty_record);
+        join_sketch = empty_record;
+        memless_sketch = empty_record;
         (* No solution for now! *)
         join_solution = empty_record;
         memless_solution = empty_record;

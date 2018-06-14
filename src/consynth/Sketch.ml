@@ -371,7 +371,8 @@ let define_struct fmt (struct_name_and_fields : string * string list) =
       SH.add defined_structs (fst struct_name_and_fields) (snd struct_name_and_fields);
       (pp_struct_definition ~transparent:true) fmt struct_name_and_fields;
       pp_newline fmt ();
-      pp_struct_equality fmt struct_name_and_fields
+      pp_struct_equality fmt struct_name_and_fields;
+      pp_newline fmt ();
     end
 (** Given a set of variables, pretty print their definitions and return
     a list of strings representing the names of the symbolic variables
@@ -514,14 +515,11 @@ let pp_join fmt (inner, sketch) =
   let lstate = mkFnVar (get_new_name ~base:lstate_name) stype in
   let rstate = mkFnVar (get_new_name ~base:rstate_name) stype in
   let ist, ien = get_bounds sketch in
-  let st_start, st_end = Dimensions.bounds (not inner) sketch in
   let jbody =
-    let j =
-      if inner then sketch.memless_sketch else sketch.join_sketch
-    in
-    j (st_start, st_end)
+    if inner then sketch.memless_sketch else sketch.join_sketch
   in
   define_struct fmt !Incremental.incremental_struct;
+  pp_comment fmt  "-------------------------------";
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
     join_name  lstate.vname rstate.vname ist.vname ien.vname
@@ -821,7 +819,6 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
       ~by:(FnConst (CInt 0))
       ~ine:sketch.main_loop_body
   in
-  Dimensions.set_default ();
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
@@ -902,7 +899,6 @@ let pp_rosette_sketch_join fmt sketch =
       sketch.main_loop_body
       sketch.inner_functions
   in
-  Dimensions.set_default ();
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
   if List.length sketch.inner_functions > 0 then
@@ -914,7 +910,9 @@ let pp_rosette_sketch_join fmt sketch =
   pp_newline fmt ();
   define_struct fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
-  if List.length sketch.inner_functions > 0 then
+  if List.length sketch.inner_functions > 0 &&
+     InnerFuncs.uses_inner_join_func sketch.main_loop_body
+  then
     begin
       pp_inner_loops_joins fmt sketch.inner_functions;
       pp_newline fmt ()

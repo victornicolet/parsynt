@@ -24,7 +24,11 @@ let verbose = ref false
 
 let incremental_struct = ref ("", [])
 
-let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
+let _partial_solutions : (VarSet.t * fnExpr) SH.t = SH.create 10
+
+let store_partial s part = SH.add _partial_solutions s part
+
+let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
   let update_rectype name stl =
     let stl' =
       List.filter
@@ -47,7 +51,7 @@ let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
   in
   let cases e =
     match e with
-    | FnLetIn _ | FnRec _ | FnRecord _ -> true
+    | FnLetIn _ | FnRec _ | FnRecord _  -> true
     | _ -> false
   in
   let restrict_bindings f bds =
@@ -100,18 +104,25 @@ let restrict_func (variables : VarSet.t) (func : fnExpr) : fnExpr =
       case = cases;
       on_case = restrict_body;
       on_var = restrict_var;
-      on_const = identity
+      on_const = identity;
     }
     func
 
 
-let restrict (problem : prob_rep) (variables : VarSet.t) : prob_rep =
-  let new_body = restrict_func variables problem.main_loop_body in
+let rec restrict (problem : prob_rep) (variables : VarSet.t) : prob_rep =
+  let pb =
+    InnerFuncs.inline_inner ~inline_pick_join:true (Dimensions.width ()) problem
+  in
+  let new_body =
+    restrict_func pb.scontext variables pb.main_loop_body
+  in
+  let new_inners = List.map (fun pb -> restrict pb variables) pb.inner_functions in
   SketchJoin.sketch_inner_join
     (SketchJoin.sketch_join
        {
          problem with
-         scontext = ctx_inter problem.scontext variables;
+         scontext = ctx_inter pb.scontext variables;
+         inner_functions = new_inners;
          main_loop_body = new_body;
          loop_body_versions = SH.create 5;
        })
@@ -249,6 +260,14 @@ let get_increments (problem : prob_rep) : prob_rep list =
 
   (List.mapi rename_pb (List.map (restrict problem) subsets))
 
+
+(**
+   ----------------------------------------------------------------------
+
+   Incremental completion of the sketch. Given a solution for the previous
+   sketch in the incremental solving, fill in some of the holes of the
+   current sketch.
+*)
 
 let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   let rec _cb hl cl =
@@ -391,9 +410,8 @@ let complete_increment
     let incr_sketch =
       if inner then increment.memless_sketch else increment.join_sketch
     in
-    let zero = FnConst (CInt 0) in
     let new_sketch =
-      if has_loop (incr_sketch (zero, zero))  then
+      if has_loop incr_sketch  then
         begin if has_loop prev_solution then
             (* Match 'one on one' *)
             incr_sketch
@@ -402,15 +420,14 @@ let complete_increment
                a constant join from the sketch and append the
                join at the beginning.
             *)
-            (fun bnd ->
-               compose prev_solution
-                 (remove_from_loop_state
-                    sol.scontext.state_vars
-                    (incr_sketch bnd)))
+            compose prev_solution
+              (remove_from_loop_state
+                 sol.scontext.state_vars
+                 incr_sketch)
         end
       else
         (* The incremental sketch is scalar. The prev solution should be too. *)
-        (fun bnd -> complete_simple_sketch (incr_sketch bnd) prev_solution)
+        complete_simple_sketch incr_sketch prev_solution
     in
     if inner then { increment with memless_sketch = new_sketch }
     else { increment with join_sketch = new_sketch }

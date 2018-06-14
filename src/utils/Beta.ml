@@ -570,13 +570,6 @@ let special_binder typ =
   with Not_found ->
     mkFnVar vname typ
 
-let loop_res_binder t =
-  let vname = "loop_res"^(shstr_of_type t) in
-  try
-    find_var_name vname
-  with Not_found ->
-    mkFnVar vname t
-
 
 (* -------------------- 4 - LEFT AND RIGHT STATE VARIABLES ------------------ *)
 

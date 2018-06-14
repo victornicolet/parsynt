@@ -1699,8 +1699,8 @@ type prob_rep =
     uses_global_bound : bool;
     main_loop_body : fnExpr;
     loop_body_versions : fnExpr SH.t;
-    join_sketch : fnExpr * fnExpr -> fnExpr;
-    memless_sketch : fnExpr * fnExpr ->  fnExpr;
+    join_sketch : fnExpr;
+    memless_sketch : fnExpr;
     join_solution : fnExpr;
     memless_solution : fnExpr;
     init_values : RAst.expr IM.t;

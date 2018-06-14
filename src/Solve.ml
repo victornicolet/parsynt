@@ -75,10 +75,9 @@ let solution_found
   let translated_join_body =
     let join_sketch =
       if inner then
-        let i0, ie = get_bounds problem in
-        problem.memless_sketch (mkVarExpr i0, mkVarExpr ie)
+        problem.memless_sketch
       else
-        problem.join_sketch (Dimensions.bounds inner problem)
+        problem.join_sketch
     in
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
@@ -196,11 +195,17 @@ let call_solver_incremental
              incr_pb.loop_name
              FPretty.pp_fnexpr part_pb.main_loop_body
              FPretty.pp_fnexpr (if inner then
-                                  (part_pb.memless_sketch (fn_zero, fn_zero))
+                                  part_pb.memless_sketch
                                 else
-                                  (part_pb.join_sketch (fn_zero, fn_zero)));
+                                  part_pb.join_sketch);
          match call_solver ~inner:inner ctx part_pb with
-         | et', Some sol -> et +. et', Some sol
+         | et', Some sol ->
+           store_partial
+             sol.loop_name
+             (sol.scontext.state_vars,
+              if inner then sol.memless_solution else sol.join_solution);
+           et +. et', Some sol
+
          | et', None -> raise Not_found) (0., None) increments
   with Not_found -> -1.0, None
 
