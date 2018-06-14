@@ -190,7 +190,10 @@ let output_dafny_proofs (sols : prob_rep list) : unit =
   in
   printf "@.%s%sGenerating proofs for solved examples..%s@."
     (color "black") (color "b-green") color_default;
-  List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
+  try
+    List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
+  with _ ->
+    printf "%s[ERROR] Could not generate proof.%s@." (color "b-red") color_default
 
 (** --------------------------------------------------------------------------*)
 
