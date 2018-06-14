@@ -36,6 +36,7 @@ let optim_use_raw_inner = ref false
 *)
 let _inner_joins : (context * fnExpr) SH.t = SH.create 10
 
+
 let store_solution (maybe_solution : prob_rep option) : unit =
   match maybe_solution with
 
@@ -51,6 +52,10 @@ let store_solution (maybe_solution : prob_rep option) : unit =
       (sol.scontext, sol.memless_solution)
 
   | None -> ()
+
+let store_ctx_sol name o =
+  SH.add _inner_joins name o
+
 
 let get_inner_solution (join_name : string) : (context * fnExpr) option =
   try
@@ -558,7 +563,8 @@ and merge_leaves max_depth (e,d) =
   else
     (e, d + 1)
 
-let set_types_and_varsets e =
+
+let set_types_and_varsets (e : fnExpr) : fnExpr =
   let adapt_vs_and_t cs t =
     let nvs = filter_cs_by_type (input_type_or_type t) cs in
     if CS.cardinal nvs = 0 then
@@ -570,26 +576,25 @@ let set_types_and_varsets e =
     else
       nvs, t
   in
-  (fun (i,j) ->
-     (transform_expr
-        (fun e -> is_a_hole e)
-        (fun rfun e ->
-           match e with
-           | FnHoleL ((t, o), v, vs, i) ->
-             let nvs, nt = adapt_vs_and_t vs t in
-             FnHoleL ((nt, o), v, nvs, i)
+  transform_expr
+    (fun e -> is_a_hole e)
+    (fun rfun e ->
+       match e with
+       | FnHoleL ((t, o), v, vs, i) ->
+         let nvs, nt = adapt_vs_and_t vs t in
+         FnHoleL ((nt, o), v, nvs, i)
 
-           | FnHoleR ((t, o), vs, i) ->
-             let nvs, nt = adapt_vs_and_t vs t in
-             FnHoleR ((nt, o), nvs, i)
+       | FnHoleR ((t, o), vs, i) ->
+         let nvs, nt = adapt_vs_and_t vs t in
+         FnHoleR ((nt, o), nvs, i)
 
-           | _ -> rfun e)
+       | _ -> rfun e)
 
-        identity identity (e (i, j))))
+    identity identity e
 
 
 (* Sketch size can be reduced for memoryless join *)
-let rec inner_optims state letfun  =
+let rec inner_optims (state : VarSet.t) (letfun : fnExpr) : fnExpr  =
   let ctx_handle = ref (FnVariable (VarSet.max_elt state))  in
   let loop_inner_optims expr =
     transform_bindings
@@ -611,18 +616,17 @@ let rec inner_optims state letfun  =
       }
       expr
   in
-  (fun bounds ->
-     match letfun bounds with
-     | FnRec (igu, s, (_s, body)) ->
-       FnRec (igu, s, (_s, loop_inner_optims body))
-     | FnLetIn ([s, innerb], cont) ->
-       FnLetIn([s, inner_optims state (fun b -> innerb) bounds], cont)
-     | e -> e)
+  match letfun with
+  | FnRec (igu, s, (_s, body)) ->
+    FnRec (igu, s, (_s, loop_inner_optims body))
+  | FnLetIn ([s, innerb], cont) ->
+    FnLetIn([s, inner_optims state innerb], cont)
+  | e -> e
 
 
 (* Refine completions.
    - Don't use arrays with cell ref outside loops. *)
-let refine_completions letfun =
+let refine_completions (letfun : fnExpr) : fnExpr =
   let in_loops vs =
     let filter_out_outervs =
       CS.filter (fun cse -> VarSet.mem cse.cvi vs)
@@ -666,7 +670,13 @@ let refine_completions letfun =
     letfun
 
 
-let wrap_with_loop i state reach_consts base_join =
+let wrap_with_loop
+    (i : fnExpr)
+    (bounds : fnExpr * fnExpr)
+    (state : VarSet.t)
+    (reach_consts : fnExpr IM.t)
+    (base_join : fnExpr) : fnExpr =
+  let i_start, i_end = bounds in
   let start_state_valuation =
     let lsp =
       VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
@@ -682,13 +692,12 @@ let wrap_with_loop i state reach_consts base_join =
     in
     (wrap_state stv_or_cst)
   in
-  let state_binder = mkFnVar "__s" (record_type state) in
-  (fun (i_start, i_end) ->
-     FnRec ((i_start,
-             FnBinop (Lt, i, i_end),
-             FnUnop (Add1,i)),
-            (state, start_state_valuation),
-            (state_binder, FnLetIn (bind_state state_binder state, base_join))))
+  let state_binder = special_binder (record_type state) in
+  FnRec ((i_start,
+          FnBinop (Lt, i, i_end),
+          FnUnop (Add1,i)),
+         (state, start_state_valuation),
+         (state_binder, FnLetIn (bind_state state_binder state, base_join)))
 
 
 (**
@@ -700,7 +709,7 @@ let wrap_with_loop i state reach_consts base_join =
    join loop, but its final value is only the value of the right or the top
    chunk.
 *)
-let wrap_with_choice state base_join =
+let wrap_with_choice (state : VarSet.t) (base_join : fnExpr) : fnExpr =
   let binder = mkFnVar "loop_res" (record_type state) in
   let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
   let final_choices =
@@ -712,24 +721,28 @@ let wrap_with_choice state base_join =
               mkVarExpr rightval])))
       (VarSet.elements state)
   in
-  let wrap old_join =
-    FnLetIn([(FnVariable binder, old_join)],
-            wrap_state final_choices)
-  in
-  (fun(i,j) -> wrap (base_join (i,j)))
+  FnLetIn([(FnVariable binder, base_join)],
+          wrap_state final_choices)
+
 
 
 let add_drop_choice = ref true
 
 
-let make_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
+let make_wrapped_join
+    ?(for_inner=false)
+    (outeri : fnExpr)
+    (bounds : fnExpr * fnExpr)
+    (state : VarSet.t)
+    (reach_consts : fnExpr IM.t)
+    (fnlet : fnExpr) : fnExpr =
   force_wrap := false;
   let writes_in_array = ref false in
   let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
   let wrapped_join =
     if (!writes_in_array || !force_wrap) && for_inner then
       let loop_join =
-        wrap_with_loop outeri state reach_consts
+        wrap_with_loop outeri bounds state reach_consts
           (to_rec_completions base_join)
       in
       if !add_drop_choice then
@@ -737,9 +750,9 @@ let make_wrapped_join ?(for_inner=false) outeri state reach_consts fnlet =
       else
         loop_join
     else
-      (fun (i,j) -> base_join)
+      base_join
   in
-  (fun (i,j) -> refine_completions (wrapped_join (i,j)))
+  refine_completions wrapped_join
 
 
 
@@ -748,7 +761,8 @@ let build_join
     (ind_l : fnExpr list)
     (state : VarSet.t)
     (reach_consts : fnExpr IM.t)
-    (fnlet : fnExpr) : fnExpr * fnExpr -> fnExpr =
+    (bounds : fnExpr * fnExpr)
+    (fnlet : fnExpr) : fnExpr =
   if is_inner then
     begin
       let i =
@@ -759,7 +773,7 @@ let build_join
           failhere __FILE__ "build_for_inner" "Multiple inner loops not implemented."
       in
       narrow_array_completions := true;
-      let raw_sketch = make_wrapped_join ~for_inner:true i state reach_consts fnlet in
+      let raw_sketch = make_wrapped_join ~for_inner:true i bounds state reach_consts fnlet in
       let typed_sketch = set_types_and_varsets raw_sketch in
       let sketch = inner_optims state typed_sketch in
       narrow_array_completions := false;
@@ -769,9 +783,9 @@ let build_join
   else
     begin match ind_l with
       | [] ->
-        set_types_and_varsets (make_wrapped_join (FnConst (CInt 0)) state IM.empty fnlet)
+        set_types_and_varsets (make_wrapped_join (FnConst (CInt 0)) bounds state IM.empty fnlet)
       | [i] ->
-        set_types_and_varsets (make_wrapped_join i state IM.empty fnlet)
+        set_types_and_varsets (make_wrapped_join i bounds state IM.empty fnlet)
       | _ ->
         failhere __FILE__ "build_join" "Multiple inner loops not implemented."
     end
@@ -782,34 +796,35 @@ let sketch_join problem =
     List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars))
       problem.inner_functions
   in
-
+  Dimensions.set_default ();
   {
     problem with
     join_sketch =
-      (fun bnds ->
          complete_final_state problem.scontext.state_vars
-           ((build_join ~inner:false
-               inner_indexes
-               problem.scontext.state_vars
-               problem.reaching_consts
-               problem.main_loop_body) bnds))
+           (build_join ~inner:false
+              inner_indexes
+              problem.scontext.state_vars
+              problem.reaching_consts
+              (Dimensions.bounds true problem)
+              problem.main_loop_body)
   }
 
 
 
 
 let sketch_inner_join problem =
+  Dimensions.set_default ();
   let index_set = get_index_varset problem in
   {
     problem with
     memless_sketch =
-      (fun bnds ->
-         complete_final_state problem.scontext.state_vars
-           ((build_join ~inner:true
-               (List.map mkVarExpr (VarSet.elements index_set))
-               problem.scontext.state_vars
-               problem.reaching_consts
-               problem.main_loop_body) bnds))
+      complete_final_state problem.scontext.state_vars
+        (build_join ~inner:true
+           (List.map mkVarExpr (VarSet.elements index_set))
+           problem.scontext.state_vars
+           problem.reaching_consts
+           (Dimensions.bounds false problem)
+           problem.main_loop_body)
   }
 
 

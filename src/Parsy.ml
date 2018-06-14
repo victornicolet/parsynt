@@ -110,7 +110,8 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
     if List.length inner_funcs = List.length problem.inner_functions then
       begin
         if !verbose then print_inner_result problem inner_funcs ();
-        Some (InnerFuncs.replace_by_join problem inner_funcs)
+        Some (Sketch.Join.sketch_join
+                (InnerFuncs.replace_by_join problem inner_funcs))
       end
     else
       None
@@ -189,7 +190,10 @@ let output_dafny_proofs (sols : prob_rep list) : unit =
   in
   printf "@.%s%sGenerating proofs for solved examples..%s@."
     (color "black") (color "b-green") color_default;
-  List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
+  try
+    List.iter (Pf.output_dafny_proof dafny_proof_filename) sols
+  with _ ->
+    printf "%s[ERROR] Could not generate proof.%s@." (color "b-red") color_default
 
 (** --------------------------------------------------------------------------*)
 

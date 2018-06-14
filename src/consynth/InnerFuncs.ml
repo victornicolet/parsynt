@@ -176,7 +176,6 @@ let replace_by_join problem inner_loops =
     problem.main_loop_body;
   SH.add problem.loop_body_versions _KEY_JOIN_INLINED_ newbody;
 
-  Sketch.Join.sketch_join
     {
       problem with
       inner_functions = inner_loops;
@@ -291,6 +290,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   }
 
 
+
 let inner_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_INNER_INLINED_
   with Not_found -> pb.main_loop_body
@@ -361,3 +361,19 @@ let update_inners_in_body
       body
   in
   List.fold_left upd body inners
+
+
+let uses_inner_join_func : fnExpr -> bool =
+  rec_expr2 {
+    join = (||);
+    init = false;
+    case = (fun e -> match e with FnApp _ -> true | _ -> false);
+    on_case =
+      (fun f e ->
+         match e with
+         | FnApp(_, Some v, _) ->
+           Conf.is_inner_join_name v.vname
+         | _ -> false);
+    on_var = (fun v -> false);
+    on_const = (fun c -> false);
+  }

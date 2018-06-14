@@ -563,6 +563,12 @@ let mkFnVar name typ =
   register_fnv var;
   var
 
+let special_binder typ =
+  let vname = "type_"^shstr_of_type typ in
+  try
+    find_var_name vname
+  with Not_found ->
+    mkFnVar vname typ
 
 
 (* -------------------- 4 - LEFT AND RIGHT STATE VARIABLES ------------------ *)

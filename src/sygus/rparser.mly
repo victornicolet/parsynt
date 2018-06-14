@@ -91,6 +91,7 @@ bindgroup : LPAREN bindseq RPAREN { $2 }
 
 bindseq : binding bindseq { $1 :: $2 }
        	| binding { [$1] }
+	| {[]}
 
 binding : LPAREN ID expr RPAREN { ($2, $3) }
 

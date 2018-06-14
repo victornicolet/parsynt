@@ -20,6 +20,8 @@ open Beta
 open FuncTypes
 open Utils
 
+val store_partial : string -> VarSet.t * fnExpr -> unit
+val incremental_struct : (string * string list) ref
 val verbose : bool ref
 val get_increments : prob_rep -> prob_rep list
 val complete_increment : inner:bool -> prob_rep -> prob_rep option -> prob_rep

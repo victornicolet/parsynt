@@ -543,6 +543,7 @@ let wrap_state (bindings : (fnLVar * fnExpr) list) : fnExpr =
   in
   FnRecord(vs, emap)
 
+
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
 
 
@@ -1040,6 +1041,41 @@ let optype_rec =
 let analyze_optype (e : fnExpr) : operator_type = rec_expr2 optype_rec e
 
 
+
+let rec remove_empty_binds : fnExpr -> fnExpr option =
+  function
+  | FnLetIn (ve_list, letin) ->
+    begin match remove_empty_binds letin with
+      | Some let_tail ->
+        begin match ve_list with
+          | [] -> Some let_tail
+          | _ -> Some (FnLetIn (ve_list, let_tail))
+        end
+      | None ->
+        begin match ve_list with
+          | [] -> None
+          | _ -> Some (wrap_state ve_list)
+        end
+    end
+  | FnRecord (vs, emap) ->
+    begin if IM.cardinal emap = 0 then
+        None
+      else
+        Some (FnRecord (vs, emap))
+    end
+  | e -> Some e
+
+let rec remove_empty_lets : fnExpr -> fnExpr =
+  function
+  | FnLetIn(b,e) ->
+    let e' = remove_empty_lets e in
+    begin match b with
+    | [] -> e'
+    | _ -> FnLetIn (b, e')
+    end
+  | e -> e
+
+
 (** Compose a function by adding new assignments *)
 let rec remove_id_binding func =
   let aux_rem_from_list el =
@@ -1054,8 +1090,9 @@ let rec compose func1 func2 =
   match func1 with
   | FnLetIn (el, c) -> FnLetIn (el, compose c func2)
   | FnRecord(vs, emap) ->
-    FnLetIn(unwrap_state vs emap, func1)
-  | _ -> func1
+    (remove_id_binding --> remove_empty_lets)
+      (FnLetIn(unwrap_state vs emap, func2))
+  | _ -> func2
 
 let compose_head assignments func =
   match assignments with
@@ -1105,6 +1142,7 @@ let rec complete_final_state (vars : VarSet.t) (func : fnExpr) : fnExpr =
   | FnLetIn (el, l) -> FnLetIn (el, complete_final_state vars l)
 
   | _ -> func
+
 
 
 let rec used_in_fnexpr (expr : fnExpr): VarSet.t =
@@ -1443,7 +1481,7 @@ let rec scm_to_fn (scm : RAst.expr) : fnExpr =
           begin try
               FnRecord(stv,
                        List.fold_left2
-                         (fun emap v e -> IM.add v.vid (translate e) emap)
+                         (fun emap v ei -> IM.add v.vid (translate ei) emap)
                          IM.empty (VarSet.elements stv) inits)
             with Invalid_argument _ ->
               failhere __FILE__ "translate_loop" "Mismatch in state vars/ args."
@@ -1661,8 +1699,8 @@ type prob_rep =
     uses_global_bound : bool;
     main_loop_body : fnExpr;
     loop_body_versions : fnExpr SH.t;
-    join_sketch : fnExpr * fnExpr -> fnExpr;
-    memless_sketch : fnExpr * fnExpr ->  fnExpr;
+    join_sketch : fnExpr;
+    memless_sketch : fnExpr;
     join_solution : fnExpr;
     memless_solution : fnExpr;
     init_values : RAst.expr IM.t;
@@ -1819,30 +1857,7 @@ let rec pass_sequentialize fnlet =
       reorganize (unwrap_state vs emap) (FnRecord(vs, identity_map vs))
     | e -> e
   in
-  let rec remove_empty_lets =
-    function
-    | FnLetIn (ve_list, letin) ->
-      begin match remove_empty_lets letin with
-       | Some let_tail ->
-         begin match ve_list with
-          | [] -> Some let_tail
-          | _ -> Some (FnLetIn (ve_list, let_tail))
-         end
-       | None ->
-         begin match ve_list with
-          | [] -> None
-          | _ -> Some (wrap_state ve_list)
-         end
-      end
-    | FnRecord (vs, emap) ->
-      begin if IM.cardinal emap = 0 then
-          None
-        else
-          Some (FnRecord (vs, emap))
-      end
-    | e -> Some e
-  in
-  match remove_empty_lets (sequentialize_parallel_moves fnlet) with
+  match remove_empty_binds (sequentialize_parallel_moves fnlet) with
   | Some fnlet -> fnlet
   | None -> FnRecord(VarSet.empty, IM.empty)
 

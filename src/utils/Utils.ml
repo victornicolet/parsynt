@@ -555,7 +555,7 @@ module PpTools = struct
       (fun s -> printf "%s%s%s%s" (color "b-green") (color "black") s color_default) lines
 
   let message_done ?(done_what="") () =
-    printf "%sDONE%s%s@." (color "green") done_what color_default
+    printf "@.\t\t\t\t%sDONE%s%s@." (color "green") done_what color_default
 
   let message_skip () =
     printf "@."

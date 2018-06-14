@@ -50,9 +50,6 @@ let rec vi_of_var =
   | FnVariable vi -> Some vi
   | FnArray (v, _) -> vi_of_var v
 
-(* Fnetch type expression *)
-let sk_tail_state =
-  wrap_state []
 
 let increment_all_indexes index_exprs =
   IM.fold

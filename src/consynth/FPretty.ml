@@ -324,7 +324,7 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       match type_of record with
       | Record (name, stl) -> name
       | _ -> failhere __FILE__ "pp_fnexpr"
-               "Not record type in record member access."
+               "Not a record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
 

@@ -76,8 +76,8 @@ let solution_found
     let join_sketch =
       if inner then
         problem.memless_sketch
-          (let i0, ie = get_bounds problem in mkVarExpr i0, mkVarExpr ie)
-      else problem.join_sketch (Dimensions.bounds inner problem)
+      else
+        problem.join_sketch
     in
     init_scm_translate
       problem.scontext.all_vars problem.scontext.state_vars;
@@ -180,24 +180,32 @@ let call_solver ?(inner=false) (ctx : context option) (pb : prob_rep) :
     end
 
 
-let call_solver_incremental ?(inner=false) (ctx : context option) (pb : prob_rep) :
+let call_solver_incremental
+    ?(inner=false)
+    (ctx : context option)
+    (pb : prob_rep) :
   float * prob_rep option =
   let increments = get_increments pb in
   try
     List.fold_left
       (fun (et, solution) incr_pb ->
          let part_pb = complete_increment ~inner:inner incr_pb solution in
-
          if !verbose then
            printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
              incr_pb.loop_name
              FPretty.pp_fnexpr part_pb.main_loop_body
              FPretty.pp_fnexpr (if inner then
-                                  (part_pb.memless_sketch (fn_zero, fn_zero))
+                                  part_pb.memless_sketch
                                 else
-                                  (part_pb.join_sketch (fn_zero, fn_zero)));
+                                  part_pb.join_sketch);
          match call_solver ~inner:inner ctx part_pb with
-         | et', Some sol -> et +. et', Some sol
+         | et', Some sol ->
+           store_partial
+             sol.loop_name
+             (sol.scontext.state_vars,
+              if inner then sol.memless_solution else sol.join_solution);
+           et +. et', Some sol
+
          | et', None -> raise Not_found) (0., None) increments
   with Not_found -> -1.0, None
 
@@ -207,7 +215,8 @@ let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   let lp_name = problem.loop_name in
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
-    (* Compile the sketch to a Racket file, call Rosette, and parse the solution. *)
+    (* Compile the sketch to a Racket file, call Rosette, and parse the
+       solution. *)
     let racket_elapsed, parsed =
       (if !solve_incrementally then call_solver_incremental else call_solver)
         ~inner:inner parent_ctx problem
