@@ -28,6 +28,58 @@ let _partial_solutions : (VarSet.t * fnExpr) SH.t = SH.create 10
 
 let store_partial s part = SH.add _partial_solutions s part
 
+let get_opset_of_inner op variables : fnExpr -> VarSet.t =
+  rec_expr2
+    {
+      join = VarSet.union;
+      init = VarSet.empty;
+      case = (fun e -> match e with FnRec _ -> true | _ -> false);
+      on_case =
+        (fun f e ->
+           match e with
+           | FnRec (_,(vs, _), _) ->  op vs variables
+           | _ -> failwith "on-case failure, not FnRec");
+      on_var = (fun v -> VarSet.empty);
+      on_const = (fun v -> VarSet.empty);
+    }
+
+
+let get_diffset_of_inner : VarSet.t -> fnExpr ->  VarSet.t =
+  get_opset_of_inner (VarSet.diff)
+
+
+let get_subset_of_inner : VarSet.t -> fnExpr -> VarSet.t =
+  get_opset_of_inner (VarSet.inter)
+
+let get_inloop_info vars : fnExpr -> (VarSet.t * VarSet.t) =
+  let _init = VarSet.empty, VarSet.empty in
+  let _join s1 s2 =
+    VarSet.union (fst s1) (fst s2),
+    VarSet.union (snd s1) (snd s2)
+  in
+  let search_bindings blist =
+    List.fold_left
+      (fun (subs, bset) (v, e) ->
+         match e with
+         | FnRec(_,(vs,_),_) -> (VarSet.diff vs vars, VarSet.singleton (var_of_fnvar v))
+         | _ -> (subs, bset)) _init blist
+  in
+  rec_expr2
+    {
+      join = _join;
+      init = _init;
+      case = (fun e -> match e with FnLetIn _ -> true | _ -> false);
+      on_case =
+        (fun f e ->
+           match e with
+           | FnLetIn (blist, expr) ->
+             _join (search_bindings blist) (f expr)
+           | _ -> _init);
+
+      on_var = (fun v -> _init);
+      on_const = (fun v -> _init);
+    }
+
 let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
   let update_rectype name stl =
     let stl' =
@@ -109,19 +161,39 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
     func
 
 
-let rec restrict (problem : prob_rep) (variables : VarSet.t) : prob_rep =
-  let pb =
-    InnerFuncs.inline_inner ~inline_pick_join:true (Dimensions.width ()) problem
-  in
+let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
   let new_body =
     restrict_func pb.scontext variables pb.main_loop_body
+  in
+  let rec_seq_var =
+    let diffset = get_subset_of_inner variables pb.main_loop_body in
+    mkFnVar "pinput" (Vector (record_type diffset, None))
+
+  in
+  let new_context =
+    let ctr = ctx_inter pb.scontext variables in
+    (* This assumes the only used vars that are record sequences are the summarized
+       input of the summarized outer loop.
+       See InnerFuncs.ml, L43 (transform_rl_vars)
+    *)
+    let update_record_sequences var =
+      match var.vtype with
+      | Vector(Record(sname, stl), _) ->
+        rec_seq_var
+      | _ -> var
+    in
+    {
+      ctr with
+      used_vars = VarSet.map update_record_sequences ctr.used_vars;
+      all_vars = VarSet.map update_record_sequences ctr.all_vars;
+    }
   in
   let new_inners = List.map (fun pb -> restrict pb variables) pb.inner_functions in
   SketchJoin.sketch_inner_join
     (SketchJoin.sketch_join
        {
-         problem with
-         scontext = ctx_inter pb.scontext variables;
+         pb with
+         scontext = new_context;
          inner_functions = new_inners;
          main_loop_body = new_body;
          loop_body_versions = SH.create 5;
@@ -257,8 +329,10 @@ let get_increments (problem : prob_rep) : prob_rep list =
            Format.printf "@[<v 4>    %i : %a@]@." i VarSet.pp_vs varset)
         subsets
     end;
-
-  (List.mapi rename_pb (List.map (restrict problem) subsets))
+  let pb =
+    InnerFuncs.inline_inner ~inline_pick_join:true (Dimensions.width ()) problem
+  in
+  (List.mapi rename_pb (List.map (restrict pb) subsets))
 
 
 (**
@@ -293,14 +367,25 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   _c sketch solution
 
 
+
 let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
-  let projected_name = ref "" in
+  let diffset = get_diffset_of_inner variables sketch in
+  let proj_name = record_name diffset in
+  let proj_struct = record_type diffset in
+  incremental_struct := (proj_name, VarSet.names diffset);
+
+  let loopres_binder, new_loopres_binder =
+    let vars, binders = get_inloop_info variables sketch in
+    let lb = VarSet.max_elt binders in
+    lb,
+    mkFnVar (lb.vname^"_part") proj_struct
+  in
   let record_proj stl =
-    (Record (!projected_name,
-             List.filter (fun (s,t) ->
-                 try let _ =
-                       VarSet.find_by_name variables s in false
-                 with Not_found -> true) stl))
+    Record (proj_name,
+            List.filter (fun (s,t) ->
+                try let _ =
+                      VarSet.find_by_name variables s in false
+                with Not_found -> true) stl)
   in
   let on_variable var =
     match var.vtype with
@@ -308,19 +393,17 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
       special_binder (record_proj stl)
     | _ -> var
   in
-  let change_binder_type =
+  let change_binder_type v =
+             match v with
+             | FnVariable var when var = loopres_binder ->
+               FnVariable new_loopres_binder
+             | _ -> v
+  in
+  let change_binders =
     transform_expr2
       { case = (fun e -> false); on_case = (fun f e -> e); on_const = identity;
-        on_var =
-          (fun v ->
-             match v with
-             | FnVariable var ->
-               begin match var.vtype with
-                 | Record (name, stl) ->
-                   FnVariable { var with vtype = record_proj stl }
-                 | _ -> v
-               end
-             | _ -> v)}
+        on_var = change_binder_type;
+      }
   in
   let transform_loopb body =
     let case e =
@@ -335,7 +418,7 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
       | FnLetIn (bindings, expr) ->
         FnLetIn (
           List.map
-            (fun (v, ve) -> (v, f ve))
+            (fun (v, ve) -> (change_binder_type v, f ve))
             (List.filter
                (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables))
                bindings),
@@ -357,28 +440,9 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
       { case = case; on_case = on_case; on_var = on_var; on_const = identity }
       body
   in
-  let diffset = rec_expr2
-    {
-      join = VarSet.union;
-      init = VarSet.empty;
-      case = (fun e -> match e with FnRec _ -> true | _ -> false);
-      on_case =
-        (fun f e ->
-           match e with
-           | FnRec (_,(vs, _), _) ->  VarSet.diff vs variables
-           | _ -> failwith "on-case failure, not FnRec");
-      on_var = (fun v -> VarSet.empty);
-      on_const = (fun v -> VarSet.empty);
-    } sketch
-  in
-  begin if not (VarSet.is_empty diffset) then
-      let sname = record_name diffset in
-      projected_name := sname;
-      incremental_struct := (sname, VarSet.names diffset);
-  end;
 
   transform_expr2
-    { case = (fun e -> match e with FnRec _ | FnRecord _ -> true | _ -> false);
+    { case = (fun e -> match e with FnRec _ | FnRecord _ | FnLetIn _ -> true | _ -> false);
       on_case =
         (fun f e ->
            match e with
@@ -390,7 +454,11 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
              FnRecord(vs,
                       IM.mapi (fun k e ->
                           try mkVarExpr (VarSet.find_by_id variables k)
-                          with Not_found -> change_binder_type e) emap)
+                          with Not_found -> change_binders e) emap)
+           | FnLetIn (blist, expr) ->
+             FnLetIn (List.map (fun (v,e) -> (change_binder_type v, f e)) blist,
+                      f expr)
+
            | _  -> failwith "on-case failure");
       on_var = identity;
       on_const = identity;

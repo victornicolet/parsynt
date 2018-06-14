@@ -177,6 +177,7 @@ sig
   val split : elt -> t -> t * bool * t
   val find : elt -> t -> elt
   val of_list : elt list -> t
+  val map : (elt -> elt) -> t -> t
   val find_by_id : t -> int -> elt
   val find_by_name : t -> string -> elt
   val vids_of_vs : t -> int list

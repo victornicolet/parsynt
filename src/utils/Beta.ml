@@ -329,37 +329,39 @@ module FnVs =
 module VarSet =
 struct
   include FnVs
-  let find_by_id vs id : FnVs.elt =
-    FnVs.max_elt (FnVs.filter (fun elt -> elt.vid = id) vs)
-  let find_by_name vs name : FnVs.elt =
-    FnVs.max_elt (FnVs.filter (fun elt -> elt.vname = name) vs)
+  let map f vs : t =
+    of_list (List.map f (elements vs))
+  let find_by_id vs id : elt =
+    max_elt (filter (fun elt -> elt.vid = id) vs)
+  let find_by_name vs name : elt =
+    max_elt (filter (fun elt -> elt.vname = name) vs)
   let vids_of_vs vs : int list =
-    List.map (fun vi -> vi.vid) (FnVs.elements vs)
+    List.map (fun vi -> vi.vid) (elements vs)
   let has_vid vs id : bool =
     List.mem id (vids_of_vs vs)
   let bindings vs =
-    List.map (fun elt -> (elt.vid, elt)) (FnVs.elements vs)
+    List.map (fun elt -> (elt.vid, elt)) (elements vs)
   let names vs =
-    List.map (fun elt -> elt.vname) (FnVs.elements vs)
+    List.map (fun elt -> elt.vname) (elements vs)
   let types vs =
-    List.map (fun elt -> elt.vtype) (FnVs.elements vs)
+    List.map (fun elt -> elt.vtype) (elements vs)
   let record vs =
-    List.map (fun elt -> elt.vname, elt.vtype) (FnVs.elements vs)
+    List.map (fun elt -> elt.vname, elt.vtype) (elements vs)
   let add_prefix vs prefix =
-    FnVs.of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (FnVs.elements vs))
+    of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (elements vs))
   let iset vs ilist =
-    FnVs.of_list
-      (List.filter (fun vi -> List.mem vi.vid ilist) (FnVs.elements vs))
+    of_list
+      (List.filter (fun vi -> List.mem vi.vid ilist) (elements vs))
   let pp_var_names fmt vs =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt elt -> fprintf fmt "%s" elt.vname)
-      fmt (FnVs.elements vs)
+      fmt (elements vs)
   let pp_vs fmt vs =
     fprintf fmt "@[<v 2>%a@]"
       (PpTools.pp_break_sep_list
          (fun fmt var -> printf "(%i: %s)" var.vid var.vname))
-      (FnVs.elements vs)
+      (elements vs)
 end
 
 
