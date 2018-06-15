@@ -205,13 +205,12 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
       all_vars = VarSet.map update_record_sequences ctr.all_vars;
     }
   in
-  let new_inners = List.map (fun pb -> restrict pb variables) pb.inner_functions in
   SketchJoin.sketch_inner_join
     (SketchJoin.sketch_join
        {
          pb with
          scontext = new_context;
-         inner_functions = new_inners;
+         inner_functions = [];
          main_loop_body = new_body;
          loop_body_versions = SH.create 5;
        })
@@ -304,7 +303,6 @@ let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
 
 let get_dependent_subsets (problem : prob_rep) : VarSet.t list =
   let dep_map =
-
     collect_dependencies problem.scontext problem.main_loop_body
   in
   rank_and_cluster problem.scontext.state_vars dep_map

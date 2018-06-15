@@ -185,6 +185,7 @@ let call_solver_incremental
     (ctx : context option)
     (pb : prob_rep) :
   float * prob_rep option =
+
   let increments = get_increments pb in
   try
     List.fold_left

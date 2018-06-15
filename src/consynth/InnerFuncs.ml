@@ -222,7 +222,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
     inlined
   in
 
-  let inline_join in_info args =
+  let inline_join s in_info args =
     let j_start, j_end = get_bounds in_info in
     let repl_start e =
       replace_expression ~in_subscripts:true
@@ -236,29 +236,40 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
        If the solution is of the form loop + choice bindings, extract the loop,
        and push the bindings to the outer loop.
     *)
-    let in_sol =
-      match in_info.memless_solution with
+    let in_body, new_unwrap =
+      let replaced_rl =
+        transform_rl_vars
+          created_inputs
+          (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
+          ((repl_start --> repl_end) in_info.memless_solution)
+      in
+      match replaced_rl with
       | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
-        FnRec (igu, vsbs, loopdef)
-      | e ->  e
+        let choices' =
+          IM.map
+            (fun e ->
+               replace_expression
+                 ~in_subscripts:false
+                 ~to_replace:(FnVar loop_res)
+                 ~by:(FnVar s)
+                 ~ine:e) choices
+        in
+        FnRec (igu, vsbs, loopdef),
+        Some (unwrap_state in_state choices')
+      | e ->  e, None
     in
-    let in_body =
-      transform_rl_vars
-        created_inputs
-        (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
-        ((repl_start --> repl_end) in_sol)
-    in
+
     if !verbose then
       printf
         "[WARNING] Inlined inner join iterates from 0 to %i by default.@."
         in_loop_width;
-    in_body
-  in
 
+    in_body, new_unwrap
+  in
 
   let inline_case e =
     match e with
-    | FnApp (st, Some f, args) ->
+    | FnLetIn([lrb, FnApp(st, Some f, args)], FnLetIn(unwrap_lrb, expr)) ->
       (Conf.is_inner_loop_func_name f.vname) &&
       (List.mem (Conf.id_of_inner_loop f.vname) inner_loop_ids)
 
@@ -267,10 +278,29 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
 
   let inline rfunc e =
     match e with
-    | FnApp(st, Some f, args) ->
-      (if inline_pick_join then inline_join else inline_inner)
-        (List.find (fun pin -> pin.id = (Conf.id_of_inner_loop f.vname)) problem.inner_functions)
-        args
+    | FnLetIn([lrb, FnApp(st, Some f, args)], FnLetIn(unwrap_lrb, expr)) ->
+      let infun, new_unwraps =
+        if inline_pick_join then
+          let injoin, new_unwrap =
+            inline_join lrb
+              (List.find (fun pin ->
+                   pin.id = (Conf.id_of_inner_loop f.vname))
+                  problem.inner_functions) args
+          in
+          match new_unwrap with
+          | Some l -> injoin, l
+          | None -> injoin, unwrap_lrb
+        else
+          let injoin =
+                      inline_inner
+            (List.find (fun pin ->
+                 pin.id = (Conf.id_of_inner_loop f.vname))
+               problem.inner_functions) args
+          in
+          injoin, unwrap_lrb
+      in
+      FnLetIn([lrb, infun], FnLetIn(new_unwraps, expr))
+
 
     | _ -> rfunc e
   in

@@ -725,6 +725,29 @@ let wrap_with_choice (state : VarSet.t) (base_join : fnExpr) : fnExpr =
           wrap_state final_choices)
 
 
+let make_loop_join i bounds state fnlet =
+  let _wa = ref true in
+  match fnlet with
+  | FnLetIn([v, FnRec(igu, (vs,bs),(s, lbody))], expr) ->
+    printf " @. %a @. ==========@." pp_fnexpr fnlet;
+    let loop_join_body =
+      make_join ~index:i ~state:state ~skip:[] ~w_a:_wa lbody
+    in
+    let ist, iend = bounds in
+    let join =
+      FnLetIn([v, FnRec((ist, FnBinop(Lt, i, iend), FnUnop(Add1, i)),
+                        (vs, bs),
+                        (s, loop_join_body))],
+              expr)
+    in
+    printf "JOIN @. %a @. ==========@." pp_fnexpr join;
+    join
+
+  | _ ->
+    failwith "make_loop_join"
+
+
+
 
 let add_drop_choice = ref true
 
@@ -738,21 +761,24 @@ let make_wrapped_join
     (fnlet : fnExpr) : fnExpr =
   force_wrap := false;
   let writes_in_array = ref false in
-  let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
-  let wrapped_join =
-    if (!writes_in_array || !force_wrap) && for_inner then
-      let loop_join =
-        wrap_with_loop outeri bounds state reach_consts
-          (to_rec_completions base_join)
-      in
-      if !add_drop_choice then
-        wrap_with_choice state loop_join
+  if has_loop fnlet then
+    make_loop_join outeri bounds state fnlet
+  else
+    let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
+    let wrapped_join =
+      if (!writes_in_array || !force_wrap) && for_inner then
+        let loop_join =
+          wrap_with_loop outeri bounds state reach_consts
+            (to_rec_completions base_join)
+        in
+        if !add_drop_choice then
+          wrap_with_choice state loop_join
+        else
+          loop_join
       else
-        loop_join
-    else
-      base_join
-  in
-  refine_completions wrapped_join
+        base_join
+    in
+    refine_completions wrapped_join
 
 
 
