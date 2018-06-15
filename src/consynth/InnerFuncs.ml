@@ -191,7 +191,7 @@ let no_join_inlined_body pb =
 
 let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
-    printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
+    printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
       FPretty.pp_fnexpr (no_join_inlined_body problem);
 
   let inner_loop_ids = List.map (fun pin -> pin.id) problem.inner_functions in
@@ -232,11 +232,21 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
       replace_expression ~in_subscripts:true
         ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
     in
+    (**
+       If the solution is of the form loop + choice bindings, extract the loop,
+       and push the bindings to the outer loop.
+    *)
+    let in_sol =
+      match in_info.memless_solution with
+      | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
+        FnRec (igu, vsbs, loopdef)
+      | e ->  e
+    in
     let in_body =
       transform_rl_vars
         created_inputs
         (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
-        ((repl_start --> repl_end) in_info.memless_solution)
+        ((repl_start --> repl_end) in_sol)
     in
     if !verbose then
       printf
@@ -273,8 +283,12 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
         on_const = identity } cur_loop_body
   in
   if !verbose then
-    printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
-      FPretty.pp_fnexpr loop_body';
+    begin if loop_body' != cur_loop_body then
+        printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
+          FPretty.pp_fnexpr loop_body'
+      else
+        printf "[INFO] Outer function after inlining unchanged.@.";
+    end;
 
   let new_vars =
     IH.fold (fun k v vs -> VarSet.add v vs) created_inputs VarSet.empty

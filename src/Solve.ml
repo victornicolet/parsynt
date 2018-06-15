@@ -73,7 +73,7 @@ let solution_found
   in
   (* Parse the body of the join. *)
   let translated_join_body =
-    let join_sketch =
+    let sketch =
       if inner then
         problem.memless_sketch
       else
@@ -84,7 +84,7 @@ let solution_found
     try
       let solver_sol = scm_to_fn sol_info.Cg.join_body in
       remove_hole_vars
-        (match Sketch.Join.match_hole_to_completion join_sketch solver_sol with
+        (match Sketch.Join.match_hole_to_completion sketch solver_sol with
          | Some precise_sol ->
            (Expressions.enormalize
               problem.scontext

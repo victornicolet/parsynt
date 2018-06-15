@@ -874,7 +874,8 @@ let match_hole_to_completion
     | _ ->
       if !verbose then
         begin
-          printf "[INFO] ==== Solution and sketch do not match. ====@.";
+          printf "[INFO]%s ==== Solution and sketch do not match. ====%s@."
+            (PpTools.color "red") PpTools.color_default;
           printf "       @[<v 4>%a@;!=@;%a@]@." pp_fnexpr h pp_fnexpr c;
         end;
       failwith "Mistmatch."

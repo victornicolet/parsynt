@@ -17,7 +17,10 @@
 
 
 open Beta
+open Format
+open FPretty
 open FuncTypes
+open SymbExe
 open Utils
 
 let verbose = ref false
@@ -106,9 +109,25 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
     | FnLetIn _ | FnRec _ | FnRecord _  -> true
     | _ -> false
   in
+
+  let maybe_sub v =
+    match v with
+    | FnVariable var ->
+      begin
+        match var.vtype with
+        | Record (name, stl) ->
+          Some (var, mkFnVar "x_" (update_rectype name stl))
+        | _ -> None
+      end
+    | _ -> None
+  in
+
   let restrict_bindings f bds =
     List.map
-      (fun (v,e) -> (v, f e))
+      (fun (v,e) ->
+         match maybe_sub v with
+         | Some (ov, nv) -> Some(ov, nv), (mkVar nv, f e)
+         | None -> None, (v, f e))
       (List.filter
          (fun (v,e) ->
             let var = var_of_fnvar v in
@@ -116,23 +135,21 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
             | Record(name, stl) -> true
             | _ -> VarSet.mem (var_of_fnvar v) variables) bds)
   in
-  let restrict_var v =
-    match v with
-    | FnVariable var ->
-      begin
-        match var.vtype with
-        | Record (name, stl) ->
-          FnVariable {var with vtype = update_rectype name stl}
-        | _ -> v
-      end
-    | _ -> v
-  in
   let restrict_body f e =
     match e with
     | FnLetIn (bindings, expr) ->
       begin match restrict_bindings f bindings with
         | [] -> f expr
-        | l -> FnLetIn(l, f expr)
+        | l ->
+          let substs, bindings = ListTools.unpair l in
+          let true_substs = somes substs in
+          let nexpr =
+            List.fold_left
+              (fun nexpr (ovar, nvar) ->
+                 replace_expression (mkVarExpr ovar) (mkVarExpr nvar) nexpr)
+              expr true_substs
+          in
+          FnLetIn(bindings, f nexpr)
       end
 
     | FnRecord(vs, emap) ->
@@ -142,7 +159,7 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
 
     | FnRec ((i,g,u),(vs,bs),(s,body)) ->
       let nvs = VarSet.inter variables vs in
-      let s' = {s with vtype = record_type nvs} in
+      let s' = mkFnVar "s" (record_type nvs) in
       let bs' = f bs in
       let body' =
         f (replace_expression (mkVarExpr s) (mkVarExpr s') body)
@@ -155,7 +172,7 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
     {
       case = cases;
       on_case = restrict_body;
-      on_var = restrict_var;
+      on_var = identity;
       on_const = identity;
     }
     func
@@ -167,7 +184,7 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
   in
   let rec_seq_var =
     let diffset = get_subset_of_inner variables pb.main_loop_body in
-    mkFnVar "pinput" (Vector (record_type diffset, None))
+    mkFnVar "A" (Vector (record_type diffset, None))
 
   in
   let new_context =
@@ -200,64 +217,39 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
        })
 
 
-let collect_dependencies (vars : VarSet.t) (func : fnExpr) : VarSet.t IM.t =
-  let join_depmap a b =
-    IM.fold
-      (fun k be map' ->
-         if IM.mem k map' then map' else
-           IM.add k be map')
-      b
-      (IM.fold
-         (fun k ae map' ->
-            try
-              IM.add k (VarSet.union ae (IM.find k b)) map'
-            with Not_found ->
-              IM.add k ae map') a IM.empty)
+let rec collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
+  let lbody =
+    transform_expr2
+      { case = (fun e -> match e with FnArraySet _ -> true | _ -> false);
+        on_case =
+          (fun f e ->
+             match e with
+             | FnArraySet (a, i, ae) -> FnArraySet (a, FnConst(CInt 0), f ae)
+             | _ -> e);
+        on_var =
+          (fun v ->
+             match v with
+             | FnVariable var -> v
+             | FnArray (v, e) -> FnArray(v, FnConst(CInt 0)));
+        on_const = identity
+      } func
   in
-  let case e =
-    match e with
-    | FnLetIn _ | FnRecord _ -> true
-    | _ -> false
+  if !verbose then
+    printf "[INFO]@[<v 4>Collect dependencies on function:@;%a@]@." pp_fnexpr lbody;
+  let final_exprs, _  =
+    unfold
+      { context = ctx;
+        state_exprs = SymbExe.create_symbol_map ctx.state_vars;
+        intermediate_states = IM.empty;
+        index_exprs = IM.map (fun x -> FnConst(CInt 0))
+            (IM.of_alist (VarSet.bindings ctx.index_vars));
+        inputs = ES.empty
+      }
+      lbody
   in
-  let on_case f e =
-    match e with
-    | FnLetIn (bindings, expr) ->
-      let from_bindings =
-        IM.of_alist
-          (List.map
-             (fun (v, e) ->
-                let var = var_of_fnvar v in
-                (var.vid, VarSet.inter vars (used_in_fnexpr e)))
-             bindings)
-      in
-      let from_expr = f expr in
-      IM.mapi
-        (fun k deps ->
-           VarSet.fold
-             (fun var deps' ->
-                try
-                  (VarSet.union (IM.find var.vid from_bindings) deps')
-                with Not_found ->
-                  deps')
-             deps deps)
-        from_expr
+  IM.map (fun e -> used_in_fnexpr e) final_exprs
 
 
-    | FnRecord (vs, emap) ->
-      IM.map used_in_fnexpr emap
-
-    | _ -> failhere __FILE__ "collect_dependencies" "Bad case."
-  in
-  rec_expr2
-    {
-      join = join_depmap;
-      on_case = on_case;
-      case = case;
-      init = IM.empty;
-      on_var = (fun c -> IM.empty);
-      on_const = (fun c -> IM.empty);
-    }
-    func
 
 
 let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
@@ -298,7 +290,11 @@ let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
   in
   snd (List.fold_left
          (fun (last, acc) cluster ->
-            let se = VarSet.union last cluster in
+            let se =
+              VarSet.filter
+                (fun e -> VarSet.mem e vars)
+                (VarSet.union last cluster)
+            in
             (se, acc@[se]))
          (VarSet.empty, [])
          (build_clusters deps_sorted []))
@@ -308,13 +304,18 @@ let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
 
 let get_dependent_subsets (problem : prob_rep) : VarSet.t list =
   let dep_map =
-    collect_dependencies problem.scontext.state_vars problem.main_loop_body
+
+    collect_dependencies problem.scontext problem.main_loop_body
   in
   rank_and_cluster problem.scontext.state_vars dep_map
 
 
 let get_increments (problem : prob_rep) : prob_rep list =
-  let subsets = get_dependent_subsets problem in
+  let pb =
+    InnerFuncs.inline_inner ~inline_pick_join:true (Dimensions.width ()) problem
+  in
+
+  let subsets = get_dependent_subsets pb in
   let rename_pb i pb =
     if i < List.length subsets - 1 then
       { pb with loop_name = pb.loop_name^"_part"^(string_of_int i) }
@@ -329,9 +330,6 @@ let get_increments (problem : prob_rep) : prob_rep list =
            Format.printf "@[<v 4>    %i : %a@]@." i VarSet.pp_vs varset)
         subsets
     end;
-  let pb =
-    InnerFuncs.inline_inner ~inline_pick_join:true (Dimensions.width ()) problem
-  in
   (List.mapi rename_pb (List.map (restrict pb) subsets))
 
 
@@ -370,42 +368,34 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
 
 let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
   let diffset = get_diffset_of_inner variables sketch in
-  let proj_name = record_name diffset in
-  let proj_struct = record_type diffset in
-  incremental_struct := (proj_name, VarSet.names diffset);
+  let inner_proj_name = record_name diffset in
+  let inner_proj_struct = record_type diffset in
+  incremental_struct := (inner_proj_name, VarSet.names diffset);
 
-  let loopres_binder, new_loopres_binder =
+  let loopres_binder, new_loopres_binder, new_inner_binder =
     let vars, binders = get_inloop_info variables sketch in
     let lb = VarSet.max_elt binders in
     lb,
-    mkFnVar (lb.vname^"_part") proj_struct
+    mkFnVar (lb.vname^"_part") inner_proj_struct,
+    mkFnVar "s" inner_proj_struct
   in
-  let record_proj stl =
-    Record (proj_name,
-            List.filter (fun (s,t) ->
-                try let _ =
-                      VarSet.find_by_name variables s in false
-                with Not_found -> true) stl)
+
+  let change_loopres_binder v =
+    match v with
+    | FnVariable var when var = loopres_binder ->
+      FnVariable new_loopres_binder
+    | _ -> v
   in
-  let on_variable var =
-    match var.vtype with
-    | Record(name, stl) ->
-      special_binder (record_proj stl)
-    | _ -> var
-  in
-  let change_binder_type v =
-             match v with
-             | FnVariable var when var = loopres_binder ->
-               FnVariable new_loopres_binder
-             | _ -> v
-  in
+
   let change_binders =
+
     transform_expr2
       { case = (fun e -> false); on_case = (fun f e -> e); on_const = identity;
-        on_var = change_binder_type;
+        on_var = change_loopres_binder;
       }
   in
-  let transform_loopb body =
+
+  let transform_loop_body in_binder body =
     let case e =
       match e with
       | FnLetIn _ -> true
@@ -418,7 +408,7 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
       | FnLetIn (bindings, expr) ->
         FnLetIn (
           List.map
-            (fun (v, ve) -> (change_binder_type v, f ve))
+            (fun (v, ve) -> (change_loopres_binder v, f ve))
             (List.filter
                (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables))
                bindings),
@@ -432,13 +422,18 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
     in
     let on_var v =
       match v with
-      | FnVariable var ->
-        FnVariable (on_variable var)
+      | FnVariable var when var = in_binder ->
+        FnVariable new_inner_binder
+
       | _ -> v
     in
     transform_expr2
       { case = case; on_case = on_case; on_var = on_var; on_const = identity }
       body
+  in
+
+  let transform_initial_state s init_expr =
+    transform_loop_body s init_expr
   in
 
   transform_expr2
@@ -447,8 +442,9 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
         (fun f e ->
            match e with
            | FnRec (igu, (vs, bs), (s, body)) ->
-             FnRec (igu, (VarSet.diff vs variables, transform_loopb bs),
-                    (on_variable s, remove_empty_lets (transform_loopb body)))
+             Format.printf "@.@.==[INFO]== %s --> %s@." s.vname new_inner_binder.vname;
+             FnRec (igu, (VarSet.diff vs variables, transform_initial_state s bs),
+                    (new_inner_binder, remove_empty_lets (transform_loop_body s body)))
 
            | FnRecord (vs, emap) ->
              FnRecord(vs,
@@ -456,7 +452,7 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
                           try mkVarExpr (VarSet.find_by_id variables k)
                           with Not_found -> change_binders e) emap)
            | FnLetIn (blist, expr) ->
-             FnLetIn (List.map (fun (v,e) -> (change_binder_type v, f e)) blist,
+             FnLetIn (List.map (fun (v,e) -> (change_loopres_binder v, f e)) blist,
                       f expr)
 
            | _  -> failwith "on-case failure");
