@@ -27,6 +27,7 @@ open FPretty
 open FuncTypes
 open Format
 
+let verbose = ref false
 
 type stv_type =
   | SymbScalar of fnExpr
@@ -377,6 +378,119 @@ let test_04 () =
   ()
 
 
+let test_05 () =
+  let vars = vardefs "((mtr int) (c int_array) (mtrr int) (a int_int_array) (i int) (j int))" in
+  let cont = make_context vars "((mtr mtrr c) (i) (a) (mtr mtrr c i j a) (mtr mtrr c))" in
+  let c = vars#get "c" in
+  let mtr = vars#get "mtr" in
+  let mtrr = vars#get "mtrr" in
+  let a = vars#get "a" in
+  let j = vars#get "j" in let i = vars#get "i" in
+  let inctx = make_context vars "((mtr c) (j) (a) (mtr mtrr c j a) (mtr c))" in
+  let intype = record_type inctx.state_vars in
+  let tup = mkFnVar "tup" intype in
+  let bnds = mkFnVar "bound" intype in
+  let func =
+    (_letin [FnVariable tup,
+             FnRec((sk_zero, (flt (evar i) (_ci 5)), (fplus (evar j) sk_one)),
+                   (inctx.state_vars, FnRecord(inctx.state_vars,
+                                               IM.of_alist [mtr.vid, sk_zero;c.vid, evar c])),
+                   (bnds,
+                    (_letin [ _self bnds mtr; _self bnds c]
+                       (_letin [var c, FnArraySet(evar c, evar j, (fplus (c $ (evar j))
+                                                                     (a $$ (evar i, evar j))))]
+                          (_let [var c, evar c;
+                                 var mtr, fmax (fplus (c $ (evar j)) (evar mtr)) sk_zero])))))]
+       (_let [_self tup c;
+              _self tup mtr;
+              var mtrr, fmax (evar mtrr) (_inrec tup mtr)]))
+  in
+  let mtrr1 =
+      fmax (evar mtrr)
+        (fmax
+           (fplus (fplus (c $ (_ci 4)) (a $$ (evar i, _ci 4)))
+              (fmax
+                 (fplus (fplus (c $ (_ci 3)) (a $$ (evar i, _ci 3)))
+                    (fmax
+                       (fplus (fplus (c $ (_ci 2)) (a $$ (evar i, _ci 2)))
+                          (fmax
+                             (fplus (fplus (c $ (_ci 1)) (a $$ (evar i, _ci 1)))
+                                (fmax
+                                   (fplus (c $ (_ci 0)) (a $$ (evar i, _ci 0)))
+                                   (_ci 0)))
+                             (_ci 0)))
+                       (_ci 0)))
+                 (_ci 0)))
+           (_ci 0))
+  in
+  let r1 =
+    symbolic_execution_test "mtrr" vars cont func 2
+      [c.vid, SymbLinear [
+         0, (fplus (c $ (_ci 0))
+               (a $$ (evar i, _ci 0)));
+         1, (fplus (c $ (_ci 1))
+               (a $$ (evar i, _ci 1)));
+         2, (fplus (c $ (_ci 2))
+               (a $$ (evar i, _ci 2)));
+         3, (fplus (c $ (_ci 3))
+               (a $$ (evar i, _ci 3)));];
+       mtrr.vid, SymbScalar mtrr1
+      ]
+  in
+  let ip1 = fplus (evar i) sk_one in
+  let mtr2 =
+    (fmax
+       (fplus
+          (fplus (fplus (c $ (_ci 4)) (a $$ (evar i, _ci 4))) (a $$ (ip1, _ci 4)))
+          (fmax
+             (fplus
+                (fplus (fplus (c $ (_ci 3)) (a $$ (evar i, _ci 3))) (a $$ (ip1, _ci 3)))
+                (fmax
+                   (fplus
+                      (fplus (fplus (c $ (_ci 2)) (a $$ (evar i, _ci 2))) (a $$ (ip1, _ci 2)))
+                      (fmax
+                         (fplus
+                            (fplus (fplus (c $ (_ci 1)) (a $$ (evar i, _ci 1))) (a $$ (ip1, _ci 1)))
+                            (fmax
+                               (fplus (fplus (c $ (_ci 0)) (a $$ (evar i, _ci 0)))  (a $$ (ip1, _ci 0)))
+                               (_ci 0)))
+                         (_ci 0)))
+                   (_ci 0)))
+             (_ci 0)))
+       (_ci 0))
+  in
+  let _ =
+    symbolic_execution_test
+      ~_xinfo:
+        (Some {
+            r1 with
+            index_exprs = increment_all_indexes (create_symbol_map cont.index_vars);
+          })
+      "mtrr, second unfolding" vars cont func 2
+      [
+        c.vid, SymbLinear [
+          0, (fplus
+                (fplus (c $ (_ci 0))
+                   (a $$ (evar i, _ci 0)))
+                (a $$ (ip1, _ci 0)));
+          1, (fplus
+                (fplus (c $ (_ci 1))
+                   (a $$ (evar i, _ci 1)))
+                (a $$ (ip1, _ci 1)));
+          2,(fplus
+               (fplus (c $ (_ci 2))
+                  (a $$ (evar i, _ci 2)))
+               (a $$ (ip1, _ci 2)));
+          3, (fplus
+                (fplus (c $ (_ci 3))
+                   (a $$ (evar i, _ci 3)))
+                (a $$ (ip1, _ci 3)))];
+       mtrr.vid, SymbScalar (fmax mtrr1 mtr2)
+      ]
+  in
+  ()
+
+
 (* Normalization: file defined tests. *)
 let test_load filename =
   let inchan = IO.input_channel (open_in filename) in
@@ -406,4 +520,5 @@ let test () =
   test_03bis ();
   test_03ter ();
   test_04 ();
+  test_05 ();
   file_defined_tests ()

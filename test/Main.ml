@@ -81,4 +81,8 @@ match !tid with
 | 4 -> TVd.test ()
 | 5 -> TE.test ()
 | 6 -> TSbx.test ()
+| 7 ->
+  TE.test ();
+  TSbx.test ();
+  TVd.test ()
 | _ -> ()
