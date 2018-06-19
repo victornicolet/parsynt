@@ -387,16 +387,33 @@ type ecost =
   {
     occurrences : int;
     max_depth : int;
+    indexation : int;
   }
 
 let expression_cost ctx e =
+  let idx =
+    match e with
+    | FnVar(FnArray(_, FnConst (CInt i))) -> i
+    | FnVar(FnArray(_, FnConst (CInt64 i))) -> Int64.to_int i
+    | FnVar(FnArray(_, FnBinop(Plus, _, FnConst (CInt i))))
+    | FnVar(FnArray(_, FnBinop(Plus, FnConst (CInt i), _))) -> i
+    | FnVar(FnArray(_, FnBinop(Plus, _, FnConst (CInt64 i))))
+    | FnVar(FnArray(_, FnBinop(Plus, FnConst (CInt64 i), _))) -> Int64.to_int i
+    | _ -> 0
+  in
   let ctx_costlies = es_to_aces ctx.costly_exprs in
-  let case0 = { occurrences = 0; max_depth = 0 } in
-  let case1 = { occurrences = 1; max_depth = 1 } in
+  let case0 = { occurrences = 0; max_depth = 0; indexation = idx} in
+  let case1 = { occurrences = 1; max_depth = 1; indexation = idx } in
   let join_c c1 c2 =
-    { occurrences = c1.occurrences + c2.occurrences;
-      max_depth = let mx =  max c1.max_depth c2.max_depth in
-        if mx > 0 then mx + 1 else 0 }
+    let mdepth =
+      let mx =  max c1.max_depth c2.max_depth in
+      (if mx > 0 then mx + 1 else 0)
+    in
+    {
+      occurrences = c1.occurrences + c2.occurrences;
+      max_depth = mdepth;
+      indexation = idx;
+    }
   in
   let special_case e = ACES.mem e ctx_costlies in
   let handle_spec f e =  case1 in
@@ -409,11 +426,20 @@ let expression_cost ctx e =
   let case_const c = case0 in
   rec_expr join_c case0 special_case handle_spec case_const case_var e
 
-let ccost (d1, o1) (d2, o2) =
-  if d1 = d2 then compare o1 o2 else compare d1 d2
 
 let compare_ecost ec1 ec2 =
-  ccost (ec1.max_depth, ec1.occurrences) (ec2.max_depth, ec2.occurrences)
+  let ccost (d1, o1, i1) (d2, o2, i2) =
+  if d1 = d2 then
+    if o1 = o2 then
+      (* Order indexes in increasing order. *)
+      compare i2 i1
+    else
+      compare o1 o2
+  else
+    compare d1 d2
+  in
+  ccost (ec1.max_depth, ec1.occurrences, ec1.indexation)
+    (ec2.max_depth, ec2.occurrences, ec2.indexation)
 
 let compare_cost ctx e1 e2 =
   compare_ecost (expression_cost ctx e1) (expression_cost ctx e2)
@@ -678,6 +704,45 @@ let factorize_multi_toplevel ctx e =
   let e'' =  rebuild_tree_AC ctx eres in
   e''
 
+
+let find_max_state_factors
+    (ctx : context)
+    (t : fn_type)
+    (top_op : fnV)
+    (op : fnV)
+    (ell : fnExpr list list) : fnExpr list =
+  let separated_expr =
+    (List.fold_left
+       (fun assoc_list (h,l) ->
+          try
+            let assoc = List.assoc h assoc_list in
+            let assoc_list' = List.remove_assoc h assoc_list in
+            (h,l::assoc)::assoc_list'
+          with Not_found ->
+            (h,[l])::assoc_list))
+       []
+      (List.map
+         (List.partition
+            (fun expr ->
+               let ec = expression_cost ctx expr in
+               ec.occurrences > 0)) ell)
+  in
+  List.map
+    (fun (h, l) ->
+       match h, l with
+       | [] , _ ->
+         FnApp(t, Some top_op, List.map (fun args -> FnApp(t, Some op, args)) l)
+       | _ , [] ->
+         FnApp(t, Some op, h)
+       | _ , _ ->
+         FnBinop(check_option (op_from_name op.vname),
+                 FnApp(t, Some op, h),
+                 FnApp(t, Some top_op,
+                       List.map (fun args -> FnApp(t, Some op, args)) l))) separated_expr
+
+
+
+
 (** Inverse distributivity / factorization.
     This step rebuilds expression trees, but has to flatten the expressions
     it returns *)
@@ -793,6 +858,7 @@ let __factorize__ ctx top_op el =
     ListTools.lmin List.length different_factorizations
   in
   List.map flatten_AC (best_factorization @(el_no_binops))
+
 
 let factorize ctx =
   (* Transform apps where we can recognize the top operator. *)

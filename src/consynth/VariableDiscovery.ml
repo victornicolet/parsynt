@@ -336,8 +336,8 @@ let update_with_one_candidate
 
   let candidate_expr', e =
     let e = find_computed_expressions i xinfo xinfo_out candidate_expr in
-     (reduce_full ~limit:i
-        (ctx_add_cexp xinfo_out.context xinfo_out.inputs)) e, e
+    (normalize
+       (ctx_add_cexp xinfo_out.context xinfo_out.inputs)) e, e
   in
 
   if !verbose then
@@ -451,7 +451,8 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
       {
         xinfo0 with
         state_exprs =
-         IM.map (reduction_with_warning xinfo.context) xinfo0.state_exprs
+          IM.map (normalize ~linear:true xinfo.context --> enormalize xinfo.context)
+            xinfo0.state_exprs
       }
     in
     if !verbose then

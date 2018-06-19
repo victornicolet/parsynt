@@ -16,7 +16,7 @@ function Factor(x : int): int
 
 function ResJoin(leftFactor : int, leftRes : int, rightFactor : int, rightRes : int): int
 {
-  (((rightRes + 1) * leftFactor) + (leftRes - leftFactor))
+  (((1 + rightRes) * leftFactor) + (leftRes - leftFactor))
 }
 
 function FactorJoin(leftFactor : int, rightFactor : int): int

@@ -333,7 +333,7 @@ let remove_duplicate_auxiliaries xinfo aux_set input_func =
 
 
 let reduction_with_warning ctx expr =
-  let reduced_expression = reduce_full ctx expr in
+  let reduced_expression = normalize ctx expr in
   if (expr = reduced_expression) && !debug then
     begin
       Format.fprintf Format.std_formatter
