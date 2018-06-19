@@ -192,21 +192,23 @@ let pick_best_recfunc fexpr_l =
      now, there is an offset for the discovery. When the aux is supposed to
      accumulate constant values, this will create a problem.
 *)
-let create_new_aux new_aux_vi expr =
-  let rec_case = FnVar (FnVariable new_aux_vi) in
+let create_new_aux (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
+  let rec_case = FnVar (FnVariable new_aux) in
   let funcs =
     match expr with
     | FnBinop (op, expr1, expr2) when is_constant expr1 && is_constant expr2 ->
       [FnBinop (op, rec_case, expr2);
        FnBinop (op, expr1, rec_case);
        FnBinop (op, expr1, expr2)]
+
+
     | _ -> [rec_case]
   in
   let new_aux func =
-    { avar = new_aux_vi;
+    { avar = new_aux;
       aexpr = expr;
       afunc = func;
-      depends = VarSet.singleton new_aux_vi }
+      depends = VarSet.singleton new_aux }
   in
   AuxSet.of_list (List.map new_aux funcs)
 
@@ -333,7 +335,6 @@ let update_with_one_candidate
 
   (** Replace subexpressions corresponding to state expressions
       in the candidate expression *)
-
   let candidate_expr', e =
     let e = find_computed_expressions i xinfo xinfo_out candidate_expr in
     (normalize
