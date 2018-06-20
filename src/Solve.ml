@@ -227,7 +227,7 @@ let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
       begin
         printf
           "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
-          (color "orange") color_default lp_name;
+          (color "yellow") color_default lp_name;
         if !FnPretty.skipped_non_linear_operator then
           (** Try with non-linear operators. *)
           (FnPretty.reinit expr_depth true;

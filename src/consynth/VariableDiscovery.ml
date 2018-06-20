@@ -109,23 +109,6 @@ and accepted_expression e =
 
 
 
-(** Rank the state variable according to sequential order assignment and then
-    the number of incoming edges in the use-def graph.
-*)
-let merge_union vid ao bo =
-  match ao, bo with
-  | Some a, Some b -> Some (VarSet.union a b)
-  | Some a, None -> Some a
-  | _ , Some b -> Some b
-  | _ ,_ -> None
-
-let update_map map vi vi_used =
-  if IM.mem vi.vid map then
-    IM.add vi.vid (VarSet.union vi_used (IM.find vi.vid map)) map
-  else
-    IM.add vi.vid vi_used map
-
-
 
 
 let rank_by_use stv uses_map =
@@ -156,25 +139,18 @@ let pick_best_recfunc fexpr_l =
      now, there is an offset for the discovery. When the aux is supposed to
      accumulate constant values, this will create a problem.
 *)
-let create_new_aux (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
-  let rec_case = FnVar (FnVariable new_aux) in
-  let funcs =
-    match expr with
-    | FnBinop (op, expr1, expr2) when is_constant expr1 && is_constant expr2 ->
-      [FnBinop (op, rec_case, expr2);
-       FnBinop (op, expr1, rec_case);
-       FnBinop (op, expr1, expr2)]
-
-
-    | _ -> [rec_case]
-  in
-  let new_aux func =
+let create_new_aux (ctx : context) (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
+  let rec_case = FnVariable new_aux in
+  let funcs  = RFind.get_base_accus ctx rec_case expr in
+  let new_aux (func, t) =
     { avar = new_aux;
       aexpr = expr;
       afunc = func;
+      atype = t;
       depends = VarSet.singleton new_aux }
   in
   AuxSet.of_list (List.map new_aux funcs)
+
 
 
 (**
@@ -234,6 +210,7 @@ let update_accu
         avar = new_vi;
         aexpr = replace_available_vars xinfo xinfo_aux expr;
         afunc = new_f;
+        atype = candidate_aux.atype;
         depends = used_in_fnexpr new_f;
       }
     in
@@ -259,7 +236,7 @@ let update_with_one_candidate
     if ni then
       let typ = type_of cexpr in
       let new_aux_varinfo = mkFnVar (get_new_name ~base:!_aux_prefix_) typ in
-      let new_auxs = create_new_aux new_aux_varinfo cexpr in
+      let new_auxs = create_new_aux xinfo.context new_aux_varinfo cexpr in
 
       if !debug then
         printf "@.Adding new variable %s@;with expression@;%a@."

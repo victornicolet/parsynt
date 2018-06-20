@@ -24,6 +24,55 @@ open Utils
 
 let verbose = ref false
 
+(** Rank the state variable according to sequential order assignment and then
+    the number of incoming edges in the use-def graph.
+*)
+let merge_union vid ao bo =
+  match ao, bo with
+  | Some a, Some b -> Some (VarSet.union a b)
+  | Some a, None -> Some a
+  | _ , Some b -> Some b
+  | _ ,_ -> None
+
+let update_map map vi vi_used =
+  if IM.mem vi.vid map then
+    IM.add vi.vid (VarSet.union vi_used (IM.find vi.vid map)) map
+  else
+    IM.add vi.vid vi_used map
+
+let uses stv input_func =
+  let f_expr = rec_expr
+      VarSet.union (* Join *)
+      VarSet.empty (* Leaf *)
+      (fun e -> false) (* No special cases *)
+      (fun f e -> VarSet.empty) (* Never used*)
+      (fun c -> VarSet.empty) (* Handle constants *)
+      (fun v ->
+         VarSet.inter
+           (VarSet.singleton (var_of_fnvar v)) stv) (* Variables *)
+  in
+  let rec aux_used_stvs stv inpt map =
+    match inpt with
+    | FnLetIn (velist, letin) ->
+      let new_uses = List.fold_left used_in_assignment map velist in
+      let letin_uses = aux_used_stvs stv letin IM.empty in
+      IM.merge merge_union new_uses letin_uses
+
+    | FnRecord (vs, emap) ->
+      IM.fold
+        (fun i e map' ->
+           used_in_assignment map' (FnVariable(VarSet.find_by_id vs i), e))
+        emap
+        map
+
+    | _ -> failhere __FILE__ "uses"
+             "Bad toplevel expr form, recursion should not have reached this."
+  and used_in_assignment map (v, expr) =
+    let var = var_of_fnvar v in
+    if VarSet.mem var stv then update_map map var (f_expr expr) else map
+  in
+  aux_used_stvs stv input_func IM.empty
+
 
 let rec collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
   let lbody =
@@ -44,18 +93,28 @@ let rec collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
   in
   if !verbose then
     printf "[INFO]@[<v 4>Collect dependencies on function:@;%a@]@." pp_fnexpr lbody;
-  let final_exprs, _  =
-    unfold
-      { context = ctx;
-        state_exprs = SymbExe.create_symbol_map ctx.state_vars;
-        intermediate_states = IM.empty;
-        index_exprs = IM.map (fun x -> FnConst(CInt 0))
-            (IM.of_alist (VarSet.bindings ctx.index_vars));
-        inputs = ES.empty
-      }
-      lbody
-  in
-  IM.map (fun e -> used_in_fnexpr e) final_exprs
+
+  try
+    let final_exprs, _  =
+      unfold
+        { context = ctx;
+          state_exprs = SymbExe.create_symbol_map ctx.state_vars;
+          intermediate_states = IM.empty;
+          index_exprs = IM.map (fun x -> FnConst(CInt 0))
+              (IM.of_alist (VarSet.bindings ctx.index_vars));
+          inputs = ES.empty
+        }
+        lbody
+    in
+    IM.map (fun e -> used_in_fnexpr e) final_exprs
+  with SymbExeError (s, e) ->
+    if !verbose then
+      begin
+        printf "[ERROR] Symbolic execution error while colecting dependencies.@.";
+        printf "        Reverting to simpler version of dependency collection."
+      end;
+    uses ctx.state_vars func
+
 
 let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
   (* Search for variables that depend only on themselves *)

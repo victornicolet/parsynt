@@ -28,11 +28,19 @@ open Utils.PpTools
 let debug = ref false
 
 
-type auxiliary =
+type aux_comp_type =
+  | Scalar
+  | Map
+  | FoldL of auxiliary
+  | FoldR of auxiliary
+
+
+and auxiliary =
   {
     avar : fnV;
     aexpr : fnExpr;
     afunc : fnExpr;
+    atype : aux_comp_type;
     depends : VarSet.t;
   }
 
@@ -110,11 +118,11 @@ module AuxSet =
       iter (fun aux -> pp_auxiliary fmt aux) a
   end)
 
-let mkAux v e =
-  { avar = v; aexpr = e; afunc = wrap_state []; depends = VarSet.empty; }
+let mkAux t v e =
+  { avar = v; aexpr = e; afunc = wrap_state []; atype = t; depends = VarSet.empty; }
 
-let mkAuxF v e f =
-  { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }
+let mkAuxF t v e f =
+  { avar = v; aexpr = e; afunc = f; atype = t; depends = VarSet.empty; }
 
 
 let replace_index_uses index_set =
