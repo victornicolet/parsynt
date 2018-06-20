@@ -26,31 +26,79 @@ open Utils
 open VUtils
 
 
-let exec_foldl (aux : auxiliary) (acc : auxiliary) =
+let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
   let xinfo' =
     {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
   in
-  let replace_cell aux j e =
-    match aux.aexpr with
-    | FnVector el ->
-      replace_expression
-        (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-        (el >> j)
-        e
-    | ex ->
-      replace_expression
-        (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-        ex
-        e
-  in
   let unfold_op e = fst (unfold_expr xinfo' e) in
+  let acc_index_var = VarSet.max_elt acc.depends in
   let e_unfolded =
     match aux.afunc with
     | FnVector el ->
-      FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
+      let _, _, elements =
+        List.fold_left
+          (fun (j, scacc, elts) e ->
+             let scacc' =
+               replace_expression_in_subscripts
+                 (mkVarExpr acc_index_var) (* TODO replace by j index *)
+                 (FnConst (CInt j))
+                 (replace_expression
+                    (mkVarExpr acc.avar)
+                    scacc
+                    (unfold_op acc.afunc))
+             in
+             j + 1,
+             scacc',
+             elts@[replace_expression
+                     (mkVarExpr acc.avar)
+                     scacc'
+                     (unfold_op e)])
+          (0, acc.aexpr, [])
+          el
+      in
+      FnVector elements
     | _ ->
       failhere __FILE__ "find_accumulator" "Got non-vector while looking for map."
   in
+  e_unfolded
+
+
+let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
+  let xinfo' =
+    {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
+  in
+  let unfold_op e = fst (unfold_expr xinfo' e) in
+  let acc_index_var = VarSet.max_elt acc.depends in
+  let e_unfolded =
+    match aux.afunc with
+    | FnVector el ->
+      let _, _, elements =
+        List.fold_left
+          (fun (j, scacc, elts) e ->
+             let scacc' =
+               replace_expression_in_subscripts
+                 (mkVarExpr acc_index_var)
+                 (FnConst (CInt j))
+                 (replace_expression
+                    (mkVarExpr acc.avar)
+                    scacc
+                    (unfold_op acc.afunc))
+             in
+             j - 1,
+             scacc',
+             elts@[replace_expression
+                     (mkVarExpr acc.avar)
+                     scacc'
+                     (unfold_op e)])
+          (List.length el - 1, acc.aexpr, [])
+          el
+      in
+      FnVector elements
+    | _ ->
+      failhere __FILE__ "find_accumulator" "Got non-vector while looking for map."
+  in
+  e_unfolded
+
 
 
 let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
@@ -78,7 +126,7 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
         replace_expression
           (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
           (el >> j)
-          ep
+          e
       | ex ->
         replace_expression
           (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
@@ -99,37 +147,14 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
   in
 
   let find_foldl_accumulator aux acc =
-    let e_unfolded = exec_foldl aux acc in
+    let e_unfolded = exec_foldl xinfo aux acc in
     printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
       cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
     e_unfolded @= ne
   in
 
   let find_foldr_accumulator aux acc =
-    let xinfo' =
-      {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
-    in
-    let replace_cell aux j e =
-      match aux.aexpr with
-      | FnVector el ->
-        replace_expression
-          (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-          (el >> j)
-          e
-      | ex ->
-        replace_expression
-          (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-          ex
-          e
-    in
-    let unfold_op e = fst (unfold_expr xinfo' e) in
-    let e_unfolded =
-      match aux.afunc with
-      | FnVector el ->
-        FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
-      | e ->
-        replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
-    in
+   let e_unfolded = exec_foldr xinfo aux acc in
     printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
       cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
     e_unfolded @= ne
@@ -204,12 +229,13 @@ let create_foldl (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list
   []
 
 let create_foldr (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) =
+  let acc_index = mkFnVar "j" Integer in
   let acc_func =
     assert (List.length el >= 3);
     let maybe_func =
       replace_expression_in_subscripts
         ~to_replace:(FnConst (CInt 1))
-        ~by:(mkVarExpr (mkFnVar "j" Integer))
+        ~by:(mkVarExpr acc_index)
         ~ine:
           (replace_AC ctx ~to_replace:(el >> 0) ~by:(mkVarExpr sc_acc) ~ine:(el >>1))
     in
@@ -221,7 +247,7 @@ let create_foldr (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list
         aexpr = ListTools.last el;
         afunc = acc_func;
         atype = Scalar;
-        depends = VarSet.empty;
+        depends = VarSet.singleton acc_index;
       }
   in
   [FnVector(List.map (fun e -> mkVarExpr sc_acc) el), t]
