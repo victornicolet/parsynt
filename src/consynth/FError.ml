@@ -1,7 +1,7 @@
 open Beta
 open Format
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 
 let debug_global = ref true
 let set_debug_global () = debug_global := true

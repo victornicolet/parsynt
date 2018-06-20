@@ -21,7 +21,7 @@ open Format
 open Utils
 open Utils.PpTools
 open FError
-open FuncTypes
+open Fn
 open SymbExe
 open VariableDiscovery
 open Loops
@@ -227,7 +227,7 @@ let func2sketch cfile funcreps =
           (fun k c ->
              printf "%s = %a@;"
                (VarSet.find_by_id state_vars k).vname
-               FPretty.pp_fnexpr c)
+               FnPretty.pp_fnexpr c)
           s_reach_consts
       end;
 

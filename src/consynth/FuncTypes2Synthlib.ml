@@ -18,8 +18,8 @@
 *)
 
 open Beta
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open List
 open Synthlib2ast
 open Synthlib

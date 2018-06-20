@@ -14,7 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open FuncTypes
+
+open Fn
 open Beta
 
 let iterations_limit = Conf.get_conf_int "loop_finite_limit"

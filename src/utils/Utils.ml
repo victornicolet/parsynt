@@ -718,7 +718,6 @@ let print_defs vs defsHash =
 (* OCaml does not come with a globbing function. As a workaround, the
    following function builds a regular expression from a glob pattern.
    Only the '*' and '?' wildcards are recognized. *)
-open Str
 
 let regexp_of_glob pat =
   Str.regexp

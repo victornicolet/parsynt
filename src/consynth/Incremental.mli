@@ -17,7 +17,7 @@
 
 
 open Beta
-open FuncTypes
+open Fn
 open Utils
 
 val store_partial : string -> VarSet.t * fnExpr -> unit

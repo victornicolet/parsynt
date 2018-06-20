@@ -1,7 +1,7 @@
 open Beta
+open Fn
+open FnPretty
 open Format
-open FuncTypes
-open FPretty
 open Utils
 
 (* Defintiion of a subset of the Dafny language for a cleaner management of

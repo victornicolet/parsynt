@@ -1,6 +1,6 @@
 open Beta
+open Fn
 open Utils
-open FuncTypes
 
 val debug : bool ref
 val verbose : bool ref

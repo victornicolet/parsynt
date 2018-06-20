@@ -1,16 +1,20 @@
 open Beta
+open Fn
+open FnPretty
 open Format
 open SymbExe
 open Utils
 open PpTools
 open TestUtils
 open PpTools
-open FPretty
+
 open ExpressionReduction
 open Expressions
 open VariableDiscovery
 
-open FuncTypes
+
+
+let verbose = ref false
 
 let x, y, z, a, b, c, a_n =
   FnVariable (make_int_varinfo "x"),
@@ -64,7 +68,8 @@ let test_split_expression () =
        __factorize_multi__  ctx Max el
      | _ -> [])
   in
-  printf "Split expression:@.%a@." cp_expr_list splittin_results;
+  if !verbose then
+    printf "Split expression:@.%a@." cp_expr_list splittin_results;
   if List.length splittin_results < 1 then
     msg_failed tname
   else
@@ -76,21 +81,22 @@ let normalization_test lin name context expr expected =
   let expr_norm = normalize ~linear:lin context expr in
   let normal_expressions = collect_normal_subexpressions context expr_norm in
   if expected @= expr_norm then
-    (printf "Normal subexpressions:@.%a@."
-       (fun fmt gexp_list ->
-          pp_print_list
-            ~pp_sep:(fun fmt () -> fprintf fmt "@.")
-            (fun fmt (g, e) ->
-               if List.length g > 0 then
-                 fprintf fmt "@[<hov 1>%sif%s@;[%a]@;%s{%s(%a)%s}%s@]"
-                   (color "red") color_default
-                   cp_expr_list g
-                   (color "red") color_default
-                    cp_fnexpr e
-                   (color "red") color_default
-               else
-                 fprintf fmt "%a" cp_fnexpr e)
-            fmt gexp_list) normal_expressions;
+    (if !verbose then
+       printf "Normal subexpressions:@.%a@."
+         (fun fmt gexp_list ->
+            pp_print_list
+              ~pp_sep:(fun fmt () -> fprintf fmt "@.")
+              (fun fmt (g, e) ->
+                 if List.length g > 0 then
+                   fprintf fmt "@[<hov 1>%sif%s@;[%a]@;%s{%s(%a)%s}%s@]"
+                     (color "red") color_default
+                     cp_expr_list g
+                     (color "red") color_default
+                     cp_fnexpr e
+                     (color "red") color_default
+                 else
+                   fprintf fmt "%a" cp_fnexpr e)
+              fmt gexp_list) normal_expressions;
      msg_passed (sprintf "Normalization of %s test passed." name))
   else
     begin
@@ -102,8 +108,9 @@ let normalization_test lin name context expr expected =
 
 
 let test_normalize_expression_00 () =
-  printf "Test: normalizing expression from second unfolding of \
-          max terminal sum.@.";
+  if !verbose then
+    printf "Test: normalizing expression from second unfolding of \
+            max terminal sum.@.";
   let mts0 = make_int_varinfo "mts0" in
   let a = make_int_array_varinfo "a" in
   let a1 = a $ (_ci 1) in
@@ -123,8 +130,9 @@ let test_normalize_expression_00 () =
   normalization_test false "mts" ctx mts1 emts1
 
 let test_normalize_expression_01 () =
-  printf "Test: normalizing expression from second unfolding of \
-          max top left rectangle.@.";
+  if !verbose then
+    printf "Test: normalizing expression from second unfolding of \
+            max top left rectangle.@.";
   let col0 = make_int_array_varinfo "col0" in
   let mtrl0 = make_int_varinfo "mtrl0" in
   let a = make_int_int_array_varinfo "A" in
@@ -166,8 +174,9 @@ let test_normalize_expression_01 () =
 
 
 let test_normalize_expression_02 () =
-  printf "Test: normalizing expression from second unfolding of \
-          max top right rectangle.@.";
+  if !verbose then
+    printf "Test: normalizing expression from second unfolding of \
+            max top right rectangle.@.";
   let mtrr0 = make_int_varinfo "mtrr0" in
   let a = make_int_int_array_varinfo "A" in
   let c = make_int_array_varinfo "c" in
@@ -206,8 +215,9 @@ let test_normalize_expression_02 () =
   normalization_test true "mtrr" ctx mtrr1 mtrr1_norm_expected
 
 let test_normalize_expression_03 () =
-  printf "Test: normalizing expression from second unfolding of \
-          well-balanced parenthesis.@.";
+  if !verbose then
+    printf "Test: normalizing expression from second unfolding of \
+            well-balanced parenthesis.@.";
   let wb0, cnt0 = make_bool_varinfo "wb0", make_int_varinfo "cnt0" in
   let a = make_bool_array_varinfo "A" in
   let a0 = a $ sk_zero in
@@ -238,8 +248,9 @@ let test_normalize_expression_03 () =
 
 
 let test_normalize_expression_04 () =
-  printf "Test: normalizing expression from second unfolding of \
-          max top right rectangle (m = 3).@.";
+  if !verbose then
+    printf "Test: normalizing expression from second unfolding of \
+            max top right rectangle (m = 3).@.";
   let mtrr0 = make_int_varinfo "mtrr0" in
   let a = make_int_int_array_varinfo "A" in
   let c = make_int_array_varinfo "c" in
@@ -305,7 +316,8 @@ let test_normalize_expression_04 () =
 
 
 let test_normalize_expression_05 () =
-  printf "Test: two unfolding of maxmimum prefix sum.@.";
+  if !verbose then
+    printf "Test: two unfolding of maxmimum prefix sum.@.";
   let vars = vardefs "((mps int) (sum int) (a int_array))" in
   let e0 = expression vars "(max (max mps (+ sum a#0)) (+ (+ sum a#0) a#1))" in
   let e1 = expression vars "(max (+ sum (max a#0 (+ a#1 a#0))) mps)" in
@@ -321,7 +333,7 @@ let test_local_normal_test () =
   let tname = "Test local normal." in
   let ploc_res fmt locres =
     fprintf fmt (match locres with
-        | NonNormal -> "NonNormalal"
+        | NonNormal -> "NonNormal"
         | Normal -> "Normal"
         | Input -> "Input"
         | State -> "State"
@@ -373,8 +385,7 @@ let test_peval_01 () =
 (* Normalization: file defined tests. *)
 let test_load filename =
   let inchan = IO.input_channel (open_in filename) in
-  let message = IO.read_line inchan in
-  print_endline message;
+  let _ = IO.read_line inchan in
   let title = IO.read_line inchan in
   let use_lin = bool_of_string (IO.read_line inchan) in
   let vars = vardefs (IO.read_line inchan) in
@@ -390,6 +401,8 @@ let file_defined_tests () =
   List.iter test_load test_files
 
 let test () =
+  printf "@.%s%s[TEST] Expressions and normalization.%s@."
+    (color "b-green") (color "black") color_default;
   test_flatten_expression ();
   test_split_expression ();
   test_normalize_expression_01 ();

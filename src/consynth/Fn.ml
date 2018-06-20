@@ -290,11 +290,6 @@ let join_optypes opt1 opt2 =
   | Arith, _ | _, Arith -> Arith
   | _, _ -> NotNum        (* Join *)
 
-(* Returns true if the symb operator is a function we have to define in C *)
-let is_op_c_fun (op : symb_binop) : bool =
-  match op with
-  | Max | Min -> true
-  | _ -> false
 
 (** The identity function in the functional representation of the func. *)
 let identity_fn =
@@ -1638,11 +1633,12 @@ let mk_ctx vs stv = {
   costly_exprs = ES.empty
 }
 
-let ctx_inter (ctx : context) (vs : VarSet.t) : context = {
-  ctx with
-  state_vars = VarSet.inter vs ctx.state_vars;
-  index_vars = ctx.index_vars;
-}
+let ctx_inter (ctx : context) (vs : VarSet.t) : context =
+  {
+    ctx with
+    state_vars = VarSet.inter vs ctx.state_vars;
+    index_vars = ctx.index_vars;
+  }
 
 
 let ctx_update_vsets ctx vs =

@@ -1,5 +1,5 @@
 module Canalyst = Canalyst
-module FuncTypes = FuncTypes
+module Fn = Fn
 module SketchJoin = SketchJoin
 module Func2Fn = Func2Fn
 module Sketch = Sketch

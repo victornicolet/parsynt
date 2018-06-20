@@ -16,7 +16,7 @@
 *)
 
 open Beta
-open FuncTypes
+open Fn
 open Utils
 open Format
 
@@ -191,8 +191,8 @@ let no_join_inlined_body pb =
 
 let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
-    printf "[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
-      FPretty.pp_fnexpr (no_join_inlined_body problem);
+    printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
+      FnPretty.pp_fnexpr (no_join_inlined_body problem);
 
   let inner_loop_ids = List.map (fun pin -> pin.id) problem.inner_functions in
   let created_inputs = IH.create 5 in
@@ -222,7 +222,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
     inlined
   in
 
-  let inline_join in_info args =
+  let inline_join s in_info args =
     let j_start, j_end = get_bounds in_info in
     let repl_start e =
       replace_expression ~in_subscripts:true
@@ -232,23 +232,44 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
       replace_expression ~in_subscripts:true
         ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
     in
-    let in_body =
-      transform_rl_vars
-        created_inputs
-        (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
-        ((repl_start --> repl_end) in_info.memless_solution)
+    (**
+       If the solution is of the form loop + choice bindings, extract the loop,
+       and push the bindings to the outer loop.
+    *)
+    let in_body, new_unwrap =
+      let replaced_rl =
+        transform_rl_vars
+          created_inputs
+          (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
+          ((repl_start --> repl_end) in_info.memless_solution)
+      in
+      match replaced_rl with
+      | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
+        let choices' =
+          IM.map
+            (fun e ->
+               replace_expression
+                 ~in_subscripts:false
+                 ~to_replace:(FnVar loop_res)
+                 ~by:(FnVar s)
+                 ~ine:e) choices
+        in
+        FnRec (igu, vsbs, loopdef),
+        Some (unwrap_state in_state choices')
+      | e ->  e, None
     in
+
     if !verbose then
       printf
         "[WARNING] Inlined inner join iterates from 0 to %i by default.@."
         in_loop_width;
-    in_body
-  in
 
+    in_body, new_unwrap
+  in
 
   let inline_case e =
     match e with
-    | FnApp (st, Some f, args) ->
+    | FnLetIn([lrb, FnApp(st, Some f, args)], FnLetIn(unwrap_lrb, expr)) ->
       (Conf.is_inner_loop_func_name f.vname) &&
       (List.mem (Conf.id_of_inner_loop f.vname) inner_loop_ids)
 
@@ -257,10 +278,29 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
 
   let inline rfunc e =
     match e with
-    | FnApp(st, Some f, args) ->
-      (if inline_pick_join then inline_join else inline_inner)
-        (List.find (fun pin -> pin.id = (Conf.id_of_inner_loop f.vname)) problem.inner_functions)
-        args
+    | FnLetIn([lrb, FnApp(st, Some f, args)], FnLetIn(unwrap_lrb, expr)) ->
+      let infun, new_unwraps =
+        if inline_pick_join then
+          let injoin, new_unwrap =
+            inline_join lrb
+              (List.find (fun pin ->
+                   pin.id = (Conf.id_of_inner_loop f.vname))
+                  problem.inner_functions) args
+          in
+          match new_unwrap with
+          | Some l -> injoin, l
+          | None -> injoin, unwrap_lrb
+        else
+          let injoin =
+                      inline_inner
+            (List.find (fun pin ->
+                 pin.id = (Conf.id_of_inner_loop f.vname))
+               problem.inner_functions) args
+          in
+          injoin, unwrap_lrb
+      in
+      FnLetIn([lrb, infun], FnLetIn(new_unwraps, expr))
+
 
     | _ -> rfunc e
   in
@@ -273,8 +313,12 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
         on_const = identity } cur_loop_body
   in
   if !verbose then
-    printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
-      FPretty.pp_fnexpr loop_body';
+    begin if loop_body' != cur_loop_body then
+        printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
+          FnPretty.pp_fnexpr loop_body'
+      else
+        printf "[INFO] Outer function after inlining unchanged.@.";
+    end;
 
   let new_vars =
     IH.fold (fun k v vs -> VarSet.add v vs) created_inputs VarSet.empty

@@ -17,15 +17,18 @@
 
 
 open Beta
-open Format
-open FPretty
-open ExpressionReduction
-open SymbExe
-open VUtils
 open Expressions
-open FuncTypes
+open Fn
+open Format
+open FnPretty
+open SymbExe
 open Utils
-open Utils.PpTools
+open VUtils
+
+module ER = ExpressionReduction
+module RFind = RecurrenceFinder
+
+open PpTools
 
 exception VariableDiscoveryError of string
 
@@ -124,45 +127,6 @@ let update_map map vi vi_used =
 
 
 
-(** Given a function an a set of state variables, return a mapping
-    from state variable ids to the list of variable ids used in the
-    function.
-    @param stv A set of state variables.
-    @input_func the function on which to compute the uses
-    @return A mapping from state variable ids to lists of variable ids.
-*)
-let uses stv input_func =
-  let f_expr = rec_expr
-      VarSet.union (* Join *)
-      VarSet.empty (* Leaf *)
-      (fun e -> false) (* No special cases *)
-      (fun f e -> VarSet.empty) (* Never used*)
-      (fun c -> VarSet.empty) (* Handle constants *)
-      (fun v ->
-         VarSet.inter
-           (VarSet.singleton (var_of_fnvar v)) stv) (* Variables *)
-  in
-  let rec aux_used_stvs stv inpt map =
-    match inpt with
-    | FnLetIn (velist, letin) ->
-      let new_uses = List.fold_left used_in_assignment map velist in
-      let letin_uses = aux_used_stvs stv letin IM.empty in
-      IM.merge merge_union new_uses letin_uses
-
-    | FnRecord (vs, emap) ->
-      IM.fold
-        (fun i e map' ->
-           used_in_assignment map' (FnVariable(VarSet.find_by_id vs i), e))
-        emap
-        map
-
-    | _ -> failhere __FILE__ "uses"
-             "Bad toplevel expr form, recursion should not have reached this."
-  and used_in_assignment map (v, expr) =
-    let var = var_of_fnvar v in
-    if VarSet.mem var stv then update_map map var (f_expr expr) else map
-  in
-  aux_used_stvs stv input_func IM.empty
 
 let rank_by_use stv uses_map =
   let num_uses_list =
@@ -192,21 +156,23 @@ let pick_best_recfunc fexpr_l =
      now, there is an offset for the discovery. When the aux is supposed to
      accumulate constant values, this will create a problem.
 *)
-let create_new_aux new_aux_vi expr =
-  let rec_case = FnVar (FnVariable new_aux_vi) in
+let create_new_aux (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
+  let rec_case = FnVar (FnVariable new_aux) in
   let funcs =
     match expr with
     | FnBinop (op, expr1, expr2) when is_constant expr1 && is_constant expr2 ->
       [FnBinop (op, rec_case, expr2);
        FnBinop (op, expr1, rec_case);
        FnBinop (op, expr1, expr2)]
+
+
     | _ -> [rec_case]
   in
   let new_aux func =
-    { avar = new_aux_vi;
+    { avar = new_aux;
       aexpr = expr;
       afunc = func;
-      depends = VarSet.singleton new_aux_vi }
+      depends = VarSet.singleton new_aux }
   in
   AuxSet.of_list (List.map new_aux funcs)
 
@@ -333,11 +299,10 @@ let update_with_one_candidate
 
   (** Replace subexpressions corresponding to state expressions
       in the candidate expression *)
-
   let candidate_expr', e =
     let e = find_computed_expressions i xinfo xinfo_out candidate_expr in
-     (reduce_full ~limit:i
-        (ctx_add_cexp xinfo_out.context xinfo_out.inputs)) e, e
+    (ER.normalize
+       (ctx_add_cexp xinfo_out.context xinfo_out.inputs)) e, e
   in
 
   if !verbose then
@@ -372,7 +337,7 @@ let update_with_one_candidate
                 printf "@[<v 4>[INFO] Increments auxiliaries:@;%a.@]@."
                   AuxSet.pp_aux_set sub_aux;
               (* A subexpression of the expression is an auxiliary variable *)
-              let possible_accs = find_accumulator xinfo candidate_expr' sub_aux in
+              let possible_accs = RFind.find_accumulator xinfo candidate_expr' sub_aux in
               if AS.cardinal possible_accs > 0
               then
                 accumulation_case candidate_expr' possible_accs aux_set'
@@ -451,7 +416,8 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
       {
         xinfo0 with
         state_exprs =
-         IM.map (reduction_with_warning xinfo.context) xinfo0.state_exprs
+          IM.map (ER.normalize ~linear:true xinfo.context --> enormalize xinfo.context)
+            xinfo0.state_exprs
       }
     in
     if !verbose then
@@ -575,7 +541,7 @@ let discover problem =
   timec := Unix.gettimeofday ();
   let stv = problem.scontext.state_vars in
   let ranked_stv =
-    rank_by_use stv (uses stv  problem.main_loop_body)
+    rank_by_use stv (FnDep.collect_dependencies problem.scontext problem.main_loop_body)
   in
   (* For each variable, do the auxiliary variable discovery. *)
   let problem' =

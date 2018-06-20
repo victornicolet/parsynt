@@ -329,37 +329,39 @@ module FnVs =
 module VarSet =
 struct
   include FnVs
-  let find_by_id vs id : FnVs.elt =
-    FnVs.max_elt (FnVs.filter (fun elt -> elt.vid = id) vs)
-  let find_by_name vs name : FnVs.elt =
-    FnVs.max_elt (FnVs.filter (fun elt -> elt.vname = name) vs)
+  let map f vs : t =
+    of_list (List.map f (elements vs))
+  let find_by_id vs id : elt =
+    max_elt (filter (fun elt -> elt.vid = id) vs)
+  let find_by_name vs name : elt =
+    max_elt (filter (fun elt -> elt.vname = name) vs)
   let vids_of_vs vs : int list =
-    List.map (fun vi -> vi.vid) (FnVs.elements vs)
+    List.map (fun vi -> vi.vid) (elements vs)
   let has_vid vs id : bool =
     List.mem id (vids_of_vs vs)
   let bindings vs =
-    List.map (fun elt -> (elt.vid, elt)) (FnVs.elements vs)
+    List.map (fun elt -> (elt.vid, elt)) (elements vs)
   let names vs =
-    List.map (fun elt -> elt.vname) (FnVs.elements vs)
+    List.map (fun elt -> elt.vname) (elements vs)
   let types vs =
-    List.map (fun elt -> elt.vtype) (FnVs.elements vs)
+    List.map (fun elt -> elt.vtype) (elements vs)
   let record vs =
-    List.map (fun elt -> elt.vname, elt.vtype) (FnVs.elements vs)
+    List.map (fun elt -> elt.vname, elt.vtype) (elements vs)
   let add_prefix vs prefix =
-    FnVs.of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (FnVs.elements vs))
+    of_list (List.map (fun v -> {v with vname = prefix^v.vname}) (elements vs))
   let iset vs ilist =
-    FnVs.of_list
-      (List.filter (fun vi -> List.mem vi.vid ilist) (FnVs.elements vs))
+    of_list
+      (List.filter (fun vi -> List.mem vi.vid ilist) (elements vs))
   let pp_var_names fmt vs =
     pp_print_list
       ~pp_sep:(fun fmt () -> fprintf fmt ", ")
       (fun fmt elt -> fprintf fmt "%s" elt.vname)
-      fmt (FnVs.elements vs)
+      fmt (elements vs)
   let pp_vs fmt vs =
     fprintf fmt "@[<v 2>%a@]"
       (PpTools.pp_break_sep_list
          (fun fmt var -> printf "(%i: %s)" var.vid var.vname))
-      (FnVs.elements vs)
+      (elements vs)
 end
 
 
@@ -772,3 +774,135 @@ let is_struct_accessor a =
 
 let record_map vs f =
   IM.mapi (fun i e -> let var = VarSet.find_by_id vs i in f var e)
+
+
+(** Pretty-printing operators *)
+
+let string_of_unsafe_binop =
+  function
+  | TODO -> "TODO"
+
+let string_of_symb_binop ?(fd=false) =
+  function
+  | And -> "&&"
+  | Nand -> "nand" | Or -> "||" | Nor -> "nor" | Implies -> "implies"
+  | Xor -> "xor"
+  (** Integers and reals *)
+  | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
+  | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
+  (** Max and min *)
+  | Max -> if fd then Conf.get_conf_string "dafny_max_fun" else "max"
+  | Min -> if fd then Conf.get_conf_string "dafny_min_fun" else "min"
+  (** Comparison *)
+  | Eq -> if fd then "==" else "="
+  | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
+  | Neq -> if fd then "!=" else "neq"
+  (** Shift*)
+  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
+  | Expt -> "expt"
+  | UnsafeBinop op -> string_of_unsafe_binop op
+
+(** ********************************************************* UNARY OPERATORS *)
+(**
+   Some racket function that are otherwise unsafe
+   to use in Racket, but we might still need them.
+*)
+let string_of_unsafe_unop =
+  function
+  (** Trigonometric + hyp. functions *)
+  | Sin -> "sin" | Cos -> "cos" | Tan -> "tan" | Sinh -> "sinh"
+  | Cosh -> "cosh" | Tanh -> "tanh"
+  (** Anti functions *)
+  | ASin -> "asin" | ACos -> "acos" | ATan -> "atan" | ASinh -> "asinh"
+  | ACosh -> "acosh" | ATanh
+  (** Other functions *)
+  | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
+  | Exp -> "exp" | Sqrt -> "sqrt"
+
+exception Not_prefix
+
+let string_of_symb_unop ?(fc = true) ?(fd = false) =
+  function
+  | UnsafeUnop op -> string_of_unsafe_unop op
+  | Not -> if fd || fc then "!" else "not"
+  | Add1 -> if fd then "1 +" else "add1"
+  | Sub1 -> if fd then "1 +" else "sub1"
+  | Abs -> if fd then raise Not_prefix else "abs"
+  | Floor -> if fd then raise Not_prefix else "floor"
+  | Ceiling -> if fd then raise Not_prefix else "ceiling"
+  | Truncate -> if fd then raise Not_prefix else "truncate"
+  | Round -> if fd then raise Not_prefix else "round"
+  | Neg -> "-"
+  | Sgn -> if fd then raise Not_prefix else "sgn"
+
+let string_of_unop_func ?(fc = false) ?(fd = false) op =
+  try
+    ignore(string_of_symb_unop ~fc:fc ~fd:fd op);
+    None
+  with Not_prefix ->
+    Some (string_of_symb_unop ~fc:false ~fd:false op)
+
+
+let ostring_of_baseSymbolicType =
+  function
+  | Integer -> Some "integer?"
+  | Real -> Some "real?"
+  | Boolean -> Some "boolean?"
+  | _ -> None
+
+(* Returns true if the symb operator is a function we have to define in C *)
+let is_op_c_fun (op : symb_binop) : bool =
+  match op with
+  | Max | Min -> true
+  | _ -> false
+
+
+let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
+  let pp_int ppf i = fprintf ppf "%i" i in
+  let pp_float ppf f = fprintf ppf "%10.3f" f in
+  function
+  | CNil -> fprintf ppf "()"
+  | CInt i -> pp_int ppf i
+  | CInt64 i -> pp_int ppf (Int64.to_int i)
+  | CReal f -> pp_float ppf f
+  | CBool b ->
+    if for_dafny || for_c then
+      (if b then fprintf ppf "true" else fprintf ppf "false")
+    else
+      (if b then fprintf ppf "#t" else fprintf ppf "#f")
+
+  | CBox cst -> fprintf ppf "<Cil.constant>"
+  | CChar c -> fprintf ppf "%c" c
+  | CString s -> fprintf ppf "%s" s
+  | CArrayInit (n, c) -> fprintf ppf "(make-list %i %a)" n (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
+  | CUnop (op, c) ->
+    fprintf ppf "(%s %a)" (string_of_symb_unop op)
+      (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
+  | CBinop (op, c1, c2) ->
+    if is_op_c_fun op then
+      fprintf ppf "%s(%a,@; %a)" (string_of_symb_binop op)
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
+    else
+      fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
+        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
+
+  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
+  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
+  | Infnty ->
+    if for_dafny then
+      fprintf ppf "%s" (Conf.get_conf_string "dafny_max_seq_fun")
+    else
+      fprintf ppf "+inf.0"
+  | NInfnty ->
+    if for_dafny then
+      fprintf ppf "%s" (Conf.get_conf_string "dafny_min_seq_fun")
+    else
+      fprintf ppf "-inf.0"
+  | Pi -> fprintf ppf "pi"
+  | Sqrt2 -> fprintf ppf "(sqrt 2)"
+  | Ln2 -> fprintf ppf "(log 2)"
+  | Ln10 -> fprintf ppf "(log 10)"
+  | SqrtPi -> fprintf ppf "(sqrt pi)"
+  | E -> fprintf ppf "(exp 1)"

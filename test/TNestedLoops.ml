@@ -24,7 +24,7 @@ open Format
 open Utils
 open PpTools
 open InnerFuncs
-open FuncTypes
+open Fn
 module SJoin = SketchJoin
 
 let test_filenames = glob (Conf.project_dir ^"/test/nested_loops/*.c")
@@ -71,7 +71,7 @@ let one_test test_filename =
   let unsolved_sketches = Canalyst.func2sketch cfile func_infos in
 
   if !test_verbosity > 0 then
-    List.iter (FPretty.pp_problem_rep std_formatter) unsolved_sketches;
+    List.iter (FnPretty.pp_problem_rep std_formatter) unsolved_sketches;
 
 
   let transformed_inner =
@@ -79,7 +79,7 @@ let one_test test_filename =
   in
   if !test_verbosity > 0 then
     printf "@.FUNC --> FUNC translation: OK@.";
-    List.iter (FPretty.pp_problem_rep std_formatter) transformed_inner
+    List.iter (FnPretty.pp_problem_rep std_formatter) transformed_inner
 
 
 let test () =

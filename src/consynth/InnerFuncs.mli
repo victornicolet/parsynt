@@ -1,4 +1,4 @@
-open FuncTypes
+open Fn
 
 val verbose : bool ref
 val replace_by_join : prob_rep -> prob_rep list -> prob_rep
