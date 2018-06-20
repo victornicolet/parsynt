@@ -25,8 +25,8 @@
 open Beta
 open Utils
 open Conf
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open Format
 open Utils.PpTools
 open Cil2Func

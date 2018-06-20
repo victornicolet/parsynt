@@ -290,11 +290,6 @@ let join_optypes opt1 opt2 =
   | Arith, _ | _, Arith -> Arith
   | _, _ -> NotNum        (* Join *)
 
-(* Returns true if the symb operator is a function we have to define in C *)
-let is_op_c_fun (op : symb_binop) : bool =
-  match op with
-  | Max | Min -> true
-  | _ -> false
 
 (** The identity function in the functional representation of the func. *)
 let identity_fn =

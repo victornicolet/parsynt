@@ -20,9 +20,9 @@
 
 open Beta
 open Utils
-open FuncTypes
+open Fn
 open Cil
-open FPretty
+open FnPretty
 open Format
 open Expressions
 

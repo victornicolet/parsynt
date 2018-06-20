@@ -20,8 +20,8 @@
 
 open Beta
 open Format
-open FPretty
-open FuncTypes
+open FnPretty
+open Fn
 open TestUtils
 open Utils
 open Utils.ListTools

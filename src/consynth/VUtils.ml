@@ -18,8 +18,8 @@
 open Beta
 open Format
 open Utils
-open FPretty
-open FuncTypes
+open FnPretty
+open Fn
 open SymbExe
 open Expressions
 open ExpressionReduction
@@ -340,9 +340,9 @@ let reduction_with_warning ctx expr =
         "%sWarning%s : expression @;%a@; unchanged after \
          reduction with state %a @; and expressions %a @."
         (PpTools.color "red") PpTools.color_default
-        FPretty.pp_fnexpr reduced_expression
+        FnPretty.pp_fnexpr reduced_expression
         VarSet.pp_var_names ctx.state_vars
-        (fun fmt a -> FPretty.pp_expr_set fmt a) ctx.costly_exprs
+        (fun fmt a -> FnPretty.pp_expr_set fmt a) ctx.costly_exprs
     end
   else ();
   reduced_expression
@@ -505,41 +505,6 @@ let find_subexpr (top_expr : fnExpr) (auxs : AuxSet.t) =
     AuxSet.inters (List.mapi (fun j ej -> vector_subexpr ej j) el)
 
   | _ -> scalar_subexpr top_expr
-
-
-
-(** Check that the function applied to the old expression gives
-    the new expression. *)
-let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
-  AuxSet.filter
-    (fun aux ->
-       let xinfo' =
-         {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
-       in
-       let replace_cell aux j e =
-         match aux.aexpr with
-         | FnVector el ->
-           replace_expression
-             (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-             (el >> j)
-             e
-         | ex ->
-           replace_expression
-             (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-             ex
-             e
-       in
-       let unfold_op e = fst (unfold_expr xinfo' e) in
-       let e_unfolded =
-         match aux.afunc with
-         | FnVector el ->
-           FnVector(List.mapi (fun i e -> replace_cell aux i (unfold_op e)) el)
-         | e ->
-           replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
-       in
-       printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
-         cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
-       e_unfolded @= ne)
 
 
 let find_computed_expressions

@@ -21,7 +21,7 @@ open Beta
 open Conf
 open Cil
 open Format
-open FuncTypes
+open Fn
 open Synthlib
 open Synthlib2ast
 open Utils.ListTools

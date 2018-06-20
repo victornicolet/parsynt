@@ -16,11 +16,11 @@
 *)
 
 open Beta
-open Utils
-open FError
-open Format
 open Expressions
-open FuncTypes
+open FError
+open Fn
+open Format
+open Utils
 
 
 let debug = ref false
@@ -126,7 +126,7 @@ let create_symbol_map vs =
          map) vs IM.empty
 
 let pe s e =
-  Format.printf "{%s} %a@." s FPretty.cp_fnexpr e
+  Format.printf "{%s} %a@." s FnPretty.cp_fnexpr e
 
 (** ----------------------------------------------------------------------  *)
 (** Partial interpretation: produces simplified expression. *)
@@ -228,7 +228,7 @@ let add_intermediate_state (i : int) (state : fnExpr) : unit =
       _intermediate_states := !_intermediate_states@[state]
     else
       (printf "[ERROR] Intermediate states =@;%a,@.i =@;%i,@.state =@;%a@."
-         FPretty.cp_expr_list !_intermediate_states i FPretty.cp_fnexpr state;
+         FnPretty.cp_expr_list !_intermediate_states i FnPretty.cp_fnexpr state;
       failwith "Not enough / too many intermediate states.")
   | _ ->
     failwith "Cannot add a state that is not a record."
@@ -269,10 +269,10 @@ let pp_env fmt env =
   Format.fprintf fmt
     "@[Bound: %a.@;Exprs: %a@;Indexes: %a@;Exprs: %a@;Reads: %a@]@."
     VarSet.pp_vs env.ebound
-    FPretty.cp_expr_map env.ebexprs
+    FnPretty.cp_expr_map env.ebexprs
     VarSet.pp_vs env.eindex
-    FPretty.cp_expr_map env.eiexprs
-    (FPretty.pp_expr_set ~sep:(fun fmt () -> Format.fprintf fmt "@;"))
+    FnPretty.cp_expr_map env.eiexprs
+    (FnPretty.pp_expr_set ~sep:(fun fmt () -> Format.fprintf fmt "@;"))
     env.ereads
 
 
@@ -381,7 +381,7 @@ and do_expr env expr : fnExpr * ex_env =
 
        | _ ->
          if !verbose then
-           printf "[ERROR] %a@." FPretty.pp_fnexpr (FnRecordMember(re',s));
+           printf "[ERROR] %a@." FnPretty.pp_fnexpr (FnRecordMember(re',s));
          failhere __FILE__ "do_expr (FnRecordMember)"
            "Expected a record in record member accessor.")
     in
@@ -422,7 +422,7 @@ and do_expr env expr : fnExpr * ex_env =
 
   | _ ->
     if !verbose then
-      Format.printf "[ERROR] do_expr not implemented for %a" FPretty.pp_fnexpr expr;
+      Format.printf "[ERROR] do_expr not implemented for %a" FnPretty.pp_fnexpr expr;
     failhere __FILE__ "do_expr" "Match case not implemented."
 
 
@@ -440,7 +440,7 @@ and do_set_array env a i e : fnExpr =
   with exc ->
     if !debug then
       Format.printf "[ERROR] Cannot set array: %a[%a] = %a"
-        FPretty.pp_fnexpr a FPretty.pp_fnexpr i FPretty.pp_fnexpr e;
+        FnPretty.pp_fnexpr a FnPretty.pp_fnexpr i FnPretty.pp_fnexpr e;
     raise exc
 
 
@@ -452,7 +452,7 @@ and concrete_index i =
 
   | _ ->
     if !verbose then
-      Format.printf "[ERROR] %a is not concrete." FPretty.pp_fnexpr i;
+      Format.printf "[ERROR] %a is not concrete." FnPretty.pp_fnexpr i;
     failhere __FILE__ "concrete_index"
       "Cannot use non-concretized indexes in symbolic execution."
 
@@ -494,7 +494,7 @@ and do_var env v : fnExpr * ex_env =
     | _ ->
       if !verbose then
         printf "[ERROR] Received %a instead of input variable or vector.@."
-          FPretty.cp_fnexpr a';
+          FnPretty.cp_fnexpr a';
       failhere __FILE__ "do_var"
         "An array variable should be an input or a vector."
 
@@ -613,7 +613,6 @@ let unfold_expr (exec_info : exec_info) (e : fnExpr) : fnExpr * ES.t =
     the application of the function to the input variables expressions.
 *)
 let unfold_once ?(silent = false) exec_info inp_func =
-  if silent then () else incr GenVars.exec_count;
   let new_exprs, inputs = unfold exec_info inp_func in
   {
     exec_info with

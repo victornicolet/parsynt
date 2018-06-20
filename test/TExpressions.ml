@@ -1,16 +1,18 @@
 open Beta
+open Fn
+open FnPretty
 open Format
 open SymbExe
 open Utils
 open PpTools
 open TestUtils
 open PpTools
-open FPretty
+
 open ExpressionReduction
 open Expressions
 open VariableDiscovery
 
-open FuncTypes
+
 
 let verbose = ref false
 

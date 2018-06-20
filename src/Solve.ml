@@ -20,7 +20,7 @@
 open Beta
 open Conf
 open Format
-open FuncTypes
+open Fn
 open Incremental
 open Str
 open Utils
@@ -194,8 +194,8 @@ let call_solver_incremental
          if !verbose then
            printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
              incr_pb.loop_name
-             FPretty.pp_fnexpr part_pb.main_loop_body
-             FPretty.pp_fnexpr (if inner then
+             FnPretty.pp_fnexpr part_pb.main_loop_body
+             FnPretty.pp_fnexpr (if inner then
                                   part_pb.memless_sketch
                                 else
                                   part_pb.join_sketch);
@@ -212,7 +212,7 @@ let call_solver_incremental
 
 let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   (* Set the expression depth of the sketch printer.*)
-  FPretty.holes_expr_depth := expr_depth;
+  FnPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
@@ -228,12 +228,12 @@ let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
         printf
           "@.%sNO SOLUTION%s found for %s (solver returned unsat)."
           (color "orange") color_default lp_name;
-        if !FPretty.skipped_non_linear_operator then
+        if !FnPretty.skipped_non_linear_operator then
           (** Try with non-linear operators. *)
-          (FPretty.reinit ~ed:expr_depth ~use_nl:true;
+          (FnPretty.reinit expr_depth true;
            solve_one parent_ctx problem)
         else
-          (FPretty.reinit ~ed:expr_depth ~use_nl:false;
+          (FnPretty.reinit expr_depth false;
            None)
       end
     | Some pb -> Some pb

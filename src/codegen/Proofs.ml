@@ -1,8 +1,8 @@
 open Beta
+open Fn
+open FnPretty
 open Format
 open Utils
-open FuncTypes
-open FPretty
 open Dafny
 
 

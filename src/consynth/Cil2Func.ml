@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
+
 open Beta
 open Cil
 open Format
@@ -23,8 +24,6 @@ open Loops
 open Utils
 open Utils.CilTools
 open Utils.PpTools
-open FuncTypes
-open FPretty
 open FError
 open Sets
 open Loops
@@ -481,6 +480,7 @@ let bound_state_vars vs lf =
   bound_vars VS.empty lf
 
 
+let defloc = { line = 0; file = "let_prepend" ; byte = 0; }
 (**
    Prepend a set of bindings to a let form. The input is a list of
    bindings considered to be parallel assignments.

@@ -19,8 +19,8 @@ open Format
 open Cil
 
 open Beta
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open Utils
 open Utils.PpTools
 

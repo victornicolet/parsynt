@@ -19,13 +19,14 @@
 
 open Beta
 open Conf
-open Str
+open Fn
 open Format
+open Getopt
+open Str
+open Solve
 open Utils
 open Utils.PpTools
-open Getopt
-open FuncTypes
-open Solve
+
 
 module L = Local
 module C = Canalyst
@@ -70,9 +71,9 @@ let print_inner_result problem inner_funcs () =
                \tJoin:@.%a@.\
                \tIdentity state:%a@."
          pb.loop_name
-         FPretty.pp_fnexpr pb.main_loop_body
-         FPretty.pp_fnexpr pb.memless_solution
-         (ppimap FPretty.pp_constants) pb.identity_values
+         FnPretty.pp_fnexpr pb.main_loop_body
+         FnPretty.pp_fnexpr pb.memless_solution
+         (ppimap pp_constants) pb.identity_values
     )
     inner_funcs
 
@@ -253,7 +254,7 @@ let main () =
          (List.map solve_problem problem_list))
   in
   (** Handle all the solutions found *)
-  (List.iter (fun problem -> FPretty.pp_problem_rep std_formatter problem)
+  (List.iter (fun problem -> FnPretty.pp_problem_rep std_formatter problem)
      (somes solved));
   (* For each solved problem, generate a TBB implementation *)
   output_tbb_tests (somes solved);

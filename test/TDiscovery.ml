@@ -1,11 +1,12 @@
 open Beta
 open Format
-open FPretty
+open Fn
+open FnPretty
 open Utils
 open Utils.PpTools
 open VariableDiscovery
 open TestUtils
-open FuncTypes
+
 
 
 let test_1 () =

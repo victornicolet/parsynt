@@ -295,3 +295,12 @@ val record_accessor : string -> fnV -> fnV
 val is_struct_accessor : string -> bool
 
 val mark_outer_used : fnV -> unit
+
+exception Not_prefix
+
+val string_of_symb_binop: ?fd:bool -> symb_binop -> string
+val string_of_symb_unop: ?fc:bool -> ?fd:bool -> symb_unop -> string
+val string_of_unop_func: ?fc:bool -> ?fd:bool -> symb_unop -> string option
+val ostring_of_baseSymbolicType : fn_type -> string option
+val is_op_c_fun : symb_binop -> bool
+val pp_constants: ?for_c:bool -> ?for_dafny:bool -> Format.formatter -> constants -> unit

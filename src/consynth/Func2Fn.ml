@@ -1,7 +1,7 @@
 open Beta
 open Utils
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open Cil2Func
 open Utils.ListTools
 open VariableAnalysis

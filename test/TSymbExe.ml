@@ -18,13 +18,13 @@
 *)
 
 open Beta
+open Fn
+open FnPretty
 open SymbExe
 open Utils
 open TestUtils
 open ExpressionReduction
 open VariableDiscovery
-open FPretty
-open FuncTypes
 open Format
 
 let verbose = ref false

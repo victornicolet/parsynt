@@ -16,7 +16,7 @@
 *)
 
 open Beta
-open FuncTypes
+open Fn
 open Utils
 open Format
 
@@ -192,7 +192,7 @@ let no_join_inlined_body pb =
 let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
-      FPretty.pp_fnexpr (no_join_inlined_body problem);
+      FnPretty.pp_fnexpr (no_join_inlined_body problem);
 
   let inner_loop_ids = List.map (fun pin -> pin.id) problem.inner_functions in
   let created_inputs = IH.create 5 in
@@ -315,7 +315,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     begin if loop_body' != cur_loop_body then
         printf "[INFO] @[<v 4>Outer function after inlining:@;%a@]@."
-          FPretty.pp_fnexpr loop_body'
+          FnPretty.pp_fnexpr loop_body'
       else
         printf "[INFO] Outer function after inlining unchanged.@.";
     end;

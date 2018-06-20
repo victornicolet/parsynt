@@ -23,7 +23,7 @@ open Loops
 open Format
 open TestUtils
 open Utils
-open FuncTypes
+open Fn
 
 open PpTools
 
@@ -257,7 +257,7 @@ let _test () =
            printf "All variables :%a@." VS.pvs allvars;
            printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
-           FPretty.printFnexpr sketch;
+           FnPretty.printFnexpr sketch;
            printf "@.";
          end;
        SM.add fname (stv, figu,func)

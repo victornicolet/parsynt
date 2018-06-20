@@ -17,9 +17,9 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 open Beta
-open FuncTypes
+open Fn
 open Utils
-open FPretty
+open FnPretty
 open Format
 module IH = Sets.IH
 module E = Expressions
@@ -347,7 +347,7 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
         with Failure s ->
           Format.eprintf "[ERROR] Failure %s@." s;
           let msg =
-            Format.sprintf "Check if %s is vi failed." (FPretty.sprintFnexpr e)
+            Format.sprintf "Check if %s is vi failed." (FnPretty.sprintFnexpr e)
           in
           failhere __FILE__ "make_assignment_list"  msg
       end
