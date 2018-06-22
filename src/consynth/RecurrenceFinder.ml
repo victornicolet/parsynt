@@ -25,6 +25,9 @@ open SymbExe
 open Utils
 open VUtils
 
+let _aux_prefix_ = ref "aux"
+let aux_prefix s = _aux_prefix_ := "aux_"^s
+
 
 let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
   let xinfo' =
@@ -58,7 +61,7 @@ let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
       in
       FnVector elements
     | _ ->
-      failhere __FILE__ "find_accumulator" "Got non-vector while looking for map."
+      failhere __FILE__ "find_accumulator" "Got non-vector while looking for foldl."
   in
   e_unfolded
 
@@ -69,36 +72,77 @@ let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
   in
   let unfold_op e = fst (unfold_expr xinfo' e) in
   let acc_index_var = VarSet.max_elt acc.depends in
+  let accumulate_foldr (j, scacc, elts) e =
+    (* Compute the accumulator *)
+    let scacc' =
+      replace_expression_in_subscripts
+        (mkVarExpr acc_index_var)
+        (FnConst (CInt (j - 1)))
+        (replace_expression
+           (mkVarExpr acc.avar)
+           scacc
+           (unfold_op acc.afunc))
+    in
+    j - 1,
+    scacc',
+    elts@[
+      (* Replace the accummulator by its expression *)
+      replace_expression
+        (mkVarExpr acc.avar)
+        scacc
+        (unfold_op e)]
+  in
   let e_unfolded =
     match aux.afunc with
     | FnVector el ->
       let _, _, elements =
-        List.fold_left
-          (fun (j, scacc, elts) e ->
-             let scacc' =
-               replace_expression_in_subscripts
-                 (mkVarExpr acc_index_var)
-                 (FnConst (CInt j))
-                 (replace_expression
-                    (mkVarExpr acc.avar)
-                    scacc
-                    (unfold_op acc.afunc))
-             in
-             j - 1,
-             scacc',
-             elts@[replace_expression
-                     (mkVarExpr acc.avar)
-                     scacc'
-                     (unfold_op e)])
-          (List.length el - 1, acc.aexpr, [])
+        List.fold_left accumulate_foldr
+          (List.length el - 1,
+           replace_expression_in_subscripts
+             (mkVarExpr acc_index_var)
+             (FnConst (CInt (List.length el - 1)))
+             acc.aexpr,
+           [])
           el
       in
       FnVector elements
     | _ ->
-      failhere __FILE__ "find_accumulator" "Got non-vector while looking for map."
+      failhere __FILE__ "find_accumulator" "Got non-vector while looking for foldr."
   in
   e_unfolded
 
+
+let replace_foldr_accu (accu : auxiliary) (el : fnExpr list) =
+  let acc_index_var = VarSet.max_elt accu.depends in
+  let accumulate_foldr (j, scacc, elts) e =
+    (* Compute the accumulator *)
+    let scacc' =
+      replace_expression
+        (mkVarExpr accu.avar)
+        scacc
+        (replace_expression_in_subscripts
+           (mkVarExpr acc_index_var)
+           (FnConst (CInt (j - 1)))
+           accu.afunc)
+    in
+    j - 1,
+    scacc',
+    elts@[
+      (* Replace the accummulator by its expression *)
+      replace_expression
+        scacc
+        (mkVarExpr accu.avar)
+        e]
+  in
+  third
+    (List.fold_left accumulate_foldr
+       (List.length el - 1,
+        replace_expression_in_subscripts
+          (mkVarExpr acc_index_var)
+          (FnConst (CInt (List.length el - 1)))
+          accu.aexpr,
+        [])
+       el)
 
 
 let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
@@ -111,8 +155,10 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
     let e_unfolded =
       replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op aux.afunc)
     in
-    printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
-      cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
+    printf "@[<v 4>Scalar accumulation?@;%a@;%s==%s@;%a@.%b@]@."
+      cp_fnexpr e_unfolded
+      (PpTools.color "red") (PpTools.color_default)
+      cp_fnexpr ne (e_unfolded @= ne);
     e_unfolded @= ne
   in
 
@@ -141,22 +187,29 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
       | e ->
         replace_expression (mkVarExpr aux.avar) aux.aexpr (unfold_op e)
     in
-    printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
-      cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
+    printf "@[<v 4>Map accumulation?@;%a@;%s==%s@;%a@.%b@]@."
+      cp_fnexpr e_unfolded
+      (PpTools.color "red") (PpTools.color_default)
+      cp_fnexpr ne (e_unfolded @= ne);
     e_unfolded @= ne
   in
 
   let find_foldl_accumulator aux acc =
     let e_unfolded = exec_foldl xinfo aux acc in
-    printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
-      cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
+    printf "@[<v 4>Foldl accumulation?@;%a@;%s==%s@;%a@.%b@]@."
+      cp_fnexpr e_unfolded
+      (PpTools.color "red") (PpTools.color_default)
+      cp_fnexpr ne (e_unfolded @= ne);
     e_unfolded @= ne
   in
 
   let find_foldr_accumulator aux acc =
    let e_unfolded = exec_foldr xinfo aux acc in
-    printf "@[<v 4>Accumulation?@;%a==@;%a@.%b@]@."
-      cp_fnexpr e_unfolded cp_fnexpr ne (e_unfolded @= ne);
+    printf "@[<v 4>Foldr accumulation?@;%a@;%s==%s@;%a@.%b@]@."
+      cp_fnexpr e_unfolded
+      (PpTools.color "red") (PpTools.color_default)
+      cp_fnexpr ne
+      (e_unfolded @= ne);
     e_unfolded @= ne
   in
 
@@ -232,19 +285,20 @@ let create_foldr (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list
   let acc_index = mkFnVar "j" Integer in
   let acc_func =
     assert (List.length el >= 3);
-    let maybe_func =
-      replace_expression_in_subscripts
-        ~to_replace:(FnConst (CInt 1))
-        ~by:(mkVarExpr acc_index)
-        ~ine:
-          (replace_AC ctx ~to_replace:(el >> 0) ~by:(mkVarExpr sc_acc) ~ine:(el >>1))
-    in
-    maybe_func
+    replace_expression_in_subscripts
+      ~to_replace:(FnConst (CInt 1))
+      ~by:(mkVarExpr acc_index)
+      ~ine:
+        (replace_AC ctx ~to_replace:(el >> 0) ~by:(mkVarExpr sc_acc) ~ine:(el >>1))
   in
   let t = FoldR
       {
         avar = sc_acc;
-        aexpr = ListTools.last el;
+        aexpr =
+          replace_expression_in_subscripts
+            ~to_replace:(FnConst (CInt 0))
+            ~by:(mkVarExpr acc_index)
+            ~ine:(el >> 0);
         afunc = acc_func;
         atype = Scalar;
         depends = VarSet.singleton acc_index;
@@ -282,3 +336,93 @@ let get_base_accus (ctx : context) (var : fnLVar) (expr : fnExpr) :
       [expr, Map]
 
   | _ -> [expr, Scalar]
+
+
+
+(** make_rec_calls replaces the expression of the auxiliary aux in the expression
+    expr' by the variable var, creating the accumulation function for the new auxiliary
+    var that is being created.
+*)
+let make_rec_calls
+  (xinfo : exec_info)
+  (var, aux : fnV * auxiliary)
+  (expr' : fnExpr) : fnExpr list =
+
+  let make_cell_rec_call el' vecs (j, e) =
+    let rcalls =
+      replace_many_AC e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
+    in
+    if List.length vecs = 0 then
+      List.map (fun rcall -> [rcall]) rcalls
+    else if List.length vecs <= List.length rcalls then
+      List.map2 (fun vec rcall -> vec@[rcall]) vecs (ListTools.take (List.length vecs) rcalls)
+    else
+      List.map2 (fun vec rcall -> vec@[rcall]) (ListTools.take (List.length rcalls) vecs) rcalls
+
+  in
+
+  match aux.atype, aux.aexpr, expr' with
+  | Map, FnVector el, FnVector el' ->
+    assert (List.length el = List.length el');
+    List.map (fun l -> FnVector l)
+      (List.fold_left (make_cell_rec_call el') [] (List.mapi (fun i e -> (i,e)) el))
+
+  | FoldR accu, FnVector el, FnVector el' ->
+    assert (List.length el = List.length el');
+    let rcalls =
+      List.map
+        (fun l -> FnVector (replace_foldr_accu accu l))
+      (List.fold_left (make_cell_rec_call el') [] (List.mapi (fun i e -> (i,e)) el))
+    in
+    rcalls
+
+  | FoldL accu, _, _ -> failwith "TODO"
+
+  | Scalar, _, _ -> replace_many aux.aexpr (mkVarExpr var) expr' 1
+
+  | _, _, _ -> replace_many aux.aexpr (mkVarExpr var) expr' 1
+
+
+let pick_best_recfunc fexpr_l =
+  List.hd fexpr_l
+
+
+let update_accumulator
+    (xinfo : exec_info)
+    (xinfo_aux : exec_info)
+    (expr : fnExpr)
+    (candidates : AuxSet.t)
+    (aux_set' : AuxSet.t)  =
+
+  let update_one_accu candidate_aux aux_set' =
+    (* Create a new auxiliary to avoid deleting the old one *)
+    let new_vi =
+      mkFnVar (get_new_name ~base:!_aux_prefix_) (type_of candidate_aux.aexpr)
+    in
+    (**
+       Replace the old expression of the auxiliary by the auxiliary. Be careful
+       not to add too many recursive calls. Try to replace it only once, to
+       avoid spurious recursive locations.
+    *)
+    let replace_aux = make_rec_calls xinfo (new_vi, candidate_aux) expr in
+    let new_f =
+      pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
+    in
+
+    let new_auxiliary =
+      {
+        avar = new_vi;
+        aexpr = replace_available_vars xinfo xinfo_aux expr;
+        afunc = new_f;
+        atype = candidate_aux.atype;
+        depends = used_in_fnexpr new_f;
+      }
+    in
+    if !verbose then
+      printf
+        "@[<v 4>[INFO] Updated@;%s,@;now has accumulator :@;%a@;and expression@;%a@]@."
+        new_vi.vname cp_fnexpr new_f cp_fnexpr new_auxiliary.aexpr;
+
+    AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
+  in
+  update_one_accu (AuxSet.max_elt candidates) aux_set'

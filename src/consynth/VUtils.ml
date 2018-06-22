@@ -27,6 +27,7 @@ open Utils.PpTools
 
 let debug = ref false
 
+let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
 type aux_comp_type =
   | Scalar
@@ -44,10 +45,20 @@ and auxiliary =
     depends : VarSet.t;
   }
 
-let pp_auxiliary fmt aux =
+let rec pp_auxiliary fmt aux =
   fprintf fmt
-    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@]@;"
+    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@, type=%a]@;"
     aux.avar.vname cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
+    pp_comp_type aux.atype
+
+and pp_comp_type fmt ct =
+  match ct with
+  | Map -> fprintf fmt "(MAP)"
+  | Scalar -> fprintf fmt "(SCALAR)"
+  | FoldR x -> fprintf fmt "(FOLDR %a)" pp_auxiliary x
+  | FoldL x -> fprintf fmt "(FOLDL %a)" pp_auxiliary x
+
+
 
 module AS = Set.Make (struct
     type t = auxiliary
@@ -106,10 +117,10 @@ module AuxSet =
       else
         begin
           printf
-            "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
+            "@.%s%s Adding new auxiliary :%s %s.@.%a@."
             (color "b-green") (color "black") color_default
             aux_to_add.avar.vname
-            cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
+            pp_auxiliary aux_to_add;
 
           add aux_to_add aux_set
         end
@@ -377,32 +388,37 @@ let reset_index_expressions xinfo aux =
 
 let replace_available_vars
     (xinfo : exec_info) (xinfo_aux : exec_info) (ce : fnExpr): fnExpr =
-  let aux se expr j =
+  let aux se expr=
     IM.fold
       (fun vid st_e ine ->
          let vi = VarSet.find_by_id xinfo.context.state_vars vid in
-         let tr =
+         let trlist =
            match vi.vtype with
-           | Vector _ when j >= 0->
-             mkVarExpr ~offsets:[FnConst(CInt j)] vi
-           | _ -> mkVarExpr vi
+           | Vector _ ->
+             ListTools.init _MAX_ARRAY_SIZE_
+               (fun j -> j, mkVarExpr ~offsets:[FnConst(CInt j)] vi)
+
+           | _ -> [-1, mkVarExpr vi]
          in
-         let by =
+         let by j =
            match st_e with
            | FnVector stel when j >= 0 ->
-             accumulated_subexpression (vi, j) (stel >> j)
+             let ea, jx = accumulated_subexpression vi (stel >> j) in ea
            | e ->
-             accumulated_subexpression (vi, j) e
+             let ea, jx = accumulated_subexpression vi e in ea
+
          in
-         replace_AC xinfo_aux.context tr by ine)
+         (List.fold_left
+            (fun ine (j, tr) ->
+               replace_AC xinfo_aux.context tr (by j) ine) ine trlist))
       se
       expr
   in
   match ce with
   | FnVector el ->
-    FnVector (List.mapi (fun j e -> aux xinfo_aux.state_exprs e j) el)
+    FnVector (List.map (fun e -> aux xinfo_aux.state_exprs e) el)
   | _ ->
-    aux xinfo_aux.state_exprs ce (-1)
+    aux xinfo_aux.state_exprs ce
 
 
 let rec is_stv vset expr =
@@ -519,47 +535,58 @@ let find_computed_expressions
     (i :int) (xinfo : exec_info) (xinfo_aux : exec_info) (e : fnExpr) : fnExpr =
   let vals_at_j xinfo j =
     let from_intermediate_vals =
-      IM.map
-        (fun el -> if List.length el > j then Some (el >> j) else None)
-        xinfo.intermediate_states
+      List.map (fun (_i, _e) -> (_i, check_option _e))
+        (List.filter (fun (_i,_e) -> is_some _e)
+        (IM.to_alist
+           (IM.map
+              (fun el -> if List.length el > j then Some (el >> j) else None)
+              xinfo.intermediate_states)))
     in
     let from_vectors_of_state =
-      IM.map
-        (fun e ->
-           match e with
-           | FnVector el when List.length el > j -> Some (el >> j)
-           | e -> None)
-        xinfo.state_exprs
+      List.flatten
+        (List.map
+           (fun (vid, el) ->
+              match el with
+              | Some l -> List.map (fun _e -> (vid, _e)) l
+              | None -> [])
+           (IM.to_alist
+              (IM.map
+                 (fun e ->
+                    match e with
+                    | FnVector el when List.length el > j -> Some el
+                    | e -> None)
+                 xinfo.state_exprs)))
     in
-    IM.map check_option (IM.join_opt from_vectors_of_state from_intermediate_vals)
+    from_intermediate_vals @ from_vectors_of_state
   in
   let aux state_exprs e j =
-    IM.fold
-      (fun vid e ce ->
+    List.fold_left
+      (fun ce (vid, e) ->
          let vi = VarSet.find_by_id xinfo.context.state_vars vid in
+         let tr, jx = accumulated_subexpression vi e in
          let by =
            match vi.vtype with
-           | Vector (t,_) -> mkVarExpr ~offsets:[FnConst(CInt j)] vi
+           | Vector (t,_) -> mkVarExpr ~offsets:[FnConst(CInt jx)] vi
            | _ -> mkVarExpr vi
          in
-         let tr = (accumulated_subexpression (vi, j) e) in
          if is_constant tr then
            ce
          else
            replace_AC xinfo_aux.context ~to_replace:tr ~by:by ~ine:ce)
-      state_exprs e
+      e state_exprs
   in
-  if i > 0 then
-    match e with
-    | FnVector el ->
-      FnVector
-        (List.mapi
-           (fun j e ->
-              aux (vals_at_j xinfo_aux j) e j) el)
+  match e with
+  | FnVector el ->
+    FnVector
+      (List.mapi
+         (fun j e ->
+            aux (vals_at_j xinfo_aux j) e j) el)
 
-    | _ -> aux xinfo_aux.state_exprs e (-1)
-  else
-    e
+  | _ ->
+    if i > 0 then
+      aux (IM.to_alist xinfo_aux.state_exprs) e (-1)
+    else
+      e
 
 let new_const_exprs xinfo aux cur_vi v =
   (if

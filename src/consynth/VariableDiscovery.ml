@@ -36,8 +36,6 @@ let debug = ref false
 let verbose = ref false
 let debug_dev = ref true
 
-let _aux_prefix_ = ref "aux"
-let aux_prefix s = _aux_prefix_ := "aux_"^s
 
 let max_exec_no =
   ref (Conf.get_conf_int "variable_discovery_max_unfoldings")
@@ -131,20 +129,20 @@ let rank_by_use stv uses_map =
 
 
 
-let pick_best_recfunc fexpr_l =
-  List.hd fexpr_l
-
-
 (** Adding auxiliaries in a smarter way. Since we cannot infer initial values
      now, there is an offset for the discovery. When the aux is supposed to
      accumulate constant values, this will create a problem.
 *)
-let create_new_aux (ctx : context) (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
+let create_new_aux
+    (xinfo : exec_info)
+    (xinfo_aux : exec_info)
+    (new_aux : fnV)
+    (expr : fnExpr) : AuxSet.t =
   let rec_case = FnVariable new_aux in
-  let funcs  = RFind.get_base_accus ctx rec_case expr in
+  let funcs  = RFind.get_base_accus xinfo.context rec_case expr in
   let new_aux (func, t) =
     { avar = new_aux;
-      aexpr = expr;
+      aexpr = replace_available_vars xinfo xinfo_aux expr;
       afunc = func;
       atype = t;
       depends = VarSet.singleton new_aux }
@@ -161,68 +159,6 @@ let create_new_aux (ctx : context) (new_aux : fnV) (expr : fnExpr) : AuxSet.t =
    @param: expr the expression of the auxiliary in the previous unfolding.
    @param: expr' the expression from which to deduce the recursion.
 *)
-let make_rec_calls
-    (var, aux_expr : fnV * fnExpr) (expr' : fnExpr) : fnExpr list =
-  match aux_expr, expr' with
-  | FnVector el, FnVector el' ->
-    assert (List.length el = List.length el');
-    let make_cell_rec_call vecs (j, e) =
-      let rcalls =
-        replace_many_AC e (mkVarExpr ~offsets:[FnConst (CInt j)] var) (el' >> j) 1
-      in
-      if List.length vecs = 0 then
-        List.map (fun rcall -> [rcall]) rcalls
-      else if List.length vecs <= List.length rcalls then
-        List.map2 (fun vec rcall -> vec@[rcall]) vecs (ListTools.take (List.length vecs) rcalls)
-      else
-        List.map2 (fun vec rcall -> vec@[rcall]) (ListTools.take (List.length rcalls) vecs) rcalls
-
-    in
-    List.map (fun l -> FnVector l)
-      (List.fold_left make_cell_rec_call [] (List.mapi (fun i e -> (i,e)) el))
-
-  | _, _ -> replace_many aux_expr (mkVarExpr var) expr' 1
-
-let update_accu
-    (xinfo : exec_info)
-    (xinfo_aux : exec_info)
-    (expr : fnExpr)
-    (candidates : AuxSet.t)
-    (aux_set' : AuxSet.t)  =
-
-  let update_one_accu candidate_aux aux_set' =
-    (* Create a new auxiliary to avoid deleting the old one *)
-    let new_vi =
-      mkFnVar (get_new_name ~base:!_aux_prefix_) (type_of candidate_aux.aexpr)
-    in
-    (**
-       Replace the old expression of the auxiliary by the auxiliary. Be careful
-       not to add too many recursive calls. Try to replace it only once, to
-       avoid spurious recursive locations.
-    *)
-    let replace_aux = make_rec_calls (new_vi, candidate_aux.aexpr) expr in
-    let new_f =
-      pick_best_recfunc (List.map (reset_index_expressions xinfo) replace_aux)
-    in
-
-    let new_auxiliary =
-      {
-        avar = new_vi;
-        aexpr = replace_available_vars xinfo xinfo_aux expr;
-        afunc = new_f;
-        atype = candidate_aux.atype;
-        depends = used_in_fnexpr new_f;
-      }
-    in
-    if !verbose then
-      printf
-        "@[<v 4>[INFO] Updated@;%s,@;now has accumulator :@;%a@;and expression@;%a@]@."
-        new_vi.vname cp_fnexpr new_f cp_fnexpr new_auxiliary.aexpr;
-
-    AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
-  in
-  update_one_accu (AuxSet.max_elt candidates) aux_set'
-
 
 let update_with_one_candidate
     ((i, ni) : int * bool)
@@ -235,8 +171,8 @@ let update_with_one_candidate
   let new_aux_case cexpr aset aset' =
     if ni then
       let typ = type_of cexpr in
-      let new_aux_varinfo = mkFnVar (get_new_name ~base:!_aux_prefix_) typ in
-      let new_auxs = create_new_aux xinfo.context new_aux_varinfo cexpr in
+      let new_aux_varinfo = mkFnVar (get_new_name ~base:!RFind._aux_prefix_) typ in
+      let new_auxs = create_new_aux xinfo xinfo_out new_aux_varinfo cexpr in
 
       if !debug then
         printf "@.Adding new variable %s@;with expression@;%a@."
@@ -319,7 +255,7 @@ let update_with_one_candidate
               then
                 accumulation_case candidate_expr' possible_accs aux_set'
               else if ni then
-                update_accu xinfo xinfo_out candidate_expr' sub_aux aux_set'
+                RFind.update_accumulator xinfo xinfo_out candidate_expr' sub_aux aux_set'
               else
                 aux_set'
             end
@@ -436,7 +372,7 @@ let discover_for_id problem var =
       printf "       State: %a.@." VarSet.pp_var_names problem.scontext.state_vars;
       printf "       Function: %a.@." pp_fnexpr problem.main_loop_body;
     end;
-  aux_prefix var.vname;
+  RFind.aux_prefix var.vname;
 
   let ctx = problem.scontext in
   discover_init ();
