@@ -28,6 +28,18 @@ open VUtils
 let _aux_prefix_ = ref "aux"
 let aux_prefix s = _aux_prefix_ := "aux_"^s
 
+let replace_cell aux j e =
+  match aux.aexpr with
+  | FnVector el ->
+    replace_expression
+      (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
+      (el >> j)
+      e
+  | ex ->
+    replace_expression
+      (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
+      ex
+      e
 
 let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
   let xinfo' =
@@ -95,6 +107,7 @@ let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
   let e_unfolded =
     match aux.afunc with
     | FnVector el ->
+      (* Replace the accumulated part *)
       let _, _, elements =
         List.fold_left accumulate_foldr
           (List.length el - 1,
@@ -105,7 +118,11 @@ let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
            [])
           el
       in
-      FnVector elements
+      (* Replace the self-recursive part. *)
+      let elements' =
+        List.mapi (fun i e -> replace_cell aux i e) elements
+      in
+      FnVector elements'
     | _ ->
       failhere __FILE__ "find_accumulator" "Got non-vector while looking for foldr."
   in
@@ -165,19 +182,6 @@ let find_accumulator (xinfo : exec_info ) (ne : fnExpr) : AuxSet.t -> AuxSet.t =
   let find_map_accumulator aux =
     let xinfo' =
       {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
-    in
-    let replace_cell aux j e =
-      match aux.aexpr with
-      | FnVector el ->
-        replace_expression
-          (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-          (el >> j)
-          e
-      | ex ->
-        replace_expression
-          (mkVarExpr ~offsets:[FnConst (CInt j)] aux.avar)
-          ex
-          e
     in
     let unfold_op e = fst (unfold_expr xinfo' e) in
     let e_unfolded =
