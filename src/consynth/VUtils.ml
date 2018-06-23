@@ -23,6 +23,7 @@ open Fn
 open SymbExe
 open Expressions
 open ExpressionReduction
+open TestUtils
 open Utils.PpTools
 
 let debug = ref false
@@ -152,7 +153,7 @@ let add_to_inner_loop_body
   let new_stv = VarSet.add aux.avar ctx.state_vars in
   let new_body =
     complete_final_state new_stv
-      (compose_tail [v, e] inner_loop.main_loop_body)
+      (compose_tail new_stv [v, e] inner_loop.main_loop_body)
   in
   printf "New body:@.%a@." pp_fnexpr new_body;
   {
@@ -225,10 +226,10 @@ let compose problem xinfo aux_set =
      else
        hal@assgn, tal
   in
-  let compose_case_vector
+  let compose_case_map
       (xinfo : exec_info)
       (aux : auxiliary)
-      (el :fnExpr list)
+      (el : fnExpr list)
       (il : prob_rep list) : prob_rep list =
     List.map
       (fun inner_loop ->
@@ -258,52 +259,116 @@ let compose problem xinfo aux_set =
             inner_loop))
       il
   in
+  let compose_case_foldr
+      (xinfo : exec_info)
+      (aux : auxiliary)
+      (accu : auxiliary)
+      (tl : (fnLVar * fnExpr) list) =
+    let foldr_state =
+      VarSet.of_list [aux.avar; accu.avar]
+    in
+    let jx = VarSet.max_elt aux.depends in
+    let foldr_type = record_type foldr_state in
+    let loop_bind = mkFnVar "_s" foldr_type in
+    let loop_res = mkFnVar "_res" foldr_type in
+    let arrayexpr =
+      let el =
+        match aux.aexpr with
+        | FnVector el -> el
+        | _ -> failhere __FILE__ "compose_case_foldr" "Not a vector?"
+      in
+      replace_expression
+        ~in_subscripts:true
+        ~to_replace: (FnConst(CInt 0))
+        ~by:(mkVarExpr jx)
+        ~ine:(List.hd el)
+    in
+    let foldr_body =
+      FnLetIn([_self loop_bind aux.avar;
+               _self loop_bind accu.avar;],
+              FnRecord(foldr_state,
+                       IM.of_alist [accu.avar.vid, accu.afunc;
+                                    aux.avar.vid,
+                                    FnArraySet(mkVarExpr aux.avar,
+                                               mkVarExpr jx,
+                                               arrayexpr)]))
+    in
+    let foldr_init =
+      FnRecord(foldr_state,
+               IM.of_alist [accu.avar.vid, accu.aexpr;
+                            aux.avar.vid, mkVarExpr aux.avar])
+    in
+    let n = mkFnVar "n" Integer in
+    let foldr_loop =
+      let j = mkVarExpr jx in
+      FnRec((mkVarExpr n, FnBinop(Ge, j, FnConst(CInt 0)), FnUnop(Sub1, j)),
+            (foldr_state, foldr_init),
+            (loop_bind, foldr_body))
+    in
+    printf "LOOP : @. %a@." pp_fnexpr foldr_loop;
+    tl @ [mkVar loop_res, foldr_loop; _self loop_res aux.avar]
+  in
+  let partition_fchanges aux (hl, tl, il) =
+    (** Distinguish different cases :
+        - the function is not identity but an accumulator, we add the
+        function 'as is' in the loop body.
+        TODO : graph analysis to place the let-binding at the right
+        position.
+        - the function is a vector. Deduce the recursion to add in the
+        inner loop.
+        - the function f is the identity, then the auxliary variable
+        depends on a finite prefix of the inputs. The expression depends
+        on the starting index
+
+        Analyse expressions to respect dependencies.
+    *)
+    match aux.atype with
+    | Scalar ->
+      begin match aux.afunc with
+        | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
+          let hl', tl' =
+            compose_case_single xinfo aux (hl, tl) v
+          in
+          (hl', tl', il)
+
+        | _ ->
+          let hl', tl' =
+            compose_case_default xinfo aux (hl, tl)
+          in
+          (hl', tl', il)
+      end
+
+    | Map ->
+      begin match aux.afunc with
+        | FnVector el ->
+          let il' = compose_case_map xinfo aux el il in
+          (hl, tl, il')
+        | _ ->
+          let hl', tl' =
+            compose_case_default xinfo aux (hl, tl)
+          in
+          (hl', tl', il)
+      end
+
+    | FoldL acc -> failwith "TODO"
+
+    | FoldR acc ->
+      let tl' = compose_case_foldr xinfo aux acc tl in
+      (hl, tl', il)
+  in
+
   let new_func, inner_loops =
     let head_assgn, tail_assgn, inner_loops =
-      (AuxSet.fold
-         (fun aux (hl, tl, il)->
-            (** Distinguish different cases :
-                - the function is not identity but an accumulator, we add the
-                function 'as is' in the loop body.
-                TODO : graph analysis to place the let-binding at the right
-                position.
-                - the function is a vector. Deduce the recursion to add in the
-                inner loop.
-                - the function f is the identity, then the auxliary variable
-                depends on a finite prefix of the inputs. The expression depends
-                on the starting index
-
-                Analyse expressions to respect dependencies.
-            *)
-            match aux.afunc with
-            | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
-              let hl', tl' =
-                compose_case_single xinfo aux (hl, tl) v
-              in
-              (hl', tl', il)
-
-            | FnVector el ->
-              let il' = compose_case_vector xinfo aux el il in
-              (hl, tl, il')
-
-            | _ ->
-              let hl', tl' =
-                compose_case_default xinfo aux (hl, tl)
-              in
-              (hl', tl', il)
-              (** If the function depends only on index and read variables, the
-                  final value of the auxiliary depends only on its
-                  "final expression"
-              *)
-         )
-
-         aux_set ([], [], problem.inner_functions))
+      AuxSet.fold partition_fchanges
+         aux_set
+         ([], [], problem.inner_functions)
     in
     let f = complete_final_state new_ctx.state_vars
-        (compose_tail tail_assgn clean_f)
+        (compose_tail new_ctx.state_vars tail_assgn clean_f)
     in
     (compose_head head_assgn f), inner_loops
   in
+  printf "New func:@.%a.@." pp_fnexpr new_func;
   {
     problem with
     scontext = new_ctx;

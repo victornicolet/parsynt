@@ -1094,15 +1094,31 @@ let compose_head assignments func =
   | [] -> func
   | _ -> FnLetIn (assignments, func)
 
-let rec compose_tail assignments func =
+let rec compose_tail final assignments func =
   match assignments with
   | [] -> func
   | _ ->
     match func with
     | FnRecord (vs, emap) ->
       let bindings = unwrap_state vs emap in
-      remove_id_binding (FnLetIn (bindings, wrap_state assignments))
-    | FnLetIn (el, l) -> FnLetIn (el, compose_tail assignments l)
+      let pre, post =
+        let rec f (pre, post) l =
+          match l with
+          | [] -> pre, post
+          | (v, e) :: tl ->
+            let var = var_of_fnvar v in
+            if VarSet.mem var final then
+              (pre, post @ [v,e])
+            else
+              (pre @ post @ [v,e], [])
+        in
+        f ([], []) assignments
+      in
+      remove_id_binding (FnLetIn (bindings,
+                                  FnLetIn(pre,
+                                          wrap_state post)))
+
+    | FnLetIn (el, l) -> FnLetIn (el, compose_tail final assignments l)
     | _ -> func
 
 let complete_with_state stv el =

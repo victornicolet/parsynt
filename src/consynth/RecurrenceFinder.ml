@@ -41,7 +41,8 @@ let replace_cell aux j e =
       ex
       e
 
-let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
+let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) :
+  fnExpr =
   let xinfo' =
     {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
   in
@@ -73,12 +74,14 @@ let exec_foldl (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
       in
       FnVector elements
     | _ ->
-      failhere __FILE__ "find_accumulator" "Got non-vector while looking for foldl."
+      failhere __FILE__ "find_accumulator"
+        "Got non-vector while looking for foldl."
   in
   e_unfolded
 
 
-let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr =
+let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) :
+  fnExpr =
   let xinfo' =
     {xinfo with context = {xinfo.context with state_vars = VarSet.empty}}
   in
@@ -124,7 +127,8 @@ let exec_foldr (xinfo : exec_info) (aux : auxiliary) (acc : auxiliary) : fnExpr 
       in
       FnVector elements'
     | _ ->
-      failhere __FILE__ "find_accumulator" "Got non-vector while looking for foldr."
+      failhere __FILE__ "find_accumulator"
+        "Got non-vector while looking for foldr."
   in
   e_unfolded
 
@@ -282,22 +286,36 @@ let is_foldr (ctx : context) (el : fnExpr list) : bool =
             | _ -> false) iset) el
 
 
-let create_foldl (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) =
-  []
+let create_foldl
+    (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) =
+  failwith "TODO"
 
-let create_foldr (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) =
+
+let create_foldr
+    (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) :
+  (fnExpr * aux_comp_type) list =
+
   let acc_index = mkFnVar "j" Integer in
+  (* Simple accumulator detection for now:
+     a[1] = accum(a[0]) *)
   let acc_func =
     assert (List.length el >= 3);
     replace_expression_in_subscripts
       ~to_replace:(FnConst (CInt 1))
       ~by:(mkVarExpr acc_index)
       ~ine:
-        (replace_AC ctx ~to_replace:(el >> 0) ~by:(mkVarExpr sc_acc) ~ine:(el >>1))
+        (replace_AC ctx
+           ~to_replace:(el >> 0)
+           ~by:(mkVarExpr sc_acc)
+           ~ine:(el >>1))
   in
   let t = FoldR
       {
         avar = sc_acc;
+        (* The expression of the accumulator doesn't
+           have the same meaning as the expression of the auxiliary,
+           it stores the initial value of the accumulator as a function
+           of acc_index. *)
         aexpr =
           replace_expression_in_subscripts
             ~to_replace:(FnConst (CInt 0))
@@ -311,11 +329,9 @@ let create_foldr (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list
   [FnVector(List.map (fun e -> mkVarExpr sc_acc) el), t]
 
 
-let find_row_function (el : fnExpr list) =
-  el
-
-
-
+(* Guess an initial accumulator for a variable. This function should only
+   be called during the first iterations of the variable discovery algorithm.
+*)
 let get_base_accus (ctx : context) (var : fnLVar) (expr : fnExpr) :
   (fnExpr * aux_comp_type) list =
 
@@ -343,9 +359,9 @@ let get_base_accus (ctx : context) (var : fnLVar) (expr : fnExpr) :
 
 
 
-(** make_rec_calls replaces the expression of the auxiliary aux in the expression
-    expr' by the variable var, creating the accumulation function for the new auxiliary
-    var that is being created.
+(** make_rec_calls replaces the expression of the auxiliary aux in the
+    expression expr' by the variable var, creating the accumulation function
+    for the new auxiliary var that is being created.
 *)
 let make_rec_calls
   (xinfo : exec_info)
@@ -359,24 +375,32 @@ let make_rec_calls
     if List.length vecs = 0 then
       List.map (fun rcall -> [rcall]) rcalls
     else if List.length vecs <= List.length rcalls then
-      List.map2 (fun vec rcall -> vec@[rcall]) vecs (ListTools.take (List.length vecs) rcalls)
+      List.map2
+        (fun vec rcall -> vec@[rcall])
+        vecs
+        (ListTools.take (List.length vecs) rcalls)
     else
-      List.map2 (fun vec rcall -> vec@[rcall]) (ListTools.take (List.length rcalls) vecs) rcalls
-
+      List.map2
+        (fun vec rcall -> vec@[rcall])
+        (ListTools.take (List.length rcalls) vecs)
+        rcalls
   in
 
   match aux.atype, aux.aexpr, expr' with
   | Map, FnVector el, FnVector el' ->
     assert (List.length el = List.length el');
     List.map (fun l -> FnVector l)
-      (List.fold_left (make_cell_rec_call el') [] (List.mapi (fun i e -> (i,e)) el))
+      (List.fold_left (make_cell_rec_call el') []
+         (List.mapi (fun i e -> (i,e))
+            el))
 
   | FoldR accu, FnVector el, FnVector el' ->
     assert (List.length el = List.length el');
     let rcalls =
-      List.map
-        (fun l -> FnVector (replace_foldr_accu accu l))
-      (List.fold_left (make_cell_rec_call el') [] (List.mapi (fun i e -> (i,e)) el))
+      List.map (fun l -> FnVector (replace_foldr_accu accu l))
+        (List.fold_left (make_cell_rec_call el') []
+           (List.mapi (fun i e -> (i,e))
+              el))
     in
     rcalls
 
@@ -387,16 +411,23 @@ let make_rec_calls
   | _, _, _ -> replace_many aux.aexpr (mkVarExpr var) expr' 1
 
 
+(** Function generate several possible recursive functions for one expression.
+    Later, we should be able to pick the best candidate if we generate more
+    recursive functions.
+*)
 let pick_best_recfunc fexpr_l =
   List.hd fexpr_l
 
 
+(** Called when the accumulation doesn't match exactly, but the auxiliaries
+    in the candidates set are subexpressions of the expression expr.
+    Returns the updated set aux_set *)
 let update_accumulator
     (xinfo : exec_info)
     (xinfo_aux : exec_info)
     (expr : fnExpr)
     (candidates : AuxSet.t)
-    (aux_set' : AuxSet.t)  =
+    (aux_set : AuxSet.t) : AuxSet.t =
 
   let update_one_accu candidate_aux aux_set' =
     (* Create a new auxiliary to avoid deleting the old one *)
@@ -429,4 +460,4 @@ let update_accumulator
 
     AuxSet.add_new_aux xinfo.context aux_set' new_auxiliary
   in
-  update_one_accu (AuxSet.max_elt candidates) aux_set'
+  update_one_accu (AuxSet.max_elt candidates) aux_set
