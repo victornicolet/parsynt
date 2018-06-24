@@ -267,13 +267,13 @@ let compose problem xinfo aux_set =
     let foldr_state =
       VarSet.of_list [aux.avar; accu.avar]
     in
-    let jx = VarSet.max_elt aux.depends in
+    let jx = VarSet.max_elt accu.depends in
     let foldr_type = record_type foldr_state in
     let loop_bind = mkFnVar "_s" foldr_type in
     let loop_res = mkFnVar "_res" foldr_type in
     let arrayexpr =
       let el =
-        match aux.aexpr with
+        match aux.afunc with
         | FnVector el -> el
         | _ -> failhere __FILE__ "compose_case_foldr" "Not a vector?"
       in
@@ -305,7 +305,6 @@ let compose problem xinfo aux_set =
             (foldr_state, foldr_init),
             (loop_bind, foldr_body))
     in
-    printf "LOOP : @. %a@." pp_fnexpr foldr_loop;
     tl @ [mkVar loop_res, foldr_loop; _self loop_res aux.avar]
   in
   let partition_fchanges aux (hl, tl, il) =

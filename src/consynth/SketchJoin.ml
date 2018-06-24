@@ -744,7 +744,7 @@ let make_loop_join i bounds state fnlet =
     join
 
   | _ ->
-    failwith "make_loop_join"
+    make_join ~index:i ~state:state ~skip:[] ~w_a:_wa fnlet
 
 
 
