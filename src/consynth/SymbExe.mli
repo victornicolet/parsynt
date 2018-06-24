@@ -13,6 +13,8 @@ type exec_info =
     inputs : ES.t
   }
 
+exception SymbExeError of string * fnExpr
+
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
     variables. Don't forget to call init when necessary.

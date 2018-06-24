@@ -222,6 +222,8 @@ module ListTools = struct
   let some_tl l =
     if length l > 0 then Some (tl l) else None
 
+  let for_all_i pred l =
+    List.for_all pred (List.mapi (fun i e -> (i,e)) l)
 end
 
 

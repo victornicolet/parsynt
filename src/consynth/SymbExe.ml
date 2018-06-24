@@ -39,6 +39,20 @@ type exec_info =
     index_exprs : fnExpr IM.t;
     inputs : ES.t  }
 
+exception SymbExeError of string * fnExpr
+
+let print_SymbExeError (exc : exn) : string option =
+  match exc with
+  | SymbExeError (s, e) ->
+    begin
+      fprintf str_formatter "@[<v 4>[SYMBOLIC EXECUTION ERROR] %s.@;%a@]"
+        s FnPretty.pp_fnexpr e;
+      Some (flush_str_formatter ())
+    end
+  | _ -> None;;
+
+Printexc.register_printer print_SymbExeError;;
+
 (* Array size must be bounded during the symbolic execution. *)
 let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
@@ -229,9 +243,9 @@ let add_intermediate_state (i : int) (state : fnExpr) : unit =
     else
       (printf "[ERROR] Intermediate states =@;%a,@.i =@;%i,@.state =@;%a@."
          FnPretty.cp_expr_list !_intermediate_states i FnPretty.cp_fnexpr state;
-      failwith "Not enough / too many intermediate states.")
+       raise (SymbExeError ("wrong number of states", state)) )
   | _ ->
-    failwith "Cannot add a state that is not a record."
+    raise (SymbExeError ("Cannot add a state that is not a record.", state))
 
 let get_one_intermediate_val (var : fnV) : fnExpr list  =
   let some_vals =
@@ -291,7 +305,7 @@ let update_binding ?(offset=(-1)) v e env =
       try
         IM.find v.vid env.ebexprs
       with Not_found ->
-        failhere __FILE__ "update_binding" "Unbound array var."
+        raise (SymbExeError ("update_binding : Unbound array var.", e))
     in
     match vec with
     | FnVector ea ->
@@ -301,7 +315,7 @@ let update_binding ?(offset=(-1)) v e env =
         ebexprs = IM.add v.vid (FnVector ea') env.ebexprs;
       }
     | _ ->
-      failhere __FILE__ "update_binding" "Array var type, not vector expression."
+      raise (SymbExeError ("update_binding: Array var type, not vector expression.", vec))
   else
     { env with
       ebound = VarSet.add v env.ebound;
@@ -330,7 +344,7 @@ and do_binding sin uenv (var, expr) : ex_env =
     up_join (update_binding ~offset:(concrete_index i') a e uenv) reads
 
   | FnArray _ ->
-    failhere __FILE__ "do_binding" "Setting 2D Array cell not supported."
+    raise (SymbExeError ("do_binding: Setting 2D Array cell not supported.", expr))
 
 
 and do_expr env expr : fnExpr * ex_env =
@@ -374,16 +388,16 @@ and do_expr env expr : fnExpr * ex_env =
   | FnRecordMember (re, s) ->
     let re', env' = do_expr env re in
     let e', env' =
-      (match re' with
-       | FnRecord(vs, emap) ->
-         let e'' = IM.find (VarSet.find_by_name vs s).vid emap in
-         do_expr env' e''
+      match re' with
+      | FnRecord(vs, emap) ->
+        let e'' = IM.find (VarSet.find_by_name vs s).vid emap in
+        do_expr env' e''
 
-       | _ ->
-         if !verbose then
-           printf "[ERROR] %a@." FnPretty.pp_fnexpr (FnRecordMember(re',s));
-         failhere __FILE__ "do_expr (FnRecordMember)"
-           "Expected a record in record member accessor.")
+      | _ ->
+        if !verbose then
+          printf "[ERROR] %a@." FnPretty.pp_fnexpr (FnRecordMember(re',s));
+        raise (SymbExeError ("do_expr (FnRecordMember): Expected a record in record member accessor.",
+                             re'))
     in
     e', env'
 
@@ -423,7 +437,7 @@ and do_expr env expr : fnExpr * ex_env =
   | _ ->
     if !verbose then
       Format.printf "[ERROR] do_expr not implemented for %a" FnPretty.pp_fnexpr expr;
-    failhere __FILE__ "do_expr" "Match case not implemented."
+    raise (SymbExeError ("do_expr: Match case not implemented.", expr))
 
 
 and do_set_array env a i e : fnExpr =
@@ -434,8 +448,9 @@ and do_set_array env a i e : fnExpr =
       FnVector(ListTools.replace_ith e_ar (concrete_index i) e)
 
     | _ ->
-      failhere __FILE__ "do_set_array"
-        "Cannot modify an expression that is not a vector."
+      raise (SymbExeError
+               ("do_set_array: Cannot modify an expression that is not a vector.",
+                e))
 
   with exc ->
     if !debug then
@@ -453,8 +468,9 @@ and concrete_index i =
   | _ ->
     if !verbose then
       Format.printf "[ERROR] %a is not concrete." FnPretty.pp_fnexpr i;
-    failhere __FILE__ "concrete_index"
-      "Cannot use non-concretized indexes in symbolic execution."
+    raise (SymbExeError
+             ("concrete_index: Cannot use non-concretized indexes in symbolic execution.",
+              i))
 
 
 and do_var env v : fnExpr * ex_env =
@@ -495,8 +511,8 @@ and do_var env v : fnExpr * ex_env =
       if !verbose then
         printf "[ERROR] Received %a instead of input variable or vector.@."
           FnPretty.cp_fnexpr a';
-      failhere __FILE__ "do_var"
-        "An array variable should be an input or a vector."
+      raise (SymbExeError ("do_var : An array variable should be an input or a vector.",
+                           a'))
 
 
 and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =

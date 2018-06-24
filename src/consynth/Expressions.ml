@@ -1033,22 +1033,23 @@ let apply_special_rules ctx e =
   in
   factorize ctx e1
 
-let accumulated_subexpression (vi, j) e =
-  let is_int_const c j =
+let accumulated_subexpression vi e =
+  let is_int_const c =
     match c with
-    | FnConst (CInt j') -> j' = j
-    | FnConst (CInt64 j') -> Int64.to_int j' = j
-    | _ -> false
+    | FnConst (CInt j) -> true, j
+    | FnConst (CInt64 j) -> true, Int64.to_int j
+    | _ -> false, -1
   in
   match e with
-  | FnBinop (op, FnVar (FnVariable vi'), acc) when vi = vi' -> acc
-  | FnBinop (op, acc, FnVar (FnVariable vi')) when vi = vi' -> acc
+  | FnBinop (op, FnVar (FnVariable vi'), acc) when vi = vi' -> acc, 0
+  | FnBinop (op, acc, FnVar (FnVariable vi')) when vi = vi' -> acc, 0
   | FnBinop (op, FnVar (FnArray(FnVariable vi', c)), acc)
   | FnBinop (op, acc, FnVar (FnArray(FnVariable vi', c))) ->
-    if vi = vi' && is_int_const c j then
-      acc
-    else e
-  | _ -> e
+    let cond, j = is_int_const c in
+    if vi = vi' && cond then
+      acc, j
+    else e, 0
+  | _ -> e, 0
 
 
 (** Transformations taking AC in account *)

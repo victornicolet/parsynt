@@ -23,23 +23,43 @@ open Fn
 open SymbExe
 open Expressions
 open ExpressionReduction
+open TestUtils
 open Utils.PpTools
 
 let debug = ref false
 
+let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
-type auxiliary =
+type aux_comp_type =
+  | Scalar
+  | Map
+  | FoldL of auxiliary
+  | FoldR of auxiliary
+
+
+and auxiliary =
   {
     avar : fnV;
     aexpr : fnExpr;
     afunc : fnExpr;
+    atype : aux_comp_type;
     depends : VarSet.t;
   }
 
-let pp_auxiliary fmt aux =
+let rec pp_auxiliary fmt aux =
   fprintf fmt
-    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@]@;"
+    "@[<v>@[<v 2>%s =@;%a.@]@;@[<v 2>f =@;%a@, type=%a]@;"
     aux.avar.vname cp_fnexpr aux.aexpr cp_fnexpr aux.afunc
+    pp_comp_type aux.atype
+
+and pp_comp_type fmt ct =
+  match ct with
+  | Map -> fprintf fmt "(MAP)"
+  | Scalar -> fprintf fmt "(SCALAR)"
+  | FoldR x -> fprintf fmt "(FOLDR %a)" pp_auxiliary x
+  | FoldL x -> fprintf fmt "(FOLDL %a)" pp_auxiliary x
+
+
 
 module AS = Set.Make (struct
     type t = auxiliary
@@ -98,10 +118,10 @@ module AuxSet =
       else
         begin
           printf
-            "@.%s%s Adding new auxiliary :%s %s.@.Expression : %a.@.Function : %a@."
+            "@.%s%s Adding new auxiliary :%s %s.@.%a@."
             (color "b-green") (color "black") color_default
             aux_to_add.avar.vname
-            cp_fnexpr aux_to_add.aexpr cp_fnexpr aux_to_add.afunc;
+            pp_auxiliary aux_to_add;
 
           add aux_to_add aux_set
         end
@@ -110,11 +130,11 @@ module AuxSet =
       iter (fun aux -> pp_auxiliary fmt aux) a
   end)
 
-let mkAux v e =
-  { avar = v; aexpr = e; afunc = wrap_state []; depends = VarSet.empty; }
+let mkAux t v e =
+  { avar = v; aexpr = e; afunc = wrap_state []; atype = t; depends = VarSet.empty; }
 
-let mkAuxF v e f =
-  { avar = v; aexpr = e; afunc = f; depends = VarSet.empty; }
+let mkAuxF t v e f =
+  { avar = v; aexpr = e; afunc = f; atype = t; depends = VarSet.empty; }
 
 
 let replace_index_uses index_set =
@@ -133,7 +153,7 @@ let add_to_inner_loop_body
   let new_stv = VarSet.add aux.avar ctx.state_vars in
   let new_body =
     complete_final_state new_stv
-      (compose_tail [v, e] inner_loop.main_loop_body)
+      (compose_tail new_stv [v, e] inner_loop.main_loop_body)
   in
   printf "New body:@.%a@." pp_fnexpr new_body;
   {
@@ -206,10 +226,10 @@ let compose problem xinfo aux_set =
      else
        hal@assgn, tal
   in
-  let compose_case_vector
+  let compose_case_map
       (xinfo : exec_info)
       (aux : auxiliary)
-      (el :fnExpr list)
+      (el : fnExpr list)
       (il : prob_rep list) : prob_rep list =
     List.map
       (fun inner_loop ->
@@ -239,52 +259,115 @@ let compose problem xinfo aux_set =
             inner_loop))
       il
   in
+  let compose_case_foldr
+      (xinfo : exec_info)
+      (aux : auxiliary)
+      (accu : auxiliary)
+      (tl : (fnLVar * fnExpr) list) =
+    let foldr_state =
+      VarSet.of_list [aux.avar; accu.avar]
+    in
+    let jx = VarSet.max_elt accu.depends in
+    let foldr_type = record_type foldr_state in
+    let loop_bind = mkFnVar "_s" foldr_type in
+    let loop_res = mkFnVar "_res" foldr_type in
+    let arrayexpr =
+      let el =
+        match aux.afunc with
+        | FnVector el -> el
+        | _ -> failhere __FILE__ "compose_case_foldr" "Not a vector?"
+      in
+      replace_expression
+        ~in_subscripts:true
+        ~to_replace: (FnConst(CInt 0))
+        ~by:(mkVarExpr jx)
+        ~ine:(List.hd el)
+    in
+    let foldr_body =
+      FnLetIn([_self loop_bind aux.avar;
+               _self loop_bind accu.avar;],
+              FnRecord(foldr_state,
+                       IM.of_alist [accu.avar.vid, accu.afunc;
+                                    aux.avar.vid,
+                                    FnArraySet(mkVarExpr aux.avar,
+                                               mkVarExpr jx,
+                                               arrayexpr)]))
+    in
+    let foldr_init =
+      FnRecord(foldr_state,
+               IM.of_alist [accu.avar.vid, accu.aexpr;
+                            aux.avar.vid, mkVarExpr aux.avar])
+    in
+    let n = mkFnVar "n" Integer in
+    let foldr_loop =
+      let j = mkVarExpr jx in
+      FnRec((mkVarExpr n, FnBinop(Ge, j, FnConst(CInt 0)), FnUnop(Sub1, j)),
+            (foldr_state, foldr_init),
+            (loop_bind, foldr_body))
+    in
+    tl @ [mkVar loop_res, foldr_loop; _self loop_res aux.avar]
+  in
+  let partition_fchanges aux (hl, tl, il) =
+    (** Distinguish different cases :
+        - the function is not identity but an accumulator, we add the
+        function 'as is' in the loop body.
+        TODO : graph analysis to place the let-binding at the right
+        position.
+        - the function is a vector. Deduce the recursion to add in the
+        inner loop.
+        - the function f is the identity, then the auxliary variable
+        depends on a finite prefix of the inputs. The expression depends
+        on the starting index
+
+        Analyse expressions to respect dependencies.
+    *)
+    match aux.atype with
+    | Scalar ->
+      begin match aux.afunc with
+        | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
+          let hl', tl' =
+            compose_case_single xinfo aux (hl, tl) v
+          in
+          (hl', tl', il)
+
+        | _ ->
+          let hl', tl' =
+            compose_case_default xinfo aux (hl, tl)
+          in
+          (hl', tl', il)
+      end
+
+    | Map ->
+      begin match aux.afunc with
+        | FnVector el ->
+          let il' = compose_case_map xinfo aux el il in
+          (hl, tl, il')
+        | _ ->
+          let hl', tl' =
+            compose_case_default xinfo aux (hl, tl)
+          in
+          (hl', tl', il)
+      end
+
+    | FoldL acc -> failwith "TODO"
+
+    | FoldR acc ->
+      let tl' = compose_case_foldr xinfo aux acc tl in
+      (hl, tl', il)
+  in
+
   let new_func, inner_loops =
     let head_assgn, tail_assgn, inner_loops =
-      (AuxSet.fold
-         (fun aux (hl, tl, il)->
-            (** Distinguish different cases :
-                - the function is not identity but an accumulator, we add the
-                function 'as is' in the loop body.
-                TODO : graph analysis to place the let-binding at the right
-                position.
-                - the function is a vector. Deduce the recursion to add in the
-                inner loop.
-                - the function f is the identity, then the auxliary variable
-                depends on a finite prefix of the inputs. The expression depends
-                on the starting index
-
-                Analyse expressions to respect dependencies.
-            *)
-            match aux.afunc with
-            | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
-              let hl', tl' =
-                compose_case_single xinfo aux (hl, tl) v
-              in
-              (hl', tl', il)
-
-            | FnVector el ->
-              let il' = compose_case_vector xinfo aux el il in
-              (hl, tl, il')
-
-            | _ ->
-              let hl', tl' =
-                compose_case_default xinfo aux (hl, tl)
-              in
-              (hl', tl', il)
-              (** If the function depends only on index and read variables, the
-                  final value of the auxiliary depends only on its
-                  "final expression"
-              *)
-         )
-
-         aux_set ([], [], problem.inner_functions))
+      AuxSet.fold partition_fchanges
+         aux_set
+         ([], [], problem.inner_functions)
     in
     let f = complete_final_state new_ctx.state_vars
-        (compose_tail tail_assgn clean_f)
+        (compose_tail new_ctx.state_vars tail_assgn clean_f)
     in
     (compose_head head_assgn f), inner_loops
   in
+  printf "New func:@.%a.@." pp_fnexpr new_func;
   {
     problem with
     scontext = new_ctx;
@@ -369,32 +452,37 @@ let reset_index_expressions xinfo aux =
 
 let replace_available_vars
     (xinfo : exec_info) (xinfo_aux : exec_info) (ce : fnExpr): fnExpr =
-  let aux se expr j =
+  let aux se expr=
     IM.fold
       (fun vid st_e ine ->
          let vi = VarSet.find_by_id xinfo.context.state_vars vid in
-         let tr =
+         let trlist =
            match vi.vtype with
-           | Vector _ when j >= 0->
-             mkVarExpr ~offsets:[FnConst(CInt j)] vi
-           | _ -> mkVarExpr vi
+           | Vector _ ->
+             ListTools.init _MAX_ARRAY_SIZE_
+               (fun j -> j, mkVarExpr ~offsets:[FnConst(CInt j)] vi)
+
+           | _ -> [-1, mkVarExpr vi]
          in
-         let by =
+         let by j =
            match st_e with
            | FnVector stel when j >= 0 ->
-             accumulated_subexpression (vi, j) (stel >> j)
+             let ea, jx = accumulated_subexpression vi (stel >> j) in ea
            | e ->
-             accumulated_subexpression (vi, j) e
+             let ea, jx = accumulated_subexpression vi e in ea
+
          in
-         replace_AC xinfo_aux.context tr by ine)
+         (List.fold_left
+            (fun ine (j, tr) ->
+               replace_AC xinfo_aux.context tr (by j) ine) ine trlist))
       se
       expr
   in
   match ce with
   | FnVector el ->
-    FnVector (List.mapi (fun j e -> aux xinfo_aux.state_exprs e j) el)
+    FnVector (List.map (fun e -> aux xinfo_aux.state_exprs e) el)
   | _ ->
-    aux xinfo_aux.state_exprs ce (-1)
+    aux xinfo_aux.state_exprs ce
 
 
 let rec is_stv vset expr =
@@ -511,47 +599,58 @@ let find_computed_expressions
     (i :int) (xinfo : exec_info) (xinfo_aux : exec_info) (e : fnExpr) : fnExpr =
   let vals_at_j xinfo j =
     let from_intermediate_vals =
-      IM.map
-        (fun el -> if List.length el > j then Some (el >> j) else None)
-        xinfo.intermediate_states
+      List.map (fun (_i, _e) -> (_i, check_option _e))
+        (List.filter (fun (_i,_e) -> is_some _e)
+        (IM.to_alist
+           (IM.map
+              (fun el -> if List.length el > j then Some (el >> j) else None)
+              xinfo.intermediate_states)))
     in
     let from_vectors_of_state =
-      IM.map
-        (fun e ->
-           match e with
-           | FnVector el when List.length el > j -> Some (el >> j)
-           | e -> None)
-        xinfo.state_exprs
+      List.flatten
+        (List.map
+           (fun (vid, el) ->
+              match el with
+              | Some l -> List.map (fun _e -> (vid, _e)) l
+              | None -> [])
+           (IM.to_alist
+              (IM.map
+                 (fun e ->
+                    match e with
+                    | FnVector el when List.length el > j -> Some el
+                    | e -> None)
+                 xinfo.state_exprs)))
     in
-    IM.map check_option (IM.join_opt from_vectors_of_state from_intermediate_vals)
+    from_intermediate_vals @ from_vectors_of_state
   in
   let aux state_exprs e j =
-    IM.fold
-      (fun vid e ce ->
+    List.fold_left
+      (fun ce (vid, e) ->
          let vi = VarSet.find_by_id xinfo.context.state_vars vid in
+         let tr, jx = accumulated_subexpression vi e in
          let by =
            match vi.vtype with
-           | Vector (t,_) -> mkVarExpr ~offsets:[FnConst(CInt j)] vi
+           | Vector (t,_) -> mkVarExpr ~offsets:[FnConst(CInt jx)] vi
            | _ -> mkVarExpr vi
          in
-         let tr = (accumulated_subexpression (vi, j) e) in
          if is_constant tr then
            ce
          else
            replace_AC xinfo_aux.context ~to_replace:tr ~by:by ~ine:ce)
-      state_exprs e
+      e state_exprs
   in
-  if i > 0 then
-    match e with
-    | FnVector el ->
-      FnVector
-        (List.mapi
-           (fun j e ->
-              aux (vals_at_j xinfo_aux j) e j) el)
+  match e with
+  | FnVector el ->
+    FnVector
+      (List.mapi
+         (fun j e ->
+            aux (vals_at_j xinfo_aux j) e j) el)
 
-    | _ -> aux xinfo_aux.state_exprs e (-1)
-  else
-    e
+  | _ ->
+    if i > 0 then
+      aux (IM.to_alist xinfo_aux.state_exprs) e (-1)
+    else
+      e
 
 let new_const_exprs xinfo aux cur_vi v =
   (if
