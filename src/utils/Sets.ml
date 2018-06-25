@@ -1,6 +1,7 @@
 module S = Str
 module IOS = Reachingdefs.IOS
 
+
 (** Set modules **)
 module IntHash =
 struct
@@ -59,3 +60,73 @@ module SH = Hashtbl.Make (struct
     let equal s1 s2 = s1 = s2
     let hash s = Hashtbl.hash s
   end)
+
+module IntegerMap = Map.Make(struct type t = int let compare = compare end)
+module IM = struct
+  include IntegerMap
+
+  let keyset imt =
+    IS.of_list (List.map (fun (a,b) -> a) (bindings imt))
+
+  let add_all add_to to_add =
+    fold (fun k v mp -> if mem k add_to then mp else add k v mp) to_add add_to
+
+  let update_all add_to to_add = fold add to_add add_to
+
+  let join_opt map_a map_b =
+    let f k a = match a with Some x -> true | None -> false in
+    let a = filter f map_a in
+    let b = filter f map_b in
+    add_all a b
+
+
+  let inter a b =
+    fold (fun k v mp -> if mem k a then add k v b else mp) b empty
+
+  let is_disjoint ?(non_empty = (fun k v -> true)) a b=
+    try
+      fold
+        (fun k v bol ->
+           if non_empty k v
+           then
+             (if mem k a then failwith "iom" else bol)
+           else bol)
+        b
+        true
+    with Failure s -> false
+
+  let disjoint_sets im1 im2 =
+    let im1_in_im2 =
+      fold
+        (fun k v map ->
+           if mem k im2 then add k v map else map)
+        im1 empty
+    in
+    let im2_in_im1 =
+      fold
+        (fun k v map ->
+           if mem k im1 then add k v map else map)
+        im2 empty
+    in
+    let im1_only =
+      fold
+        (fun k v map ->
+           if mem k im2 then map else add k v map)
+        im1 empty
+    in
+    let im2_only =
+      fold
+        (fun k v map ->
+           if mem k im1 then map else add k v map)
+        im2 empty
+    in
+    im1_in_im2, im2_in_im1, im1_only, im2_only
+
+  let of_ih ih = IH.fold add ih empty
+
+  let to_alist im =
+    fold (fun i a l -> (i, a)::l) im []
+
+  let of_alist alist =
+    List.fold_left (fun emap (i, e) -> add i e emap) empty alist
+end

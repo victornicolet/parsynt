@@ -20,9 +20,9 @@
 
 open Beta
 open Utils
-open FuncTypes
+open Fn
 open Cil
-open FPretty
+open FnPretty
 open Format
 open Expressions
 
@@ -204,7 +204,81 @@ let remove_double_negs ctx e=
   in
   transform_expr red_cases red_apply_dbn identity identity e
 
-let reduce_full ?(search_linear=false) ?(limit = 10) ctx expr =
+
+let force_linear_normal_form ctx e =
+  let distr_for_linear op expr_list =
+    let aux acc e =
+      let e' = rebuild_tree_AC ctx e in
+      match e' with
+      | FnBinop(op1, e0, FnBinop(op2, u,v))
+        when is_right_distributive op2 op1 &&
+             op2 = op ->
+        acc@[FnBinop(op1, e0, u);FnBinop(op1, e0, v)]
+
+      | FnBinop(op1, FnBinop(op2, u,v), e0)
+        when is_left_distributive op2 op1 &&
+             op2 = op ->
+        acc@[FnBinop(op1, u, e0);FnBinop(op1, v, e0)]
+
+      | _ ->
+        acc@[e]
+    in
+    List.fold_left aux [] expr_list
+  in
+
+  let factor_largest_common t top_op el =
+    let flat_el = List.map flatten_AC el in
+    let flat_ops, remainder =
+      List.partition
+        (fun e ->
+           match e with
+           | FnApp(t, Some opvar, _) ->
+             is_some (op_from_name opvar.vname)
+           | _ -> false)
+        flat_el
+    in
+    let op_assoc =
+      let add_op_elt op el opmap =
+        try
+          let elts = List.assoc op opmap in
+          let opmap' = List.remove_assoc op opmap in
+          (op, el::elts)::opmap'
+        with Not_found ->
+          (op, [el])::opmap
+      in
+      List.fold_left
+        (fun opmap expr ->
+           match expr with
+           | FnApp(t, Some opvar, el) ->
+             let op = check_option (op_from_name opvar.vname) in
+             add_op_elt op el opmap
+           | _ -> opmap)
+        [] flat_ops
+    in
+    (List.fold_left
+      (fun el (op,assoce) ->
+         el@(find_max_state_factors ctx t top_op (get_AC_op op) assoce)) []
+      op_assoc) @ remainder
+  in
+  (* Try to apply distributivity rules that can make the expression
+     linear normal. *)
+  let flat_e = flatten_AC e in
+  let e_tree = match flat_e with
+    | FnApp(t, Some opvar, el) ->
+      begin
+        match op_from_name opvar.vname with
+        | Some op ->
+          let el' = distr_for_linear op el in
+          let el'' = factor_largest_common t opvar el' in
+          rebuild_tree_AC ctx
+            (FnApp(t, Some opvar, el''))
+        | None -> e
+      end
+    | _ -> e
+  in e_tree
+
+
+let reduce_full ?(search_linear=false) ?(limit = 10) (ctx : context) (expr : fnExpr) =
   let rec aux_apply_ternary_rules ctx limit e =
     let red_expr0 = reduce_cost ctx e in
     let red_expr1 = reduce_cost_specials ctx red_expr0 in
@@ -220,7 +294,8 @@ let reduce_full ?(search_linear=false) ?(limit = 10) ctx expr =
   in
   let r0 = aux_apply_ternary_rules ctx limit expr in
   if search_linear then
-    factorize_multi_toplevel ctx r0
+    (force_linear_normal_form ctx
+       (factorize_multi_toplevel ctx r0))
   else
     rules_AC r0
 
@@ -229,8 +304,9 @@ let rec normalize ?(linear=false) ctx sklet =
   | FnLetIn (ve_list, letin) ->
     FnLetIn (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list,
              normalize ctx letin)
-  | FnLetExpr ve_list ->
-    FnLetExpr (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
+  | FnRecord(vs, emap) ->
+    let ve_list = unwrap_state vs emap in
+    wrap_state (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
 
   | e -> reduce_full ~search_linear:linear ctx e
 
@@ -270,7 +346,8 @@ let clean_unused_assignments : fnExpr -> fnExpr =
     { case = (fun e -> match e with FnLetIn _ -> true | _ -> false);
       on_case = (fun f e ->
           match e with
-          | FnLetIn([(v, FnRec(igu, st, (s, body)))], FnLetExpr(choices)) ->
+          | FnLetIn([(v, FnRec(igu, st, (s, body)))], FnRecord(rvs, remap)) ->
+            let choices = unwrap_state rvs remap in
             let to_ignore =
               List.fold_left
                 (fun l (v,e) ->
@@ -279,9 +356,9 @@ let clean_unused_assignments : fnExpr -> fnExpr =
                    | _ -> v :: l) [] choices
             in
             FnLetIn([(v, FnRec(igu, st, (s, remove_to_ignore to_ignore body)))],
-                    FnLetExpr(choices))
+                    wrap_state choices)
           | FnLetIn(b, cont) -> FnLetIn(b, f cont)
-          | _ -> failwith "GUarded clause");
+          | _ -> failwith "Guarded clause");
       on_var = identity;
       on_const = identity;
     }

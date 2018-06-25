@@ -23,7 +23,7 @@ open Loops
 open Format
 open TestUtils
 open Utils
-open FuncTypes
+open Fn
 
 open PpTools
 
@@ -63,8 +63,12 @@ let wf_test_case fname (func : C2F.letin) sketch  =
     in
     let sketch_ok =
       match sketch with
-      | FnLetExpr ([_, FnCond(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
-                                 FnBinop(Plus, _, _))]) -> true
+      | FnRecord (vs, emap) ->
+        begin match snd (ListTools.unpair (IM.to_alist emap)) with
+          | [FnCond(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
+                       FnBinop(Plus, _, _))] -> true
+          | _ -> false
+        end
       | _ -> false
     in
     sketch_ok && nb_subs_ok
@@ -73,15 +77,20 @@ let wf_test_case fname (func : C2F.letin) sketch  =
   | "test_simple_loop" ->
     (wf_single_subst func) &&
     (match sketch with
-     | FnLetExpr ([_, FnBinop(Plus, FnBinop(Plus, _, _), _)]) -> true
+     | FnRecord(_, map) ->
+       let _, e = IM.max_binding map in
+       begin match e with
+         | FnBinop(Plus, FnBinop(Plus, _, _), _) -> true
+         | _ -> false
+       end
      | _ -> false)
 
 
   (** A loop with more local variables than state variables. *)
   | "test_detect_state" ->
     (match sketch with
-     | FnLetExpr li ->
-       (List.length li = 2)
+     | FnRecord (vs, emap) ->
+       (IM.cardinal emap = 2)
      | _ -> false)
 
 
@@ -103,86 +112,96 @@ let wf_test_case fname (func : C2F.letin) sketch  =
       have been broken into conditionals by cil. *)
   | "test_rebuild_and" ->
     (match sketch with
-     | FnLetExpr ([(_, FnBinop(And, _, _))]) -> true
+     | FnRecord(_, map) ->
+       let _, e = IM.max_binding map in
+       begin match e with
+         | FnBinop(And, _, _) -> true
+         | _ -> false
+       end
      | _ -> false)
 
   (** Same thing for disjunctions. *)
   | "test_rebuild_or" ->
     (match sketch with
-     | FnLetExpr ([(_, FnBinop(Or, _, _))]) -> true
+     | FnRecord(_, map) ->
+       let _, e = IM.max_binding map in
+       begin match e with
+         |  FnBinop(Or, _, _) -> true
+         | _ -> false
+       end
      | _ -> false)
 
 
   (** The balanced parenthesis example : test its well-formed *)
 
-  | "test_balanced_bool" ->
-    (match sketch with
-     | FnLetIn ([_, FnCond(FnVar(FnArray(_, _)),
-                             FnBinop(Plus, _, _),
-                             FnBinop(Minus, _, _))],
-                FnLetExpr([(_, FnCond(FnBinop(And, _, _),
-                                          sk_one, sk_zero));
-                          (_,_);(_,_)])) -> true
-     | _ -> false)
-
-  (** ANother implementation of the balanced parenthesis example, test
-   that the and is rebuilt *)
-  | "test_and_in_if" ->
-    (match sketch with
-     | FnLetExpr([(_, FnBinop(And, _, FnBinop(Ge, cnte, sk_zero)));
-                  (_, cnte2)]) ->
-       (cnte = cnte2) &&
-         (match cnte with
-            FnBinop(Plus,
-                    _,
-                    FnCond(FnVar(FnArray _), FnConst _,
-                              FnConst _)) -> true
-           |_ -> false)
-     |_ -> false)
-
-  (** The is_sorted example *)
-  | "test_is_sorted" ->
-    (match sketch with
-     | FnLetExpr([(_, FnBinop(And, _, FnBinop(Lt, _, aref)));(_, aref2)]) ->
-       (aref = aref2) && (match aref with | FnVar(FnArray (_, _)) -> true
-                                          | _ ->false)
-     | _ -> false)
-
-  (** The drop-while example *)
-  | "test_drop_while_pos_int" ->
-    (match sketch with
-     | FnLetExpr ([(_, FnCond(FnBinop(And,
-                                          FnUnop(Not, FnBinop(Eq, _, _)),_),
-                                  _, _));
-                   (_, FnCond(FnUnop(Not, _), _, _))]) -> true
-     | _ -> false)
-
-  | "test_alternating_sequence" ->
-    (match sketch with
-     | FnLetExpr ([(_, FnVar (FnArray(_, _)));
-                    (_ , FnBinop(And,
-                                 FnVar(_),
-                                 FnCond(FnVar(_),_,_)))])-> true
-     | _ -> false)
-
-
-  | "test_atoi" ->
-    (match sketch with
-     | FnLetExpr([(_, FnBinop(Plus,
-                              FnBinop(Times, _, _),
-                              _))]) -> true
-     | _ -> false)
-
-  | "test_s01" ->
-    (match sketch with
-     | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
-                  (r, FnBinop(Or, FnBinop(And, FnVar s2, FnUnop(Not, _)),
-                              FnVar r1))])
-     | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
-                  (r, FnBinop(Or, FnVar s2,
-                              FnBinop(And, FnUnop(Not, _), FnVar r1)))]) ->
-                s = s1 && s2 = s && r = r1
-     | _ -> false)
+  (* | "test_balanced_bool" ->
+   *   (match sketch with
+   *    | FnLetIn ([_, FnCond(FnVar(FnArray(_, _)),
+   *                            FnBinop(Plus, _, _),
+   *                            FnBinop(Minus, _, _))],
+   *               FnLetExpr([(_, FnCond(FnBinop(And, _, _),
+   *                                         sk_one, sk_zero));
+   *                         (_,_);(_,_)])) -> true
+   *    | _ -> false)
+   *
+   * (\** ANother implementation of the balanced parenthesis example, test
+   *  that the and is rebuilt *\)
+   * | "test_and_in_if" ->
+   *   (match sketch with
+   *    | FnLetExpr([(_, FnBinop(And, _, FnBinop(Ge, cnte, sk_zero)));
+   *                 (_, cnte2)]) ->
+   *      (cnte = cnte2) &&
+   *        (match cnte with
+   *           FnBinop(Plus,
+   *                   _,
+   *                   FnCond(FnVar(FnArray _), FnConst _,
+   *                             FnConst _)) -> true
+   *          |_ -> false)
+   *    |_ -> false)
+   *
+   * (\** The is_sorted example *\)
+   * | "test_is_sorted" ->
+   *   (match sketch with
+   *    | FnLetExpr([(_, FnBinop(And, _, FnBinop(Lt, _, aref)));(_, aref2)]) ->
+   *      (aref = aref2) && (match aref with | FnVar(FnArray (_, _)) -> true
+   *                                         | _ ->false)
+   *    | _ -> false)
+   *
+   * (\** The drop-while example *\)
+   * | "test_drop_while_pos_int" ->
+   *   (match sketch with
+   *    | FnLetExpr ([(_, FnCond(FnBinop(And,
+   *                                         FnUnop(Not, FnBinop(Eq, _, _)),_),
+   *                                 _, _));
+   *                  (_, FnCond(FnUnop(Not, _), _, _))]) -> true
+   *    | _ -> false)
+   *
+   * | "test_alternating_sequence" ->
+   *   (match sketch with
+   *    | FnLetExpr ([(_, FnVar (FnArray(_, _)));
+   *                   (_ , FnBinop(And,
+   *                                FnVar(_),
+   *                                FnCond(FnVar(_),_,_)))])-> true
+   *    | _ -> false)
+   *
+   *
+   * | "test_atoi" ->
+   *   (match sketch with
+   *    | FnLetExpr([(_, FnBinop(Plus,
+   *                             FnBinop(Times, _, _),
+   *                             _))]) -> true
+   *    | _ -> false)
+   *
+   * | "test_s01" ->
+   *   (match sketch with
+   *    | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
+   *                 (r, FnBinop(Or, FnBinop(And, FnVar s2, FnUnop(Not, _)),
+   *                             FnVar r1))])
+   *    | FnLetExpr([(s, (FnBinop (Or, FnVar s1, _)));
+   *                 (r, FnBinop(Or, FnVar s2,
+   *                             FnBinop(And, FnUnop(Not, _), FnVar r1)))]) ->
+   *               s = s1 && s2 = s && r = r1
+   *    | _ -> false) *)
 
   | "test_match_anbn" ->
     (match sketch with | _ -> false)
@@ -211,17 +230,17 @@ let _test () =
        let stmt = loop_body cl in
        let _, stv = loop_rwset cl in
        let func, figu =
-         C2F.cil2func cl.lvariables stmt igu
+         C2F.cil2func [] cl.lvariables stmt igu
        in
        (* let printer = new C2F.cil2func_printer (VS.union allvars w) stv in *)
        let figu' =
          let ids, igu = check_option figu in
          varset_of_vs ids, igu
        in
-       let so = new Sketch.Body.sketch_builder (varset_of_vs allvars)
+       let so = new Func2Fn.funct_builder (varset_of_vs allvars)
          (varset_of_vs stv) func figu' in
        so#build;
-       let sketch, sigu = check_option so#get_sketch in
+       let sketch, sigu = check_option so#get_funct in
        let fname = cl.lcontext.host_function.vname in
        if wf_test_case fname func sketch then
 
@@ -238,7 +257,7 @@ let _test () =
            printf "All variables :%a@." VS.pvs allvars;
            printf "State variables : %a@." VS.pvs stv;
            printf "@.Sketch :@.";
-           FPretty.printFnexpr sketch;
+           FnPretty.printFnexpr sketch;
            printf "@.";
          end;
        SM.add fname (stv, figu,func)

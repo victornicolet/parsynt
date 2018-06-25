@@ -37,7 +37,7 @@ type fn_type =
   | Real
   | Boolean
   (** Type tuple *)
-  | Record of (string * fn_type) list
+  | Record of string * (string * fn_type) list
   (** Other lifted types *)
   | Bitvector of int
   (** A function in Rosette is an uninterpreted function *)
@@ -126,7 +126,6 @@ val type_of_args : (string * Cil.typ * Cil.attribute list) list option
 val type_of_cilconst : Cil.constant -> fn_type
 val ciltyp_of_symb_type : fn_type -> Cil.typ option
 
-val recordtype_of_vs : Utils.VS.t -> fn_type
 
 val pp_typ : Format.formatter -> fn_type -> unit
 
@@ -178,6 +177,7 @@ sig
   val split : elt -> t -> t * bool * t
   val find : elt -> t -> elt
   val of_list : elt list -> t
+  val map : (elt -> elt) -> t -> t
   val find_by_id : t -> int -> elt
   val find_by_name : t -> string -> elt
   val vids_of_vs : t -> int list
@@ -249,6 +249,7 @@ val find_vi_name_id : string -> int -> Cil.varinfo
 val find_var_name_id : string -> int -> fnV
 
 val mkFnVar : string -> fn_type -> fnV
+val special_binder : fn_type -> fnV
 
 val rhs_prefix : string
 val lhs_prefix : string
@@ -284,14 +285,22 @@ val discover_clear : unit -> unit
 val discover_add : fnV -> unit
 val discover_save : unit -> unit
 
-val record_name : ?only_by_type:bool -> ?seed:string -> (string * fn_type) list
-  -> string
-
+val record_name : ?only_by_type:bool -> ?seed:string -> VarSet.t -> string
+val record_type : VarSet.t ->  fn_type
 val is_name_of_struct : string -> bool
-val get_struct : string -> (string * fn_type) list
-val state_var_name : VarSet.t -> string -> string
+val get_struct : string -> (string * fn_type) list * VarSet.t
 
+val record_map : VarSet.t -> (VarSet.elt -> 'a -> 'b) -> 'a Utils.IM.t -> 'b Utils.IM.t
 val record_accessor : string -> fnV -> fnV
 val is_struct_accessor : string -> bool
 
 val mark_outer_used : fnV -> unit
+
+exception Not_prefix
+
+val string_of_symb_binop: ?fd:bool -> symb_binop -> string
+val string_of_symb_unop: ?fc:bool -> ?fd:bool -> symb_unop -> string
+val string_of_unop_func: ?fc:bool -> ?fd:bool -> symb_unop -> string option
+val ostring_of_baseSymbolicType : fn_type -> string option
+val is_op_c_fun : symb_binop -> bool
+val pp_constants: ?for_c:bool -> ?for_dafny:bool -> Format.formatter -> constants -> unit

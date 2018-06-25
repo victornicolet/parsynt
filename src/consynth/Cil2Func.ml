@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
+
 open Beta
 open Cil
 open Format
@@ -23,8 +24,6 @@ open Loops
 open Utils
 open Utils.CilTools
 open Utils.PpTools
-open FuncTypes
-open FPretty
 open FError
 open Sets
 open Loops
@@ -481,6 +480,7 @@ let bound_state_vars vs lf =
   bound_vars VS.empty lf
 
 
+let defloc = { line = 0; file = "let_prepend" ; byte = 0; }
 (**
    Prepend a set of bindings to a let form. The input is a list of
    bindings considered to be parallel assignments.
@@ -565,9 +565,9 @@ and do_i vs let_form =
                  | _ -> failwith  "do_i : unexpected function call"
                in
                (* Inner loop specific. *)
-               if Conf.is_inner_loop_func_name fname then
+               if Conf.is_inner_loop_func_name fname && e_argli = [] then
                  (* Replace by a binding to state variables of the inner loop *)
-                 let func_app = FunApp (ef, List.map container e_argli) in
+                 let func_app = FunApp (ef, []) in
                  do_lval vs (hfun, ofun) func_app let_form loc
                else
                  failwith "do_i : side effects not suppoerted."
@@ -588,7 +588,6 @@ and do_s vs let_form s =
          if List.length il != 1 then raise Not_found;
          let innerloop = IH.find global_loops s.sid in
          let stv = innerloop.lvariables.state_vars in
-         let uvs = innerloop.lvariables.used_vars in
          let fvi, floc =
            match List.nth il 0 with
            | Call (_, ef, args,loc) ->
@@ -598,7 +597,7 @@ and do_s vs let_form s =
               loc
            | _ -> failwith "do_s : failed to get an inner loop function"
          in
-         let args = List.map (fun vi -> Var vi) (VS.varlist uvs) in
+         let args = List.map (fun vi -> Var vi) (VS.varlist stv) in
          let fapp = FunApp (Lval (Var fvi, NoOffset), args) in
          let innerloop_call =
            Let(LhTuple stv, fapp, empty_state (), 0, locUnknown)
@@ -764,7 +763,7 @@ and convert_loop vs tmps let_body igu let_cont loc =
    from variable ids to expressions with conditionals inside.
  *)
 
-and red vs tmps let_form substs =
+and normalize vs tmps let_form substs =
   match let_form with
   | State emap ->
      let id_list = VS.vids_of_vs vs in
@@ -783,11 +782,11 @@ and red vs tmps let_form substs =
          | LhVar vi ->
             let nexpr = apply_subs expr substs in
             let nsubs = IM.add vi.vid (Var vi) substs in
-            Let(lhv, nexpr, red vs tmps cont nsubs, id, loc)
+            Let(lhv, nexpr, normalize vs tmps cont nsubs, id, loc)
 
          | LhElem (lhs, ofs) ->
             let nexpr = apply_subs expr substs in
-            Let(lhv, nexpr, red vs tmps cont substs, id, loc)
+            Let(lhv, nexpr, normalize vs tmps cont substs, id, loc)
 
          | LhTuple vil ->
             let nexpr = apply_subs expr substs in
@@ -796,14 +795,14 @@ and red vs tmps let_form substs =
                 (fun vi nsubs -> IM.add vi.vid (Var vi) nsubs)
                 vil substs
             in
-            Let(lhv, nexpr, red vs tmps cont nsubs, id, loc))
+            Let(lhv, nexpr, normalize vs tmps cont nsubs, id, loc))
 
      | _ ->
         match lhv with
         | LhVar vi ->
            let nexpr = apply_subs expr substs in
            let nsubs = IM.add vi.vid nexpr substs in
-           red vs tmps cont nsubs
+           normalize vs tmps cont nsubs
 
         (* Do not keep reducing for arrays, and don't apply the
            reduction: reinstall the bindings for the variables
@@ -823,7 +822,7 @@ and red vs tmps let_form substs =
           in
           let_prepend
             reinstall_bindings
-            (Let(lhv, expr, red vs tmps cont nsubs, id, loc))
+            (Let(lhv, expr, normalize vs tmps cont nsubs, id, loc))
 
         | LhTuple vil ->
            let nexpr = apply_subs expr substs in
@@ -832,24 +831,24 @@ and red vs tmps let_form substs =
                (fun vi nsubs -> IM.add vi.vid nexpr nsubs)
                vil substs
            in
-           red vs tmps cont nsubs
+           normalize vs tmps cont nsubs
      end
 
   | LetCond (e, bif, belse, cont, loc) ->
      let ce = e  in
-     let red_if = reduce vs tmps bif in
-     let red_else = reduce vs tmps  belse in
+     let red_if = clean_and_normalize vs tmps bif in
+     let red_else = clean_and_normalize vs tmps  belse in
      let merged, nsubs, olde_o = merge_cond vs ce red_if red_else substs in
      if merged
      then
        match olde_o with
-       | Some olde -> let_add2 olde (red vs tmps cont nsubs) vs
-       | None -> red vs tmps cont nsubs
+       | Some olde -> let_add2 olde (normalize vs tmps cont nsubs) vs
+       | None -> normalize vs tmps cont nsubs
      else
        LetCond (ce,
-                red vs tmps bif substs,
-                red vs tmps belse substs,
-                red vs tmps cont substs, loc)
+                normalize vs tmps bif substs,
+                normalize vs tmps belse substs,
+                normalize vs tmps cont substs, loc)
 
 and clean vs let_form =
   match let_form with
@@ -874,9 +873,9 @@ and clean vs let_form =
      LetCond (ce, clean vs lif, clean vs lelse, clean vs lcont, loc)
 
 
-and reduce vs tmps let_form =
-  let reduced_form = red vs tmps let_form IM.empty in
-  clean vs reduced_form
+and clean_and_normalize vs tmps let_form =
+  let norm_form = normalize vs tmps let_form IM.empty in
+  clean vs norm_form
 
 (** We want to write only in state variables. This step eliminates
     bindings to temporary variables by replacing their expression in
@@ -1021,7 +1020,8 @@ let init map_loops =
 
 
 
-let cil2func (variables : Loops.variables) block (i,g,u) =
+let cil2func (inners : (int * Loops.variables) list)
+    (variables : Loops.variables) block (i,g,u) =
   (**
 Prepare the environment for the conversion. Inner loops are functions
 inside the parent loop.
@@ -1037,26 +1037,25 @@ inside the parent loop.
       let statevs = variables.state_vars in
       let tmps = variables.tmp_vars in
       let printer = new cil2func_printer variables in
-      let let_expression_0 = (do_b statevs block) in
-      let let_expression =
-        eliminate_temporaries variables let_expression_0
+
+      let figu =
+        index_of_igu (i,g,u),
+        (do_il statevs [i], Container (g, IM.empty), do_il statevs [u])
       in
-      let index = index_of_igu (i,g,u) in
-      let init_f = do_il statevs [i] in
-      let update_f = do_il statevs [u] in
-      let guard_e = Container (g, IM.empty) in
-      let func, figu =
-        reduce statevs tmps let_expression, (index, (init_f, guard_e, update_f))
-      in
+
+      let func0 = do_b statevs block in
+      let func1 = eliminate_temporaries variables func0 in
+      let func_final = clean_and_normalize statevs tmps func1 in
+
       if !debug then
         printf "@.CIL --> FUNCTION transformation result:@.\
                 - Before reduction:@.%a@.\
                 - Eliminate temporaries:@.%a@.\
                 - After reduction:@.%a@."
-          (printer#pp_letin ~wloc:false) let_expression_0
-          (printer#pp_letin ~wloc:false) let_expression
-          (printer#pp_letin ~wloc:false) func;
+          (printer#pp_letin ~wloc:false) func0
+          (printer#pp_letin ~wloc:false) func1
+          (printer#pp_letin ~wloc:false) func_final;
 
-      func, Some figu
+      func_final, Some figu
     end
   with Failure s -> fail_functional_conversion s

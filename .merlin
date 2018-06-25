@@ -1,4 +1,5 @@
 B _build/
+B _build/src
 B _build/test
 B _build/src/consynth
 B _build/src/codegen

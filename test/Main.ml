@@ -31,7 +31,6 @@ module C2F = Cil2Func
 
 (** Different test modules *)
 module TC2F = TCil2Func
-module TF2S = TFunc2Sketch
 module TGDef = TGenDefs
 module TSbx = TSymbExe
 module TScm = TestSchemeParsing
@@ -67,7 +66,7 @@ let testProcessFile () =
     (fun k cl ->
        let stmt = loop_body cl in
        let igu = check_option cl.ligu in
-       let _ = C2F.cil2func cl.lvariables stmt igu in
+       let _ = C2F.cil2func [] cl.lvariables stmt igu in
        ())
     loops;;
 
@@ -82,4 +81,8 @@ match !tid with
 | 4 -> TVd.test ()
 | 5 -> TE.test ()
 | 6 -> TSbx.test ()
+| 7 ->
+  TE.test ();
+  TSbx.test ();
+  TVd.test ()
 | _ -> ()

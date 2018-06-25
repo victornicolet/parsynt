@@ -1,11 +1,13 @@
 open Beta
-open FuncTypes
+open Fn
 
-val join_loop_width : int ref
 val debug : bool ref
 val verbose : bool ref
 val store_solution : prob_rep option -> unit
-val build_join : fnExpr list -> VarSet.t -> fnExpr ->
-  (fnExpr * fnExpr) -> fnExpr
-val build_for_inner : fnExpr list -> VarSet.t -> fnExpr Utils.IM.t -> fnExpr ->
-  (fnExpr * fnExpr) -> fnExpr
+val store_ctx_sol : string -> (context * fnExpr) -> unit
+val get_inner_solution : string -> (context * fnExpr) option
+
+val sketch_join : prob_rep -> prob_rep
+val sketch_inner_join : prob_rep -> prob_rep
+
+val match_hole_to_completion: fnExpr -> fnExpr -> fnExpr option

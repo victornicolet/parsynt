@@ -1,11 +1,12 @@
 open Beta
 open Format
-open FPretty
+open Fn
+open FnPretty
 open Utils
 open Utils.PpTools
 open VariableDiscovery
 open TestUtils
-open FuncTypes
+
 
 
 let test_1 () =
@@ -46,11 +47,12 @@ let test_1 () =
       init_values = IM.empty;
       identity_values = IM.empty;
       func_igu = mts_figu;
-      loop_body = mts_func;
-      join_sketch = (fun bnds -> sk_tail_state);
-      memless_sketch = (fun bnds -> sk_tail_state);
-      join_solution = sk_tail_state;
-      memless_solution = sk_tail_state;
+      main_loop_body = mts_func;
+      loop_body_versions = SH.create 5;
+      join_sketch = empty_record;
+      memless_sketch = empty_record;
+      join_solution = empty_record;
+      memless_solution = empty_record;
       reaching_consts = rconsts;
     }
   in

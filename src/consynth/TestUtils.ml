@@ -1,7 +1,26 @@
+(**
+   This file is part of Parsynt.
+
+    Parsynt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Parsynt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Beta
+open Fn
+open Utils.PpTools
 open Utils
-open PpTools
-open FuncTypes
+
+
 
 
 let sk_zero = FnConst (CInt 0)
@@ -28,6 +47,7 @@ let make_bool_array_varinfo vname =
 let var v = FnVariable v
 let evar v = FnVar (var v)
 
+
 let make_var ?(offsets = []) typ vname =
   match typ with
   | "int" ->
@@ -49,9 +69,6 @@ let rec vi_of_var =
   | FnVariable vi -> Some vi
   | FnArray (v, _) -> vi_of_var v
 
-(* Fnetch type expression *)
-let sk_tail_state =
-  FnLetExpr ([])
 
 let increment_all_indexes index_exprs =
   IM.fold
@@ -69,8 +86,10 @@ let _cb b = FnConst (CBool b)
 let _b e1 op e2 = FnBinop (op, e1, e2)
 let _u op e1 = FnUnop (op, e1)
 let _Q c e1 e2 = FnCond (c, e1, e2)
-let _let el = FnLetExpr el
+let _let el = wrap_state el
 let _letin el l = FnLetIn (el, l)
+let _inrec r x = FnRecordMember(evar r, x.vname)
+let _self r x = var x, FnRecordMember (evar r, x.vname)
 (* some functions lifted to host language *)
 let fplus e1 e2 = _b e1 Plus e2
 let ftimes e1 e2 = _b e1 Times e2

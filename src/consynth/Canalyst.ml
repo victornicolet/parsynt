@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -21,7 +21,7 @@ open Format
 open Utils
 open Utils.PpTools
 open FError
-open FuncTypes
+open Fn
 open SymbExe
 open VariableDiscovery
 open Loops
@@ -47,8 +47,6 @@ let parseOneFile (fname : string) : C.file =
     Errormsg.Error ->
     failhere __FILE__ "parseOneFile" "Error while parsing input file,\
               the filename might contain errors"
-
-
 
 let processFile fileName =
   C.initCIL ();
@@ -136,10 +134,12 @@ type sigu = VS.t * (fnExpr * fnExpr * fnExpr)
 *)
 let cil2func cfile loops =
   Cil2Func.init loops;
+
   let sorted_lps = A.transform_and_sort loops in
+
   let rec translate_loop loop =
     let finfo = init_func_info loop in
-    let stmt = (loop_body loop) in
+
     if !verbose then
       (printf "@.%s=== Loop %i in %s ===%s"
          (color "blue") loop.lid loop.lcontext.host_function.C.vname color_default;
@@ -148,14 +148,23 @@ let cil2func cfile loops =
         printf "@.Identified index variables: %a"
          VS.pvs loop.lvariables.index_vars;
       );
+
+    finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
+
     let func, figu =
       match loop.ligu with
       | Some igu ->
-        Cil2Func.cil2func loop.lvariables stmt igu
+        let in_states =
+          List.map (fun info_in -> (info_in.lid, info_in.lvariables)) finfo.inner_funcs
+        in
+        Cil2Func.cil2func in_states loop.lvariables (loop_body loop) igu
       | None -> Cil2Func.empty_state (), None
     in
 
+    finfo.func <- func;
+    finfo.figu <- figu;
     finfo.reaching_consts <- loop.lcontext.reaching_constants;
+
     if !verbose then
       begin
         printf "@.Reaching constants:@.";
@@ -163,22 +172,20 @@ let cil2func cfile loops =
           (fun k e -> printf "%s = %s@."
               (VS.find_by_id k loop.lvariables.state_vars).Cil.vname
               (CilTools.psprint80 Cil.dn_exp e)
-          ) finfo.reaching_consts
-      end;
-    finfo.func <- func;
-    finfo.figu <- figu;
-    finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
-    if !verbose then
-      let printer =
-        new Cil2Func.cil2func_printer loop.lvariables
-      in
-      (printf "@.[for loop %i in %s]@."
-          loop.lid loop.lcontext.host_function.C.vname;);
-      printer#printlet func;
-      printf "@.";
+          ) finfo.reaching_consts;
+        let printer =
+          new Cil2Func.cil2func_printer loop.lvariables
+        in
+        (printf "@.[for loop %i in %s]@."
+           loop.lid loop.lcontext.host_function.C.vname;);
+        printer#printlet func;
+        printf "@.";
+      end
     else ();
+
     finfo
   in
+
   List.map translate_loop sorted_lps
 
 
@@ -193,11 +200,7 @@ let func2sketch cfile funcreps =
     let inners = List.map transform_func func_info.inner_funcs in
     let var_set = varset_of_vs func_info.lvariables.all_vars in
     let state_vars = varset_of_vs func_info.lvariables.state_vars in
-    let figu =
-      match func_info.figu with
-      | Some f -> f
-      | None -> failhere __FILE__ "func2sketch" "Bad for loop"
-    in
+
     let s_reach_consts =
       IM.fold
         (fun vid cilc m ->
@@ -207,7 +210,7 @@ let func2sketch cfile funcreps =
              with Not_found ->
                Bottom
            in
-           match Sketch.Body.conv_init_expr expect_type cilc with
+           match Func2Fn.conv_init_expr expect_type cilc with
            | Some e -> IM.add vid e m
            | None ->
              eprintf "@.Warning : initial value %s for %s not valid.@."
@@ -216,6 +219,7 @@ let func2sketch cfile funcreps =
              m)
         func_info.reaching_consts IM.empty
     in
+
     if !verbose then
       begin
         printf "@.Reaching constants information:@.";
@@ -223,43 +227,31 @@ let func2sketch cfile funcreps =
           (fun k c ->
              printf "%s = %a@;"
                (VarSet.find_by_id state_vars k).vname
-               FPretty.pp_fnexpr c)
+               FnPretty.pp_fnexpr c)
           s_reach_consts
       end;
-    let figu' =
-      let iset, igu = figu in varset_of_vs iset, igu
-    in
-    let sketch_obj =
-      new Sketch.Body.sketch_builder var_set state_vars
-        func_info.func figu'
-    in
-    sketch_obj#build;
-    let loop_body, sigu =
-      match sketch_obj#get_sketch with
-      | Some (a,b) ->  a,b
+
+
+    let loop_body, sigu, uses_global_bounds =
+      let f2f =
+        let figu =
+          match func_info.figu with
+          | Some (iset, igu) ->
+            varset_of_vs iset, igu
+          | None -> failhere __FILE__ "func2sketch" "Bad for loop"
+        in
+        new Func2Fn.funct_builder var_set state_vars func_info.func figu
+      in
+      f2f#build;
+      match f2f#get_funct with
+      | Some (a,b) ->  a,b, f2f#get_uses_global_bounds
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
+
     let index_set, _ = sigu in
     aux_vars_init ();
-    Sketch.Join.join_loop_width := !mat_w;
-    let inner_indexes =
-      List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) inners
-    in
-    let join_sk =
-      Sketch.Join.build_join
-        inner_indexes
-        state_vars
-        loop_body
-    in
-    (* Set the loop width for the join *)
-    Sketch.Join.join_loop_width := !mat_w;
-    let mless_sk =
-      Sketch.Join.build_for_inner
-        [FnVar (FnVariable (VarSet.max_elt index_set))]
-        state_vars
-        s_reach_consts
-        loop_body;
-    in
+
+
     incr no_sketches;
     create_boundary_variables index_set;
     (* Input size from reaching definitions, min_int dependencies,
@@ -292,37 +284,44 @@ let func2sketch cfile funcreps =
        This structure should be containing all the information to call the solver
        and the auxiliary discovery methods.
     *)
-    {
-      id = func_info.lid;
-      host_function =
-        (mkFuncDec
-           (try check_option
-               (get_fun cfile func_info.host_function.Cil.vname)
-        with Failure s -> (eprintf "Failure : %s@." s;
-                           failhere __FILE__ "func2sketch"
-                             "Failed to get host function.")));
-      loop_name = func_info.loop_name;
-      scontext =
-        { state_vars = state_vars;
-          index_vars = index_set;
-          used_vars = varset_of_vs func_info.lvariables.used_vars;
-          all_vars = varset_of_vs func_info.lvariables.all_vars;
-          costly_exprs = ES.empty;
-        };
-      min_input_size = max_m_sizes;
-      uses_global_bound = sketch_obj#get_uses_global_bounds;
-      loop_body = loop_body;
-      join_sketch = join_sk;
-      memless_sketch = mless_sk;
-      (* No solution for now! *)
-      join_solution = FnLetExpr ([]);
-      memless_solution = FnLetExpr ([]);
-      init_values = IM.empty;
-      identity_values = IM.empty;
-      func_igu = sigu;
-      reaching_consts = s_reach_consts;
-      inner_functions = inners;
-    }
+
+    let lversions = SH.create 10 in
+    SH.add lversions "orig" loop_body;
+    let fn_pb =
+      {
+        id = func_info.lid;
+        host_function =
+          (mkFuncDec
+             (try check_option
+                    (get_fun cfile func_info.host_function.Cil.vname)
+              with Failure s -> (eprintf "Failure : %s@." s;
+                                 failhere __FILE__ "func2sketch"
+                                   "Failed to get host function.")));
+        loop_name = func_info.loop_name;
+        scontext =
+          { state_vars = state_vars;
+            index_vars = index_set;
+            used_vars = varset_of_vs func_info.lvariables.used_vars;
+            all_vars = varset_of_vs func_info.lvariables.all_vars;
+            costly_exprs = ES.empty;
+          };
+        min_input_size = max_m_sizes;
+        uses_global_bound = uses_global_bounds;
+        main_loop_body = loop_body;
+        loop_body_versions = lversions;
+        join_sketch = empty_record;
+        memless_sketch = empty_record;
+        (* No solution for now! *)
+        join_solution = empty_record;
+        memless_solution = empty_record;
+        init_values = IM.empty;
+        identity_values = IM.empty;
+        func_igu = sigu;
+        reaching_consts = s_reach_consts;
+        inner_functions = inners;
+      }
+    in
+    Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
   List.map transform_func funcreps
 
@@ -342,33 +341,36 @@ let find_new_variables prob_rep =
       raise (VariableDiscoveryError s)
   in
   (** Apply some optimization to reduce the size of the function *)
-  let nlb_opt = Sketch.Body.optims new_prob.loop_body in
-  let new_loop_body =
-    complete_final_state new_prob.scontext.state_vars nlb_opt
-  in
   discover_save ();
-  let inner_indexes =
-    List.map (fun pb -> mkVarExpr (VarSet.max_elt pb.scontext.index_vars)) prob_rep.inner_functions
+
+  let inners =
+    List.map Sketch.Join.sketch_inner_join new_prob.inner_functions
   in
-  let join_sketch =
-    (fun bnds ->
-       complete_final_state new_prob.scontext.state_vars
-         ((Sketch.Join.build_join
-            inner_indexes
-            new_prob.scontext.state_vars nlb_opt) bnds))
+
+  let new_loop_body =
+    let nlb_opt = Func2Fn.optims new_prob.main_loop_body in
+    let nlb =
+      complete_final_state new_prob.scontext.state_vars nlb_opt
+    in
+    InnerFuncs.update_inners_in_body
+      (List.combine prob_rep.inner_functions inners) nlb
   in
-  {
+
+  SH.clear new_prob.loop_body_versions;
+  Sketch.Join.sketch_join {
     new_prob with
-    loop_body = new_loop_body;
-    join_sketch = join_sketch;
+    main_loop_body = new_loop_body;
+    inner_functions = inners;
   }
+
 
 let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
   let parent_context =
     if inner then
       (match parent_context with
        | Some context -> context
-       | None -> failhere __FILE__ "pp_sketch" "Parent context not provided for child loop.")
+       | None -> failhere __FILE__ "pp_sketch"
+                   "Parent context not provided for child loop.")
     else
       mk_ctx VarSet.empty VarSet.empty
   in
@@ -379,6 +381,14 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
       Sketch.pp_rosette_sketch parent_context inner fmt sketch_rep
     end
   | _ -> ()
+
+
+let fetch_solution
+    ?(solver=Conf.rosette)
+    ?(inner=false)
+    ?(parent_ctx=None)
+    (problem : prob_rep) : float * prob_rep option =
+    0.0, Some problem
 
 
 let store_solution = Join.store_solution

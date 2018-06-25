@@ -28,6 +28,7 @@ module IH = Sets.IH
 module IS = Sets.IS
 module SM = Sets.SM
 module SH = Sets.SH
+module IM = Sets.IM
 
 let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
 
@@ -197,6 +198,14 @@ module ListTools = struct
   let last list =
     List.nth list ((List.length list) - 1)
 
+  let take n l =
+    let rec _t i l r =
+      if i <= 0 then l
+      else _t (i - 1) (l@[List.hd r]) (List.tl r)
+    in
+    if n < List.length l then _t n [] l else l
+
+
   let remove_last list =
     match (List.rev list) with
     | h::t -> List.rev t
@@ -213,6 +222,8 @@ module ListTools = struct
   let some_tl l =
     if length l > 0 then Some (tl l) else None
 
+  let for_all_i pred l =
+    List.for_all pred (List.mapi (fun i e -> (i,e)) l)
 end
 
 
@@ -234,6 +245,13 @@ let check_option ao =
   | None -> raise (Failure "check_option")
 
 let somes l = List.map check_option (List.filter is_some l)
+
+let (=>>) (f: 'a -> 'b option) (g : 'b -> 'c option): 'a -> 'c option =
+  (fun x ->
+     match f x with
+     | Some y -> g y
+     | None -> None)
+
 
 let maybe_apply (f:'a->'b) (v: 'a option) : 'b option =
   match v with
@@ -496,78 +514,6 @@ module IHTools = struct
 
 end
 
-module IntegerMap = Map.Make(struct type t = int let compare = compare end)
-module IM = struct
-  include IntegerMap
-
-  let keyset imt =
-    IS.of_list (List.map (fun (a,b) -> a) (IntegerMap.bindings imt))
-
-  let add_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k add_to then mp else
-           IntegerMap.add k v mp)
-      to_add add_to
-
-  let update_all add_to to_add =
-    IntegerMap.fold
-      (fun k v mp -> IntegerMap.add k v mp)
-      to_add add_to
-
-
-  let inter a b =
-    IntegerMap.fold
-      (fun k v mp ->
-         if IntegerMap.mem k a
-         then IntegerMap.add k v b
-         else mp)
-      b
-      IntegerMap.empty
-
-  let is_disjoint ?(non_empty = (fun k v -> true)) a b=
-    try
-      IntegerMap.fold
-        (fun k v bol ->
-           if non_empty k v
-           then
-             (if IntegerMap.mem k a
-              then failwith "iom"
-              else bol)
-           else bol)
-        b
-        true
-    with Failure s -> false
-
-  let disjoint_sets im1 im2 =
-    let im1_in_im2 =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im2 then IntegerMap.add k v map else map)
-        im1 IntegerMap.empty
-    in
-    let im2_in_im1 =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im1 then IntegerMap.add k v map else map)
-        im2 IntegerMap.empty
-    in
-    let im1_only =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im2 then map else IntegerMap.add k v map)
-        im1 IntegerMap.empty
-    in
-    let im2_only =
-      IntegerMap.fold
-        (fun k v map ->
-           if IntegerMap.mem k im1 then map else IntegerMap.add k v map)
-        im2 IntegerMap.empty
-    in
-    im1_in_im2, im2_in_im1, im1_only, im2_only
-
-  let of_ih ih = IH.fold (fun k l m -> IntegerMap.add k l m) ih IntegerMap.empty
-end
 
 module PpTools = struct
   let colorPrefix = "\x1b"
@@ -611,7 +557,7 @@ module PpTools = struct
       (fun s -> printf "%s%s%s%s" (color "b-green") (color "black") s color_default) lines
 
   let message_done ?(done_what="") () =
-    printf "%sDONE%s%s@." (color "green") done_what color_default
+    printf "@.\t\t\t\t%sDONE%s%s@." (color "green") done_what color_default
 
   let message_skip () =
     printf "@."
@@ -774,7 +720,6 @@ let print_defs vs defsHash =
 (* OCaml does not come with a globbing function. As a workaround, the
    following function builds a regular expression from a glob pattern.
    Only the '*' and '?' wildcards are recognized. *)
-open Str
 
 let regexp_of_glob pat =
   Str.regexp

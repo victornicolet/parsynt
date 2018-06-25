@@ -1,7 +1,7 @@
 open Beta
 open Utils
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open Cil2Func
 open Utils.ListTools
 open VariableAnalysis
@@ -12,7 +12,7 @@ module Ct = CilTools
 
 (**
    The main entry point of the file is build :
-   build a sketch from the Floop (vector of functions
+   build a function from the Floop (vector of functions
    for each state variable representing the ody of the
    loop).
 *)
@@ -43,7 +43,6 @@ let remove_simple_state_rewritings (var , expr) =
 
 let apply_remove fnlet =
   match fnlet with
-  | FnLetExpr el -> fnlet
   | FnLetIn (el, cont) ->
     let new_rewrites = List.map remove_simple_state_rewritings el in
     FnLetIn (new_rewrites, cont)
@@ -93,8 +92,11 @@ let rebuild_boolean_expressions (var, expr) =
 (** Apply or- and and- rebuilding in expression tree *)
 let rec apply_rearrange fnlet =
   match fnlet with
-  | FnLetExpr el ->
-    FnLetExpr (List.map rebuild_boolean_expressions el)
+  | FnRecord(vs, emap) ->
+    FnRecord(vs, record_map vs
+               (fun v e -> let _, e' = rebuild_boolean_expressions (v,e) in e')
+               emap)
+
   | FnLetIn (el, cont) ->
     FnLetIn (List.map rebuild_boolean_expressions el,
              apply_rearrange cont)
@@ -198,9 +200,14 @@ let booleanize (v, e) =
 
 let rec remove_boolean_ifs fnlet =
   match fnlet with
-  | FnLetExpr el ->
-    FnLetExpr (List.map booleanize
-                 (List.map force_boolean_constants el))
+  | FnRecord (vs, emap) ->
+    FnRecord (vs,
+              record_map vs
+                (fun v e ->
+                   let _, e' =
+                     (force_boolean_constants --> booleanize) (mkVar v, e)
+                   in e') emap)
+
   | FnLetIn (el, cont) ->
     FnLetIn (List.map booleanize
                (List.map force_boolean_constants el),
@@ -243,14 +250,14 @@ let optims fnlet =
   isolate_set_array (apply_rearrange (remove_boolean_ifs fnlet'))
 
 
-(** A class to build the sketch, initialized with a set containing all
+(** A class to build the function, initialized with a set containing all
     variables, the state varaibles, the function in pre-functionalized form,
     and the loop-bounds information.
-    Build the sketch by calling the buuild method, and retrieve it with
-    the get_sketch method.
+    Build the function by calling the buuild method, and retrieve it with
+    the get_function method.
 *)
 
-class sketch_builder
+class funct_builder
     (all_vs : VarSet.t)
     (stv : VarSet.t)
     (func : letin)
@@ -260,7 +267,7 @@ class sketch_builder
     val mutable state_vars = stv
     val mutable func = func
     val mutable figu = _figu
-    val mutable sketch = None
+    val mutable funct = None
     val mutable global_bound =
       let _, (_, guard, _) = _figu in
       match guard with
@@ -463,15 +470,16 @@ class sketch_builder
           in
           let complete_state =
             VarSet.fold
-              (fun state_vi l ->
-                 let state_var = state_vi in
-                 l@[
+              (fun state_var emap ->
+                 let _, e =
                    if IM.mem state_var.vid state
                    then IM.find state_var.vid state
-                   else (FnVariable state_var, mkVarExpr state_var)])
-              state_vars []
+                   else FnVariable state_var, mkVarExpr state_var
+                 in
+                 IM.add state_var.vid e emap)
+              state_vars IM.empty
           in
-          FnLetExpr complete_state
+          FnRecord (state_vars, complete_state)
 
         | Let (v, e, cont, i, loc) ->
           let rec cur_v (v : lhs) =
@@ -487,7 +495,7 @@ class sketch_builder
                  this record variable.
               *)
               let varset = varset_of_vs vil in
-              let rec_var = mkFnVar "tup$" (Record (VarSet.record varset)) in
+              let rec_var = mkFnVar "tup$" (record_type varset) in
               let restore_stvs_bindings =
                 List.map
                   (fun var -> (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
@@ -510,16 +518,18 @@ class sketch_builder
                     convert_letin let_else)
           in
           let cbody_state, _ = used_in_fnlet cond_body in
-          let rec_var = mkFnVar "tup$" (Record (VarSet.record cbody_state)) in
+          let rec_var = mkFnVar "tup$" (record_type cbody_state) in
           let restore_stvs_bindings =
             List.map
-              (fun var -> (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
+              (fun var ->
+                 (FnVariable var, FnRecordMember(mkVarExpr rec_var, var.vname)))
               (VarSet.elements cbody_state)
           in
           if is_empty_state let_cont then
-            FnLetIn([mkVar rec_var, cond_body], FnLetExpr(restore_stvs_bindings))
+            FnLetIn([mkVar rec_var, cond_body], wrap_state restore_stvs_bindings)
           else
-            FnLetIn([mkVar rec_var, cond_body], FnLetIn(restore_stvs_bindings, convert_letin let_cont))
+            FnLetIn([mkVar rec_var, cond_body],
+                    FnLetIn(restore_stvs_bindings, convert_letin let_cont))
       in
 
       let index, (ilet, gexpr, ulet) = figu in
@@ -528,10 +538,10 @@ class sketch_builder
       let uletin = convert_letin ulet in
       (** TODO implement records to manage index *)
       let gskexpr = convert gexpr in
-      sketch <- Some (optims (convert_letin func),
+      funct <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));
 
-    method get_sketch = sketch
+    method get_funct = funct
     method get_uses_global_bounds = uses_global_bound
   end
 
@@ -566,7 +576,7 @@ let rec conv_init_expr expected_type (cil_exp : Cil.exp) =
   | _ -> None
 
 
-(** Transform the converted sketch to a loop body and a join sketch *)
+(** Transform the converted function to a loop body and a join function *)
 
 let rec make_conditional_guards initial_vs letin_form =
   match letin_form with
@@ -576,9 +586,8 @@ let rec make_conditional_guards initial_vs letin_form =
       make_conditional_guards new_state_vars body in
     FnLetIn (new_bindings, new_body), state_vars'
 
-  | FnLetExpr bindings ->
-    let new_bindings, new_state_vars = mk_cg bindings initial_vs in
-    FnLetExpr new_bindings, new_state_vars
+  | FnRecord(vs, emap) ->
+    failwith "Not implemented."
 
   | _ -> letin_form, initial_vs
 and mk_cg bindings vs =

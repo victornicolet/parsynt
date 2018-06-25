@@ -1,9 +1,9 @@
 open Beta
-open FuncTypes
+open Fn
 open Format
-open Utils
 open Racket
-
+open Utils
+open Utils.PpTools
 
 module Ct = Utils.CilTools
 module VS = Utils.VS
@@ -13,13 +13,14 @@ let printing_sketch = ref false
 let holes_expr_depth = ref 1
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
-
+let assume_join_map = ref true
 
 let state_vars = ref VS.empty
 
-let rosette_loop_macro_name = Conf.get_conf_string "rosette_func_loop_macro_name"
+let rosette_loop_macro_name =
+  Conf.get_conf_string "rosette_func_loop_macro_name"
 
-let reinit ?(ed = 1) ?(use_nl = false) =
+let reinit ed use_nl =
   printing_sketch := false;
   holes_expr_depth := ed;
   if use_nl then
@@ -70,84 +71,17 @@ let string_of_opchoice oct =
 
 
 let make_index_completion_string f e =
-  fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
-  flush_str_formatter ()
+  if !assume_join_map then
+    begin
+      fprintf str_formatter "%a" f e;
+      flush_str_formatter ()
+    end
+  else
+    begin
+      fprintf str_formatter "(choose (add1 %a) (sub1 %a) %a)" f e f e f e;
+      flush_str_formatter ()
+    end
 
-(** Pretty-printing operators *)
-
-let string_of_unsafe_binop =
-  function
-  | TODO -> "TODO"
-
-let string_of_symb_binop ?(fd=false) =
-  function
-  | And -> "&&"
-  | Nand -> "nand" | Or -> "||" | Nor -> "nor" | Implies -> "implies"
-  | Xor -> "xor"
-  (** Integers and reals *)
-  | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
-  | Quot -> "quot" | Rem -> "rem" | Mod -> "modulo"
-  (** Max and min *)
-  | Max -> if fd then Conf.get_conf_string "dafny_max_fun" else "max"
-  | Min -> if fd then Conf.get_conf_string "dafny_min_fun" else "min"
-  (** Comparison *)
-  | Eq -> if fd then "==" else "="
-  | Lt -> "<" | Le -> "<=" | Gt -> ">" | Ge -> ">="
-  | Neq -> if fd then "!=" else "neq"
-  (** Shift*)
-  | ShiftL -> "shiftl" | ShiftR -> "shiftr"
-  | Expt -> "expt"
-  | UnsafeBinop op -> string_of_unsafe_binop op
-
-(** ********************************************************* UNARY OPERATORS *)
-(**
-   Some racket function that are otherwise unsafe
-   to use in Racket, but we might still need them.
-*)
-let string_of_unsafe_unop =
-  function
-  (** Trigonometric + hyp. functions *)
-  | Sin -> "sin" | Cos -> "cos" | Tan -> "tan" | Sinh -> "sinh"
-  | Cosh -> "cosh" | Tanh -> "tanh"
-  (** Anti functions *)
-  | ASin -> "asin" | ACos -> "acos" | ATan -> "atan" | ASinh -> "asinh"
-  | ACosh -> "acosh" | ATanh
-  (** Other functions *)
-  | Log -> "log" | Log2 -> "log2" | Log10 -> "log10"
-  | Exp -> "exp" | Sqrt -> "sqrt"
-
-exception Not_prefix
-
-let string_of_symb_unop ?(fc = true) ?(fd = false) =
-  function
-  | UnsafeUnop op -> string_of_unsafe_unop op
-  | Not -> if fd || fc then "!" else "not"
-  | Add1 -> if fd then "1 +" else "add1"
-  | Sub1 -> if fd then "1 +" else "sub1"
-  | Abs -> if fd then raise Not_prefix else "abs"
-  | Floor -> if fd then raise Not_prefix else "floor"
-  | Ceiling -> if fd then raise Not_prefix else "ceiling"
-  | Truncate -> if fd then raise Not_prefix else "truncate"
-  | Round -> if fd then raise Not_prefix else "round"
-  | Neg -> "-"
-  | Sgn -> if fd then raise Not_prefix else "sgn"
-
-let string_of_unop_func ?(fc = false) ?(fd = false) op =
-  try
-    ignore(string_of_symb_unop ~fc:fc ~fd:fd op);
-    None
-  with Not_prefix ->
-    Some (string_of_symb_unop ~fc:false ~fd:false op)
-
-
-let ostring_of_baseSymbolicType =
-  function
-  | Integer -> Some "integer?"
-  | Real -> Some "real?"
-  | Boolean -> Some "boolean?"
-  | _ -> None
-
-open Utils.PpTools
 
 let rec pp_symb_type ppf t =
   fprintf ppf "%s%a%s" (color "blue") pp_symb_type_aux t color_default
@@ -158,15 +92,15 @@ and pp_symb_type_aux ppf t =
     begin
       match t with
       | Unit -> fprintf ppf "unit"
-      | Record tl ->
-        fprintf ppf "(%a)"
+      | Record (s, tl) ->
+        fprintf ppf "(%s | %a)"
+          s
           (fun ppf l ->
              pp_print_list
                ~pp_sep:(fun ppf () -> fprintf ppf ",")
                (fun ppf (s, ty) -> fprintf ppf "%s: %a" s pp_symb_type ty)
                ppf
-               l)
-          tl
+               l) tl
 
       | Bitvector  i ->
         fprintf ppf "(bitvector %i)" i
@@ -210,55 +144,6 @@ and pp_symb_type_aux ppf t =
       | _ -> ()
     end
 
-let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
-  let pp_int ppf i = fprintf ppf "%i" i in
-  let pp_float ppf f = fprintf ppf "%10.3f" f in
-  function
-  | CNil -> fprintf ppf "()"
-  | CInt i -> pp_int ppf i
-  | CInt64 i -> pp_int ppf (Int64.to_int i)
-  | CReal f -> pp_float ppf f
-  | CBool b ->
-    if for_dafny || for_c then
-      (if b then fprintf ppf "true" else fprintf ppf "false")
-    else
-      (if b then fprintf ppf "#t" else fprintf ppf "#f")
-
-  | CBox cst -> fprintf ppf "<Cil.constant>"
-  | CChar c -> fprintf ppf "%c" c
-  | CString s -> fprintf ppf "%s" s
-  | CArrayInit (n, c) -> fprintf ppf "(make-list %i %a)" n (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
-  | CUnop (op, c) ->
-    fprintf ppf "(%s %a)" (string_of_symb_unop op)
-      (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c
-  | CBinop (op, c1, c2) ->
-    if is_op_c_fun op then
-      fprintf ppf "%s(%a,@; %a)" (string_of_symb_binop op)
-        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
-        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
-    else
-      fprintf ppf "(%s@; %a@; %a)" (string_of_symb_binop op)
-        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c1
-        (pp_constants ~for_c:for_c ~for_dafny:for_dafny) c2
-
-  | CUnsafeUnop (unsop, c) -> fprintf ppf  ""
-  | CUnsafeBinop (unsbop, c1, c2) -> fprintf ppf ""
-  | Infnty ->
-    if for_dafny then
-      fprintf ppf "%s" (Conf.get_conf_string "dafny_max_seq_fun")
-    else
-      fprintf ppf "+inf.0"
-  | NInfnty ->
-    if for_dafny then
-      fprintf ppf "%s" (Conf.get_conf_string "dafny_min_seq_fun")
-    else
-      fprintf ppf "-inf.0"
-  | Pi -> fprintf ppf "pi"
-  | Sqrt2 -> fprintf ppf "(sqrt 2)"
-  | Ln2 -> fprintf ppf "(log 2)"
-  | Ln10 -> fprintf ppf "(log 10)"
-  | SqrtPi -> fprintf ppf "(sqrt pi)"
-  | E -> fprintf ppf "(exp 1)"
 
 (** Basic pretty-printing *)
 let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
@@ -280,13 +165,6 @@ let rec pp_fnlvar (ppf : Format.formatter) fnlvar =
 and pp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[<hov 2>(%s %a)@]"
-      (record_name ~only_by_type:true (List.map (fun (v,e) -> "_", type_of_var v) el))
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> pp_fnexpr ppf e)) el
-
   | FnLetIn (el, l) ->
     fprintf ppf "@[<hov 2>(let (%a)@; %a)@]"
        (fun ppf el ->
@@ -300,8 +178,10 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
                      Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a %a)]@]"
                        pp_fnlvar a pp_fnlvar a pp_fnexpr i pp_fnexpr e
                    | FnArray(a', k) ->
-                     Format.fprintf ppf "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
-                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar a pp_fnexpr i pp_fnexpr e
+                     Format.fprintf ppf
+                       "@[<hov 2>[%a (list-set %a %a (list-set %a %a %a))]@]"
+                       pp_fnlvar a' pp_fnlvar a' pp_fnexpr k pp_fnlvar
+                       a pp_fnexpr i pp_fnexpr e
                   )
                 | _ ->
                   Format.fprintf ppf "@[<hov 2>[%a %a]@]"
@@ -311,20 +191,17 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
 
   | FnVar v -> fp ppf "%a" pp_fnlvar v
 
-  | FnRecord (rt, exprs) ->
-    let stl =
-      match rt with
-      | Record stl -> stl
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record."
-    in
-    let record_name = record_name stl in
-    fp ppf "(%s %a)" record_name (pp_break_sep_list pp_fnexpr) exprs
+  | FnRecord (vs, exprs) ->
+    let rname = record_name vs in
+    fp ppf "@[<v 2>(%s@;%a)@]" rname (pp_break_sep_list pp_fnexpr)
+      (snd (ListTools.unpair (unwrap_state vs exprs)))
 
   | FnRecordMember (record, mname) ->
     let record_name =
       match type_of record with
-      | Record stl -> record_name stl
-      | _ -> failhere __FILE__ "pp_fnexpr" "Not record type in record member access."
+      | Record (name, stl) -> name
+      | _ -> failhere __FILE__ "pp_fnexpr"
+               "Not a record type in record member access."
     in
     fp ppf "(%s-%s %a)" record_name mname pp_fnexpr record
 
@@ -334,12 +211,11 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnFun l -> pp_fnexpr ppf l
 
   | FnVector a ->
-    fprintf ppf "@[<v 2><%a>@]"
+    fprintf ppf "@[<v 2>{%a}@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; @;")
-           pp_fnexpr fmt l)
-      a
+           ~pp_sep:(fun fmt () -> fprintf fmt ";@;")
+           pp_fnexpr fmt l) a
 
   | FnArraySet(a,i,e) ->
     fprintf ppf "@[<v 2>(list-set@;%a@;%a@;%a)@]"
@@ -355,14 +231,20 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_fnexpr) argl
 
   | FnHoleR (t, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnHoleL (t, v, cs, i) ->
-    let istr = make_index_completion_string pp_fnexpr i in
-    fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-      hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+    if CS.is_empty cs then
+      fp ppf "(??)"
+    else
+      let istr = make_index_completion_string pp_fnexpr i in
+      fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
+        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
 
   | FnChoice el ->
     fp ppf "@[<v 2>(choose@;%a)@]"
@@ -480,6 +362,31 @@ let pp_expr_map fmt em =
     readability.
     ----------------------------------------------------------------------------
 *)
+let _interp i =
+  let pluses  e =
+    let rec _aux (var, ints) e =
+      match e with
+      | FnBinop (Plus, e1, e2) ->
+        let vars', ints' = _aux (var, ints) e1 in
+        _aux (vars', ints') e2
+      | FnConst (CInt i) -> (var, i::ints)
+      | FnVar v -> (v::var, ints)
+      | _ -> failwith "S"
+    in
+    _aux ([], []) e
+  in
+  try
+    let vars, ints = pluses i in
+    let intval = List.fold_left (+) 0 ints in
+    if List.length vars = 1 then
+      if intval = 0 then
+        FnVar (List.hd vars)
+      else
+        FnBinop (Plus, FnVar (List.hd vars), FnConst (CInt intval))
+    else i
+  with _ -> i
+
+
 
 let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
   match fnlvar with
@@ -488,10 +395,18 @@ let rec cp_fnlvar (ppf : Format.formatter) fnlvar =
 
   | FnArray (v, offset) ->
     let offset_str =
-      fprintf str_formatter "%a" pp_fnexpr offset;
+      fprintf str_formatter "%a" cp_index (_interp offset);
       flush_str_formatter ()
     in
     fprintf ppf "%a[%s%s%s]" cp_fnlvar v (color "i") offset_str color_default
+
+and cp_index fmt i =
+  match i with
+  | FnBinop(op, e1, e2) ->
+    Format.fprintf fmt "%a%s%a"
+      cp_fnexpr e1 (string_of_symb_binop op)
+      cp_fnexpr e2
+  | _ -> cp_fnexpr fmt i
 
 and cp_expr_list fmt el =
   ppli fmt ~sep:"@;" cp_fnexpr el
@@ -499,18 +414,6 @@ and cp_expr_list fmt el =
 and cp_fnexpr (ppf : Format.formatter) fnexpr =
   let fp = Format.fprintf in
   match fnexpr with
-  | FnLetExpr el ->
-    fprintf ppf "@[%s(%s%s%s%s %a%s)%s@]"
-      (color "red") color_default
-      (color "b")
-      (record_name ~only_by_type:true
-         (List.map (fun (v,e) -> let tv = type_of_var v in shstr_of_type tv, tv) el))
-      color_default
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf "@;")
-         (fun ppf (v,e) -> cp_fnexpr ppf e)) el
-      (color "red") color_default
-
   | FnLetIn (el, l) ->
     fprintf ppf "%s(%slet%s @[<v 2>(%a)@]@.@[<hov 2> %a@]%s)%s"
       (* Opening parenthesis *)
@@ -534,18 +437,19 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnArraySet(a,i,e) ->
     fp ppf "%a[%a] = %a" cp_fnexpr a cp_fnexpr i cp_fnexpr e
 
-  | FnRecord (t, el) ->
-    fp ppf "(Record[%a] %a)" pp_typ t cp_expr_list el
+  | FnRecord (vs, emap) ->
+    fp ppf "(Record[%s] %a)" (record_name vs)
+      cp_expr_list (snd (ListTools.unpair (unwrap_state vs emap)))
 
   | FnRecordMember (r, m) ->
     fp ppf "([%a]-%s %a)" pp_typ (type_of r) m cp_fnexpr r
 
 
  | FnVector a ->
-    fprintf ppf "@[<v 2><%a>@]"
+    fprintf ppf "@[<v><%a>@]"
       (fun fmt l ->
          pp_print_list
-           ~pp_sep:(fun fmt () -> fprintf fmt "; ")
+           ~pp_sep:(fun fmt () -> fprintf fmt ";@;")
            (fun fmt e -> fprintf fmt "%a" cp_fnexpr e)
            fmt l)
       a
@@ -582,9 +486,16 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
   | FnAlignofE e -> fp ppf "(AlignOfE %a)" cp_fnexpr e
 
   | FnBinop (op, e1, e2) ->
-    fp ppf "@[<hov 1>(%s%s%s@;%a@;%a)@]"
-      (color "b") (string_of_symb_binop op) color_default
-      cp_fnexpr e1 cp_fnexpr e2
+    begin
+      match op with
+      | Max | Min ->
+        fp ppf "@[<hov 1>(%s%s%s@;%a@;%a)@]"
+          (color "b") (string_of_symb_binop op) color_default
+          cp_fnexpr e1 cp_fnexpr e2
+      | _ ->
+        fp ppf "@[<hov 1>(%a@;%s%s%s@;%a)@]"
+          cp_fnexpr e1 (color "b") (string_of_symb_binop op)  color_default cp_fnexpr e2
+    end
 
   | FnUnop (op, e) ->
     fp ppf "@[<hov 1>(%s%s%s %a)@]"
@@ -631,7 +542,7 @@ let scprintFnexpr s =
 
 let ecprintFnexpr s = cp_fnexpr err_formatter s
 
-let cp_expr_set fmt ?(sep = (fun fmt () -> fprintf fmt "; ")) es =
+let cp_expr_set ?(sep = (fun fmt () -> fprintf fmt "; ")) fmt es =
   let elt_list = ES.elements es in
   if List.length elt_list = 0 then
     fprintf fmt "[Empty]"
@@ -645,6 +556,12 @@ let cp_expr_list fmt el =
     fmt
     el
 
+let cp_expr_map fmt em =
+  fprintf fmt "@[<v>{%a}@]"
+    (fun fmt em ->
+       (IM.iter
+        (fun k e -> fprintf fmt "%i <-- %a;@;" k cp_fnexpr e) em))
+    em
 
 
 (** C-style pretty printing. Useful for printing functional intermediary
@@ -767,8 +684,6 @@ let pp_c_assignment_list p_id_asgn_list fmt ve_list =
 
 let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
   match fnlet with
-  | FnLetExpr assgn_list ->
-    fprintf fmt "@[%a@]" (pp_c_assignment_list p_id_assign) assgn_list
   | FnLetIn (assgn_list, fnlet') ->
     fprintf fmt "@[%a@;%a@]"
       (pp_c_assignment_list p_id_assign) assgn_list
@@ -779,7 +694,7 @@ let rec pp_c_fnlet ?(p_id_assign = true) fmt fnlet =
 let print_c_let = pp_c_fnlet std_formatter
 let print_c_expr = pp_c_expr std_formatter
 
-let rec pp_problem_rep fmt fnetch =
+let rec pp_problem_rep ?(inner=false) fmt fnetch =
   fprintf fmt "@[<v 2>%s%sSummary for %s (%i) :%s@;\
                %sLoop body :%s@;%a@;\
                %sJoin:%s@;%a\n @;\
@@ -788,15 +703,16 @@ let rec pp_problem_rep fmt fnetch =
     fnetch.loop_name fnetch.id
     color_default
     (color "b") color_default
-    pp_fnexpr fnetch.loop_body
+    pp_fnexpr fnetch.main_loop_body
     (color "b") color_default
-    pp_fnexpr fnetch.join_solution
+    pp_fnexpr
+    (if inner then fnetch.memless_solution else fnetch.join_solution)
     (color "b-lightgray")
     (fun fmt () ->
        if List.length fnetch.inner_functions > 0 then
          fprintf fmt "@[<v 2>%sInner functions:%s\n@;%a@]"
            (color "b-blue") color_default
-           (pp_print_list ~pp_sep:pp_sep_brk pp_problem_rep)
+           (pp_print_list ~pp_sep:pp_sep_brk (pp_problem_rep ~inner:true))
            fnetch.inner_functions
        else
          ()) ()

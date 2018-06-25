@@ -1,16 +1,19 @@
 open Beta
+open Fn
 open Utils
-open FuncTypes
 
 val debug : bool ref
-
+val verbose : bool ref
 type exec_info =
   {
     context : context;
     state_exprs : fnExpr IM.t;
+    intermediate_states : fnExpr list IM.t;
     index_exprs : fnExpr IM.t;
     inputs : ES.t
   }
+
+exception SymbExeError of string * fnExpr
 
 (** exec_once : simulate the application of a function body to a set of
     expressions for the state variables. The inputs are replaced by fresh
@@ -32,6 +35,7 @@ type exec_info =
     the application of the function to the input variables expressions.
 *)
 val create_symbol_map : VarSet.t -> fnExpr IM.t
-val unfold : fnExpr IM.t -> exec_info -> fnExpr-> fnExpr IM.t * ES.t
+val unfold : exec_info -> fnExpr-> fnExpr IM.t * ES.t
 val unfold_expr : exec_info -> fnExpr -> fnExpr * ES.t
-val unfold_once : ?silent:bool -> exec_info -> fnExpr -> fnExpr IM.t * ES.t
+val unfold_once : ?silent:bool -> exec_info -> fnExpr -> exec_info
+val get_intermediate_values:  VarSet.t -> (fnExpr list) IM.t

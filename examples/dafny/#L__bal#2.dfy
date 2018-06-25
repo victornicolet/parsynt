@@ -3,17 +3,17 @@ function DfLength(s: seq<int>): int
 
 function DfMin(x: int, y: int): int { if x > y then y else x}
 
-function Cnt(a : seq<bool>): int
-{
-  if a == [] then 0 else (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1)))
-}
-
-function Aux_bal1(a : seq<bool>): int
+function Aux_bal4(a : seq<bool>): int
 {
   if a == [] then
     0
     else
-    DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_bal1(a[..|a|-1]))
+    DfMin((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))), Aux_bal4(a[..|a|-1]))
+}
+
+function Cnt(a : seq<bool>): int
+{
+  if a == [] then 0 else (Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1)))
 }
 
 function Bal(a : seq<bool>): bool
@@ -24,28 +24,52 @@ function Bal(a : seq<bool>): bool
     (Bal(a[..|a|-1]) && ((Cnt(a[..|a|-1]) + (if a[|a|-1] then 1 else (-1))) >= 0))
 }
 
-function CntJoin(leftCnt : int, rightCnt : int): int
+function Aux_bal4Join(leftAux_bal4 : int, leftCnt : int, rightAux_bal4 : int, rightCnt : int): int
 {
-  (rightCnt + leftCnt)
+  DfMin((rightAux_bal4 + leftCnt), leftAux_bal4)
 }
 
-function Aux_bal1Join(leftAux_bal1 : int, leftCnt : int, rightAux_bal1 : int, rightCnt : int): int
+function CntJoin(leftAux_bal4 : int, leftCnt : int, rightAux_bal4 : int, rightCnt : int): int
 {
-  DfMin((rightAux_bal1 + leftCnt), leftAux_bal1)
+  ((if false then rightAux_bal4 else rightCnt) + leftCnt)
 }
 
-function BalJoin(leftAux_bal1 : int, leftCnt : int, leftBal : bool, rightAux_bal1 : int, rightCnt : int, rightBal : bool): bool
+function BalJoin(leftAux_bal4 : int, leftCnt : int, leftBal : bool, rightAux_bal4 : int, rightCnt : int, rightBal : bool): bool
 {
-  ((((if rightBal then ((-1) - 1) else (-2)) + (leftCnt + 1)) >= ((-1) - rightAux_bal1)) && leftBal)
+  ((((if rightBal then (-2) else (-2)) + (1 + leftCnt)) >= ((-1) - rightAux_bal4)) && leftBal)
 }
 
+
+lemma BaseCaseAux_bal4(a : seq<bool>)
+  ensures Aux_bal4(a) == Aux_bal4Join(Aux_bal4(a), Cnt(a), Aux_bal4([]), Cnt([]))
+  {}
+
+lemma HomAux_bal4(a : seq<bool>, R_a : seq<bool>)
+  ensures Aux_bal4(a + R_a) == Aux_bal4Join(Aux_bal4(a), Cnt(a), Aux_bal4(R_a), Cnt(R_a))
+  {
+    if R_a == [] 
+    {
+    assert(a + [] == a);
+    BaseCaseAux_bal4(a);
+    
+     } else {
+    calc{
+    Aux_bal4(a + R_a);
+    =={
+      HomCnt(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      }
+    Aux_bal4Join(Aux_bal4(a), Cnt(a), Aux_bal4(R_a), Cnt(R_a));
+    } // End calc.
+  } // End else.
+} // End lemma.
 
 lemma BaseCaseCnt(a : seq<bool>)
-  ensures Cnt(a) == CntJoin(Cnt(a), Cnt([]))
+  ensures Cnt(a) == CntJoin(Aux_bal4(a), Cnt(a), Aux_bal4([]), Cnt([]))
   {}
 
 lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
-  ensures Cnt(a + R_a) == CntJoin(Cnt(a), Cnt(R_a))
+  ensures Cnt(a + R_a) == CntJoin(Aux_bal4(a), Cnt(a), Aux_bal4(R_a), Cnt(R_a))
   {
     if R_a == [] 
     {
@@ -55,42 +79,21 @@ lemma HomCnt(a : seq<bool>, R_a : seq<bool>)
      } else {
     calc{
     Cnt(a + R_a);
-    =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    CntJoin(Cnt(a), Cnt(R_a));
-    } // End calc.
-  } // End else.
-} // End lemma.
-
-lemma BaseCaseAux_bal1(a : seq<bool>)
-  ensures Aux_bal1(a) == Aux_bal1Join(Aux_bal1(a), Cnt(a), Aux_bal1([]), Cnt([]))
-  {}
-
-lemma HomAux_bal1(a : seq<bool>, R_a : seq<bool>)
-  ensures Aux_bal1(a + R_a) == Aux_bal1Join(Aux_bal1(a), Cnt(a), Aux_bal1(R_a), Cnt(R_a))
-  {
-    if R_a == [] 
-    {
-    assert(a + [] == a);
-    BaseCaseAux_bal1(a);
-    
-     } else {
-    calc{
-    Aux_bal1(a + R_a);
     =={
-      HomCnt(a, R_a[..|R_a| - 1]);
+      HomAux_bal4(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    Aux_bal1Join(Aux_bal1(a), Cnt(a), Aux_bal1(R_a), Cnt(R_a));
+    CntJoin(Aux_bal4(a), Cnt(a), Aux_bal4(R_a), Cnt(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
 
 lemma BaseCaseBal(a : seq<bool>)
-  ensures Bal(a) == BalJoin(Aux_bal1(a), Cnt(a), Bal(a), Aux_bal1([]), Cnt([]), Bal([]))
+  ensures Bal(a) == BalJoin(Aux_bal4(a), Cnt(a), Bal(a), Aux_bal4([]), Cnt([]), Bal([]))
   {}
 
 lemma HomBal(a : seq<bool>, R_a : seq<bool>)
-  ensures Bal(a + R_a) == BalJoin(Aux_bal1(a), Cnt(a), Bal(a), Aux_bal1(R_a), Cnt(R_a), Bal(R_a))
+  ensures Bal(a + R_a) == BalJoin(Aux_bal4(a), Cnt(a), Bal(a), Aux_bal4(R_a), Cnt(R_a), Bal(R_a))
   {
     if R_a == [] 
     {
@@ -101,11 +104,11 @@ lemma HomBal(a : seq<bool>, R_a : seq<bool>)
     calc{
     Bal(a + R_a);
     =={
-      HomAux_bal1(a, R_a[..|R_a| - 1]);
+      HomAux_bal4(a, R_a[..|R_a| - 1]);
       HomCnt(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    BalJoin(Aux_bal1(a), Cnt(a), Bal(a), Aux_bal1(R_a), Cnt(R_a), Bal(R_a));
+    BalJoin(Aux_bal4(a), Cnt(a), Bal(a), Aux_bal4(R_a), Cnt(R_a), Bal(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

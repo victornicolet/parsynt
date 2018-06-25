@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -31,12 +31,19 @@ type func_info =
     mutable inner_funcs : func_info list;
   }
 
+
 val parseOneFile: string -> Cil.file
 val processFile: string -> Cil.file * Loops.loop_info Utils.IM.t
 val cil2func : Cil.file -> Loops.loop_info Utils.IM.t -> func_info list
-val func2sketch: Cil.file -> func_info list -> FuncTypes.prob_rep list
-val find_new_variables : FuncTypes.prob_rep -> FuncTypes.prob_rep
-val pp_sketch: ?inner:bool -> ?parent_context:FuncTypes.context option->
-  Conf.solver -> Format.formatter -> FuncTypes.prob_rep -> unit
-val store_solution: FuncTypes.prob_rep option -> unit
+val func2sketch: Cil.file -> func_info list -> Fn.prob_rep list
+val find_new_variables : Fn.prob_rep -> Fn.prob_rep
+val pp_sketch: ?inner:bool -> ?parent_context:Fn.context option->
+  Conf.solver -> Format.formatter -> Fn.prob_rep -> unit
+val fetch_solution:
+  ?solver:Conf.solver ->
+  ?inner:bool->
+  ?parent_ctx:(Fn.context option) ->
+  Fn.prob_rep -> float * Fn.prob_rep option
+
+val store_solution: Fn.prob_rep option -> unit
 val clear: unit -> unit

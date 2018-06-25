@@ -1,8 +1,8 @@
 open Beta
+open Fn
+open FnPretty
 open Format
 open Utils
-open FuncTypes
-open FPretty
 open Dafny
 
 
@@ -482,12 +482,12 @@ let find_exprs vi solved_sketch =
       (match ret_binding vi ve_list with
        | Some e -> Some e
        | None -> find_binding vi letin)
-    | FnLetExpr ve_list ->
-      ret_binding vi ve_list
+    | FnRecord (vs, emap) ->
+      ret_binding vi (unwrap_state vs emap)
     | _ -> None
   in
   let flat_function =
-    force_flat solved_sketch.scontext.state_vars solved_sketch.loop_body
+    force_flat solved_sketch.scontext.state_vars solved_sketch.main_loop_body
   in
   (try
      check_option (find_binding vi flat_function)

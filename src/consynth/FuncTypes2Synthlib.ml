@@ -18,8 +18,8 @@
 *)
 
 open Beta
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open List
 open Synthlib2ast
 open Synthlib
@@ -51,8 +51,8 @@ let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
   function
   | FnLetIn (velist, cont) ->
     SyLet(map _binding velist, to_term ~texpr:texpr cont)
-  | FnLetExpr velist ->
-    SyLet(map _binding velist, texpr)
+  | FnRecord (vs, emap) ->
+    SyLet(map _binding (unwrap_state vs emap), texpr)
   | FnVar v ->of_var v
   | FnConst c -> SyLiteral (of_const c)
   | FnBinop(op, e1, e2) ->

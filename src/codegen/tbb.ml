@@ -1,7 +1,7 @@
 (**
    This file is part of Parsynt.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -19,8 +19,8 @@ open Format
 open Cil
 
 open Beta
-open FuncTypes
-open FPretty
+open Fn
+open FnPretty
 open Utils
 open Utils.PpTools
 
@@ -271,10 +271,6 @@ let remove_constant_assignments sktch sklet =
   in
   let rec aux sklet c_a =
     match sklet with
-    | FnLetExpr ve_list ->
-      let ve_list0, c_a0 = rem_from_ve_list ve_list in
-      FnLetExpr ve_list0, c_a@c_a0
-
     | FnLetIn (ve_list, letin) ->
       let ve_list0, c_a0 = rem_from_ve_list ve_list in
       let letin0, c_a1 = aux letin (c_a@c_a0) in
@@ -355,12 +351,12 @@ let make_tbb_class pb =
     class_name_appendix^(String.capitalize (pbname_of_sketch pb))
   in
   let tbb_class = makeEmptyClass class_name in
-  let index_type =
-    TNamed (
-      { tname = iterator_type_name;
-        ttype = iterator_c_typ;
-        treferenced = false;},[])
-  in
+  (* let index_type =
+   *   TNamed (
+   *     { tname = iterator_type_name;
+   *       ttype = iterator_c_typ;
+   *       treferenced = false;},[])
+   * in *)
   let index_var = VarSet.max_elt pb.scontext.index_vars in
   let begin_index_var = left_index_vi index_var in
   let end_index_var = right_index_vi index_var in
@@ -453,7 +449,7 @@ let make_tbb_class pb =
   let tbb_operator =
     let operator_body_printer fmt ()  =
       let mod_loop_body, constant_assignments =
-        remove_constant_assignments pb pb.loop_body
+        remove_constant_assignments pb pb.main_loop_body
       in
       pp_operator_body fmt pb (index_var, begin_index_var, end_index_var)
         constant_assignments
