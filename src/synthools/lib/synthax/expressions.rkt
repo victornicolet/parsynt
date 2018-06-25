@@ -40,8 +40,8 @@
 
 ;; A scalar is a variable or a constant
 (define-synthax Scalar
-  ([(Scalar x ...) (choose x ... (??))]
-   [(Scalar) (??)]))
+  ([(Scalar x ...) (choose x ... (?? real?))]
+   [(Scalar) (?? real?)]))
 
 ;; Vector set
 (define-synthax SetVector
@@ -129,10 +129,10 @@
 ;; to expressions with min/max and then adding non-linear operators
 
 (define-synthax ArithBinops
-  ([(ArithBinops 0) (choose + -)]))
+  ([(ArithBinops) (choose + -)]))
 
 (define-synthax BasicBinopsNum
-  ([(BasicBinopsNum 0) (choose + - min max)]))
+  ([(BasicBinopsNum) (choose + - min max)]))
 
 (define-synthax NLBinopsNum
   ([(NLBinopsNum 0) (choose * / + - min max)]))
@@ -156,11 +156,11 @@
   #:else (choose
           (Scalar x ...)
           ; Binary expression
-          ((ArithBinops 0)
+          (ArithBinops
            (NumExprArith x ... (sub1 depth))
            (NumExprArith x ... (sub1 depth)))
           ; Unary expression
-          ((BasicUnopsNum 0)
+          (BasicUnopsNum
            (NumExprArith x ... (sub1 depth)))))
 
 (define-synthax (NumExprBasic x ... depth)
