@@ -195,6 +195,19 @@ module ListTools = struct
       (fun li i ->
          if List.mem i li then li else i::li) a b
 
+  let remove_elt e l =
+    let rec go l acc = match l with
+      | [] -> rev acc
+      | x::xs when e = x -> go xs acc
+      | x::xs -> go xs (x::acc)
+    in go l []
+
+  let remove_duplicates l =
+    let rec go l acc = match l with
+      | [] -> rev acc
+      | x :: xs -> go (remove_elt x xs) (x::acc)
+    in go l []
+
   let last list =
     List.nth list ((List.length list) - 1)
 

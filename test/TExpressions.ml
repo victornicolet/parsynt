@@ -77,8 +77,8 @@ let test_split_expression () =
 
 (* A group of normalization tests to ensure we do not 'break' the old examples.
 *)
-let normalization_test lin name context expr expected =
-  let expr_norm = normalize ~linear:lin context expr in
+let normalization_test name context expr expected =
+  let expr_norm = normalize context expr in
   let normal_expressions = collect_normal_subexpressions context expr_norm in
   if expected @= expr_norm then
     (if !verbose then
@@ -127,7 +127,7 @@ let test_normalize_expression_00 () =
   let emts1 =                   (* max(mts0 + a1 + a0, max(a1 + 0, 0)) *)
     fmax (fplus (evar mts0) (fplus a0 a1)) (fmax (fplus a1 sk_zero) sk_zero)
   in
-  normalization_test false "mts" ctx mts1 emts1
+  normalization_test "mts" ctx mts1 emts1
 
 let test_normalize_expression_01 () =
   if !verbose then
@@ -170,7 +170,7 @@ let test_normalize_expression_01 () =
             (fmax (fplus a10 a00) a00))
          (fmax (evar mtrl0) (_ci 0)))
   in
-  normalization_test true "mtlr" ctx mtrl1 mtrl1_norm_expected
+  normalization_test "mtlr" ctx mtrl1 mtrl1_norm_expected
 
 
 let test_normalize_expression_02 () =
@@ -212,7 +212,7 @@ let test_normalize_expression_02 () =
           (fplus c0 (fmax a00 (fplus a00 a10)))
           (evar mtrr0)))
   in
-  normalization_test true "mtrr" ctx mtrr1 mtrr1_norm_expected
+  normalization_test "mtrr" ctx mtrr1 mtrr1_norm_expected
 
 let test_normalize_expression_03 () =
   if !verbose then
@@ -244,7 +244,7 @@ let test_normalize_expression_03 () =
                   (_Q a1 sk_one (fneg sk_one))))) sk_zero)
       (evar wb0)
   in
-  normalization_test false "wb" ctx wb1 wb1_norm_expected
+  normalization_test "wb" ctx wb1 wb1_norm_expected
 
 
 let test_normalize_expression_04 () =
@@ -312,7 +312,7 @@ let test_normalize_expression_04 () =
                    (fplus a10 a00)))
              (evar mtrr0))))
   in
-  normalization_test true "mtrr2" ctx mtrr1 mtrr1_norm_expected
+  normalization_test "mtrr2" ctx mtrr1 mtrr1_norm_expected
 
 
 let test_normalize_expression_05 () =
@@ -327,7 +327,7 @@ let test_normalize_expression_05 () =
               all_vars = VarSet.of_list [vars#get "sum"; vars#get "mps"; vars#get "a"];
               costly_exprs = ES.of_list [evar (vars#get "sum"); evar (vars#get "mps")] }
   in
-  normalization_test false "mps" ctx e0 e1
+  normalization_test "mps" ctx e0 e1
 
 let test_local_normal_test () =
   let tname = "Test local normal." in
@@ -387,12 +387,12 @@ let test_load filename =
   let inchan = IO.input_channel (open_in filename) in
   let _ = IO.read_line inchan in
   let title = IO.read_line inchan in
-  let use_lin = bool_of_string (IO.read_line inchan) in
+  let _ = bool_of_string (IO.read_line inchan) in
   let vars = vardefs (IO.read_line inchan) in
   let context = make_context vars (IO.read_line inchan) in
   let ein = expression vars (IO.read_line inchan) in
   let enorm = expression vars (IO.read_line inchan) in
-  normalization_test use_lin title context ein enorm
+  normalization_test title context ein enorm
 
 let file_defined_tests () =
   let test_files =

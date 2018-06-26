@@ -56,7 +56,9 @@ let unfold_index xinfo idx_update =
       inputs = ES.empty;
     }
   in
-  let ix' = unfold_once ~silent:true ix idx_update in
+  let idx = VarSet.max_elt xinfo.context.index_vars in
+  let idx_u = wrap_state [FnVariable idx, idx_update] in
+  let ix' = unfold_once ~silent:true ix idx_u in
   VarSet.fold
     (fun vi map -> IM.add vi.vid (IM.find vi.vid ix'.state_exprs) map)
     xinfo.context.index_vars IM.empty
@@ -329,7 +331,7 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
       {
         xinfo0 with
         state_exprs =
-          IM.map (ER.normalize ~linear:true xinfo.context --> enormalize xinfo.context)
+          IM.map (ER.normalize xinfo.context --> enormalize xinfo.context)
             xinfo0.state_exprs
       }
     in

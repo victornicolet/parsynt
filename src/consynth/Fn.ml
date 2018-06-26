@@ -2220,3 +2220,36 @@ let fnlet_to_stmts fd fnlet =
                           skind = Instr []; preds = []; succs = [] }
   in
   fd, translate_let fnlet empty_statement
+
+
+let used_struct_types (body : fnExpr) : fn_type list =
+  let rec extract_of_var v =
+    match v with
+    | FnVariable v ->
+      begin match v.vtype with
+      | Record _ -> [v.vtype]
+      | _ -> []
+      end
+    | FnArray (a, e) ->
+      extract_of_var a
+  in
+  let rectypes =
+    rec_expr2
+      {
+        case =
+          (fun e ->
+             match e with
+             | FnRecord _  -> true
+             | _ -> false);
+        on_case =
+          (fun f e ->
+             match e with
+             | FnRecord (vs, _) -> [record_type vs]
+             | _ -> []);
+        on_var = extract_of_var;
+        on_const = (fun c -> []);
+        init = [];
+        join = (@);
+      } body
+  in
+  ListTools.remove_duplicates rectypes
