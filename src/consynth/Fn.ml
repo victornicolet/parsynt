@@ -1696,29 +1696,90 @@ type sigu = VarSet.t * (fnExpr * fnExpr * fnExpr)
 
 type func_dec =
   {
+    (* The variable that has the name and the type of the function. *)
     fvar : fnV;
+    (* The lsit of variables that represent the arguments of the function
+       by name and type.
+    *)
     fformals : fnV list;
+    (* The local variables of the function. *)
     flocals : fnV list;
   }
 
 type prob_rep =
   {
+    (* The id of the problem, unique and should not be modified. *)
     id : int;
+    (* host_function describes the host function of the loop. See
+       the definition of func_dec type for more information.
+    *)
     host_function : func_dec;
+    (* The name of the loop, generated using the truncated name of the
+       host function and the line number. For more information on how the
+    name is generated in the main flow of the tool, see Canalyst.ml.
+       It uses Conf.inner_loop_func_name (see the Conf library)
+    *)
     loop_name : string;
+    (* The context of the loop, storing information about the index
+       variables of the loop. See the definition of the context type
+       for more information.
+    *)
     scontext : context;
+    (* min_input_size is the minimal size of the input for the loop to
+       be well defined. For example, if a loop uses the expression a[i-1] and
+       the index of the loop i starts at 0, then the input of the loop (the
+       array a) needs to be at least 1.
+       Still experimental.
+    *)
     min_input_size : int;
+    (* Experimental. Ignore for now... *)
     uses_global_bound : bool;
+    (* The loop body. It is the expression of a function representing the
+       body of the loop. To understand how to use this loop body inside a
+       recursive function, have a look at Sketch.pp_loop_body that prints the
+       body with some context information, inside a recursive function.
+    *)
     main_loop_body : fnExpr;
+    (* Store different loop body versions, the inner loop / inner join
+       solution will need to be inlined / abstracted at different points of the
+       analysis.
+    *)
     loop_body_versions : fnExpr SH.t;
+    (* The sketch of the join. Not used if it is an inner loop.
+       To understand how it is used, see Sketch.pp_join and Sketch.pp_join_body
+    *)
     join_sketch : fnExpr;
+    (* The sketch of the memoryless join. Useless if this is an outer loop.
+       To understand how it is used, see Sketch.pp_join and Sketch.pp_join_body
+    *)
     memless_sketch : fnExpr;
+    (* The solution of the join sketch. Does not necessarily correspond exactly
+    to filling the holes of the join sketch, because some optimizations /
+       simplifcations might have been performed here.
+    *)
     join_solution : fnExpr;
+    (* Similar to above, but for the memoryless join. *)
     memless_solution : fnExpr;
+    (* Store for the init values that have been found by solving the sketch.
+       This map uses variable names used in the sketch to bind non-translated
+       expressions returned by the solver to the variables of the problem.
+       Should represent:
+       STATE VARIABLE ID --> INITIAL VALUE IN THE JOIN SKETCH SOLUTION
+    *)
     init_values : RAst.expr IM.t;
+    (* SImilar to the above, but identity values. Only used in the memoryless
+       join for now, to find the initial state s0.
+    *)
     identity_values : constants IM.t;
+    (* The loop's initial value, index guard and index update. See
+       Sketch.pp_loop for more information.
+    *)
     func_igu : sigu;
+    (* Maps variable ids to the value of the state variable reaching the
+       loop.
+    *)
     reaching_consts : fnExpr IM.t;
+    (* The list of inner loops, translated to functional form.*)
     mutable inner_functions : prob_rep list;
   }
 

@@ -142,11 +142,12 @@ let cil2func cfile loops =
 
     if !verbose then
       (printf "@.%s=== Loop %i in %s ===%s"
-         (color "blue") loop.lid loop.lcontext.host_function.C.vname color_default;
+         (color "blue") loop.lid loop.lcontext.host_function.C.vname
+         color_default;
        printf "@.Identified state variables: %a"
          VS.pvs loop.lvariables.state_vars;
-        printf "@.Identified index variables: %a"
-         VS.pvs loop.lvariables.index_vars;
+        printf "@.Identified index variables: %a@."
+          VS.pvs loop.lvariables.index_vars;
       );
 
     finfo.inner_funcs <- List.map translate_loop loop.inner_loops;
@@ -155,7 +156,8 @@ let cil2func cfile loops =
       match loop.ligu with
       | Some igu ->
         let in_states =
-          List.map (fun info_in -> (info_in.lid, info_in.lvariables)) finfo.inner_funcs
+          List.map (fun info_in -> (info_in.lid, info_in.lvariables))
+            finfo.inner_funcs
         in
         Cil2Func.cil2func in_states loop.lvariables (loop_body loop) igu
       | None -> Cil2Func.empty_state (), None
@@ -198,6 +200,19 @@ let no_sketches = ref 0;;
 let func2sketch cfile funcreps =
   let rec  transform_func func_info =
     let inners = List.map transform_func func_info.inner_funcs in
+    let host_func =
+      mkFuncDec
+        (try check_option
+               (get_fun cfile func_info.host_function.Cil.vname)
+         with Failure s -> (eprintf "Failure : %s@." s;
+                            failhere __FILE__ "func2sketch"
+                              "Failed to get host function."))
+    in
+
+    if !verbose then
+      printf "@.[INFO] Loop %s has host function: %a.@."
+        func_info.loop_name FnPretty.pp_func_dec host_func;
+
     let var_set = varset_of_vs func_info.lvariables.all_vars in
     let state_vars = varset_of_vs func_info.lvariables.state_vars in
 
@@ -247,13 +262,11 @@ let func2sketch cfile funcreps =
       | Some (a,b) ->  a,b, f2f#get_uses_global_bounds
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
-
-    let index_set, _ = sigu in
     aux_vars_init ();
 
 
     incr no_sketches;
-    create_boundary_variables index_set;
+    create_boundary_variables (fst sigu);
     (* Input size from reaching definitions, min_int dependencies,
        etc. *)
     let m_sizes =
@@ -290,17 +303,11 @@ let func2sketch cfile funcreps =
     let fn_pb =
       {
         id = func_info.lid;
-        host_function =
-          (mkFuncDec
-             (try check_option
-                    (get_fun cfile func_info.host_function.Cil.vname)
-              with Failure s -> (eprintf "Failure : %s@." s;
-                                 failhere __FILE__ "func2sketch"
-                                   "Failed to get host function.")));
+        host_function = host_func;
         loop_name = func_info.loop_name;
         scontext =
           { state_vars = state_vars;
-            index_vars = index_set;
+            index_vars = (fst sigu);
             used_vars = varset_of_vs func_info.lvariables.used_vars;
             all_vars = varset_of_vs func_info.lvariables.all_vars;
             costly_exprs = ES.empty;
@@ -323,8 +330,11 @@ let func2sketch cfile funcreps =
     in
     Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
-  List.map transform_func funcreps
-
+  let probs = List.map transform_func funcreps in
+  (* Do igus first, and then arrays. otherwise this will create errors. *)
+  List.iter Dimensions.register_dimensions_igu probs;
+  List.iter Dimensions.register_dimensions_arrays probs;
+  probs
 
 (**
    Finds auxiliary variables necessary to parallelize the function.

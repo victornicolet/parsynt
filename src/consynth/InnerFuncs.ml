@@ -188,7 +188,18 @@ let no_join_inlined_body pb =
   with Not_found -> pb.main_loop_body
 
 
-
+(* `inline_inner` replaces the calls to inner functions by either the solution
+   of the memoryless join or the body of the inner loop.
+   By default, it will pick the solution of the memoryless/inner join.
+   To switch to inner functions, call with ~inline_pick_join:false.
+   @param `in_loop_width` The loop inlined has to be finitized for symbolic
+   execution and join synthesis, in_loop_width is the finitization limit.
+   @param `problem` is the problem where the loop needs to be inlined, the
+   resulting loop body will be the main_loop_body of the problem returned.
+   It will inline in the loop body returned by no_join_inlined_body. If there
+   is the corresponding entry  _KEY_JOIN_NOT_INLINED_ in the loop versions,
+   if will use this one, otherwise the main_loop_body.
+*)
 let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
