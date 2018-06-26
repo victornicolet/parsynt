@@ -43,7 +43,7 @@ let max_exec_no =
 let symbex_inner_loop_width = ref 3
 
 let unfold_index xinfo idx_update =
-  let ix =
+  let xi =
     { context =
         { state_vars = xinfo.context.index_vars ;
           index_vars = VarSet.empty;
@@ -56,7 +56,14 @@ let unfold_index xinfo idx_update =
       inputs = ES.empty;
     }
   in
-  let ix' = unfold_once ~silent:true ix idx_update in
+  let iset = used_in_fnexpr idx_update in
+  let idx_u = if VarSet.cardinal iset = 1 then
+      let idx = VarSet.max_elt iset in
+      FnRecord(iset, IM.of_alist [idx.vid, idx_update])
+    else
+      idx_update
+  in
+  let ix' = unfold_once ~silent:true xi idx_u in
   VarSet.fold
     (fun vi map -> IM.add vi.vid (IM.find vi.vid ix'.state_exprs) map)
     xinfo.context.index_vars IM.empty
