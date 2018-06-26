@@ -950,7 +950,6 @@ let pp_rosette_sketch_join fmt sketch =
   pp_synth fmt st0 bnames struct_name read_vars min_dep_len
 
 
-
 (** Main interface to print the sketch of the whole problem.
     @param fmt A Format.formatter
     @param read A list of variable ids representing the subset of read-only
@@ -986,7 +985,6 @@ let pp_rosette_sketch parent_context inner fmt (sketch : prob_rep) =
     Returns the logic needed to solve the sketch.
 *)
 let logic_of_pb pb = SyLIA
-
 
 (* There are no comp types in synthlib. *)
 let funcdef_body pb =

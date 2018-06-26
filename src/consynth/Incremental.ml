@@ -260,22 +260,26 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   let rec _cb hl cl =
     List.fold_left
       (fun hl' (vh, eh) ->
-         match List.filter (fun (vc, ec) ->  vc = vh) cl with
+         match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
          | [] -> hl'@[vh,eh]
-         | hd :: tl -> hl'@[vh, snd hd])
+         | hd :: tl ->
+           hl'@[fst hd, snd hd])
       [] hl
   and _c h c =
     match h, c with
-  | FnLetIn (bsk, esk) , FnLetIn (bsol, esol) ->
-    FnLetIn (_cb bsk bsol, _c esk esol)
+    | FnLetIn (bsk, FnLetIn(bsk2, esk)), FnLetIn (bsol, esol) ->
+      FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
 
-  | FnRecord(vs, emap) , FnRecord(vs', emap') ->
-    FnRecord(vs,
-             IM.mapi
-               (fun i e -> try IM.find i emap' with Not_found -> e)
-               emap)
+    | FnLetIn (bsk, esk) , FnLetIn (bsol, esol) ->
+      FnLetIn (_cb bsk bsol, _c esk esol)
 
-  | _ -> h
+    | FnRecord(vs, emap) , FnRecord(vs', emap') ->
+      FnRecord(vs,
+               IM.mapi
+                 (fun i e -> try IM.find i emap' with Not_found -> e)
+                 emap)
+
+    | _ -> h
   in
   _c sketch solution
 
@@ -357,7 +361,6 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
         (fun f e ->
            match e with
            | FnRec (igu, (vs, bs), (s, body)) ->
-             Format.printf "@.@.==[INFO]== %s --> %s@." s.vname new_inner_binder.vname;
              FnRec (igu, (VarSet.diff vs variables, transform_initial_state s bs),
                     (new_inner_binder, remove_empty_lets (transform_loop_body s body)))
 
@@ -376,6 +379,25 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
     } sketch
 
 
+let compose_loop (sol : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : fnExpr =
+  match prev_solution, sketch with
+  | FnLetIn([x1, FnRec(_,_,(s1, bodysol))], r1),
+    FnLetIn([x2, FnRec(igu, st2,(s2, bodysketch))], r2) ->
+    let r =
+      replace_expression (FnVar x1) (FnVar x2)
+        (complete_simple_sketch r2 r1)
+    in
+    begin
+      match bodysol, bodysketch with
+      | FnLetIn(l1, e1), FnLetIn(l2, e2) ->
+        let body = FnLetIn(l2, complete_simple_sketch e2 e1) in
+        let res = FnLetIn([x2, FnRec(igu, st2, (s2, body))], r) in
+        res
+
+      | _ -> failwith "OP"
+    end
+  | _ -> failwith "OP"
+
 
 let complete_increment
     ~inner:(inner:bool)
@@ -393,18 +415,19 @@ let complete_increment
       if has_loop incr_sketch  then
         begin if has_loop prev_solution then
             (* Match 'one on one' *)
-            (print_endline "MATCH";
-             incr_sketch)
+            compose_loop
+              sol
+              prev_solution
+              incr_sketch
           else
             (* Remove the variables that can be joined with
                a constant join from the sketch and append the
                join at the beginning.
             *)
-            (print_endline "COMPOSE";
             compose prev_solution
               (remove_from_loop_state
                  sol.scontext.state_vars
-                 incr_sketch))
+                 incr_sketch)
         end
       else
         (* The incremental sketch is scalar. The prev solution should be too. *)

@@ -740,7 +740,7 @@ let make_loop_join i bounds state fnlet =
         failhere __FILE__ "make_loop_join" "Loop to drill has no index."
     in
     let loop_join_body =
-      make_join ~index:i ~state:state ~skip:[] ~w_a:_wa lbody
+      make_join ~index:idx ~state:state ~skip:[] ~w_a:_wa lbody
     in
     let ist, iend = bounds in
     let nbs =
