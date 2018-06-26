@@ -716,4 +716,13 @@ let rec pp_problem_rep ?(inner=false) fmt fnetch =
            fnetch.inner_functions
        else
          ()) ()
-  color_default;
+  color_default;;
+
+let pp_func_dec fmt funcdec =
+  let pp_args =
+    pp_comma_sep_list
+       (fun fmt arg -> fprintf fmt "%a %s" pp_typ arg.vtype arg.vname)
+  in
+  fprintf fmt "@[<v 4>%a %s@;(%a)@;[%a]@]"
+    pp_typ funcdec.fvar.vtype funcdec.fvar.vname
+    pp_args funcdec.fformals pp_args funcdec.flocals
