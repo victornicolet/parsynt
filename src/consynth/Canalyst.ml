@@ -262,7 +262,6 @@ let func2sketch cfile funcreps =
       | Some (a,b) ->  a,b, f2f#get_uses_global_bounds
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
-    Dimensions.dimensionalize (snd sigu) loop_body;
     aux_vars_init ();
 
 
@@ -331,8 +330,11 @@ let func2sketch cfile funcreps =
     in
     Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
-  List.map transform_func funcreps
-
+  let probs = List.map transform_func funcreps in
+  (* Do igus first, and then arrays. otherwise this will create errors. *)
+  List.iter Dimensions.register_dimensions_igu probs;
+  List.iter Dimensions.register_dimensions_arrays probs;
+  probs
 
 (**
    Finds auxiliary variables necessary to parallelize the function.

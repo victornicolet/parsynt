@@ -51,8 +51,15 @@ let bounds (fixed : bool) (sketch : prob_rep) : fnExpr * fnExpr =
   else mkVarExpr ist, mkVarExpr ien
 
 
+(* If possible, link indexes to intervals and guess arrary dimensions.
+   Experimental : later, use solver.
+*)
 
 type e_interval = fnExpr * fnExpr
+
+let pp_interval fmt iv =
+  Format.fprintf fmt "[%a; %a]" FnPretty.pp_fnexpr (fst iv)
+    FnPretty.pp_fnexpr (snd iv)
 
 let _index_intervals : e_interval IH.t = IH.create 5
 let _array_dimensions : (e_interval list) IH.t = IH.create 5
@@ -65,7 +72,35 @@ let update_index_interval (i : fnV) interval =
     IH.add _index_intervals i.vid interval;
     true
 
-let dimensionalize (init, grd, upd : fnExpr * fnExpr * fnExpr) (body : fnExpr) =
+let reg_array_subscript (a : fnExpr) (i : fnExpr) : unit =
+  let add_dim a dims =  IH.add _array_dimensions a.vid dims in
+  let avar, aoffset =
+    match a with
+    | FnVar(FnVariable a') -> a', []
+    | FnVar(FnArray (FnVariable a', i')) -> a', [i']
+    | FnVar(FnArray (FnArray(FnVariable a', i'), j')) -> a', [i'; j']
+    | _ -> failhere __FILE__ "reg_array_subscript" "Too many dimensions."
+  in
+  let get_offset_interval e =
+    let interval i = IH.find _index_intervals i.vid in
+    match e with
+    | FnBinop(Minus, FnVar (FnVariable ii), c) ->
+      let i0, iN = interval ii in
+      FnBinop(Minus, i0, c), FnBinop(Minus, iN, c)
+
+    | FnBinop(Plus, FnVar (FnVariable ii), c) ->
+      let i0, iN = interval ii in
+      FnBinop(Plus, i0, c), FnBinop(Plus, iN, c)
+
+    | FnVar(FnVariable ii) ->
+      interval ii
+
+    | _ -> failhere __FILE__ "get_offset_interval" "Index subscript not supproted."
+  in
+  add_dim avar (List.map get_offset_interval (aoffset@[i]))
+
+
+let dimensionalize (init, grd, upd : fnExpr * fnExpr * fnExpr) =
   let i1 = used_in_fnexpr init in
   let i2 = used_in_fnexpr grd in
   let i3 = used_in_fnexpr upd in
@@ -97,10 +132,36 @@ let dimensionalize (init, grd, upd : fnExpr * fnExpr * fnExpr) (body : fnExpr) =
 
     | _ -> failwith "Dimensions: index/guard not defining an interval?"
   in
-  Format.printf "@.[REMOVE #12] Index %s is in [%a; %a]@."
-    index.vname
-    FnPretty.pp_fnexpr (fst i_interval)
-    FnPretty.pp_fnexpr (snd i_interval);
 
   if update_index_interval index i_interval then () else
     failhere __FILE__ "dimensionalize" "Conflict for an index."
+
+
+let dimensionalize_body body =
+  rec_expr2
+    {
+      case = (fun e -> match e with FnArraySet _ -> true | _ -> false);
+      on_case =
+        (fun f e ->
+           match e with
+           | FnArraySet(a, i, e) ->
+             reg_array_subscript a i; f e
+           | _ -> ());
+      on_var =
+        (fun v ->
+           match v with
+           | FnVariable _ -> ()
+           | FnArray (a, i) -> reg_array_subscript (FnVar a) i);
+      on_const = (fun c -> ());
+      init = ();
+      join = (fun a b -> ());
+    } body
+
+
+let rec register_dimensions_igu (pb : prob_rep) =
+  List.iter register_dimensions_igu pb.inner_functions;
+  dimensionalize (snd pb.func_igu)
+
+let rec register_dimensions_arrays (pb : prob_rep) =
+  List.iter register_dimensions_arrays pb.inner_functions;
+  dimensionalize_body pb.main_loop_body
