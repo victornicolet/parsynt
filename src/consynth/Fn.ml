@@ -1719,7 +1719,7 @@ type prob_rep =
     identity_values : constants IM.t;
     func_igu : sigu;
     reaching_consts : fnExpr IM.t;
-    inner_functions : prob_rep list;
+    mutable inner_functions : prob_rep list;
   }
 
 let mkFuncDec fndc =
