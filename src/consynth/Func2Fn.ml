@@ -250,6 +250,19 @@ let optims fnlet =
   isolate_set_array (apply_rearrange (remove_boolean_ifs fnlet'))
 
 
+let simplify_index expr =
+  match expr with
+  | FnLetIn([i,e], FnRecord(vs, emap)) ->
+    let ivar = var_of_fnvar i in
+    if IM.mem ivar.vid emap then
+      let iexpr = IM.find ivar.vid emap in
+      begin match iexpr with
+      | FnVar _ -> e
+      | _ -> expr
+      end
+    else e
+  | _ -> expr
+
 (** A class to build the function, initialized with a set containing all
     variables, the state varaibles, the function in pre-functionalized form,
     and the loop-bounds information.
@@ -451,9 +464,6 @@ class funct_builder
             (mkVarExpr ~offsets:off_list)
 
 
-
-
-      (** TODO : add the current loop index *)
       and convert_letin letin =
         match letin with
         | State subs  ->
@@ -534,9 +544,8 @@ class funct_builder
 
       let index, (ilet, gexpr, ulet) = figu in
 
-      let iletin = convert_letin ilet in
-      let uletin = convert_letin ulet in
-      (** TODO implement records to manage index *)
+      let iletin = simplify_index (convert_letin ilet) in
+      let uletin = simplify_index (convert_letin ulet) in
       let gskexpr = convert gexpr in
       funct <- Some (optims (convert_letin func),
                       (index, (iletin, gskexpr, uletin)));

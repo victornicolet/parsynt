@@ -262,13 +262,12 @@ let func2sketch cfile funcreps =
       | Some (a,b) ->  a,b, f2f#get_uses_global_bounds
       | None -> failhere __FILE__ "func2sketch" "Failed in sketch building."
     in
-
-    let index_set, _ = sigu in
+    Dimensions.dimensionalize (snd sigu) loop_body;
     aux_vars_init ();
 
 
     incr no_sketches;
-    create_boundary_variables index_set;
+    create_boundary_variables (fst sigu);
     (* Input size from reaching definitions, min_int dependencies,
        etc. *)
     let m_sizes =
@@ -309,7 +308,7 @@ let func2sketch cfile funcreps =
         loop_name = func_info.loop_name;
         scontext =
           { state_vars = state_vars;
-            index_vars = index_set;
+            index_vars = (fst sigu);
             used_vars = varset_of_vs func_info.lvariables.used_vars;
             all_vars = varset_of_vs func_info.lvariables.all_vars;
             costly_exprs = ES.empty;
