@@ -1780,7 +1780,7 @@ type prob_rep =
     *)
     reaching_consts : fnExpr IM.t;
     (* The list of inner loops, translated to functional form.*)
-    inner_functions : prob_rep list;
+    mutable inner_functions : prob_rep list;
   }
 
 let mkFuncDec fndc =
