@@ -361,6 +361,7 @@ let reduce_full ?(limit = 10) (ctx : context) (expr : fnExpr) =
     (force_linear_normal_form ctx
        (factorize_multi_toplevel ctx r0))
 
+
 let rec normalize ctx sklet =
   match sklet with
   | FnLetIn (ve_list, letin) ->

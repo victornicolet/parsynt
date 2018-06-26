@@ -835,13 +835,17 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
+
+  define_structs fmt (used_struct_types sketch.main_loop_body);
+  define_structs fmt (used_struct_types sketch.memless_sketch);
+  define_structs fmt (used_struct_types sketch.join_sketch);
+
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
   *)
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  define_structs fmt (used_struct_types sketch.main_loop_body);
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
@@ -914,6 +918,10 @@ let pp_rosette_sketch_join fmt sketch =
   in
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
+
+  define_structs fmt (used_struct_types sketch.main_loop_body);
+  define_structs fmt (used_struct_types sketch.memless_sketch);
+
   if List.length sketch.inner_functions > 0 then
     begin
       pp_inner_loops_defs fmt sketch.inner_functions;

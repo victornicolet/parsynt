@@ -726,21 +726,50 @@ let wrap_with_choice (state : VarSet.t) (base_join : fnExpr) : fnExpr =
 
 
 let make_loop_join i bounds state fnlet =
+  let lsp  =
+    VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
+  in
   let _wa = ref true in
   match fnlet with
-  | FnLetIn([v, FnRec(igu, (vs,bs),(s, lbody))], expr) ->
-    printf " @. %a @. ==========@." pp_fnexpr fnlet;
+  | FnLetIn([v, FnRec((init,g,u), (vs,bs),(s, lbody))], expr) ->
+    let idx =
+      try
+        mkVarExpr (VarSet.max_elt
+                     (VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u)))
+      with Not_found ->
+        failhere __FILE__ "make_loop_join" "Loop to drill has no index."
+    in
     let loop_join_body =
       make_join ~index:i ~state:state ~skip:[] ~w_a:_wa lbody
     in
     let ist, iend = bounds in
+    let nbs =
+      match bs with
+      | FnRecord(vs, emap) ->
+        let nemap = IM.map
+            (fun expr ->
+               transform_expr (fun e -> false) (fun f e -> e)
+                 (fun c -> c)
+                 (fun v ->
+                    if VarSet.mem (var_of_fnvar v) state then
+                      begin match v with
+                        | FnVariable var ->
+                          FnVariable (VarSet.find_by_id lsp var.vid )
+                        | FnArray(FnVariable var, ie) ->
+                          FnArray (FnVariable (VarSet.find_by_id lsp var.vid), ie)
+                        | _ -> failwith "not supported."
+                      end
+                    else v) expr) emap
+        in
+        FnRecord(vs, nemap)
+      | _ -> failwith "not expected."
+    in
     let join =
-      FnLetIn([v, FnRec((ist, FnBinop(Lt, i, iend), FnUnop(Add1, i)),
-                        (vs, bs),
+      FnLetIn([v, FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
+                        (vs, nbs),
                         (s, loop_join_body))],
               expr)
     in
-    printf "JOIN @. %a @. ==========@." pp_fnexpr join;
     join
 
   | _ ->

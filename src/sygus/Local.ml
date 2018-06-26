@@ -126,17 +126,18 @@ let compile ?(solver=Conf.rosette) ?(print_err_msg = default_error)
       eprintf "%sDumping sketch file in %s%s%s\n"
         (PpTools.color "b-red") (PpTools.color "hi-underlined") dump_file
         (PpTools.color_default);
-      ignore(Sys.command ("cat "^dump_file));
     end;
-  Sys.remove sketch_tmp_file;
-  if errno != 0 then
+    if errno != 0 then
     begin
       if !debug then
         begin
           print_err_msg errno;
         end;
+      ignore(Sys.command ("cat "^sketch_tmp_file));
+      Sys.remove sketch_tmp_file;
       exit 1;
     end;
+  Sys.remove sketch_tmp_file;
   errno, elapsed, solution_tmp_file
 
 let fetch_solution ?(solver=rosette) filename =

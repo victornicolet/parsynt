@@ -283,10 +283,20 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
         pp_fnexpr c pp_fnexpr e1 pp_fnexpr e2
 
   | FnRec ((i, g, u), (s, k), (_s, e)) ->
-    let index_set = VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u) in
+    let index_set = used_in_fnexpr u in
    ( match VarSet.cardinal index_set with
-    | 0 -> fp ppf "@[<v  2>%a@]" pp_fnexpr e
-    | 1 ->
+     | 0 ->
+       fp ppf "@[<hov 2>(%s %a (lambda () %a)@;(lambda () %a)@;%a@;(lambda (%s) %a))@]"
+         rosette_loop_macro_name
+         pp_fnexpr i
+         (fun fmt g -> let b = !printing_sketch in
+           printing_sketch := false; pp_fnexpr fmt g; printing_sketch := b)  g
+         pp_fnexpr u
+         pp_fnexpr k
+         _s.vname
+         pp_fnexpr e
+
+     | 1 ->
       let index = VarSet.max_elt index_set in
       fp ppf "@[<hov 2>(%s %a (lambda (%s) %a)@;(lambda (%s) %a)@;%a@;(lambda (%s %s) %a))@]"
         rosette_loop_macro_name

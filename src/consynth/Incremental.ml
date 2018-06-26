@@ -245,7 +245,7 @@ let get_increments (problem : prob_rep) : prob_rep list =
            Format.printf "@[<v 4>    %i : %a@]@." i VarSet.pp_vs varset)
         subsets
     end;
-  (List.mapi rename_pb (List.map (restrict pb) subsets))
+  List.mapi rename_pb (List.map (restrict pb) subsets)
 
 
 (**
@@ -393,16 +393,18 @@ let complete_increment
       if has_loop incr_sketch  then
         begin if has_loop prev_solution then
             (* Match 'one on one' *)
-            incr_sketch
+            (print_endline "MATCH";
+             incr_sketch)
           else
             (* Remove the variables that can be joined with
                a constant join from the sketch and append the
                join at the beginning.
             *)
+            (print_endline "COMPOSE";
             compose prev_solution
               (remove_from_loop_state
                  sol.scontext.state_vars
-                 incr_sketch)
+                 incr_sketch))
         end
       else
         (* The incremental sketch is scalar. The prev solution should be too. *)
