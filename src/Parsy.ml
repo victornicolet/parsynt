@@ -87,7 +87,10 @@ let convert (problem : prob_rep) : prob_rep =
 let rec limit_depth ?(depth = 0) (problem : prob_rep) =
     if List.length problem.inner_functions = 0 then problem
     else if depth = 0 then (problem.inner_functions <- List.map (limit_depth ~depth:(depth + 1)) problem.inner_functions; problem)
-    else convert problem  
+    else let res = convert problem in  
+     FnPretty.pp_fnexpr std_formatter problem.main_loop_body;
+     print_newline ();
+     FnPretty.pp_fnexpr std_formatter res.main_loop_body; res
 
 (**
    Recursively solve the inner loops using different tactics.
