@@ -1,4 +1,4 @@
-val silent_racket_command_string : string -> string
+val silent_racket_command_string : int -> string -> string
 val err_handler_sketch : 'a -> unit
 val pp_struct_definition :
   ?transparent:bool -> Format.formatter -> string *string list -> unit

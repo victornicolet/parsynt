@@ -68,8 +68,8 @@ and fnExpr =
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
   | FnApp of fn_type * (fnV option) * (fnExpr list)
-  | FnHoleL of hole_type * fnLVar * CS.t * fnExpr
-  | FnHoleR of hole_type * CS.t * fnExpr
+  | FnHoleL of hole_type * fnLVar * CS.t * fnExpr * int
+  | FnHoleR of hole_type * CS.t * fnExpr * int
   | FnChoice of fnExpr list
   | FnVector of fnExpr list
   | FnArraySet of fnExpr * fnExpr * fnExpr
@@ -195,7 +195,7 @@ and type_of expr =
   | FnCond (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
   | FnApp (t, _, _) -> t
-  | FnHoleL (ht, _,  _, _) | FnHoleR (ht, _, _) ->
+  | FnHoleL (ht, _,  _, _, _) | FnHoleR (ht, _, _, _) ->
     (match ht with (t, ot) -> t)
 
   | FnFun e -> Function(type_of e, type_of e)
@@ -766,9 +766,9 @@ let transform_expr
       let in_aux = recurse_aux letin in
       FnLetIn (List.map (fun (v, e) -> (v, recurse_aux e)) velist, in_aux)
 
-    | FnHoleL(t, v, cs, e) -> FnHoleL(t, v, cs, recurse_aux e)
+    | FnHoleL(t, v, cs, e, d) -> FnHoleL(t, v, cs, recurse_aux e, d)
 
-    | FnHoleR(t, cs, e) -> FnHoleR(t, cs, recurse_aux e)
+    | FnHoleR(t, cs, e, d) -> FnHoleR(t, cs, recurse_aux e, d)
 
     | FnChoice el -> FnChoice (List.map recurse_aux el)
 
@@ -922,12 +922,27 @@ let to_rec_completions e =
     on_case =
       (fun f e ->
          match e with
-         | FnHoleL(ht, var, cst, e') -> FnHoleL(ht, var, CS._LRorRec cst, e')
-         | FnHoleR(ht, cst, e') -> FnHoleR(ht, CS._LRorRec cst, e')
+         | FnHoleL(ht, var, cst, e', d) -> FnHoleL(ht, var, CS._LRorRec cst, e', d)
+         | FnHoleR(ht, cst, e', d) -> FnHoleR(ht, CS._LRorRec cst, e', d)
          | _ -> f e);
     on_var = identity;
     on_const = identity
   } e
+
+
+let set_hole_depths e d =
+  transform_expr2 {
+    case = (fun e -> match e with FnHoleL _ | FnHoleR _ -> true | _ -> false);
+    on_case =
+      (fun f e ->
+         match e with
+         | FnHoleL(ht, var, cst, e', _) -> FnHoleL(ht, var,cst, e', d)
+         | FnHoleR(ht, cst, e', _) -> FnHoleR(ht, cst, e', d)
+         | _ -> f e);
+    on_var = identity;
+    on_const = identity
+  } e
+
 (**
    Replace expression n time. Returns a list of expressions, with all
    the possible combinations.
@@ -1845,6 +1860,13 @@ let get_bounds problem =
   with Not_found ->
     mkFnVar (bvar.vname^"_start") bvar.vtype,
     mkFnVar (bvar.vname^"_end") bvar.vtype
+
+let set_pb_hole_depths (pb : prob_rep) (d : int) =
+  {
+    pb with
+    memless_sketch = set_hole_depths pb.memless_sketch d;
+    join_sketch = set_hole_depths pb.join_sketch d;
+  }
 
 (* ----------------------- 9 - CONVERSION TO CIL  ----------------------------*)
 

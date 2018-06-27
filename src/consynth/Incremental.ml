@@ -397,7 +397,6 @@ let compose_loop (sol : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : f
   match prev_solution, sketch with
   | FnLetIn([x1, FnRec(_,_,(s1, bodysol))], r1),
     FnLetIn([x2, FnRec(igu, st2,(s2, bodysketch))], r2) ->
-    printf "======= %a@." pp_fnexpr sketch;
     let r =
       replace_expression (FnVar x1) (FnVar x2)
         (complete_simple_sketch r2 r1)

@@ -19,5 +19,5 @@
 
 val debug: bool ref
 val dump_sketch : bool ref
-val compile_and_fetch : ?print_err_msg:(int -> unit) -> Conf.solver ->
+val compile_and_fetch : ?timeout:int -> ?print_err_msg:(int -> unit) -> Conf.solver ->
   (Format.formatter -> 'a -> 'b) -> 'a -> float * RAst.expr list

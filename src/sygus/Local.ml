@@ -95,29 +95,47 @@ let completeFile filename solution_file_name sketch_printer sketch =
   Stream.iter process_line (line_stream_of_channel footer);
   close_out oc
 
+
 let default_error i =
   eprintf "Errno %i : Error while running racket on sketch.\n" i
 
-let exec_solver solver filename =
+
+let exec_solver (timeout : int) (solver : solver) (filename : string) : int * float =
   let start = Unix.gettimeofday () in
   (* Execute on filename. *)
   let errcode =
     match solver.name with
-    | "Rosette" -> Sys.command (Racket.silent_racket_command_string filename)
-    | "CVC4" -> Sys.command (Racket.silent_racket_command_string filename)
-    | _ -> Sys.command (Racket.silent_racket_command_string filename)
+    | "Rosette" -> Sys.command (Racket.silent_racket_command_string timeout filename)
+    | "CVC4" -> Sys.command (Racket.silent_racket_command_string timeout filename)
+    | _ -> Sys.command (Racket.silent_racket_command_string timeout filename)
   in
   let elapsed = (Unix.gettimeofday ()) -. start in
   if !debug then
     Format.printf "@.%s : executed in %.3f s@." solver.name elapsed;
   errcode, elapsed
 
-let compile ?(solver=Conf.rosette) ?(print_err_msg = default_error)
-    printer printer_arg =
+
+let compile
+    ?(solver=Conf.rosette)
+    ?(print_err_msg = default_error)
+    (timeout : int)
+    (printer : Format.formatter -> 'a -> 'b)
+    (printer_arg : 'a) : bool * float * string =
+
   let solution_tmp_file = Filename.temp_file "parsynt_solution_" solver.extension in
   let sketch_tmp_file = Filename.temp_file "parsynt_sketch_" solver.extension in
   completeFile sketch_tmp_file solution_tmp_file printer printer_arg;
-  let errno, elapsed = exec_solver solver sketch_tmp_file in
+  (* Consider a break in the solver execution as a timeout. Thsi enables the user to
+     terminate a call that is lasting too long and thus allows to 'continue' with
+     the different steps of the algorithm.
+  *)
+  Sys.catch_break true;
+  let errno, elapsed =
+    try
+      exec_solver timeout solver sketch_tmp_file
+    with Sys.Break ->
+      124, -1.0
+  in
   if !dump_sketch || (errno != 0 && !debug) then
     begin
       remove_in_dir dumpDir;
@@ -127,18 +145,33 @@ let compile ?(solver=Conf.rosette) ?(print_err_msg = default_error)
         (PpTools.color "b-red") (PpTools.color "hi-underlined") dump_file
         (PpTools.color_default);
     end;
+  (* Continue: signal that algorithm should continue without solution. *)
+  let continue =
     if errno != 0 then
-    begin
-      if !debug then
-        begin
-          print_err_msg errno;
-        end;
-      ignore(Sys.command ("cat "^sketch_tmp_file));
-      Sys.remove sketch_tmp_file;
-      exit 1;
-    end;
+      begin
+        if errno = 124 || errno = 255 then
+          begin
+            Format.printf "@.[INFO] Solver terminated / stopped by user.@.";
+            true
+          end
+        else
+          begin
+            Format.printf "[ERROR] Errno : %i@." errno;
+            if !debug then
+              begin
+                print_err_msg errno;
+              end;
+            (* ignore(Sys.command ("cat "^sketch_tmp_file)); *)
+            Sys.remove sketch_tmp_file;
+            exit 1;
+          end;
+      end
+    else
+      false
+  in
   Sys.remove sketch_tmp_file;
-  errno, elapsed, solution_tmp_file
+  continue, elapsed, solution_tmp_file
+
 
 let fetch_solution ?(solver=rosette) filename =
   match solver.name with
@@ -166,9 +199,13 @@ let fetch_solution ?(solver=rosette) filename =
 
 
 
-let compile_and_fetch ?(print_err_msg = default_error)
-    solver printer printer_arg =
-  let errno, elapsed, filename =
-    compile ~solver:solver ~print_err_msg:print_err_msg printer printer_arg
+let compile_and_fetch
+    ?(timeout=(-1))
+    ?(print_err_msg = default_error)
+    (solver: solver)
+    (printer : Format.formatter -> 'a -> 'b)
+    (printer_arg : 'a) =
+  let continue, elapsed, filename =
+    compile ~solver:solver ~print_err_msg:print_err_msg timeout printer printer_arg
   in
-  elapsed, fetch_solution filename
+  if continue then -1.0, [] else elapsed, fetch_solution filename

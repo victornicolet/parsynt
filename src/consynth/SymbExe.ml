@@ -426,13 +426,13 @@ and do_expr env expr : fnExpr * ex_env =
     FnChoice (List.map partial_interpret el'),
     List.fold_left (fun sf s' -> up_join sf s') env sl'
 
-  | FnHoleL (ht, v, cs, e) ->
+  | FnHoleL (ht, v, cs, e, d) ->
     let e', s' = do_expr env e in
-    FnHoleL (ht, v, cs, e'),  s'
+    FnHoleL (ht, v, cs, e', d),  s'
 
-  | FnHoleR (ht, cs, e) ->
+  | FnHoleR (ht, cs, e, d) ->
     let e', s' = do_expr env e in
-    FnHoleR (ht, cs, e'), s'
+    FnHoleR (ht, cs, e', d), s'
 
   | _ ->
     if !verbose then

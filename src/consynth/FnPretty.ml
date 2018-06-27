@@ -10,7 +10,7 @@ module VS = Utils.VS
 
 let print_imp_style = ref false
 let printing_sketch = ref false
-let holes_expr_depth = ref 1
+
 let use_non_linear_operator = ref false
 let skipped_non_linear_operator = ref false
 let assume_join_map = ref true
@@ -22,7 +22,7 @@ let rosette_loop_macro_name =
 
 let reinit ed use_nl =
   printing_sketch := false;
-  holes_expr_depth := ed;
+
   if use_nl then
     printf "Using non-linear operators.@.";
   use_non_linear_operator := use_nl;
@@ -230,21 +230,21 @@ and pp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "(%s %a)" funname
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") pp_fnexpr) argl
 
-  | FnHoleR (t, cs, i) ->
+  | FnHoleR (t, cs, i, d) ->
     if CS.is_empty cs then
       fp ppf "(??)"
     else
       let istr = make_index_completion_string pp_fnexpr i in
       fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+        hole_type_expr t (CS.pp_cs istr) cs d
 
-  | FnHoleL (t, v, cs, i) ->
+  | FnHoleL (t, v, cs, i, d) ->
     if CS.is_empty cs then
       fp ppf "(??)"
     else
       let istr = make_index_completion_string pp_fnexpr i in
       fp ppf "@[<hv 2>(%a@;%a@;%i)@]"
-        hole_type_expr t (CS.pp_cs istr) cs !holes_expr_depth
+        hole_type_expr t (CS.pp_cs istr) cs d
 
   | FnChoice el ->
     fp ppf "@[<v 2>(choose@;%a)@]"
@@ -475,11 +475,11 @@ and cp_fnexpr (ppf : Format.formatter) fnexpr =
     fp ppf "@[<hov 2>(%s%s%s %a)@]" (color "u") funname color_default
       (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt " ") cp_fnexpr) argl
 
-  | FnHoleR (t, _, _) ->
+  | FnHoleR (t, _, _, _) ->
     fp ppf "%s%a%s"
       (color "grey") hole_type_expr t color_default
 
-  | FnHoleL (t, v, _, _) ->
+  | FnHoleL (t, v, _, _, _) ->
     fp ppf "%s %a %s"
       (color "grey") hole_type_expr t color_default
 
@@ -640,9 +640,9 @@ let rec pp_c_expr ?(for_dafny = false) fmt e =
      | None ->
        fprintf fmt "@[%a@]" pp_c_expr_list args)
 
-  | FnHoleL ((t, _), v , _, _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
+  | FnHoleL ((t, _), v , _, _, _) -> fprintf fmt "@[<hov 2>(<LEFT_HOLE@;%a@;%a>)@]"
                                  (pp_c_var ~rhs:true) v pp_typ t
-  | FnHoleR ((t, _), _, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
+  | FnHoleR ((t, _), _, _, _) -> fprintf fmt "@[<hov 2>(<RIGHT_HOLE@;%a>)@]" pp_typ t
 
   | _ -> fprintf fmt "@[(<UNSUPPORTED EXPRESSION %a>)@]" pp_fnexpr e
 

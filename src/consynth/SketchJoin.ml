@@ -84,25 +84,25 @@ let is_right_hole =
 
 let replace_hole_type t' =
   function
-  | FnHoleR (t, cs, i) -> FnHoleR(t', cs, i)
-  | FnHoleL (t, v, cs, i) -> FnHoleL(t', v, cs, i)
+  | FnHoleR (t, cs, i, d) -> FnHoleR(t', cs, i, d)
+  | FnHoleL (t, v, cs, i, d) -> FnHoleL(t', v, cs, i, d)
   | e -> e
 
 let type_of_hole =
   function
-  | FnHoleR (t, _, _) | FnHoleL (t, _, _, _) -> Some t
+  | FnHoleR (t, _, _, _) | FnHoleL (t, _, _, _, _) -> Some t
   | _ -> None
 
 let completion_vars_of_hole =
   function
-  | FnHoleR (_, cs, _) -> cs
-  | FnHoleL (_, _, cs, _) -> cs
+  | FnHoleR (_, cs, _, _) -> cs
+  | FnHoleL (_, _, cs, _, _) -> cs
   | _ -> CS.empty
 
 let midx_of_hole =
   function
-  | FnHoleR (_, _,i) -> i
-  | FnHoleL (_, _,_,i) -> i
+  | FnHoleR (_, _,i, _) -> i
+  | FnHoleL (_, _,_,i, _) -> i
   | _ -> FnConst(CNil)
 
 
@@ -133,15 +133,17 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
                      VarSet.fold
                        (fun var emap ->
                           IM.add var.vid (FnHoleR (holt var.vtype,
-                                   CS._R (CS.of_vs state),
-                                   index_expr)) emap) rvs IM.empty), 1
+                                                   CS._R (CS.of_vs state),
+                                                   index_expr,
+                                                   1))
+                            emap) rvs IM.empty), 1
           | _ -> FnVar var, 0
         else
           (if VarSet.mem vi state
            then
-             FnHoleL (holt t, var, CS._LorR (CS.of_vs state), index_expr), 1
+             FnHoleL (holt t, var, CS._LorR (CS.of_vs state), index_expr, 1), 1
            else
-             FnHoleR (holt t, CS._R (CS.of_vs state), index_expr), 1)
+             FnHoleR (holt t, CS._R (CS.of_vs state), index_expr, 1), 1)
   in
   let make_hole_array var sklv expr =
     (match type_of_var sklv with
@@ -158,7 +160,7 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
           in
           FnHoleL (holt t,
                    FnArray(sklv, expr),
-                   CS._LorR completion, index_expr),
+                   CS._LorR completion, index_expr, 1),
           1
         else if is_record_type t then
           (* At this point, a variable of record type (not a record expression!) should
@@ -171,12 +173,13 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
                        (fun var emap ->
                           IM.add var.vid (FnHoleR (holt var.vtype,
                                                    CS._R (CS.of_vs state),
-                                                   index_expr)) emap) rvs IM.empty), 1
+                                                   index_expr, 1))
+                            emap) rvs IM.empty), 1
           | _ ->
             FnVar var,
             0
         else
-          FnHoleR (holt t, CS._R (CS.of_vs state), index_expr), 1)
+          FnHoleR (holt t, CS._R (CS.of_vs state), index_expr, 1), 1)
 
      | _ -> failhere __FILE__ "make_holes" "Unexpected type in array")
   in
@@ -194,10 +197,10 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
     let cs = CS._R (CS.of_vs state) in
     begin
       match c with
-      | CInt _ | CInt64 _ -> FnHoleR (holt Integer, cs, index_expr), 1
-      | CReal _ -> FnHoleR (holt Real, cs, index_expr), 1
-      | CBool _ -> FnHoleR (holt Boolean, cs, index_expr), 1
-      | _ -> FnHoleR (holt Unit, cs, index_expr), 1
+      | CInt _ | CInt64 _ -> FnHoleR (holt Integer, cs, index_expr, 1), 1
+      | CReal _ -> FnHoleR (holt Real, cs, index_expr, 1), 1
+      | CBool _ -> FnHoleR (holt Boolean, cs, index_expr, 1), 1
+      | _ -> FnHoleR (holt Unit, cs, index_expr, 1), 1
     end
 
 
@@ -335,7 +338,7 @@ and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array
           if is_left_aux vi_bound || is_right_aux vi_bound  then
 
             l @ [vbound, FnHoleL (((type_of e), Basic), vbound,
-                                  CS._LorR (CS.of_vs state), ie)]
+                                  CS._LorR (CS.of_vs state), ie, 1)]
           else
             begin match vi_bound.vtype with
               | Vector _ ->
@@ -525,7 +528,7 @@ and merge_leaves max_depth (e,d) =
          | Some t ->
            if t1 = t2 && rh_h1 && rh_h2 then
              let ht_final = Function (t1, t) in
-             FnHoleR ((ht_final, join_optypes o1 o2), vars, idx), d
+             FnHoleR ((ht_final, join_optypes o1 o2), vars, idx, 1), d
            else
              FnBinop(op, h1, h2), d + 1
 
@@ -543,7 +546,7 @@ and merge_leaves max_depth (e,d) =
         in
         if all_holes
         then
-          FnHoleR ((t, NotNum), vars, idx), d
+          FnHoleR ((t, NotNum), vars, idx, 1), d
         else
           let el', _ = ListTools.unpair
               (List.map (fun e_ -> merge_leaves max_depth (e_, d)) el)
@@ -552,7 +555,7 @@ and merge_leaves max_depth (e,d) =
       | FnCond (c, ei, ee) ->
         begin
           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c, midx_of_hole ee),
+            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c, midx_of_hole ee, 1),
                     ei, ee), d
           else
             e, 0
@@ -580,13 +583,13 @@ let set_types_and_varsets (e : fnExpr) : fnExpr =
     (fun e -> is_a_hole e)
     (fun rfun e ->
        match e with
-       | FnHoleL ((t, o), v, vs, i) ->
+       | FnHoleL ((t, o), v, vs, i, d) ->
          let nvs, nt = adapt_vs_and_t vs t in
-         FnHoleL ((nt, o), v, nvs, i)
+         FnHoleL ((nt, o), v, nvs, i, d)
 
-       | FnHoleR ((t, o), vs, i) ->
+       | FnHoleR ((t, o), vs, i, d) ->
          let nvs, nt = adapt_vs_and_t vs t in
-         FnHoleR ((nt, o), nvs, i)
+         FnHoleR ((nt, o), nvs, i, d)
 
        | _ -> rfun e)
 
@@ -608,7 +611,7 @@ let rec inner_optims (state : VarSet.t) (letfun : fnExpr) : fnExpr  =
         on_case =
           (fun f e ->
              match e with
-             | FnHoleL(_, v, _, _) -> FnVar v
+             | FnHoleL(_, v, _, _, _) -> FnVar v
              | FnHoleR _ -> e
              | _ -> e);
         on_const = identity;
@@ -636,10 +639,10 @@ let refine_completions (letfun : fnExpr) : fnExpr =
         case = (fun e -> match e with FnHoleR _ | FnHoleL _ -> true | _ -> false);
         on_case =
           (fun f e -> match e with
-             | FnHoleR (t, cs, e) ->
-               FnHoleR (t, CS._LRorRec (filter_out_outervs cs), e)
-             | FnHoleL (t, v, cs, e) ->
-               FnHoleL (t, v, CS._LRorRec (filter_out_outervs cs), e)
+             | FnHoleR (t, cs, e, d) ->
+               FnHoleR (t, CS._LRorRec (filter_out_outervs cs), e, d)
+             | FnHoleL (t, v, cs, e, d) ->
+               FnHoleL (t, v, CS._LRorRec (filter_out_outervs cs), e, d)
              | _ -> e);
         on_var = identity;
         on_const = identity;
@@ -657,10 +660,10 @@ let refine_completions (letfun : fnExpr) : fnExpr =
   in
   let on_case f e =
     match e with
-    | FnHoleL (t, v, cs, e) ->
-      FnHoleL (t, v, filter_out_arrays cs, e)
-    | FnHoleR (t, cs, e) ->
-      FnHoleR (t, filter_out_arrays cs, e)
+    | FnHoleL (t, v, cs, e, d) ->
+      FnHoleL (t, v, filter_out_arrays cs, e, d)
+    | FnHoleR (t, cs, e, d) ->
+      FnHoleR (t, filter_out_arrays cs, e, d)
     | FnRec (igu, (vs,bs), (s, e)) ->
       FnRec(igu, (vs,bs), (s, in_loops vs e))
     | _ -> e
@@ -776,7 +779,7 @@ let make_loop_join i bounds state fnlet =
     let join =
       FnLetIn([v, FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
                         (vs, nbs),
-                        (s, loop_join_body))],
+                        (s, to_rec_completions loop_join_body))],
               final_expr)
     in
     join
