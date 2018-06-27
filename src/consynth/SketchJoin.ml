@@ -764,11 +764,20 @@ let make_loop_join i bounds state fnlet =
         FnRecord(vs, nemap)
       | _ -> failwith "not expected."
     in
+    let final_expr =
+      let linvar =
+        List.map (fun var -> FnVariable var)
+          (VarSet.elements
+             (VarSet.filter (fun var -> is_array_type var.vtype) vs))
+      in
+      make_join ~index:(FnConst (CInt 0)) ~state:state
+        ~skip:linvar ~w_a:_wa expr
+    in
     let join =
       FnLetIn([v, FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
                         (vs, nbs),
                         (s, loop_join_body))],
-              expr)
+              final_expr)
     in
     join
 

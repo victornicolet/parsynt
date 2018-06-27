@@ -24,13 +24,18 @@ open FnDep
 open SymbExe
 open Utils
 
+
 let verbose = ref false
+
 
 let incremental_struct = ref ("", [])
 
+
 let _partial_solutions : (VarSet.t * fnExpr) SH.t = SH.create 10
 
+
 let store_partial s part = SH.add _partial_solutions s part
+
 
 let get_opset_of_inner op variables : fnExpr -> VarSet.t =
   rec_expr2
@@ -54,6 +59,7 @@ let get_diffset_of_inner : VarSet.t -> fnExpr ->  VarSet.t =
 
 let get_subset_of_inner : VarSet.t -> fnExpr -> VarSet.t =
   get_opset_of_inner (VarSet.inter)
+
 
 let get_inloop_info vars : fnExpr -> (VarSet.t * VarSet.t) =
   let _init = VarSet.empty, VarSet.empty in
@@ -84,7 +90,10 @@ let get_inloop_info vars : fnExpr -> (VarSet.t * VarSet.t) =
       on_const = (fun v -> _init);
     }
 
-let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
+
+let rec restrict_func
+    (old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
+
   let update_rectype name stl =
     let stl' =
       List.filter
@@ -186,12 +195,11 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
   let rec_seq_var =
     let diffset = get_subset_of_inner variables pb.main_loop_body in
     mkFnVar "A" (Vector (record_type diffset, None))
-
   in
   let new_context =
     let ctr = ctx_inter pb.scontext variables in
-    (* This assumes the only used vars that are record sequences are the summarized
-       input of the summarized outer loop.
+    (* This assumes the only used vars that are record sequences are the
+       summarized input of the summarized outer loop.
        See InnerFuncs.ml, L43 (transform_rl_vars)
     *)
     let update_record_sequences var =
@@ -356,13 +364,18 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
   in
 
   transform_expr2
-    { case = (fun e -> match e with FnRec _ | FnRecord _ | FnLetIn _ -> true | _ -> false);
+    { case = (fun e ->
+          match e with
+          |  FnRec _ | FnRecord _ | FnLetIn _ -> true
+          | _ -> false);
       on_case =
         (fun f e ->
            match e with
            | FnRec (igu, (vs, bs), (s, body)) ->
-             FnRec (igu, (VarSet.diff vs variables, transform_initial_state s bs),
-                    (new_inner_binder, remove_empty_lets (transform_loop_body s body)))
+             FnRec (igu, (VarSet.diff vs variables, transform_initial_state s
+                            bs),
+                    (new_inner_binder, remove_empty_lets
+                       (transform_loop_body s body)))
 
            | FnRecord (vs, emap) ->
              FnRecord(vs,
@@ -370,7 +383,8 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
                           try mkVarExpr (VarSet.find_by_id variables k)
                           with Not_found -> change_binders e) emap)
            | FnLetIn (blist, expr) ->
-             FnLetIn (List.map (fun (v,e) -> (change_loopres_binder v, f e)) blist,
+             FnLetIn (List.map (fun (v,e) -> (change_loopres_binder v, f e))
+                        blist,
                       f expr)
 
            | _  -> failwith "on-case failure");
@@ -383,6 +397,7 @@ let compose_loop (sol : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : f
   match prev_solution, sketch with
   | FnLetIn([x1, FnRec(_,_,(s1, bodysol))], r1),
     FnLetIn([x2, FnRec(igu, st2,(s2, bodysketch))], r2) ->
+    printf "======= %a@." pp_fnexpr sketch;
     let r =
       replace_expression (FnVar x1) (FnVar x2)
         (complete_simple_sketch r2 r1)
@@ -414,24 +429,33 @@ let complete_increment
     let new_sketch =
       if has_loop incr_sketch  then
         begin if has_loop prev_solution then
-            (* Match 'one on one' *)
-            compose_loop
-              sol
-              prev_solution
-              incr_sketch
+            begin
+              (* Match 'one on one' *)
+              if !verbose then printf "[INFO] Loop solution, loop sketch.@.";
+              compose_loop
+                sol
+                prev_solution
+                incr_sketch
+            end
           else
+            begin
             (* Remove the variables that can be joined with
                a constant join from the sketch and append the
                join at the beginning.
             *)
+              if !verbose then printf "[INFO] Scalar solution, loop sketch.@.";
             compose prev_solution
               (remove_from_loop_state
                  sol.scontext.state_vars
                  incr_sketch)
+          end
         end
       else
-        (* The incremental sketch is scalar. The prev solution should be too. *)
-        complete_simple_sketch incr_sketch prev_solution
+        begin
+          (* The incremental sk. is scalar. The prev solution should be too.*)
+          if !verbose then printf "[INFO] Scalar sketch.@.";
+          complete_simple_sketch incr_sketch prev_solution
+        end
     in
     if inner then { increment with memless_sketch = new_sketch }
     else { increment with join_sketch = new_sketch }

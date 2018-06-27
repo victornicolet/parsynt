@@ -192,9 +192,11 @@ let call_solver_incremental
       (fun (et, solution) incr_pb ->
          let part_pb = complete_increment ~inner:inner incr_pb solution in
          if !verbose then
-           printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
-             incr_pb.loop_name
+           printf "@.@[<v 4>%s[INFO] Partial problem %s:%s@;%a.@;\
+                   %sSketch:%s@;%a@]@."
+             (color "blue") incr_pb.loop_name color_default
              FnPretty.pp_fnexpr part_pb.main_loop_body
+             (color "blue") color_default
              FnPretty.pp_fnexpr (if inner then
                                   part_pb.memless_sketch
                                 else

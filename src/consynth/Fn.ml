@@ -1201,6 +1201,33 @@ let has_loop (e : fnExpr) : bool =
       on_const = (fun e -> false); }
     e
 
+let rec unmodified_vars (state : VarSet.t) (expr : fnExpr) =
+  match expr with
+  | FnLetIn (binds, expr') ->
+    let state' =
+      VarSet.diff
+        state
+        (* Set of modified vars *)
+        (List.fold_left
+           (fun u (v, e) ->
+              match e with
+              | FnVar v' when v = v -> u
+              | _ -> VarSet.add (var_of_fnvar v) u)
+           VarSet.empty binds)
+    in unmodified_vars state' expr'
+  | FnRecord (vs, emap) ->
+    VarSet.filter
+      (fun var ->
+         try
+           begin match IM.find var.vid emap with
+             | FnVar (FnVariable var') -> var'.vid = var.vid
+             | _ -> false
+           end
+         with _ -> true) state
+
+  | _ -> state
+
+
 (** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
 
 
