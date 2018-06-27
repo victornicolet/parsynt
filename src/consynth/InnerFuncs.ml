@@ -267,6 +267,29 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
         in
         FnRec (igu, vsbs, loopdef),
         Some (unwrap_state in_state choices')
+
+      | FnLetIn(prescalar,
+                FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices))) ->
+        let sub er (v,e) =
+          replace_expression
+            ~in_subscripts:false
+            ~to_replace:(FnVar v)
+            ~by:e
+            ~ine:er
+        in
+        let f e =
+          let e' = replace_expression
+            ~in_subscripts:false
+            ~to_replace:(FnVar loop_res)
+            ~by:(FnVar s)
+            ~ine:e
+          in
+          List.fold_left sub e' prescalar
+        in
+        let choices' = IM.map f choices in
+        FnRec (igu, vsbs, loopdef),
+        Some (unwrap_state in_state choices')
+
       | e ->  e, None
     in
 

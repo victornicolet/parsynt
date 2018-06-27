@@ -117,7 +117,7 @@ let rec collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
 
 
 let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
-  (* Search for variables that depend only on themselves *)
+
   let deps_sorted =
     (List.sort (fun (v1,i1) (v2,i2) -> compare i1 i2)
        (List.map
@@ -138,7 +138,7 @@ let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
              dep
              to_sat)
       vdeps
-      (VarSet.singleton var)
+      VarSet.empty
   in
   let rec build_clusters vlist accum =
     match vlist with
@@ -147,7 +147,7 @@ let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =
       let cluster, remainder =
         let vdeps = IM.find var.vid deps in
         let cluster = satisfy var vdeps accum in
-        cluster,
+        VarSet.add var cluster,
         (List.filter (fun (v,i) -> not (VarSet.mem v cluster)) tl)
       in
       build_clusters remainder (accum@[cluster])

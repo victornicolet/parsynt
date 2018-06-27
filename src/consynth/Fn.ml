@@ -673,6 +673,8 @@ let rec_expr
     | e when case e -> case_handler recurse_aux e
     | FnVar v -> var_handler v
     | FnConst c -> const_handler c
+    | FnVector el ->
+      List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | FnBinop (_, e1, e2) ->
       join (recurse_aux e1) (recurse_aux e2)

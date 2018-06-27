@@ -411,31 +411,37 @@ and inline_inner_join
     | _ -> false
   in
 
-  wa := state_has_array;
+  let m _s igu vs bs sarg b : (fnLVar * fnExpr) list =
+    wa := state_has_array;
+    if !optim_use_raw_inner then
+      [vbound, FnRec (igu, (vs, bs), (sarg, b))]
+    else
+      let maybe_ra, core_body = strip_record_assignments b in
+      (match maybe_ra with
+       | Some ra ->
+         let core_body' = drill core_body in
+         let to_inline =
+           [vbound, FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body')))]
+         in
+         if !verbose then
+           printf "@[<v 4>[INFO] INLINE THIS: %a@]@." pp_fnexpr
+             (FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body'))));
+         to_inline
+
+       | None ->
+         failhere __FILE__ "inline_inner_join"
+           "Missing bindings in inner join loop body.")
+  in
   match get_inner_solution f.vname with
   | Some (ctx, func) ->
     begin
       match func with
       (* Match shape of solution of inner join.*)
       | FnLetIn([(_s, FnRec (igu, (vs, bs), (sarg, b)))], _) ->
-        if !optim_use_raw_inner then
-          [vbound, FnRec (igu, (vs, bs), (sarg, b))]
-        else
-          let maybe_ra, core_body = strip_record_assignments b in
-          (match maybe_ra with
-          | Some ra ->
-            let core_body' = drill core_body in
-            let to_inline =
-              [vbound, FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body')))]
-            in
-            if !verbose then
-              printf "@[<v 4>[INFO] INLINE THIS: %a@]@." pp_fnexpr
-                (FnRec(igu, (vs,bs), (sarg, FnLetIn(ra, core_body'))));
-            to_inline
+        m _s igu vs bs sarg b
 
-          | None ->
-            failhere __FILE__ "inline_inner_join"
-              "Missing bindings in inner join loop body.")
+      | FnLetIn(scs, FnLetIn([(_s, FnRec (igu, (vs, bs), (sarg, b)))], _)) ->
+        let core = m _s igu vs bs sarg b in core
 
       | _ -> failhere __FILE__ "inline_inner_join"
                "Toplevel form of inner join not recognized."

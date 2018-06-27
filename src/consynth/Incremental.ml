@@ -228,8 +228,21 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
 
 let get_dependent_subsets (problem : prob_rep) : VarSet.t list =
   let dep_map =
-    collect_dependencies problem.scontext problem.main_loop_body
+    let f k d =
+      VarSet.inter problem.scontext.state_vars
+        (VarSet.filter (fun v -> v.vid != k) d)
+    in
+    IM.mapi f
+    (collect_dependencies problem.scontext problem.main_loop_body)
   in
+  if !verbose then
+    begin
+      printf "[INFO] Dependencies:@.";
+      IM.iter (fun k deps ->
+          printf "    %s <-- %a@."
+            (VarSet.find_by_id problem.scontext.all_vars k).vname
+            VarSet.pp_var_names deps) dep_map;
+    end;
   rank_and_cluster problem.scontext.state_vars dep_map
 
 
@@ -394,23 +407,38 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
 
 
 let compose_loop (sol : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : fnExpr =
-  match prev_solution, sketch with
-  | FnLetIn([x1, FnRec(_,_,(s1, bodysol))], r1),
-    FnLetIn([x2, FnRec(igu, st2,(s2, bodysketch))], r2) ->
-    let r =
-      replace_expression (FnVar x1) (FnVar x2)
-        (complete_simple_sketch r2 r1)
-    in
-    begin
-      match bodysol, bodysketch with
-      | FnLetIn(l1, e1), FnLetIn(l2, e2) ->
-        let body = FnLetIn(l2, complete_simple_sketch e2 e1) in
-        let res = FnLetIn([x2, FnRec(igu, st2, (s2, body))], r) in
-        res
+  let scalars, prev_sol =
+    match prev_solution with
+    | FnLetIn(scalars, FnLetIn([x1, FnRec (a,b,c)], r1)) ->
+      scalars, FnLetIn([x1, FnRec (a,b,c)], r1)
 
-      | _ -> failwith "OP"
-    end
-  | _ -> failwith "OP"
+    | FnLetIn([x1, FnRec _], r1) ->
+      [] , prev_solution
+
+    | _ -> failhere __FILE__ "compose_loop" "Bad top form."
+  in
+  let core =
+    match prev_sol, sketch with
+    | FnLetIn([x1, FnRec(_,_,(s1, bodysol))], r1),
+      FnLetIn([x2, FnRec(igu, st2,(s2, bodysketch))], r2) ->
+      let r =
+        replace_expression (FnVar x1) (FnVar x2)
+          (complete_simple_sketch r2 r1)
+      in
+      begin
+        match bodysol, bodysketch with
+        | FnLetIn(l1, e1), FnLetIn(l2, e2) ->
+          let body = FnLetIn(l2, complete_simple_sketch e2 e1) in
+          let res = FnLetIn([x2, FnRec(igu, st2, (s2, body))], r) in
+          res
+
+        | _ -> failhere __FILE__ "compose_loop" "Bad body form."
+      end
+    | _ -> failhere __FILE__ "compose_loop" "Bad top form."
+  in
+  match scalars with
+  | [] -> core
+  | _ -> FnLetIn(scalars, core)
 
 
 let complete_increment
