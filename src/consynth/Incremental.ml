@@ -71,7 +71,8 @@ let get_inloop_info vars : fnExpr -> (VarSet.t * VarSet.t) =
     List.fold_left
       (fun (subs, bset) (v, e) ->
          match e with
-         | FnRec(_,(vs,_),_) -> (VarSet.diff vs vars, VarSet.singleton (var_of_fnvar v))
+         | FnRec(_,(vs,_),_) ->
+           VarSet.diff vs vars, VarSet.singleton (var_of_fnvar v)
          | _ -> (subs, bset)) _init blist
   in
   rec_expr2

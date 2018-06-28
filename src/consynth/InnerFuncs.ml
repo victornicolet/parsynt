@@ -132,7 +132,9 @@ let replace_by_join problem inner_loops =
          | None ->
 
            if !verbose then
-             printf "@.[INFO] Inner join %s is not inlined.@." in_info.loop_name;
+             printf
+               "@.[INFO] Inner join %s is not inlined.@."
+               in_info.loop_name;
 
            let capture_state =
              FnRecord (state, identity_map state)
@@ -169,7 +171,8 @@ let replace_by_join problem inner_loops =
                         used_vars = added_inputs }
   in
   let newbody, newctx =
-    List.fold_left replace (problem.main_loop_body, problem.scontext) inner_loops
+    List.fold_left
+      replace (problem.main_loop_body, problem.scontext) inner_loops
   in
 
   SH.add problem.loop_body_versions _KEY_JOIN_NOT_INLINED_
@@ -214,7 +217,9 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
     let in_type = record_type in_state in
     let in_index = VarSet.max_elt in_info.scontext.index_vars in
     let in_binder = mkFnVar ("$"^(string_of_int in_info.id)^"s") in_type in
-    let map_args = IM.of_alist (List.combine (VarSet.vids_of_vs in_state) args) in
+    let map_args =
+      IM.of_alist (List.combine (VarSet.vids_of_vs in_state) args)
+    in
     if !verbose then
       printf
         "[WARNING] Inlined inner function iterates from 0 to %i by default.@."

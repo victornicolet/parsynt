@@ -1172,6 +1172,18 @@ let rec complete_final_state (vars : VarSet.t) (func : fnExpr) : fnExpr =
   | _ -> func
 
 
+let rec extend_final_state
+    (vars : VarSet.t)
+    (extension : fnExpr IM.t)
+    (func : fnExpr) : fnExpr =
+  match func with
+  | FnRecord (vs, emap) ->
+    FnRecord(VarSet.union vars vs, IM.add_all emap extension)
+
+  | FnLetIn (el, l) -> FnLetIn (el, extend_final_state vars extension l)
+
+  | _ -> func
+
 
 let rec used_in_fnexpr (expr : fnExpr): VarSet.t =
   let join = VarSet.union in
@@ -1217,6 +1229,26 @@ let has_loop (e : fnExpr) : bool =
       on_var = (fun e -> false);
       on_const = (fun e -> false); }
     e
+
+let last_expr (vars : VarSet.t) (expr : fnExpr) =
+  let rec aux e x =
+    match e with
+    | FnLetIn (l, e0) ->
+      aux e0
+        (IM.add_all
+           x
+           (IM.of_alist
+              (List.filter
+                 (fun (vid, e) -> VarSet.has_vid vars vid)
+                 (List.map (fun (v,e) -> (var_of_fnvar v).vid, e) l))))
+
+    | FnRecord (vs, emap) ->
+      IM.add_all x (IM.filter (fun k _ -> VarSet.has_vid vars k) emap)
+
+    | _ -> x
+  in aux expr IM.empty
+
+
 
 let rec unmodified_vars (state : VarSet.t) (expr : fnExpr) =
   match expr with

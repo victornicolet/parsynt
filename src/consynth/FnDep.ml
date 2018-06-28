@@ -106,7 +106,14 @@ let rec collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
         }
         lbody
     in
-    IM.map (fun e -> used_in_fnexpr e) final_exprs
+    let fnu = uses ctx.state_vars func in
+    IM.mapi
+      (fun i e ->
+         VarSet.union
+           (used_in_fnexpr e)
+           (IM.find i fnu))
+      final_exprs
+
   with SymbExeError (s, e) ->
     if !verbose then
       begin

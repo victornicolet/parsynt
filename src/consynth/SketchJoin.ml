@@ -109,14 +109,19 @@ let midx_of_hole =
 (* Some transformations need to be wrapped in a recursive function *)
 let force_wrap = ref false
 
-let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(skip=[])
+let rec make_holes
+    ?(max_depth = 1)
+    ?(is_final = false)
+    ?(is_array = false)
+    ?(skip=[])
     (index_expr : fnExpr)
     (state : VarSet.t)
     (optype : operator_type)
-    expression =
+    (expression : fnExpr) : fnExpr * int =
   let holt t = (t, optype) in
   let self_rcall =
-    make_holes ~max_depth:max_depth ~is_final:is_final ~is_array:is_array  ~skip:skip
+    make_holes
+      ~max_depth:max_depth ~is_final:is_final ~is_array:is_array  ~skip:skip
       index_expr state
   in
   let make_hole_variable var vi =
@@ -163,8 +168,8 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
                    CS._LorR completion, index_expr, 1),
           1
         else if is_record_type t then
-          (* At this point, a variable of record type (not a record expression!) should
-             be the summarized input from the inner loop. *)
+          (* At this point, a variable of record type (not a record expression!)
+             should be the summarized input from the inner loop. *)
           match t with
           | Record (s, lt) ->
             let stl, rvs = get_struct s in
@@ -253,7 +258,8 @@ let rec make_holes ?(max_depth = 1) ?(is_final = false) ?(is_array = false) ?(sk
   | FnLetIn (bindings, cont) ->
     let w_a = ref false in
     let new_bindings  =
-      make_assignment_list ~index_e:index_expr ~state:state ~skip:skip ~wa:w_a bindings
+      make_assignment_list
+        ~index_e:index_expr ~state:state ~skip:skip ~wa:w_a bindings
     in
     let to_skip = fst (ListTools.unpair bindings) in
     let new_cont, _ =
@@ -286,7 +292,8 @@ and make_hole_e ?(max_depth = 2) ?(is_array=false) ?(is_final=false)
        state)
      optype e
 
-and make_assignment_list ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array =
+and make_assignment_list
+    ~index_e:ie ~state:state ~skip:skip ~wa:writes_in_array =
   let in_skip_list var skip =
     match var with
     | FnVariable v ->
@@ -388,8 +395,10 @@ and inline_inner_join
               List.map
           (fun (v, e) ->
              match e with
-             | FnVar v' when v = v' -> (v,e)
-             | _ -> (v, fst (make_hole_e ~max_depth:1 ~is_array:!wa index state e)))
+               | FnVar v' when v = v' ->
+                 (v,e)
+               | _ ->
+                 (v, fst(make_hole_e ~max_depth:1 ~is_array:!wa index state e)))
           bindings
     in
     match body with
@@ -492,12 +501,14 @@ and make_join ~(index : fnExpr) ~(state : VarSet.t) ~(skip: fnLVar list)
       (VarSet.elements state)
   in
   if !make_flat_join then
-    wrap_state ((make_assignments [] --> List.flatten --> remap_bindings_to_state) body)
+    wrap_state
+      ((make_assignments [] --> List.flatten --> remap_bindings_to_state) body)
   else
     let bds = List.rev (make_assignments [] body) in
     match bds with
     | hd :: (rhd :: rtl) ->
-      List.fold_left (fun cont binds -> FnLetIn(binds, cont)) (wrap_state hd) (rhd :: rtl)
+      List.fold_left
+        (fun cont binds -> FnLetIn(binds, cont)) (wrap_state hd) (rhd :: rtl)
     | [l] -> wrap_state l
     | _ -> wrap_state []
 
@@ -561,8 +572,15 @@ and merge_leaves max_depth (e,d) =
       | FnCond (c, ei, ee) ->
         begin
           if is_a_hole ei && is_a_hole ee && is_a_hole c then
-            FnCond (FnHoleR ((Boolean, NotNum), completion_vars_of_hole c, midx_of_hole ee, 1),
-                    ei, ee), d
+            FnCond (
+              FnHoleR (
+                (Boolean, NotNum),
+                completion_vars_of_hole c,
+                midx_of_hole ee,
+                1),
+              ei,
+              ee),
+            d
           else
             e, 0
         end
@@ -642,7 +660,9 @@ let refine_completions (letfun : fnExpr) : fnExpr =
     in
     transform_expr2
       {
-        case = (fun e -> match e with FnHoleR _ | FnHoleL _ -> true | _ -> false);
+        case =
+          (fun e ->
+            match e with FnHoleR _ | FnHoleL _ -> true | _ -> false);
         on_case =
           (fun f e -> match e with
              | FnHoleR (t, cs, e, d) ->
@@ -688,7 +708,8 @@ let wrap_with_loop
   let i_start, i_end = bounds in
   let start_state_valuation =
     let lsp =
-      VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
+      VarSet.add_prefix state
+        (Conf.get_conf_string "rosette_join_left_state_prefix")
     in
     let stv_or_cst =
       List.map
@@ -736,59 +757,126 @@ let wrap_with_choice (state : VarSet.t) (base_join : fnExpr) : fnExpr =
 
 let make_loop_join i bounds state fnlet =
   let lsp  =
-    VarSet.add_prefix state (Conf.get_conf_string "rosette_join_left_state_prefix")
+    VarSet.add_prefix state
+      (Conf.get_conf_string "rosette_join_left_state_prefix")
+  in
+  let state_vars_to_left_thread =
+    transform_expr (fun e -> false) (fun f e -> e)
+      (fun c -> c)
+      (fun v ->
+         if VarSet.mem (var_of_fnvar v) state then
+           begin match v with
+             | FnVariable var ->
+               FnVariable (VarSet.find_by_id lsp var.vid )
+             | FnArray(FnVariable var, ie) ->
+               FnArray (FnVariable
+                          (VarSet.find_by_id lsp var.vid), ie)
+             | _ -> failwith "not supported."
+           end
+         else v)
   in
   let _wa = ref true in
-  match fnlet with
-  | FnLetIn([v, FnRec((init,g,u), (vs,bs),(s, lbody))], expr) ->
-    let idx =
-      try
-        mkVarExpr (VarSet.max_elt
-                     (VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u)))
-      with Not_found ->
-        failhere __FILE__ "make_loop_join" "Loop to drill has no index."
-    in
-    let loop_join_body =
-      make_join ~index:idx ~state:state ~skip:[] ~w_a:_wa lbody
-    in
+  let idx (i,g,u) =
+    try
+      mkVarExpr (VarSet.max_elt
+                   (VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u)))
+    with Not_found ->
+      failhere __FILE__ "make_loop_join" "Loop to drill has no index."
+  in
+  let drill_loop_body (i,g,u) (vs, bs) (s, lbody) =
+    let idx = idx (i,g,u) in
     let ist, iend = bounds in
     let nbs =
       match bs with
       | FnRecord(vs, emap) ->
-        let nemap = IM.map
-            (fun expr ->
-               transform_expr (fun e -> false) (fun f e -> e)
-                 (fun c -> c)
-                 (fun v ->
-                    if VarSet.mem (var_of_fnvar v) state then
-                      begin match v with
-                        | FnVariable var ->
-                          FnVariable (VarSet.find_by_id lsp var.vid )
-                        | FnArray(FnVariable var, ie) ->
-                          FnArray (FnVariable (VarSet.find_by_id lsp var.vid), ie)
-                        | _ -> failwith "not supported."
-                      end
-                    else v) expr) emap
-        in
+        let nemap = IM.map state_vars_to_left_thread emap in
         FnRecord(vs, nemap)
       | _ -> failwith "not expected."
     in
-    let final_expr =
-      let linvar =
-        List.map (fun var -> FnVariable var)
-          (VarSet.elements
-             (VarSet.filter (fun var -> is_array_type var.vtype) vs))
-      in
-      make_join ~index:(FnConst (CInt 0)) ~state:state
-        ~skip:linvar ~w_a:_wa expr
+    let loop_join_body =
+      make_join ~index:idx ~state:state ~skip:[] ~w_a:_wa lbody
     in
-    let join =
-      FnLetIn([v, FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
+    FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
                         (vs, nbs),
-                        (s, to_rec_completions loop_join_body))],
-              final_expr)
+                        (s, to_rec_completions loop_join_body))
+  in
+  let final_expr (vs, expr) =
+    let linvar =
+      List.map (fun var -> FnVariable var)
+        (VarSet.elements
+           (VarSet.filter (fun var -> is_array_type var.vtype) vs))
     in
-    join
+    make_join ~index:(FnConst (CInt 0)) ~state:state
+      ~skip:linvar ~w_a:_wa expr
+  in
+  match fnlet with
+  | FnLetIn([v, FnRec((init,g,u), (vs,bs),(s, lbody))], expr) ->
+    (* If the last `expr` after the loop updates a variable
+       that depends on array variables,
+       through another variable for example, *)
+    let push_in_loop, idmap =
+      let ctxt =
+        let x = mk_ctx (used_in_fnexpr expr) state in
+        {x with index_vars = used_in_fnexpr (idx (i,g,u))}
+      in
+      (* Variables of the state that depend on a linear variable through
+         linear dependencies.
+      *)
+      let vars_w_deps_lin =
+        let i_dlin =
+          IM.filter
+            (fun k vs -> VarSet.exists (fun var -> is_array_type var.vtype) vs)
+            (FnDep.collect_dependencies ctxt fnlet)
+        in
+        List.map
+          (fun (k, _) -> VarSet.find_by_id state k)
+          (IM.to_alist i_dlin)
+      in
+      let x = VarSet.diff (VarSet.of_list vars_w_deps_lin) vs in
+      x,
+      VarSet.fold (fun var m -> IM.add var.vid (mkVarExpr var) m) x IM.empty
+    in
+    (* Extend the loop body with the variable depending on the linear state
+       variables.
+    *)
+    if VarSet.cardinal push_in_loop > 0 then
+      begin
+        let vs', bs', s', lbody', expr' =
+          let index = idx (i,g,u) in
+          let ext_state = VarSet.union vs push_in_loop in
+          let ext_bs =
+            match bs with
+            | FnRecord(vs, emap) ->
+              FnRecord(ext_state, IM.add_all emap idmap)
+            | _ ->
+              failhere __FILE__ "make_loop_join" "Failed extending inner loop."
+          in
+          let s' = mkFnVar "s" (record_type ext_state) in
+          let ext_body =
+            let lbody' =
+              replace_expression (mkVarExpr s) (mkVarExpr s') lbody
+            in
+            let unwrap_added_vars =
+              VarSet.fold
+                (fun var bn -> (TestUtils._self s' var)::bn) ext_state []
+            in
+            let addmap =
+              let lb =
+                make_join ~index:index ~state:ext_state ~skip:[] ~w_a:_wa expr
+              in
+              last_expr push_in_loop lb
+            in
+            FnLetIn(unwrap_added_vars,
+                    extend_final_state push_in_loop addmap lbody')
+          in
+          ext_state, ext_bs, s', ext_body, expr
+        in
+        FnLetIn([v, drill_loop_body (init,g,u) (vs', bs') (s', lbody')],
+                final_expr (vs, expr))
+      end
+    else
+      FnLetIn([v, drill_loop_body (init,g,u) (vs, bs) (s, lbody)],
+              final_expr (vs, expr))
 
   | _ ->
     make_join ~index:i ~state:state ~skip:[] ~w_a:_wa fnlet
@@ -811,7 +899,9 @@ let make_wrapped_join
   if has_loop fnlet then
     make_loop_join outeri bounds state fnlet
   else
-    let base_join = make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet in
+    let base_join =
+      make_join ~index:outeri ~state:state ~skip:[] ~w_a:writes_in_array fnlet
+    in
     let wrapped_join =
       if (!writes_in_array || !force_wrap) && for_inner then
         let loop_join =
@@ -843,10 +933,13 @@ let build_join
         | [i] -> i
         | [] -> FnConst (CInt 0)
         | _ ->
-          failhere __FILE__ "build_for_inner" "Multiple inner loops not implemented."
+          failhere __FILE__ "build_for_inner"
+            "Multiple inner loops not implemented."
       in
       narrow_array_completions := true;
-      let raw_sketch = make_wrapped_join ~for_inner:true i bounds state reach_consts fnlet in
+      let raw_sketch =
+        make_wrapped_join ~for_inner:true i bounds state reach_consts fnlet
+      in
       let typed_sketch = set_types_and_varsets raw_sketch in
       let sketch = inner_optims state typed_sketch in
       narrow_array_completions := false;
@@ -856,7 +949,8 @@ let build_join
   else
     begin match ind_l with
       | [] ->
-        set_types_and_varsets (make_wrapped_join (FnConst (CInt 0)) bounds state IM.empty fnlet)
+        set_types_and_varsets
+          (make_wrapped_join (FnConst (CInt 0)) bounds state IM.empty fnlet)
       | [i] ->
         set_types_and_varsets (make_wrapped_join i bounds state IM.empty fnlet)
       | _ ->
@@ -920,7 +1014,8 @@ let match_hole_to_completion
     | FnHoleR _, e
     | FnChoice _, e ->
       if !verbose then
-        printf "@.[INFO] Hole solution: %a = %a.@." pp_fnexpr h pp_fnexpr (E.peval c);
+        printf "@.[INFO] Hole solution: %a = %a.@."
+          pp_fnexpr h pp_fnexpr (E.peval c);
       E.peval e
 
     | FnArraySet(ae, ie, e), FnArraySet(ae', ie', e') ->
@@ -928,12 +1023,15 @@ let match_hole_to_completion
 
     | FnBinop(op, e1, e2), FnBinop(op', e1', e2') when op = op' ->
       FnBinop(op, mhc e1 e1', mhc e2 e2')
+
     | FnUnop(op, e), FnUnop(op', e') when op = op' ->
       FnUnop(op, mhc e e')
+
     | FnCond(c, t, f), FnCond(c', t', f') ->
       FnCond(mhc c c', mhc t t', mhc f f')
 
-    | FnRec((i,g,u),(vs,bs),(s, body)), FnRec((i',g',u'),(vs', bs'),(s', body')) ->
+    | FnRec((i,g,u),(vs,bs),(s, body)),
+      FnRec((i',g',u'),(vs', bs'),(s', body')) ->
       FnRec((mhc i i', mhc g g', mhc u u'), (vs', bs'), (s', mhc body body'))
 
     | FnLetIn (bindings, cont), FnLetIn (bindings', cont') ->
