@@ -87,7 +87,7 @@ let convert (problem : prob_rep) : prob_rep =
 let rec limit_depth ?(depth = 0) (problem : prob_rep) =
     if List.length problem.inner_functions = 0 then problem
     else if depth = 0 then (problem.inner_functions <- List.map (limit_depth ~depth:(depth + 1)) problem.inner_functions; problem)
-    else convert problem  
+    else convert problem
 
 (**
    Recursively solve the inner loops using different tactics.
@@ -263,7 +263,7 @@ let main () =
   let solved =
     List.map check_option
       (List.filter is_some
-         (List.map solve_problem 
+         (List.map solve_problem
             (List.map limit_depth problem_list)))
   in
   (** Handle all the solutions found *)

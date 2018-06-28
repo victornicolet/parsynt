@@ -198,7 +198,7 @@ let cil2func cfile loops =
 let no_sketches = ref 0;;
 
 let func2sketch cfile funcreps =
-  let rec  transform_func func_info =
+  let rec transform_func func_info =
     let inners = List.map transform_func func_info.inner_funcs in
     let host_func =
       mkFuncDec
