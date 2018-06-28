@@ -80,7 +80,7 @@ let print_inner_result problem inner_funcs () =
 
 (* Function to convert a subproblem into a loop body *)
 let convert (problem : prob_rep) : prob_rep =
-    let pb = InnerFuncs.inline_inner ~inline_pick_join:false (Dimensions.width ()) problem in
+    let pb = InnerFuncs.inline_inner ~index_variable:true ~inline_pick_join:false (Dimensions.width ()) problem in
     problem.inner_functions <- []; pb
 
 (* Function to limit the depth to 1 *)
