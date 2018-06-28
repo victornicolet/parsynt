@@ -106,6 +106,29 @@ let midx_of_hole =
   | _ -> FnConst(CNil)
 
 
+let to_identity (vars : VarSet.t) (expr : fnExpr) : fnExpr =
+  let rec aux e =
+    match e with
+    | FnLetIn (l, e') ->
+      let new_l =
+        List.filter (fun (v, e) -> not (VarSet.mem (var_of_fnvar v) vars)) l
+      in
+      FnLetIn (new_l, aux e')
+
+    | FnRecord (vs, emap) ->
+      let new_emap =
+        IM.mapi
+          (fun i e0 ->
+             try let var = VarSet.find_by_id vars i in mkVarExpr var
+             with Not_found -> e0)
+          emap
+      in
+      FnRecord (vs, new_emap)
+
+    | _ -> e
+  in
+  aux expr
+
 (* Some transformations need to be wrapped in a recursive function *)
 let force_wrap = ref false
 
@@ -800,14 +823,37 @@ let make_loop_join i bounds state fnlet =
                         (vs, nbs),
                         (s, to_rec_completions loop_join_body))
   in
-  let final_expr (vs, expr) =
-    let linvar =
-      List.map (fun var -> FnVariable var)
-        (VarSet.elements
-           (VarSet.filter (fun var -> is_array_type var.vtype) vs))
-    in
-    make_join ~index:(FnConst (CInt 0)) ~state:state
-      ~skip:linvar ~w_a:_wa expr
+  let final_expr extension (s,s') (vs, expr)  =
+    if VarSet.is_empty extension then
+      let linvar =
+        List.map (fun var -> FnVariable var)
+          (VarSet.elements
+             (VarSet.filter (fun var -> is_array_type var.vtype) vs))
+      in
+      make_join ~index:(FnConst (CInt 0)) ~state:state
+        ~skip:linvar ~w_a:_wa expr
+    else
+      (* The loop before the final expression has been extended,
+         We need to add a choice binding, and make the last an
+         identity.
+      *)
+      let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
+      let ext_choices =
+        List.map
+          (fun v ->
+             let rightval = {v with vname = rprefix ^ v.vname} in
+             (mkVar v, FnChoice(
+                 [FnRecordMember(FnVar s', v.vname);
+                  mkVarExpr rightval])))
+          (VarSet.elements extension)
+      in
+      let expr' =
+        FnLetIn(ext_choices,
+                to_identity extension
+                  (replace_expression (FnVar s) (FnVar s') expr))
+      in
+      expr'
+
   in
   match fnlet with
   | FnLetIn([v, FnRec((init,g,u), (vs,bs),(s, lbody))], expr) ->
@@ -852,6 +898,7 @@ let make_loop_join i bounds state fnlet =
               failhere __FILE__ "make_loop_join" "Failed extending inner loop."
           in
           let s' = mkFnVar "s" (record_type ext_state) in
+
           let ext_body =
             let lbody' =
               replace_expression (mkVarExpr s) (mkVarExpr s') lbody
@@ -871,12 +918,13 @@ let make_loop_join i bounds state fnlet =
           in
           ext_state, ext_bs, s', ext_body, expr
         in
-        FnLetIn([v, drill_loop_body (init,g,u) (vs', bs') (s', lbody')],
-                final_expr (vs, expr))
+        let v' = mkFnVar "x" (record_type vs') in
+        FnLetIn([FnVariable v', drill_loop_body (init,g,u) (vs', bs') (s', lbody')],
+                final_expr push_in_loop (v, FnVariable v')  (vs, expr))
       end
     else
       FnLetIn([v, drill_loop_body (init,g,u) (vs, bs) (s, lbody)],
-              final_expr (vs, expr))
+              final_expr push_in_loop (v, v) (vs, expr))
 
   | _ ->
     make_join ~index:i ~state:state ~skip:[] ~w_a:_wa fnlet

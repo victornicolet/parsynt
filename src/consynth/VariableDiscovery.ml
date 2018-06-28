@@ -402,7 +402,8 @@ let discover_for_id problem var =
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
   let clean_aux_set =
-    remove_duplicate_auxiliaries start_exec_state aux_set problem.main_loop_body
+    remove_constant_auxiliaries
+      (remove_duplicate_auxiliaries start_exec_state aux_set problem.main_loop_body)
   in
 
   VarSet.iter discover_add (AuxSet.vars aux_set);

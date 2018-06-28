@@ -238,7 +238,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
     inlined
   in
 
-  let inline_join s in_info args =
+  let inline_join new_loopres in_info args =
     let j_start, j_end = get_bounds in_info in
     let repl_start e =
       replace_expression ~in_subscripts:true
@@ -247,6 +247,14 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
     let repl_end e =
       replace_expression ~in_subscripts:true
         ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
+    in
+
+    let repl_loopres x e =
+      replace_expression
+            ~in_subscripts:false
+            ~to_replace:(FnVar x)
+            ~by:(FnVar new_loopres)
+            ~ine:e
     in
     (**
        If the solution is of the form loop + choice bindings, extract the loop,
@@ -262,13 +270,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
       match replaced_rl with
       | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
         let choices' =
-          IM.map
-            (fun e ->
-               replace_expression
-                 ~in_subscripts:false
-                 ~to_replace:(FnVar loop_res)
-                 ~by:(FnVar s)
-                 ~ine:e) choices
+          IM.map (repl_loopres loop_res) choices
         in
         FnRec (igu, vsbs, loopdef),
         Some (unwrap_state in_state choices')
@@ -283,12 +285,7 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
             ~ine:er
         in
         let f e =
-          let e' = replace_expression
-            ~in_subscripts:false
-            ~to_replace:(FnVar loop_res)
-            ~by:(FnVar s)
-            ~ine:e
-          in
+          let e' = repl_loopres loop_res e in
           List.fold_left sub e' prescalar
         in
         let choices' = IM.map f choices in
@@ -318,28 +315,25 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
   let inline rfunc e =
     match e with
     | FnLetIn([lrb, FnApp(st, Some f, args)], FnLetIn(unwrap_lrb, expr)) ->
+      let matching_inner_loop =
+        List.find
+          (fun pin -> pin.id = (Conf.id_of_inner_loop f.vname))
+          problem.inner_functions
+      in
       let infun, new_unwraps =
         if inline_pick_join then
           let injoin, new_unwrap =
-            inline_join lrb
-              (List.find (fun pin ->
-                   pin.id = (Conf.id_of_inner_loop f.vname))
-                  problem.inner_functions) args
+            inline_join lrb matching_inner_loop args
           in
           match new_unwrap with
-          | Some l -> injoin, l
+          | Some l ->
+            injoin, l
           | None -> injoin, unwrap_lrb
         else
-          let injoin =
-                      inline_inner
-            (List.find (fun pin ->
-                 pin.id = (Conf.id_of_inner_loop f.vname))
-               problem.inner_functions) args
-          in
+          let injoin = inline_inner matching_inner_loop args in
           injoin, unwrap_lrb
       in
       FnLetIn([lrb, infun], FnLetIn(new_unwraps, expr))
-
 
     | _ -> rfunc e
   in
@@ -384,6 +378,7 @@ let update_inners_in_body
     (body : fnExpr) : fnExpr =
   let upd body (old_inner, new_inner) =
     let old_rname = record_name old_inner.scontext.state_vars in
+    let new_x = mkFnVar "tup$" (record_type new_inner.scontext.state_vars) in
     let all_record_accessors l =
       if
         List.length l > 0 &&
@@ -401,6 +396,20 @@ let update_inners_in_body
       else
         None
     in
+    let change_loopres_binder bindings =
+      let f (v, e) =
+        match v, e with
+        | FnVariable x, FnRec _
+        | FnVariable x, FnApp _ when is_record_type x.vtype ->
+          begin match x.vtype with
+            | Record(n, _) when n = old_rname ->
+              FnVariable new_x, e
+            | _ -> v, e
+          end
+        | _ -> v, e
+      in
+      List.map f bindings
+    in
     let case e =
       match e with
       | FnVar (FnVariable v) ->
@@ -415,23 +424,16 @@ let update_inners_in_body
     in
     let on_case f e =
       match e with
-      | FnVar (FnVariable v) ->
-        let typ = match v.vtype with
-          | Record (ols, _) when ols = old_rname ->
-            record_type new_inner.scontext.state_vars
-          | t -> t
-        in FnVar(FnVariable {v with vtype = typ})
+      | FnVar (FnVariable v) -> FnVar(FnVariable new_x)
 
       | FnLetIn(binds, expr) ->
         begin match all_record_accessors binds with
           | Some x ->
-            let x' =
-              {x with vtype = record_type new_inner.scontext.state_vars}
-            in
-            FnLetIn(bind_state x' new_inner.scontext.state_vars, f expr)
+            FnLetIn(bind_state new_x new_inner.scontext.state_vars, f expr)
           | None ->
-            FnLetIn(List.map (fun (v,e) -> (v, f e)) binds, f expr)
+            FnLetIn(change_loopres_binder binds, f expr)
         end
+
       | _ -> e
     in
     transform_expr2
