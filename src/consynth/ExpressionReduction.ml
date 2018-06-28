@@ -29,6 +29,68 @@ open Expressions
 
 let verbose = ref true
 
+let rec is_stv vset expr =
+  match expr with
+  | FnUnop (_, FnVar v)
+  | FnVar v ->
+    begin
+      try
+        VarSet.mem (check_option (vi_of v)) vset
+      with Failure s -> false
+    end
+  | FnCond (c, e1, e2) -> is_stv vset c
+  | _ -> false
+
+
+let scalar_normal_form (vset : VarSet.t) (e : fnExpr) =
+  let is_candidate =
+    function
+    | FnBinop (_, e1, e2)
+    | FnCond (_, e1, e2) ->
+      (** One of the operands must be a state variable
+          but not the other *)
+      (is_stv vset e1 && (not (fn_uses vset e2))) ||
+      (is_stv vset e2 && (not (fn_uses vset e1)))
+    (* Special rule for conditionals *)
+    | _ ->  false
+  in
+
+  let handle_candidate f =
+    function
+    | FnBinop (_, e1, e2) ->
+      begin
+        match e1, e2 with
+        | FnCond(c, _, _), estv when is_stv vset estv ->
+          [1]
+        | estv, FnCond(c, _, _) when is_stv vset estv ->
+          [1]
+        | e, estv  when is_stv vset estv -> [1]
+        | estv, e when is_stv vset estv -> [1]
+        | _ -> []
+      end
+
+    | FnCond (_, e1, e2) ->
+      if is_stv vset e1 then
+        [1]
+      else
+        [1]
+    | _ ->  []
+  in
+  let collected = (rec_expr
+                     (fun a b -> a@b)
+                     []
+                     is_candidate
+                     handle_candidate
+                     (fun c -> [])
+                     (fun v -> [])
+                     e)
+  in
+  (List.length collected) <= ((VarSet.cardinal vset) + 1)
+
+
+
+
+
 let reduce_cost_binop rfunc ctx (op2 : symb_binop) (x : fnExpr) (y : fnExpr) =
   match x, y with
   (** Transform comparisons with max min into conjunctions
@@ -278,7 +340,7 @@ let force_linear_normal_form ctx e =
   in e_tree
 
 
-let reduce_full ?(search_linear=false) ?(limit = 10) (ctx : context) (expr : fnExpr) =
+let reduce_full ?(limit = 10) (ctx : context) (expr : fnExpr) =
   let rec aux_apply_ternary_rules ctx limit e =
     let red_expr0 = reduce_cost ctx e in
     let red_expr1 = reduce_cost_specials ctx red_expr0 in
@@ -293,22 +355,23 @@ let reduce_full ?(search_linear=false) ?(limit = 10) (ctx : context) (expr : fnE
     rebuild_tree_AC ctx r1
   in
   let r0 = aux_apply_ternary_rules ctx limit expr in
-  if search_linear then
+  if scalar_normal_form ctx.state_vars r0 then
+    rules_AC r0
+  else
     (force_linear_normal_form ctx
        (factorize_multi_toplevel ctx r0))
-  else
-    rules_AC r0
 
-let rec normalize ?(linear=false) ctx sklet =
+
+let rec normalize ctx sklet =
   match sklet with
   | FnLetIn (ve_list, letin) ->
-    FnLetIn (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list,
+    FnLetIn (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list,
              normalize ctx letin)
   | FnRecord(vs, emap) ->
     let ve_list = unwrap_state vs emap in
-    wrap_state (List.map (fun (v, e) -> (v, reduce_full ~search_linear:linear ctx e)) ve_list)
+    wrap_state (List.map (fun (v, e) -> (v, reduce_full ctx e)) ve_list)
 
-  | e -> reduce_full ~search_linear:linear ctx e
+  | e -> reduce_full ctx e
 
 
 let clean_unused_assignments : fnExpr -> fnExpr =

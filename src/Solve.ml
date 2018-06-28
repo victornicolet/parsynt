@@ -156,17 +156,36 @@ let solution_found
                   identity_values = id_vals}
 
 
-let call_solver ?(inner=false) (ctx : context option) (pb : prob_rep) :
+let call_solver ?(timeout=(-1)) ?(inner=false) (ctx : context option) (pb : prob_rep) :
   float * prob_rep option =
-  let t_elapsed, parsed =
-    L.compile_and_fetch Conf.rosette
-      ~print_err_msg:Racket.err_handler_sketch
-      (C.pp_sketch ~inner:inner ~parent_context:ctx Conf.rosette)
-      pb
+
+  let rec solve_for_depth d0 dmax =
+    if !verbose then
+      printf "[INFO]%sSearching at depth %i...@."
+        (if timeout > 0 then "(TIMEOUT="^(string_of_int timeout)^") "
+         else "")
+        d0;
+
+    let t, p =
+      L.compile_and_fetch Conf.rosette
+        ~timeout:timeout
+        ~print_err_msg:Racket.err_handler_sketch
+        (C.pp_sketch ~inner:inner ~parent_context:ctx Conf.rosette)
+        (set_pb_hole_depths pb d0)
+    in
+    if List.exists (fun e -> (RAst.Str_e "unsat") = e) p || p = [] then
+      begin
+        if d0 = dmax then
+          t, None
+        else
+          solve_for_depth (d0 + 1) dmax
+      end
+    else
+      t, Some p
   in
-  if List.exists (fun e -> (RAst.Str_e "unsat") = e) parsed then
-    t_elapsed, None
-  else
+  let t_elapsed, maybe_parsed_sol = solve_for_depth 0 2 in
+  match maybe_parsed_sol with
+  | Some parsed ->
     begin try
         let sol =
           Some (solution_found ~inner:inner t_elapsed parsed pb)
@@ -178,6 +197,7 @@ let call_solver ?(inner=false) (ctx : context option) (pb : prob_rep) :
         (solution_failed ~failure:s pb;
          t_elapsed, None)
     end
+  | None -> -1.0, None
 
 
 let call_solver_incremental
@@ -192,14 +212,16 @@ let call_solver_incremental
       (fun (et, solution) incr_pb ->
          let part_pb = complete_increment ~inner:inner incr_pb solution in
          if !verbose then
-           printf "@[<v 4>[INFO] Partial problem %s:@;%a.@;Sketch:@;%a@]@."
-             incr_pb.loop_name
+           printf "@.@[<v 4>%s[INFO] Partial problem %s:%s@;%a.@;\
+                   %sSketch:%s@;%a@]@."
+             (color "blue") incr_pb.loop_name color_default
              FnPretty.pp_fnexpr part_pb.main_loop_body
+             (color "blue") color_default
              FnPretty.pp_fnexpr (if inner then
                                   part_pb.memless_sketch
                                 else
                                   part_pb.join_sketch);
-         match call_solver ~inner:inner ctx part_pb with
+         match call_solver ~timeout:10 ~inner:inner ctx part_pb with
          | et', Some sol ->
            store_partial
              sol.loop_name
@@ -210,16 +232,16 @@ let call_solver_incremental
          | et', None -> raise Not_found) (0., None) increments
   with Not_found -> -1.0, None
 
+
 let rec solve_one ?(inner=false) ?(expr_depth = 1) parent_ctx problem =
   (* Set the expression depth of the sketch printer.*)
-  FnPretty.holes_expr_depth := expr_depth;
   let lp_name = problem.loop_name in
   try
     message_start_subtask ("Solving sketch for "^problem.loop_name);
     (* Compile the sketch to a Racket file, call Rosette, and parse the
        solution. *)
     let racket_elapsed, parsed =
-      (if !solve_incrementally then call_solver_incremental else call_solver)
+      (if !solve_incrementally then call_solver_incremental else (call_solver ~timeout:(-1)))
         ~inner:inner parent_ctx problem
     in
     match parsed with

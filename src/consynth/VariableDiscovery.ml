@@ -56,6 +56,7 @@ let unfold_index xinfo idx_update =
       inputs = ES.empty;
     }
   in
+<<<<<<< HEAD
   let iset = used_in_fnexpr idx_update in
   let idx_u = if VarSet.cardinal iset = 1 then
       let idx = VarSet.max_elt iset in
@@ -64,6 +65,11 @@ let unfold_index xinfo idx_update =
       idx_update
   in
   let ix' = unfold_once ~silent:true xi idx_u in
+=======
+  let idx = VarSet.max_elt xinfo.context.index_vars in
+  let idx_u = wrap_state [FnVariable idx, idx_update] in
+  let ix' = unfold_once ~silent:true ix idx_u in
+>>>>>>> 6ecf2ec30cf8ad74f366c5236d554f7483c998d6
   VarSet.fold
     (fun vi map -> IM.add vi.vid (IM.find vi.vid ix'.state_exprs) map)
     xinfo.context.index_vars IM.empty
@@ -336,7 +342,7 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
       {
         xinfo0 with
         state_exprs =
-          IM.map (ER.normalize ~linear:true xinfo.context --> enormalize xinfo.context)
+          IM.map (ER.normalize xinfo.context --> enormalize xinfo.context)
             xinfo0.state_exprs
       }
     in
@@ -407,7 +413,8 @@ let discover_for_id problem var =
   in
   (* Filter out the auxiliaries that are just duplicates of a state variable. *)
   let clean_aux_set =
-    remove_duplicate_auxiliaries start_exec_state aux_set problem.main_loop_body
+    remove_constant_auxiliaries
+      (remove_duplicate_auxiliaries start_exec_state aux_set problem.main_loop_body)
   in
 
   VarSet.iter discover_add (AuxSet.vars aux_set);

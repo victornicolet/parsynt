@@ -8,14 +8,27 @@ function Mps(a : seq<int>): int
   if a == [] then 0 else DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Mps(a[..|a|-1]))
 }
 
+function Aux_mps5(a : seq<int>): int
+{
+  if a == [] then
+    0
+    else
+    DfMax((Sum(a[..|a|-1]) + a[|a|-1]), Aux_mps5(a[..|a|-1]))
+}
+
 function Sum(a : seq<int>): int
 {
   if a == [] then 0 else (Sum(a[..|a|-1]) + a[|a|-1])
 }
 
-function MpsJoin(leftMps : int, leftSum : int, rightMps : int, rightSum : int): int
+function MpsJoin(leftAux_mps5 : int, leftSum : int, rightAux_mps5 : int, rightSum : int): int
 {
-  DfMax((leftSum + rightMps), leftMps)
+  DfMax((leftSum + rightAux_mps5), leftAux_mps5)
+}
+
+function Aux_mps5Join(leftAux_mps5 : int, leftSum : int, rightAux_mps5 : int, rightSum : int): int
+{
+  DfMax((leftSum + rightAux_mps5), leftAux_mps5)
 }
 
 function SumJoin(leftSum : int, rightSum : int): int
@@ -25,11 +38,11 @@ function SumJoin(leftSum : int, rightSum : int): int
 
 
 lemma BaseCaseMps(a : seq<int>)
-  ensures Mps(a) == MpsJoin(Mps(a), Sum(a), Mps([]), Sum([]))
+  ensures Mps(a) == MpsJoin(Aux_mps5(a), Sum(a), Aux_mps5([]), Sum([]))
   {}
 
 lemma HomMps(a : seq<int>, R_a : seq<int>)
-  ensures Mps(a + R_a) == MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a))
+  ensures Mps(a + R_a) == MpsJoin(Aux_mps5(a), Sum(a), Aux_mps5(R_a), Sum(R_a))
   {
     if R_a == [] 
     {
@@ -40,10 +53,35 @@ lemma HomMps(a : seq<int>, R_a : seq<int>)
     calc{
     Mps(a + R_a);
     =={
+      HomAux_mps5(a, R_a[..|R_a| - 1]);
       HomSum(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    MpsJoin(Mps(a), Sum(a), Mps(R_a), Sum(R_a));
+    MpsJoin(Aux_mps5(a), Sum(a), Aux_mps5(R_a), Sum(R_a));
+    } // End calc.
+  } // End else.
+} // End lemma.
+
+lemma BaseCaseAux_mps5(a : seq<int>)
+  ensures Aux_mps5(a) == Aux_mps5Join(Aux_mps5(a), Sum(a), Aux_mps5([]), Sum([]))
+  {}
+
+lemma HomAux_mps5(a : seq<int>, R_a : seq<int>)
+  ensures Aux_mps5(a + R_a) == Aux_mps5Join(Aux_mps5(a), Sum(a), Aux_mps5(R_a), Sum(R_a))
+  {
+    if R_a == [] 
+    {
+    assert(a + [] == a);
+    BaseCaseAux_mps5(a);
+    
+     } else {
+    calc{
+    Aux_mps5(a + R_a);
+    =={
+      HomSum(a, R_a[..|R_a| - 1]);
+      assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
+      }
+    Aux_mps5Join(Aux_mps5(a), Sum(a), Aux_mps5(R_a), Sum(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

@@ -17,7 +17,7 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(* *
+(*
    1 - Printing sketches for Rosette (Scheme lang)
    2 - Printing sketches for other sygus solvers (Synthlib v2) (Work in progress...)
 *)
@@ -81,17 +81,20 @@ type define_symbolic =
   | DefRecord of (fnV * string * ((string * fn_type) list) * (int * int)) list
   | DefEmpty
 
+
 let gen_array_cell_vars ~num_cells:n vi =
   let gen_cell i =
     {vi with vname = vi.vname^"$"^(string_of_int i)}
   in
   ListTools.init (n - 1) gen_cell
 
+
 let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
   ListTools.init (n - 1)
     (fun i ->
        (ListTools.init (m - 1)
           (fun j -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)})))
+
 
 let rec pp_define_symbolic fmt def =
   let to_v l  = (List.map (fun vi -> vi.vname) l) in
@@ -362,7 +365,8 @@ let handle_special_consts fmt input_vars reach_consts =
 *)
 let defined_structs = SH.create 10
 
-let define_struct fmt (struct_name_and_fields : string * string list) =
+let define_structs fmt (rlist : fn_type list) =
+  let define_struct fmt struct_name_and_fields =
   if SH.mem defined_structs (fst struct_name_and_fields) ||
      List.length (snd struct_name_and_fields) = 0
   then ()
@@ -374,6 +378,17 @@ let define_struct fmt (struct_name_and_fields : string * string list) =
       pp_struct_equality fmt struct_name_and_fields;
       pp_newline fmt ();
     end
+  in
+  List.iter
+    (fun rt ->
+       match rt with
+       | Record(name, stl) ->
+         define_struct fmt (name, fst(ListTools.unpair stl));
+         fprintf fmt "@."
+
+       | _ -> ()) rlist
+
+
 (** Given a set of variables, pretty print their definitions and return
     a list of strings representing the names of the symbolic variables
     that have been defined.
@@ -518,7 +533,7 @@ let pp_join fmt (inner, sketch) =
   let jbody =
     if inner then sketch.memless_sketch else sketch.join_sketch
   in
-  define_struct fmt !Incremental.incremental_struct;
+  define_structs fmt (used_struct_types jbody);
   pp_comment fmt  "-------------------------------";
   Format.fprintf fmt
     "@[<hov 2>(define (%s %s %s %s %s)@;%a)@]@.@."
@@ -736,11 +751,9 @@ let define_inner_join fmt lname (state, styp) (ist, iend) join =
     pp_fnexpr wrapped_join
 
 let pp_inner_def fmt pb =
-  let stv = pb.scontext.state_vars in
-  let inner_struct_name = record_name stv in
   (* Define state struct type. *)
   pp_comment fmt "Defining struct for state of the inner loop.";
-  define_struct fmt (inner_struct_name, VarSet.names stv);
+  define_structs fmt (used_struct_types pb.main_loop_body);
   pp_newline fmt ()
 
 let pp_inner_loops_defs fmt inner_loop_list =
@@ -822,13 +835,17 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
+
+  define_structs fmt (used_struct_types sketch.main_loop_body);
+  define_structs fmt (used_struct_types sketch.memless_sketch);
+  define_structs fmt (used_struct_types sketch.join_sketch);
+
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
   *)
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  define_struct fmt (struct_name, VarSet.names state_vars);
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
@@ -901,6 +918,10 @@ let pp_rosette_sketch_join fmt sketch =
   in
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
+
+  define_structs fmt (used_struct_types sketch.main_loop_body);
+  define_structs fmt (used_struct_types sketch.memless_sketch);
+
   if List.length sketch.inner_functions > 0 then
     begin
       pp_inner_loops_defs fmt sketch.inner_functions;
@@ -908,7 +929,7 @@ let pp_rosette_sketch_join fmt sketch =
     end;
   pp_symbolic_definitions_of fmt bnd_vars read_vars;
   pp_newline fmt ();
-  define_struct fmt (struct_name, VarSet.names state_vars);
+  define_structs fmt (used_struct_types sketch.main_loop_body);
   pp_newline fmt ();
   if List.length sketch.inner_functions > 0 &&
      InnerFuncs.uses_inner_join_func sketch.main_loop_body
@@ -927,7 +948,6 @@ let pp_rosette_sketch_join fmt sketch =
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
   pp_synth fmt st0 bnames struct_name read_vars min_dep_len
-
 
 
 (** Main interface to print the sketch of the whole problem.
@@ -965,7 +985,6 @@ let pp_rosette_sketch parent_context inner fmt (sketch : prob_rep) =
     Returns the logic needed to solve the sketch.
 *)
 let logic_of_pb pb = SyLIA
-
 
 (* There are no comp types in synthlib. *)
 let funcdef_body pb =

@@ -25,8 +25,15 @@ open Utils.PpTools
 
 type racket_struct = string * (string list)
 
-let silent_racket_command_string (target : string) : string =
-  "racket "^target^"> /dev/null"
+let silent_racket_command_string (timeout : int) (target : string) : string =
+  let str =
+    if timeout > 1 then
+      "timeout "^(string_of_int timeout)^" racket "^target^" > /dev/null"
+    else
+      "racket "^target^"> /dev/null"
+  in
+  printf "[INFO] Call solver: $ %s@." str;
+  str
 
 let err_handler_sketch i : unit =
   eprintf "%sError%s while running racket on sketch.@."

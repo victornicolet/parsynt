@@ -80,17 +80,14 @@ let print_inner_result problem inner_funcs () =
 
 (* Function to convert a subproblem into a loop body *)
 let convert (problem : prob_rep) : prob_rep =
-    let pb = InnerFuncs.inline_inner (Dimensions.width ()) problem in
+    let pb = InnerFuncs.inline_inner ~inline_pick_join:false (Dimensions.width ()) problem in
     problem.inner_functions <- []; pb
 
 (* Function to limit the depth to 1 *)
 let rec limit_depth ?(depth = 0) (problem : prob_rep) =
     if List.length problem.inner_functions = 0 then problem
     else if depth = 0 then (problem.inner_functions <- List.map (limit_depth ~depth:(depth + 1)) problem.inner_functions; problem)
-    else let res = convert problem in  
-     FnPretty.pp_fnexpr std_formatter problem.main_loop_body;
-     print_newline ();
-     FnPretty.pp_fnexpr std_formatter res.main_loop_body; res
+    else convert problem
 
 (**
    Recursively solve the inner loops using different tactics.
@@ -266,7 +263,7 @@ let main () =
   let solved =
     List.map check_option
       (List.filter is_some
-         (List.map solve_problem 
+         (List.map solve_problem
             (List.map limit_depth problem_list)))
   in
   (** Handle all the solutions found *)

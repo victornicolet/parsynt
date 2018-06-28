@@ -68,8 +68,8 @@ and fnExpr =
   | FnBinop of symb_binop * fnExpr * fnExpr
   | FnUnop of symb_unop * fnExpr
   | FnApp of fn_type * (fnV option) * (fnExpr list)
-  | FnHoleL of hole_type * fnLVar * CS.t * fnExpr
-  | FnHoleR of hole_type * CS.t * fnExpr
+  | FnHoleL of hole_type * fnLVar * CS.t * fnExpr * int
+  | FnHoleR of hole_type * CS.t * fnExpr * int
   | FnChoice of fnExpr list
   | FnVector of fnExpr list
   | FnArraySet of fnExpr * fnExpr * fnExpr
@@ -195,7 +195,7 @@ and type_of expr =
   | FnCond (c, e1, e2) -> join_types (type_of e1) (type_of e2)
 
   | FnApp (t, _, _) -> t
-  | FnHoleL (ht, _,  _, _) | FnHoleR (ht, _, _) ->
+  | FnHoleL (ht, _,  _, _, _) | FnHoleR (ht, _, _, _) ->
     (match ht with (t, ot) -> t)
 
   | FnFun e -> Function(type_of e, type_of e)
@@ -673,6 +673,8 @@ let rec_expr
     | e when case e -> case_handler recurse_aux e
     | FnVar v -> var_handler v
     | FnConst c -> const_handler c
+    | FnVector el ->
+      List.fold_left (fun a e -> join a (recurse_aux e)) init el
 
     | FnBinop (_, e1, e2) ->
       join (recurse_aux e1) (recurse_aux e2)
@@ -766,9 +768,9 @@ let transform_expr
       let in_aux = recurse_aux letin in
       FnLetIn (List.map (fun (v, e) -> (v, recurse_aux e)) velist, in_aux)
 
-    | FnHoleL(t, v, cs, e) -> FnHoleL(t, v, cs, recurse_aux e)
+    | FnHoleL(t, v, cs, e, d) -> FnHoleL(t, v, cs, recurse_aux e, d)
 
-    | FnHoleR(t, cs, e) -> FnHoleR(t, cs, recurse_aux e)
+    | FnHoleR(t, cs, e, d) -> FnHoleR(t, cs, recurse_aux e, d)
 
     | FnChoice el -> FnChoice (List.map recurse_aux el)
 
@@ -922,12 +924,27 @@ let to_rec_completions e =
     on_case =
       (fun f e ->
          match e with
-         | FnHoleL(ht, var, cst, e') -> FnHoleL(ht, var, CS._LRorRec cst, e')
-         | FnHoleR(ht, cst, e') -> FnHoleR(ht, CS._LRorRec cst, e')
+         | FnHoleL(ht, var, cst, e', d) -> FnHoleL(ht, var, CS._LRorRec cst, e', d)
+         | FnHoleR(ht, cst, e', d) -> FnHoleR(ht, CS._LRorRec cst, e', d)
          | _ -> f e);
     on_var = identity;
     on_const = identity
   } e
+
+
+let set_hole_depths e d =
+  transform_expr2 {
+    case = (fun e -> match e with FnHoleL _ | FnHoleR _ -> true | _ -> false);
+    on_case =
+      (fun f e ->
+         match e with
+         | FnHoleL(ht, var, cst, e', _) -> FnHoleL(ht, var,cst, e', d)
+         | FnHoleR(ht, cst, e', _) -> FnHoleR(ht, cst, e', d)
+         | _ -> f e);
+    on_var = identity;
+    on_const = identity
+  } e
+
 (**
    Replace expression n time. Returns a list of expressions, with all
    the possible combinations.
@@ -1155,6 +1172,18 @@ let rec complete_final_state (vars : VarSet.t) (func : fnExpr) : fnExpr =
   | _ -> func
 
 
+let rec extend_final_state
+    (vars : VarSet.t)
+    (extension : fnExpr IM.t)
+    (func : fnExpr) : fnExpr =
+  match func with
+  | FnRecord (vs, emap) ->
+    FnRecord(VarSet.union vars vs, IM.add_all emap extension)
+
+  | FnLetIn (el, l) -> FnLetIn (el, extend_final_state vars extension l)
+
+  | _ -> func
+
 
 let rec used_in_fnexpr (expr : fnExpr): VarSet.t =
   let join = VarSet.union in
@@ -1200,6 +1229,52 @@ let has_loop (e : fnExpr) : bool =
       on_var = (fun e -> false);
       on_const = (fun e -> false); }
     e
+
+let last_expr (vars : VarSet.t) (expr : fnExpr) =
+  let rec aux e x =
+    match e with
+    | FnLetIn (l, e0) ->
+      aux e0
+        (IM.add_all
+           x
+           (IM.of_alist
+              (List.filter
+                 (fun (vid, e) -> VarSet.has_vid vars vid)
+                 (List.map (fun (v,e) -> (var_of_fnvar v).vid, e) l))))
+
+    | FnRecord (vs, emap) ->
+      IM.add_all x (IM.filter (fun k _ -> VarSet.has_vid vars k) emap)
+
+    | _ -> x
+  in aux expr IM.empty
+
+
+let rec unmodified_vars (state : VarSet.t) (expr : fnExpr) =
+  match expr with
+  | FnLetIn (binds, expr') ->
+    let state' =
+      VarSet.diff
+        state
+        (* Set of modified vars *)
+        (List.fold_left
+           (fun u (v, e) ->
+              match e with
+              | FnVar v' when v = v -> u
+              | _ -> VarSet.add (var_of_fnvar v) u)
+           VarSet.empty binds)
+    in unmodified_vars state' expr'
+  | FnRecord (vs, emap) ->
+    VarSet.filter
+      (fun var ->
+         try
+           begin match IM.find var.vid emap with
+             | FnVar (FnVariable var') -> var'.vid = var.vid
+             | _ -> false
+           end
+         with _ -> true) state
+
+  | _ -> state
+
 
 (** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
 
@@ -1819,6 +1894,13 @@ let get_bounds problem =
     mkFnVar (bvar.vname^"_start") bvar.vtype,
     mkFnVar (bvar.vname^"_end") bvar.vtype
 
+let set_pb_hole_depths (pb : prob_rep) (d : int) =
+  {
+    pb with
+    memless_sketch = set_hole_depths pb.memless_sketch d;
+    join_sketch = set_hole_depths pb.join_sketch d;
+  }
+
 (* ----------------------- 9 - CONVERSION TO CIL  ----------------------------*)
 
 (** Includes passes to transform the code into an appropriate form *)
@@ -2220,3 +2302,36 @@ let fnlet_to_stmts fd fnlet =
                           skind = Instr []; preds = []; succs = [] }
   in
   fd, translate_let fnlet empty_statement
+
+
+let used_struct_types (body : fnExpr) : fn_type list =
+  let rec extract_of_var v =
+    match v with
+    | FnVariable v ->
+      begin match v.vtype with
+      | Record _ -> [v.vtype]
+      | _ -> []
+      end
+    | FnArray (a, e) ->
+      extract_of_var a
+  in
+  let rectypes =
+    rec_expr2
+      {
+        case =
+          (fun e ->
+             match e with
+             | FnRecord _  -> true
+             | _ -> false);
+        on_case =
+          (fun f e ->
+             match e with
+             | FnRecord (vs, _) -> [record_type vs]
+             | _ -> []);
+        on_var = extract_of_var;
+        on_const = (fun c -> []);
+        init = [];
+        join = (@);
+      } body
+  in
+  ListTools.remove_duplicates rectypes

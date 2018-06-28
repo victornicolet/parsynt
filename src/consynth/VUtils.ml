@@ -406,6 +406,13 @@ let is_already_computed xinfo aux exprs =
   in
   IM.cardinal candidate_state_variables > 0
 
+let remove_constant_auxiliaries : AuxSet.t -> AuxSet.t =
+  AuxSet.filter
+    (fun aux ->
+       match aux.afunc with
+       | FnConst _ -> false
+       | _ -> true)
+
 let remove_duplicate_auxiliaries xinfo aux_set input_func =
   let xinfo' = unfold_once ~silent:true xinfo input_func in
   AuxSet.filter
