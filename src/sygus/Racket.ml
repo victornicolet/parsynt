@@ -32,7 +32,7 @@ let silent_racket_command_string (timeout : int) (target : string) : string =
     else
       "racket "^target^"> /dev/null"
   in
-  printf "[INFO] Call solver: $ %s@." str;
+  printf "@.[SOLVER CALL] >> $ %s@." str;
   str
 
 let err_handler_sketch i : unit =

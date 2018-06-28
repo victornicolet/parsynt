@@ -290,7 +290,17 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   and _c h c =
     match h, c with
     | FnLetIn (bsk, FnLetIn(bsk2, esk)), FnLetIn (bsol, esol) ->
-      FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
+      let common1, common2 =
+        let a1 = fst(used_in_assignments bsk) in
+        let a2 = fst(used_in_assignments bsk2) in
+        let b = fst(used_in_assignments bsol) in
+        VarSet.cardinal (VarSet.inter a1 b),
+        VarSet.cardinal (VarSet.inter a2 b)
+      in
+      if common1 > common2 then
+        FnLetIn (_cb bsk bsol, FnLetIn (bsk2, _c esk esol))
+      else
+        FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
 
     | FnLetIn (bsk, esk) , FnLetIn (bsol, esol) ->
       FnLetIn (_cb bsk bsol, _c esk esol)

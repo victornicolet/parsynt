@@ -32,6 +32,9 @@ module ExpRed = ExpressionReduction
 module L = Local
 module C = Canalyst
 
+let _incr_timeout_ = 15 (* base timeout for incremental solving *)
+
+let timeout_multiplier = ref 1
 let solve_incrementally = ref false
 let verbose = ref false
 let synthTimes = (Conf.get_conf_string "synth_times_log")
@@ -167,8 +170,9 @@ let call_solver ?(timeout=(-1)) ?(inner=false) (ctx : context option) (pb : prob
         d0;
 
     let t, p =
+      let new_timeout = timeout * (d0 + 1) in
       L.compile_and_fetch Conf.rosette
-        ~timeout:timeout
+        ~timeout:new_timeout
         ~print_err_msg:Racket.err_handler_sketch
         (C.pp_sketch ~inner:inner ~parent_context:ctx Conf.rosette)
         (set_pb_hole_depths pb d0)
@@ -200,12 +204,14 @@ let call_solver ?(timeout=(-1)) ?(inner=false) (ctx : context option) (pb : prob
   | None -> -1.0, None
 
 
+
 let call_solver_incremental
     ?(inner=false)
     (ctx : context option)
     (pb : prob_rep) :
   float * prob_rep option =
 
+  let tmout = _incr_timeout_ * !timeout_multiplier in
   let increments = get_increments pb in
   try
     List.fold_left
@@ -221,7 +227,7 @@ let call_solver_incremental
                                   part_pb.memless_sketch
                                 else
                                   part_pb.join_sketch);
-         match call_solver ~timeout:10 ~inner:inner ctx part_pb with
+         match call_solver ~timeout:tmout ~inner:inner ctx part_pb with
          | et', Some sol ->
            store_partial
              sol.loop_name

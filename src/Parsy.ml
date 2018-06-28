@@ -149,6 +149,8 @@ and solve_problem problem =
              message_error_task "Couldn't find auxliary variables...\n";
              raise e)
         in
+        (* Once the variable discovery has been done, we don't want to timeout easily. *)
+        Solve.timeout_multiplier := 100;
         message_done ();
         match (solve_inners =>> (solve_one None)) problem' with
         | Some x -> Some x
