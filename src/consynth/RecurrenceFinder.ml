@@ -295,7 +295,7 @@ let create_foldr
     (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) :
   (fnExpr * aux_comp_type) list =
 
-  let acc_index = mkFnVar "j" Integer in
+  let acc_index = mkFnVar "k" Integer in
   (* Simple accumulator detection for now:
      a[1] = accum(a[0]) *)
   let acc_func =

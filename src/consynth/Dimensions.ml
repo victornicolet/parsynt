@@ -168,3 +168,6 @@ let rec register_dimensions_igu (pb : prob_rep) =
 let rec register_dimensions_arrays (pb : prob_rep) =
   List.iter register_dimensions_arrays pb.inner_functions;
   dimensionalize_body pb.main_loop_body
+
+let get_index_dims index =
+  IH.find _index_intervals index.vid

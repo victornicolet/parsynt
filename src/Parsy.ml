@@ -123,7 +123,7 @@ and solve_problem problem =
   (* Try to solve the inner loops first *)
   let aux_solve problem =
       let tactic1_sol =
-        if !skip_first_solve then None else solve_one None problem
+        if !skip_first_solve || !skip_all_before_vardisc then None else solve_one None problem
       in
       match tactic1_sol with
       | Some x -> Some x
