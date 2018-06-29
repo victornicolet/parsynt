@@ -54,9 +54,9 @@ let print_SymbExeError (exc : exn) : string option =
 Printexc.register_printer print_SymbExeError;;
 
 (* Array size must be bounded during the symbolic execution. *)
-let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
-let _arsize_ = ref _MAX_ARRAY_SIZE_
+
+
 (** Create a mapping from variable ids to variable expressions to start the
     algorithm *)
 let var_to_symbols = IH.create 10
@@ -123,16 +123,16 @@ let create_symbol_map vs =
        let eqvi = add_symbol vi in
        IM.add vi.vid
          (if is_matrix_type vi.vtype then
-            FnVector (ListTools.init !_arsize_
+            FnVector (ListTools.init Dimensions._SYMBEX_FINITE_
                          (fun i ->
                             FnVector(
-                              ListTools.init !_arsize_
+                              ListTools.init Dimensions._SYMBEX_FINITE_
                                 (fun j ->
                                    FnVar(FnArray(FnArray(FnVariable eqvi,
                                                          FnConst (CInt i)),
                                                 FnConst (CInt j)))))))
           else if is_array_type vi.vtype then
-            FnVector (ListTools.init !_arsize_
+            FnVector (ListTools.init Dimensions._SYMBEX_FINITE_
                         (fun i -> FnVar(FnArray(FnVariable eqvi,
                                                 FnConst (CInt i)))))
           else
@@ -517,9 +517,9 @@ and do_var env v : fnExpr * ex_env =
 
 and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
-  let static = !_arsize_ - 1 in
+  let static = Dimensions._SYMBEX_FINITE_ -1 in
   let from_n v =
-    !_arsize_ - 1
+    Dimensions._SYMBEX_FINITE_ - 1
   in
   let i0 =
     match init with

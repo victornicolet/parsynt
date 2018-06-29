@@ -26,20 +26,20 @@ let inner_iterations_limit = Conf.get_conf_int "inner_loop_finite_limit"
 let mat_w = ref 0
 let mat_h = ref 0
 
-  let set_default () =
+let set_default () =
   mat_w := inner_iterations_limit;
-mat_h := iterations_limit
+  mat_h := iterations_limit
 
-  let set_large_square () =
+let set_large_square () =
   mat_w := iterations_limit;
-mat_h := iterations_limit
+  mat_h := iterations_limit
 
-  let set_small_square () =
+let set_small_square () =
   mat_w := inner_iterations_limit;
-mat_h := inner_iterations_limit
+  mat_h := inner_iterations_limit
 
-  let reset_matdims() =
-set_default ()
+let reset_matdims() =
+  set_default ()
 
 let width () = !mat_w
 let height () = !mat_h
@@ -61,7 +61,29 @@ let pp_interval fmt iv =
   Format.fprintf fmt "[%a; %a]" FnPretty.pp_fnexpr (fst iv)
     FnPretty.pp_fnexpr (snd iv)
 
-let known_bounds : fnV list ref = ref []
+
+(* Managin n,m .. *)
+let _SYMBEX_FINITE_ = Conf.get_conf_int "symbolic_execution_finitization"
+
+type boundinfo = { synthesis : int;  symbex : int }
+
+let _bndmap : boundinfo IH.t = IH.create 10
+
+let pop_flag = ref false
+let pop_bnd () =
+  if !pop_flag then inner_iterations_limit
+  else (pop_flag := true; iterations_limit)
+
+let add_bound (n : fnV) : unit =
+  if IH.mem _bndmap n.vid then
+    ()
+  else
+    IH.add _bndmap n.vid
+      {
+        synthesis = pop_bnd ();
+        symbex = _SYMBEX_FINITE_;
+      }
+
 
 (* Maps index to the interval it belongs to in the original loops. *)
 let _index_intervals : e_interval IH.t = IH.create 5
@@ -72,7 +94,7 @@ let register_index_dims index (i0, iN) =
   begin match i0, iN with
     | FnConst _, FnVar(FnVariable n)
     | FnVar(FnVariable n), FnConst _->
-      known_bounds := (!known_bounds)@[n]
+      add_bound n
     | _ -> ()
   end;
   IH.add _index_intervals index.vid (i0, iN)
