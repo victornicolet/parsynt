@@ -203,7 +203,7 @@ let no_join_inlined_body pb =
    is the corresponding entry  _KEY_JOIN_NOT_INLINED_ in the loop versions,
    if will use this one, otherwise the main_loop_body.
 *)
-let inline_inner ?(inline_pick_join=true) in_loop_width problem =
+let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
       FnPretty.pp_fnexpr (no_join_inlined_body problem);
@@ -224,10 +224,17 @@ let inline_inner ?(inline_pick_join=true) in_loop_width problem =
       printf
         "[WARNING] Inlined inner function iterates from 0 to %i by default.@."
         in_loop_width;
+    (* Added a case for index variable *)
+    let index = 
+    (if index_variable then 
+        let (_,(_,g,_)) = in_info.func_igu in
+        g
+    else FnConst (CInt in_loop_width)) in 
+
     let inlined =
       FnRec((
         FnConst (CInt 0),
-        FnBinop(Lt, mkVarExpr in_index, FnConst (CInt in_loop_width)),
+        FnBinop(Lt, mkVarExpr in_index,index),
         FnBinop(Plus, mkVarExpr in_index, FnConst (CInt 1))),
         (in_state, FnRecord(in_state, map_args)),
         (in_binder,
