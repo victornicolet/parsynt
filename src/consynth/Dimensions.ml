@@ -61,11 +61,22 @@ let pp_interval fmt iv =
   Format.fprintf fmt "[%a; %a]" FnPretty.pp_fnexpr (fst iv)
     FnPretty.pp_fnexpr (snd iv)
 
+let known_bounds : fnV list ref = ref []
 
 (* Maps index to the interval it belongs to in the original loops. *)
 let _index_intervals : e_interval IH.t = IH.create 5
 (* Maps array variables to dimensions. *)
 let _array_dimensions : (e_interval list) IH.t = IH.create 5
+
+let register_index_dims index (i0, iN) =
+  begin match i0, iN with
+    | FnConst _, FnVar(FnVariable n)
+    | FnVar(FnVariable n), FnConst _->
+      known_bounds := (!known_bounds)@[n]
+    | _ -> ()
+  end;
+  IH.add _index_intervals index.vid (i0, iN)
+
 
 let update_index_interval (i : fnV) interval =
   try
@@ -171,3 +182,6 @@ let rec register_dimensions_arrays (pb : prob_rep) =
 
 let get_index_dims index =
   IH.find _index_intervals index.vid
+
+let get_array_dims array =
+  IH.find _array_dimensions array.vid

@@ -92,6 +92,7 @@ let _inrec r x = FnRecordMember(evar r, x.vname)
 let _self r x = var x, FnRecordMember (evar r, x.vname)
 (* some functions lifted to host language *)
 let fplus e1 e2 = _b e1 Plus e2
+let fminus e1 e2 = _b e1 Minus e2
 let ftimes e1 e2 = _b e1 Times e2
 let fmin e1 e2 = _b e1 Min e2
 let fmax e1 e2 = _b e1 Max e2

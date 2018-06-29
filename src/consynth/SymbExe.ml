@@ -515,42 +515,50 @@ and do_var env v : fnExpr * ex_env =
                            a'))
 
 
-and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
+and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
-
-  let i0, iEnd =
-    match i with
-    | FnConst (CInt c) -> c, 0
-    | _ ->
-      (Format.printf "%sAssuming loop is leftwards.%s@."
-         (PpTools.color "blue") PpTools.color_default);
-      0, !_arsize_ - 1
+  let static = !_arsize_ - 1 in
+  let from_n v =
+    !_arsize_ - 1
+  in
+  let i0 =
+    match init with
+    | FnConst (CInt c) -> c
+    | FnConst (CInt64 c64) -> (Int64.to_int c64)
+    | FnVar v -> from_n v
+    | _ -> 0
   in
 
-  let i0', iEnd' =
+  let c_stop =
     match g with
     | FnBinop (Lt, _, FnConst (CInt c))
     | FnBinop (Gt, FnConst (CInt c), _) ->
-      0, c
+      (fun i -> i >= c)
     | FnBinop (Lt, FnConst (CInt c), _)
     | FnBinop (Gt, _, FnConst (CInt c)) ->
-      c, 0
-    | _ -> 0, !_arsize_
+      (fun i -> i <= c)
+    | _ ->
+      (fun i -> i >= static)
   in
 
-  let i0, iEnd = min i0 i0' , max iEnd iEnd' in
+  let c_update =
+    match u with
+    | FnBinop(Plus, _ ,_) | FnUnop (Add1, _) -> (fun i -> i + 1)
+    | FnBinop(Minus, _ ,_) | FnUnop (Sub1, _) -> (fun i -> i - 1)
+    | _ -> (fun i -> i + 1)
+  in
 
   let exec_loop k out_env body =
-    let rec aux k env body =
-      if k >= iEnd then
+    let rec aux k counter env body =
+      if c_stop k then
         begin let record = IM.find s.vid env.ebexprs in
-          add_intermediate_state (k+1) record;
+          add_intermediate_state (counter + 1) record;
           record, env
         end
       else
         begin let res, _ = do_expr (update_indexval env indexvar k) body in
-          add_intermediate_state (k+1) res;
-          aux (k+1)
+          add_intermediate_state (counter + 1) res;
+          aux (c_update k) (counter + 1)
             {env with
              ebound = VarSet.singleton s;
              ebexprs = IM.singleton s.vid res;}
@@ -564,7 +572,7 @@ and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
        ebound = VarSet.singleton s;
        ebexprs = IM.singleton s.vid bs';}
     in
-    let res_final, env_final = aux k start_env body in
+    let res_final, env_final = aux k 0 start_env body in
     res_final, env_final
   in
   exec_loop i0 env body

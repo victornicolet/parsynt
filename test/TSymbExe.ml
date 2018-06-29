@@ -491,6 +491,63 @@ let test_05 () =
   ()
 
 
+
+let test_06 () =
+  let vars = vardefs "((sum int) (mtr int) (c int_array) (mtrr int) (a int_int_array) (i int) (j int))" in
+  let cont = make_context vars "((sum mtr mtrr c) (i) (a) (mtr sum mtrr c i j a) (mtr sum mtrr c))" in
+  let c = vars#get "c" in
+  let mtr = vars#get "mtr" in
+  let sum = vars#get "sum" in
+  let mtrr = vars#get "mtrr" in
+  let a = vars#get "a" in
+  let j = vars#get "j" in let i = vars#get "i" in
+  let inctx = make_context vars "((sum mtr c) (j) (a) (sum mtr mtrr c j a) (sum mtr c))" in
+  let intype = record_type inctx.state_vars in
+  let tup = mkFnVar "tup" intype in
+  let bnds = mkFnVar "bound" intype in
+  let func =
+    (_letin [FnVariable tup,
+             FnRec((_ci 5, (FnBinop(Ge, (evar i), (_ci 0))), (fminus (evar j) sk_one)),
+                   (inctx.state_vars,
+                    FnRecord(inctx.state_vars,
+                             IM.of_alist [sum.vid, sk_zero;
+                                          mtr.vid, sk_zero;
+                                          c.vid, evar c])),
+                   (bnds,
+                    (_letin [ _self bnds mtr; _self bnds c; _self bnds sum]
+                       (_letin [var sum, fplus (evar sum) (a $$ (evar i, evar j))]
+                          (_letin [var c, FnArraySet(evar c, evar j,
+                                                     (fplus (evar sum) (c $ (evar j))))]
+                             (_let [
+                                 var sum, evar sum;
+                                 var c, evar c;
+                                 var mtr, fmax (fplus (c $ (evar j)) (evar mtr)) sk_zero]))))))]
+       (_let [_self tup c;
+              _self tup mtr;
+              _self tup sum;
+              var mtrr, fmax (evar mtrr) (_inrec tup mtr)]))
+  in
+  let aone =
+    fplus
+      (fplus
+         (fplus
+            (fplus
+               (fplus
+                  (a $$ (evar i, _ci 5))
+                  (a $$ (evar i, _ci 4)))
+               (a $$ (evar i, _ci 3)))
+            (a $$ (evar i, _ci 2)))
+         (a $$ (evar i, _ci 1)))
+      (c $ (_ci 1))
+  in
+  let _ =
+    symbolic_execution_test "foldr" vars cont func 2
+      [
+        c.vid, SymbLinear [1, aone];
+      ]
+  in
+  ()
+
 (* Normalization: file defined tests. *)
 let test_load filename =
   let inchan = IO.input_channel (open_in filename) in
@@ -521,4 +578,5 @@ let test () =
   test_03ter ();
   test_04 ();
   test_05 ();
+  test_06 ();
   file_defined_tests ()
