@@ -5,12 +5,15 @@ function DfMax(x: int, y: int): int { if x > y then x else y}
 
 function M(a : seq<int>): int
 {
-  if a == [] then 0 else DfMax(M(a[..|a|-1]), a[|a|-1])
+  if a == [] then
+    0
+    else
+    (if (M(a[..|a|-1]) < a[|a|-1]) then a[|a|-1] else M(a[..|a|-1]))
 }
 
 function MJoin(leftM : int, rightM : int): int
 {
-  DfMax(rightM, DfMax(leftM, (-2)))
+  (if (rightM == (1 + rightM)) then rightM else DfMax(rightM, leftM))
 }
 
 

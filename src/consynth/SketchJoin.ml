@@ -243,8 +243,8 @@ let rec make_holes
 
 
   | FnFun skl ->
-    FnFun (
-      make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl),
+    FnFun
+      (make_join ~index:index_expr ~state:state ~skip:[] ~w_a:(ref false) skl),
     0
 
 
@@ -356,13 +356,13 @@ and make_assignment_list
 
     | _ ->
       begin
-        if !verbose && false then
-          begin
-            printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
-            printf "       Type : %a@." pp_typ (type_of e);
-            printf "       Result: %a@."
-              pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
-          end;
+        (* if !verbose && false then
+         *   begin
+         *     printf "[INFO] Hole in expr : %a@." pp_fnexpr e;
+         *     printf "       Type : %a@." pp_typ (type_of e);
+         *     printf "       Result: %a@."
+         *       pp_fnexpr (let e, _ = (make_hole_e ie state e) in  e);
+         *   end; *)
         try
           let vi_bound = check_option (vi_of vbound) in
           if is_left_aux vi_bound || is_right_aux vi_bound  then

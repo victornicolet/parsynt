@@ -190,6 +190,10 @@ let cil2func cfile loops =
 
   List.map translate_loop sorted_lps
 
+(* Function to convert a subproblem into a loop body *)
+let convert (problem : prob_rep) : prob_rep =
+    let pb = InnerFuncs.inline_inner ~index_variable:true ~inline_pick_join:false (Dimensions.width ()) problem in
+    problem.inner_functions <- []; pb
 
 (**
    From intermediary representation with contained expressions to final
@@ -198,8 +202,8 @@ let cil2func cfile loops =
 let no_sketches = ref 0;;
 
 let func2sketch cfile funcreps =
-  let rec transform_func func_info =
-    let inners = List.map transform_func func_info.inner_funcs in
+  let rec  transform_func ?(depth = 0) func_info =
+    let inners = List.map (transform_func ~depth:(depth+1)) func_info.inner_funcs in
     let host_func =
       mkFuncDec
         (try check_option
@@ -327,6 +331,10 @@ let func2sketch cfile funcreps =
         reaching_consts = s_reach_consts;
         inner_functions = inners;
       }
+    (* Added to limit the depth in case depth = *)
+    in let fn_pb =
+    if (List.length fn_pb.inner_functions = 0)||(depth = 0) then fn_pb
+    else let aux = convert fn_pb in fprintf Format.std_formatter "Succesful inlining \n"; aux
     in
     Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in

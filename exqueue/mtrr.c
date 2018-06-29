@@ -6,13 +6,12 @@ int _mtrr(int** a, int* c, int n) {
   int sum = 0;
 
   for (int i = 0; i < n; i++) {
-	sum = 0;
-	mtr = 0;
+    mtr = 0;
     for(int j = 0; j < n; j++){
-	  c[j] += a[i][j];
-	  mtr = max(mtr + c[j], 0);
+      c[j] += a[i][j];
+      mtr = max(mtr + c[j], 0);
     }
-	mtrr = max(mtr, mtrr);
+    mtrr = max(mtr, mtrr);
   }
   return mtrr;
 }
