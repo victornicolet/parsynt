@@ -35,7 +35,8 @@ type stv_type =
   | Linear of (int * constants) list
   | SymbLinear of (int * fnExpr) list
 
-let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efinal =
+let symbolic_execution_test
+    ?(_xinfo = None) tname vars ctx funct unfoldings efinal =
   let indexes =  create_symbol_map ctx.index_vars in
   let state = create_symbol_map ctx.state_vars in
   let xinfo =

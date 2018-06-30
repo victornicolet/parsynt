@@ -529,19 +529,15 @@ and do_var env v : fnExpr * ex_env =
 and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
   let static = Dimensions._SYMBEX_FINITE_ -1 in
-  let from_n v =
-    Dimensions._SYMBEX_FINITE_ - 1
-  in
   let i0 =
-    match init with
+    match peval (Dimensions.concretize init) with
     | FnConst (CInt c) -> c
     | FnConst (CInt64 c64) -> (Int64.to_int c64)
-    | FnVar v -> from_n v
     | _ -> 0
   in
 
-  let c_stop =
-    match g with
+  let c_stop0 =
+    match Dimensions.concretize g with
     | FnBinop (Lt, _, FnConst (CInt c))
     | FnBinop (Gt, FnConst (CInt c), _) ->
       (fun i -> i >= c)
@@ -562,11 +558,20 @@ and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
       (fun i -> i >= static)
   in
 
-  let c_update =
+  let c_update, c_stop =
     match u with
-    | FnBinop(Plus, _ ,_) | FnUnop (Add1, _) -> (fun i -> i + 1)
-    | FnBinop(Minus, _ ,_) | FnUnop (Sub1, _) -> (fun i -> i - 1)
-    | _ -> (fun i -> i + 1)
+    | FnBinop(Plus, _ ,_) | FnUnop (Add1, _) ->
+      if !verbose then
+        printf "[INFO] Rightwards loop.@.";
+      (fun i -> i + 1), (fun i -> c_stop0 i || i >= 5)
+    | FnBinop(Minus, _ ,_) | FnUnop (Sub1, _) ->
+      if !verbose then
+        printf "[INFO] Leftwards loop.@.";
+      (fun i -> i - 1), (fun i -> c_stop0 i || i <= 0)
+    | _ ->
+      if !verbose then
+        printf "[INFO] Rightwards loop.@.";
+      (fun i -> i + 1), (fun i -> c_stop0 i || i >= 5)
   in
 
   let exec_loop k out_env body =

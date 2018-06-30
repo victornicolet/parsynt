@@ -381,15 +381,17 @@ let inline_auxiliaries problem xinfo aux_set =
   in
 
   let new_func, inner_loops =
-    let head_assgn, tail_assgn, inner_loops =
+    let pre, post, inner_loops =
       AuxSet.fold partition_fchanges
          aux_set
          ([], [], problem.inner_functions)
     in
-    let f = complete_final_state new_ctx.state_vars
-        (compose_tail new_ctx.state_vars tail_assgn clean_f)
+
+    let f =
+      complete_final_state new_ctx.state_vars
+        (compose_tail new_ctx.state_vars post clean_f)
     in
-    (compose_head head_assgn f), inner_loops
+    (compose_head pre f), inner_loops
   in
   printf "New func:@.%a.@." pp_fnexpr new_func;
   {

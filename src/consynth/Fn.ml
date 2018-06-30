@@ -1111,34 +1111,38 @@ let compose_head assignments func =
   | [] -> func
   | _ -> FnLetIn (assignments, func)
 
-let rec compose_tail final assignments func =
+let rec compose_tail
+    (final : VarSet.t)
+    (assignments : (fnLVar * fnExpr) list)
+    (func : fnExpr) : fnExpr =
   match assignments with
   | [] -> func
   | _ ->
-    match func with
-    | FnRecord (vs, emap) ->
-      let bindings = unwrap_state vs emap in
-      let pre, post =
-        let rec f (pre, post) l =
-          match l with
-          | [] -> pre, post
-          | (v, e) :: tl ->
-            let var = var_of_fnvar v in
-            if VarSet.mem var final then
-              (pre, post @ [v,e])
-            else
-              (pre @ post @ [v,e], [])
+    begin match func with
+      | FnRecord (vs, emap) ->
+        let bindings = unwrap_state vs emap in
+        let pre, post =
+          let rec f (pre, post) l =
+            match l with
+            | [] -> pre, post
+            | (v, e) :: tl ->
+              let var = var_of_fnvar v in
+              if VarSet.mem var final then
+                f (pre, post @ [v,e]) tl
+              else
+                f (pre @ post @ [v,e], []) tl
+          in
+          f ([], []) assignments
         in
-        f ([], []) assignments
-      in
-      remove_id_binding (FnLetIn (bindings,
-                                  FnLetIn(pre,
-                                          wrap_state post)))
+        remove_id_binding (FnLetIn (bindings,
+                                    FnLetIn(pre,
+                                            wrap_state post)))
 
-    | FnLetIn (el, l) -> FnLetIn (el, compose_tail final assignments l)
-    | _ -> func
+      | FnLetIn (el, l) -> FnLetIn (el, compose_tail final assignments l)
+      | _ -> func
+    end
 
-let complete_with_state stv el =
+let complete_with_state (stv : VarSet.t) (el : (fnLVar * fnExpr) list) =
   let emap =
     List.fold_left
       (fun map (v,e) ->
@@ -1164,7 +1168,9 @@ let rec complete_final_state (vars : VarSet.t) (func : fnExpr) : fnExpr =
     FnRecord(
       VarSet.union vars vs,
       VarSet.fold
-        (fun var emap' -> IM.add var.vid (mkVarExpr var) emap')
+        (fun var emap' ->
+           if IM.mem var.vid emap' then emap'
+           else IM.add var.vid (mkVarExpr var) emap')
         to_add emap)
 
   | FnLetIn (el, l) -> FnLetIn (el, complete_final_state vars l)

@@ -70,6 +70,7 @@ type boundinfo = { synthesis : int;  symbex : int }
 let _bndmap : boundinfo IH.t = IH.create 10
 
 let pop_flag = ref false
+
 let pop_bnd () =
   if !pop_flag then inner_iterations_limit
   else (pop_flag := true; iterations_limit)
@@ -81,7 +82,7 @@ let add_bound (n : fnV) : unit =
     IH.add _bndmap n.vid
       {
         synthesis = pop_bnd ();
-        symbex = _SYMBEX_FINITE_;
+        symbex = 5;
       }
 
 
@@ -207,3 +208,29 @@ let get_index_dims index =
 
 let get_array_dims array =
   IH.find _array_dimensions array.vid
+
+
+let get_concrete v =
+  try
+    Some (IH.find _bndmap v.vid)
+  with Not_found -> None
+
+let concretize (e : fnExpr) =
+  let g v =
+    match v with
+    | FnVar (FnVariable var) ->
+      begin match get_concrete var with
+        | Some c ->
+          (Format.printf "Concretized: %s ---> %i.@." var.vname c.symbex);
+          FnConst (CInt c.symbex)
+        | None -> v
+      end
+    | _ -> v
+  in
+  transform_expr2
+    {
+      case = (fun e -> match e with FnVar _ -> true | _ -> false );
+      on_case = (fun f e -> g e);
+      on_var = identity;
+      on_const = identity;
+    } e
