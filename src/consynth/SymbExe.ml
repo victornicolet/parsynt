@@ -231,6 +231,7 @@ let rec partial_interpret e =
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for unfold_once *)
 let _intermediate_states : fnExpr list ref = ref []
+let saved_intermediate_state = ref []
 
 let clear_intermediate_states () =
   _intermediate_states := []
@@ -246,6 +247,10 @@ let add_intermediate_state (i : int) (state : fnExpr) : unit =
        raise (SymbExeError ("wrong number of states", state)) )
   | _ ->
     raise (SymbExeError ("Cannot add a state that is not a record.", state))
+
+let save_intermediate_states () =
+  saved_intermediate_state := !_intermediate_states;
+  _intermediate_states := []
 
 let get_one_intermediate_val (var : fnV) : fnExpr list  =
   let some_vals =
@@ -505,7 +510,13 @@ and do_var env v : fnExpr * ex_env =
 
     | FnVector ar ->
       let i0 = concrete_index i' in
-      List.nth ar i0, env''
+      begin try
+        List.nth ar i0, env''
+        with _ ->
+          raise (SymbExeError
+                   ("In vector, cannot access cell "^(string_of_int i0),
+                    FnVector ar))
+      end
 
     | _ ->
       if !verbose then
@@ -534,9 +545,19 @@ and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
     | FnBinop (Lt, _, FnConst (CInt c))
     | FnBinop (Gt, FnConst (CInt c), _) ->
       (fun i -> i >= c)
+
+    | FnBinop (Le, _, FnConst (CInt c))
+    | FnBinop (Ge, FnConst (CInt c), _) ->
+      (fun i -> i > c)
+
     | FnBinop (Lt, FnConst (CInt c), _)
     | FnBinop (Gt, _, FnConst (CInt c)) ->
       (fun i -> i <= c)
+
+    | FnBinop (Le, FnConst (CInt c), _)
+    | FnBinop (Ge, _, FnConst (CInt c)) ->
+      (fun i -> i < c)
+
     | _ ->
       (fun i -> i >= static)
   in
@@ -573,6 +594,7 @@ and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
        ebexprs = IM.singleton s.vid bs';}
     in
     let res_final, env_final = aux k 0 start_env body in
+    save_intermediate_states ();
     res_final, env_final
   in
   exec_loop i0 env body

@@ -50,7 +50,22 @@ let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efi
       }
     | Some xinfo -> xinfo
   in
-  let xinfo' = unfold_once ~silent:false xinfo funct in
+  let xinfo' =
+    try
+      unfold_once ~silent:false xinfo funct
+    with
+    | SymbExeError (s,v) ->
+      begin
+        printf "%s%s : error during symbolic execution.%s@."
+          (PpTools.color "red") tname PpTools.color_default;
+        printf "@[<v 4>%s :@;%a@]@." s cp_fnexpr v;
+        failwith s
+      end
+    | _ ->
+      printf "%s%s : error during symbolic execution.%s@."
+        (PpTools.color "red") tname PpTools.color_default;
+      failwith "Fatal error during symbolic execution."
+  in
   begin
     try
       List.iter
@@ -507,7 +522,7 @@ let test_06 () =
   let bnds = mkFnVar "bound" intype in
   let func =
     (_letin [FnVariable tup,
-             FnRec((_ci 3, (FnBinop(Ge, (evar i), (_ci 0))), (fminus (evar j) sk_one)),
+             FnRec((_ci 5, (FnBinop(Ge, (evar i), (_ci 0))), (fminus (evar j) sk_one)),
                    (inctx.state_vars,
                     FnRecord(inctx.state_vars,
                              IM.of_alist [sum.vid, sk_zero;
@@ -540,13 +555,12 @@ let test_06 () =
          (a $$ (evar i, _ci 1)))
       (c $ (_ci 1))
   in
-  let _ =
-    symbolic_execution_test "foldr" vars cont func 2
+  try
+    ignore(symbolic_execution_test "foldr" vars cont func 2
       [
         c.vid, SymbLinear [1, aone];
-      ]
-  in
-  ()
+      ])
+  with _ -> ()
 
 
 let test_07 () =
@@ -617,7 +631,13 @@ let test_07 () =
      symbolic_execution_test "foldr-mtrr" vars cont f 2
        []
   in
-  ()
+  if !verbose then
+    printf "Dependencies:@.%a@."
+      (PpTools.ppifmap
+      (fun fmt i -> printf "(%s)" (VarSet.find_by_id cont.state_vars i).vname)
+      (fun fmt deps -> printf "(deps : %a)" VarSet.pp_var_names deps))
+      (FnDep.collect_dependencies cont f)
+
 
 
 
@@ -652,4 +672,5 @@ let test () =
   test_04 ();
   test_05 ();
   test_06 ();
+  test_07 ();
   file_defined_tests ()
