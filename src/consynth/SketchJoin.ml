@@ -1030,6 +1030,24 @@ let sketch_join problem =
 let sketch_inner_join problem =
   Dimensions.set_default ();
   let index_set = get_index_varset problem in
+    (* Utilisation of transform_expr to remove the loop body form the sketch. For that, we need: *)
+    let removeExpr = ref None in
+    let case = function 
+        | FnRec(_) -> true
+        | _ -> false
+    in let case_handler f e = match e with
+        | FnRec ((i,g,u), (inner_state, init_inner_state), (s, letin)) ->
+    removeExpr := Some i; f letin 
+        | _ -> failwith "Impossible case"
+    in let const_handler c = c
+    (* Changes all indexes i to 0 *)
+    in let var_handler v = 
+        let rec aux_var_handler = function
+            (*| FnArray(a,e) when Some e = !removeExpr -> FnArray(a,FnConst (CInt 0))*)
+            | FnArray(a,e) -> FnArray(aux_var_handler a,e)
+            | x -> x
+        in aux_var_handler v
+    in let m = transform_expr case case_handler const_handler var_handler problem.main_loop_body in
   {
     problem with
     memless_sketch =
@@ -1039,7 +1057,7 @@ let sketch_inner_join problem =
            problem.scontext.state_vars
            problem.reaching_consts
            (Dimensions.bounds false problem)
-           problem.main_loop_body)
+           m)
   }
 
 
