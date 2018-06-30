@@ -129,7 +129,6 @@ let compile
      terminate a call that is lasting too long and thus allows to 'continue' with
      the different steps of the algorithm.
   *)
-  Sys.catch_break true;
   let errno, elapsed =
     try
       exec_solver timeout solver sketch_tmp_file

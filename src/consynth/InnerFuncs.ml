@@ -382,23 +382,6 @@ let update_inners_in_body
   let upd body (old_inner, new_inner) =
     let old_rname = record_name old_inner.scontext.state_vars in
     let new_x = mkFnVar "tup$" (record_type new_inner.scontext.state_vars) in
-    let all_record_accessors l =
-      if
-        List.length l > 0 &&
-        List.for_all
-          (fun (v,e) ->
-             match e with
-             | FnRecordMember(ev, s) -> true
-             | _ -> false) l
-      then
-        begin
-          match List.hd l with
-          | _, FnRecordMember(FnVar(FnVariable var), _) -> Some var
-          | _ -> None
-        end
-      else
-        None
-    in
     let change_loopres_binder bindings =
       let f (v, e) =
         match v, e with

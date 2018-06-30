@@ -113,7 +113,9 @@ let rec restrict_func
       in
       record_name vs'
     in
-    Record(name', stl')
+    match stl' with
+    | [] -> Bottom
+    | _ -> Record(name', stl')
   in
   let cases e =
     match e with
@@ -126,8 +128,12 @@ let rec restrict_func
     | FnVariable var ->
       begin
         match var.vtype with
+        (* Restrict the record type *)
         | Record (name, stl) ->
-          Some (var, mkFnVar "x_" (update_rectype name stl))
+          let new_rtype = update_rectype name stl in
+          Some (var, mkFnVar "x_" new_rtype)
+
+        (* No restriction. *)
         | _ -> None
       end
     | _ -> None
@@ -143,9 +149,14 @@ let rec restrict_func
          (fun (v,e) ->
             let var = var_of_fnvar v in
             match var.vtype with
-            | Record(name, stl) -> true
+            | Record(name, stl) ->
+              begin match update_rectype name stl with
+                | Bottom -> false
+                | _ -> true
+              end
             | _ -> VarSet.mem (var_of_fnvar v) variables) bds)
   in
+
   let restrict_body f e =
     match e with
     | FnLetIn (bindings, expr) ->

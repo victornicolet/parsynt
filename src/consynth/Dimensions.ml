@@ -221,7 +221,6 @@ let concretize (e : fnExpr) =
     | FnVar (FnVariable var) ->
       begin match get_concrete var with
         | Some c ->
-          (Format.printf "Concretized: %s ---> %i.@." var.vname c.symbex);
           FnConst (CInt c.symbex)
         | None -> v
       end

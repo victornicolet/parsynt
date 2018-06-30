@@ -778,11 +778,48 @@ let wrap_with_choice (state : VarSet.t) (base_join : fnExpr) : fnExpr =
           wrap_state final_choices)
 
 
-let make_loop_join i bounds state fnlet =
+let final_expr _wa state extension (s,s') (vs, expr)  =
+  if VarSet.is_empty extension then
+    let linvar =
+      List.map (fun var -> FnVariable var)
+        (VarSet.elements
+           (VarSet.filter (fun var -> is_array_type var.vtype) vs))
+    in
+    make_join ~index:(FnConst (CInt 0)) ~state:state
+      ~skip:linvar ~w_a:_wa expr
+  else
+    (* The loop before the final expression has been extended,
+       We need to add a choice binding, and make the last an
+       identity.
+    *)
+    let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
+    let ext_choices =
+      List.map
+        (fun v ->
+           let rightval = {v with vname = rprefix ^ v.vname} in
+           (mkVar v, FnChoice(
+               [FnRecordMember(FnVar s', v.vname);
+                mkVarExpr rightval])))
+        (VarSet.elements extension)
+    in
+    let expr' =
+      FnLetIn(ext_choices,
+              to_identity extension
+                (replace_expression (FnVar s) (FnVar s') expr))
+    in
+    expr'
+
+
+let make_loop_join
+    (i : fnExpr) (bounds : fnExpr * fnExpr) (state : VarSet.t) (fnlet : fnExpr) :
+  fnExpr =
+
+  let _wa = ref true in
   let lsp  =
     VarSet.add_prefix state
       (Conf.get_conf_string "rosette_join_left_state_prefix")
   in
+
   let state_vars_to_left_thread =
     transform_expr (fun e -> false) (fun f e -> e)
       (fun c -> c)
@@ -798,16 +835,9 @@ let make_loop_join i bounds state fnlet =
            end
          else v)
   in
-  let _wa = ref true in
-  let idx (i,g,u) =
-    try
-      mkVarExpr (VarSet.max_elt
-                   (VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u)))
-    with Not_found ->
-      failhere __FILE__ "make_loop_join" "Loop to drill has no index."
-  in
+
   let drill_loop_body (i,g,u) (vs, bs) (s, lbody) =
-    let idx = idx (i,g,u) in
+    let idx = mkVarExpr (indexof (i,g,u)) in
     let ist, iend = bounds in
     let nbs =
       match bs with
@@ -820,42 +850,11 @@ let make_loop_join i bounds state fnlet =
       make_join ~index:idx ~state:state ~skip:[] ~w_a:_wa lbody
     in
     FnRec((ist, FnBinop(Lt, idx, iend), FnUnop(Add1, idx)),
-                        (vs, nbs),
-                        (s, to_rec_completions loop_join_body))
+          (vs, nbs),
+          (s, to_rec_completions loop_join_body))
   in
-  let final_expr extension (s,s') (vs, expr)  =
-    if VarSet.is_empty extension then
-      let linvar =
-        List.map (fun var -> FnVariable var)
-          (VarSet.elements
-             (VarSet.filter (fun var -> is_array_type var.vtype) vs))
-      in
-      make_join ~index:(FnConst (CInt 0)) ~state:state
-        ~skip:linvar ~w_a:_wa expr
-    else
-      (* The loop before the final expression has been extended,
-         We need to add a choice binding, and make the last an
-         identity.
-      *)
-      let rprefix = (Conf.get_conf_string "rosette_join_right_state_prefix") in
-      let ext_choices =
-        List.map
-          (fun v ->
-             let rightval = {v with vname = rprefix ^ v.vname} in
-             (mkVar v, FnChoice(
-                 [FnRecordMember(FnVar s', v.vname);
-                  mkVarExpr rightval])))
-          (VarSet.elements extension)
-      in
-      let expr' =
-        FnLetIn(ext_choices,
-                to_identity extension
-                  (replace_expression (FnVar s) (FnVar s') expr))
-      in
-      expr'
 
-  in
-  match fnlet with
+  match fuse_loops_for_sketching fnlet with
   | FnLetIn([v, FnRec((init,g,u), (vs,bs),(s, lbody))], expr) ->
     (* If the last `expr` after the loop updates a variable
        that depends on array variables,
@@ -863,7 +862,7 @@ let make_loop_join i bounds state fnlet =
     let push_in_loop, idmap =
       let ctxt =
         let x = mk_ctx (used_in_fnexpr expr) state in
-        {x with index_vars = used_in_fnexpr (idx (i,g,u))}
+        {x with index_vars = used_in_fnexpr (mkVarExpr (indexof (i,g,u)))}
       in
       (* Variables of the state that depend on a linear variable through
          linear dependencies.
@@ -888,7 +887,7 @@ let make_loop_join i bounds state fnlet =
     if VarSet.cardinal push_in_loop > 0 then
       begin
         let vs', bs', s', lbody', expr' =
-          let index = idx (i,g,u) in
+          let index = mkVarExpr(indexof (i,g,u)) in
           let ext_state = VarSet.union vs push_in_loop in
           let ext_bs =
             match bs with
@@ -920,11 +919,11 @@ let make_loop_join i bounds state fnlet =
         in
         let v' = mkFnVar "x" (record_type vs') in
         FnLetIn([FnVariable v', drill_loop_body (init,g,u) (vs', bs') (s', lbody')],
-                final_expr push_in_loop (v, FnVariable v')  (vs, expr))
+                final_expr _wa state push_in_loop (v, FnVariable v')  (vs, expr))
       end
     else
       FnLetIn([v, drill_loop_body (init,g,u) (vs, bs) (s, lbody)],
-              final_expr push_in_loop (v, v) (vs, expr))
+              final_expr _wa state push_in_loop (v, v) (vs, expr))
 
   | _ ->
     make_join ~index:i ~state:state ~skip:[] ~w_a:_wa fnlet
