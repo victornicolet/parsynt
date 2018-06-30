@@ -394,6 +394,7 @@ let inline_auxiliaries problem xinfo aux_set =
     (compose_head pre f), inner_loops
   in
   printf "New func:@.%a.@." pp_fnexpr new_func;
+  InnerFuncs.reg_no_join_inlined_body problem new_func;
   {
     problem with
     scontext = new_ctx;

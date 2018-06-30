@@ -190,6 +190,8 @@ let no_join_inlined_body pb =
   try SH.find pb.loop_body_versions _KEY_JOIN_NOT_INLINED_
   with Not_found -> pb.main_loop_body
 
+let reg_no_join_inlined_body pb nj =
+  SH.add pb.loop_body_versions _KEY_JOIN_NOT_INLINED_ nj
 
 (* `inline_inner` replaces the calls to inner functions by either the solution
    of the memoryless join or the body of the inner loop.

@@ -289,6 +289,45 @@ let get_increments (problem : prob_rep) : prob_rep list =
    current sketch.
 *)
 
+let complete_scalar_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
+  let rec _cb hl cl =
+    List.fold_left
+      (fun hl' (vh, eh) ->
+         match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
+         | [] -> hl'@[vh,eh]
+         | hd :: tl ->
+           hl'@[fst hd, snd hd])
+      [] hl
+  and _c h c =
+    match h, c with
+    | FnLetIn (bsk, FnLetIn(bsk2, esk)), FnLetIn (bsol, esol) ->
+      let common1, common2 =
+        let a1 = fst(used_in_assignments bsk) in
+        let a2 = fst(used_in_assignments bsk2) in
+        let b = fst(used_in_assignments bsol) in
+        VarSet.cardinal (VarSet.inter a1 b),
+        VarSet.cardinal (VarSet.inter a2 b)
+      in
+      if common1 > common2 then
+        FnLetIn (_cb bsk bsol, FnLetIn (bsk2, _c esk esol))
+      else
+        FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
+
+    | FnLetIn (bsk, esk) , FnLetIn (bsol, esol) ->
+      FnLetIn (_cb bsk bsol, _c esk esol)
+
+    | FnRecord(vs, emap) , FnRecord(vs', emap') ->
+      FnRecord(vs,
+               IM.mapi
+                 (fun i e -> try IM.find i emap' with Not_found -> e)
+                 emap)
+
+    | _ -> h
+  in
+  _c sketch solution
+
+
+
 let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   let rec _cb hl cl =
     List.fold_left
@@ -503,7 +542,7 @@ let complete_increment
         begin
           (* The incremental sk. is scalar. The prev solution should be too.*)
           if !verbose then printf "[INFO] Scalar sketch.@.";
-          complete_simple_sketch incr_sketch prev_solution
+          complete_scalar_sketch incr_sketch prev_solution
         end
     in
     if inner then { increment with memless_sketch = new_sketch }
