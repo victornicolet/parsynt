@@ -35,7 +35,8 @@ type stv_type =
   | Linear of (int * constants) list
   | SymbLinear of (int * fnExpr) list
 
-let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efinal =
+let symbolic_execution_test
+    ?(_xinfo = None) tname vars ctx funct unfoldings efinal =
   let indexes =  create_symbol_map ctx.index_vars in
   let state = create_symbol_map ctx.state_vars in
   let xinfo =
@@ -50,7 +51,22 @@ let symbolic_execution_test ?(_xinfo = None) tname vars ctx funct unfoldings efi
       }
     | Some xinfo -> xinfo
   in
-  let xinfo' = unfold_once ~silent:false xinfo funct in
+  let xinfo' =
+    try
+      unfold_once ~silent:false xinfo funct
+    with
+    | SymbExeError (s,v) ->
+      begin
+        printf "%s%s : error during symbolic execution.%s@."
+          (PpTools.color "red") tname PpTools.color_default;
+        printf "@[<v 4>%s :@;%a@]@." s cp_fnexpr v;
+        failwith s
+      end
+    | _ ->
+      printf "%s%s : error during symbolic execution.%s@."
+        (PpTools.color "red") tname PpTools.color_default;
+      failwith "Fatal error during symbolic execution."
+  in
   begin
     try
       List.iter
@@ -491,6 +507,141 @@ let test_05 () =
   ()
 
 
+
+let test_06 () =
+  let vars = vardefs "((sum int) (mtr int) (c int_array) (mtrr int) (a int_int_array) (i int) (j int))" in
+  let cont = make_context vars "((sum mtr mtrr c) (i) (a) (mtr sum mtrr c i j a) (mtr sum mtrr c))" in
+  let c = vars#get "c" in
+  let mtr = vars#get "mtr" in
+  let sum = vars#get "sum" in
+  let mtrr = vars#get "mtrr" in
+  let a = vars#get "a" in
+  let j = vars#get "j" in let i = vars#get "i" in
+  let inctx = make_context vars "((sum mtr c) (j) (a) (sum mtr mtrr c j a) (sum mtr c))" in
+  let intype = record_type inctx.state_vars in
+  let tup = mkFnVar "tup" intype in
+  let bnds = mkFnVar "bound" intype in
+  let func =
+    (_letin [FnVariable tup,
+             FnRec((_ci 5, (FnBinop(Ge, (evar i), (_ci 0))), (fminus (evar j) sk_one)),
+                   (inctx.state_vars,
+                    FnRecord(inctx.state_vars,
+                             IM.of_alist [sum.vid, sk_zero;
+                                          mtr.vid, sk_zero;
+                                          c.vid, evar c])),
+                   (bnds,
+                    (_letin [ _self bnds mtr; _self bnds c; _self bnds sum]
+                       (_letin [var sum, fplus (evar sum) (a $$ (evar i, evar j))]
+                          (_letin [var c, FnArraySet(evar c, evar j,
+                                                     (fplus (evar sum) (c $ (evar j))))]
+                             (_let [
+                                 var sum, evar sum;
+                                 var c, evar c;
+                                 var mtr, fmax (fplus (c $ (evar j)) (evar mtr)) sk_zero]))))))]
+       (_let [_self tup c;
+              _self tup mtr;
+              _self tup sum;
+              var mtrr, fmax (evar mtrr) (_inrec tup mtr)]))
+  in
+  let aone =
+    fplus
+      (fplus
+         (fplus
+            (fplus
+               (fplus
+                  (a $$ (evar i, _ci 5))
+                  (a $$ (evar i, _ci 4)))
+               (a $$ (evar i, _ci 3)))
+            (a $$ (evar i, _ci 2)))
+         (a $$ (evar i, _ci 1)))
+      (c $ (_ci 1))
+  in
+  try
+    ignore(symbolic_execution_test "foldr" vars cont func 2
+      [
+        c.vid, SymbLinear [1, aone];
+      ])
+  with _ -> ()
+
+
+let test_07 () =
+  let vars =
+    vardefs "((acc int) (mtr int) (c int_array) (c2 int_array) (mtrr int) (a int_int_array) (i int) (j int) (k int))"
+  in
+  let cont = make_context vars "((mtr mtrr c c2) (i) (a) (mtr mtrr c2 acc c i j k a) (mtr mtrr c c2))" in
+  let c = vars#get "c" in
+  let c2 = vars#get "c2" in
+  let mtr = vars#get "mtr" in
+  let acc = vars#get "acc" in
+  let mtrr = vars#get "mtrr" in
+  let a = vars#get "a" in
+  let j = vars#get "j" in
+  let i = vars#get "i" in
+  let k = vars#get "k" in
+  let inctx1 = make_context vars "((mtr c) (j) (a) (mtr mtrr c j a) (mtr c))" in
+  let inctx2 = make_context vars "((acc c2) (k) (a) (k a acc c2) (c2 acc))" in
+  let st1 = inctx1.state_vars in
+  let st2 = inctx2.state_vars in
+  let intype1 = record_type inctx1.state_vars in
+  let intype2 = record_type inctx2.state_vars in
+  let tup1 = mkFnVar "tup1" intype1 in
+  let _res = mkFnVar "res" intype2 in
+  let b1 = mkFnVar "b1" intype1 in
+  let b2 = mkFnVar "b2" intype1 in
+  let f =
+    let foldr_loop =
+      FnRec ((_ci 3,
+             fgt (evar k) (_ci 0),
+             fminus (evar k) (_ci 1)),
+      (st2, FnRecord(st2, IM.of_alist [acc.vid, (c $ (_ci 5));
+                                       c2.vid, (evar c2)])),
+      (b2,
+       (_letin [_self b2 acc; _self b2 c2]
+          (_let
+             [var acc, (fplus (c $ (evar k)) (evar acc));
+              var c2, FnArraySet(evar c2,
+                                 evar k,
+                                 fmax (evar acc) (c2 $ (evar k)))]))))
+    in
+    let foldl_loop =
+      FnRec
+        (((_ci 0),
+          (fgt (_ci 5) (evar j)),
+          (fplus (evar j) (_ci 1))),
+         (st1, FnRecord (st1, IM.of_alist [c.vid, (evar c); mtr.vid, _ci 0])),
+         (b1,
+          (_letin [_self b1 mtr; _self b1 c]
+             (_letin [var c, FnArraySet(evar c, evar j,
+                                        (fplus (c $ (evar j))
+                                           (a $$(evar i, evar j))))]
+                (_let [var c, evar c;
+                       var mtr, fmax (fplus (evar mtr) (c $ (evar j))) (_ci 0)])))))
+    in
+    (_letin
+       [var tup1, foldl_loop]
+       (_letin [_self tup1 c; _self tup1 mtr]
+          (_letin [var mtrr, fmax (evar mtr) (evar mtrr)]
+             (_letin [var _res, foldr_loop]
+                (_letin [_self _res c2]
+                   (_let [var c, (evar c);
+                          var mtr, (evar mtr);
+                          var mtrr, (evar mtrr);
+                          var c2, (evar c2)]))))))
+  in
+   let _ =
+     symbolic_execution_test "foldr-mtrr" vars cont f 2
+       []
+  in
+  if !verbose then
+    printf "Dependencies:@.%a@."
+      (PpTools.ppifmap
+      (fun fmt i -> printf "(%s)" (VarSet.find_by_id cont.state_vars i).vname)
+      (fun fmt deps -> printf "(deps : %a)" VarSet.pp_var_names deps))
+      (FnDep.collect_dependencies cont f)
+
+
+
+
 (* Normalization: file defined tests. *)
 let test_load filename =
   let inchan = IO.input_channel (open_in filename) in
@@ -521,4 +672,6 @@ let test () =
   test_03ter ();
   test_04 ();
   test_05 ();
+  test_06 ();
+  test_07 ();
   file_defined_tests ()

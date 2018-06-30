@@ -172,6 +172,47 @@ let create_new_aux
    @param: expr the expression of the auxiliary in the previous unfolding.
    @param: expr' the expression from which to deduce the recursion.
 *)
+let new_aux_case ni xinfo xinfo_out cexpr aset aset' =
+  if ni then
+    let typ = type_of cexpr in
+    let new_aux_varinfo = mkFnVar (get_new_name ~base:!RFind._aux_prefix_) typ in
+    let new_auxs = create_new_aux xinfo xinfo_out new_aux_varinfo cexpr in
+
+    if !debug then
+      printf "@.Adding new variable %s@;with expression@;%a@."
+        new_aux_varinfo.vname
+        cp_fnexpr cexpr;
+
+    AuxSet.fold
+      (fun aux new_auxs ->
+         AuxSet.add_new_aux xinfo.context new_auxs aux)
+      new_auxs
+      aset'
+  else begin
+    if !verbose then printf "[INFO] Skipped adding new variable.@.";
+    aset'
+  end
+
+
+let index_update_case xinfo xinfo_out aux_set' aux candidate_i =
+  if !debug then
+    printf "Variable is incremented after index update %s: %a@."
+      aux.avar.vname cp_fnexpr candidate_i;
+  let new_aux = { aux with afunc = candidate_i } in
+  AuxSet.add_new_aux xinfo.context aux_set' new_aux
+
+
+let accumulation_case xinfo xinfo_out candidate possible_accs aux_set' =
+  let aux = AS.max_elt possible_accs in
+  if !debug then
+    printf "@.Variable %s is incremented by %a@."
+      aux.avar.vname cp_fnexpr aux.afunc;
+  let new_aux =
+    { aux with
+      aexpr =
+        replace_available_vars xinfo xinfo_out candidate } in
+  AuxSet.add_new_aux xinfo.context aux_set' new_aux
+
 
 let update_with_one_candidate
     ((i, ni) : int * bool)
@@ -180,48 +221,6 @@ let update_with_one_candidate
     (aux_set : AuxSet.t)
     (aux_set': AuxSet.t)
     (candidate_expr : fnExpr) : AuxSet.t =
-
-  let new_aux_case cexpr aset aset' =
-    if ni then
-      let typ = type_of cexpr in
-      let new_aux_varinfo = mkFnVar (get_new_name ~base:!RFind._aux_prefix_) typ in
-      let new_auxs = create_new_aux xinfo xinfo_out new_aux_varinfo cexpr in
-
-      if !debug then
-        printf "@.Adding new variable %s@;with expression@;%a@."
-          new_aux_varinfo.vname
-          cp_fnexpr cexpr;
-
-      AuxSet.fold
-        (fun aux new_auxs ->
-           AuxSet.add_new_aux xinfo.context new_auxs aux)
-        new_auxs
-        aset'
-    else begin
-      if !verbose then printf "[INFO] Skipped adding new variable.@.";
-      aset'
-    end
-  in
-
-  let index_update_case aux candidate_i =
-    if !debug then
-      printf "Variable is incremented after index update %s: %a@."
-        aux.avar.vname cp_fnexpr candidate_i;
-    let new_aux = { aux with afunc = candidate_i } in
-    AuxSet.add_new_aux xinfo.context aux_set' new_aux
-  in
-
-  let accumulation_case candidate possible_accs aux_set' =
-    let aux = AS.max_elt possible_accs in
-    if !debug then
-      printf "@.Variable %s is incremented by %a@."
-        aux.avar.vname cp_fnexpr aux.afunc;
-    let new_aux =
-      { aux with
-        aexpr =
-          replace_available_vars xinfo xinfo_out candidate } in
-    AuxSet.add_new_aux xinfo.context aux_set' new_aux
-  in
 
   (** Replace subexpressions corresponding to state expressions
       in the candidate expression *)
@@ -266,7 +265,7 @@ let update_with_one_candidate
               let possible_accs = RFind.find_accumulator xinfo candidate_expr' sub_aux in
               if AS.cardinal possible_accs > 0
               then
-                accumulation_case candidate_expr' possible_accs aux_set'
+                accumulation_case xinfo xinfo_out candidate_expr' possible_accs aux_set'
               else if ni then
                 RFind.update_accumulator xinfo xinfo_out candidate_expr' sub_aux aux_set'
               else
@@ -278,8 +277,8 @@ let update_with_one_candidate
             let candidate_i = reset_index_expressions xinfo candidate_expr' in
             begin
               match AS.elements (find_matching_aux candidate_i aux_set) with
-              | aux :: _ -> index_update_case aux candidate_i
-              | _ -> new_aux_case candidate_expr' aux_set aux_set'
+              | aux :: _ -> index_update_case xinfo xinfo_out aux_set' aux candidate_i
+              | _ -> new_aux_case ni xinfo xinfo_out candidate_expr' aux_set aux_set'
             end
         end
     end
@@ -321,12 +320,12 @@ let find_auxiliaries ?(not_last_iteration = true) i
 
 
 
-let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
+let rec fixpoint problem var i_fix (xinfo, oset : exec_info * AuxSet.t) =
   let idx_update = get_index_update problem in
   printf "@.%s%s%s%s@."
     (color "black") (color "b-blue")
     (pad ~c:'-' (fprintf str_formatter
-                   "-------------------- UNFOLDING %i ----------------" i;
+                   "-------------------- UNFOLDING %i ----------------" i_fix;
                  flush_str_formatter ()) 80)
     color_default;
 
@@ -353,8 +352,8 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
     (** Find the new set of auxiliaries by analyzing the expressions at the
         current unfolding level *)
     let oset' =
-      find_auxiliaries i
-        ~not_last_iteration:(i < !max_exec_no)
+      find_auxiliaries i_fix
+        ~not_last_iteration:(i_fix < !max_exec_no)
         xinfo
         xinfo1
         (IM.find var.vid xinfo1.state_exprs)
@@ -364,11 +363,11 @@ let rec fixpoint problem var i (xinfo, oset : exec_info * AuxSet.t) =
      index_exprs = unfold_index xinfo1 idx_update},
     oset'
   in
-  if (i > !max_exec_no - 1) || (same_aux oset oset')
+  if (i_fix > !max_exec_no - 1) || (same_aux oset oset')
   then
     xinfo', oset'
   else
-    fixpoint problem var (i + 1) (xinfo', oset')
+    fixpoint problem var (i_fix + 1) (xinfo', oset')
 
 
 
@@ -438,7 +437,7 @@ let discover_for_id problem var =
               cp_fnexpr aux.afunc) a)
     clean_aux_set;
 
-  let problem' = VUtils.compose problem start_exec_state clean_aux_set in
+  let problem' = VUtils.inline_auxiliaries problem start_exec_state clean_aux_set in
   discover_init ();
   problem'
 

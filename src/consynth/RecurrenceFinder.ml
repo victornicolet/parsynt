@@ -295,7 +295,21 @@ let create_foldr
     (ctx : context) (var : fnLVar) (sc_acc : fnV) (el : fnExpr list) :
   (fnExpr * aux_comp_type) list =
 
-  let acc_index = mkFnVar "j" Integer in
+  let dims =
+    let ar_state, ar_inpt =
+      VarSet.partition (fun v -> VarSet.mem v ctx.state_vars)
+        (VarSet.filter (fun v -> is_array_type v.vtype)
+           (used_in_fnexpr (List.hd el)))
+    in
+    if VarSet.is_empty ar_state then
+      failwith "Not implemented."
+    else
+      List.hd
+        (List.map Dimensions.get_array_dims (VarSet.elements ar_state))
+  in
+
+  let acc_index = mkFnVar "k" Integer in
+  Dimensions.register_index_dims acc_index (List.hd dims);
   (* Simple accumulator detection for now:
      a[1] = accum(a[0]) *)
   let acc_func =

@@ -54,9 +54,9 @@ let print_SymbExeError (exc : exn) : string option =
 Printexc.register_printer print_SymbExeError;;
 
 (* Array size must be bounded during the symbolic execution. *)
-let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
 
-let _arsize_ = ref _MAX_ARRAY_SIZE_
+
+
 (** Create a mapping from variable ids to variable expressions to start the
     algorithm *)
 let var_to_symbols = IH.create 10
@@ -123,16 +123,16 @@ let create_symbol_map vs =
        let eqvi = add_symbol vi in
        IM.add vi.vid
          (if is_matrix_type vi.vtype then
-            FnVector (ListTools.init !_arsize_
+            FnVector (ListTools.init Dimensions._SYMBEX_FINITE_
                          (fun i ->
                             FnVector(
-                              ListTools.init !_arsize_
+                              ListTools.init Dimensions._SYMBEX_FINITE_
                                 (fun j ->
                                    FnVar(FnArray(FnArray(FnVariable eqvi,
                                                          FnConst (CInt i)),
                                                 FnConst (CInt j)))))))
           else if is_array_type vi.vtype then
-            FnVector (ListTools.init !_arsize_
+            FnVector (ListTools.init Dimensions._SYMBEX_FINITE_
                         (fun i -> FnVar(FnArray(FnVariable eqvi,
                                                 FnConst (CInt i)))))
           else
@@ -231,6 +231,7 @@ let rec partial_interpret e =
 (** --------------------------------------------------------------------------*)
 (** Intermediary functions for unfold_once *)
 let _intermediate_states : fnExpr list ref = ref []
+let saved_intermediate_state = ref []
 
 let clear_intermediate_states () =
   _intermediate_states := []
@@ -246,6 +247,10 @@ let add_intermediate_state (i : int) (state : fnExpr) : unit =
        raise (SymbExeError ("wrong number of states", state)) )
   | _ ->
     raise (SymbExeError ("Cannot add a state that is not a record.", state))
+
+let save_intermediate_states () =
+  saved_intermediate_state := !_intermediate_states;
+  _intermediate_states := []
 
 let get_one_intermediate_val (var : fnV) : fnExpr list  =
   let some_vals =
@@ -505,7 +510,13 @@ and do_var env v : fnExpr * ex_env =
 
     | FnVector ar ->
       let i0 = concrete_index i' in
-      List.nth ar i0, env''
+      begin try
+        List.nth ar i0, env''
+        with _ ->
+          raise (SymbExeError
+                   ("In vector, cannot access cell "^(string_of_int i0),
+                    FnVector ar))
+      end
 
     | _ ->
       if !verbose then
@@ -515,42 +526,65 @@ and do_var env v : fnExpr * ex_env =
                            a'))
 
 
-and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
+and do_loop (env : ex_env) (init, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
   let indexvar = VarSet.max_elt (used_in_fnexpr u) in
-
-  let i0, iEnd =
-    match i with
-    | FnConst (CInt c) -> c, 0
-    | _ ->
-      (Format.printf "%sAssuming loop is leftwards.%s@."
-         (PpTools.color "blue") PpTools.color_default);
-      0, !_arsize_ - 1
+  let static = Dimensions._SYMBEX_FINITE_ -1 in
+  let i0 =
+    match peval (Dimensions.concretize init) with
+    | FnConst (CInt c) -> c
+    | FnConst (CInt64 c64) -> (Int64.to_int c64)
+    | _ -> 0
   in
 
-  let i0', iEnd' =
-    match g with
+  let c_stop0 =
+    match Dimensions.concretize g with
     | FnBinop (Lt, _, FnConst (CInt c))
     | FnBinop (Gt, FnConst (CInt c), _) ->
-      0, c
+      (fun i -> i >= c)
+
+    | FnBinop (Le, _, FnConst (CInt c))
+    | FnBinop (Ge, FnConst (CInt c), _) ->
+      (fun i -> i > c)
+
     | FnBinop (Lt, FnConst (CInt c), _)
     | FnBinop (Gt, _, FnConst (CInt c)) ->
-      c, 0
-    | _ -> 0, !_arsize_
+      (fun i -> i <= c)
+
+    | FnBinop (Le, FnConst (CInt c), _)
+    | FnBinop (Ge, _, FnConst (CInt c)) ->
+      (fun i -> i < c)
+
+    | _ ->
+      (fun i -> i >= static)
   in
 
-  let i0, iEnd = min i0 i0' , max iEnd iEnd' in
+  let c_update, c_stop =
+    match u with
+    | FnBinop(Plus, _ ,_) | FnUnop (Add1, _) ->
+      if !verbose then
+        printf "[INFO] Rightwards loop.@.";
+      (fun i -> i + 1), (fun i -> c_stop0 i || i >= 5)
+    | FnBinop(Minus, _ ,_) | FnUnop (Sub1, _) ->
+      if !verbose then
+        printf "[INFO] Leftwards loop.@.";
+      (fun i -> i - 1), (fun i -> c_stop0 i || i <= 0)
+    | _ ->
+      if !verbose then
+        printf "[INFO] Rightwards loop.@.";
+      (fun i -> i + 1), (fun i -> c_stop0 i || i >= 5)
+  in
 
   let exec_loop k out_env body =
-    let rec aux k env body =
-      if k >= iEnd then
+    let rec aux k counter env body =
+      if c_stop k then
         begin let record = IM.find s.vid env.ebexprs in
-          add_intermediate_state (k+1) record;
+          add_intermediate_state (counter + 1) record;
           record, env
         end
       else
         begin let res, _ = do_expr (update_indexval env indexvar k) body in
-          add_intermediate_state (k+1) res;
-          aux (k+1)
+          add_intermediate_state (counter + 1) res;
+          aux (c_update k) (counter + 1)
             {env with
              ebound = VarSet.singleton s;
              ebexprs = IM.singleton s.vid res;}
@@ -564,7 +598,8 @@ and do_loop (env : ex_env) (i, g, u) (vs, bs) (s, body) : fnExpr * ex_env =
        ebound = VarSet.singleton s;
        ebexprs = IM.singleton s.vid bs';}
     in
-    let res_final, env_final = aux k start_env body in
+    let res_final, env_final = aux k 0 start_env body in
+    save_intermediate_states ();
     res_final, env_final
   in
   exec_loop i0 env body

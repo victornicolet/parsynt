@@ -174,139 +174,163 @@ let clear_solution (prob : prob_rep) : prob_rep =
     join_solution = empty_record;
   }
 
+
+(* The different inline cases of inline_auxiliaries. *)
+let compose_case_single xinfo new_ctx aux (hal, tal) v =
+  (* Replace index by "start index" variable *)
+  let aux_expression =
+    add_left_auxiliary v;
+    replace_index_uses
+      left_index_vi xinfo.context.index_vars aux.aexpr
+  in
+  (** If the only the "start index" appears, or the aux variable's
+      expression is only a function of the index/input variable, it
+      can be removed from the loop *)
+  if
+    begin
+      let used_vars = used_in_fnexpr aux_expression in
+      let not_read_vars =
+        VarSet.diff used_vars
+          (VarSet.diff xinfo.context.all_vars new_ctx.state_vars)
+      in
+      let not_read_not_index =
+        VarSet.diff not_read_vars new_ctx.index_vars in
+      (** No other variables than read-only or index *)
+      VarSet.cardinal not_read_not_index = 0
+    end
+  then
+    hal@[(FnVariable v, aux_expression)],
+    tal
+  else
+    hal@[(FnVariable v, aux_expression)], tal
+
+let compose_case_default xinfo aux (hal, tal) =
+  let cur_vi = aux.avar in
+  let v = (FnVariable cur_vi) in
+  let assgn =
+    [v, aux.afunc]
+  in
+  let dependencies =
+    VarSet.cardinal (VarSet.inter aux.depends xinfo.context.state_vars)
+  in
+  if dependencies > 0
+  then
+    (* The variable depends on other state variables *)
+    hal, tal@assgn
+  else
+    hal@assgn, tal
+
+let compose_case_map
+    (xinfo : exec_info)
+    (aux : auxiliary)
+    (el : fnExpr list)
+    (il : prob_rep list) : prob_rep list =
+  List.map
+    (fun inner_loop ->
+       let j = VarSet.max_elt (get_index_varset inner_loop) in
+       let jexprs =
+         List.mapi
+           (fun i e ->
+              replace_expression
+                ~in_subscripts:true
+                ~to_replace:(FnConst (CInt i))
+                ~by:(mkVarExpr j)
+                ~ine:e) el
+       in
+       if List.length jexprs > 1 &&
+          List.for_all (fun e -> e @= (List.hd jexprs)) jexprs
+       then
+         let binding =
+           FnVariable aux.avar,
+           FnArraySet(mkVarExpr aux.avar, mkVarExpr j, List.hd jexprs)
+         in
+         clear_solution (add_to_inner_loop_body aux inner_loop binding)
+
+       else
+         (if !debug then
+            printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
+              aux.avar.vname;
+          inner_loop))
+    il
+
+
+(* Add a foldr type auxiliary, the 'tricky' part is to put the
+   inverse loop at the  right position. Since the state variables
+   have the expression they have at the end of the body when they are
+   replaced during auxiliary discovery, we put the loop after all the
+   non-identity assignments in the loop.
+   For now, since the added loop is *not* included in the inner function,
+   it works only if the auxiliary does not refer to input.
+*)
+
+let compose_case_foldr
+    (xinfo : exec_info)
+    (aux : auxiliary)
+    (accu : auxiliary)
+    (tl : (fnLVar * fnExpr) list) =
+  let foldr_state =
+    VarSet.of_list [aux.avar; accu.avar]
+  in
+  let jvar = VarSet.max_elt accu.depends in
+  let foldr_type = record_type foldr_state in
+  let loop_bind = mkFnVar "_s" foldr_type in
+  let loop_res = mkFnVar "_res" foldr_type in
+  let arrayexpr =
+    let el =
+      match aux.afunc with
+      | FnVector el -> el
+      | _ -> failhere __FILE__ "compose_case_foldr" "Not a vector?"
+    in
+    replace_expression
+      ~in_subscripts:true
+      ~to_replace: (FnConst(CInt 0))
+      ~by:(mkVarExpr jvar)
+      ~ine:(List.hd el)
+  in
+  let foldr_body =
+    FnLetIn([_self loop_bind aux.avar;
+             _self loop_bind accu.avar;],
+            FnRecord(foldr_state,
+                     IM.of_alist [accu.avar.vid, accu.afunc;
+                                  aux.avar.vid,
+                                  FnArraySet(mkVarExpr aux.avar,
+                                             mkVarExpr jvar,
+                                             arrayexpr)]))
+  in
+  let foldr_init =
+    FnRecord(foldr_state,
+             IM.of_alist [accu.avar.vid, accu.aexpr;
+                          aux.avar.vid, mkVarExpr aux.avar])
+  in
+  let n0, n =
+    try
+      Dimensions.get_index_dims jvar
+    with Not_found ->
+      (if !verbose then
+         printf "[WARNING] Dimensions of %s not found. Going with 0,5." jvar.vname;
+       FnConst(CInt 0),FnConst(CInt 5))
+  in
+  (* Register the dimensions of the auxiliary. *)
+  Dimensions.dimensionalize_body foldr_body;
+  let foldr_loop =
+    let j = mkVarExpr jvar in
+    (* Use j's interval in reverse *)
+    FnRec((FnUnop(Sub1, n), FnBinop(Ge, j, n0), FnUnop(Sub1, j)),
+          (foldr_state, foldr_init),
+          (loop_bind, foldr_body))
+  in
+  tl @ [mkVar loop_res, foldr_loop; _self loop_res aux.avar]
+
+
 (** Given a set of auxiliary variables and the associated functions,
     and the set of state variable and a function, return a new set
     of state variables and a function.
 *)
-let compose problem xinfo aux_set =
+let inline_auxiliaries problem xinfo aux_set =
   let f = InnerFuncs.no_join_inlined_body problem in
   let new_ctx = ctx_update_vsets xinfo.context (AuxSet.vars aux_set) in
   let clean_f = remove_id_binding f in
-  let compose_case_single xinfo aux (hal, tal) v =
-    (* Replace index by "start index" variable *)
-    let aux_expression =
-      add_left_auxiliary v;
-      replace_index_uses
-        left_index_vi xinfo.context.index_vars aux.aexpr
-    in
-    (** If the only the "start index" appears, or the aux variable's
-        expression is only a function of the index/input variable, it
-        can be removed from the loop *)
-    if
-      begin
-        let used_vars = used_in_fnexpr aux_expression in
-        let not_read_vars =
-          VarSet.diff used_vars
-            (VarSet.diff xinfo.context.all_vars new_ctx.state_vars)
-        in
-        let not_read_not_index =
-          VarSet.diff not_read_vars new_ctx.index_vars in
-        (** No other variables than read-only or index *)
-        VarSet.cardinal not_read_not_index = 0
-      end
-    then
-      hal@[(FnVariable v, aux_expression)],
-      tal
-    else
-      hal@[(FnVariable v, aux_expression)], tal
-  in
-  let compose_case_default xinfo aux (hal, tal) =
-    let cur_vi = aux.avar in
-    let v = (FnVariable cur_vi) in
-    let assgn =
-       [v, aux.afunc]
-     in
-     let dependencies =
-       VarSet.cardinal (VarSet.inter aux.depends xinfo.context.state_vars)
-     in
-     if dependencies > 0
-     then
-       (* The variable depends on other state variables *)
-       hal, tal@assgn
-     else
-       hal@assgn, tal
-  in
-  let compose_case_map
-      (xinfo : exec_info)
-      (aux : auxiliary)
-      (el : fnExpr list)
-      (il : prob_rep list) : prob_rep list =
-    List.map
-      (fun inner_loop ->
-         let j = VarSet.max_elt (get_index_varset inner_loop) in
-         let jexprs =
-           List.mapi
-             (fun i e ->
-                replace_expression
-                  ~in_subscripts:true
-                  ~to_replace:(FnConst (CInt i))
-                  ~by:(mkVarExpr j)
-                  ~ine:e) el
-         in
-         if List.length jexprs > 1 &&
-            List.for_all (fun e -> e @= (List.hd jexprs)) jexprs
-         then
-           let binding =
-             FnVariable aux.avar,
-             FnArraySet(mkVarExpr aux.avar, mkVarExpr j, List.hd jexprs)
-           in
-           clear_solution (add_to_inner_loop_body aux inner_loop binding)
 
-         else
-           (if !debug then
-              printf "[WARNING] Skipped auxiliary %s. Unrecognized shape.@."
-              aux.avar.vname;
-            inner_loop))
-      il
-  in
-  let compose_case_foldr
-      (xinfo : exec_info)
-      (aux : auxiliary)
-      (accu : auxiliary)
-      (tl : (fnLVar * fnExpr) list) =
-    let foldr_state =
-      VarSet.of_list [aux.avar; accu.avar]
-    in
-    let jx = VarSet.max_elt accu.depends in
-    let foldr_type = record_type foldr_state in
-    let loop_bind = mkFnVar "_s" foldr_type in
-    let loop_res = mkFnVar "_res" foldr_type in
-    let arrayexpr =
-      let el =
-        match aux.afunc with
-        | FnVector el -> el
-        | _ -> failhere __FILE__ "compose_case_foldr" "Not a vector?"
-      in
-      replace_expression
-        ~in_subscripts:true
-        ~to_replace: (FnConst(CInt 0))
-        ~by:(mkVarExpr jx)
-        ~ine:(List.hd el)
-    in
-    let foldr_body =
-      FnLetIn([_self loop_bind aux.avar;
-               _self loop_bind accu.avar;],
-              FnRecord(foldr_state,
-                       IM.of_alist [accu.avar.vid, accu.afunc;
-                                    aux.avar.vid,
-                                    FnArraySet(mkVarExpr aux.avar,
-                                               mkVarExpr jx,
-                                               arrayexpr)]))
-    in
-    let foldr_init =
-      FnRecord(foldr_state,
-               IM.of_alist [accu.avar.vid, accu.aexpr;
-                            aux.avar.vid, mkVarExpr aux.avar])
-    in
-    let n = mkFnVar "n" Integer in
-    let foldr_loop =
-      let j = mkVarExpr jx in
-      FnRec((mkVarExpr n, FnBinop(Ge, j, FnConst(CInt 0)), FnUnop(Sub1, j)),
-            (foldr_state, foldr_init),
-            (loop_bind, foldr_body))
-    in
-    tl @ [mkVar loop_res, foldr_loop; _self loop_res aux.avar]
-  in
   let partition_fchanges aux (hl, tl, il) =
     (** Distinguish different cases :
         - the function is not identity but an accumulator, we add the
@@ -326,7 +350,7 @@ let compose problem xinfo aux_set =
       begin match aux.afunc with
         | FnVar (FnVariable v) when v.vid = aux.avar.vid ->
           let hl', tl' =
-            compose_case_single xinfo aux (hl, tl) v
+            compose_case_single xinfo new_ctx aux (hl, tl) v
           in
           (hl', tl', il)
 
@@ -357,15 +381,17 @@ let compose problem xinfo aux_set =
   in
 
   let new_func, inner_loops =
-    let head_assgn, tail_assgn, inner_loops =
+    let pre, post, inner_loops =
       AuxSet.fold partition_fchanges
          aux_set
          ([], [], problem.inner_functions)
     in
-    let f = complete_final_state new_ctx.state_vars
-        (compose_tail new_ctx.state_vars tail_assgn clean_f)
+
+    let f =
+      complete_final_state new_ctx.state_vars
+        (compose_tail new_ctx.state_vars post clean_f)
     in
-    (compose_head head_assgn f), inner_loops
+    (compose_head pre f), inner_loops
   in
   printf "New func:@.%a.@." pp_fnexpr new_func;
   {
