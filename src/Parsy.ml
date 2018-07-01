@@ -110,7 +110,7 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
         | None, elapsed->
           let inpb' =
             try
-              Canalyst.find_new_variables problem
+              Canalyst.find_new_variables inpb
             with VariableDiscovery.VariableDiscoveryError s as e ->
               eprintf "[ERROR] Received variable discovery errror in aux_solve of solve_problem.@.";
               eprintf "[ERROR] Skipping problem %s.@." problem.loop_name;
