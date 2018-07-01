@@ -340,6 +340,9 @@ let rec used_vars_expr ?(onlyNoOffset = false) (exp : expr) =
      let ve' = used_vars_expr ~onlyNoOffset:onlyNoOffset e' in
      VS.union ve ve'
 
+  | FunApp (_, el) ->
+    List.fold_left (fun uset e -> VS.union uset (used_vars_expr e)) VS.empty el
+
   | _ -> VS.empty
 
 let rec used_vars_letin ?(onlyNoOffset = false) (letform : letin) =

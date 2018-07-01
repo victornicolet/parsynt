@@ -91,14 +91,35 @@ let rec solve_inners (problem : prob_rep) : prob_rep option =
   else
     let solve_inner_problem inpb =
       if is_empty_record inpb.memless_solution then
-        let start = Unix.gettimeofday () in
-        let maybe_solution =
-          solve_one ~inner:true (Some problem.scontext) inpb
+
+        let loc_solve inpb =
+          let start = Unix.gettimeofday () in
+          let sol = solve_one ~inner:true (Some problem.scontext) inpb in
+          let elapsed = Unix.gettimeofday () -. start in
+          sol, elapsed
         in
-        let elapsed = Unix.gettimeofday () -. start in
-        message_info (fun () ->
-            printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
-        maybe_solution
+        let sln_inner msol elapsed =
+          message_info (fun () ->
+              printf "Inner loop %s, solved in %.3f s." inpb.loop_name elapsed);
+          msol
+        in
+        match loc_solve inpb with
+        | Some sln, elapsed ->
+          sln_inner (Some sln) elapsed
+
+        | None, elapsed->
+          let inpb' =
+            try
+              Canalyst.find_new_variables problem
+            with VariableDiscovery.VariableDiscoveryError s as e ->
+              eprintf "[ERROR] Received variable discovery errror in aux_solve of solve_problem.@.";
+              eprintf "[ERROR] Skipping problem %s.@." problem.loop_name;
+              message_error_task "Couldn't find auxliary variables...\n";
+              raise e
+          in
+          let sol', elapsed' = loc_solve inpb' in
+          sln_inner sol' elapsed'
+
       else Some inpb
     in
     (* Solve the inner functions. *)

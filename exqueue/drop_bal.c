@@ -2,7 +2,7 @@ int drop_count(_Bool** A, int m, int n) {
   int count = 0;
   int offset = 0;
   int line_offset = 0;
-  _Bool bal = true;
+  _Bool bal = 1;
 
   for(int i = 0; i < n; i++) {
 	line_offset = 0;
