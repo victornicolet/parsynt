@@ -131,7 +131,11 @@ let rec restrict_func
         (* Restrict the record type *)
         | Record (name, stl) ->
           let new_rtype = update_rectype name stl in
-          Some (var, mkFnVar "x_" new_rtype)
+          if new_rtype = var.vtype then
+            (*  No need for a new variable, but keep identity sub. *)
+            Some (var, var)
+          else
+            Some (var, mkFnVar "x_" new_rtype)
 
         (* No restriction. *)
         | _ -> None
@@ -298,33 +302,18 @@ let complete_scalar_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
          | hd :: tl ->
            hl'@[fst hd, snd hd])
       [] hl
-  and _c h c =
-    match h, c with
-    | FnLetIn (bsk, FnLetIn(bsk2, esk)), FnLetIn (bsol, esol) ->
-      let common1, common2 =
-        let a1 = fst(used_in_assignments bsk) in
-        let a2 = fst(used_in_assignments bsk2) in
-        let b = fst(used_in_assignments bsol) in
-        VarSet.cardinal (VarSet.inter a1 b),
-        VarSet.cardinal (VarSet.inter a2 b)
-      in
-      if common1 > common2 then
-        FnLetIn (_cb bsk bsol, FnLetIn (bsk2, _c esk esol))
-      else
-        FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
+  and _c h flat_c =
+    (* Only scalar variables: aasignments 'in parallel' can be flattened. *)
+    match h with
+    | FnLetIn(hl, he) ->
+      FnLetIn(_cb hl flat_c, _c he flat_c)
 
-    | FnLetIn (bsk, esk) , FnLetIn (bsol, esol) ->
-      FnLetIn (_cb bsk bsol, _c esk esol)
-
-    | FnRecord(vs, emap) , FnRecord(vs', emap') ->
-      FnRecord(vs,
-               IM.mapi
-                 (fun i e -> try IM.find i emap' with Not_found -> e)
-                 emap)
+    | FnRecord(hvs, hemap) ->
+      wrap_state (_cb (unwrap_state hvs hemap) flat_c)
 
     | _ -> h
   in
-  _c sketch solution
+  _c sketch (flat_bindings solution)
 
 
 

@@ -539,6 +539,19 @@ let wrap_state (bindings : (fnLVar * fnExpr) list) : fnExpr =
   in
   FnRecord(vs, emap)
 
+
+let flat_bindings (func : fnExpr) : (fnLVar * fnExpr) list =
+  let rec aux e l =
+    match e with
+    | FnLetIn(l', e') ->
+      aux e' (l@l')
+    | FnRecord(vs, emap) ->
+      l@(unwrap_state vs emap)
+
+    | _ -> l
+  in
+  aux func []
+
 let all_record_accessors (l : (fnLVar * fnExpr) list) : fnV option =
   if
     List.length l > 0 &&
