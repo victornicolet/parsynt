@@ -205,6 +205,79 @@ let reg_no_join_inlined_body pb nj =
    is the corresponding entry  _KEY_JOIN_NOT_INLINED_ in the loop versions,
    if will use this one, otherwise the main_loop_body.
 *)
+let inline_inner_join_case (pb, _ci, _iw, _def) new_loopres in_info args =
+  let j_start, j_end = get_bounds in_info in
+  let repl_start e =
+    replace_expression ~in_subscripts:true
+      ~to_replace:(mkVarExpr j_start) ~by:(FnConst (CInt 0)) ~ine:e
+  in
+  let repl_end e =
+    replace_expression ~in_subscripts:true
+      ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt _iw)) ~ine:e
+  in
+
+  let repl_loopres x e =
+    replace_expression
+      ~in_subscripts:false
+      ~to_replace:(FnVar x)
+      ~by:(FnVar new_loopres)
+      ~ine:e
+  in
+  (**
+     If the solution is of the form loop + choice bindings, extract the loop,
+     and push the bindings to the outer loop.
+  *)
+  let in_body, new_unwrap =
+    let replaced_rl =
+      transform_rl_vars
+        _ci
+        (mkVarExpr (VarSet.max_elt (get_index_varset pb)))
+        ((repl_start --> repl_end) in_info.memless_solution)
+    in
+    match replaced_rl with
+    | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
+      let choices' =
+        IM.map (repl_loopres loop_res) choices
+      in
+      FnRec (igu, vsbs, loopdef),
+      unwrap_state in_state choices'
+
+    | FnLetIn(prescalar,
+              FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices))) ->
+      let sub er (v,e) =
+        replace_expression
+          ~in_subscripts:false
+          ~to_replace:(FnVar v)
+          ~by:e
+          ~ine:er
+      in
+      let f e =
+        let e' = repl_loopres loop_res e in
+        List.fold_left sub e' prescalar
+      in
+      let choices' = IM.map f choices in
+      FnRec (igu, vsbs, loopdef),
+      unwrap_state in_state choices'
+
+    | e ->  e, _def
+  in
+
+  if has_loop in_body then
+    begin if !verbose then
+        printf
+          "[WARNING] Inlined inner join iterates from 0 to %i by default.@."
+          _iw;
+      Some in_body, new_unwrap
+    end
+  else
+    (* This is not a loop, so we might as well push the expressions in the unwrapping. *)
+    match in_body with
+    | FnRecord(vs, emap) ->
+      None, unwrap_state vs emap
+    | _ ->
+      Some in_body, new_unwrap
+
+
 let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width problem =
   if !verbose then
     printf "@.[INFO] @[<v 4>Outer function before inlining:@;%a@]@."
@@ -243,70 +316,7 @@ let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width 
     inlined
   in
 
-  let inline_join new_loopres in_info args =
-    let j_start, j_end = get_bounds in_info in
-    let repl_start e =
-      replace_expression ~in_subscripts:true
-        ~to_replace:(mkVarExpr j_start) ~by:(FnConst (CInt 0)) ~ine:e
-    in
-    let repl_end e =
-      replace_expression ~in_subscripts:true
-        ~to_replace:(mkVarExpr j_end) ~by:(FnConst (CInt in_loop_width)) ~ine:e
-    in
 
-    let repl_loopres x e =
-      replace_expression
-            ~in_subscripts:false
-            ~to_replace:(FnVar x)
-            ~by:(FnVar new_loopres)
-            ~ine:e
-    in
-    (**
-       If the solution is of the form loop + choice bindings, extract the loop,
-       and push the bindings to the outer loop.
-    *)
-    let in_body, new_unwrap =
-      let replaced_rl =
-        transform_rl_vars
-          created_inputs
-          (mkVarExpr (VarSet.max_elt (get_index_varset problem)))
-          ((repl_start --> repl_end) in_info.memless_solution)
-      in
-      match replaced_rl with
-      | FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices)) ->
-        let choices' =
-          IM.map (repl_loopres loop_res) choices
-        in
-        FnRec (igu, vsbs, loopdef),
-        Some (unwrap_state in_state choices')
-
-      | FnLetIn(prescalar,
-                FnLetIn([loop_res, FnRec (igu, vsbs, loopdef)], FnRecord(in_state, choices))) ->
-        let sub er (v,e) =
-          replace_expression
-            ~in_subscripts:false
-            ~to_replace:(FnVar v)
-            ~by:e
-            ~ine:er
-        in
-        let f e =
-          let e' = repl_loopres loop_res e in
-          List.fold_left sub e' prescalar
-        in
-        let choices' = IM.map f choices in
-        FnRec (igu, vsbs, loopdef),
-        Some (unwrap_state in_state choices')
-
-      | e ->  e, None
-    in
-
-    if !verbose then
-      printf
-        "[WARNING] Inlined inner join iterates from 0 to %i by default.@."
-        in_loop_width;
-
-    in_body, new_unwrap
-  in
 
   let inline_case e =
     match e with
@@ -327,18 +337,23 @@ let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width 
       in
       let infun, new_unwraps =
         if inline_pick_join then
-          let injoin, new_unwrap =
-            inline_join lrb matching_inner_loop args
-          in
-          match new_unwrap with
-          | Some l ->
-            injoin, l
-          | None -> injoin, unwrap_lrb
+          inline_inner_join_case
+            (problem, created_inputs, in_loop_width, unwrap_lrb)
+            lrb
+            matching_inner_loop
+            args
         else
           let injoin = inline_inner matching_inner_loop args in
-          injoin, unwrap_lrb
+          Some injoin, unwrap_lrb
       in
-      FnLetIn([lrb, infun], FnLetIn(new_unwraps, expr))
+      begin
+        match infun with
+      | Some x ->
+        FnLetIn([lrb, x], FnLetIn(new_unwraps, expr))
+      | None ->
+        FnLetIn(new_unwraps, expr)
+      end
+
 
     | _ -> rfunc e
   in

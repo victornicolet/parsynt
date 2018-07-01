@@ -1,4 +1,4 @@
-int _mode(int **a, int n, int m) {
+int _mode(int *a, int n, int m) {
   /* Inner loop variables */
   int cnt = 0; /* Counting variable for the inner loop */
   int elt = 0; /* The element we are counting in the inner loop */
@@ -13,7 +13,7 @@ int _mode(int **a, int n, int m) {
 
     for(int j = 0; j < n; j++){ /* j < i is also correct */
       if(a[j] == elt) {
-	cnt++;
+		cnt++;
       }
     }
 

@@ -569,7 +569,9 @@ and do_i vs let_form =
                in
                (* Inner loop specific. *)
                if Conf.is_inner_loop_func_name fname && e_argli = [] then
-                 (* Replace by a binding to state variables of the inner loop *)
+                 (* Replace by a binding to state variables of the inner loop and
+                    any variable used in the inner loop that is a state variable of
+                    the outer loop. *)
                  let func_app = FunApp (ef, []) in
                  do_lval vs (hfun, ofun) func_app let_form loc
                else
@@ -591,6 +593,7 @@ and do_s vs let_form s =
          if List.length il != 1 then raise Not_found;
          let innerloop = IH.find global_loops s.sid in
          let stv = innerloop.lvariables.state_vars in
+         let deps = VS.inter vs innerloop.lvariables.used_vars in
          let fvi, floc =
            match List.nth il 0 with
            | Call (_, ef, args,loc) ->
@@ -600,7 +603,9 @@ and do_s vs let_form s =
               loc
            | _ -> failwith "do_s : failed to get an inner loop function"
          in
-         let args = List.map (fun vi -> Var vi) (VS.varlist stv) in
+         let args =
+           List.map (fun vi -> Var vi) (VS.varlist (VS.union stv deps))
+         in
          let fapp = FunApp (Lval (Var fvi, NoOffset), args) in
          let innerloop_call =
            Let(LhTuple stv, fapp, empty_state (), 0, locUnknown)

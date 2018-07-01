@@ -806,6 +806,13 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   let idx = sketch.scontext.index_vars in
   let index_name = (VarSet.max_elt idx).vname in
   let parent_index_var = (VarSet.max_elt (parent_context.index_vars)) in
+  let repl_par_idx e =
+        replace_expression
+      ~in_subscripts:true
+      ~to_replace:(FnVar (FnVariable parent_index_var))
+      ~by:(FnConst (CInt 0))
+      ~ine:e
+  in
   let st0 = ident_state_name in
   (* Global bound name "n" *)
   let bnd_vars =
@@ -824,14 +831,8 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   in
   let struct_name = record_name state_vars in
   (* The parent index has to be replaced with a constant. *)
-
-  let loop_body =
-    replace_expression
-      ~in_subscripts:true
-      ~to_replace:(FnVar (FnVariable parent_index_var))
-      ~by:(FnConst (CInt 0))
-      ~ine:sketch.main_loop_body
-  in
+  let loop_body = repl_par_idx sketch.main_loop_body in
+  let rconsts = IM.map repl_par_idx sketch.reaching_consts in
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
@@ -844,19 +845,19 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
   *)
-  pp_symbolic_definitions_of fmt bnd_vars read_vars;
+  pp_symbolic_definitions_of fmt bnd_vars (VarSet.diff read_vars state_vars);
   pp_newline fmt ();
   pp_newline fmt ();
   pp_static_loop_bounds fmt index_name;
   pp_newline fmt ();
   pp_loop ~inner:true ~dynamic:false fmt idx bnames (loop_body, state_vars)
-    sketch.reaching_consts struct_name;
+    rconsts struct_name;
   pp_comment fmt "Wrapping for the sketch of the memoryless join.";
   pp_join fmt (true, sketch);
   pp_newline fmt ();
   pp_comment fmt "Symbolic input state and synthesized id state";
   let additional_symbols =
-    pp_input_state_definitions ~inner:true fmt state_vars sketch.reaching_consts
+    pp_input_state_definitions ~inner:true fmt state_vars rconsts
   in
   pp_comment fmt "Actual synthesis work happens here";
   pp_newline fmt ();
