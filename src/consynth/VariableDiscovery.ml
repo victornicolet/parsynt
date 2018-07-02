@@ -452,7 +452,10 @@ let discover_for_id problem var =
 let timec = ref 0.0
 
 let discover problem =
-  if !verbose then printf "@.[INFO] Starting variable discovery...@.";
+  if !verbose then
+    printf "@.@[<v 4>[INFO] Starting variable discovery for %s.@]@."
+      problem.loop_name;
+
 
   let prepare pb =
     if List.length pb.inner_functions > 0 then

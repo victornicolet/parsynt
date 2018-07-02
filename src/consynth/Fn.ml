@@ -511,6 +511,7 @@ let is_empty_record (expr : fnExpr) : bool =
   | FnRecord(vs, im) -> VarSet.is_empty vs && IM.is_empty im
   | _ -> false
 
+
 let bind_state ?(prefix="") ~state_rec:state_var ~members:vs =
   let vars = VarSet.elements vs in
   List.map
@@ -537,6 +538,37 @@ let wrap_state (bindings : (fnLVar * fnExpr) list) : fnExpr =
     List.fold_left (fun emap (v, e) -> IM.add v.vid e emap) IM.empty vl
   in
   FnRecord(vs, emap)
+
+
+let flat_bindings (func : fnExpr) : (fnLVar * fnExpr) list =
+  let rec aux e l =
+    match e with
+    | FnLetIn(l', e') ->
+      aux e' (l@l')
+    | FnRecord(vs, emap) ->
+      l@(unwrap_state vs emap)
+
+    | _ -> l
+  in
+  aux func []
+
+let all_record_accessors (l : (fnLVar * fnExpr) list) : fnV option =
+  if
+    List.length l > 0 &&
+    List.for_all
+      (fun (v,e) ->
+         match e with
+         | FnRecordMember(ev, s) -> true
+         | _ -> false) l
+  then
+    begin
+      match List.hd l with
+      | _, FnRecordMember(FnVar(FnVariable var), _) -> Some var
+      | _ -> None
+    end
+  else
+    None
+
 
 
 let is_vi fnlv vi = maybe_apply_default (fun x -> vi = x) (vi_of fnlv) false
@@ -1236,6 +1268,14 @@ let has_loop (e : fnExpr) : bool =
       on_const = (fun e -> false); }
     e
 
+let indexof (i,g,u) =
+  try
+    VarSet.max_elt
+       (VarSet.inter (used_in_fnexpr g) (used_in_fnexpr u))
+  with Not_found ->
+    failhere __FILE__ "make_loop_join" "Loop to drill has no index."
+
+
 let last_expr (vars : VarSet.t) (expr : fnExpr) =
   let rec aux e x =
     match e with
@@ -1281,6 +1321,123 @@ let rec unmodified_vars (state : VarSet.t) (expr : fnExpr) =
 
   | _ -> state
 
+
+let split_bindings (expr : fnExpr) =
+  let rec aux e (pre,post) =
+    match e with
+    | FnLetIn(l,e') ->
+      begin match all_record_accessors l with
+      | Some _ -> aux e' (pre@l, post)
+      | None -> aux e' (pre, post@l)
+      end
+    | FnRecord (vs, emap)  ->
+      let l = unwrap_state vs emap in
+      begin match all_record_accessors l with
+      | Some _ -> (pre@l, post)
+      | None -> (pre, post@l)
+      end
+
+    | _ -> (pre, post)
+  in
+  aux expr ([],[])
+
+(* The input is a function with one or more loops inside *)
+let fuse_loops_for_sketching (func : fnExpr) : fnExpr =
+  let rec collect_loops l e =
+    match e with
+    | FnLetIn(bindings, expr) ->
+      collect_loops (collect_bound bindings l) expr
+
+    | FnRecord(vs, emap) ->
+        collect_bound (unwrap_state vs emap) l
+
+    | _ -> l
+  and collect_bound bindings l =
+    match bindings with
+    | [] -> l
+    | (v, e)::tl ->
+      begin match e with
+        | FnRec _ ->
+          collect_bound tl (l@[v,e])
+        | _ ->
+          collect_bound tl (collect_loops l e)
+      end
+  in
+  let rec replace_loops
+      ((l1,l) : (fnV * fnLVar * fnExpr) * VarSet.t) (e : fnExpr) : fnExpr =
+    match e with
+    | FnLetIn(bindings, expr) ->
+      FnLetIn(replace_in_bindings (l1, l) bindings,
+              replace_loops (l1, l) expr)
+    | FnRecord(vs, emap) -> e
+    | _ -> e
+
+  and replace_in_bindings ((v, v1, l1), rm) bindings  =
+    match bindings with
+    | [] -> []
+    | (v', e')::tl ->
+      if VarSet.mem (var_of_fnvar v') rm then
+        replace_in_bindings ((v, v1, l1), rm) tl
+      else if v' = v1 then
+        (FnVariable v, l1)::(replace_in_bindings ((v, v1, l1), rm) tl)
+      else
+        (v', e')::(replace_in_bindings ((v, v1, l1), rm) tl)
+  in
+  (* Remove loop to be fused *)
+  (* Update loop fused *)
+  let fuse_loop (v, v1, loop1) (v2, loop2) =
+    match loop1, loop2 with
+    | FnRec((i1,g1,u1),(vs1, bs1),(s1, body1)),
+      FnRec((i2,g2,u2),(vs2, bs2),(s2, body2)) ->
+      let index1, index2 =
+        indexof (i1, g1, u1), indexof (i2, g2, u2)
+      in
+      let i,g,u = i1, g1, u1 in
+      let vs = VarSet.union vs1 vs2 in
+      let bs = match bs1, bs2 with
+        | FnRecord(_ , emap1), FnRecord(_, emap2) ->
+          FnRecord(vs, IM.add_all emap1 emap2)
+        | _ -> failwith "Expected start state to be a record."
+      in
+      let s = mkFnVar "_fs" (record_type vs) in
+      let body =
+        let s2bind, c2 = split_bindings body2 in
+        let l0 = complete_final_state vs (compose_tail vs c2 body1) in
+        let l1 =
+          FnLetIn(bind_state s (VarSet.diff vs vs1), l0)
+        in
+        let f1 e = replace_expression (mkVarExpr s1) (mkVarExpr s) e in
+        let f2 e = replace_expression (mkVarExpr s2) (mkVarExpr s) e in
+        let f3 e = replace_expression (mkVarExpr index2) (mkVarExpr index1) e in
+        remove_empty_lets ((f2 --> f1 --> f3) l1)
+      in
+      let v' = mkFnVar "_res" (record_type vs) in
+      (v', v1, FnRec((i,g,u),(vs,bs),(s,body)))
+
+    | _ , _ -> failwith "Expected two loops for fusion."
+  in
+  let all_loops = collect_loops [] func in
+  let final_func =
+    if List.length all_loops >= 2 then
+      let v1, loop1 = List.hd all_loops in
+      let to_remove = List.tl all_loops in
+      let (v, v1, loop) =
+        List.fold_left fuse_loop (var_of_fnvar v1, v1, loop1) to_remove
+      in
+      let v_to_rem =
+        VarSet.of_list (List.map (fun (v, _) -> var_of_fnvar v) to_remove)
+      in
+      let f' =
+        remove_empty_lets
+          (replace_loops ((v, v1, loop), v_to_rem) func)
+      in
+      List.fold_left
+        (fun ef (v',l') -> replace_expression (FnVar v') (mkVarExpr v) ef)
+        f' all_loops
+    else
+      func
+  in
+  final_func
 
 (** ------------------------ 5 - SCHEME <-> FUNC -------------------------- *)
 

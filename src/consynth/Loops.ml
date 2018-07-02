@@ -371,15 +371,21 @@ let tmps = VS.filter (fun v -> v.vistmp)
 
 let analyze_loop_bodies cfile () =
   let analyze_loop lid loop =
-    let rec populate_varsets loop =
-      loop.inner_loops <- List.map populate_varsets loop.inner_loops;
+    let rec populate_varsets ?(out_state=VS.empty) loop =
       let r = va_read (loop_body loop) in
       let w = va_write (loop_body loop) in
+
+      loop.inner_loops <-
+        List.map (populate_varsets ~out_state:w) loop.inner_loops;
+
       (* State variables : written in body + in nested loops *)
       loop.lvariables.state_vars <-
-        VS.union w
-          (VS.unions (List.map (fun loop -> loop.lvariables.state_vars)
-                        loop.inner_loops));
+        VS.unions
+          ([w; VS.inter out_state r]
+           @
+           (List.map (fun loop -> loop.lvariables.state_vars)
+              loop.inner_loops));
+
       (* Used variables : read in body + in nested loops *)
       loop.lvariables.used_vars <-
         VS.union r

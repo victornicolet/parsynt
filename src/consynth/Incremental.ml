@@ -113,7 +113,9 @@ let rec restrict_func
       in
       record_name vs'
     in
-    Record(name', stl')
+    match stl' with
+    | [] -> Bottom
+    | _ -> Record(name', stl')
   in
   let cases e =
     match e with
@@ -126,8 +128,16 @@ let rec restrict_func
     | FnVariable var ->
       begin
         match var.vtype with
+        (* Restrict the record type *)
         | Record (name, stl) ->
-          Some (var, mkFnVar "x_" (update_rectype name stl))
+          let new_rtype = update_rectype name stl in
+          if new_rtype = var.vtype then
+            (*  No need for a new variable, but keep identity sub. *)
+            Some (var, var)
+          else
+            Some (var, mkFnVar "x_" new_rtype)
+
+        (* No restriction. *)
         | _ -> None
       end
     | _ -> None
@@ -143,9 +153,14 @@ let rec restrict_func
          (fun (v,e) ->
             let var = var_of_fnvar v in
             match var.vtype with
-            | Record(name, stl) -> true
+            | Record(name, stl) ->
+              begin match update_rectype name stl with
+                | Bottom -> false
+                | _ -> true
+              end
             | _ -> VarSet.mem (var_of_fnvar v) variables) bds)
   in
+
   let restrict_body f e =
     match e with
     | FnLetIn (bindings, expr) ->
@@ -277,6 +292,30 @@ let get_increments (problem : prob_rep) : prob_rep list =
    sketch in the incremental solving, fill in some of the holes of the
    current sketch.
 *)
+
+let complete_scalar_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
+  let rec _cb hl cl =
+    List.fold_left
+      (fun hl' (vh, eh) ->
+         match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
+         | [] -> hl'@[vh,eh]
+         | hd :: tl ->
+           hl'@[fst hd, snd hd])
+      [] hl
+  and _c h flat_c =
+    (* Only scalar variables: aasignments 'in parallel' can be flattened. *)
+    match h with
+    | FnLetIn(hl, he) ->
+      FnLetIn(_cb hl flat_c, _c he flat_c)
+
+    | FnRecord(hvs, hemap) ->
+      wrap_state (_cb (unwrap_state hvs hemap) flat_c)
+
+    | _ -> h
+  in
+  _c sketch (flat_bindings solution)
+
+
 
 let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
   let rec _cb hl cl =
@@ -492,7 +531,7 @@ let complete_increment
         begin
           (* The incremental sk. is scalar. The prev solution should be too.*)
           if !verbose then printf "[INFO] Scalar sketch.@.";
-          complete_simple_sketch incr_sketch prev_solution
+          complete_scalar_sketch incr_sketch prev_solution
         end
     in
     if inner then { increment with memless_sketch = new_sketch }
