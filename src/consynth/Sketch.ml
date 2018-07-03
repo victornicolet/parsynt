@@ -199,12 +199,6 @@ let rec pp_define_symbolic fmt def =
            nvars;
          List.iteri
            (fun i vars ->
-              pp_define_symbolic fmt
-                (match matrix_type vi.vtype with
-                 | Integer -> DefInteger vars
-                 | Real -> DefReal vars
-                 | Boolean -> DefBoolean vars
-                 | _ -> DefEmpty);
               F.fprintf fmt "@[<hv 2>(define %s$%i@;(list %a))@]@\n"
                 vi.vname i pp_string_list (to_v vars))
            mvars;

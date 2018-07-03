@@ -226,10 +226,10 @@ let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width 
         in_loop_width;
     (* Added a case for index variable *)
     let index = 
-    (if index_variable then 
+    (*(if index_variable then 
         let (_,(_,g,_)) = in_info.func_igu in
         g
-    else FnConst (CInt in_loop_width)) in 
+    else*) FnConst (CInt in_loop_width) in 
 
     let inlined =
       FnRec((
