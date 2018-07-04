@@ -304,6 +304,7 @@ let is_matrix_type t =
 
 let matrix_type t =
   match t with
+  | Vector (Vector (Vector(t,_), _), _) -> t
   | Vector (Vector (t, _), _) -> t
   | _ -> failontype "Cannot extract matrix type, this is not a matrix."
 

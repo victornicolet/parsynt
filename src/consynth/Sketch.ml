@@ -78,6 +78,7 @@ type define_symbolic =
   | DefBoolean of fnV list
   | DefArray of (fnV * int) list
   | DefMatrix of (fnV * int * int) list
+  | DefMatrix3D of (fnV * int * int * int) list 
   | DefRecord of (fnV * string * ((string * fn_type) list) * (int * int)) list
   | DefEmpty
 
@@ -94,6 +95,14 @@ let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
     (fun i ->
        (ListTools.init (m - 1)
           (fun j -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)})))
+
+let gen_mat3d_cell_vars ~num_lines:n ~num_cols:m ~num_bicols:o vi =
+  ListTools.init (n - 1)
+    (fun i ->
+       (ListTools.init (m - 1)
+        (fun j ->
+           (ListTools.init (o - 1)
+              (fun k -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)^"$"^(string_of_int k)})))))
 
 
 let rec pp_define_symbolic fmt def =
@@ -166,6 +175,37 @@ let rec pp_define_symbolic fmt def =
            vi.vname pp_string_list (to_v avars))
       vil
 
+  | DefMatrix3D vil ->
+    List.iter
+      (fun (vi, n, m, o) ->
+         let nvars = gen_mat3d_cell_vars ~num_lines:n ~num_cols:m ~num_bicols: o vi in
+         let mvars = gen_mat_cell_vars ~num_lines:n ~num_cols:m vi in
+         let avars = gen_array_cell_vars ~num_cells:n vi in
+         (* First iter *)
+         List.iteri
+           (fun i vars1 ->
+                   (* Second iter *)
+                   (List.iteri
+                       (fun j vars2 ->
+                      pp_define_symbolic fmt
+                        (match matrix_type vi.vtype with
+                         | Integer -> DefInteger vars2
+                         | Real -> DefReal vars2
+                         | Boolean -> DefBoolean vars2
+                         | _ -> DefEmpty);
+                      F.fprintf fmt "@[<hv 2>(define %s$%i$%i@;(list %a))@]@\n"
+                        vi.vname i j pp_string_list (to_v vars2))
+                       vars1))
+           nvars;
+         List.iteri
+           (fun i vars ->
+              F.fprintf fmt "@[<hv 2>(define %s$%i@;(list %a))@]@\n"
+                vi.vname i pp_string_list (to_v vars))
+           mvars;
+         F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
+           vi.vname pp_string_list (to_v avars))
+      vil
+
   | DefRecord virtl ->
     List.iter
       (fun (vi, name, mems, (n, m)) ->
@@ -205,9 +245,12 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
             | Boolean -> DefBoolean [vi]
             | Real -> DefReal [vi]
             | Vector (v, _) ->
-              (* Support up to 2-dimensional arrays. *)
+              (* Support up to 3-dimensional arrays. *)
               (match v with
-               | Vector (v2, _) -> DefMatrix [(vi, Dimensions.height (), Dimensions.width ())]
+               | Vector (v2, _) -> 
+                  (match v2 with
+                   | Vector (v3, _) -> DefMatrix3D [(vi, Dimensions.height (), Dimensions.width (),Dimensions.width ())]
+                   | _ -> DefMatrix [(vi,Dimensions.height (),Dimensions.width () )])
                | _ -> DefArray [(vi, if inner then Dimensions.width () else Dimensions.height ())])
             | Record (s, rt) ->
               DefRecord [(vi, s, rt, Dimensions.dims () )]
@@ -222,6 +265,11 @@ let rec input_symbols_of_vs vs =
   VarSet.fold
     (fun vi symbs ->
        match vi.vtype with
+       | Vector(Vector (Vector _, _),_) ->
+         symbs@(List.flatten (List.flatten (gen_mat3d_cell_vars
+                                ~num_lines:(Dimensions.height ())
+                                ~num_cols:(Dimensions.width ())
+                                ~num_bicols:(Dimensions.width ()) vi)))
        | Vector(Vector _, _) ->
          symbs@(List.flatten (gen_mat_cell_vars
                                 ~num_lines:(Dimensions.height ())
