@@ -505,15 +505,13 @@ let rec rebuild_tree_AC ctx =
   let rebuild_flat_expr rfunc e =
     match e with
     | FnApp (t, Some f, el) ->
-      begin
-        let op_ = op_from_name f.vname in
-        match op_ with
+      begin match op_from_name f.vname with
         | Some op ->
           let el' = List.map rfunc el in
-          let el_ordered =
+          let el_ord =
             (List.sort (compare_cost ctx) el')
           in
-          begin match el_ordered with
+          begin match el_ord with
           | hd :: tl ->
             List.fold_left
               (fun tree e -> FnBinop (op, e, tree))
@@ -754,6 +752,45 @@ let extract_operand_lists el =
        | _ -> l1, l2)
     ([], []) el
 
+
+let __factorize_special_cases__ ctx top_op el =
+  match top_op with
+  | Min ->
+    let factorizable, rest =
+      List.partition
+        (fun e ->
+           let e' = rebuild_tree_AC ctx e in
+           match e' with
+           | FnBinop(Plus, _, _) -> true
+           | _ -> false)
+        el
+    in
+    begin try
+        let el_sep =
+          List.map
+            (fun e ->
+               match e with
+               | FnApp(t, o, args) ->
+                 let a, b = List.partition (fun e -> ES.mem e ctx.costly_exprs) args in
+                 FnApp(t,o,a),FnApp(t,o,b)
+
+               | _ -> failwith "K") factorizable
+        in
+        begin match el_sep with
+          | [] -> None
+          | (state, input) :: tl ->
+            if List.for_all (fun (s,i) -> s = state) el_sep then
+              Some (FnApp(Integer,
+                          Some (get_AC_op Plus),
+                          [FnApp(Integer, Some (get_AC_op Min), ListTools.lsnd el_sep); state]))
+            else
+              None
+        end
+      with _ -> None
+    end
+
+  | _ -> None
+
 let __factorize__ ctx top_op el =
   let el = List.map (rebuild_tree_AC ctx) el in
   let el_binops, el_no_binops =
@@ -761,67 +798,69 @@ let __factorize__ ctx top_op el =
                              | FnBinop (_, _, _) -> true
                              | _ -> false) el
   in
+  let rec do_binop op e1 e2 hd tl =
+    let ce1 = cost ctx e1 in
+    let ce2 = cost ctx e2 in
+
+    if is_left_distributive top_op op && ce1 > ce2 then
+      (** Look for similar expressions in the list *)
+      let sim_exprs, rtl =
+        List.partition
+          (fun e ->
+             match e with
+             | FnBinop (op', e1', ee) when op' = op && e1' @= e1 -> true
+             (* | FnBinop (op', ee, e1') when op' = op && e1' @= e1 && is_commutative op' ->
+              *   true *)
+             | _ -> false) tl
+
+      in
+      let _, sim_exprs_snd = extract_operand_lists sim_exprs in
+      let new_exprs =
+        FnBinop
+          (op,
+           e1,
+           FnApp (type_of e2, Some (get_AC_op top_op), e2::sim_exprs_snd))
+      in
+      new_exprs::(regroup rtl)
+
+    else
+
+      begin
+
+        if is_right_distributive top_op op && ce2 < ce1 then
+          let sim_exprs, rtl =
+            List.partition
+              (fun e ->
+                 match e with
+                 | FnBinop (op', ee, e2') when
+                     op' = op && e2' @= e2 -> true
+                 | _ -> false) tl
+          in
+          (* Extract the list of the second operands of the list of
+             binary operators *)
+          let sim_exprs_fst, _ = extract_operand_lists sim_exprs in
+          (* Build the new expression by lifting e2 on top at the
+             right of the operator *)
+          let new_exprs =
+            FnBinop
+              (op,
+               FnApp (type_of e1, Some (get_AC_op top_op), e1::sim_exprs_fst),
+               e2)
+          in
+          new_exprs::(regroup rtl)
+
+        else
+          hd::(regroup tl)
+      end
   (* Regroup expressions lists by common factors.
   *)
-  let rec regroup el =
+  and regroup el =
     match el with
     | hd :: tl ->
       begin (** begin match list *)
         match hd with
-        | FnBinop (op, e1, e2) ->
-          let ce1 = cost ctx e1 in
-          let ce2 = cost ctx e2 in
-
-          if is_left_distributive top_op op && ce1 > ce2 then
-            (** Look for similar expressions in the list *)
-            let sim_exprs, rtl =
-              List.partition
-                (fun e ->
-                   match e with
-                   | FnBinop (op', e1', ee) when op' = op && e1' @= e1 -> true
-                   (* | FnBinop (op', ee, e1') when op' = op && e1' @= e1 && is_commutative op' ->
-                    *   true *)
-                   | _ -> false) tl
-
-            in
-            let _, sim_exprs_snd = extract_operand_lists sim_exprs in
-            let new_exprs =
-              FnBinop
-                (op,
-                 e1,
-                 FnApp (type_of e2, Some (get_AC_op top_op), e2::sim_exprs_snd))
-            in
-            new_exprs::(regroup rtl)
-
-          else
-
-            begin
-
-              if is_right_distributive top_op op && ce2 < ce1 then
-                let sim_exprs, rtl =
-                  List.partition
-                    (fun e ->
-                       match e with
-                       | FnBinop (op', ee, e2') when
-                           op' = op && e2' @= e2 -> true
-                       | _ -> false) tl
-                in
-                (* Extract the list of the second operands of the list of
-                   binary operators *)
-                let sim_exprs_fst, _ = extract_operand_lists sim_exprs in
-                (* Build the new expression by lifting e2 on top at the
-                   right of the operator *)
-                let new_exprs =
-                  FnBinop
-                    (op,
-                     FnApp (type_of e1, Some (get_AC_op top_op), e1::sim_exprs_fst),
-                     e2)
-                in
-                new_exprs::(regroup rtl)
-
-              else
-                hd::(regroup tl)
-            end
+        | FnBinop(op, e1, e2) ->
+          do_binop op e1 e2 hd tl
 
         | _ ->  hd::(regroup tl)
       end (** end match hd::tl *)
@@ -857,7 +896,10 @@ let __factorize__ ctx top_op el =
   let best_factorization =
     ListTools.lmin List.length different_factorizations
   in
-  List.map flatten_AC (best_factorization @(el_no_binops))
+  match __factorize_special_cases__ ctx top_op el with
+  | Some e -> [e]
+  | None ->
+    List.map flatten_AC (best_factorization @(el_no_binops))
 
 
 let factorize ctx =
@@ -874,7 +916,7 @@ let factorize ctx =
       let op_ = op_from_name opvar.vname in
       begin match op_ with
         | Some op ->
-          let fact_el = List.map rfunc (__factorize__ ctx op el) in
+          let fact_el = __factorize__ ctx op (List.map rfunc el) in
           FnApp (t, Some opvar, fact_el)
         | None -> failhere __FILE__ "factorize_all" "bad case"
       end
@@ -923,7 +965,7 @@ let __transform_conj_comps__ top_op el =
       (top_op : symb_binop)
       (op : symb_binop) common_expr exprs =
     if is_left_operand then
-      let _, right_op_list = extract_operand_lists exprs in
+      let _, right_op_list = ListTools.unpair exprs in
       match top_op, op with
       | Or, Lt | Or, Le | And, Gt | And, Ge  ->
         FnBinop(op,
@@ -939,7 +981,7 @@ let __transform_conj_comps__ top_op el =
 
       | _ , _ -> failhere __FILE__ "build_comp_conj" "Unexpected match case (1)."
     else
-      let left_op_list, _ = extract_operand_lists exprs in
+      let left_op_list, _ = ListTools.unpair exprs in
       match top_op, op with
       | Or, Lt | Or, Le | And, Gt | And, Ge  ->
           FnBinop(op,
@@ -957,51 +999,55 @@ let __transform_conj_comps__ top_op el =
   in
   (* Regroup expressions in expression list. Check for factorizable terms while
      regrouping: the list of expressions get modified during the regroup phase. *)
-  let rec regroup el =
+  let rec regroup_comp_conj op el =
     match el with
-    | hd :: tl ->
-      begin
-        match hd with
-        | FnBinop (op, e1, e2) ->
-          let left_common, left_tl_rest =
-            List.partition
-              (fun e ->
-                 match e with
-                 | FnBinop (op', e1', e2') -> op' = op && e1 @= e1'
-                 | _ -> false)
-              tl
-          in
-          let right_common, right_tl_rest =
-            List.partition
-              (fun e ->
-                 match e with
-                 | FnBinop (op', e1', e2') -> op' = op && e2 @= e2'
-                 | _ -> false)
-              tl
-          in
-          let hdexpr, new_tl =
-            if List.length left_common > 0 || List.length right_common > 0 then
-              begin
-                if List.length left_common > List.length right_common
-                then
-                  build_comp_conj true top_op op e1 (hd::left_common),
-                  left_tl_rest
-                else
-                  build_comp_conj false top_op op e2 (hd::right_common),
-                  right_tl_rest
-              end
+    | (e1, e2) :: tl ->
+      let left_common, left_tl_rest =
+        List.partition
+          (fun (e1', _) -> e1 @= e1')
+          tl
+      in
+      let right_common, right_tl_rest =
+        List.partition (fun (_, e2') ->  e2 @= e2') tl
+      in
+      let hdexpr, new_tl =
+        if List.length left_common > 0 || List.length right_common > 0 then
+          begin
+            if List.length left_common > List.length right_common
+            then
+              build_comp_conj true top_op op e1 ((e1, e2)::left_common),
+              left_tl_rest
             else
-              hd, tl
-          in
-          hdexpr::(regroup new_tl)
-
-        | _ -> failwith "Unexpected case in regroup el"
-      end
+              build_comp_conj false top_op op e2 ((e1, e2)::right_common),
+              right_tl_rest
+          end
+        else
+          FnBinop(op,e1,e2), tl
+      in
+      hdexpr::(regroup_comp_conj op new_tl)
 
     | [] -> []
-
   in
-  List.map flatten_AC (rest@(regroup with_comparison))
+  let regroup_operands el =
+    (* el is a list of expressions FnBinop(op, e1, e2) where op is a comparison operator.
+       First, group each that have the same comparions operator. *)
+    let update_assocmap op (e1, e2) amap =
+      if BinopMap.mem op amap then
+        let p = BinopMap.find op amap in BinopMap.add op (p@[e1,e2]) amap
+      else BinopMap.add op [e1,e2] amap
+    in
+    let opmap =
+      List.fold_left
+        (fun bmap expr ->
+           match expr with
+           | FnBinop(op, e1, e2) ->
+             update_assocmap op (e1, e2) bmap
+           | _ -> bmap) BinopMap.empty el
+    in
+    let res = BinopMap.bindings (BinopMap.mapi regroup_comp_conj opmap) in
+    List.flatten (ListTools.lsnd res)
+  in
+  List.map flatten_AC (rest@(regroup_operands with_comparison))
 
 let transform_conj_comps e =
   let case e =
@@ -1028,8 +1074,12 @@ let transform_conj_comps e =
 let apply_special_rules ctx e =
   let e0 = transform_all_comparisons e in
   let e1 =
-    let e' = factorize ctx (transform_conj_comps e) in
-    if cost ctx e' < cost ctx e0 then e' else e0
+    let e'' = transform_conj_comps e0 in
+    let e' = factorize ctx e'' in
+    printf "e' = %a@." cp_fnexpr e';
+    if cost ctx e' < cost ctx e0 then e' else
+      if cost ctx e'' < cost ctx e0 then e'' else e0
+    (* e' *)
   in
   factorize ctx e1
 

@@ -907,3 +907,9 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
   | Ln10 -> fprintf ppf "(log 10)"
   | SqrtPi -> fprintf ppf "(sqrt pi)"
   | E -> fprintf ppf "(exp 1)"
+
+
+module BinopMap = Map.Make (struct
+    type t = symb_binop
+    let compare b1 b2 = Pervasives.compare b1 b2
+  end)

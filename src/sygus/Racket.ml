@@ -28,7 +28,7 @@ type racket_struct = string * (string list)
 let silent_racket_command_string (timeout : int) (target : string) : string =
   let str =
     if timeout > 1 then
-      "timeout "^(string_of_int timeout)^" racket "^target^" > /dev/null"
+      "timeout --foreground "^(string_of_int timeout)^" racket "^target^" > /dev/null"
     else
       "racket "^target^"> /dev/null"
   in
