@@ -188,6 +188,7 @@ module ListTools = struct
 
   let lfst (l : ('a * 'b) list) : 'a list = List.map (fun (a,b) -> a) l
   let lsnd (l : ('a * 'b) list) : 'b list = List.map (fun (a,b) -> b) l
+  let lthird (l : ('a * 'b * 'c) list) : 'c list = List.map (fun (a,b,c) -> c) l
 
   let untriple a_b_c_li =
         List.fold_left

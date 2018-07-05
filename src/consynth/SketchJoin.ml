@@ -477,8 +477,8 @@ and inline_inner_join
       (* This case should be made more precise *)
       | x -> [vbound,x]
 
-      | _ -> failhere __FILE__ "inline_inner_join"
-               "Toplevel form of inner join not recognized."
+      (* | _ -> failhere __FILE__ "inline_inner_join"
+       *          "Toplevel form of inner join not recognized." *)
     end
   | None ->
     failhere __FILE__ "inline_inner_join" ("Cannot find inner join "^f.vname)
@@ -1031,7 +1031,7 @@ let rec removeRecord (s : fnV) (letin : fnExpr) : fnExpr =
         | FnLetIn(((_,FnRecordMember(FnVar(FnVariable(s)),_))::[]),_) -> true
         | _ -> false
     in let case_handler f e = match e with
-        | FnLetIn(l,e) -> e 
+        | FnLetIn(l,e) -> e
         | _ -> failwith "Impossible"
     in let var_handler v = v
     in let const_handler v = v
@@ -1042,16 +1042,16 @@ let sketch_inner_join problem =
   Dimensions.set_default ();
   let index_set = get_index_varset problem in
     (* Utilisation of transform_expr to remove the loop body form the sketch. For that, we need: *)
-    let case = function 
+    let case = function
         | FnRec(_) -> true
         | _ -> false
     in let case_handler f e = match e with
         | FnRec ((i,g,u), (inner_state, init_inner_state), (s, letin)) ->
-                let newLetin = removeRecord s letin in f newLetin 
+                let newLetin = removeRecord s letin in f newLetin
         | _ -> failwith "Impossible case"
     in let const_handler c = c
     (* Changes all indexes i to 0 *)
-    in let var_handler v = 
+    in let var_handler v =
         let rec aux_var_handler = function
             | FnArray(a,e) -> FnArray(aux_var_handler a,e)
             | x -> x

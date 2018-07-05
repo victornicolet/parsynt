@@ -132,7 +132,11 @@ let reg_array_subscript (a : fnExpr) (i : fnExpr) : unit =
     | FnVar(FnVariable ii) ->
       interval ii
 
-    | _ -> failhere __FILE__ "get_offset_interval" "Index subscript not supproted."
+    | FnConst (CInt i) ->
+      e,e
+    | _ ->
+      Format.printf "%a" FnPretty.pp_fnexpr e;
+      failhere __FILE__ "get_offset_interval" "Index subscript not supported."
   in
   add_dim avar (List.map get_offset_interval (aoffset@[i]))
 

@@ -558,10 +558,10 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
     | FnBinop (_, e1, e2) ->
       begin
         match e1, e2 with
-        | FnCond(c, _, _), estv when is_stv vset estv ->
-          [collect_state_lvars estv, c]
-        | estv, FnCond(c, _, _) when is_stv vset estv ->
-          [collect_state_lvars estv, c]
+        (* | FnCond(c, _, _), estv when is_stv vset estv ->
+         *   [collect_state_lvars estv, c]
+         * | estv, FnCond(c, _, _) when is_stv vset estv ->
+         *   [collect_state_lvars estv, c] *)
         | e, estv  when is_stv vset estv -> [collect_state_lvars estv, e]
         | estv, e when is_stv vset estv -> [collect_state_lvars estv, e]
         | _ -> []

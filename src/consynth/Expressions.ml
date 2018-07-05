@@ -41,6 +41,21 @@ module SH = Hashtbl.Make
     end)
 
 
+(* Utils *)
+let update_assocmap (op : symb_binop)  (elt : 'a)  (amap : 'a list BinopMap.t) =
+  if BinopMap.mem op amap then
+    let p = BinopMap.find op amap in BinopMap.add op (elt::p) amap
+  else BinopMap.add op [elt] amap
+
+let split_input_state
+    (ctx : context) (el : fnExpr list) : fnExpr list * fnExpr list =
+  List.partition
+    (fun e ->
+       match e with
+       | FnVar a -> VarSet.mem (var_of_fnvar a) ctx.state_vars
+       | _ -> false) el
+
+
 (* Other expression properties *)
 let is_constant expr =
   rec_expr2
@@ -217,7 +232,6 @@ let op_from_name name : symb_binop option =
   | "min" -> Some Min
   | "max" -> Some Max
   | _ -> None
-
 
 (** Identity rules *)
 let operators_with_identities : symb_binop list = [Minus; Plus; Times; Div]
@@ -516,8 +530,9 @@ let rec rebuild_tree_AC ctx =
             List.fold_left
               (fun tree e -> FnBinop (op, e, tree))
               hd tl
-          | [] -> failhere __FILE__ "rebuild_tree_AC"
-                    "Unexpected length for list in AC conversion"
+          | [] ->
+            failhere __FILE__ "rebuild_tree_AC"
+              "Unexpected length for list in AC conversion."
           end
         | None -> failwith "Rebuild_flat_expr : Unexpected case."
       end
@@ -902,7 +917,77 @@ let __factorize__ ctx top_op el =
     List.map flatten_AC (best_factorization @(el_no_binops))
 
 
-let factorize ctx =
+
+
+let __factorize_flat__
+    (ctx : context) (top : symb_binop) (el : fnExpr list) : fnExpr list =
+  let bop_map, rest =
+    List.fold_left
+      (fun (m, r) e ->
+         match e with
+         | FnApp(t, Some opvar, args) ->
+           begin match op_from_name opvar.vname with
+             | Some binop ->
+               if is_left_distributive top binop then
+                 let state, inputs = split_input_state ctx args in
+                 let stateset = ACES.of_list state in
+                 let inputset = ACES.of_list inputs in
+                 (update_assocmap binop (t, stateset, inputset) m, r)
+               else
+                 (m, e::r)
+
+             | None -> (m, e::r)
+           end
+
+         | _ -> (m, e::r))
+      (BinopMap.empty, [])
+      el
+  in
+  let fact_map =
+    let factor_or_flat op sli =
+      let opvar = get_AC_op op in
+      match sli with
+      | [t, a, b] ->
+        let al, bl = ACES.elements a, ACES.elements b in
+        [FnApp(t, Some opvar, al @ bl)]
+
+      | (t, a, b)::tl ->
+        let same_a, diff_a =
+          List.partition (fun (t', a', b') -> a = a') sli
+        in
+        if List.length diff_a > 0 then
+          raise Not_found
+        else
+          let factorized_expr =
+            let bs =
+              List.map
+                (fun targs ->
+                   if ACES.cardinal targs < 1 then
+                     raise Not_found
+                   else
+                     FnApp(t, Some opvar, ACES.elements targs))
+                (ListTools.lthird same_a)
+            in
+            let eb =
+              [FnApp (t, Some (get_AC_op top), bs)]
+            in
+            let as' = ACES.elements a in
+            [FnApp(t, Some opvar, eb @ as')]
+          in
+          factorized_expr
+
+
+      | _ ->
+        failwith "Empty list of operands should not have been added to map."
+    in
+    BinopMap.mapi factor_or_flat bop_map
+  in
+  let fact_elts = List.flatten (ListTools.lsnd (BinopMap.bindings fact_map)) in
+  fact_elts @ rest
+
+
+
+let factorize (ctx : context) : fnExpr -> fnExpr =
   (* Transform apps where we can recognize the top operator. *)
   let case e =
     match e with
@@ -916,7 +1001,13 @@ let factorize ctx =
       let op_ = op_from_name opvar.vname in
       begin match op_ with
         | Some op ->
-          let fact_el = __factorize__ ctx op (List.map rfunc el) in
+          (* let fact_el = __factorize__ ctx op (List.map rfunc el) in *)
+          let fact_el =
+            try
+              __factorize_flat__ ctx op (List.map rfunc el)
+            with Not_found ->
+              __factorize__ ctx op (List.map rfunc el)
+          in
           FnApp (t, Some opvar, fact_el)
         | None -> failhere __FILE__ "factorize_all" "bad case"
       end
@@ -1031,11 +1122,6 @@ let __transform_conj_comps__ top_op el =
   let regroup_operands el =
     (* el is a list of expressions FnBinop(op, e1, e2) where op is a comparison operator.
        First, group each that have the same comparions operator. *)
-    let update_assocmap op (e1, e2) amap =
-      if BinopMap.mem op amap then
-        let p = BinopMap.find op amap in BinopMap.add op (p@[e1,e2]) amap
-      else BinopMap.add op [e1,e2] amap
-    in
     let opmap =
       List.fold_left
         (fun bmap expr ->
@@ -1071,12 +1157,11 @@ let transform_conj_comps e =
   transform_expr case transf identity identity e
 
 (** Put all the special rules here *)
-let apply_special_rules ctx e =
+let apply_special_rules (ctx : context) (e : fnExpr) : fnExpr =
   let e0 = transform_all_comparisons e in
   let e1 =
     let e'' = transform_conj_comps e0 in
     let e' = factorize ctx e'' in
-    printf "e' = %a@." cp_fnexpr e';
     if cost ctx e' < cost ctx e0 then e' else
       if cost ctx e'' < cost ctx e0 then e'' else e0
     (* e' *)
@@ -1136,7 +1221,9 @@ let replace_AC ctx ~to_replace:to_replace ~by:by_expr ~ine:in_expr =
                 List.for_all (fun e -> List.mem e common_terms) el' in
               begin
                 if common_is_el' then
-                  let raw_term = FnApp (t, Some opvar, remaining_terms@[flat_by]) in
+                  let raw_term =
+                    FnApp (t, Some opvar, remaining_terms@[flat_by])
+                  in
                   flatten_AC (rebuild_tree_AC ctx raw_term)
                 else
                   FnApp (t, Some opvar, List.map rfunc el)
