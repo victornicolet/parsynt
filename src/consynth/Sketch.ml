@@ -78,7 +78,7 @@ type define_symbolic =
   | DefBoolean of fnV list
   | DefArray of (fnV * int) list
   | DefMatrix of (fnV * int * int) list
-  | DefMatrix3D of (fnV * int * int * int) list 
+  | DefMatrix3D of (fnV * int * int * int) list
   | DefRecord of (fnV * string * ((string * fn_type) list) * (int * int)) list
   | DefEmpty
 
@@ -247,7 +247,7 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
             | Vector (v, _) ->
               (* Support up to 3-dimensional arrays. *)
               (match v with
-               | Vector (v2, _) -> 
+               | Vector (v2, _) ->
                   (match v2 with
                    | Vector (v3, _) -> DefMatrix3D [(vi, Dimensions.height (), Dimensions.width (),Dimensions.width ())]
                    | _ -> DefMatrix [(vi,Dimensions.height (),Dimensions.width () )])
@@ -881,6 +881,15 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   (* The parent index has to be replaced with a constant. *)
   let loop_body = repl_par_idx sketch.main_loop_body in
   let rconsts = IM.map repl_par_idx sketch.reaching_consts in
+  let input_struct_types =
+    List.filter
+      (fun vtype -> match vtype with Record _ -> true | _ -> false)
+      (List.map (fun var -> match var.vtype with
+           | Record (nm, l) ->  Record (nm, l)
+           | Vector(Record (nm,l), _) -> Record (nm,l)
+           | t -> t)
+          (VarSet.elements read_vars))
+  in
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
@@ -888,7 +897,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   define_structs fmt (used_struct_types sketch.main_loop_body);
   define_structs fmt (used_struct_types sketch.memless_sketch);
   define_structs fmt (used_struct_types sketch.join_sketch);
-
+  define_structs fmt input_struct_types;
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
@@ -965,11 +974,21 @@ let pp_rosette_sketch_join fmt sketch =
       sketch.main_loop_body
       sketch.inner_functions
   in
+  let input_struct_types =
+    List.filter
+      (fun vtype -> match vtype with Record _ -> true | _ -> false)
+      (List.map (fun var -> match var.vtype with
+           | Record (nm, l) ->  Record (nm, l)
+           | Vector(Record (nm,l), _) -> Record (nm,l)
+           | t -> t)
+          (VarSet.elements read_vars))
+  in
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
 
   define_structs fmt (used_struct_types sketch.main_loop_body);
   define_structs fmt (used_struct_types sketch.memless_sketch);
+  define_structs fmt input_struct_types;
 
   if List.length sketch.inner_functions > 0 then
     begin
