@@ -100,7 +100,7 @@
              A$7$2 A$7$3 A$7$4 A$8$0 A$8$1 A$8$2 A$8$3 A$8$4))
 
 
-(define ($_identity iEnd) ($Vi_i (make-list 5 (choose 0 #t #f 10 -10 min_all max_all))
+(define ($_identity iEnd) ($Vi_i (make-list 5 (choose 0 #t #f 10 -10 min_all ))
                                  (choose 0 #t #f 10 -10 min_all
                                          )))
 (define-symbolic symbolic_mins$0 symbolic_mins$1 symbolic_mins$2 symbolic_mins$3 symbolic_mins$4 integer?)
