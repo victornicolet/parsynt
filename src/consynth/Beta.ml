@@ -554,6 +554,23 @@ let find_var_name_id name id =
   | Some var -> var
   | None -> raise Not_found
 
+exception Found_var of fnV
+
+let find_var_id id =
+  try
+    begin
+      SH.iter
+        (fun k lv ->
+           match (List.find (fun (i, v, _) -> i = id && is_some v) lv) with
+           | _, Some var, _ -> raise (Found_var var)
+           | _ -> ())
+        _VARS;
+      raise Not_found
+    end
+  with Found_var v -> v
+
+
+
 let mkFnVar name typ =
   let var_name = get_new_name ~base:name in
   let var =

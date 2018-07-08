@@ -16,7 +16,7 @@ debug_sketch,false
 loop_finite_limit,9
 inner_loop_finite_limit,5
 synth_times_log,synth_times.csv
-rosette_base_init_values,0 #t #f
+rosette_base_init_values,0 #t #f 10 -10
 rosette_identity_state_name,$_identity
 rosette_initial_state_name,$_initial
 rosette_join_name,__join__
@@ -40,3 +40,4 @@ tbb_iterator_type,long
 tbb_right_state_name,x
 variable_discovery_max_unfoldings,3
 symbolic_execution_finitization,10
+base_incr_timeout,1000

@@ -16,6 +16,8 @@
 *)
 
 open Fn
+open FnPretty
+open Format
 open Beta
 open Utils
 
@@ -237,3 +239,24 @@ let concretize (e : fnExpr) =
       on_var = identity;
       on_const = identity;
     } e
+
+
+let print_status () =
+  printf "Index intervals:@.";
+  IH.iter
+    (fun k interval ->
+       printf "@[<v 4>\t%i : %s --> [%a; %a]@]@."
+         k (try (find_var_id k).vname with Not_found -> "??")
+         pp_fnexpr (fst interval) pp_fnexpr (snd interval))
+    _index_intervals;
+  printf "Array bounds:@.";
+  IH.iter
+    (fun k intervals ->
+       printf "@[<v 4>\t%i : %s --> %a@]@."
+         k (try (find_var_id k).vname with Not_found -> "??")
+         (pp_print_list ~pp_sep:PpTools.pp_sep_brk
+            (fun fmt interval ->
+               fprintf fmt "[%a; %a]"
+                 pp_fnexpr (fst interval) pp_fnexpr (snd interval)))
+         intervals)
+    _array_dimensions

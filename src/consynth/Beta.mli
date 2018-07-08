@@ -247,6 +247,7 @@ val find_var_name : string -> fnV
 val find_vi_name : string -> Cil.varinfo
 val find_vi_name_id : string -> int -> Cil.varinfo
 val find_var_name_id : string -> int -> fnV
+val find_var_id : int -> fnV
 
 val mkFnVar : string -> fn_type -> fnV
 val special_binder : fn_type -> fnV
