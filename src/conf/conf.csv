@@ -40,4 +40,4 @@ tbb_iterator_type,long
 tbb_right_state_name,x
 variable_discovery_max_unfoldings,3
 symbolic_execution_finitization,10
-base_incr_timeout,1000
+base_incr_timeout,20
