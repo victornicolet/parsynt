@@ -13,13 +13,22 @@ examples/Basic
 # Build / compilation directories
 # OCaml
 _build
+
 examples/tbb/*.cpp
+examples/tbb/nested_loops/cmake-build-debug
+examples/tbb/nested_loops/Makefile
+examples/tbb/nested_loops/*.cbp
+examples/tbb/nested_loops/cmake_install.cmake
+examples/tbb/nested_loops/.idea
+examples/tbb/nested_loops/Exp*
+
 examples/dafny/*.dll
 examples/dafny/*.mdb
-dump
+
 src/conf/project_dir.ml
 examples/dafny/__loop*
 test/synth_times.csv
+dump
 dump*
 
 src/alt-cil/

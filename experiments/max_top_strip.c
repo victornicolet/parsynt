@@ -12,3 +12,11 @@ int _mtopstrip(int **a, int m, int n){
 	}
   return max_top_strip;
 }
+
+
+/*
+  Join :
+  top_strip_sum = r.top_strip_sum + l.top_strip_sum
+  max_top_strip = max(l.max_top_strip, r.max_top_strip + l.top_strip_sum)
+
+*/
