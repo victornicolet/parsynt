@@ -281,12 +281,17 @@ let main () =
   (List.iter (fun problem -> FnPretty.pp_problem_rep std_formatter problem)
      (somes solved));
   (* For each solved problem, generate a TBB implementation *)
-  output_tbb_tests (somes solved);
+  begin try
+      output_tbb_tests (somes solved);
+    with _ -> () end;
   (* If exact_fp is set, generate the exact floating point parallel
      implementation *)
   (* if !exact_fp then (List.iter fpexp_header (somes solved)); *)
   (* Generate a proof in Dafny. *)
-  output_dafny_proofs (somes solved);
+  begin try
+      output_dafny_proofs (somes solved);
+    with _ -> () end;
+
   (* Total elapsed_time  *)
   elapsed_time := (Unix.gettimeofday ()) -. !elapsed_time;
   printf "@.\t\t\t\t\t\t%sFINISHED in %.3f s%s@.@." (color "green")

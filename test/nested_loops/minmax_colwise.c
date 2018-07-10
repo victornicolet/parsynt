@@ -1,5 +1,3 @@
-
-
 int minimax_col(int** A, int n, int m)
 {
   int* mins;

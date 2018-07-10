@@ -275,15 +275,20 @@ let is_foldl (ctx : context) : fnExpr list -> bool =
 
 let is_foldr (ctx : context) (el : fnExpr list) : bool =
   let n = List.length el in
-  ListTools.for_all_i
-    (fun (i, expr) ->
-       let iset = collect_input_subscripts ctx expr in
-       ES.cardinal iset <= (i + 1) &&
-       ES.for_all
-         (fun e ->
-            match e with
-            | FnConst (CInt j) -> j >= (n - (i + 1))
-            | _ -> false) iset) el
+  ((ListTools.for_all_i
+        (fun (i, expr) ->
+           let iset = collect_input_subscripts ctx expr in
+           ES.cardinal iset <= (i + 1) &&
+           ES.for_all
+             (fun e ->
+                match e with
+                | FnConst (CInt j) -> j >= (n - (i + 1))
+                | _ -> false) iset) el)
+     &&
+     (not (List.for_all
+             (fun expr ->
+                let iset = collect_input_subscripts ctx expr in
+                ES.cardinal iset = 1) el)))
 
 
 let create_foldl

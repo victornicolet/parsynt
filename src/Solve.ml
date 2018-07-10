@@ -32,7 +32,7 @@ module ExpRed = ExpressionReduction
 module L = Local
 module C = Canalyst
 
-let _incr_timeout_ = 15 (* base timeout for incremental solving *)
+let _incr_timeout_ = Conf.get_conf_int "base_incr_timeout"
 
 let timeout_multiplier = ref 1
 let solve_incrementally = ref false

@@ -355,8 +355,9 @@ let reduce_full ?(limit = 10) (ctx : context) (expr : fnExpr) =
     rebuild_tree_AC ctx r1
   in
   let r0 = aux_apply_ternary_rules ctx limit expr in
-  if scalar_normal_form ctx.state_vars r0 then
-    rules_AC r0
+  let r0' = rules_AC r0 in
+  if scalar_normal_form ctx.state_vars r0' then
+    r0'
   else
     (force_linear_normal_form ctx
        (factorize_multi_toplevel ctx r0))

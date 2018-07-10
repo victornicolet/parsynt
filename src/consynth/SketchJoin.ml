@@ -474,9 +474,11 @@ and inline_inner_join
 
       | FnLetIn(scs, FnLetIn([(_s, FnRec (igu, (vs, bs), (sarg, b)))], _)) ->
         let core = m _s igu vs bs sarg b in core
+      (* This case should be made more precise *)
+      | x -> [vbound,x]
 
-      | _ -> failhere __FILE__ "inline_inner_join"
-               "Toplevel form of inner join not recognized."
+      (* | _ -> failhere __FILE__ "inline_inner_join"
+       *          "Toplevel form of inner join not recognized." *)
     end
   | None ->
     failhere __FILE__ "inline_inner_join" ("Cannot find inner join "^f.vname)
@@ -1023,12 +1025,39 @@ let sketch_join problem =
               problem.main_loop_body)
   }
 
-
+(* Function to remove a record *)
+let rec removeRecord (s : fnV) (letin : fnExpr) : fnExpr =
+    let case = function
+        | FnLetIn(((_,FnRecordMember(FnVar(FnVariable(s)),_))::[]),_) -> true
+        | _ -> false
+    in let case_handler f e = match e with
+        | FnLetIn(l,e) -> e
+        | _ -> failwith "Impossible"
+    in let var_handler v = v
+    in let const_handler v = v
+    in transform_expr case case_handler const_handler var_handler letin
 
 
 let sketch_inner_join problem =
   Dimensions.set_default ();
   let index_set = get_index_varset problem in
+    (* Utilisation of transform_expr to remove the loop body form the sketch. For that, we need: *)
+    let case = function
+        | FnRec(_) -> true
+        | _ -> false
+    in let case_handler f e = match e with
+        | FnRec ((i,g,u), (inner_state, init_inner_state), (s, letin)) ->
+                let newLetin = removeRecord s letin in f newLetin
+        | _ -> failwith "Impossible case"
+    in let const_handler c = c
+    (* Changes all indexes i to 0 *)
+    in let var_handler v =
+        let rec aux_var_handler = function
+            | FnArray(a,e) -> FnArray(aux_var_handler a,e)
+            | x -> x
+        in aux_var_handler v
+    (* m is the transformed sketch *)
+    in let m = transform_expr case case_handler const_handler var_handler problem.main_loop_body in
   {
     problem with
     memless_sketch =
@@ -1038,7 +1067,7 @@ let sketch_inner_join problem =
            problem.scontext.state_vars
            problem.reaching_consts
            (Dimensions.bounds false problem)
-           problem.main_loop_body)
+           m)
   }
 
 

@@ -304,6 +304,7 @@ let is_matrix_type t =
 
 let matrix_type t =
   match t with
+  | Vector (Vector (Vector(t,_), _), _) -> t
   | Vector (Vector (t, _), _) -> t
   | _ -> failontype "Cannot extract matrix type, this is not a matrix."
 
@@ -552,6 +553,23 @@ let find_var_name_id name id =
   match snd3 (List.find (fun (i, _, _) -> i = id) vlist) with
   | Some var -> var
   | None -> raise Not_found
+
+exception Found_var of fnV
+
+let find_var_id id =
+  try
+    begin
+      SH.iter
+        (fun k lv ->
+           match (List.find (fun (i, v, _) -> i = id && is_some v) lv) with
+           | _, Some var, _ -> raise (Found_var var)
+           | _ -> ())
+        _VARS;
+      raise Not_found
+    end
+  with Found_var v -> v
+
+
 
 let mkFnVar name typ =
   let var_name = get_new_name ~base:name in
@@ -906,3 +924,9 @@ let rec pp_constants ?(for_c=false) ?(for_dafny=false) ppf =
   | Ln10 -> fprintf ppf "(log 10)"
   | SqrtPi -> fprintf ppf "(sqrt pi)"
   | E -> fprintf ppf "(exp 1)"
+
+
+module BinopMap = Map.Make (struct
+    type t = symb_binop
+    let compare b1 b2 = Pervasives.compare b1 b2
+  end)

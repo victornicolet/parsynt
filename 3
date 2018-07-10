@@ -190,9 +190,26 @@ let cil2func cfile loops =
 
   List.map translate_loop sorted_lps
 
-(* Function to convert a subproblem into a loop body *)
+(* Function to convert a subproblem into a loop body, plus remove the loop inside *)
 let convert (problem : prob_rep) : prob_rep =
     let pb = InnerFuncs.inline_inner ~index_variable:true ~inline_pick_join:false (Dimensions.width ()) problem in
+    (* Utilisation of transform_expr. For that, we need: *)
+    let case = function 
+        | FnRec(_) -> true
+        | _ -> false
+    in let case_handler f e = match e with
+        | FnRec ((i,g,u), (inner_state, init_inner_state), (s, letin)) ->
+    f letin 
+        | e -> transform_expr f e
+    in let const_handler c = c
+    (* Changes all indexes i to 0 *)
+    in let var_handler v = 
+        let rec aux_var_handler = function
+            | FnArray(a,e) when e = i -> FnArray(a,FnConst (CInt 0))
+            | FnArray(a,e) -> FnArray(a,aux_var_handler e)
+            | x -> x
+        in aux_var_handler v
+    in transform_expr case case_handler const_handler var_handler pb.main_loop_body;
     problem.inner_functions <- []; pb
 
 (**
@@ -336,16 +353,12 @@ let func2sketch cfile funcreps =
     if (List.length fn_pb.inner_functions = 0)||(depth = 0) then fn_pb
     else let aux = convert fn_pb in fprintf Format.std_formatter "Succesful inlining \n"; aux
     in
-    VarSet.iter register_fnv fn_pb.scontext.all_vars;
-    VarSet.iter register_fnv fn_pb.scontext.index_vars;
     Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
   let probs = List.map transform_func funcreps in
   (* Do igus first, and then arrays. otherwise this will create errors. *)
   List.iter Dimensions.register_dimensions_igu probs;
   List.iter Dimensions.register_dimensions_arrays probs;
-  if !verbose then
-    Dimensions.print_status ();
   probs
 
 (**
