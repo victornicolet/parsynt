@@ -10,19 +10,33 @@ using namespace tbb;
 struct MaxBottomStrip {
     int **A;
     long m;
-    int rs;
-    int mlr;
-    int *rects;
+    int ss;
+    int mbs;
+    int sum;
 
-    MaxLeftRec(int** _input, int* rects, long rl) : A(_input), m(rl), rs(0), mlr(0), rects(rects) {}
+    MaxBottomStrip(int** _input, long rl) : A(_input), m(rl), ss(0), mbs(0), sum(0) {}
 
-    MaxLeftRec(MaxLeftRec& s, split) { }
+    MaxBottomStrip(MaxBottomStrip& s, split) { A = s.A; m = s.m; ss = 0; mbs = 0; sum = 0; }
 
     void operator()( const blocked_range<long>& r ) {
+      for(int i = r.begin(); i < r.end(); i++)
+        {
+          ss = 0;
+          for(int j = 0; j < m; j++)
+            {
+              ss += A[i][j];
+            }
+          /*  Auxiliary : sum += strip_sum */
+          sum += ss;
+          mbs = max(mbs + ss, 0);
+        }
 
     }
 
-    void join(MaxLeftRec& rhs) {
+    void join(MaxBottomStrip& r) {
+       ss = r.ss;
+       sum = sum + r.sum;
+       mbs = max(r.mbs, r.sum + mbs);
 
     }
 
@@ -34,6 +48,19 @@ double do_seq(int **A, long m, long n) {
 
     StopWatch t;
     t.start();
+    int ss = 0;
+    int mbs = 0;
+
+      for(int i = 0; i < n; i++)
+        {
+          ss = 0;
+          for(int j = 0; j < m; j++)
+            {
+              ss += A[i][j];
+            }
+          /*  Auxiliary : sum += strip_sum */
+          mbs = max(mbs + ss, 0);
+        }
 
 
     return t.stop();
@@ -48,7 +75,7 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    MaxBottomStrip mlr(input, rects,  m);
+    MaxBottomStrip mlr(input , m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();

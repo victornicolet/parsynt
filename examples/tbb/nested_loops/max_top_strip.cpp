@@ -10,24 +10,34 @@ using namespace tbb;
 struct MaxTopStrip {
     int **A;
     long m;
-    int rs;
-    int mlr;
+    int tss;
+    int mts;
     int *rects;
 
-    MaxLeftRec(int** _input, int* rects, long rl) : A(_input), m(rl), rs(0), mlr(0), rects(rects) {}
+    MaxTopStrip(int** _input, int* rects, long rl) : A(_input), m(rl), tss(0), mts(0), rects(rects) {}
 
-    MaxLeftRec(MaxLeftRec& s, split) {mlr = 0; rs = 0; A = s.A; m = s.m; rects = s.rects; }
+    MaxTopStrip(MaxTopStrip& s, split) {mts = 0; tss = 0; A = s.A; m = s.m; rects = s.rects; }
 
     void operator()( const blocked_range<long>& r ) {
+      for(int i = r.begin(); i < r.end(); i++)
+        {
+          for(int j = 0; j < m; j++)
+            {
+              tss += A[i][j];
+            }
+          mts = max(mts, tss);
+        }
 
     }
-
-    void join(MaxLeftRec& rhs) {
-        mlr = 0;
-        rs = rhs.rs;
+    
+    // To do
+    void join(MaxTopStrip& rhs) {
+        int aux = tss;
+        tss = rhs.tss+tss;
+        mts = max(mts,rhs.mts+aux);
         for(long j = 0; j < m; j++) {
             rects [j] += rhs.rects[j];
-            mlr = max(mlr, rects[j]);
+            mts = max(mts, rects[j]);
         }
     }
 
@@ -39,18 +49,16 @@ double do_seq(int **A, long m, long n) {
 
     StopWatch t;
     t.start();
-    bool b;
-    int rs = 0;
-    int mlr = 0;
-
-    for(long i = 0; i < n; ++i) {
-        rs = 0;
-        mlr = 0;
-        for(long j = 0; j < m; j++) {
-            rs += A[i][j];
-            rects[j] += rs;
-            mlr = max(mlr, rects[j]);
+    int top_strip_sum = 0;
+    int max_top_strip = 0;
+    int strip_sum = 0;
+    for(int i = 0; i < n; i++)
+    {
+      for(int j = 0; j < m; j++)
+        {
+          top_strip_sum += A[i][j];
         }
+      max_top_strip = max(max_top_strip, top_strip_sum);
     }
 
     return t.stop();
@@ -65,7 +73,7 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    MaxTopStrip mlr(input, m);
+    MaxTopStrip mlr(input, rects, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
