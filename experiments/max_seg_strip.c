@@ -1,4 +1,11 @@
-int _mbotstrip(int **a, int m, int n){
+/*
+   Computes the sum of the segment subarray of an array whose
+   sum is maximal. A segment subarray is a contiguous set of lines
+   of the matrix.
+   (example of the maximum segment strip of an array).
+ */
+
+int _msegstrip(int **a, int m, int n){
   int max_bot_strip = 0;
   int max_strip = 0;
   int strip_sum = 0;

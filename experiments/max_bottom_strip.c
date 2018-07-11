@@ -1,3 +1,9 @@
+/*
+   Computes the sum of the bottom subarray of an array whose
+   sum is maximal.
+   (example of the maximum bottom strip of an array).
+ */
+
 int _mbotstrip(int **a, int m, int n){
   int max_bot_strip = 0;
   int strip_sum = 0;

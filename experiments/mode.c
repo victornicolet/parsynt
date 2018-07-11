@@ -1,13 +1,13 @@
 int _mode(int *a, int n, int m) {
-  /* Inner loop variables */
+
   int cnt = 0; /* Counting variable for the inner loop */
   int elt = 0; /* The element we are counting in the inner loop */
-  /* Outer loop variables */
+
   int mode = 0; /* The mode of the sequence so far */
-  int max_cnt = 0; /* The count of the mode so far */
+  int max_cnt = MIN_INT; /* The count of the mode so far */
 
   for(int i = 0; i < n; i++){
-    /* At iteration i count how many times a[i] appears */
+
     elt = a[i];
     cnt = 0;
 
@@ -25,3 +25,9 @@ int _mode(int *a, int n, int m) {
 
   return mode;
 }
+/* Join
+   cnt = r.cnt
+   elt = r.elt
+   max_cnt = max(r.max_cnt, l.max_cnt)
+   mode =  (r.max_cnt > l.max_cnt) ? l.mode : r.mode
+*/
