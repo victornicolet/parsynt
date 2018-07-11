@@ -41,3 +41,17 @@
 ./ExpGradient1,46,2.03755
 ./ExpGradient1,58,2.24445
 ./ExpGradient1,64,2.05485
+./ExpMinMax,1,40.4103
+./ExpMinMax,2,20.6619
+./ExpMinMax,3,17.277
+./ExpMinMax,4,13.5574
+./ExpMinMax,6,9.30295
+./ExpMinMax,8,7.17778
+./ExpMinMax,10,5.36387
+./ExpMinMax,12,4.37889
+./ExpMinMax,16,3.27653
+./ExpMinMax,24,2.4026
+./ExpMinMax,32,2.15452
+./ExpMinMax,46,1.69693
+./ExpMinMax,58,1.81345
+./ExpMinMax,64,1.71691
