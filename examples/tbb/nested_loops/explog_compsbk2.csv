@@ -69,3 +69,17 @@
 ./ExpMaxDist,46,1.37249
 ./ExpMaxDist,58,1.15614
 ./ExpMaxDist,64,1.04073
+./ExpMinMaxCol,1,79.0935
+./ExpMinMaxCol,2,42.4581
+./ExpMinMaxCol,3,30.3972
+./ExpMinMaxCol,4,23.9702
+./ExpMinMaxCol,6,15.2817
+./ExpMinMaxCol,8,11.892
+./ExpMinMaxCol,10,9.60173
+./ExpMinMaxCol,12,8.06909
+./ExpMinMaxCol,16,6.21048
+./ExpMinMaxCol,24,4.42025
+./ExpMinMaxCol,32,3.78255
+./ExpMinMaxCol,46,5.1591
+./ExpMinMaxCol,58,7.14332
+./ExpMinMaxCol,64,8.45578
