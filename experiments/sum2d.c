@@ -16,7 +16,6 @@ int nsum(int** a, int n) {
 /*
    Join found without auxiliary variable :
 
-   sum = sum-l + sum-r
+   sumbis = l.sumbis + r.sumbis
 
-   in 1.692 s
 */

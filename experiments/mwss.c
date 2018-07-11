@@ -1,3 +1,10 @@
+/*
+  Returns the length of the longest
+  balanced substring of a string a.
+  Here, a "1" represents an opening bracket
+  and a "0" a closing bracket.
+ */
+
 int mwbss(_Bool *a, int m, int n) {
   int max_length = 0;
   int offset = 0;
@@ -7,7 +14,7 @@ int mwbss(_Bool *a, int m, int n) {
 	offset = 0;
 	balance = 1;
 
-	for(int j = 0; j < n; j++) {
+	for(int j = i; j < n; j++) {
 
 	  offset += a[j] ? 1 : -1;
 
@@ -22,3 +29,10 @@ int mwbss(_Bool *a, int m, int n) {
 
   return max_length;
 }
+
+/*
+  Join:
+  offset = r.offset
+  balance = r.balance
+  max_length = max(r.max_length, l.max_length)
+*/

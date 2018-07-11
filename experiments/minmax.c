@@ -1,3 +1,7 @@
+/* Computes the maximum of the minimums of each
+   line. Only scalars in this simple example.
+*/
+
 int maxmin(int **A, int m, int n) {
   int amin = 0;
   int amaxmin = 0;
@@ -11,3 +15,10 @@ int maxmin(int **A, int m, int n) {
   }
   return amaxmin;
 }
+
+
+/*
+  Join:
+  amin = r.amin
+  amaxmin = max(l.amaxmin, r.amaxmin)
+*/

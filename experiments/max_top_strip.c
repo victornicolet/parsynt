@@ -1,3 +1,9 @@
+/*
+   Computes the sum of the top subarray of an array whose
+   sum is maximal.
+   (example of the maximum top strip of an array).
+ */
+
 int _mtopstrip(int **a, int m, int n){
   int top_strip_sum = 0;
   int max_top_strip = 0;
