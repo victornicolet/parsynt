@@ -6,59 +6,54 @@
 using namespace std;
 using namespace tbb;
 
-static int __min_int = static_cast<int>(INT64_MIN);
-static int __max_int = static_cast<int>(INT64_MAX);
 
-struct Sorted2D {
+struct MinMax {
     int **A;
-    bool sorted;
-    int prev;
-    int first;
+    int amin;
+    int amax;
     long m;
 
-    Sorted2D(int** _input, long rl) :
-            A(_input), m(rl), sorted(true), prev(__max_int), first(__min_int){}
+    MinMax(int** _input, long rl) : A(_input), m(rl), amin(INT_MAX), amax(INT_MIN){}
 
-    Sorted2D(Sorted2D& s, split) {
-        sorted = true;
-        prev = __max_int;
-        first = __min_int;
+    MinMax(MinMax& s, split) {
+        amax = INT_MIN;
+        amin = INT_MAX;
         A = s.A;
         m = s.m;
     }
 
     void operator()( const blocked_range<long>& r ) {
-        bool bl = sorted;
-        int loc_prev = prev;
+        int _amax = amax;
+        int _amin = amin;
         for(long i = r.begin(); i != r.end(); ++i) {
+            _amin = INT_MAX;
             for(long j = 0; j < m-1; j++) {
-                bl = bl && loc_prev > A[i][j];
-                loc_prev = A[i][j];
+                _amin = min(_amin, A[i][j]);
             }
+            _amax = max(_amax, _amin);
         }
-        first =
-        prev = loc_prev;
-        sorted = bl;
+        amax = _amax;
+        amin = _amin;
     }
 
-    void join(Sorted2D& rhs) {
-        sorted = sorted && rhs.sorted && rhs.prev > first;
-        first = rhs.first;
+    void join(MinMax& rhs) {
+        amax = max(amax, rhs.amax);
+        amin = rhs.amin;
     }
-
 };
 
 double do_seq(int **A, long m, long n) {
     StopWatch t;
     t.start();
-    bool b;
+    int amax = INT_MIN;
+    int amin = INT_MAX;
 
     for(long i = 0; i < n - 1; ++i) {
+        amin = INT_MAX;
         for(long j = 0; j < m-1; j++) {
-            b = b &&
-                (A[i+1][j] > A[i][j]) &&
-                (A[i][j+1] > A[i][j]);
+            amin = min (amin, A[i][j]);
         }
+        amax = max(amax, amin);
     }
 
     return t.stop();
@@ -71,11 +66,11 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    Sorted2D sr(input, m);
+    MinMax minMax(input, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
-        parallel_reduce(blocked_range<long>(0, n-1), sr);
+        parallel_reduce(blocked_range<long>(0, n), minMax);
         elapsed += t.stop();
     }
 
@@ -92,12 +87,12 @@ int main(int argc, char** argv) {
     for(long i = 0; i < n; i++) {
         input[i] = (int*) malloc(sizeof(int) * m);
         for(long j =0; j < m; j++){
-            input[i][j] = static_cast<int>(i + j);
+            input[i][j] = (rand() % 255) - 125;
         }
     }
 
     if(argc <= 1) {
-        cout << "Usage: Gradient1 [NUMBER OF CORES]" << endl;
+        cout << "Usage: MinMax [NUMBER OF CORES]" << endl;
         return  -1;
     }
 
@@ -112,7 +107,7 @@ int main(int argc, char** argv) {
         exp_time = do_seq(input, m, n);
     }
 
-    cout <<argv[0] << "," << num_cores << "," << exp_time << endl;
+    cout << argv[0] << "," << num_cores << "," << exp_time << endl;
 
     return 0;
 }

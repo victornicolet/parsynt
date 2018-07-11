@@ -6,44 +6,71 @@
 using namespace std;
 using namespace tbb;
 
-static int __min_int = static_cast<int>(INT64_MIN);
-static int __max_int = static_cast<int>(INT64_MAX);
+//int col_maxmin(int **A, int m, int n) {
+//
+//    int *amin;
+//    int amaxmin = 0;
+//
+//    amin = malloc(m * sizeof(amin));
+//
+//    for(int i = 0; i < n; i++) {
+//        amaxmin = 0;
+//
+//        for(int j = 0; j < n; j++) {
+//            amin[j] = min (amin[j], A[i][j]);
+//            amaxmin = max(amaxmin, amin);
+//        }
+//    }
+//    return amaxmin;
+//}
+//
+//
+///*
+//  Join:
+//  for j = 1 .. m:
+//        amin[j] = min(l.amin[j], r.amin[j]);
+//		amaxmin = max(amin[j], amaxmin)
+//*/
 
-struct Sorted2D {
+
+struct MinMaxCol {
     int **A;
-    bool sorted;
-    int prev;
-    int first;
+    int *amin;
+    int amaxmin;
     long m;
 
-    Sorted2D(int** _input, long rl) :
-            A(_input), m(rl), sorted(true), prev(__max_int), first(__min_int){}
+    MinMaxCol(int** _input, long rl) : A(_input), m(rl), amaxmin(INT_MIN){
+        amin = new int[rl];
+    }
 
-    Sorted2D(Sorted2D& s, split) {
-        sorted = true;
-        prev = __max_int;
-        first = __min_int;
+    MinMaxCol(MinMaxCol& s, split) {
+        amaxmin = INT_MIN;
         A = s.A;
         m = s.m;
+        amin = new int[s.m];
     }
 
     void operator()( const blocked_range<long>& r ) {
-        bool bl = sorted;
-        int loc_prev = prev;
+        int _amaxmin = amaxmin;
+        int* _amin = amin;
+
         for(long i = r.begin(); i != r.end(); ++i) {
-            for(long j = 0; j < m-1; j++) {
-                bl = bl && loc_prev > A[i][j];
-                loc_prev = A[i][j];
+            for(long j = 0; j < m; j++) {
+                _amin[j] = min(_amin[j], A[i][j]);
+                _amaxmin = max(_amaxmin, _amin[j]);
             }
         }
-        first =
-        prev = loc_prev;
-        sorted = bl;
+
+        amaxmin = _amaxmin;
+        amin = _amin;
+
     }
 
-    void join(Sorted2D& rhs) {
-        sorted = sorted && rhs.sorted && rhs.prev > first;
-        first = rhs.first;
+    void join(MinMaxCol& rhs) {
+        for(long j = 0; j < m; j++) {
+            amin[j] = min(amin[j], rhs.amin[j]);
+            amaxmin = max(amin[j], amaxmin);
+        }
     }
 
 };
@@ -51,13 +78,14 @@ struct Sorted2D {
 double do_seq(int **A, long m, long n) {
     StopWatch t;
     t.start();
-    bool b;
 
-    for(long i = 0; i < n - 1; ++i) {
-        for(long j = 0; j < m-1; j++) {
-            b = b &&
-                (A[i+1][j] > A[i][j]) &&
-                (A[i][j+1] > A[i][j]);
+    int _amaxmin = INT_MIN;
+    int* _amin = new int[m];
+
+    for(long i = 0; i < n; ++i) {
+        for(long j = 0; j < m; j++) {
+            _amin[j] = min(_amin[j], A[i][j]);
+            _amaxmin = max(_amaxmin, _amin[j]);
         }
     }
 
@@ -71,11 +99,11 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    Sorted2D sr(input, m);
+    MinMaxCol minMaxCol(input, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
-        parallel_reduce(blocked_range<long>(0, n-1), sr);
+        parallel_reduce(blocked_range<long>(0, n-1), minMaxCol);
         elapsed += t.stop();
     }
 
@@ -92,7 +120,7 @@ int main(int argc, char** argv) {
     for(long i = 0; i < n; i++) {
         input[i] = (int*) malloc(sizeof(int) * m);
         for(long j =0; j < m; j++){
-            input[i][j] = static_cast<int>(i + j);
+            input[i][j] = rand() % 40;
         }
     }
 

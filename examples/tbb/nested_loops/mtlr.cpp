@@ -6,44 +6,80 @@
 using namespace std;
 using namespace tbb;
 
-static int __min_int = static_cast<int>(INT64_MIN);
-static int __max_int = static_cast<int>(INT64_MAX);
 
-struct Sorted2D {
+//int *c;
+//int mtr = 0;
+//int mtrl = 0;
+//int sum;
+///*
+//   int * aux;
+// */
+//
+//for (int i = 0; i < n; i++) {
+//sum = 0;
+//mtr = 0;
+//for(int j = 0; j < m; j++){
+//sum += a[i][j];
+//c[j] += sum;
+//mtr = max(c[j], mtr);
+///* Auxiliary:
+//   aux[j] = max(aux[j], c[j]);
+//*/
+//}
+//mtrl = max(mtr, mtrl);
+//}
+//return mtrl;
+
+struct MTLR {
     int **A;
-    bool sorted;
-    int prev;
-    int first;
     long m;
 
-    Sorted2D(int** _input, long rl) :
-            A(_input), m(rl), sorted(true), prev(__max_int), first(__min_int){}
+    int *c;
+    int *aux;
+    int mtr;
+    int mtlr;
+    int sum;
 
-    Sorted2D(Sorted2D& s, split) {
-        sorted = true;
-        prev = __max_int;
-        first = __min_int;
+
+    MTLR(int** _input, long rl) : A(_input), m(rl), sum(0), mtr(0), mtlr(0){
+        c = new int[rl];
+        aux = new int[rl];
+    }
+
+    MTLR(MTLR& s, split) {
+        sum = 0;
+        mtr = 0;
+        mtlr = 0;
+        c = new int[s.m];
+        aux = new int[s.m];
         A = s.A;
         m = s.m;
+
     }
 
     void operator()( const blocked_range<long>& r ) {
-        bool bl = sorted;
-        int loc_prev = prev;
-        for(long i = r.begin(); i != r.end(); ++i) {
-            for(long j = 0; j < m-1; j++) {
-                bl = bl && loc_prev > A[i][j];
-                loc_prev = A[i][j];
+
+        for (long i = r.begin(); i != r.end(); i++) {
+            sum = 0;
+            mtr = 0;
+            for (long j = 0; j < m; j++) {
+                sum += A[i][j];
+                c[j] += sum;
+                mtr = max(c[j], mtr);
+                aux[j] = max(aux[j], c[j]);
             }
+            mtlr = max(mtr, mtlr);
         }
-        first =
-        prev = loc_prev;
-        sorted = bl;
     }
 
-    void join(Sorted2D& rhs) {
-        sorted = sorted && rhs.sorted && rhs.prev > first;
-        first = rhs.first;
+    void join(MTLR& r) {
+        mtr = 0;
+        for(long j = 0; j < m; j++){
+            c[j] = c[j] + r.c[j];
+            aux[j] = max(aux[j], c[j] + r.aux[j]);
+            mtr = max(mtr, aux[j]);
+        }
+        mtlr = max(mtr, mtlr);
     }
 
 };
@@ -51,13 +87,11 @@ struct Sorted2D {
 double do_seq(int **A, long m, long n) {
     StopWatch t;
     t.start();
-    bool b;
+    int sum= 0;
 
     for(long i = 0; i < n - 1; ++i) {
         for(long j = 0; j < m-1; j++) {
-            b = b &&
-                (A[i+1][j] > A[i][j]) &&
-                (A[i][j+1] > A[i][j]);
+            sum += A[i][j];
         }
     }
 
@@ -71,11 +105,11 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    Sorted2D sr(input, m);
+    MTLR sum(input, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
-        parallel_reduce(blocked_range<long>(0, n-1), sr);
+        parallel_reduce(blocked_range<long>(0, n), sum);
         elapsed += t.stop();
     }
 
@@ -92,7 +126,7 @@ int main(int argc, char** argv) {
     for(long i = 0; i < n; i++) {
         input[i] = (int*) malloc(sizeof(int) * m);
         for(long j =0; j < m; j++){
-            input[i][j] = static_cast<int>(i + j);
+            input[i][j] = rand() % 40;
         }
     }
 

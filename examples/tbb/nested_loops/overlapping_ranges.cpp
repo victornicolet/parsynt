@@ -6,44 +6,58 @@
 using namespace std;
 using namespace tbb;
 
-static int __min_int = static_cast<int>(INT64_MIN);
-static int __max_int = static_cast<int>(INT64_MAX);
 
-struct Sorted2D {
+struct Overlaps {
     int **A;
-    bool sorted;
-    int prev;
-    int first;
     long m;
 
-    Sorted2D(int** _input, long rl) :
-            A(_input), m(rl), sorted(true), prev(__max_int), first(__min_int){}
+    int high, h, low, l;
+    int aux_incl44, aux_incl45;
+    bool incl;
 
-    Sorted2D(Sorted2D& s, split) {
-        sorted = true;
-        prev = __max_int;
-        first = __min_int;
+    Overlaps(int** _input, long rl) : A(_input), m(rl),
+                                      high(INT_MAX), h(INT_MAX), low(INT_MIN), l(INT_MIN),
+                                      incl(true){}
+
+    Overlaps(Overlaps& s, split) {
+        high = INT_MAX; h = INT_MAX;
+        low = INT_MIN; l = INT_MIN;
+        incl = true;
         A = s.A;
         m = s.m;
     }
 
     void operator()( const blocked_range<long>& r ) {
-        bool bl = sorted;
-        int loc_prev = prev;
-        for(long i = r.begin(); i != r.end(); ++i) {
-            for(long j = 0; j < m-1; j++) {
-                bl = bl && loc_prev > A[i][j];
-                loc_prev = A[i][j];
+
+        long e = r.begin();
+
+        for(long i = e; i != r.end(); ++i) {
+            low = 0;
+            high = 0;
+
+            for(long j = 0; j < m; j++) {
+                high = max(high, A[i][j]);
+                low = min(low, A[i][j]);
             }
+
+            if (i == e) {
+                aux_incl44 = high;
+                aux_incl45 = low;
+            }
+
+            h = min(h, high);
+            l = min(l, low);
+
+            incl = incl && h > l;
         }
-        first =
-        prev = loc_prev;
-        sorted = bl;
     }
 
-    void join(Sorted2D& rhs) {
-        sorted = sorted && rhs.sorted && rhs.prev > first;
-        first = rhs.first;
+    void join(Overlaps& r) {
+        low = r.low;
+        high = r.high;
+        l = r.l;
+        h = r.h;
+        incl = (r.aux_incl44 >= h) ? false : ((aux_incl45 <= r.l) ? (r.incl && incl) : false);
     }
 
 };
@@ -51,14 +65,28 @@ struct Sorted2D {
 double do_seq(int **A, long m, long n) {
     StopWatch t;
     t.start();
-    bool b;
+    int sum= 0;
 
-    for(long i = 0; i < n - 1; ++i) {
-        for(long j = 0; j < m-1; j++) {
-            b = b &&
-                (A[i+1][j] > A[i][j]) &&
-                (A[i][j+1] > A[i][j]);
+    int low, high;
+    int l = 0;
+    int h = 0;
+    bool incl = true;
+
+
+    for(long i = 0; i < n; ++i) {
+        low = 0;
+        high = 0;
+
+        for(long j = 0; j < m; j++) {
+            high = max(high, A[i][j]);
+            low = min(low, A[i][j]);
         }
+
+        h = min(h, high);
+        l = min(l, low);
+
+        incl = incl && h > l;
+
     }
 
     return t.stop();
@@ -71,11 +99,11 @@ double do_par(int **input, long m, long n, int num_cores) {
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    Sorted2D sr(input, m);
+    Overlaps pv(input, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
-        parallel_reduce(blocked_range<long>(0, n-1), sr);
+        parallel_reduce(blocked_range<long>(0, n-1), pv);
         elapsed += t.stop();
     }
 
@@ -92,7 +120,7 @@ int main(int argc, char** argv) {
     for(long i = 0; i < n; i++) {
         input[i] = (int*) malloc(sizeof(int) * m);
         for(long j =0; j < m; j++){
-            input[i][j] = static_cast<int>(i + j);
+            input[i][j] = rand() % 40;
         }
     }
 

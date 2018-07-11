@@ -6,7 +6,6 @@
 int _mtrr(int** a, int* c, int n, int m) {
   int mtr = 0;
   int mtrr = 0;
-  int sum = 0;
   /*
 	 Auxilary:
 	 int acc_aux;
@@ -14,7 +13,6 @@ int _mtrr(int** a, int* c, int n, int m) {
 	 int j2;
    */
   for (int i = 0; i < n; i++) {
-	sum = 0;
 	mtr = 0;
 	/*
 	   acc_aux = 0;

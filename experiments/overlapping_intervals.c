@@ -21,9 +21,10 @@ _Bool overlap_range(int **A, int m, int n) {
 
 	h = min(h, high);
 	l = min(l, low);
+	incl = incl && h > l;
   }
 
-  return h > l;
+  return incl;
 }
 
 
