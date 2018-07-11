@@ -29,3 +29,15 @@
 ./Exp2DSum,64,1.67372
 ./ExpGradient1,1,59.5454
 ./ExpGradient1,2,32.8628
+./ExpGradient1,3,23.0229
+./ExpGradient1,4,18.6417
+./ExpGradient1,6,12.3756
+./ExpGradient1,8,9.42074
+./ExpGradient1,10,7.49902
+./ExpGradient1,12,6.47928
+./ExpGradient1,16,4.64228
+./ExpGradient1,24,3.17724
+./ExpGradient1,32,2.57844
+./ExpGradient1,46,2.03755
+./ExpGradient1,58,2.24445
+./ExpGradient1,64,2.05485
