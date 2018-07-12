@@ -32,7 +32,7 @@ _Bool increasing_intervals(int **A, int m, int n) {
 
 /*
   Join:
-  in_aux = l.in_aux
+  in_aux = min(l.in_aux, r.in_aux)
   high = r.high
   phigh = r.phigh
   incr = l.incr && (r.in_aux <= l.phigh) false : r.incr
