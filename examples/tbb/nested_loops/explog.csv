@@ -1,0 +1,14 @@
+./Exp2DSorted,1,13.9771
+./Exp2DSum,1,13.309
+./ExpGradient1,1,33.7089
+./ExpGradient2,1,48.5141
+./ExpMinMax,1,20.7354
+./ExpMaxDist,1,30.2484
+./ExpMinMaxCol,1,39.5306
+./ExpMaxLeftRect,1,34.2889
+./ExpMaxTopStrip,1,13.5645
+./ExpMaxBottomStrip,1,14.5741
+./ExpMaxSegStrip,1,15.1527
+./ExpMTLR,1,64.8776
+./ExpMTRR,1,76.0518
+./ExpSaddlePoint,1,64.9891

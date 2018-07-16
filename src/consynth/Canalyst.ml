@@ -336,12 +336,16 @@ let func2sketch cfile funcreps =
     if (List.length fn_pb.inner_functions = 0)||(depth = 0) then fn_pb
     else let aux = convert fn_pb in fprintf Format.std_formatter "Succesful inlining \n"; aux
     in
+    VarSet.iter register_fnv fn_pb.scontext.all_vars;
+    VarSet.iter register_fnv fn_pb.scontext.index_vars;
     Sketch.Join.sketch_inner_join (Sketch.Join.sketch_join fn_pb)
   in
   let probs = List.map transform_func funcreps in
   (* Do igus first, and then arrays. otherwise this will create errors. *)
   List.iter Dimensions.register_dimensions_igu probs;
   List.iter Dimensions.register_dimensions_arrays probs;
+  if !verbose then
+    Dimensions.print_status ();
   probs
 
 (**

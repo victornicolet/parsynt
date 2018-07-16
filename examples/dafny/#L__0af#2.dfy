@@ -9,9 +9,9 @@ function Res(a : seq<bool>): bool
     (((! a[|a|-1]) && Seen1(a[..|a|-1])) || Res(a[..|a|-1]))
 }
 
-function Aux1(a : seq<bool>): bool
+function Aux_res12(a : seq<bool>): bool
 {
-  if a == [] then false else ((! a[|a|-1]) || Aux1(a[..|a|-1]))
+  if a == [] then false else ((! a[|a|-1]) || Aux_res12(a[..|a|-1]))
 }
 
 function Seen1(a : seq<bool>): bool
@@ -19,28 +19,28 @@ function Seen1(a : seq<bool>): bool
   if a == [] then false else (Seen1(a[..|a|-1]) || a[|a|-1])
 }
 
-function ResJoin(leftAux1 : bool, leftRes : bool, leftSeen1 : bool, rightAux1 : bool, rightRes : bool, rightSeen1 : bool): bool
+function ResJoin(leftAux_res12 : bool, leftRes : bool, leftSeen1 : bool, rightAux_res12 : bool, rightRes : bool, rightSeen1 : bool): bool
 {
-  (((rightAux1 || rightRes) && (rightRes || leftSeen1)) || leftRes)
+  ((rightAux_res12 && leftSeen1) || ((rightAux_res12 && leftRes) || (leftRes || rightRes)))
 }
 
-function Aux1Join(leftAux1 : bool, rightAux1 : bool): bool
+function Aux_res12Join(leftAux_res12 : bool, rightAux_res12 : bool): bool
 {
-  (rightAux1 || (leftAux1 || rightAux1))
+  (leftAux_res12 || rightAux_res12)
 }
 
 function Seen1Join(leftSeen1 : bool, rightSeen1 : bool): bool
 {
-  (rightSeen1 || (rightSeen1 || (leftSeen1 || leftSeen1)))
+  (leftSeen1 || rightSeen1)
 }
 
 
 lemma BaseCaseRes(a : seq<bool>)
-  ensures Res(a) == ResJoin(Aux1(a), Res(a), Seen1(a), Aux1([]), Res([]), Seen1([]))
+  ensures Res(a) == ResJoin(Aux_res12(a), Res(a), Seen1(a), Aux_res12([]), Res([]), Seen1([]))
   {}
 
 lemma HomRes(a : seq<bool>, R_a : seq<bool>)
-  ensures Res(a + R_a) == ResJoin(Aux1(a), Res(a), Seen1(a), Aux1(R_a), Res(R_a), Seen1(R_a))
+  ensures Res(a + R_a) == ResJoin(Aux_res12(a), Res(a), Seen1(a), Aux_res12(R_a), Res(R_a), Seen1(R_a))
   {
     if R_a == [] 
     {
@@ -51,32 +51,32 @@ lemma HomRes(a : seq<bool>, R_a : seq<bool>)
     calc{
     Res(a + R_a);
     =={
-      HomAux1(a, R_a[..|R_a| - 1]);
+      HomAux_res12(a, R_a[..|R_a| - 1]);
       HomSeen1(a, R_a[..|R_a| - 1]);
       assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a;
       }
-    ResJoin(Aux1(a), Res(a), Seen1(a), Aux1(R_a), Res(R_a), Seen1(R_a));
+    ResJoin(Aux_res12(a), Res(a), Seen1(a), Aux_res12(R_a), Res(R_a), Seen1(R_a));
     } // End calc.
   } // End else.
 } // End lemma.
 
-lemma BaseCaseAux1(a : seq<bool>)
-  ensures Aux1(a) == Aux1Join(Aux1(a), Aux1([]))
+lemma BaseCaseAux_res12(a : seq<bool>)
+  ensures Aux_res12(a) == Aux_res12Join(Aux_res12(a), Aux_res12([]))
   {}
 
-lemma HomAux1(a : seq<bool>, R_a : seq<bool>)
-  ensures Aux1(a + R_a) == Aux1Join(Aux1(a), Aux1(R_a))
+lemma HomAux_res12(a : seq<bool>, R_a : seq<bool>)
+  ensures Aux_res12(a + R_a) == Aux_res12Join(Aux_res12(a), Aux_res12(R_a))
   {
     if R_a == [] 
     {
     assert(a + [] == a);
-    BaseCaseAux1(a);
+    BaseCaseAux_res12(a);
     
      } else {
     calc{
-    Aux1(a + R_a);
+    Aux_res12(a + R_a);
     =={ assert(a + R_a[..|R_a|-1]) + [R_a[|R_a|-1]] == a + R_a; }
-    Aux1Join(Aux1(a), Aux1(R_a));
+    Aux_res12Join(Aux_res12(a), Aux_res12(R_a));
     } // End calc.
   } // End else.
 } // End lemma.

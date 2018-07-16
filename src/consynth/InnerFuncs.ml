@@ -302,6 +302,7 @@ let inline_inner ?(index_variable=false) ?(inline_pick_join=true) in_loop_width 
         g
     else FnConst (CInt in_loop_width)) in
 
+
     let inlined =
       FnRec((
         FnConst (CInt 0),

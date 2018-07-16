@@ -16,5 +16,5 @@ int _sum(int*** a, int m, int n, int o) {
     }
     sum += sumbis;
   }
-  return sum;
+  return mps;
 }

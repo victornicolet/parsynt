@@ -208,27 +208,8 @@ let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
   let new_body =
     restrict_func pb.scontext variables pb.main_loop_body
   in
-  let rec_seq_var =
-    let diffset = get_subset_of_inner variables pb.main_loop_body in
-    mkFnVar "A" (Vector (record_type diffset, None))
-  in
   let new_context =
-    let ctr = ctx_inter pb.scontext variables in
-    (* This assumes the only used vars that are record sequences are the
-       summarized input of the summarized outer loop.
-       See InnerFuncs.ml, L43 (transform_rl_vars)
-    *)
-    let update_record_sequences var =
-      match var.vtype with
-      | Vector(Record(sname, stl), _) ->
-        rec_seq_var
-      | _ -> var
-    in
-    {
-      ctr with
-      used_vars = VarSet.map update_record_sequences ctr.used_vars;
-      all_vars = VarSet.map update_record_sequences ctr.all_vars;
-    }
+    ctx_inter pb.scontext variables
   in
   SketchJoin.sketch_inner_join
     (SketchJoin.sketch_join
@@ -293,16 +274,32 @@ let get_increments (problem : prob_rep) : prob_rep list =
    current sketch.
 *)
 
+let has_hole =
+  rec_expr2
+    {
+      init = false;
+      join = (||);
+      case = (fun e -> match e with FnHoleL _ | FnHoleR _ | FnChoice _ -> true | _ -> false);
+      on_case = (fun f e -> match e with FnHoleL _ | FnHoleR _ | FnChoice _ -> true | _ -> false);
+      on_var = (fun v -> false);
+      on_const = (fun c -> false);
+    }
+
+let rec _cb hl cl =
+  List.fold_left
+    (fun hl' (vh, eh) ->
+       if has_hole eh then
+         begin
+           match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
+           | [] -> hl'@[vh,eh]
+           | hd :: tl ->
+             hl'@[fst hd, snd hd]
+         end
+       else hl'@[vh,eh] )     (* Leave unchanged. *)
+    [] hl
+
 let complete_scalar_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
-  let rec _cb hl cl =
-    List.fold_left
-      (fun hl' (vh, eh) ->
-         match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
-         | [] -> hl'@[vh,eh]
-         | hd :: tl ->
-           hl'@[fst hd, snd hd])
-      [] hl
-  and _c h flat_c =
+  let rec _c h flat_c =
     (* Only scalar variables: aasignments 'in parallel' can be flattened. *)
     match h with
     | FnLetIn(hl, he) ->
@@ -318,15 +315,7 @@ let complete_scalar_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
 
 
 let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
-  let rec _cb hl cl =
-    List.fold_left
-      (fun hl' (vh, eh) ->
-         match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
-         | [] -> hl'@[vh,eh]
-         | hd :: tl ->
-           hl'@[fst hd, snd hd])
-      [] hl
-  and _c h c =
+  let rec  _c h c =
     match h, c with
     | FnLetIn (bsk, FnLetIn(bsk2, esk)), FnLetIn (bsol, esol) ->
       let common1, common2 =

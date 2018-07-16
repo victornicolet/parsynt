@@ -537,7 +537,9 @@ let rec collect_state_lvars (expr : fnExpr) : fnLVar =
   | FnUnop (_, FnVar v)
   | FnVar v -> v
   | FnCond (c, e1, e2) -> collect_state_lvars c
-  | _ -> failwith "Not an stv."
+  | _ ->
+    if !verbose then printf "[ERROR] Not an stv : %a@." pp_fnexpr expr;
+    failhere __FILE__ "collect_state_vars" "Not an stv."
 
 
 let candidates (vset : VarSet.t) (e : fnExpr) =
@@ -558,10 +560,10 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
     | FnBinop (_, e1, e2) ->
       begin
         match e1, e2 with
-        | FnCond(c, _, _), estv when is_stv vset estv ->
-          [collect_state_lvars estv, c]
-        | estv, FnCond(c, _, _) when is_stv vset estv ->
-          [collect_state_lvars estv, c]
+        (* | FnCond(c, _, _), estv when is_stv vset estv ->
+         *   [collect_state_lvars estv, c]
+         * | estv, FnCond(c, _, _) when is_stv vset estv ->
+         *   [collect_state_lvars estv, c] *)
         | e, estv  when is_stv vset estv -> [collect_state_lvars estv, e]
         | estv, e when is_stv vset estv -> [collect_state_lvars estv, e]
         | _ -> []
@@ -571,7 +573,7 @@ let candidates (vset : VarSet.t) (e : fnExpr) =
       if is_stv vset e1 then
         [collect_state_lvars e1, e2]
       else
-        [collect_state_lvars e1, e2]
+        [collect_state_lvars e2, e1]
     | _ ->  []
   in
 

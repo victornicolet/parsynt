@@ -78,6 +78,7 @@ type define_symbolic =
   | DefBoolean of fnV list
   | DefArray of (fnV * int) list
   | DefMatrix of (fnV * int * int) list
+  | DefMatrix3D of (fnV * int * int * int) list
   | DefRecord of (fnV * string * ((string * fn_type) list) * (int * int)) list
   | DefEmpty
 
@@ -94,6 +95,14 @@ let gen_mat_cell_vars ~num_lines:n ~num_cols:m vi =
     (fun i ->
        (ListTools.init (m - 1)
           (fun j -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)})))
+
+let gen_mat3d_cell_vars ~num_lines:n ~num_cols:m ~num_bicols:o vi =
+  ListTools.init (n - 1)
+    (fun i ->
+       (ListTools.init (m - 1)
+        (fun j ->
+           (ListTools.init (o - 1)
+              (fun k -> {vi with vname = vi.vname^"$"^(string_of_int i)^"$"^(string_of_int j)^"$"^(string_of_int k)})))))
 
 
 let rec pp_define_symbolic fmt def =
@@ -166,6 +175,37 @@ let rec pp_define_symbolic fmt def =
            vi.vname pp_string_list (to_v avars))
       vil
 
+  | DefMatrix3D vil ->
+    List.iter
+      (fun (vi, n, m, o) ->
+         let nvars = gen_mat3d_cell_vars ~num_lines:n ~num_cols:m ~num_bicols: o vi in
+         let mvars = gen_mat_cell_vars ~num_lines:n ~num_cols:m vi in
+         let avars = gen_array_cell_vars ~num_cells:n vi in
+         (* First iter *)
+         List.iteri
+           (fun i vars1 ->
+                   (* Second iter *)
+                   (List.iteri
+                       (fun j vars2 ->
+                      pp_define_symbolic fmt
+                        (match matrix_type vi.vtype with
+                         | Integer -> DefInteger vars2
+                         | Real -> DefReal vars2
+                         | Boolean -> DefBoolean vars2
+                         | _ -> DefEmpty);
+                      F.fprintf fmt "@[<hv 2>(define %s$%i$%i@;(list %a))@]@\n"
+                        vi.vname i j pp_string_list (to_v vars2))
+                       vars1))
+           nvars;
+         List.iteri
+           (fun i vars ->
+              F.fprintf fmt "@[<hv 2>(define %s$%i@;(list %a))@]@\n"
+                vi.vname i pp_string_list (to_v vars))
+           mvars;
+         F.fprintf fmt "@[<hv 2>(define %s@;(list %a))@]@\n"
+           vi.vname pp_string_list (to_v avars))
+      vil
+
   | DefRecord virtl ->
     List.iter
       (fun (vi, name, mems, (n, m)) ->
@@ -205,9 +245,12 @@ let pp_vs_to_symbs ?(inner=false) fmt except vs =
             | Boolean -> DefBoolean [vi]
             | Real -> DefReal [vi]
             | Vector (v, _) ->
-              (* Support up to 2-dimensional arrays. *)
+              (* Support up to 3-dimensional arrays. *)
               (match v with
-               | Vector (v2, _) -> DefMatrix [(vi, Dimensions.height (), Dimensions.width ())]
+               | Vector (v2, _) ->
+                  (match v2 with
+                   | Vector (v3, _) -> DefMatrix3D [(vi, Dimensions.height (), Dimensions.width (),Dimensions.width ())]
+                   | _ -> DefMatrix [(vi,Dimensions.height (),Dimensions.width () )])
                | _ -> DefArray [(vi, if inner then Dimensions.width () else Dimensions.height ())])
             | Record (s, rt) ->
               DefRecord [(vi, s, rt, Dimensions.dims () )]
@@ -222,6 +265,11 @@ let rec input_symbols_of_vs vs =
   VarSet.fold
     (fun vi symbs ->
        match vi.vtype with
+       | Vector(Vector (Vector _, _),_) ->
+         symbs@(List.flatten (List.flatten (gen_mat3d_cell_vars
+                                ~num_lines:(Dimensions.height ())
+                                ~num_cols:(Dimensions.width ())
+                                ~num_bicols:(Dimensions.width ()) vi)))
        | Vector(Vector _, _) ->
          symbs@(List.flatten (gen_mat_cell_vars
                                 ~num_lines:(Dimensions.height ())
@@ -833,6 +881,15 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   (* The parent index has to be replaced with a constant. *)
   let loop_body = repl_par_idx sketch.main_loop_body in
   let rconsts = IM.map repl_par_idx sketch.reaching_consts in
+  let input_struct_types =
+    List.filter
+      (fun vtype -> match vtype with Record _ -> true | _ -> false)
+      (List.map (fun var -> match var.vtype with
+           | Record (nm, l) ->  Record (nm, l)
+           | Vector(Record (nm,l), _) -> Record (nm,l)
+           | t -> t)
+          (VarSet.elements read_vars))
+  in
   (* Select the bitwidth for representatin in Rosettte depending on the
      operators used in the loop body. *)
   pp_current_bitwidth fmt sketch.main_loop_body;
@@ -840,7 +897,7 @@ let pp_rosette_sketch_inner_join fmt parent_context sketch =
   define_structs fmt (used_struct_types sketch.main_loop_body);
   define_structs fmt (used_struct_types sketch.memless_sketch);
   define_structs fmt (used_struct_types sketch.join_sketch);
-
+  define_structs fmt input_struct_types;
   (**
      Print all the necessary symbolic definitions. For the memoryless join,
      we need only one line of matrix input.
@@ -917,11 +974,21 @@ let pp_rosette_sketch_join fmt sketch =
       sketch.main_loop_body
       sketch.inner_functions
   in
+  let input_struct_types =
+    List.filter
+      (fun vtype -> match vtype with Record _ -> true | _ -> false)
+      (List.map (fun var -> match var.vtype with
+           | Record (nm, l) ->  Record (nm, l)
+           | Vector(Record (nm,l), _) -> Record (nm,l)
+           | t -> t)
+          (VarSet.elements read_vars))
+  in
   (** FPretty configuration for the current sketch *)
   pp_current_bitwidth fmt sketch.main_loop_body;
 
   define_structs fmt (used_struct_types sketch.main_loop_body);
   define_structs fmt (used_struct_types sketch.memless_sketch);
+  define_structs fmt input_struct_types;
 
   if List.length sketch.inner_functions > 0 then
     begin
