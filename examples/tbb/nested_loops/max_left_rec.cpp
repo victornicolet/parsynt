@@ -14,9 +14,13 @@ struct MaxLeftRec {
     int mlr;
     int *rects;
 
-    MaxLeftRec(int** _input, int* rects, long rl) : A(_input), m(rl), rs(0), mlr(0), rects(rects) {}
+    MaxLeftRec(int** _input, long rl) : A(_input), m(rl), rs(0), mlr(0) {
+      rects = new int[rl];
+    }
 
-    MaxLeftRec(MaxLeftRec& s, split) {mlr = 0; rs = 0; A = s.A; m = s.m; rects = s.rects; }
+    MaxLeftRec(MaxLeftRec& s, split) {
+      mlr = 0; rs = 0; A = s.A; m = s.m; rects = new int[s.m];
+    }
 
     void operator()( const blocked_range<long>& r ) {
         int lrs = 0;
@@ -72,13 +76,12 @@ double do_seq(int **A, long m, long n) {
 double do_par(int **input, long m, long n, int num_cores) {
     StopWatch t;
     double elapsed = 0.0;
-    // Any specific initalization of state variables must be done here.
-    int * rects = (int*) calloc(m, sizeof(int));
+
     // TBB Initialization with num_cores cores
     static task_scheduler_init init(task_scheduler_init::deferred);
     init.initialize(num_cores, UT_THREAD_DEFAULT_STACK_SIZE);
 
-    MaxLeftRec mlr(input, rects,  m);
+    MaxLeftRec mlr(input, m);
 
     for(int i = 0; i < NUM_EXP ; i++){
         t.start();
@@ -99,7 +102,7 @@ int main(int argc, char** argv) {
     for(long i = 0; i < n; i++) {
         input[i] = (int*) malloc(sizeof(int) * m);
         for(long j =0; j < m; j++){
-            input[i][j] = static_cast<int>(i + j);
+	  input[i][j] = (rand () % 40) - 20;
         }
     }
 

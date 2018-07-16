@@ -7,18 +7,22 @@ experiments = [ # 'Exp2DSorted',
     # 'ExpMinMax',
     # 'ExpMaxDist',
     # 'ExpMinMaxCol',
-    # 'ExpMaxLeftRect',
+     'ExpMaxLeftRect'
     # 'ExpMaxTopStrip',
     # 'ExpMaxBottomStrip',
     # 'ExpMaxSegStrip',
     # 'ExpMaxTopBox',
     # 'ExpMaxBottomBox',
     # 'ExpMaxSegBox',
-    'ExpMTLR',
-    'ExpMTRR',
-    'ExpSaddlePoint',
-    'ExpMode',
-    'ExpOverlapping']
+#    'ExpMTLR',
+ #   'ExpMTRR',
+  #  'ExpSaddlePoint',
+#    'ExpMode'
+    # 'ExpOverlapping',
+    # 'ExpMaxBalSub',
+    # 'ExpPyramidRange',
+    # 'ExpIncreasingRange'
+]
 
 num_cores = [1, 2, 3, 4, 6, 8, 10, 12, 16, 24, 32, 46, 58, 64]
 
