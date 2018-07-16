@@ -16,7 +16,7 @@ XOCamlbuildExtraArgs: "-use-menhir"
 PreBuildCommand: ./prebuild.sh
 PreInstallCommand:   $ocamlfind install ppx_getenv lib/META
 PreUninstallCommand: $ocamlfind remove ppx_getenv
-PostDistcleanCommand: $rm _tags myocamlbuild.ml setup.ml setup.data
+PostDistcleanCommand: $rm myocamlbuild.ml setup.ml setup.data
 
 Library conf
   Path: src/conf
