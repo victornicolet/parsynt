@@ -167,13 +167,9 @@ let output_tbb_tests (solutions : prob_rep list) =
   let tbb_test_filename (solution : prob_rep) =
       folder_name^(Tbb.pbname_of_sketch solution)^".cpp"
   in
-  (* Generating header filenames *)
-  let tbb_header_filename (solution : prob_rep) =
-      folder_name^(Tbb.pbname_of_sketch solution)^".h"
-  in
   printf "@.%s%sGenerating implementations for solved examples..%s@."
     (color "black") (color "b-green") color_default;
-  List.iter (Tbb.output_tbb_test tbb_test_filename tbb_header_filename) solutions
+  List.iter (Tbb.output_tbb_test tbb_test_filename) solutions
     else
       failwith "Failed to create directory for tbb example output."
 

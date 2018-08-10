@@ -283,8 +283,11 @@ let remove_constant_assignments sktch sklet =
 (* Print the includes, the namepace and the type declaration necessary
    before actually declaring the class representing the problem *)
 let fprint_test_prelude fmt pb_header_filename =
-  let includes = [IncludeGlobal "iostream"; IncludeGlobal "tbb/tbb.h";
+  (* Header is not useful *)
+  (*let includes = [IncludeGlobal "iostream"; IncludeGlobal "tbb/tbb.h";
                   IncludeLocal pb_header_filename] in
+   *)
+let includes = [IncludeGlobal "iostream"; IncludeGlobal "tbb/tbb.h"; IncludeLocal "StopWatch"; IncludeLocal "param"] in
   pp_print_list
     ~pp_sep:(fun fmt () -> ())
     pp_include fmt includes;
@@ -517,7 +520,8 @@ let test_class_name_of pb = "Test"^(String.capitalize (pbname_of_sketch pb))
 
 let fprint_implementations fmt pb tbb_class =
   let test_cname = test_class_name_of pb in
-  let class_var = String.lowercase ("_p_"^pb.loop_name^"_") in
+  (*let class_var = String.lowercase ("_p_"^pb.loop_name^"_") in
+* *)
   (* Use the init constructor here, and it must always have the id 0 *)
   let cstr_args =
     (List.find (fun cstr -> cstr.cid = 0)
@@ -531,39 +535,46 @@ let fprint_implementations fmt pb tbb_class =
     in
     (Ct.psprint80 dn_type ret_typ)
   in
-  let class_field =
+  (*let class_field =
     try
       (Ct.psprint80 dn_exp
          (IH.find Loops.return_exprs pb.host_function.fvar.vid))
     with Not_found -> "/* DON't KNOW WHAT TO RETURN */"
-  in
+  in*)
   (* Print the parallel version of the loop *)
   fprintf fmt
-    "@[<v 2>%s %s::parallel_apply() const {@\n\
-     %s %s(%a);@\n\
-     parallel_reduce(blocked_range<%s>(0,n,%s), %s);@\n\
-     return %s.%s;@\n@]@\n}@\n"
+    "@[<v 2>%s %s::parallel_apply(int* input, long n, int numcores) const {@
+     StopWatch t;@
+     double elapsed = 0.0;@
+     @
+     //TBB initialization with numcores cores;@
+     static task_scheduler_init init(task_scheduler_init::deferred);@
+     init.initialize(numcores, UT_THREAD_DEFAULT_STACK_SIZE);@
+     @
+     %s result(input,n);@
+     @[<v 2>
+     for(int i = 0; i < NUM_EXP ; i++){@
+     t.start();@
+     parallel_reduce(blocked_range<%s>(0,n,%s), result);@
+     elapsed += t.stop();@] @
+     }@
+     return elapsed/NUM_EXP;@\n@]@\n}@\n"
     (* Return type of the function *)
     return_type
     (* Name of the examples and name of the current C++ class *)
     test_cname
     (* Name of the class containg the parallel implementation *)
     tbb_class.cname
-    (* Name of the instance of the class *)
-    class_var
-    (* Arguments of the base constructor of the parallel class *)
-    (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ")
-       pp_constr_arg_in_app) cstr_args
     (* Other parameters *)
     iterator_type_name
-    (Conf.get_conf_string "tbb_chunk_size")
-    class_var class_var class_field;
+    (Conf.get_conf_string "tbb_chunk_size");
 
   (** Print the sequential version of the function *)
   fprintf fmt
     "@[<v 2>%s %s::sequential_apply() const {@\n\
      %a@\n\
-     \* FILL THE BLOCK HERE *\;@\n\
+     /* FILL THE BLOCK HERE */;@\n\
+
      return %s;@\n@]@\n}@\n"
     (* Return type of the function *)
     return_type
@@ -588,30 +599,15 @@ let fprint_tbb_class fmt pb tbb_class =
   fprint_sep fmt;
   fprint_implementations fmt pb tbb_class
 
-let fprint_tbb_header fmt pb tbb_class =
-  fprint_test_prelude fmt (pbname_of_sketch pb);
-  pp_class fmt tbb_class;
-  fprint_sep fmt;
-  fprint_implementations fmt pb tbb_class
-
-let output_tbb_test fname_of_sol fname_of_header solution =
+let output_tbb_test fname_of_sol solution =
   (* Create class object *)
   let tbb_class_summary = make_tbb_class solution in
   let cpp_name = fname_of_sol solution in
-  (* Get names *)
-  let header_name = fname_of_header solution in
   (* Cpp file *)
   let tbb_file_oc =  open_out cpp_name in
   let tbb_file_out_fmt = Format.make_formatter
       (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
-  (* Header file *)
-  let tbb_file_oc_header =  open_out header_name in
-  let tbb_file_out_fmt_header = Format.make_formatter
-      (output tbb_file_oc_header) (fun () -> flush tbb_file_oc_header) in
   (* Print *)
   printf "New file: %s.@." cpp_name;
-  printf "New file: %s.@." header_name;
   fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
-  fprint_tbb_header tbb_file_out_fmt_header solution tbb_class_summary;
   close_out tbb_file_oc;
-  close_out tbb_file_oc_header;
