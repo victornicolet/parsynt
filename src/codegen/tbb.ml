@@ -582,20 +582,36 @@ let fprint_implementations fmt pb tbb_class =
     "sum"
 
 
-
-
 let fprint_tbb_class fmt pb tbb_class =
   fprint_test_prelude fmt (pbname_of_sketch pb);
   pp_class fmt tbb_class;
   fprint_sep fmt;
   fprint_implementations fmt pb tbb_class
 
+let fprint_tbb_header fmt pb tbb_class =
+  fprint_test_prelude fmt (pbname_of_sketch pb);
+  pp_class fmt tbb_class;
+  fprint_sep fmt;
+  fprint_implementations fmt pb tbb_class
 
-let output_tbb_test fname_of_sol solution =
-  let tbb_file_oc =  open_out (fname_of_sol solution) in
+let output_tbb_test fname_of_sol fname_of_header solution =
+  (* Create class object *)
+  let tbb_class_summary = make_tbb_class solution in
+  let cpp_name = fname_of_sol solution in
+  (* Get names *)
+  let header_name = fname_of_header solution in
+  (* Cpp file *)
+  let tbb_file_oc =  open_out cpp_name in
   let tbb_file_out_fmt = Format.make_formatter
       (output tbb_file_oc) (fun () -> flush tbb_file_oc) in
-  let tbb_class_summary = make_tbb_class solution in
-  printf "New file: %s.@." (fname_of_sol solution);
+  (* Header file *)
+  let tbb_file_oc_header =  open_out header_name in
+  let tbb_file_out_fmt_header = Format.make_formatter
+      (output tbb_file_oc_header) (fun () -> flush tbb_file_oc_header) in
+  (* Print *)
+  printf "New file: %s.@." cpp_name;
+  printf "New file: %s.@." header_name;
   fprint_tbb_class tbb_file_out_fmt solution tbb_class_summary;
-  close_out tbb_file_oc
+  fprint_tbb_header tbb_file_out_fmt_header solution tbb_class_summary;
+  close_out tbb_file_oc;
+  close_out tbb_file_oc_header;

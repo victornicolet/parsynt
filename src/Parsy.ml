@@ -154,7 +154,6 @@ and solve_problem problem =
 (** --------------------------------------------------------------------------*)
 (** Generating a TBB implementation of the parallel solution discovered *)
 let output_tbb_tests (solutions : prob_rep list) =
-  let tbb_test_filename (solution : prob_rep) =
     let folder_name =
       (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
     in
@@ -165,13 +164,18 @@ let output_tbb_tests (solutions : prob_rep list) =
         Sys.command ("mkdir "^folder_name)
     in
     if errco = 0 then
+  let tbb_test_filename (solution : prob_rep) =
       folder_name^(Tbb.pbname_of_sketch solution)^".cpp"
-    else
-      failwith "Failed to create directory for tbb example output."
+  in
+  (* Generating header filenames *)
+  let tbb_header_filename (solution : prob_rep) =
+      folder_name^(Tbb.pbname_of_sketch solution)^".h"
   in
   printf "@.%s%sGenerating implementations for solved examples..%s@."
     (color "black") (color "b-green") color_default;
-  List.iter (Tbb.output_tbb_test tbb_test_filename) solutions
+  List.iter (Tbb.output_tbb_test tbb_test_filename tbb_header_filename) solutions
+    else
+      failwith "Failed to create directory for tbb example output."
 
 
 (** Generating Dafny proofs *)
