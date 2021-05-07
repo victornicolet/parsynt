@@ -252,7 +252,7 @@ then
     cd $CIL_SOURCE_DIR/alt-cil
     echo "Creating local cil package and installing it with opam .."
     opam pin add cil . -n
-    opem install cil
+    opam install cil
     cd ../..
 else
     msg_success "Cil version pinned to local repository."
