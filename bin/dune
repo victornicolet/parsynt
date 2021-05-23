@@ -1,0 +1,3 @@
+(executable
+ (name Parsynt)
+ (libraries ParsyntLib fmt base parsexp compiler-libs sexplib getopt))

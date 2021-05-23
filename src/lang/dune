@@ -1,0 +1,7 @@
+(library
+ (name lang)
+ (wrapped true)
+ (libraries utils base stdio codegen sexplib fmt)
+ (virtual_deps cppo menhir)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let)))

@@ -17,748 +17,354 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Cil
-open Pretty
-open List
-open Printf
-open Format
-open Sets
-
+open Base
 module IH = Sets.IH
 module IS = Sets.IS
 module SM = Sets.SM
 module SH = Sets.SH
 module IM = Sets.IM
+module Config = Config
+module Log = Log
+module Naming = Naming
 
-let failhere file f s = failwith (sprintf "[%s][%s]: %s@." file f s)
+let failhere file f s =
+  failwith Fmt.(to_to_string (fun frmt () -> pf frmt "[%s][%s]: %s@." file f s) ())
 
-let try_not_found f m = try f with Not_found -> print_endline m
-
-(** Hash a set of variables with their variable id *)
-let ih_of_vs vset =
-  let ihs = IH.create 10 in
-  VSo.iter (fun v -> IH.add ihs v.vid v) vset;
-  ihs
-
-(**
-    Returns a new hashset containing the the keys
-    in h1, and values are the pairs of values
-    having the same key in h1 and h2 (None for the second
-    element if not found).
-*)
-
-let ih_join_left (newh : ('a * 'b option) IH.t)
-    (h1 : 'a IH.t)  (h2 : 'b IH.t) : unit =
-  IH.iter
-    (fun k v1 ->
-       try
-         let v2 = IH.find h2 k in
-         IH.add newh k (v1, Some v2)
-       with Not_found -> IH.add newh k (v1, None)) h1
+let try_not_found f m = try f with Caml.Not_found -> Fmt.(pf stdout "%s" m)
 
 let identity x = x
-let identity2 x y = y
+
+let identity2 _ y = y
 
 let is_some = function Some _ -> true | _ -> false
+
 let is_none = function None -> true | _ -> false
 
-(** Convert a varinfo to an expression *)
-let v2e (v : varinfo): Cil.exp = Lval (var v)
+let ( ==> ) (f : 'a -> 'b) (xo : 'a option) = match xo with Some x -> Some (f x) | None -> None
 
-let (==>) (f: 'a -> 'b) (xo : 'a option) =
-  match xo with
-  | Some x -> Some (f x)
-  | None -> None
+let ( |> ) (a : 'a) (f : 'a -> 'b) : 'b = f a
 
-let (|>) (a : 'a) (f: 'a -> 'b): 'b = f a
-let (>>) (a : 'a list) (b : int) = List.nth a b
-let foi = float_of_int
-let fos = float_of_string
+let ( >> ) (a : 'a list) (b : int) = List.nth a b
 
-let (-->) (f : 'a -> 'b) (g : 'b -> 'c) = (fun x -> g (f x))
+let ( @: ) (a : 'a list) (b : int) = List.nth a b
 
-let (<=>) (f : 'a -> 'a) (g : 'a -> 'a) = (fun x -> f x = g x)
+let foi = Float.of_int
 
+let fos = Float.of_string
 
-let map_2 (f : 'a -> 'b) ((a,b): ('a * 'a)) : ('b * 'b) = (f a, f b)
+let ( --> ) (f : 'a -> 'b) (g : 'b -> 'c) x = g (f x)
 
-let map_3 (f : 'a -> 'b) ((a, b, c): ('a * 'a * 'a)) : ('b * 'b * 'b) =
-  (f a, f b, f c)
+let ( <=> ) (f : 'a -> 'a) (g : 'a -> 'a) x = f x = g x
 
-let fst (a,b)  = a
-let snd (a,b) = b
-let fst3 (a,b,c)  = a
-let snd3 (a,b,c) = b
-let third (a,b,c) = c
+let map_2 (f : 'a -> 'b) ((a, b) : 'a * 'a) : 'b * 'b = (f a, f b)
+
+let map_3 (f : 'a -> 'b) ((a, b, c) : 'a * 'a * 'a) : 'b * 'b * 'b = (f a, f b, f c)
+
+let fst (a, _) = a
+
+let snd (_, b) = b
+
+let fst3 (a, _, _) = a
+
+let f2of3 (a, b, _) = (a, b)
+
+let snd3 (_, b, _) = b
+
+let third (_, _, c) = c
 
 (* Mutable conditionals for actions. *)
 let _brev b = b := not !b
+
 let _boff b = b := false
+
 let _bon b = b := true
+
 (* If flag true then do nothing, else do and set flag to true. *)
-let (-?) b f = if !b then () else (_bon b; f)
+let ( -? ) b f =
+  if !b then ()
+  else (
+    _bon b;
+    f)
+
 (* If flag true then do and set flag to false, else do nothing *)
-let (+?) b f = if !b then (_boff b; f) else ()
+let ( +? ) b f =
+  if !b then (
+    _boff b;
+    f)
+  else ()
 
+(* Set operations *)
+let ( -$ ) is1 is2 = Set.diff is1 is2
 
-let bool_of_int64 i = i = 1L
+let ( +$ ) is1 is2 = Set.union is1 is2
 
-let str_contains str sub = ExtLib.String.exists str sub;;
-let str_begins_with sub str = ExtLib.String.starts_with str sub;;
-let str_ends_with sub str = ExtLib.String.ends_with str sub;;
+let ( ~$ ) i = Set.singleton (module Int) i
+
+let ( !$ ) s = Set.max_elt s
+
+let ( ?$ ) s = Set.length s
+
+let bool_of_int64 i = Int64.(i = 1L)
+
+let str_contains str sub = String.is_substring str ~substring:sub
+
+let str_begins_with sub str = String.is_prefix ~prefix:sub str
+
+let str_ends_with sub str = String.is_suffix ~suffix:sub str
+
 (** Lists *)
 module ListTools = struct
   open List
-  (** a -- b -- > list of integers from a to b *)
-  let (--) i j =
+
+  let ( -- ) i j =
     if i <= j then
-      let rec aux n acc =
-        if n < i then acc else aux (n-1) (n :: acc)
-      in aux j []
+      let rec aux n acc = if n < i then acc else aux (n - 1) (n :: acc) in
+      aux j []
     else []
 
-  let init (len : int) (f: int -> 'a) : 'a list =
-    let rec aux_init l i =
-      if i <= 0 then (f 0)::l else (aux_init ((f i)::l) (i -1))
-    in aux_init [] len
+  (** Generate all pairs of distrinct elements in list *)
+  let rec all_pairs lst =
+    match lst with [] -> [] | hd :: tl -> List.map ~f:(fun t -> (hd, t)) tl @ all_pairs tl
 
-  let replace_ith (l : 'a list) (k : int) (e : 'a) =
-    List.mapi (fun i e' -> if i = k then e else e') l
+  let cartesian3 l1 l2 l3 =
+    List.map ~f:(fun x -> List.map ~f:(fun y -> List.map ~f:(fun z -> (x, y, z)) l3) l2) l1
 
-  let mapoption (f: 'a -> 'b option) (l : 'a list) : 'b list =
-    List.map (function Some x -> x | _ -> failwith "x")
-      (List.filter is_some (List.map f l))
+  let deindex l = List.map ~f:(fun (_, t) -> t) l
 
-  (* Generate all k-length subslists of list l *)
-  let k_combinations n lst =
-    let rec inner acc k lst =
-      match k with
-      | 0 -> [[]]
-      | _ ->
-        match lst with
-        | []      -> acc
-        | x :: xs ->
-          let rec accmap acc f = function
-            | []      -> acc
-            | x :: xs -> accmap ((f x) :: acc) f xs
-          in
-          let newacc = accmap acc (fun z -> x :: z) (inner [] (k - 1) xs)
-          in
-          inner newacc k xs
+  let for_all_i pred l = List.for_all ~f:pred (List.mapi ~f:(fun i e -> (i, e)) l)
+
+  let index l = List.mapi ~f:(fun i t -> (i, t)) l
+
+  let init (len : int) (f : int -> 'a) : 'a list =
+    let rec aux_init l i = if i <= 0 then f 0 :: l else aux_init (f i :: l) (i - 1) in
+    aux_init [] len
+
+  (**
+     [is_prefix_sublist pre l] returns [true] if [pre] is a prefix of the list [l].
+  *)
+  let is_prefix_sublist ?(equal = Poly.equal) (prefix : 'a list) (li : 'a list) =
+    let rec fx pre li =
+      match (pre, li) with
+      | [], [] -> true
+      | _, [] -> false
+      | [], _ :: _ -> true
+      | hd :: tl, hd' :: tl' -> if equal hd hd' then fx tl tl' else false
     in
-    inner [] n lst
+    if List.is_empty prefix then false else fx prefix li
 
   (**
       Returns the max of a list.
       /!\ The max of an empty list is min_int.
   *)
   let intlist_max li =
-    List.fold_left
-      (fun max elt -> if elt > max then elt else max)
-      min_int
-      li
+    List.fold_left ~f:(fun max elt -> if elt > max then elt else max) ~init:Int.min_value li
+
+  (* Generate all k-length subslists of list l *)
+  let k_combinations n lst =
+    let rec inner acc k lst =
+      match k with
+      | 0 -> [ [] ]
+      | _ -> (
+          match lst with
+          | [] -> acc
+          | x :: xs ->
+              let rec accmap acc f = function [] -> acc | x :: xs -> accmap (f x :: acc) f xs in
+              let newacc = accmap acc (fun z -> x :: z) (inner [] (k - 1) xs) in
+              inner newacc k xs)
+    in
+    inner [] n lst
+
+  let last list = List.nth list (List.length list - 1)
+
+  let rec lexicographic comp lx ly =
+    match (lx, ly) with
+    | [], [] -> 0
+    | hd1 :: tl1, hd2 :: tl2 ->
+        let x = comp hd1 hd2 in
+        if x = 0 then lexicographic comp tl1 tl2 else x
+    | _ :: _, [] -> 1
+    | _ -> -1
+
+  let lfst (l : ('a * 'b) list) : 'a list = List.map ~f:fst l
 
   let lmin score_func l =
-    let scored_list =
-      List.map (fun elt -> (score_func elt, elt)) l in
-    snd (List.hd
-           (List.sort
-              (fun (s1, _) (s2, _) ->
-                 Pervasives.compare s1 s2)
-              scored_list))
+    let scored_list = List.map ~f:(fun elt -> (score_func elt, elt)) l in
+    let sorted_by_score =
+      List.sort ~compare:(fun (s1, _) (s2, _) -> Poly.compare s1 s2) scored_list
+    in
+    match sorted_by_score with (_, elt) :: _ -> Some elt | _ -> None
 
+  let lsnd (l : ('a * 'b) list) : 'b list = List.map ~f:snd l
 
+  let lthird (l : ('a * 'b * 'c) list) : 'c list = List.map ~f:(fun (_, _, c) -> c) l
 
+  let mapoption (f : 'a -> 'b option) (l : 'a list) : 'b list =
+    List.map
+      ~f:(function Some x -> x | _ -> failwith "x")
+      (List.filter ~f:is_some (List.map ~f l))
 
-  let foldl_union f l =
-    List.fold_left (fun set a -> VSo.union set (f a)) VSo.empty l
-
-  let foldl_union2 f l =
-    List.fold_left (fun (acc1, acc2) a ->
-	let s1, s2 = f a in (VSo.union acc1 s1 , VSo.union acc2 s2))
-      (VSo.empty, VSo.empty) l
-
-  let pair a_li b_li =
-    List.fold_left2
-      (fun c_li a_elt b_elt -> c_li@[(a_elt, b_elt)]) []  a_li b_li
-
-  let unpair a_b_li =
-    List.fold_left
-      (fun (a_li, b_li) (a, b) -> (a_li@[a], b_li@[b])) ([],[]) a_b_li
-
-  let lfst (l : ('a * 'b) list) : 'a list = List.map (fun (a,b) -> a) l
-  let lsnd (l : ('a * 'b) list) : 'b list = List.map (fun (a,b) -> b) l
-  let lthird (l : ('a * 'b * 'c) list) : 'c list = List.map (fun (a,b,c) -> c) l
-
-  let untriple a_b_c_li =
-        List.fold_left
-      (fun (a_li, b_li, c_li) (a, b,c) -> (a_li@[a], b_li@[b], c_li@[c])) ([],[],[]) a_b_c_li
+  let mmax (measure : 'a -> int) (l : 'a list) =
+    match l with
+    | hd :: tl ->
+        let f m e = if measure e > measure m then e else m in
+        Some (List.fold ~f ~init:hd tl)
+    | _ -> None
 
   let outer_join_lists (a, b) =
     List.fold_left
-      (fun li i ->
-         if List.mem i li then li else i::li) a b
+      ~f:(fun li i -> if List.mem li ~equal:Poly.equal i then li else i :: li)
+      ~init:a b
 
-  let remove_elt e l =
-    let rec go l acc = match l with
+  let prefixes l = List.mapi ~f:(fun i _ -> take l (i + 1)) l
+
+  let rassoc ~equal (alist : ('a * 'b) list) (key : 'b) : 'a option =
+    try Option.map ~f:fst (List.find ~f:(fun (_, y) -> equal y key) alist) with _ -> None
+
+  let remove_elt ?(equal = Poly.equal) e l =
+    let rec go l acc =
+      match l with
       | [] -> rev acc
-      | x::xs when e = x -> go xs acc
-      | x::xs -> go xs (x::acc)
-    in go l []
+      | x :: xs when equal e x -> go xs acc
+      | x :: xs -> go xs (x :: acc)
+    in
+    go l []
+
+  let replace_ith (l : 'a list) (k : int) (e : 'a) =
+    List.mapi ~f:(fun i e' -> if i = k then e else e') l
+
+  let replace_last list elt = match List.rev list with _ :: t -> List.rev (elt :: t) | [] -> []
 
   let remove_duplicates l =
-    let rec go l acc = match l with
-      | [] -> rev acc
-      | x :: xs -> go (remove_elt x xs) (x::acc)
-    in go l []
+    let rec go l acc = match l with [] -> rev acc | x :: xs -> go (remove_elt x xs) (x :: acc) in
+    go l []
 
-  let last list =
-    List.nth list ((List.length list) - 1)
+  let remove_last list = match List.rev list with _ :: t -> List.rev t | [] -> []
 
-  let take n l =
-    let rec _t i l r =
-      if i <= 0 then l
-      else _t (i - 1) (l@[List.hd r]) (List.tl r)
+  (**
+     [remove_one l e] removes one occurrence of the element [e] in [l]. If such an element has been removed, then the functoin return the pair [true, l'] where [l'] is [l] minus one occurence of [e]. Otherwise the function returns [false, []].
+  *)
+  let remove_one ?(equal = Poly.equal) l e =
+    let rec rem l =
+      match l with
+      | hd :: tl ->
+          if equal hd e then (true, tl)
+          else
+            let b, ntl = rem tl in
+            (b, hd :: ntl)
+      | [] -> (false, [])
     in
-    if n < List.length l then _t n [] l else l
+    rem l
 
+  (**
+     [remove_prefix pre l] removes the prefix [pre] from the list [l]. If [pre] is a prefix of [l] then the returned value is [Some l'] where pre @ l' = l, otherwise the returned value is None.
+  *)
+  let rec remove_prefix ?(equal = Poly.equal) (prefix : 'a list) (list : 'a list) =
+    match (prefix, list) with
+    | [], [] -> Some []
+    | _, [] -> None
+    | [], l -> Some l
+    | hd :: tl, hd' :: tl' -> if equal hd hd' then remove_prefix tl tl' else None
 
-  let remove_last list =
-    match (List.rev list) with
-    | h::t -> List.rev t
-    | []   -> []
+  (**
+     [remove_intersection l1 l2] removes elements from [l1] and [l2] that are in both lists. It is {b not} equivalent to doing the same operation on thesets of element in l1 and l2. For example, if l1 contains two elements e and l2 only one e, then the first list of the pair returned will still contain an element e.
+  *)
+  let remove_intersection ?(equal = Poly.equal) l1 l2 : int list * int list =
+    let f (nl1, nl2) l1e =
+      let removed, nl2' = remove_one ~equal nl2 l1e in
+      if removed then (nl1, nl2') else (nl1 @ [ l1e ], nl2')
+    in
+    List.fold ~f ~init:([], l2) l1
 
-  let replace_last list elt =
-    match (List.rev list) with
-    | h::t -> List.rev (elt::t)
-    | []   -> []
+  let some_hd l = if length l > 0 then Some (hd l) else None
 
-  let some_hd l =
-    if length l > 0 then Some (hd l) else None
+  let some_tl l = if length l > 0 then Some (tl l) else None
 
-  let some_tl l =
-    if length l > 0 then Some (tl l) else None
-
-  let for_all_i pred l =
-    List.for_all pred (List.mapi (fun i e -> (i,e)) l)
+  let untriple a_b_c_li =
+    List.fold_left a_b_c_li ~init:([], [], []) ~f:(fun (a_li, b_li, c_li) (a, b, c) ->
+        (a_li @ [ a ], b_li @ [ b ], c_li @ [ c ]))
 end
 
-
-
-let last_instr instr_stmt =
-  match instr_stmt.skind with
-  | Instr il -> ListTools.last il
-  | _ -> raise
-           (Failure "last_instr expected a statement of instruction list kind" )
+(**
+  [timed f x] runs the function [f] and returns its results, along
+  with a float equal to the time elapsed calling [f], measured using
+  Unix.gettimeofday ().
+*)
+let timed f x =
+  let t0 = Unix.gettimeofday () in
+  let r = f x in
+  (r, Unix.gettimeofday () -. t0)
 
 (** Simple function to check if the argument is {e Some a}.
     @param ao some argument of type 'a option
     @return the object in the option
     @raise Failure if the argument is None
 *)
-let check_option ao =
-  match ao with
-  | Some a -> a
-  | None -> raise (Failure "check_option")
+let check_option ao = match ao with Some a -> a | None -> raise (Failure "check_option")
 
-let somes l = List.map check_option (List.filter is_some l)
+(** [somes l] returns the list of elements that are (Some _) in the list l,
+    in the order they appear in the list l.
+ *)
+let somes l = List.map ~f:check_option (List.filter ~f:is_some l)
 
-let (=>>) (f: 'a -> 'b option) (g : 'b -> 'c option): 'a -> 'c option =
-  (fun x ->
-     match f x with
-     | Some y -> g y
-     | None -> None)
+let ( =>> ) (f : 'a -> 'b option) (g : 'b -> 'c option) : 'a -> 'c option =
+ fun x -> match f x with Some y -> g y | None -> None
 
+let maybe_apply (f : 'a -> 'b) (v : 'a option) : 'b option =
+  match v with Some a -> Some (f a) | None -> None
 
-let maybe_apply (f:'a->'b) (v: 'a option) : 'b option =
-  match v with
-  | Some a -> Some (f a)
-  | None -> None
-
-let maybe_apply_default (f: 'a -> 'b) (v: 'a option) (default : 'b) : 'b =
-  match v with
-  | Some a -> f a
-  | None -> default
+let maybe_apply_default (f : 'a -> 'b) (v : 'a option) (default : 'b) : 'b =
+  match v with Some a -> f a | None -> default
 
 let xorOpt o1 o2 =
-  match o1, o2 with
+  match (o1, o2) with
   | None, Some a -> Some a
   | Some _, Some _ -> raise (Failure "xorOpt")
   | _, _ -> None
 
-
-(** Get the function named fname in the file cf *)
-let get_fun cf fname =
-  let auxoptn cfile =
-    Cil.foldGlobals cfile
-      (fun fdeco g ->
-         match g with
-         | GFun (f, loc) ->
-           begin
-             if f.svar.vname = fname
-             then xorOpt fdeco (Some f)
-             else fdeco
-           end
-         | _ -> fdeco )
-      None
-  in
-  try auxoptn cf
-  with Failure s -> None
-
-let non_empty_block (b : Cil.block) =
-  (List.length b.bstmts) > 0
-
-let global_filter_only_func fn g =
-  match g with
-  | GFun (f, loc) -> fn f
-  | _ -> ()
-
-let global_filter_only_funcLoc fn g =
-  match g with
-  | GFun (f, loc) -> fn f loc
-  | _ -> ()
-
-let appendC l a =
-  List.append l
-    (if List.mem a l then [] else [a])
-
-(** Cil specific utility functions *)
-(** Pretty printing shortcuts *)
-module CilTools = CilTop
-(**
-    Extract the variables used in statements/expressions/instructions/..
-    Used variables can be on either side of an assignment.
-*)
-module VS = struct
-  include VSo
-  let rec sovi (instr : Cil.instr) : t =
-    match instr with
-    | Set (lval, exp, loc) ->
-      let vs_ls = sovv lval in
-      let vs_exp = sove exp in
-      union vs_exp vs_ls
-    | Call (lvo, ef, elist, _) ->
-      let vs_ls = maybe_apply_default sovv lvo empty in
-      let vs_el = ListTools.foldl_union sove elist in
-      union vs_ls vs_el
-    | _ -> empty
-
-  and sove (expr : Cil.exp) : t =
-    match expr with
-    | BinOp (_, e1, e2, _)
-    | Question (_, e1, e2, _) -> union (sove e1) (sove e2)
-    | SizeOfE e | AlignOfE e | UnOp (_, e, _) | CastE (_, e) -> sove e
-    | AddrOf v  | StartOf v | Lval v -> sovv v
-    | SizeOfStr _ | AlignOf _ | AddrOfLabel _ | SizeOf _ | Const _ -> empty
-
-  and sovv ?(onlyNoOffset = false) (v : Cil.lval)  : t =
-    match v with
-    | Var x, _ -> singleton x
-    | Mem e, offs -> union (sove e)
-                       (if onlyNoOffset then empty else (sovoff offs))
-
-  and sovoff (off : Cil.offset) : t =
-    match off with
-    | NoOffset -> empty
-    | Index (e, offs) -> union (sove e) (sovoff offs)
-    | Field _ -> empty
-
-  (** List to set and inverse functions *)
-
-  let bindings (vs : t) =
-    fold (fun v l -> l@[(v.vid, v)]) vs []
-
-  let of_bindings (l : (int * elt) list) : t =
-    List.fold_left (fun vs (k, v) -> add v vs) empty l
-
-
-  let varlist (vs : t) =
-    elements vs
-
-  let of_varlist (l : elt list) =
-    of_list l
-
-  let vsmap f (vs : t) =
-    map f (varlist vs)
-
-  let namelist (vs : t) =
-    List.map (fun vi -> vi.vname) (varlist vs)
-
-  let vids_of_vs (vs : t) : int list =
-    List.map (fun vi -> vi.vid) (elements vs)
-
-  let vidset_of_vs vs =
-    IS.of_list (vids_of_vs vs)
-  (** Member testing functions *)
-
-  let has_vid (id : int) (vs : t) =
-    exists (fun vi -> vi.vid = id) vs
-
-  let has_lval ((host,offset): lval) (vs: t) =
-    match host  with
-    | Var vi -> has_vid vi.vid vs
-    | _-> cardinal
-            (inter (sovv ~onlyNoOffset:true (host,offset)) vs) > 1
-
-  (** Get-element functions*)
-
-  let find_by_id (id: int) (vs : t) =
-    if has_vid id vs then
-      min_elt (filter (fun vi -> vi.vid = id) vs)
-    else
-      raise Not_found
-
-  let find_by_name (name : string) (vs : t) =
-    let matchings = filter (fun vi -> vi.vname = name) vs in
-    match cardinal matchings with
-    | 0 -> raise Not_found
-    | 1 -> min_elt matchings
-    | _ -> raise
-             (Failure
-                (Format.fprintf str_formatter
-                   "More than one variable named %s" name;
-                 Format.flush_str_formatter ()))
-
-  let subset_of_list (li : int list) (vs : t) =
-    filter (fun vi -> List.mem vi.vid li) vs
-
-  (** Set construction functions *)
-
-  let unions (vsl : t list) : t =
-    List.fold_left union empty vsl
-
-  let union_map li f =
-    List.fold_left (fun vs elt -> union vs (f elt)) empty li
-
-  let vs_of_defsMap (dm : (Cil.varinfo * Reachingdefs.IOS.t option) IH.t) :
-    t =
-    let vs = empty in
-    IH.fold (fun k (vi, rdo) vst -> add vi vst) dm vs
-
-  let vs_of_inthash ih =
-    IH.fold (fun i vi set -> add vi set) ih empty
-
-  let vs_with_suffix vs suffix =
-    fold
-      (fun var new_vs ->
-         add (CilTools.gen_var_with_suffix var suffix) new_vs)
-      vs
-      empty
-
-  let vs_with_prefix vs prefix =
-    fold
-      (fun var new_vs ->
-         add (CilTools.gen_var_with_prefix var prefix) new_vs)
-      vs
-      empty
-
-
-  (** Pretty printing variable set *)
-
-  let pp_var_names fmt (vs : t) =
-    let vi_list = varlist vs in
-    pp_print_list
-      ~pp_sep:(fun fmt () -> fprintf fmt " ")
-      (fun fmt vi -> fprintf fmt "%s" vi.Cil.vname)
-      fmt
-      vi_list
-
-  let to_string vs =
-    (pp_var_names Format.str_formatter vs ; flush_str_formatter ())
-
-  let pvs ppf (vs: t) =
-    if cardinal vs > 0 then
-      iter
-        (fun vi ->
-           if vi.vistmp then
-             Format.fprintf ppf "@[(%i : %s (-tmp-))@]@" vi.vid vi.vname
-           else
-             Format.fprintf ppf "@[(%i : %s)@]@;" vi.vid vi.vname)
-        vs
-    else
-      Format.fprintf ppf "%s@;" "{empty}"
-
-  let ppvs vs = pvs Format.std_formatter vs
-  let spvs vs = pvs Format.str_formatter vs; Format.flush_str_formatter ()
-  let epvs vs = pvs Format.err_formatter vs
-
-  let string_of_vs = spvs
-end
-
-module IHTools = struct
-  (* Converts Inthash.t to IH.t. Yes, it's different. *)
-  let convert inthash =
-    let ih = IH.create 10 in
-    Inthash.iter (IH.add ih) inthash;
-    ih
-
-  let key_list ih = IH.fold (fun k _ l -> k::l) ih []
-
-
-  (**
-      Add al the key-value bindings of to_add to add_to only
-      if the key is not present in add_to.
-  *)
-  let add_all add_to bindings_to_add =
-    IH.iter
-      (fun k v ->
-         if IH.mem add_to k then () else IH.add add_to k v)
-      bindings_to_add
-
-  let add_list (add_to : 'a IH.t) (getk : 'a -> int) (l : 'a list) =
-    List.iter (fun b -> IH.add add_to (getk b) b) l
-
-  let iter_bottom_up
-      (h : 'a IH.t)
-      (isroot : 'a -> bool)
-      (children : 'a -> 'a list)
-      (app : 'a -> unit) : 'a list =
-    let select_roots =
-      IH.fold
-        (fun k a roots ->
-           if isroot a then a::roots else roots)
-        h []
-    in
-    let rec build_botup stack acc =
-      match stack with
-      | [] -> acc
-      | hd :: tl ->
-        build_botup (tl@(children hd)) (hd::acc)
-    in
-    let upbots = build_botup select_roots [] in
-    List.iter app upbots;
-    upbots ;;
-
-end
-
-
-module PpTools = struct
-  let colorPrefix = "\x1b"
-
-  let colormap =
-    List.fold_left2
-      (fun m k v -> SM.add k (colorPrefix^v) m)
-      SM.empty
-      ["black"; "red"; "green"; "yellow"; "blue"; "violet"; "cyan"; "white";
-       "i"; "u"; "b"; "grey";
-       "b-grey"; "b-red"; "b-green"; "b-yellow";"b-blue"; "b-violet"; "b-cyan";
-       "b-white"; "b-lightgray"; "b-brown";
-       "hi-underlined"; "hi-blinking"; "hi-inverted"; "hi-concealed"]
-      ["[30m"; "[31m"; "[32m"; "[33m"; "[34m"; "[35m"; "[36m"; "[37m";
-       "[3m"; "[4m"; "[1m"; "[2m";
-       "[100m"; "[101m"; "[102m"; "[103m";"[104m"; "[105m"; "[106m"; "[107m";
-       "[47m"; "[43m";
-       "[4m"; "[5m"; "[7m"; "[8m"]
-
-  let color cname =
-    try
-      SM.find cname colormap
-    with Not_found -> colorPrefix^"[0m"
-
-  let color_default = colorPrefix^"[0m"
-
-  let pp_newline fmt () = fprintf fmt "@."
-
-  let pad ?(c=' ') s l =
-    " " ^ s ^ String.make (l - String.length s + 1) c
-
-  let rec split_80 s =
-    if String.length s > 80 then
-      [String.sub s 0 80]@(split_80 (String.sub s 80 (String.length s - 80)))
-    else
-      [s]
-
-  let success s =
-    let lines = split_80 s in
-    List.iter
-      (fun s -> printf "%s%s%s%s" (color "b-green") (color "black") s color_default) lines
-
-  let message_done ?(done_what="") () =
-    printf "@.\t\t\t\t%sDONE%s%s@." (color "green") done_what color_default
-
-  let message_skip () =
-    printf "@."
-
-  let message_info (pmsg : unit -> unit) =
-    printf "@.%s" (color "grey");
-    pmsg ();
-    printf "%s@." color_default
-
-
-
-  let message_error_task s =
-    printf "@.%s%s%s" (color "red") s color_default
-
-  let message_start_task s =
-    printf "@.%s%s%s" (color "yellow") (pad s 76) color_default
-
-  let message_start_subtask s =
-    printf "@.%s%s%s" (color "blue") (pad s 76) color_default
-
-  (** List printing *)
-
-  let rec ppli
-      (ppf : formatter)
-      ?(sep = ";")
-      (pfun : formatter -> 'a -> unit) : 'a list -> unit =
-    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "%s" sep) pfun ppf
-
-  let pp_int_list ppf =
-    ppli ppf
-      ~sep:":"
-      (fun ppf i -> fprintf ppf "%i" i)
-
-  let print_int_list = pp_int_list std_formatter
-
-  let pp_string_list fmt =
-    ppli fmt ~sep:" " (fun fmt s -> fprintf fmt "%s" s)
-
-  let pp_comma_sep_list pf fmt =
-    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt ", ") pf fmt
-
-  let pp_break_sep_list pf fmt =
-    pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;") pf fmt
-
-  let pp_sep_nl fmt () = fprintf fmt "@."
-  let pp_sep_comma fmt () = fprintf fmt ", "
-  let pp_sep_brk fmt () = fprintf fmt "@;"
-
-  (** Map printing *)
-  let ppimap
-      (pelt : formatter -> 'a -> unit)
-      (ppf : formatter) : 'a IM.t -> unit =
-    IM.iter
-      (fun i a ->
-         fprintf ppf "@[<hov 2> %i -> %a@]@;" i pelt a)
-
-  let ppifmap
-      (pi : formatter -> int -> unit)
-      (pelt : formatter -> 'a -> unit)
-      (ppf : formatter) : 'a IM.t -> unit =
-    IM.iter
-      (fun i a ->
-         fprintf ppf "@[<hov 2> %a <- %a@]@;" pi i pelt a)
-
-
-  let string_of_loc (loc : Cil.location) =
-    sprintf "<#line %i in %s, byte %i>" loc.Cil.line loc.Cil.file loc.Cil.byte
-
-  let loc_of_string loca =
-    let regexp =
-      Str.regexp "<#line \\([0-9]+\\) in \\([0-9A-Za-z\\._-]+\\), byte \\([0-9]+>\\)"
-    in
-    try
-      ignore(Str.search_forward regexp loca 0);
-      let line = int_of_string (Str.matched_group 0 loca) in
-      let file_name = Str.matched_group 1 loca in
-      let byte =  int_of_string (Str.matched_group 2 loca) in
-      Some { Cil.line = line; file = file_name; Cil.byte = byte }
-    with
-    | Not_found -> None
-    | Failure s -> None
-
-
-  (** Hastable printing *)
-  let pp_hash fmt print_elt htbl =
-    let pp_elts fmt () =
-      IH.iter (fun k elt -> fprintf fmt "(%i:%a)@;" k print_elt elt) htbl
-    in
-    fprintf fmt "@[<hv 2><HashTable:@;%a>@]" pp_elts ()
-
-  (**TODO : replace characters that are setting color back to default in incoming
-     string *)
-  let printerr s =
-    Format.fprintf err_formatter "%s%s%s" (color "red") s color_default
-
-  let print_err_std s =
-    Format.fprintf std_formatter "%s!%s %s%s%s"
-      (color "b-red") color_default
-      (color "red") s color_default
-end
-
-
-let list_array_map f l =
-  Array.to_list (Array.map f (Array.of_list l))
+let list_array_map f l = Array.to_list (Array.map ~f (Array.of_list l))
 
 let rec count_map f l ctr =
   match l with
   | [] -> []
-  | [x] -> [f x]
-  | [x;y] ->
-    (* order matters! *)
-    let x' = f x in
-    let y' = f y in
-    [x'; y']
-  | [x;y;z] ->
-    let x' = f x in
-    let y' = f y in
-    let z' = f z in
-    [x'; y'; z']
+  | [ x ] -> [ f x ]
+  | [ x; y ] ->
+      (* order matters! *)
+      let x' = f x in
+      let y' = f y in
+      [ x'; y' ]
+  | [ x; y; z ] ->
+      let x' = f x in
+      let y' = f y in
+      let z' = f z in
+      [ x'; y'; z' ]
   | x :: y :: z :: w :: tl ->
-    let x' = f x in
-    let y' = f y in
-    let z' = f z in
-    let w' = f w in
-    x' :: y' :: z' :: w' ::
-    (if ctr > 500 then list_array_map f tl
-     else count_map f tl (ctr + 1))
+      let x' = f x in
+      let y' = f y in
+      let z' = f z in
+      let w' = f w in
+      x' :: y' :: z' :: w' :: (if ctr > 500 then list_array_map f tl else count_map f tl (ctr + 1))
 
 let list_map f l = count_map f l 0
 
-let equals x1 x2 : bool =
-  (compare x1 x2) = 0
+let equals x1 x2 : bool = compare x1 x2 = 0
 
+(* Pretty printing *)
+let colon = Fmt.(fun f () -> pf f ":@ ")
 
-let print_defs vs defsHash =
-  IH.iter
-    (fun k ios ->
-       let stmts =
-         let def_ids =
-           List.map (fun os -> match os with Some o -> o | None -> failwith "X")
-             (List.filter (fun os -> match os with Some _ -> true | _ -> false)
-                  (IOS.elements ios))
-         in
-         List.map
-           (fun def_id ->
-              IH.find (IHTools.convert Reachingdefs.ReachingDef.defIdStmtHash)
-                def_id)
-           def_ids
-       in
-       printf "Reaching defs for %s:@.@[<h 2>%a@]@."
-         (try (VS.find_by_id k vs).vname with Not_found -> "??")
-         (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;")
-            (fun fmt stmt ->
-               fprintf fmt "%s" (CilTools.psprint80 Cil.dn_stmt stmt)))
-         stmts)
-    defsHash
+let semicolon = Fmt.(fun f () -> pf f ";@ ")
 
-(* From  http://www.wiki.crossplatform.ru *)
+let vert f () = Fmt.(if utf_8 f then pf f " 𒑰@;" else pf f "|@")
 
-(* OCaml does not come with a globbing function. As a workaround, the
-   following function builds a regular expression from a glob pattern.
-   Only the '*' and '?' wildcards are recognized. *)
+let arrow f () = Fmt.(if utf_8 f then pf f " →@;" else pf f "->@")
 
-let regexp_of_glob pat =
-  Str.regexp
-    (Printf.sprintf "^%s$"
-       (String.concat ""
-          (List.map
-             (function
-                | Str.Text s -> Str.quote s
-                | Str.Delim "*" -> ".*"
-                | Str.Delim "?" -> "."
-                | Str.Delim _ -> assert false)
-             (Str.full_split (Str.regexp "[*?]") pat))))
+let wrap s = Fmt.(fun f () -> pf f s)
 
-(* Now we can build a very basic globber. Only the filename part will
-   be used in the glob pattern, so directory wildcards will break in
-   this simple example. *)
-let glob pat =
-  let basedir = Filename.dirname pat in
-  let files = Sys.readdir basedir in
-  let regexp = regexp_of_glob (Filename.basename pat) in
-  List.map
-    (Filename.concat basedir)
-    (List.filter
-       (fun file -> Str.string_match regexp file 0)
-       (Array.to_list files))
+let string_msg msg s = Fmt.(fun f () -> pf f msg s)
+
+let printer_msg msg pp e = Fmt.(fun f () -> pf f msg pp e)
+
+let printer2_msg msg pp e pp2 e2 = Fmt.(fun f () -> pf f msg pp e pp2 e2)
+
+let pp_map pp f m =
+  let fl f (_, x) = pp f x in
+  Fmt.((box ~indent:2 (braces (list ~sep:semicolon fl))) f (Map.to_alist m))

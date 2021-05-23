@@ -1,0 +1,5 @@
+(library
+ (name solve)
+ (libraries lwt lwt.unix utils lang core extlib codegen sexplib str)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let)))
