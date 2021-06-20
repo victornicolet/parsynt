@@ -1,3 +1,4 @@
 (library
  (name singleloop)
+ (modules Beta)
  (libraries lang sexplib utils fmt))

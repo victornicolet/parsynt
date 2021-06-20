@@ -12,9 +12,13 @@ end
 module IH = struct
   include Hashtbl.M (Int)
 
+  let create (i : int) = Hashtbl.create (module Int) ~size:i
+
   let set (h : (int, 'a) Hashtbl.t) (key : int) (data : 'a) = Hashtbl.set h ~key ~data
 
   let add = set
+
+  let find = Hashtbl.find_exn
 
   let iter f b = Hashtbl.iteri ~f:(fun ~key ~data -> f key data) b
 
@@ -44,6 +48,8 @@ module IH = struct
     let upbots = build_botup select_roots [] in
     List.iter ~f:app upbots;
     upbots
+
+  let copy_into src dst = iter (fun key data -> Hashtbl.set dst ~key ~data) src
 end
 
 module IntegerMap = Map.M (Int)
@@ -140,6 +146,12 @@ module SH = struct
   let clear (table : 'v t) = Hashtbl.clear table
 
   let mem (table : 'v t) (s : string) = Hashtbl.mem table s
+
+  let iter f (table : 'v t) = Hashtbl.iteri table ~f:(fun ~key ~data -> f key data)
+
+  let find (table : 'v t) (s : string) = Hashtbl.find_exn table s
+
+  let replace (table : 'v t) (s : string) v = Hashtbl.set table ~key:s ~data:v
 
   let fold (f : string -> 'v -> 'a -> 'a) (table : 'v t) (init : 'a) : 'a =
     Hashtbl.fold table ~init ~f:(fun ~key ~data accum -> f key data accum)
