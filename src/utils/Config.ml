@@ -146,19 +146,26 @@ let import file_name separator =
       conf_file
   with e -> raise e
 
-let main_conf_file = import (source_file "conf/conf.csv") ","
+let main_conf_file = import (source_file "conf/Config.csv") ","
 
 let get_conf_string key =
   match Hashtbl.find main_conf_file key with
   | Some data -> List.hd data
   | None ->
-      eprintf "There is not setting for %s. There must be a missing setting in conf.csv !" key;
+      eprintf "There is not setting for %s. There must be a missing setting in Config.csv !" key;
       None
+
+let get_conf_string_exn key =
+  match Hashtbl.find main_conf_file key with
+  | Some data -> List.hd_exn data
+  | None ->
+      eprintf "There is not setting for %s. There must be a missing setting in Config.csv !" key;
+      failwith "Failed to get a configuration value."
 
 let get_conf_int key =
   try Int.of_string (List.hd_exn (Hashtbl.find_exn main_conf_file key)) with
   | Caml.Not_found ->
-      eprintf "There is not setting for %s. There must be a missing setting in conf.csv !@." key;
+      eprintf "There is not setting for %s. There must be a missing setting in Config.csv !@." key;
       raise Caml.Not_found
   | Failure s when String.(s = "int_of_string") ->
       eprintf "There is a setting for %s, but it is not an int.Found %s." key
@@ -175,9 +182,9 @@ type builtins = Min_Int | Max_Int | False | True
 let builtin_var_names =
   [ ("__MIN_INT_", Min_Int); ("__MAX_INT_", Max_Int); ("__FALSE_", False); ("__TRUE_", True) ]
 
-let is_builtin_var s = List.Assoc.mem s builtin_var_names
+let is_builtin_var s = List.Assoc.mem ~equal:Poly.equal builtin_var_names s
 
-let get_builtin s = List.Assoc.find_exn s builtin_var_names
+let get_builtin s = List.Assoc.find_exn ~equal:Poly.equal builtin_var_names s
 
 (** 3 - Parameters of the verification condition of the synthesis *)
 let verif_params_filename = source_file "conf/verification.params"

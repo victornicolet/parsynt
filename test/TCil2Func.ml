@@ -64,7 +64,7 @@ let wf_test_case fname (func : C2F.letin) sketch  =
     let sketch_ok =
       match sketch with
       | FnRecord (vs, emap) ->
-        begin match snd (ListTools.unpair (IM.to_alist emap)) with
+        begin match snd (Base.List.unzip (IM.to_alist emap)) with
           | [FnCond(FnBinop(Lt, _, _), FnBinop(Minus, _, _),
                        FnBinop(Plus, _, _))] -> true
           | _ -> false

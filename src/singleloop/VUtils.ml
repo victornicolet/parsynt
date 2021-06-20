@@ -28,7 +28,7 @@ open Utils.PpTools
 
 let debug = ref false
 
-let _MAX_ARRAY_SIZE_ = Conf.get_conf_int "symbolic_execution_finitization"
+let _MAX_ARRAY_SIZE_ = Config.get_conf_int "symbolic_execution_finitization"
 
 type aux_comp_type =
   | Scalar

@@ -52,7 +52,7 @@ let options = [
   ( 'k', "kill-first-solve", (set skip_first_solve true), None);
   ( 'K', "kill-first-inner", (set skip_all_before_vardisc true), None);
   ( 'o', "output-folder", None,
-      Some (fun o_folder -> Conf.output_dir := o_folder));
+      Some (fun o_folder -> Config.output_dir := o_folder));
   ( 's', "debug-sketch", (set Sketch.debug true), None);
   ( 'v', "verbose", (set verbose true), None);
   ( 'x', "debug-variable-discovery", (ignore(set VariableDiscovery.debug true);
@@ -177,7 +177,7 @@ and solve_problem problem =
 let output_tbb_tests (solutions : prob_rep list) =
   let tbb_test_filename (solution : prob_rep) =
     let folder_name =
-      (!Conf.output_dir)^"/"^(Conf.get_conf_string "tbb_examples_folder")
+      (!Config.output_dir)^"/"^(Config.get_conf_string "tbb_examples_folder")
     in
     let errco =
       if Sys.file_exists folder_name then
@@ -199,7 +199,7 @@ let output_tbb_tests (solutions : prob_rep list) =
 let output_dafny_proofs (sols : prob_rep list) : unit =
   let dafny_proof_filename (sol : prob_rep) =
     let folder_name =
-      (!Conf.output_dir)^"/"^(Conf.get_conf_string "dafny_examples_folder")
+      (!Config.output_dir)^"/"^(Config.get_conf_string "dafny_examples_folder")
     in
     let errco =
       if Sys.file_exists folder_name then

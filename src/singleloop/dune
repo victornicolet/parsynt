@@ -1,4 +1,17 @@
 (library
  (name singleloop)
- (modules Beta)
- (libraries lang sexplib utils fmt))
+ (modules
+  Beta
+  Dimensions
+  Expressions
+  ExpressionReduction
+  FError
+  Fn
+  FnDep
+  FnPretty
+  InnerFuncs
+  Sketch
+  SketchJoin
+  SymbExe
+  TestUtils)
+ (libraries lang sygus sexplib utils fmt))

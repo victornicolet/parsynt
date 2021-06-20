@@ -500,8 +500,8 @@ let lhs_prefix =
   Option.value (Config.get_conf_string "rosette_join_left_state_prefix") ~default:"$L"
 
 let is_side_state_varname s side_prefix =
-  let varname_parts = Str.split (Str.regexp "\.") s in
-  let side_state_name = Str.split (Str.regexp "\.") side_prefix >> 0 in
+  let varname_parts = Str.split (Str.regexp "\\.") s in
+  let side_state_name = Str.split (Str.regexp "\\.") side_prefix >> 0 in
   match List.length varname_parts with
   | 2 -> (List.nth varname_parts 1, true, varname_parts >> 0 = side_state_name)
   | 1 -> (List.nth varname_parts 0, false, false)

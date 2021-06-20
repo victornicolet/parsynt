@@ -57,7 +57,7 @@ let processFile fileName =
   (* Some declarations are found in another file,
      like __max_integer__, true, false, ... *)
   let decl_header =
-    parseOneFile (Conf.template "decl_header.h")
+    parseOneFile (Config.template "decl_header.h")
   in
   let cfile = Mergecil.merge [decl_header; parseOneFile fileName] "main" in
   Cfg.computeFileCFG cfile;
@@ -110,7 +110,7 @@ let rec init_func_info linfo =
     func = Cil2Func.empty_state ();
     figu = None;
     lid = linfo.lid;
-    loop_name = Conf.inner_loop_func_name linfo.lcontext.host_function.Cil.vname
+    loop_name = Config.inner_loop_func_name linfo.lcontext.host_function.Cil.vname
         linfo.lid;
     lvariables = linfo.lvariables;
     reaching_consts = IM.empty;
@@ -406,7 +406,7 @@ let pp_sketch ?(inner = false) ?(parent_context=None) solver fmt sketch_rep =
 
 
 let fetch_solution
-    ?(solver=Conf.rosette)
+    ?(solver=Config.rosette)
     ?(inner=false)
     ?(parent_ctx=None)
     (problem : prob_rep) : float * prob_rep option =

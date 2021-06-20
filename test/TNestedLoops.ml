@@ -27,17 +27,16 @@ open InnerFuncs
 open Fn
 module SJoin = SketchJoin
 
-let test_filenames = glob (Conf.project_dir ^"/test/nested_loops/*.c")
+let test_filenames = glob (Config.project_dir ^ "/test/nested_loops/*.c")
 
 let test_verbosity = ref 1
 
-let trynf e m =
-  try e with Not_found -> failhere __FILE__ "test" m
+let trynf e m = try e with Not_found -> failhere __FILE__ "test" m
 
 let one_test test_filename =
   Canalyst.clear ();
-  printf "@.%s%sTEST: nested loops : %s %s@." (color "b-yellow") (color "black")
-    test_filename color_default;
+  printf "@.%s%sTEST: nested loops : %s %s@." (color "b-yellow") (color "black") test_filename
+    color_default;
   let cfile = trynf (Canalyst.parseOneFile test_filename) "parseOneFile" in
   trynf (Cfg.computeFileCFG cfile) "computeCFGInfo";
   trynf (process_file cfile) "processFile";
@@ -45,14 +44,8 @@ let one_test test_filename =
   if !test_verbosity > 2 then
     IH.iter
       (fun lid cl ->
-         begin
-           printf "%s%s----------------%s@." (color "b-green") (color "black")
-             color_default;
-           try
-             pp_loop std_formatter cl
-           with Not_found ->
-             failhere __FILE__ "test" "pp_loop"
-         end)
+        printf "%s%s----------------%s@." (color "b-green") (color "black") color_default;
+        try pp_loop std_formatter cl with Not_found -> failhere __FILE__ "test" "pp_loop")
       loop_infos;
 
   (* Cil2Func.debug := true; *)
@@ -62,25 +55,19 @@ let one_test test_filename =
   if !test_verbosity > 2 then
     List.iter
       (fun (finfo : func_info) ->
-         let printer = new Cil2Func.cil2func_printer finfo.lvariables in
-         printer#fprintlet std_formatter finfo.func
-      ) func_infos;
+        let printer = new Cil2Func.cil2func_printer finfo.lvariables in
+        printer#fprintlet std_formatter finfo.func)
+      func_infos;
 
-  if !test_verbosity > 0 then
-    printf "@.CIL --> FUNC translation: OK@.";
+  if !test_verbosity > 0 then printf "@.CIL --> FUNC translation: OK@.";
   let unsolved_sketches = Canalyst.func2sketch cfile func_infos in
 
-  if !test_verbosity > 0 then
-    List.iter (FnPretty.pp_problem_rep std_formatter) unsolved_sketches;
-
+  if !test_verbosity > 0 then List.iter (FnPretty.pp_problem_rep std_formatter) unsolved_sketches;
 
   let transformed_inner =
     List.map (fun pb -> replace_by_join pb pb.inner_functions) unsolved_sketches
   in
-  if !test_verbosity > 0 then
-    printf "@.FUNC --> FUNC translation: OK@.";
-    List.iter (FnPretty.pp_problem_rep std_formatter) transformed_inner
+  if !test_verbosity > 0 then printf "@.FUNC --> FUNC translation: OK@.";
+  List.iter (FnPretty.pp_problem_rep std_formatter) transformed_inner
 
-
-let test () =
-  List.iter (fun tfname -> one_test tfname) test_filenames
+let test () = List.iter (fun tfname -> one_test tfname) test_filenames

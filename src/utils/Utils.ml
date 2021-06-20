@@ -44,7 +44,7 @@ let ( ==> ) (f : 'a -> 'b) (xo : 'a option) = match xo with Some x -> Some (f x)
 
 let ( |> ) (a : 'a) (f : 'a -> 'b) : 'b = f a
 
-let ( >> ) (a : 'a list) (b : int) = List.nth a b
+let ( >> ) (a : 'a list) (b : int) = List.nth_exn a b
 
 let ( @: ) (a : 'a list) (b : int) = List.nth a b
 

@@ -10,9 +10,9 @@ module Lt = ListTools
 
 exception Expr_exn of expr list
 
-let lstate_name = Conf.get_conf_string "rosette_join_left_state_name"
+let lstate_name = Config.get_conf_string "rosette_join_left_state_name"
 
-let rstate_name = Conf.get_conf_string "rosette_join_right_state_name"
+let rstate_name = Config.get_conf_string "rosette_join_right_state_name"
 
 (** In the join, remove the "state structure" assignments. *)
 let is_struct_assgn (id, e) =

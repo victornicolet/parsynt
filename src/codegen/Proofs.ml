@@ -45,7 +45,7 @@ let pp_input_params fmt varinfo_list =
     fmt
     varinfo_list
 
-let right_state_input_prefix = (Conf.get_conf_string "dafny_right_prefix")
+let right_state_input_prefix = (Config.get_conf_string "dafny_right_prefix")
 let _R_ s = right_state_input_prefix^s
 
 let pp_input_params_prefix fmt varinfo_list =
@@ -64,8 +64,8 @@ let pp_input_params_prefix fmt varinfo_list =
    - Prefix for the homorphism : dafny_hom_prefix
    - Assertion for empty list in homomorphism: dafny_hom_empty_assert
 *)
-let hom_prefix = Conf.get_conf_string "dafny_hom_prefix"
-let join_suffix = Conf.get_conf_string "dafny_join_suffix"
+let hom_prefix = Config.get_conf_string "dafny_hom_prefix"
+let join_suffix = Config.get_conf_string "dafny_join_suffix"
 
 let filename_of_solution sol = String.capitalize sol.loop_name
 
@@ -152,7 +152,7 @@ let pp_dfy fmt
                         {vi with vname = right_state_input_prefix^vi.vname}
                     else
                       (if VarSet.mem vi ivars then
-                         let name = (Conf.get_conf_string "dafny_length_fun")^
+                         let name = (Config.get_conf_string "dafny_length_fun")^
                                     "("^seq^")" in
                          FnVariable {vi with vname = name}
                        else v))
@@ -570,7 +570,7 @@ let set_int_limit_uses e =
     the Conf module. *)
 
 let length_def fmt =
-  let length_fun_name = Conf.get_conf_string "dafny_length_fun" in
+  let length_fun_name = Config.get_conf_string "dafny_length_fun" in
   let _len = length_fun_name, Int in
   let _s = "s", Sequence Int in
   let len_fun =
@@ -598,15 +598,15 @@ let pp_length_def fmt () =
   fprintf fmt
     "function %s(s: seq<int>): int@\n\
      {if s == [] then 0 else %s(s[..|s|-1]) + 1}@.@."
-    (Conf.get_conf_string "dafny_length_fun")
-    (Conf.get_conf_string "dafny_length_fun")
+    (Config.get_conf_string "dafny_length_fun")
+    (Config.get_conf_string "dafny_length_fun")
 
 let pp_hom_length fmt () =
   if !length_hom_printed then ()
   else
     begin
       _bon length_hom_printed;
-      let fname = (Conf.get_conf_string "dafny_length_fun") in
+      let fname = (Config.get_conf_string "dafny_length_fun") in
       fprintf fmt
         "function %sJoin(a: int, b: int): int@\n\
          { a + b }@." fname;
@@ -630,35 +630,35 @@ let pp_hom_length fmt () =
 let pp_min_def fmt =
   _bon mindef_avail;
   fprintf fmt "function %s(x: int, y: int): int { if x > y then y else x}@.@."
-    (Conf.get_conf_string "dafny_min_fun")
+    (Config.get_conf_string "dafny_min_fun")
 
 
 let pp_max_def fmt =
   _bon maxdef_avail;
   fprintf fmt "function %s(x: int, y: int): int { if x > y then x else y}@.@."
-    (Conf.get_conf_string "dafny_max_fun")
+    (Config.get_conf_string "dafny_max_fun")
 
 let pp_max_int_def fmt =
   maxdef_avail -? pp_max_def fmt;
   fprintf fmt "@[<v 2>function %s(s : seq<int>) : int @\n\
                requires |s| >= 1@]@."
-    (Conf.get_conf_string "dafny_max_seq_fun");
+    (Config.get_conf_string "dafny_max_seq_fun");
   fprintf fmt "@[<v 2>{@\n\
                if |s| == 1 then s[0]@;else@;%s(%s(s[..|s|-1]), s[|s|-1])@]\
                }"
-    (Conf.get_conf_string "dafny_max_fun")
-    (Conf.get_conf_string "dafny_max_seq_fun")
+    (Config.get_conf_string "dafny_max_fun")
+    (Config.get_conf_string "dafny_max_seq_fun")
 
 let pp_min_int_def fmt =
   mindef_avail -? pp_min_def fmt;
   fprintf fmt "@[<v 2>function %s(s : seq<int>) : int @\n\
                requires |s| >= 1@]@."
-    (Conf.get_conf_string "dafny_min_seq_fun");
+    (Config.get_conf_string "dafny_min_seq_fun");
   fprintf fmt "@[<v 2>{@\n\
                if |s| == 1 then s[0]@;else@;%s(%s(s[..|s|-1]), s[|s|-1])@]@\n\
                }@."
-    (Conf.get_conf_string "dafny_min_fun")
-    (Conf.get_conf_string "dafny_min_seq_fun")
+    (Config.get_conf_string "dafny_min_fun")
+    (Config.get_conf_string "dafny_min_seq_fun")
 
 (**
    Generate the proof variables : one proof variable per state variables, and
@@ -680,14 +680,14 @@ let gen_proof_vars sketch =
       try
         VarSet.max_elt arrays
       with Not_found ->
-        (mkFnVar (Conf.get_conf_string "dafny_seq_placeholder") (Vector(Integer, None)))
+        (mkFnVar (Config.get_conf_string "dafny_seq_placeholder") (Vector(Integer, None)))
   in
   (* Create a proofVariable for the index, that will be used in state variables
      that depend on position *)
   let index_pfv =
     let v, (i, g, u) = sketch.func_igu in
     let index_vi = VarSet.min_elt sketch.scontext.index_vars in
-    let index_name = Conf.get_conf_string "dafny_length_fun" in
+    let index_name = Config.get_conf_string "dafny_length_fun" in
     {
       pid = index_vi.vid;
       inspected = false;

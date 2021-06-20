@@ -66,7 +66,43 @@ end
 module IM = struct
   include IntegerMap
 
+  let add key data map = Map.add ~key ~data map
+
+  let bindings = Map.to_alist
+
+  let cardinal = Map.length
+
   let empty : 'v t = Map.empty (module Int)
+
+  let filter f = Map.filteri ~f:(fun ~key ~data -> f key data)
+
+  let find k m = Map.find_exn m k
+
+  let fold f map init = Map.fold ~init ~f:(fun ~key ~data acc -> f key data acc) map
+
+  let is_empty = Map.is_empty
+
+  let iter f map = Map.iteri ~f:(fun ~key ~data -> f key data) map
+
+  let map f map = Map.map ~f map
+
+  let mapi f map = Map.mapi ~f:(fun ~key ~data -> f key data) map
+
+  let mem i map = Map.mem map i
+
+  let merge f a b =
+    let f ~key = function
+      | `Both (va, vb) -> f key (Some va) (Some vb)
+      | `Left va -> f key (Some va) None
+      | `Right vb -> f key None (Some vb)
+    in
+    Map.merge ~f a b
+
+  let of_alist al = Map.of_alist_exn (module Int) al
+
+  let set key data map = Map.set ~key ~data map
+
+  let singleton (k : int) (i : 'a) : 'a t = Map.singleton (module Int) k i
 
   let keyset (imt : 'v t) : IS.t =
     Set.of_list (module Int) (List.map ~f:(fun (a, _) -> a) (Map.to_alist imt))
@@ -127,7 +163,7 @@ module IM = struct
 
   let to_alist (im : 'v t) : (int * 'v) list = Map.to_alist ~key_order:`Decreasing im
 
-  let of_alist (im : (int * 'v) list) : [ `Duplicate_key of int | `Ok of 'v t ] =
+  let of_alist_dup (im : (int * 'v) list) : [ `Duplicate_key of int | `Ok of 'v t ] =
     Map.of_alist (module Int) im
 end
 
@@ -163,6 +199,10 @@ module SM = struct
   let empty = Map.empty (module String)
 
   let singleton i = Map.singleton (module String) i
+
+  let add key data m = Map.set ~key ~data m
+
+  let set = add
 
   let find k m = Map.find m k
 

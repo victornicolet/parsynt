@@ -38,7 +38,7 @@ let debug_dev = ref true
 
 
 let max_exec_no =
-  ref (Conf.get_conf_int "variable_discovery_max_unfoldings")
+  ref (Config.get_conf_int "variable_discovery_max_unfoldings")
 
 let symbex_inner_loop_width = ref 3
 

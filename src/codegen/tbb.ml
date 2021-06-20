@@ -26,7 +26,7 @@ open Utils.PpTools
 
 module Ct = CilTools
 
-let class_member_appendix = Conf.get_conf_string "class_member_appendix"
+let class_member_appendix = Config.get_conf_string "class_member_appendix"
 
 let convtype_of_v v =
   match ciltyp_of_symb_type v.vtype with
@@ -216,11 +216,11 @@ let pp_class fmt cls =
 (** Specific use of the C++ class for our problem **)
 
 
-let class_name_appendix = Conf.get_conf_string "class_name_appendix"
+let class_name_appendix = Config.get_conf_string "class_name_appendix"
 
-let iterator_type_name = Conf.get_conf_string "tbb_iterator_type_name"
+let iterator_type_name = Config.get_conf_string "tbb_iterator_type_name"
 
-let iterator_name = Conf.get_conf_string "tbb_iterator_name"
+let iterator_name = Config.get_conf_string "tbb_iterator_name"
 
 (** The iterator has type long *)
 let iterator_c_typ = TInt (ILong,[])
@@ -369,12 +369,12 @@ let make_tbb_class pb =
     IM.add begin_index_var.vid
       (FnConst
          (CInt64 (Int64.of_string
-                    (Conf.get_conf_string "tbb_begin_index_value"))))
+                    (Config.get_conf_string "tbb_begin_index_value"))))
       (IM.add end_index_var.vid
          (FnConst
             (CInt64
                (Int64.of_string
-                  (Conf.get_conf_string "tbb_end_index_value")))) IM.empty)
+                  (Config.get_conf_string "tbb_end_index_value")))) IM.empty)
   in
   let public_vars_inits =
     let maybe_inits =
@@ -403,7 +403,7 @@ let make_tbb_class pb =
         Parallel<pb_name>(Parallel<pb_name>& <var>, split) {}
     *)
     let copy_from_name =
-      (Conf.get_conf_string "tbb_right_state_name")
+      (Config.get_conf_string "tbb_right_state_name")
     in
     let copy_cstr_args =
       [SpecialArg
@@ -493,7 +493,7 @@ let make_tbb_class pb =
         pb.scontext.state_vars;
       printing_for_join := false
     in
-    let join_from_name = (Conf.get_conf_string "tbb_right_state_name") in
+    let join_from_name = (Config.get_conf_string "tbb_right_state_name") in
     let join_args = [SpecialArg (class_name^"& "^join_from_name)] in
     {
       mid = 1;
@@ -556,7 +556,7 @@ let fprint_implementations fmt pb tbb_class =
        pp_constr_arg_in_app) cstr_args
     (* Other parameters *)
     iterator_type_name
-    (Conf.get_conf_string "tbb_chunk_size")
+    (Config.get_conf_string "tbb_chunk_size")
     class_var class_var class_field;
 
   (** Print the sequential version of the function *)

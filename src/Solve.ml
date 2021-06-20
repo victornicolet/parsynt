@@ -32,12 +32,12 @@ module ExpRed = ExpressionReduction
 module L = Local
 module C = Canalyst
 
-let _incr_timeout_ = Conf.get_conf_int "base_incr_timeout"
+let _incr_timeout_ = Config.get_conf_int "base_incr_timeout"
 
 let timeout_multiplier = ref 1
 let solve_incrementally = ref false
 let verbose = ref false
-let synthTimes = (Conf.get_conf_string "synth_times_log")
+let synthTimes = (Config.get_conf_string "synth_times_log")
 
 
 let solution_failed ?(failure = "") problem =
@@ -171,10 +171,10 @@ let call_solver ?(timeout=(-1)) ?(inner=false) (ctx : context option) (pb : prob
 
     let t, p =
       let new_timeout = timeout * (d0 + 1) in
-      L.compile_and_fetch Conf.rosette
+      L.compile_and_fetch Config.rosette
         ~timeout:new_timeout
         ~print_err_msg:Racket.err_handler_sketch
-        (C.pp_sketch ~inner:inner ~parent_context:ctx Conf.rosette)
+        (C.pp_sketch ~inner:inner ~parent_context:ctx Config.rosette)
         (set_pb_hole_depths pb d0)
     in
     if List.exists (fun e -> (RAst.Str_e "unsat") = e) p || p = [] then

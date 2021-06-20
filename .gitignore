@@ -52,10 +52,11 @@ consynth/setup.ml
 myocamlbuild.ml
 z3-master/
 
-#Emacs
+#Emacs and Vscode
 *~
 .emacs.desktop
 .emacs.desktop.lock
+.vscode
 
 # Other
 \#LICENSE

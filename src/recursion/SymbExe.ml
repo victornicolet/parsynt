@@ -64,13 +64,13 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
               sassert solver (mk_not c);
               let e2' = f2 () in
               spop solver;
-              mk_ite c e1' e2' )
+              mk_ite c e1' e2')
   and eval_mem env tuple index =
     match (eval_term env tuple).texpr with
     | ETuple tl -> (
         match List.nth tl index with
         | Some t -> eval_term env t
-        | None -> failhere Caml.__FILE__ "eval_mem" "Out of bounds." )
+        | None -> failhere Caml.__FILE__ "eval_mem" "Out of bounds.")
     | EIte (c, t1, t2) ->
         branch env c
           (fun () -> eval_term env (mk_mem t1 index))
@@ -81,7 +81,7 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
     | EStruct mems -> (
         match List.Assoc.find mems ~equal:String.equal mn with
         | Some t -> eval_term env t
-        | None -> failhere Caml.__FILE__ "eval_struct_mem" "Invalid member." )
+        | None -> failhere Caml.__FILE__ "eval_struct_mem" "Invalid member.")
     | EIte (c, t1, t2) ->
         branch env c
           (fun () -> eval_term env (eval_struct_field env t1 sn mn))
@@ -95,7 +95,7 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
     | EPLet (bindings, e2) ->
         let bindings' = List.map ~f:(fun (v, e) -> (v, eval_term env e)) bindings in
         eval_term (add_bindings bindings' env) e2
-    | EVar (Var v) -> ( match eval_var env v with Some t -> t | None -> mk_vt v )
+    | EVar (Var v) -> ( match eval_var env v with Some t -> t | None -> mk_vt v)
     | EEmpty | EHole _ -> t
     | EMem (tuple, index) -> eval_mem env tuple index
     | EMemStruct (sn, mn, struc) -> eval_struct_field env struc sn mn
@@ -104,7 +104,7 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
         match b with
         | Concat -> mk_concat (eval_term env e1) (eval_term env e2)
         | Cons -> mk_cons (eval_term env e1) (eval_term env e2)
-        | _ -> mk_bin (eval_term env e1) b (eval_term env e2) )
+        | _ -> mk_bin (eval_term env e1) b (eval_term env e2))
     | EUn (u, e1) -> mk_un u (eval_term env e1)
     | ETuple el -> mk_tuple (List.map ~f:(eval_term env) el)
     | EList el -> mk_list (List.map ~f:(eval_term env) el)
@@ -113,7 +113,7 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
         | Ok t -> t
         | Error te ->
             typecheck_err te;
-            failwith "Symbexe type error." )
+            failwith "Symbexe type error.")
     | EStruct fields ->
         let f (s, t) = (s, eval_term env t) in
         mk_struct (List.map ~f fields)
@@ -132,10 +132,10 @@ let branching_eval (solver : online_solver) (env : env) (t : term) =
             | `Duplicate_key _ ->
                 raise (SymbExeError ("lambda refers to same variable twice", fterm))
             | `Ok vals ->
-                eval_term (env_extend env { evars = VarSet.of_list argsv; evals = vals }) lbody )
+                eval_term (env_extend env { evars = VarSet.of_list argsv; evals = vals }) lbody)
         | List.Or_unequal_lengths.Unequal_lengths ->
             raise
-              (SymbExeError ("lambda application has wrong number of args, cannot branch", fterm)) )
+              (SymbExeError ("lambda application has wrong number of args, cannot branch", fterm)))
     | e ->
         Fmt.(Log.error (fun f () -> pf f "Cannot apply: %a." pp_term (mk_term e)));
         Fmt.(Log.error (fun f () -> pf f "Env was: %a." pp_env env));
@@ -168,8 +168,7 @@ let resources_of_symbs (tacc : typ) (sacc : symbolic_define) =
   match (tacc, sacc.s_term.texpr) with
   | TTup types, ETuple elts -> (
       List.Or_unequal_lengths.(
-        match List.map2 types elts ~f:res_of_t with Ok l -> l | Unequal_lengths -> failwith "TODO")
-      )
+        match List.map2 types elts ~f:res_of_t with Ok l -> l | Unequal_lengths -> failwith "TODO"))
   | TList _, EList elts -> [ RList elts ]
   | _, _ -> failwith "Expected type and symbolic expr do not match."
 
@@ -412,7 +411,7 @@ let dependencies (f : term) (targs : typ list) (tres : typ) =
                   [
                     Atom "In dependencies, unfolding did not return tuple.";
                     sexp_of_term unf0.from_init;
-                  ]) )
+                  ]))
     | _ ->
         Error
           Sexp.(
