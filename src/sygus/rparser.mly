@@ -84,8 +84,8 @@ seq0  : expr seq0   { $1 }
 idseq  : ID                { [$1] }
        | LPAREN ids RPAREN { $2 }
 
-ids    : ID ids { $1; $1 :: $2 }
-       | ID     { $1; [$1] }
+ids    : ID ids { ignore($1); $1 :: $2 }
+       | ID     { ignore($1); [$1] }
 
 bindgroup : LPAREN bindseq RPAREN { $2 }
 

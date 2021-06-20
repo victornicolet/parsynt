@@ -1,7 +1,7 @@
 {
 open Syparser
 exception LexError of string
-open Conf
+
 
 
 let keywords =

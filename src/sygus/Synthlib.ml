@@ -1,3 +1,4 @@
+open Base
 (**
    This file is part of Parsynt.
 
@@ -17,77 +18,65 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
-open Cil
-open Format
+open Lang
 open Synthlib2ast
-open Sylexer
 open Utils
 open ListTools
 
-
 let parseinputs s = Syparser.file Sylexer.token (Lexing.from_string s)
+
 let parsechan ch = Syparser.file Sylexer.token (Lexing.from_channel ch)
 
-let printsy = sypp_sygus std_formatter
+let printsy = sypp_sygus Fmt.stdout
 
 let print_file f =
-  let oc = open_out f in
-  sypp_sygus (Format.formatter_of_out_channel oc)
+  let oc = Stdio.Out_channel.create f in
+  sypp_sygus (Caml.Format.formatter_of_out_channel oc)
 
 let slg_int i = SyGLiteral (SyInt i)
-let slg_bool b = SyGLiteral (SyBool b)
 
-let sl_rule name sort productions : syNTDef =
-  (name, sort, productions)
+let _slg_bool b = SyGLiteral (SyBool b)
+
+let sl_rule name sort productions : syNTDef = (name, sort, productions)
 
 (** Probably will add some intermediate language *)
-let slg_plus l = SyGApp("+", l)
-let slg_minus a b = SyGApp("-",[a;b])
-let slg_times a b = SyGApp("*",[a;b])
-let slg_ite c x y = SyGApp("ite",[c;x;y])
-let slg_symb s = SyGId s
+let slg_plus l = SyGApp ("+", l)
+
+let _slg_minus a b = SyGApp ("-", [ a; b ])
+
+let _slg_times a b = SyGApp ("*", [ a; b ])
+
+let _slg_ite c x y = SyGApp ("ite", [ c; x; y ])
+
+let _slg_symb s = SyGId s
 
 (* Macros generators *)
-let sl_lia_expr ints bools : syNTDef list =
+let _sl_lia_expr ints _bools : syNTDef list =
   let n1 = "LIA_Expr" in
   let n2 = "LIA_Cond" in
-  [sl_rule
-     "LIA_Expr"
-     SyIntSort
-     (ints
-      @[slg_int 0; slg_int 1]
-      @[slg_plus (List.map slg_symb [n1; n1])]
-      @[slg_minus (slg_symb n1) (slg_symb n1)]
-      @[slg_ite (slg_symb n2) (slg_symb n1) (slg_symb n1)]);
-   sl_rule
-     "LIA_Cond"
-     SyBoolSort
-     []]
+  [
+    sl_rule "LIA_Expr" SyIntSort
+      (ints @ [ slg_int 0; slg_int 1 ]
+      @ [ slg_plus (List.map ~f:_slg_symb [ n1; n1 ]) ]
+      @ [ _slg_minus (_slg_symb n1) (_slg_symb n1) ]
+      @ [ _slg_ite (_slg_symb n2) (_slg_symb n1) (_slg_symb n1) ]);
+    sl_rule "LIA_Cond" SyBoolSort [];
+  ]
 
-
-let rec sort_of_ciltyp typ =
+let rec sort_of_ciltyp (typ : Typ.typ) =
   match typ with
-  | TInt _ -> SyIntSort
-  | TFloat _ -> SyRealSort
-  | TVoid _ -> SyIdSort "void"
-  | TArray (t, en, _) -> SyArraySort (SyIntSort, sort_of_ciltyp t)
-  | TPtr (t, _) -> SyArraySort(SyIntSort, sort_of_ciltyp t)
-  | TComp (cinfo, _) ->
-    let fields = List.map (fun field -> field.fname) cinfo.cfields in
-    SyEnumSort(fields)
-  | TEnum (einfo, _) ->
-    let fields = List.map (fun (s,_,_) -> s) einfo.eitems in
-    SyEnumSort(fields)
-  | TFun (t, args, _, _) ->
-    failhere __FILE__ "sort_of_ciltyp" "No type for functions."
-  | TBuiltin_va_list _->
-    failhere __FILE__ "sort_of_ciltyp" "No type for builtin_va_list."
-  | TNamed (tinfo, _) ->
-    failhere __FILE__ "sort_of_ciltyp" "No type for named type."
+  | TInt -> SyIntSort
+  | TBool -> SyBoolSort
+  | TTop -> SyIdSort "top"
+  | TList t -> SyArraySort (SyIntSort, sort_of_ciltyp t)
+  | TStruct (_, fields) -> SyEnumSort (ListTools.lfst fields)
+  | TFun (_, _) -> failhere Caml.__FILE__ "sort_of_ciltyp" "No type for functions."
+  | _ -> failhere Caml.__FILE__ "sort_of_ciltyp" (Fmt.str "No type for %a" Typ.pp_typ typ)
 
-let sort_of_varinfo vi = sort_of_ciltyp vi.vtype
+let sort_of_varinfo (vi : Term.Variable.t) = sort_of_ciltyp vi.vtype
 
 (* Some helpers to generate equivalent of recursive functions. *)
+
 let _n_simul_recursive = ref 5
 
 (**
@@ -103,57 +92,46 @@ let _n_simul_recursive = ref 5
    of the sequence.
    @return A list of function declaration commands.
 *)
-
-let gen_arity_defs (vname, vsort, fterm) args args_of_args
-    (listname, listsort) =
-  let lsizes = 0 -- (!_n_simul_recursive) in
+let gen_arity_defs (vname, vsort, fterm) args args_of_args (listname, listsort) =
+  let lsizes = 0 -- !_n_simul_recursive in
   let build_funs_rec prev_funcs n =
-    let margs =
-       args @
-       (List.map (fun i -> (listname^(string_of_int i)), listsort) (0 -- n))
-    in
+    let margs = args @ List.map ~f:(fun i -> (listname ^ Int.to_string i, listsort)) (0 -- n) in
     let bodyf =
       let rec_calls_inst =
         List.fold_left
-          (fun rterm (rec_vname, vsort) ->
-             let rec_call_body =
-               match prev_funcs with
-               | [] -> SyId rec_vname
-               | _ ->
-                 let last_fun_name =
-                   "f_"^rec_vname^"_"^(string_of_int (n-1))
-                 in
-                 let fun_args =
-                   if rec_vname = vname then args
-                   else
-                     (try
-                        SM.find rec_vname args_of_args
-                      with Not_found ->
-                        failhere __FILE__ "gen_arity_defs"
-                          (sprintf "Couldn't find the args for recursive call \
-                                    to %s in function f_%s." rec_vname vname))
-                 in
-                 let rec_args =
-                   (List.map (fun (x,s) -> SyId x) fun_args) @
-                   (List.map (fun i -> SyId (listname^(string_of_int i)))
-                      (0 -- (n - 1)))
-                 in
-                 SyApp(last_fun_name, rec_args)
-             in
-             replace ~id:rec_vname ~by:rec_call_body ~in_term:rterm)
-          fterm args
+          ~f:(fun rterm (rec_vname, _) ->
+            let rec_call_body =
+              match prev_funcs with
+              | [] -> SyId rec_vname
+              | _ ->
+                  let last_fun_name = "f_" ^ rec_vname ^ "_" ^ Int.to_string (n - 1) in
+                  let fun_args =
+                    if String.(rec_vname = vname) then args
+                    else
+                      match SM.find rec_vname args_of_args with
+                      | Some args -> args
+                      | None ->
+                          failhere Caml.__FILE__ "gen_arity_defs"
+                            (Fmt.str
+                               "Couldn't find the args for recursive call to %s in function f_%s."
+                               rec_vname vname)
+                  in
+                  let rec_args =
+                    List.map ~f:(fun (x, _) -> SyId x) fun_args
+                    @ List.map ~f:(fun i -> SyId (listname ^ Int.to_string i)) (0 -- (n - 1))
+                  in
+                  SyApp (last_fun_name, rec_args)
+            in
+            replace ~id:rec_vname ~by:rec_call_body ~in_term:rterm)
+          ~init:fterm args
       in
-      replace ~id:listname ~by:(SyId (listname^(string_of_int n)))
-        ~in_term:rec_calls_inst
+      replace ~id:listname ~by:(SyId (listname ^ Int.to_string n)) ~in_term:rec_calls_inst
     in
-    let nfname = "f_"^vname^"_"^(string_of_int n) in
-    let funn = SyFunDefCmd(nfname, margs, vsort, bodyf) in
-    prev_funcs@[funn]
+    let nfname = "f_" ^ vname ^ "_" ^ Int.to_string n in
+    let funn = SyFunDefCmd (nfname, margs, vsort, bodyf) in
+    prev_funcs @ [ funn ]
   in
-  List.fold_left
-    build_funs_rec
-    [] lsizes
-
+  List.fold_left ~f:build_funs_rec ~init:[] lsizes
 
 (** Generate constraint for a problem. Since CVC4 does not support recursion
     we generate constraint for different sizes, callign the different functions
@@ -162,54 +140,46 @@ let gen_arity_defs (vname, vsort, fterm) args args_of_args
     synthesize/verify.
     @param rargs The non-list-arguments.
 *)
-
-let gen_recursion_constraints (rname, rargs, rinput) (fname, fargs, lname) =
-  let gen_at_height cmd_lst i =
+let _gen_recursion_constraints (rname, _rargs, _rinput) (fname, fargs, _lname) =
+  let gen_at_height cmd_lst _i =
     let lhterm =
       let f_list_inputs = [] in
-      SyApp(rname,
-            [
-              SyApp (fname, fargs@f_list_inputs);
-            ])
+      SyApp (rname, [ SyApp (fname, fargs @ f_list_inputs) ])
     in
     let rhterm =
-      let f_list_inputs =
-        []
-      in
-      SyApp (fname, fargs@f_list_inputs)
+      let f_list_inputs = [] in
+      SyApp (fname, fargs @ f_list_inputs)
     in
-      cmd_lst@[SyConstraintCmd (SyApp("=",[lhterm; rhterm]))]
+    cmd_lst @ [ SyConstraintCmd (SyApp ("=", [ lhterm; rhterm ])) ]
   in
-  List.fold_left gen_at_height [] (1 -- !_n_simul_recursive)
-
-
+  List.fold_left ~f:gen_at_height ~init:[] (1 -- !_n_simul_recursive)
 
 (* Pre-defined functions *)
 
 let int_max_funDefCmd =
-  SyFunDefCmd("max",
-              [("x", SyIntSort);("y",SyIntSort)],
-              SyIntSort,
-              SyApp("ite",[SyApp(">",[SyId "x"; SyId "y"]);
-                          SyId "x"; SyId "y"]))
+  SyFunDefCmd
+    ( "max",
+      [ ("x", SyIntSort); ("y", SyIntSort) ],
+      SyIntSort,
+      SyApp ("ite", [ SyApp (">", [ SyId "x"; SyId "y" ]); SyId "x"; SyId "y" ]) )
 
 let int_min_funDefCmd =
-  SyFunDefCmd("max",
-              [("x", SyIntSort);("y",SyIntSort)],
-              SyIntSort,
-              SyApp("ite",[SyApp("<",[SyId "x"; SyId "y"]);
-                           SyId "x"; SyId "y"]))
+  SyFunDefCmd
+    ( "max",
+      [ ("x", SyIntSort); ("y", SyIntSort) ],
+      SyIntSort,
+      SyApp ("ite", [ SyApp ("<", [ SyId "x"; SyId "y" ]); SyId "x"; SyId "y" ]) )
 
 let real_max_funDefCmd =
-  SyFunDefCmd("max",
-              [("x", SyRealSort);("y",SyRealSort)],
-              SyRealSort,
-              SyApp("ite",[SyApp(">",[SyId "x"; SyId "y"]);
-                          SyId "x"; SyId "y"]))
+  SyFunDefCmd
+    ( "max",
+      [ ("x", SyRealSort); ("y", SyRealSort) ],
+      SyRealSort,
+      SyApp ("ite", [ SyApp (">", [ SyId "x"; SyId "y" ]); SyId "x"; SyId "y" ]) )
 
 let real_min_funDefCmd =
-  SyFunDefCmd("max",
-              [("x", SyRealSort);("y",SyRealSort)],
-              SyRealSort,
-              SyApp("ite",[SyApp("<",[SyId "x"; SyId "y"]);
-                           SyId "x"; SyId "y"]))
+  SyFunDefCmd
+    ( "max",
+      [ ("x", SyRealSort); ("y", SyRealSort) ],
+      SyRealSort,
+      SyApp ("ite", [ SyApp ("<", [ SyId "x"; SyId "y" ]); SyId "x"; SyId "y" ]) )

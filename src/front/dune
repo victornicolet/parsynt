@@ -1,6 +1,8 @@
 (ocamllex minic_lexer)
-(menhir (modules minic_parser))
+
+(menhir
+ (modules minic_parser))
 
 (library
- (name    front)
+ (name front)
  (libraries lang recursion sexplib utils fmt))

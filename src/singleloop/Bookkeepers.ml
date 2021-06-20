@@ -1,4 +1,3 @@
-open Cil2Func
 open Format
 open Utils
 open Cil
@@ -13,7 +12,7 @@ open VariableAnalysis
 (*     | _ -> letf *)
 (*   in *)
 (*   transform_topdown iwf_core letform *)
-type igu = Cil.varinfo * Cil.exp * Cil.exp * Cil.exp
+type igu = varinfo * Cil.exp * Cil.exp * Cil.exp
 
 let convert_igu (i, g, u) reaching_consts =
   let indexes = index_of_igu (i, g, u) in

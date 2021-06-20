@@ -180,7 +180,7 @@ let rec type_unify (t1 : typ) (t2 : typ) : typ option =
           let tol = List.map ~f:(fun (t, t') -> type_unify t t') l in
           let mf tlo topt = O.merge tlo (O.map ~f:(fun e -> [ e ]) topt) ~f:( @ ) in
           O.map ~f:mk_tup (List.fold_left ~init:(Some []) ~f:mf tol)
-      | List.Or_unequal_lengths.Unequal_lengths -> None )
+      | List.Or_unequal_lengths.Unequal_lengths -> None)
   | TStruct (s1, tl1), TStruct (s2, tl2) ->
       if String.equal s1 s2 then
         match List.zip tl1 tl2 with

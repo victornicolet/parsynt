@@ -1,9 +1,6 @@
 {
 open Rparser
 exception LexError of string
-open Conf
-
-
 
 let keywords =
     [

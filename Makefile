@@ -1,2 +1,2 @@
 all:
-	dune build bin/Parsynt.exe
+	dune build

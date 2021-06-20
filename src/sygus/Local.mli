@@ -1,3 +1,4 @@
+open Utils
 (**
    This file is part of Parsynt.
 
@@ -17,7 +18,14 @@
     along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
   *)
 
-val debug: bool ref
+val debug : bool ref
+
 val dump_sketch : bool ref
-val compile_and_fetch : ?timeout:int -> ?print_err_msg:(int -> unit) -> Conf.solver ->
-  (Format.formatter -> 'a -> 'b) -> 'a -> float * RAst.expr list
+
+val compile_and_fetch :
+  ?timeout:int ->
+  ?print_err_msg:(int -> unit) ->
+  Config.solver ->
+  (Format.formatter -> 'a -> unit) ->
+  'a ->
+  float * RAst.expr list

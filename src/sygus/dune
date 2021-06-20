@@ -1,0 +1,10 @@
+(ocamllex sylexer rlexer)
+
+(menhir
+ (modules syparser rparser))
+
+(library
+ (name sygus)
+ (libraries utils lang base stdio codegen sexplib fmt)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let)))
