@@ -1,0 +1,22 @@
+cmake-build-debug
+Makefile
+cmake_install.cmake
+PdExp*
+PtExp*
+DivideExperiments.cbp
+inte2d.csv
+.idea
+CMakeFiles
+CMakeCache.txt
+data/*.png
+.vscode
+.venv
+tmp
+data/*.pdf
+data/__pycache__
+exp_partition_divide_test.csv
+tmp/
+ExpPar\ Profiling/
+venv
+__pycache__
+

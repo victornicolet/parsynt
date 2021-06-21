@@ -1,25 +1,27 @@
-open ExtString
-open Fn
+open Sygus
 open Format
 open RAst
 open Utils
-module Tbb = Tbb
-module Cf = Conf
+
+(* module Tbb = Tbb *)
+module Cf = Config
 module L = List
 module Lt = ListTools
 
 exception Expr_exn of expr list
 
-let lstate_name = Config.get_conf_string "rosette_join_left_state_name"
+let lstate_name = Config.get_conf_string_exn "rosette_join_left_state_name"
 
-let rstate_name = Config.get_conf_string "rosette_join_right_state_name"
+let rstate_name = Config.get_conf_string_exn "rosette_join_right_state_name"
 
 (** In the join, remove the "state structure" assignments. *)
-let is_struct_assgn (id, e) =
-  let rsn = Cf.get_conf_string "rosette_struct_name" in
+let is_struct_assgn (_, e) =
+  let rsn = Cf.get_conf_string_exn "rosette_struct_name" in
   match e with
   | Apply_e (f, el) -> (
-      (match f with Id_e struct_mem_id -> String.starts_with struct_mem_id rsn | _ -> false)
+      (match f with
+      | Id_e struct_mem_id -> Base.String.is_prefix ~prefix:rsn struct_mem_id
+      | _ -> false)
       &&
       match el with
       | [ hd ] -> (
@@ -39,9 +41,9 @@ let rec rem_struct_assigns (e : RAst.expr) =
 
 (* Identify the join function and return its body *)
 let identify_join_func e =
-  let join_name = Cf.get_conf_string "rosette_join_name" in
+  let join_name = Cf.get_conf_string_exn "rosette_join_name" in
   match e with
-  | Def_e (id_list, body) ->
+  | Def_e (id_list, _) ->
       L.length id_list = 5
       && id_list >> 0 = join_name
       && str_begins_with lstate_name (id_list >> 1)
@@ -58,13 +60,14 @@ let get_values_state state_name e =
   match e with
   | Def_e (id_list, body) ->
       if List.hd id_list = state_name then
-        match body with Apply_e (f, args) -> Some args | _ -> None
+        match body with Apply_e (_, args) -> Some args | _ -> None
       else None
   | _ -> None
 
-let get_values_init e = get_values_state (Cf.get_conf_string "rosette_initial_state_name") e
+let get_values_init e = get_values_state (Cf.get_conf_string_exn "rosette_initial_state_name") e
 
-let get_values_identity e = get_values_state (Cf.get_conf_string "rosette_identity_state_name") e
+let get_values_identity e =
+  get_values_state (Cf.get_conf_string_exn "rosette_identity_state_name") e
 
 type solved_sketch_info = {
   join_body : RAst.expr;
@@ -87,6 +90,6 @@ let get_solved_sketch_info (el : RAst.expr list) =
   in
   {
     join_body = rem_struct_assigns join_body;
-    init_values = init_state;
-    identity_values = identity_state;
+    init_values = check_option init_state;
+    identity_values = check_option identity_state;
   }

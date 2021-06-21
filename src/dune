@@ -1,4 +1,3 @@
 (library
- (name ParsyntLib)
- (modules Lib)
- (libraries base lang front codegen recursion solve fmt utils))
+ (name Lib)
+ (libraries base lang front codegen recursion solve fmt utils singleloop))

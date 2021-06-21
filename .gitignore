@@ -1,65 +1,86 @@
 # File extensions
 *#
+*.\#*
+*.annot
+*.a
 *.byte
-*.native
+*.cmo
+*.cma
+*.cmi
+*.cmx
+*.cmxs
+*.cmxa
+*.dep
 *.log
+*.mldylib
+*.mlib
+*.mllib
+*.native
+*.odocl
+*.o
 examples/Basic
 *\#
 *.out
-*.\#*
-*.dep
+*_soln.txt
 *.zo
 
 # Build / compilation directories
 # OCaml
 _build
 
-examples/tbb/*.cpp
-examples/tbb/nested_loops/cmake-build-debug
-examples/tbb/nested_loops/Makefile
-examples/tbb/nested_loops/*.cbp
-examples/tbb/nested_loops/cmake_install.cmake
-examples/tbb/nested_loops/.idea
-examples/tbb/nested_loops/Exp*
-
-examples/dafny/*.dll
-examples/dafny/*.mdb
-
+# Experimental data
+experiments/data/*.csv
+experiments/data/exp_pt_seq/*.csv
+experiments/data/exp_pt_seq/*.pdf
+experiments/P*
+tmp
+inputs/*/*.csv
+table7a.txt
+table1.txt
+figure4.pdf
+fig*.pdf
+experiments/oldexamples/tbb/*.cpp
+experiments/oldexamples/tbb/nested_loops/cmake-build-debug
+experiments/oldexamples/tbb/nested_loops/Makefile
+experiments/oldexamples/tbb/nested_loops/*.cbp
+experiments/oldexamples/tbb/nested_loops/cmake_install.cmake
+experiments/oldexamples/tbb/nested_loops/.idea
+experiments/oldexamples/tbb/nested_loops/Exp*
+experiments/oldexamples/dafny/*.dll
+experiments/oldexamples/dafny/*.mdb
 src/conf/project_dir.ml
 examples/dafny/__loop*
 test/synth_times.csv
 dump
 dump*
-
-src/alt-cil/
-*.mldylib
-*.mlib
-*.mllib
-*.odocl
-META
-.idea
 CMakeFiles
 tbb_test
 CMakeCache.txt
-
 #Racket
 */compiled/
 consynth/synthServ
-
 #Oasis
 setup.data
 consynth/setup.ml
 myocamlbuild.ml
 z3-master/
-
-#Emacs and Vscode
+#IDEs
 *~
 .emacs.desktop
 .emacs.desktop.lock
 .vscode
-
+.idea
+.merlin
+META
 # Other
 \#LICENSE
+# Project specific temporary files
+tmp.smt2
+tmp_check.smt2
+logs/*
+all.sh
+# Esy files
+node_modules
+package-lock.json
 
-#Experiments data
-examples/dafny
+

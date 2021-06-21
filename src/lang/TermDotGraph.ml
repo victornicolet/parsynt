@@ -1,4 +1,4 @@
-open Codegen.Dot
+open Dot
 open Base
 open Typ
 open Term

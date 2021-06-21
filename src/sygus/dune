@@ -5,6 +5,6 @@
 
 (library
  (name sygus)
- (libraries utils lang base stdio codegen sexplib fmt)
+ (libraries utils lang base stdio sexplib fmt)
  (preprocess
   (pps ppx_sexp_conv ppx_let)))

@@ -1,4 +1,3 @@
 (library
  (name codegen)
- (modules Dot)
- (libraries sexplib utils))
+ (libraries base sexplib utils singleloop sygus))

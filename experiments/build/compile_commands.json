@@ -1,0 +1,202 @@
+[
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMsz.dir/src/pd_msz.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_msz.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_msz.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMsz.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMsz.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMdo.dir/src/pd_mdo.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_mdo.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_mdo.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMdo.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMdo.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpKSmall.dir/src/pt_ksm.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pt_ksm.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pt_ksm.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpKSmall.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpKSmall.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpPop.dir/src/pt_pop.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pt_pop.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pt_pop.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpPop.dir/src/datagen_img.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen_img.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen_img.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpPop.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpPop.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozst.dir/src/pd_cozst.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_cozst.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_cozst.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozst.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozst.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLis.dir/src/pd_lis.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_lis.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_lis.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLis.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLis.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpCins.dir/src/pt_cins.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pt_cins.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pt_cins.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpCins.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpCins.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpIns.dir/src/pt_ins.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pt_ins.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pt_ins.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpIns.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpIns.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpHis.dir/src/pt_his.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pt_his.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pt_his.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpHis.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -isystem /usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PtExpHis.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozp.dir/src/pd_cozp.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_cozp.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_cozp.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozp.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpCozp.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbo.dir/src/pd_mbo.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_mbo.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_mbo.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbo.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbo.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLmo.dir/src/pd_lmo.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_lmo.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_lmo.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLmo.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpLmo.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbozst.dir/src/pd_mbozst.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/pd_mbozst.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/pd_mbozst.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbozst.dir/src/StopWatch.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/StopWatch.cpp"
+},
+{
+  "directory": "/home/victorn/repos/discuRe/test/outputs/build",
+  "command": "/usr/bin/c++   -I/usr/local/include/opencv4   -std=c++11 -ltbb -fopenmp -g   -o CMakeFiles/PdExpMbozst.dir/src/datagen.cpp.o -c /home/victorn/repos/discuRe/test/outputs/src/datagen.cpp",
+  "file": "/home/victorn/repos/discuRe/test/outputs/src/datagen.cpp"
+}
+]
