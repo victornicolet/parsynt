@@ -1,0 +1,31 @@
+// The files start with "program"
+program
+// The user can declare their own struct type
+// For example here, a point struct with two components x and y
+typedecl point struct {x : int; y : int;};
+// An algorithm must take as input a list, declared as follows.
+point* points;
+// Declare all the variables used by the algorithm
+point* optimal_points = []; // empty list initialization
+point a;
+point b;
+boolean is_opt;
+// Optionally, one can add an assertion about the input list
+// The only supported format for now is the following, where it is asserted
+// that all the points in the list have both positive coordinaets.
+// The assertion format is:
+// assert forall(x in l){ boolean expression function of x}
+assert forall(a in points){ a.x >= 0 && a.y >= 0 };
+// The algorithm should be written with one or two loops
+for(a in points){ // For loops iterate linearly over list collections
+    is_opt = true;
+    for(b in points){
+        is_opt &= a.x >= b.x || a.y >= b.y;
+    }
+    if(is_opt)
+        optimal_points += [a];
+}
+
+// This indicates that the algorithm returns the set of optimal points
+// as a set: i.e. a list whose ordering does not matter.
+return optimal_points as set;

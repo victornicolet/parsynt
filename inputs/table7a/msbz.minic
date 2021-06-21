@@ -1,0 +1,14 @@
+program
+int *a;
+int x;
+assert forall(x in a){ x >= 0 };
+// Max sum between zeroes
+
+int ms = 0;
+int cs = 0;
+int sum = 0;
+
+for(x in a){
+    cs = (x != 0) ? cs + x : 0;
+    ms = max(ms, cs);
+}

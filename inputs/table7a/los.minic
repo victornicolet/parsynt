@@ -1,0 +1,13 @@
+program
+int *a;
+int x;
+// Longest 1*
+int ml = 0;
+int cl = 0;
+
+for(x in a) {
+    cl = (x == 1) ? cl + 1 : 0;
+    ml = max(ml, cl);
+}
+
+return ml;

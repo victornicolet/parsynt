@@ -1,0 +1,26 @@
+// The files start with "program"
+program
+// Declare the input list: a list `a` of integers.
+int *a;
+// Declare the variables used in the loop
+int x;
+// State variables should be initialized.
+int cl = 0;
+int ml = 0;
+int prev = 0;
+// Assertion that all the inputs are strictly positive
+// so that forall(x in a){prev < x};
+assert forall(x in a){ x > 0 };
+// Longest Increasing Sequence algorithm
+// We iterate through the list a
+for(x in a){
+    // cl stores the current length of an increasing sequence
+    // if prev < x then cl is increased, otherwise it is
+    cl = (prev < x) ? cl + 1 : 0;
+    // ml is updated as the maximum of the new cl and ml
+    ml = max(cl, ml);
+    // prev is updated for the next iteration
+    prev = x;
+}
+// The returned value is ml
+return ml;

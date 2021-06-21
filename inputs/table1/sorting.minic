@@ -1,0 +1,31 @@
+program
+
+int * a;
+int n;
+
+int * sorted;
+int * tmp;
+boolean to_add;
+int i;
+int x;
+int y;
+
+sorted = [];
+
+for(x in a) {
+  tmp = [];
+  to_add = true;
+  for(y in sorted){
+      if(to_add && (x > y)) {
+          tmp += [x,y];
+          to_add = false;
+      } else {
+          tmp += [y];
+      }
+  }
+  if(to_add){
+      tmp += [x];
+  }
+  sorted = tmp;
+}
+return sorted as set;

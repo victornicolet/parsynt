@@ -1,0 +1,19 @@
+program
+
+typedecl interval struct {lo : int; hi : int; };
+interval* a;
+int n;
+boolean intersect = false;
+interval x;
+interval y;
+assert forall(x in a){ x.lo <= x.hi };
+
+
+for(x in a) {
+  for(y in a){
+      if ((x.lo != y.lo || x.hi != y.hi) && x.lo <= y.hi && x.hi >= y.lo) {
+          intersect = true;
+        }
+  }
+}
+return intersect;

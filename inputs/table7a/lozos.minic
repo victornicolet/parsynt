@@ -1,0 +1,19 @@
+program
+int *a;
+int x;
+// Longest odd (01)*
+boolean s1 = false;
+boolean s2 = false;
+int cl = 0;
+int ml = 0;
+int ml_odd = 0;
+
+for(x in a) {
+    cl = s1 ? cl + 1 : 0;
+    ml = max(ml,cl);
+    s1 = s2 && (x == 1);
+    s2 = x == 0;
+    ml_odd = ((ml % 2) == 1) ? ml : ml_odd;
+}
+
+return ml;

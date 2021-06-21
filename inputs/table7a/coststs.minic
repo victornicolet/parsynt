@@ -1,0 +1,15 @@
+program
+// Count 1*2*3*
+int* a;
+int x;
+boolean s1 = false;
+boolean s2 = false;
+boolean s3 = false;
+boolean fin = false;
+int c = 0;
+
+for(x in a){
+    c = c + ((x == 3 && (s2 || s1)) ? 1 : 0);
+    s2 = (x == 2) && (s1 || s2);
+    s1 = x == 1;
+}

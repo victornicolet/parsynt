@@ -1,0 +1,18 @@
+program
+
+int x = 0;
+int y = 1;
+int *t;
+int sum = 0;
+
+int* input;
+boolean b;
+
+for(x in t) {
+    b = x > 0;
+    if(b){
+        sum += x;
+    }
+}
+
+return sum;

@@ -1,0 +1,5 @@
+program
+int x = 0;
+typedecl point struct {x : int; y : int;};
+point a;
+point b = {x = 0, y = 0};

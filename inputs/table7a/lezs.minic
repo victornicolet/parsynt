@@ -1,0 +1,18 @@
+program
+boolean * a;
+boolean x;
+// Longest even 0*
+
+int cl = 0;
+int ml_tmp = 0;
+int ml = 0;
+
+for(x in a) {
+    cl = !x ? cl + 1 : 0;
+    ml_tmp = max(ml_tmp, cl);
+    if ((ml_tmp % 2) == 0) {
+        ml = ml_tmp;
+    }
+}
+
+return ml;

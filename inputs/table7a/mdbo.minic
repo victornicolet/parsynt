@@ -1,0 +1,16 @@
+program
+int *a;
+int x;
+// Max dist between 1s
+int md = 0;
+int cd = 0;
+boolean seen1 = false;
+
+
+for(x in a) {
+    seen1 = seen1 || (x == 1);
+    cd = (seen1 && (x != 1)) ? cd + 1 : 0;
+    md = max(md, cd);
+}
+
+return md;

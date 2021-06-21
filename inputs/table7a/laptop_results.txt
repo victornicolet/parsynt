@@ -1,0 +1,28 @@
+Results of running the benchmarks on a
+laptop with 6-core Intel Core i7-8750H
+CPU @ 2.20GHz and 16GB RAM running
+Ubuntu 20.04.
+--------------------------------------
+..Benchmark name ......| p + v |  ⊙
+--------------------------------------
+..Count 1(0+)..........|  0.2  |   7.2
+..Count 1(0*)2.........|  0.2  |   2.3
+..Count 1*2*3..........|  0.3  |  11.3
+..Max dist. between 1s.|  0.4  |  20.8
+..Max dist. between 0s.|  0.6  |   5.7
+..LIS..................|  0.3  |   6.1
+..Largest peak.........|  0.6  |   6.1
+..Longest 1*...........|  0.3  |   4.4
+..Longest 1(0*)2.......|  1.0  |  19.7
+..Longest even 0*......|  0.3  |  39.7
+..Longest odd (01)*....|  0.4  |  74.7
+--------------------------------------
+       This table presents the results
+    in Table 7(a) of the paper. Times
+    are reported in seconds. For each
+    of the 11 benchmarks, the second
+    column (p + v) indicates how much
+    time is spent synthesizing the
+    predicate and the lifted function.
+    The third column ( ⊙ ) reports the
+    join synthesis time.

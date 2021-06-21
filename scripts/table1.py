@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import subprocess
-import re
 
 num_repeats = 1
-csv_output_file = "inputs/table1/timings.csv"
-table_file = "table1.txt"
+csv_output_file = "../inputs/table1/timings.csv"
+table_file = "../table1.txt"
 
 table1_benchmarks = {
     "sorting.minic":                ["Sorting", [[0, 2, 2]]],
@@ -25,7 +24,7 @@ def run_experiments():
         for bench_file, opts in table1_benchmarks.items():
             with open(csv_output_file, 'a') as o:
                 for k, m, c in opts[1]:
-                    subprocess.run(["./Discure", ("inputs/table1/%s" %
+                    subprocess.run(["./Parsynt", ("../inputs/table1/%s" %
                                                   bench_file), "-k", str(k), "-m", str(m), "-c", str(c), "--quiet"],
                                    stdout=o)
                 o.close()

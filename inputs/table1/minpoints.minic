@@ -1,0 +1,20 @@
+program
+
+typedecl point struct {x : int; y : int;};
+point* points;
+point p1 = {x = 0, y = 0};
+point p2 = {x = 0, y = 0};
+boolean is_min;
+point* minpoints = [];
+assert forall(p1 in points){ p1.x < 0 && p1.y < 0};
+for(p1 in points){
+    is_min = true;
+    for(p2 in points){
+        is_min &= p2.x >= p1.x || p2.y >= p1.y;
+    }
+    if(is_min)
+        minpoints += [p1];
+}
+
+
+return minpoints as set;

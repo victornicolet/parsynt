@@ -1,0 +1,32 @@
+program
+
+typedecl point struct {x : int; y : int;};
+point center;
+point* pointset;
+point* encircling = [];
+point a;
+point b;
+point c;
+boolean isenc;
+boolean colinear;
+int dist;
+int dist2;
+
+for(a in pointset){
+    isenc = true;
+    dist = ((c.x - a.x) * (c.x - a.x) + (c.y - a.y) * (c.y - a.y));
+
+    for(b in pointset){
+        colinear = (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.x - b.x)) == 0;
+        dist2 = ((c.x - b.x) * (c.x - b.x) + (c.y - b.y) * (c.y - b.y));
+        if(b.x != a.x && b.y != a.y) {
+            isenc = isenc && ((! colinear) || (dist2 > dist));
+        }
+    }
+    if(isenc){
+        encircling +=[a];
+    }
+
+}
+
+return encircling as set;

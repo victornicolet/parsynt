@@ -1,0 +1,16 @@
+program
+int* a;
+int x;
+// Count 1(0+)
+boolean s0 = false;
+boolean s1 = false;
+int scount = 0;
+
+
+for(x in a){
+    scount += (s1 && (x != 0)) ? 1 : 0;
+    s1 = (x == 0) && (s0 || s1);
+    s0 = x == 1;
+}
+
+return scount;

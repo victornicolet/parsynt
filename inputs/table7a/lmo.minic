@@ -1,0 +1,13 @@
+program
+int *a;
+int x;
+// Largest Preak (Mountain)
+int cmo = 0; 
+int lpeak = 0;
+
+for(x in a){
+    cmo = (x > 0) ? cmo + x : 0;
+    lpeak = max(lpeak, cmo);    
+}
+
+return lpeak;

@@ -1,0 +1,31 @@
+program
+
+int* input;
+
+typedecl data struct {key : int; count : int;};
+data* hist;
+data* tmp;
+
+int a;
+data b;
+boolean added;
+hist = [];
+
+for(a in input){
+    added = false;
+    tmp = [];
+    for(b in hist){
+        if(b.key == a) {
+            added = true;
+            tmp += [{key = a, count = b.count + 1 }];
+        } else {
+            tmp += [b];
+        }
+    }
+    hist = tmp;
+    if(!added)
+        hist += [{key = a, count = 1}];
+}
+
+
+return hist as set;

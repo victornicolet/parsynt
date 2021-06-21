@@ -1,0 +1,18 @@
+program
+// Benchmark: count 1(0*)2(0*)3 - not passing
+int* A;
+int x;
+
+boolean a = false;
+boolean b = false;
+int cl = 0;
+int ml = 0;
+
+for (x in A) {
+    cl = ((x == 3 && b) || (a || b)) ? cl + 1 : 0;
+    ml = max(ml, (x == 3 && b ? cl : 0));
+    b = (x == 2 && a) || (x == 0 && b);
+    a = x == 1 || (x == 0 && a);
+}
+
+return ml;

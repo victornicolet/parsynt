@@ -1,0 +1,17 @@
+program
+int *a;
+int x;
+// Longest 1(0*)2
+boolean s0 = false;
+boolean s1 = false;
+int ml = 0;
+int cl = 0;
+
+for(x in a){
+    cl = (s1 || (x == 2)) ? cl + 1 : 0;
+    ml = max(cl, ml);
+    s0 = x == 1;
+    s1 = (x == 0) && (s1 || s0);
+}
+
+return ml;

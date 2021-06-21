@@ -1,0 +1,17 @@
+program
+// Count 1(0*)2(0*)3
+int* a;
+int x;
+boolean s1 = false;
+boolean s2 = false;
+boolean s3 = false;
+boolean s4 = false;
+int c = 0;
+
+for(x in a){
+    c = c + ((x == 3 && (s4 || s3)) ? 1 : 0);
+    s4 = (x == 0) && (s3 || s4);
+    s3 = (x == 2) && (s1 || s2);
+    s2 = (x == 0) && (s1 || s2);
+    s1 = x == 1;
+}

@@ -1,0 +1,31 @@
+program
+
+typedecl point struct {x : int; y : int;};
+point* points;
+point a;
+point b;
+
+point* hull = [];
+
+boolean b1;
+boolean b2;
+boolean b3;
+boolean b4;
+
+for(a in points){
+    b1 = true;
+    b2 = true;
+    b3 = true;
+    b4 = true;
+    for(b in points){
+        b1 &= (a.x >= b.x) || (a.y >= b.y);
+        b2 &= (a.x >= b.x) || (a.y <= b.y);
+        b3 &= (a.x <= b.x) || (a.y >= b.y);
+        b4 &= (a.x <= b.x) || (a.y <= b.y);
+    }
+    if(b1 || b2 || b3 || b4)
+        hull += [a];
+}
+
+
+return hull as set;

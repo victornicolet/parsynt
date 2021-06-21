@@ -1,0 +1,14 @@
+program
+
+int * a;
+int n;
+
+int amax = 0;
+boolean visible = true;
+int x;
+
+for(x in a) {
+  visible = (amax <= x);
+  amax = max(amax, x);
+}
+return visible;

@@ -1,0 +1,35 @@
+program
+
+int * a;
+int n;
+
+int * ksmallest = [];
+int * tmp;
+boolean added;
+int count;
+int i;
+int x;
+int y;
+
+for(x in a) {
+  tmp = [];
+  added = false;
+  count = 1;
+  for(y in ksmallest){
+      if((x < y) && !added) {
+          tmp += [x];
+          added = true;
+          count ++;
+      }
+      if(count <= 4){
+          tmp += [y];
+          count++;
+      }
+  }
+  if((!added) && (count <= 4)){
+      tmp += [x];
+  }
+  ksmallest = tmp;
+}
+return ksmallest;
+

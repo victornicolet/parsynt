@@ -1,0 +1,24 @@
+program
+
+int* a;
+int n;
+
+
+int dist;
+int min_dist;
+int x;
+assert forall(x in a) { INT_MIN < x && x <= INT_MAX }; // INT_MIN or INT_MAX
+int y;
+int p0;
+
+min_dist = INT_MAX - INT_MIN; // > maximum possible distance between two ints
+
+for(x in a) {
+  for(y in a){
+    dist = abs(x - y);
+    if(x != y && dist < min_dist) {
+        min_dist = dist;
+    }
+  }
+}
+return min_dist as set; // permutation invariance
