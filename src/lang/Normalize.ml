@@ -1,20 +1,20 @@
 (**
-   This file is part of Discure.
+   This file is part of Parsynt.
 
     Author: Victor Nicolet <victorn@cs.toronto.edu>
 
-    Discure is free software: you can redistribute it and/or modify
+    Parsynt is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    DiscuRe is distributed in the hope that it will be useful,
+    Parsynt is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Discure.  If not, see <http://www.gnu.org/licenses/>.
+    along with Parsynt.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 open AcTerm
@@ -80,7 +80,7 @@ let distrib_rule (f : term -> term) (t : term) =
           mk_bin (f (mk_bin a op1 t2)) op2 (f (mk_bin b op1 t2))
       | _, EBin (op2, a, b) when distributes op1 op2 ->
           mk_bin (f (mk_bin t1 op1 a)) op2 (f (mk_bin t1 op1 b))
-      | _ -> t )
+      | _ -> t)
   | _ -> t
 
 let unary_down_rule (f : term -> term) (t : term) =
@@ -93,13 +93,13 @@ let unary_down_rule (f : term -> term) (t : term) =
       | EBin (Times, a, b) -> mk_mul (f (mk_opp a)) b
       | EBin (Minus, a, b) -> mk_sub b a
       | EUn (Neg, a) -> a
-      | _ -> t )
+      | _ -> t)
   | EUn (Not, x) -> (
       match x.texpr with
       | EBin (And, a, b) -> mk_or (f (mk_not a)) (f (mk_not b))
       | EBin (Or, a, b) -> mk_and (f (mk_not a)) (f (mk_not b))
       | EUn (Not, a) -> a
-      | _ -> t )
+      | _ -> t)
   | _ -> t
 
 let factor_rule (f : term -> term) (t : term) =
@@ -124,7 +124,7 @@ let factor_rule (f : term -> term) (t : term) =
           if ACES.(a1 = a2) then mk_bin (mk_bin (f a1) op1 (f (mk_bin b1 op2 b2))) op2 (f t3)
           else if ACES.(b1 = b2) then mk_bin (mk_bin (f b1) op1 (f (mk_bin a1 op2 a2))) op2 (f t3)
           else t
-      | _ -> t )
+      | _ -> t)
   | _ -> t
 
 let compar_max_rule (f : term -> term) (t : term) =
@@ -167,7 +167,7 @@ let compar_max_rule (f : term -> term) (t : term) =
           let e1 = f (mk_bin t1 o1 a) in
           let e2 = f (mk_bin t1 o1 b) in
           mk_or e1 e2
-      | _ -> t )
+      | _ -> t)
   | _ -> t
 
 let identity_rule (_ : term -> term) (t : term) = t
@@ -204,14 +204,14 @@ let cond_norm_rule (f : term -> term) (t : term) =
           let e1e = f (mk_bin e1 o1 t2) in
           let e2e = f (mk_bin e2 o1 t2) in
           mk_ite (f c) e1e e2e
-      | _ -> t )
+      | _ -> t)
   | EUn (u, t1) -> (
       match t1.texpr with
       | EIte (c, e1, e2) ->
           let e1' = f (mk_un u e1) in
           let e2' = f (mk_un u e2) in
           mk_ite c e1' e2'
-      | _ -> t )
+      | _ -> t)
   (* | EIte(cond, et, ef) when is_bool t ->
       mk_or (mk_and (f cond) (f et)) (f ef) *)
   | _ -> t
@@ -226,7 +226,7 @@ let cond_fact_rule (f : term -> term) (t : term) =
       | EBin (o, c, a), EBin (o', c', b) when Binop.(o = o') && Terms.(c = c') ->
           let ca = f (mk_ite cnd a b) in
           mk_bin c o ca
-      | _ -> t )
+      | _ -> t)
   | _ -> t
 
 let is_cond_normal (e : term) =
@@ -325,12 +325,12 @@ let to_dnf t =
         | EBin (Le, t2, t3) -> mk_bin t2 Gt t3
         | EBin (Gt, t2, t3) -> mk_bin t2 Le t3
         | EBin (Ge, t2, t3) -> mk_bin t2 Lt t3
-        | _ -> t0 )
+        | _ -> t0)
     | EBin (And, t1, t2) -> (
         match (t1.texpr, t2.texpr) with
         | EBin (Or, t3, t4), _ -> mk_or (mk_and t3 t2) (mk_and t4 t2)
         | _, EBin (Or, t3, t4) -> mk_or (mk_and t1 t3) (mk_and t1 t4)
-        | _ -> t0 )
+        | _ -> t0)
     | _ -> t0
   in
   let rec apply_until_stable k t =
@@ -364,7 +364,7 @@ let to_cnf tl =
         match (t1.texpr, t2.texpr) with
         | EBin (And, a, b), _ -> mk_bin (mk_bin a Or t2) And (mk_bin b Or t2)
         | _, EBin (Or, a, b) -> mk_bin (mk_bin t1 Or a) And (mk_bin t1 Or b)
-        | _ -> t )
+        | _ -> t)
     | _ -> t
   in
   let brk_and t =
@@ -458,7 +458,7 @@ let rebuild_max : term -> term =
             if ACES.(a = a' && b = b') then Some (mk_min a b)
             else if ACES.(a = b' && b = a') then Some (mk_max a b)
             else Some (mk_ite c a b)
-        | _ -> Some (mk_ite c a b) )
+        | _ -> Some (mk_ite c a b))
     | _ -> None
   in
   Transform.transform _mutate

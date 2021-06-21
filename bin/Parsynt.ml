@@ -12,7 +12,7 @@ let tstart = ref 0.0
 
 let help () =
   Fmt.pf stdout
-    "usage: ./Discure INPUT_FILE [-h] [-k K -m M -c C] [-v] [-d D] [-P] [--quiet] [--dump] \n\
+    "usage: ./Parsynt INPUT_FILE [-h] [-k K -m M -c C] [-v] [-d D] [-P] [--quiet] [--dump] \n\
     \                            [--two-pivots] [--no-break] \n\
     \  Optional arguments:\n\
     \  -h, --help           show this help message and exit\n\
@@ -28,7 +28,7 @@ let help () =
     \  --no-break           do not break join into subproblems (try for small problems and\n\
     \                       few cores)\n\
      See input examples in inputs/table1/*.minic and inputs/table7a/*.minic. E.g. run:\n\
-     ./Discure inputs/table7a/lmo.minic\n"
+     ./Parsynt inputs/table7a/lmo.minic\n"
 
 let options =
   [
@@ -121,8 +121,8 @@ let main () =
   Log.info (Utils.wrap "Starting.");
   (* Parse the input file *)
   if Array.length argv < 2 then (
-    Log.error (Utils.wrap "Usage: ./Discure FILENAME");
-    failwith "Specify input file name to Discure.")
+    Log.error (Utils.wrap "Usage: ./Parsynt FILENAME");
+    failwith "Specify input file name to Parsynt.")
   else (
     tstart := Unix.gettimeofday ();
     let parsed_input, asserts = parse_input !Config.master_file in
