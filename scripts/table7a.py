@@ -26,7 +26,7 @@ def run_experiments():
     for _ in range(0, num_repeats):
         with open(csv_output_file, 'a') as o:
             for bench_file, args in table7a_benchmarks.items():
-                subprocess.run(["./Discure", ("inputs/table7a/%s" %
+                subprocess.run(["./Parsynt", ("inputs/table7a/%s" %
                                               bench_file), "--quiet"] + args[1], stdout=o)
         o.close()
 

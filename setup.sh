@@ -20,8 +20,11 @@ sep () {
     echo -e "\033[44m $1 \033[0m"
 }
 
+sep "Installing z3 and python3"
 
-# 1 - Check for Racket installation
+sudo apt install z3 python3
+
+# Check for Racket installation
 
 sep "Checking Racket installation ..."
 
@@ -55,7 +58,7 @@ declare -a REQUIRED_PACKAGES=("rosette")
 # Function to query the source of a package. If empty, it means the package
 # is not installed in raco.
 raco_install_src () {
-    eval "raco pkg show $1 | sed -n 's/^\s*$1\s*\([a-ZA-Z\-\s]+[^/][a-zA-Z/_]+\)*/\1/p'"
+    eval "raco pkg show $1 | grep $1"
 }
 
 for REQ_PACKAGE in "${REQUIRED_PACKAGES[@]}"
@@ -104,7 +107,7 @@ then
     #Check if the package has been successfully installed
     if [[ -z $(raco_install_src $PKG_NAME) ]]
     then
-        msg_fail "Couldn't install package consynth."
+        msg_fail "Couldn't install package synthools."
         contact
     else
         msg_success "Package $PKG_NAME successfully installed!"
@@ -151,6 +154,7 @@ then
     if [ $? -eq 0 ]; then
 	msg_success "Opam installed"
 	msg_success "If the script fails, check Opam is configured : opam config setup -a"
+    msg_success "and check that opam's binaries are in the PATH."
     fi
 else
     msg_success "opam $OPAM_VERSION is installed."
@@ -158,141 +162,21 @@ fi
 
 eval $(opam config env)
 
-# Install oasis
-oasis version
-if [ $? -eq 0 ]; then
-    OASIS_VERSION=$(oasis version)
-    msg_success "Oasis $OASIS_VERSION is already installed!"
-else
-    echo "Installing Oasis"
-    sudo apt-get install m4
-    opam install oasis
-    oasis version
-    if [ $? -eq 0 ]; then
-	OASIS_VERSION=$(oasis version)
-	echo "Oasis version $OASIS_VERSION installed."
-    else
-	msg_fail "Failed to install Oasis. Please install it manually."
-	exit 1;
-    fi
-fi
-
-#Install menhir for parser/lexer compilation."
-MENHIR_VERSION=$(menhir --version)
-if [ $? -eq 0 ]; then
-    MENHIR_VERSION=$(menhir --version)
-    msg_success "$MENHIR_VERSION is already installed!"
-else
-    echo "Installing menhir"
-    opam install menhir
-    menhir --version
-    if [ $? -eq 0 ]; then
-	MENHIR_VERSION=$(menhir --version)
-	echo "$MENHIR_VERSION installed."
-    else
-	msg_fail "Failed to install Menhir. Please install it manually."
-	exit 1;
-    fi
-fi
-
-
-# Automatic package installation with OPAM
-opam_install () {
-    if [[ -z $OPAM_VERSION ]]
-    then
-	msg_fail "Opam is not installed. Please install it manually."
-	exit 1;
-    else
-	opam install $1;
-	PKG_VERSION=$(opam show $1 | sed -n "s/^\s*version:\s\([0-9]\)*/\1/p")
-	if [[ -z $PACKAGE_VERSION ]]
-	then
-	    msg_success "$1 $PACKAGE_VERSION has been successfully installed."
-	else
-	    msg_fail "Failed to install package $1. Please install it manually!"
-	    exit 1;
-	fi
-    fi
-}
-# Check for Ocaml packages
-# We rely on ocamlfind to find OCaml packages but on OPAM for installation
-declare -a OCAML_PACKAGES=("extlib" "getopt" "core")
-
-for OCAML_REQ_PACKAGE in "${OCAML_PACKAGES[@]}"
-do
-    PKG_SRC=$(ocamlfind query $OCAML_REQ_PACKAGE)
-    if [[ -z $PKG_SRC ]]
-    then
-       	msg_fail "Couldn't find $OCAML_REQ_PACKAGE (ocamlfind)."
-	opam_install $OCAML_REQ_PACKAGE
-    else
-	msg_success "Found OCaml package $OCAML_REQ_PACKAGE in $PKG_SRC (ocamlfind)"
-
-    fi
-done
-
-sep "Installing modified version of Cil."
-
-CIL_SOURCE_DIR="src"
-
-# Retrieve and install our modified version
-if [[ -d "$CIL_SOURCE_DIR/alt-cil" ]]; then
-    echo "Modified Cil implementation already downloaded."
-else
-    echo "Cloning Git repository for modified version of Cil ..."
-    cd $CIL_SOURCE_DIR
-    eval "git clone https://github.com/victornicolet/alt-cil.git"
-    cd ..
-fi
-
-CIL_PINNED=$(opam show cil | sed -n -e 's/^.*pinned: //p')
-
-if [[ -z $CIL_PINNED ]]
-then
-    cd $CIL_SOURCE_DIR/alt-cil
-    echo "Creating local cil package and installing it with opam .."
-    opam pin add cil . -n
-    opam install cil
-    cd ../..
-else
-    msg_success "Cil version pinned to local repository."
-fi
-
-CIL_INSTALLED_VERSION=$(opam show cil | sed -n -e 's/^.*installed-version: //p')
-CIL_DEV_REPO=$(opam show cil | sed -n -e 's/^.*dev-repo: //p')
-
-
-if [[ -z $CIL_INSTALLED_VERSION ]]
-then
-    opam install cil --verbose
-else
-    if [[ "$CIL_DEV_REPO" == "https://github.com/victornicolet/alt-cil.git" ]];
-    then
-	msg_success "dev-repo of cil is $CIL_DEV_REPO."
-	msg_success "Custom Cil version $CIL_INSTALLED_VERSION installed, good."
-	echo "---> To uninstall Cil run \$opam remove cil"
-    else
-	msg_fail "Cil is installed, but we require alt-cil."
-	msg_fail "Please uninstall Cil and run this script again."
-
-	exit
-    fi
-fi
+sep "Installing packages via opam ..."
+opam update 
+opam install core 
+opam install . --deps-only
 
 
 sep "Installed all requirements."
 
 # Configuration for absolute paths in Ocaml source
-rm $PWD/src/conf/project_dir.ml
-touch $PWD/src/conf/project_dir.ml
-echo "let base = \"$PWD\"" >> $PWD/src/conf/project_dir.ml
-echo "let src = \"$PWD/src\"" >> $PWD/src/conf/project_dir.ml
-echo "let templates = \"$PWD/src/templates/\"" >> $PWD/src/conf/project_dir.ml
+rm $PWD/src/utils/project_dir.ml
+touch $PWD/src/utils/project_dir.ml
+echo "let base = \"$PWD\"" >> $PWD/src/utils/project_dir.ml
+echo "let src = \"$PWD/src\"" >> $PWD/src/utils/project_dir.ml
+echo "let templates = \"$PWD/src/templates/\"" >> $PWD/src/utils/project_dir.ml
 
-
-sep "Creating Makefiles for Ocaml sources ..."
-oasis setup -setup-update dynamic
-msg_success "Makefiles created, trying make."
 make
 
 
@@ -305,6 +189,5 @@ else
 fi
 
 sep "Testing with some simple examples..."
-cd test
-./check_solved.sh
-cd ..
+./scripts/table7a.py 
+cat table7a.txt

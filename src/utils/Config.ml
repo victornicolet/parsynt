@@ -146,7 +146,7 @@ let import file_name separator =
       conf_file
   with e -> raise e
 
-let main_conf_file = import (source_file "conf/Config.csv") ","
+let main_conf_file = import (source_file "utils/conf.csv") ","
 
 let get_conf_string key =
   match Hashtbl.find main_conf_file key with
@@ -187,7 +187,7 @@ let is_builtin_var s = List.Assoc.mem ~equal:Poly.equal builtin_var_names s
 let get_builtin s = List.Assoc.find_exn ~equal:Poly.equal builtin_var_names s
 
 (** 3 - Parameters of the verification condition of the synthesis *)
-let verif_params_filename = source_file "conf/verification.params"
+let verif_params_filename = source_file "utils/verification.params"
 
 let verification_parameters =
   let reg_separator = Str.regexp "," in
