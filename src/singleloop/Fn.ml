@@ -86,7 +86,7 @@ and fnExpr =
 
 and fnDefinition = fnV * fnV list * fnExpr
 
-(* Get the varinfo of a variable. *)
+(** Get the varinfo of a variable. *)
 let rec vi_of fnlv =
   match fnlv with FnVariable vi' -> Some vi' | FnArray (fnlv', _) -> vi_of fnlv'
 
@@ -489,6 +489,11 @@ let var_of_vi (vi : Typ.variable) =
   register_fnv var;
   var
 
+let variable_of_vi (vi : fnV) : Typ.variable =
+  match ciltyp_of_symb_type vi.vtype with
+  | Some t -> Typ.{ vname = vi.vname; vtype = t; vid = vi.vid; vattrs = [] }
+  | None -> failwith "Unexpected"
+
 let varset_of_vs (vs : Term.VarSet.t) = VarSet.of_list (List.map var_of_vi (Base.Set.elements vs))
 
 (* Compare variables by comparing the variable id of their varinfo. *)
@@ -727,7 +732,7 @@ let set_hole_depths e d =
    Replace expression n time. Returns a list of expressions, with all
    the possible combinations.
 *)
-let replace_many ?(_in_subscripts = false) ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
+let replace_many ?(_in_subscripts = false) ~to_replace:tr ~by:b expr n =
   (* Count how many expressions have to be replaced, and then using a mutable
      counter replace expressions depending on counter. For each possible
      combination, give the indexes that have to be replaced. *)
@@ -773,7 +778,7 @@ let apply_substutions subs e =
   let var_handler v = v in
   transform_expr case case_handler const_handler var_handler e
 
-let replace_expression_in_subscripts ~to_replace:tr ~by:b ~ine:exp =
+let replace_expression_in_subscripts ~to_replace:tr ~by:b exp =
   let case _ = false in
   let case_handler _ e = e in
   let const_handler c = c in
@@ -786,9 +791,7 @@ let replace_expression_in_subscripts ~to_replace:tr ~by:b ~ine:exp =
 
 let replace_all_subs ~tr:el ~by:oe ~ine:e =
   assert (List.length el = List.length oe);
-  List.fold_left2
-    (fun ne tr b -> replace_expression_in_subscripts ~to_replace:tr ~by:b ~ine:ne)
-    e el oe
+  List.fold_left2 (fun ne tr b -> replace_expression_in_subscripts ~to_replace:tr ~by:b ne) e el oe
 
 let fn_uses vs expr =
   let join a b = a || b in

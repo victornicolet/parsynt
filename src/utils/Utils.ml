@@ -135,6 +135,8 @@ module ListTools = struct
 
   let index l = List.mapi ~f:(fun i t -> (i, t)) l
 
+  let take i l = List.take l i
+
   let init (len : int) (f : int -> 'a) : 'a list =
     let rec aux_init l i = if i <= 0 then f 0 :: l else aux_init (f i :: l) (i - 1) in
     aux_init [] len
@@ -215,7 +217,7 @@ module ListTools = struct
       ~f:(fun li i -> if List.mem li ~equal:Poly.equal i then li else i :: li)
       ~init:a b
 
-  let prefixes l = List.mapi ~f:(fun i _ -> take l (i + 1)) l
+  let prefixes l = List.mapi ~f:(fun i _ -> take (i + 1) l) l
 
   let rassoc ~equal (alist : ('a * 'b) list) (key : 'b) : 'a option =
     try Option.map ~f:fst (List.find ~f:(fun (_, y) -> equal y key) alist) with _ -> None

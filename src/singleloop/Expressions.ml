@@ -938,7 +938,7 @@ let replace_AC ctx ~to_replace ~by:by_expr ~ine:in_expr =
   in
   rebuild_tree_AC ctx (transform_expr case handle_case identity identity flat_in)
 
-let replace_many_AC ?(_in_subscripts = false) ~to_replace:tr ~by:b ~ine:expr ~ntimes:n =
+let replace_many_AC ?(_in_subscripts = false) ~to_replace:tr ~by:b expr n =
   (* Count how many expressions have to be replaced, and then using a mutable
      counter replace expressions depending on counter. For each possible
      combination, give the indexes that have to be replaced. *)

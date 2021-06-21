@@ -16,7 +16,6 @@
 *)
 
 open Beta
-open Format
 open FnPretty
 open Fn
 open SymbExe
@@ -80,7 +79,8 @@ let collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
       }
       func
   in
-  if !verbose then printf "[INFO]@[<v 4>Collect dependencies on function:@;%a@]@." pp_fnexpr lbody;
+  if !verbose then
+    Log.info_msg (Fmt.str "[@<v 4>Collect dependencies on function:@;%a@]@." pp_fnexpr lbody);
 
   try
     let final_exprs, _ =
@@ -99,8 +99,8 @@ let collect_dependencies (ctx : context) (func : fnExpr) : VarSet.t IM.t =
     IM.mapi (fun i e -> VarSet.union (used_in_fnexpr e) (IM.find i fnu)) final_exprs
   with SymbExeError (_, _) ->
     if !verbose then (
-      printf "[ERROR] Symbolic execution error while colecting dependencies.@.";
-      printf "        Reverting to simpler version of dependency collection.");
+      Log.error_msg "Symbolic execution error while colecting dependencies.";
+      Log.error_msg "Reverting to simpler version of dependency collection.");
     uses ctx.state_vars func
 
 let rank_and_cluster (vars : VarSet.t) (deps : VarSet.t IM.t) : VarSet.t list =

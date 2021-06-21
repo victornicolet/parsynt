@@ -18,9 +18,7 @@
 open Beta
 open Format
 open Fn
-open FnPretty
 open FnDep
-open SymbExe
 open Utils
 
 let verbose = ref false
@@ -38,17 +36,17 @@ let get_opset_of_inner op variables : fnExpr -> VarSet.t =
       init = VarSet.empty;
       case = (fun e -> match e with FnRec _ -> true | _ -> false);
       on_case =
-        (fun f e ->
+        (fun _ e ->
           match e with
           | FnRec (_, (vs, _), _) -> op vs variables
           | _ -> failwith "on-case failure, not FnRec");
-      on_var = (fun v -> VarSet.empty);
-      on_const = (fun v -> VarSet.empty);
+      on_var = (fun _ -> VarSet.empty);
+      on_const = (fun _ -> VarSet.empty);
     }
 
 let get_diffset_of_inner : VarSet.t -> fnExpr -> VarSet.t = get_opset_of_inner VarSet.diff
 
-let get_subset_of_inner : VarSet.t -> fnExpr -> VarSet.t = get_opset_of_inner VarSet.inter
+let _get_subset_of_inner : VarSet.t -> fnExpr -> VarSet.t = get_opset_of_inner VarSet.inter
 
 let get_inloop_info vars : fnExpr -> VarSet.t * VarSet.t =
   let _init = (VarSet.empty, VarSet.empty) in
@@ -71,12 +69,12 @@ let get_inloop_info vars : fnExpr -> VarSet.t * VarSet.t =
           match e with
           | FnLetIn (blist, expr) -> _join (search_bindings blist) (f expr)
           | _ -> _init);
-      on_var = (fun v -> _init);
-      on_const = (fun v -> _init);
+      on_var = (fun _ -> _init);
+      on_const = (fun _ -> _init);
     }
 
-let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
-  let update_rectype name stl =
+let restrict_func (_old_ctx : context) (variables : VarSet.t) (func : fnExpr) : fnExpr =
+  let update_rectype _name stl =
     let stl' =
       List.filter
         (fun (s, t) ->
@@ -121,7 +119,7 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
         | Some (ov, nv) -> (Some (ov, nv), (mkVar nv, f e))
         | None -> (None, (v, f e)))
       (List.filter
-         (fun (v, e) ->
+         (fun (v, _) ->
            let var = var_of_fnvar v in
            match var.vtype with
            | Record (name, stl) -> (
@@ -141,18 +139,18 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
             let nexpr =
               List.fold_left
                 (fun nexpr (ovar, nvar) ->
-                  replace_expression (mkVarExpr ovar) (mkVarExpr nvar) nexpr)
+                  replace_expression ~to_replace:(mkVarExpr ovar) ~by:(mkVarExpr nvar) nexpr)
                 expr true_substs
             in
             FnLetIn (bindings, f nexpr))
     | FnRecord (vs, emap) ->
         let nvs = VarSet.inter variables vs in
-        FnRecord (nvs, IM.map f (IM.filter (fun k e -> VarSet.has_vid nvs k) emap))
+        FnRecord (nvs, IM.map f (IM.filter (fun k _ -> VarSet.has_vid nvs k) emap))
     | FnRec ((i, g, u), (vs, bs), (s, body)) ->
         let nvs = VarSet.inter variables vs in
         let s' = mkFnVar "s" (record_type nvs) in
         let bs' = f bs in
-        let body' = f (replace_expression (mkVarExpr s) (mkVarExpr s') body) in
+        let body' = f (replace_expression ~to_replace:(mkVarExpr s) ~by:(mkVarExpr s') body) in
         FnRec ((i, g, u), (nvs, bs'), (s', body'))
     | _ -> e
   in
@@ -160,7 +158,7 @@ let rec restrict_func (old_ctx : context) (variables : VarSet.t) (func : fnExpr)
     { case = cases; on_case = restrict_body; on_var = identity; on_const = identity }
     func
 
-let rec restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
+let restrict (pb : prob_rep) (variables : VarSet.t) : prob_rep =
   let new_body = restrict_func pb.scontext variables pb.main_loop_body in
   let new_context = ctx_inter pb.scontext variables in
   SketchJoin.sketch_inner_join
@@ -217,18 +215,18 @@ let has_hole =
       init = false;
       join = ( || );
       case = (fun e -> match e with FnHoleL _ | FnHoleR _ | FnChoice _ -> true | _ -> false);
-      on_case = (fun f e -> match e with FnHoleL _ | FnHoleR _ | FnChoice _ -> true | _ -> false);
-      on_var = (fun v -> false);
-      on_const = (fun c -> false);
+      on_case = (fun _ e -> match e with FnHoleL _ | FnHoleR _ | FnChoice _ -> true | _ -> false);
+      on_var = (fun _ -> false);
+      on_const = (fun _ -> false);
     }
 
-let rec _cb hl cl =
+let _cb hl cl =
   List.fold_left
     (fun hl' (vh, eh) ->
       if has_hole eh then
-        match List.filter (fun (vc, ec) -> var_of_fnvar vc = var_of_fnvar vh) cl with
+        match List.filter (fun (vc, _) -> var_of_fnvar vc = var_of_fnvar vh) cl with
         | [] -> hl' @ [ (vh, eh) ]
-        | hd :: tl -> hl' @ [ (fst hd, snd hd) ]
+        | hd :: _ -> hl' @ [ (fst hd, snd hd) ]
       else hl' @ [ (vh, eh) ]) (* Leave unchanged. *)
     [] hl
 
@@ -255,7 +253,7 @@ let complete_simple_sketch (sketch : fnExpr) (solution : fnExpr) : fnExpr =
         if common1 > common2 then FnLetIn (_cb bsk bsol, FnLetIn (bsk2, _c esk esol))
         else FnLetIn (bsk, FnLetIn (_cb bsk2 bsol, _c esk esol))
     | FnLetIn (bsk, esk), FnLetIn (bsol, esol) -> FnLetIn (_cb bsk bsol, _c esk esol)
-    | FnRecord (vs, emap), FnRecord (vs', emap') ->
+    | FnRecord (vs, emap), FnRecord (_, emap') ->
         FnRecord (vs, IM.mapi (fun i e -> try IM.find i emap' with Not_found -> e) emap)
     | _ -> h
   in
@@ -268,7 +266,7 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
   incremental_struct := (inner_proj_name, VarSet.names diffset);
 
   let loopres_binder, new_loopres_binder, new_inner_binder =
-    let vars, binders = get_inloop_info variables sketch in
+    let _, binders = get_inloop_info variables sketch in
     let lb = VarSet.max_elt binders in
     (lb, mkFnVar (lb.vname ^ "_part") inner_proj_struct, mkFnVar "s" inner_proj_struct)
   in
@@ -282,8 +280,8 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
   let change_binders =
     transform_expr2
       {
-        case = (fun e -> false);
-        on_case = (fun f e -> e);
+        case = (fun _ -> false);
+        on_case = (fun _ e -> e);
         on_const = identity;
         on_var = change_loopres_binder;
       }
@@ -299,11 +297,11 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
           FnLetIn
             ( List.map
                 (fun (v, ve) -> (change_loopres_binder v, f ve))
-                (List.filter (fun (v, ve) -> not (VarSet.mem (var_of_fnvar v) variables)) bindings),
+                (List.filter (fun (v, _) -> not (VarSet.mem (var_of_fnvar v) variables)) bindings),
               f expr )
       | FnRecord (vs, emap) ->
           FnRecord
-            (VarSet.diff vs variables, IM.filter (fun k e -> not (VarSet.has_vid variables k)) emap)
+            (VarSet.diff vs variables, IM.filter (fun k _ -> not (VarSet.has_vid variables k)) emap)
       | _ -> failwith "on_case failure"
     in
     let on_var v =
@@ -341,21 +339,23 @@ let remove_from_loop_state (variables : VarSet.t) (sketch : fnExpr) : fnExpr =
     }
     sketch
 
-let compose_loop (sol : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : fnExpr =
+let compose_loop (_ : prob_rep) (prev_solution : fnExpr) (sketch : fnExpr) : fnExpr =
   let scalars, prev_sol =
     match prev_solution with
     | FnLetIn (scalars, FnLetIn ([ (x1, FnRec (a, b, c)) ], r1)) ->
         (scalars, FnLetIn ([ (x1, FnRec (a, b, c)) ], r1))
-    | FnLetIn ([ (x1, FnRec _) ], r1) -> ([], prev_solution)
+    | FnLetIn ([ (_, FnRec _) ], _) -> ([], prev_solution)
     | _ -> failhere __FILE__ "compose_loop" "Bad top form."
   in
   let core =
     match (prev_sol, sketch) with
-    | ( FnLetIn ([ (x1, FnRec (_, _, (s1, bodysol))) ], r1),
+    | ( FnLetIn ([ (x1, FnRec (_, _, (_, bodysol))) ], r1),
         FnLetIn ([ (x2, FnRec (igu, st2, (s2, bodysketch))) ], r2) ) -> (
-        let r = replace_expression (FnVar x1) (FnVar x2) (complete_simple_sketch r2 r1) in
+        let r =
+          replace_expression ~to_replace:(FnVar x1) ~by:(FnVar x2) (complete_simple_sketch r2 r1)
+        in
         match (bodysol, bodysketch) with
-        | FnLetIn (l1, e1), FnLetIn (l2, e2) ->
+        | FnLetIn (_, e1), FnLetIn (l2, e2) ->
             let body = FnLetIn (l2, complete_simple_sketch e2 e1) in
             let res = FnLetIn ([ (x2, FnRec (igu, st2, (s2, body))) ], r) in
             res

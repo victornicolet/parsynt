@@ -19,25 +19,21 @@
 
 open Beta
 open Fn
-open FnPretty
 open List
-open Synthlib2ast
-open Synthlib
+open Sygus.Synthlib2ast
+open Sygus.Synthlib
 open Utils
 
-let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
-  let _binding  (var, expr) =
+let rec to_term ?(texpr = SyLiteral (SyBool true)) =
+  let _binding (var, expr) =
     match var with
     | FnVariable v ->
-      let sort = sort_of_varinfo (cil_varinfo v) in
-      (v.vname, sort, to_term ~texpr:texpr expr)
-    | _ -> failhere __FILE__ "to_term"
-             "Unsupported left hand side in binding."
+        let sort = sort_of_varinfo (variable_of_vi v) in
+        (v.vname, sort, to_term ~texpr expr)
+    | _ -> failhere __FILE__ "to_term" "Unsupported left hand side in binding."
   in
   let rec of_var fnvar =
-    match fnvar with
-    | FnVariable vi -> SyId vi.vname
-    | FnArray(v,e) -> of_var v
+    match fnvar with FnVariable vi -> SyId vi.vname | FnArray (v, _) -> of_var v
   in
   let of_const cst =
     match cst with
@@ -49,30 +45,23 @@ let rec  to_term ?(texpr=SyLiteral(SyBool true)) =
     | _ -> failhere __FILE__ "to_term" "Unsupported constant."
   in
   function
-  | FnLetIn (velist, cont) ->
-    SyLet(map _binding velist, to_term ~texpr:texpr cont)
-  | FnRecord (vs, emap) ->
-    SyLet(map _binding (unwrap_state vs emap), texpr)
-  | FnVar v ->of_var v
+  | FnLetIn (velist, cont) -> SyLet (map _binding velist, to_term ~texpr cont)
+  | FnRecord (vs, emap) -> SyLet (map _binding (unwrap_state vs emap), texpr)
+  | FnVar v -> of_var v
   | FnConst c -> SyLiteral (of_const c)
-  | FnBinop(op, e1, e2) ->
-    SyApp(string_of_symb_binop op,
-          [to_term ~texpr:texpr e1; to_term ~texpr:texpr e2])
-  | FnUnop(op, e) -> SyApp(string_of_symb_unop op, [to_term ~texpr:texpr e])
-  | FnCond(c,e1,e2) -> SyApp("ite", map (to_term ~texpr:texpr) [c;e1;e2])
-  | FnApp(_,maybe_v, args) ->
-    (try
-      let v = check_option maybe_v in
-      SyApp(v.vname, map (to_term ~texpr:texpr) args)
-     with Failure s ->
-       failhere __FILE__ "to_term terminal_expr" "Unsupported function.")
+  | FnBinop (op, e1, e2) -> SyApp (string_of_symb_binop op, [ to_term ~texpr e1; to_term ~texpr e2 ])
+  | FnUnop (op, e) -> SyApp (string_of_symb_unop op, [ to_term ~texpr e ])
+  | FnCond (c, e1, e2) -> SyApp ("ite", map (to_term ~texpr) [ c; e1; e2 ])
+  | FnApp (_, maybe_v, args) -> (
+      try
+        let v = check_option maybe_v in
+        SyApp (v.vname, map (to_term ~texpr) args)
+      with Failure _ -> failhere __FILE__ "to_term terminal_expr" "Unsupported function.")
   | _ -> failhere __FILE__ "to_term" "Unsupported construct."
-
 
 (* The inverse conversion: from terms to expressions. *)
 
-let to_fnconst =
-  function
+let to_fnconst = function
   | SyInt i -> FnConst (CInt i)
   | SyReal r -> FnConst (CReal r)
   | SyBool b -> FnConst (CBool b)
@@ -80,34 +69,26 @@ let to_fnconst =
   | _ -> FnConst (CString "bitvector_or_enum")
 
 let to_fnexpr vars =
-  let rec _binding (v,t,e) =
+  let rec _binding (v, _, e) =
     let vi = VarSet.find_by_name vars v in
     (FnVariable vi, _fnexpr e)
-  and  _fnexpr =
-    function
-    | SyId v ->
-      (try
-        let vi = VarSet.find_by_name vars v in
-        FnVar (FnVariable vi)
-      with Not_found ->
-        failhere __FILE__ "to_fnexpr" "Unknown variable.")
+  and _fnexpr = function
+    | SyId v -> (
+        try
+          let vi = VarSet.find_by_name vars v in
+          FnVar (FnVariable vi)
+        with Not_found -> failhere __FILE__ "to_fnexpr" "Unknown variable.")
     | SyLiteral lit -> to_fnconst lit
-    | SyApp (fname, args) ->
-      let fargs = map _fnexpr args in
-      let obinop, ounop =
-        symb_binop_of_fname fname, symb_unop_of_fname fname
-      in
-      begin
-        match obinop, ounop with
-        | Some binop, _ ->
-          FnBinop(binop, hd fargs, hd (tl fargs))
-        | _ , Some unop ->
-          FnUnop(unop, hd fargs)
+    | SyApp (fname, args) -> (
+        let fargs = map _fnexpr args in
+        let obinop, ounop = (symb_binop_of_fname fname, symb_unop_of_fname fname) in
+        match (obinop, ounop) with
+        | Some binop, _ -> FnBinop (binop, hd fargs, hd (tl fargs))
+        | _, Some unop -> FnUnop (unop, hd fargs)
         | None, None ->
-          (* Dummy function for now. TODO: need a mapping from function names
-             to their types for unrecognized functions.*)
-          FnApp(Integer, None, fargs)
-      end
-    | SyLet(bindings, interm) ->
-      FnLetIn(map _binding bindings, _fnexpr interm)
-  in _fnexpr
+            (* Dummy function for now. TODO: need a mapping from function names
+               to their types for unrecognized functions.*)
+            FnApp (Integer, None, fargs))
+    | SyLet (bindings, interm) -> FnLetIn (map _binding bindings, _fnexpr interm)
+  in
+  _fnexpr
