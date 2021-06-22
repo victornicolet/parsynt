@@ -1,0 +1,10 @@
+tbb/*.cpp
+tbb/nested_loops/cmake-build-debug
+tbb/nested_loops/Makefile
+tbb/nested_loops/*.cbp
+tbb/nested_loops/cmake_install.cmake
+tbb/nested_loops/.idea
+tbb/nested_loops/Exp*
+dafny/*.dll
+dafny/*.mdb
+dafny/__loop*

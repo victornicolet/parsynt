@@ -12,7 +12,7 @@ msg_success () {
     echo -e "\033[32m OK : $1\033[0m"
 }
 contact () {
-    echo -e "\033[46m Please report error to victor.nicolet@polytechnique.edu\033[0m";
+    echo -e "\033[46m Please report error to victorn@cs.toronto.edu\033[0m";
     exit 0
 }
 sep () {
@@ -163,8 +163,8 @@ fi
 eval $(opam config env)
 
 sep "Installing packages via opam ..."
-opam update 
-opam install core 
+opam update
+opam install core
 opam install . --deps-only
 
 
@@ -188,6 +188,6 @@ else
     exit
 fi
 
-sep "Testing with some simple examples..."
-./scripts/table7a.py 
+sep "Testing with some simple examples (should take a few minutes)..."
+./scripts/table7a.py
 cat table7a.txt
