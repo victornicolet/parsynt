@@ -24,6 +24,10 @@ sep "Installing z3 and python3"
 
 sudo apt install z3 python3
 
+# Install bc
+
+sudo apt-get install -y bc
+
 # Check for Racket installation
 
 sep "Checking Racket installation ..."
